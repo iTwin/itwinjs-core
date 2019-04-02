@@ -26,7 +26,6 @@ export * from "./DisplayStyleState";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
-export * from "./FenceParams";
 export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./HitDetail";

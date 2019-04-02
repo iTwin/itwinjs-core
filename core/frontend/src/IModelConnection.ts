@@ -42,14 +42,14 @@ export class IModelConnection extends IModel {
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
   /** The set of Tiles for this IModelConnection.
-   * @hidden
+   * @internal
    */
   public readonly tiles: IModelConnection.Tiles;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
   /** The Geographic location services available for this iModelConnection */
   public readonly geoServices: GeoServices;
-  /** @hidden Whether it has already been determined that this iModelConnection does not have a map projection. */
+  /** @internal Whether it has already been determined that this iModelConnection does not have a map projection. */
   protected _noGcsDefined?: boolean;
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
@@ -405,7 +405,7 @@ export class IModelConnection extends IModel {
   /** WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
-   * @hidden
+   * @internal
    */
   public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
 
@@ -413,7 +413,7 @@ export class IModelConnection extends IModel {
    * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @throws [IModelError]($common) if a Change Cache file has already been attached before.
-   * @hidden
+   * @internal
    */
   public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
 
@@ -421,7 +421,7 @@ export class IModelConnection extends IModel {
    * > You do not have to check whether a Change Cache file had been attached before. The
    * > method does not do anything, if no Change Cache is attached.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   * @hidden
+   * @internal
    */
   public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
 
@@ -544,7 +544,7 @@ export namespace IModelConnection {
     /** The set of loaded models for this IModelConnection, indexed by Id. */
     public loaded = new Map<string, ModelState>();
 
-    /** @hidden */
+    /** @internal */
     constructor(private _iModel: IModelConnection) { }
 
     /** The Id of the [RepositoryModel]($backend). */
@@ -610,7 +610,7 @@ export namespace IModelConnection {
 
   /** The collection of Elements for an [[IModelConnection]]. */
   export class Elements {
-    /** @hidden */
+    /** @internal */
     public constructor(private _iModel: IModelConnection) { }
 
     /** The Id of the [root subject element]($docs/bis/intro/glossary.md#subject-root) for this iModel. */
@@ -634,7 +634,7 @@ export namespace IModelConnection {
   export class CodeSpecs {
     private _loaded?: CodeSpec[];
 
-    /** @hidden */
+    /** @internal */
     constructor(private _iModel: IModelConnection) { }
 
     /** Loads all CodeSpec from the remote IModelDb. */
@@ -683,7 +683,7 @@ export namespace IModelConnection {
 
   /** The collection of views for an [[IModelConnection]]. */
   export class Views {
-    /** @hidden */
+    /** @internal */
     constructor(private _iModel: IModelConnection) { }
 
     /** Query for an array of ViewDefinitionProps
@@ -770,13 +770,13 @@ export namespace IModelConnection {
   }
 
   /** Provides access to tiles associated with an IModelConnection
-   * @hidden
+   * @internal
    */
   export class Tiles {
-    /** @hidden */
+    /** @internal */
     private _iModel: IModelConnection;
 
-    /** @hidden */
+    /** @internal */
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
 
     public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id); }

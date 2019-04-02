@@ -245,9 +245,9 @@ export class Cluster<T extends Marker> {
  * @public
  */
 export abstract class MarkerSet<T extends Marker> {
-  /** @hidden */
+  /** @internal */
   protected _entries: Array<T | Cluster<T>> = []; // this is an array that holds either Markers or a cluster of markers.
-  /** @hidden */
+  /** @internal */
   protected readonly _worldToViewMap = Matrix4d.createZero();
 
   /** The minimum number of Markers that must overlap before they are clustered. Otherwise they are each drawn individually. Default is 1 (always create a cluster.) */

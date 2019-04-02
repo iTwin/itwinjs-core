@@ -20,7 +20,7 @@ if (ElectronRpcConfiguration.isElectron) {
   OidcClient = OidcBrowserClient;
 }
 
-/** @hidden */
+/** @internal */
 export class OidcClientWrapper {
 
   private static _oidcClient: IOidcFrontendClient;

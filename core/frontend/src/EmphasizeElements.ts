@@ -53,7 +53,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   protected createAppearanceFromKey(key: number): FeatureSymbology.Appearance {
     if (key < 0)
       return FeatureSymbology.Appearance.fromTransparency(Math.abs(key));
@@ -63,7 +63,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return FeatureSymbology.Appearance.fromRgba(color);
   }
 
-  /** @hidden */
+  /** @internal */
   protected createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined {
     const colorValues = color.colors;
     switch (override) {
@@ -102,9 +102,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     });
   }
 
-  /** @hidden Get the IDs of the currently never drawn elements. */
+  /** @internal Get the IDs of the currently never drawn elements. */
   public getNeverDrawnElements(vp: Viewport): Id64Set | undefined { return (undefined !== vp.neverDrawn && 0 !== vp.neverDrawn.size ? vp.neverDrawn : undefined); }
-  /** @hidden Get the IDs of the currently always drawn elements. */
+  /** @internal Get the IDs of the currently always drawn elements. */
   public getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined { return (undefined !== vp.alwaysDrawn && 0 !== vp.alwaysDrawn.size ? vp.alwaysDrawn : undefined); }
   /** Get the IDs of the currently hidden elements. */
   public getHiddenElements(vp: Viewport): Id64Set | undefined { return this.getNeverDrawnElements(vp); }
@@ -114,11 +114,12 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   public getEmphasizedElements(vp: Viewport): Id64Set | undefined { return (!vp.isAlwaysDrawnExclusive && undefined !== this._defaultAppearance ? this.getAlwaysDrawnElements(vp) : undefined); }
   /** Get the map of current elements with color/transparency overrides. */
   public getOverriddenElements(): Map<number, Id64Set> | undefined { return (undefined !== this._overrideAppearance && 0 !== this._overrideAppearance.size ? this._overrideAppearance : undefined); }
-  /** @hidden Get the IDs of current elements with the specified color/tranparency override. */
+  /** @internal Get the IDs of current elements with the specified color/tranparency override. */
   public getOverriddenElementsByKey(key: number): Id64Set | undefined { return (undefined !== this._overrideAppearance ? this._overrideAppearance.get(key) : undefined); }
 
-  /** @hidden Clear never drawn elements.
+  /** Clear never drawn elements.
    * @return false if nothing to clear.
+   * @internal
    */
   public clearNeverDrawnElements(vp: Viewport): boolean {
     if (undefined === this.getNeverDrawnElements(vp))
@@ -127,8 +128,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return true;
   }
 
-  /** @hidden Clear always drawn elements.
+  /** Clear always drawn elements.
    * @return false if nothing to clear.
+   * @internal
    */
   public clearAlwaysDrawnElements(vp: Viewport): boolean {
     if (undefined === this.getAlwaysDrawnElements(vp))
@@ -179,12 +181,13 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return true;
   }
 
-  /** @hidden Set the element IDs to be never drawn.
+  /** Set the element IDs to be never drawn.
    * @param ids The IDs of the elements to never draw.
    * @param vp The viewport.
    * @param replace true to replace currently hidden elements (if any) or false to add to the existing set.
    * @return true if overrides were changed.
    * @see [[Viewport.neverDrawn]]
+   * @internal
    */
   public setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace: boolean = true): boolean {
     const hiddenIds = new Set<string>();
@@ -201,7 +204,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return true;
   }
 
-  /** @hidden Set the element IDs to be always drawn.
+  /** Set the element IDs to be always drawn.
    * @param ids The IDs of the elements to always draw.
    * @param vp The viewport.
    * @param exclusive If true, *only* the specified elements will be drawn.
@@ -209,6 +212,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @return true if overrides were changed.
    * @see [[Viewport.alwaysDrawn]]
    * @see [[Viewport.isAlwaysDrawnExclusive]]
+   * @internal
    */
   public setAlwaysDrawnElements(ids: Id64Arg, vp: Viewport, exclusive: boolean = true, replace: boolean = true): boolean {
     const visibleIds = new Set<string>();

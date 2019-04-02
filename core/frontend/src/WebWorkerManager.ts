@@ -16,7 +16,6 @@ type rejectFunc = ((arg: Error) => void);
  * the thread with the fewest entries in the queue. Operations are represented as
  * subclasses of the abstract class WorkerOperation.
  * @alpha
- * @hidden
  */
 export class WebWorkerManager {
   private _workerProxys: WebWorkerProxy[];
@@ -67,14 +66,12 @@ class RequestMessage {
   constructor(public msgId: number, public operation: string, public operands: any) { }
 }
 
-/**
- * Abstract base class for requests handled by a Web Worker.
+/** Abstract base class for requests handled by a Web Worker.
  * @note - To direct a request to a Web Worker, create a subclass of WorkerOperation in the main thread,
  * instantiate that subclass, and then call the queueOperation method of the corresponding WebWorkerManager.
  * The javascript loaded by the WebWorkerManager must be configured to handle the request by implementing
  * a method equal to the operation argument of the WorkerOperation constructor.
  * @alpha
- * @hidden
  */
 export abstract class WorkerOperation {
   private _resolve: resolveFunc | undefined = undefined;

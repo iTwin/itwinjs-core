@@ -43,7 +43,7 @@ declare var BUILD_SEMVER: string;
  * @public
  */
 export class IModelApp {
-  /** @hidden */
+  /** @internal */
   protected static _initialized = false;
   private static _renderSystem?: RenderSystem;
   private static _authorizationClient?: IAuthorizationClient;
@@ -70,9 +70,9 @@ export class IModelApp {
   public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) {
     IModelApp._authorizationClient = authorizationClient;
   }
-  /** @hidden */
+  /** @internal */
   public static locateManager: ElementLocateManager;
-  /** @hidden */
+  /** @internal */
   public static tentativePoint: TentativePoint;
   /** The [[I18N]] for this session. */
   public static i18n: I18N;
@@ -84,13 +84,13 @@ export class IModelApp {
   public static applicationVersion: string;
   /** A uniqueId for this session */
   public static sessionId: GuidString;
-  /** @hidden */
+  /** @internal */
   public static readonly features = new FeatureGates();
   /** The [[ToolRegistry]] for this session. */
   public static readonly tools = new ToolRegistry();
-  /** @hidden */
+  /** @internal */
   protected static _imodelClient?: IModelClient;
-  /** @hidden */
+  /** @internal */
   public static get initialized() { return IModelApp._initialized; }
 
   /** The [[IModelClient]] for this session. */
@@ -100,9 +100,9 @@ export class IModelApp {
     return this._imodelClient;
   }
 
-  /** @hidden */
+  /** @internal */
   public static set iModelClient(client: IModelClient) { this._imodelClient = client; }
-  /** @hidden */
+  /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
 
   /**
@@ -189,12 +189,12 @@ export class IModelApp {
   protected static onStartup(): void { }
 
   /** Implement this method to supply options for the initialization of the [I18N]($i18n) system.
-   * @hidden
+   * @internal
    */
   protected static supplyI18NOptions(): I18NOptions | undefined { return undefined; }
 
   /** Implement this method to supply the RenderSystem that provides display capabilities.
-   * @hidden
+   * @internal
    */
   protected static supplyRenderSystem(options?: RenderSystem.Options): RenderSystem { return System.create(options); }
 

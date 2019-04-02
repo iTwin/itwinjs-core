@@ -171,7 +171,7 @@ export namespace RenderMemory {
   }
 }
 
-/* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
+/** A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
  * @internal
  */
 export class RenderPlan {

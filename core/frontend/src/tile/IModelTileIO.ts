@@ -227,10 +227,10 @@ export namespace IModelTileIO {
       return Promise.resolve(this.finishRead(isLeaf, featureTable, header.contentRange, header.emptySubRanges, sizeMultiplier));
     }
 
-    /** @hidden */
+    /** @internal */
     protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
 
-    /** @hidden */
+    /** @internal */
     protected createDisplayParams(json: any): DisplayParams | undefined {
       const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
       const lineColor = new ColorDef(JsonUtils.asInt(json.lineColor));
@@ -267,12 +267,12 @@ export namespace IModelTileIO {
       return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, material, undefined, ignoreLighting, textureMapping);
     }
 
-    /** @hidden */
+    /** @internal */
     protected colorDefFromMaterialJson(json: any): ColorDef | undefined {
       return undefined !== json ? ColorDef.from(json[0] * 255 + 0.5, json[1] * 255 + 0.5, json[2] * 255 + 0.5) : undefined;
     }
 
-    /** @hidden */
+    /** @internal */
     protected materialFromJson(key: string): RenderMaterial | undefined {
       if (this._renderMaterials === undefined || this._renderMaterials[key] === undefined)
         return undefined;
@@ -392,7 +392,7 @@ export namespace IModelTileIO {
       });
     }
 
-    /** @hidden */
+    /** @internal */
     protected readFeatureTable(): PackedFeatureTable | undefined {
       const startPos = this._buffer.curPos;
       const header = FeatureTableHeader.readFrom(this._buffer);

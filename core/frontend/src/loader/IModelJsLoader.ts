@@ -111,9 +111,9 @@ class IModelJsLoadOptions {
   }
 }
 
-// loads the iModelJs modules, and the external modules that they depend on.
-/** @internal */
-/** @hidden */
+/** Loads the iModelJs modules and the external modules that they depend on.
+ * @internal
+ */
 export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> {
   // if we are going to load the ui modules, get the third party stuff started now. They don't depend on any of our modules so can be loaded at any time.
   let thirdPartyRootPromise;

@@ -491,7 +491,9 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
   }
 }
 
-/** Describes the [[SkyBox]] and [[GroundPlane]] associated with a [[DisplayStyle3dState]]. */
+/** Describes the [[SkyBox]] and [[GroundPlane]] associated with a [[DisplayStyle3dState]].
+ * @public
+ */
 export class Environment implements EnvironmentProps {
   public readonly sky: SkyBox;
   public readonly ground: GroundPlane;

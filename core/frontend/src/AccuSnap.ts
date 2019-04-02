@@ -17,7 +17,9 @@ import { Decorator } from "./ViewManager";
 import { SnapRequestProps, DecorationGeometryProps, ColorDef } from "@bentley/imodeljs-common";
 import { CanvasDecoration } from "./rendering";
 
-/** @hidden Virtual cursor for using AccuSnap with touch input. */
+/** Virtual cursor for using AccuSnap with touch input.
+ * @internal
+ */
 export class TouchCursor implements CanvasDecoration {
   public position = new Point3d();
   protected _offsetPosition = new Point3d();
@@ -154,6 +156,7 @@ export class TouchCursor implements CanvasDecoration {
 
 /** AccuSnap is an aide for snapping to interesting points on elements or decorations as the cursor moves over them.
  * @see [Using AccuSnap]($docs/learning/frontend/primitivetools.md#AccuSnap)
+ * @public
  */
 export class AccuSnap implements Decorator {
   /** Currently active hit */
@@ -180,16 +183,16 @@ export class AccuSnap implements Decorator {
   private _motionStopTime = 0;
   /** Location of cursor when we last checked for motion */
   private readonly _lastCursorPos = new Point2d();
-  /** @hidden */
+  /** @internal */
   public readonly toolState = new AccuSnap.ToolState();
-  /** @hidden */
+  /** @internal */
   protected _settings = new AccuSnap.Settings();
-  /** @hidden */
+  /** @internal */
   public touchCursor?: TouchCursor;
   /** Current request for tooltip message. */
   private _toolTipPromise?: Promise<string | HTMLElement>;
 
-  /** @hidden */
+  /** @internal */
   public onInitialized() { }
   private get _searchDistance(): number { return this.isLocateEnabled ? 1.0 : this._settings.searchDistance; }
   private get _hotDistanceInches(): number { return IModelApp.locateManager.apertureInches * this._settings.hotDistanceFactor; }
@@ -209,7 +212,7 @@ export class AccuSnap implements Decorator {
   /** Determine whether there is a current hit that is *hot*. */
   public get isHot(): boolean { const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot; }
 
-  /** @hidden */
+  /** @internal */
   public destroy(): void { this.currHit = undefined; this.aSnapHits = undefined; }
   private get _doSnapping(): boolean { return this.isSnapEnabled && this.isSnapEnabledByUser && !this._isSnapSuspended; }
   private get _isSnapSuspended(): boolean { return (0 !== this._suppressed || 0 !== this.toolState.suspended); }
@@ -942,6 +945,7 @@ export class AccuSnap implements Decorator {
   }
 }
 
+/** @public */
 export class TentativeOrAccuSnap {
   public static get isHot(): boolean { return IModelApp.accuSnap.isHot || IModelApp.tentativePoint.isSnapped; }
 
@@ -972,6 +976,7 @@ export class TentativeOrAccuSnap {
   }
 }
 
+/** @public */
 export namespace AccuSnap {
   export class ToolState {
     public enabled = false;

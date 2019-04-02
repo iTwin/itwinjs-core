@@ -82,7 +82,7 @@ export abstract class ViewTool extends InteractiveTool {
 
 }
 
-/** @hidden */
+/** @internal */
 export abstract class ViewingToolHandle {
   constructor(public viewTool: ViewManip) { }
   public onReinitialize(): void { }
@@ -99,7 +99,7 @@ export abstract class ViewingToolHandle {
   public drawHandle(_context: DecorateContext, _hasFocus: boolean): void { }
 }
 
-/** @hidden */
+/** @internal */
 export class ViewHandleArray {
   public handles: ViewingToolHandle[] = [];
   public focus = -1;
@@ -1230,7 +1230,7 @@ class ViewZoom extends ViewingToolHandle {
   }
 }
 
-/** @hidden */
+/** @internal */
 class NavigateMotion {
   public deltaTime = 0;
   public transform = Transform.createIdentity();
@@ -1960,7 +1960,7 @@ export class WindowAreaTool extends ViewTool {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class DefaultViewTouchTool extends ViewManip {
   public static toolId = ""; // touch tools installed by IdleTool are never registered
   private _lastPtView = new Point3d();

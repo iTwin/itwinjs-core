@@ -178,7 +178,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public async onUndoPreviousStep(): Promise<boolean> { return false; }
 
-  /** @hidden */
+  /** @internal */
   public async undoPreviousStep(): Promise<boolean> {
     if (!await this.onUndoPreviousStep())
       return false;
@@ -196,7 +196,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public async onRedoPreviousStep(): Promise<boolean> { return false; }
 
-  /** @hidden */
+  /** @internal */
   public async redoPreviousStep(): Promise<boolean> {
     if (!await this.onRedoPreviousStep())
       return false;

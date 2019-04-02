@@ -22,6 +22,7 @@ import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { DecorateContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
 
+/** @beta */
 export const enum AccuDrawFlags {
   SetModePolar = 1,
   SetModeRect = 1 << 1,
@@ -47,11 +48,13 @@ export const enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
+/** @beta */
 export const enum CompassMode {
   Polar = 0,
   Rectangular = 1,
 }
 
+/** @beta */
 export const enum RotationMode {
   Top = 1,
   Front = 2,
@@ -61,6 +64,7 @@ export const enum RotationMode {
   Context = 6,
 }
 
+/** @beta */
 export const enum LockedStates {
   NONE_LOCKED = 0,
   X_BM = (1),
@@ -71,6 +75,7 @@ export const enum LockedStates {
   ANGLE_BM = (XY_BM | VEC_BM),
 }
 
+/** @beta */
 export const enum CurrentState {
   NotEnabled = 0, // Compass disabled/unwanted for this session.
   Deactivated = 1, // Compass deactivated but CAN be activated by user.
@@ -78,6 +83,7 @@ export const enum CurrentState {
   Active = 3, // Compass displayed and adjusting points.
 }
 
+/** @beta */
 export const enum ContextMode {
   Locked = 0,
   XAxis = 1,
@@ -87,6 +93,7 @@ export const enum ContextMode {
   None = 15,
 }
 
+/** @beta */
 export const enum ItemField {
   DIST_Item = 0,
   ANGLE_Item = 1,
@@ -95,6 +102,7 @@ export const enum ItemField {
   Z_Item = 4,
 }
 
+/** @beta */
 export enum KeyinStatus {
   Dynamic = 0,
   Partial = 1,
@@ -107,6 +115,7 @@ enum Constants {
   SMALL_DELTA = 0.00001,
 }
 
+/** @beta */
 export class AccudrawData {
   public flags = 0; // AccuDrawFlags
   public readonly origin = new Point3d(); // used if ACCUDRAW_SetOrigin
@@ -118,6 +127,7 @@ export class AccudrawData {
   public zero() { this.flags = this.distance = this.angle = 0; this.origin.setZero(); this.delta.setZero(); this.vector.setZero(); this.rMatrix.setIdentity(); }
 }
 
+/** @beta */
 export class Flags {
   public redrawCompass = false;
   public dialogNeedsUpdate = false;
@@ -138,11 +148,13 @@ export class Flags {
   public animateRotation = false;
 }
 
+/** @beta */
 export class RoundOff {
   public active = false;
   public units = new Set<number>();
 }
 
+/** @beta */
 export class SavedState {
   public state = CurrentState.NotEnabled;
   public mode = CompassMode.Polar;
@@ -162,6 +174,7 @@ class SavedCoords {
   public readonly savedValIsAngle: boolean[] = [];
 }
 
+/** @beta */
 export class ThreeAxes {
   public readonly x = Vector3d.unitX();
   public readonly y = Vector3d.unitY();
@@ -186,9 +199,9 @@ export class ThreeAxes {
   public equals(other: ThreeAxes): boolean { return this.x.isExactEqual(other.x) && this.y.isExactEqual(other.y) && this.z.isExactEqual(other.z); }
 }
 
-/**
- * Accudraw is an aide for entering coordinate data.
+/** Accudraw is an aide for entering coordinate data.
  * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)
+ * @beta
  */
 export class AccuDraw {
   public currentState = CurrentState.NotEnabled; // Compass state
@@ -2648,7 +2661,7 @@ export class AccuDraw {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   public refreshDecorationsAndDynamics(): void {
     // Immediately process hints and show dynamics using adjusted point when not called from button down...
     if (!this.flags.inDataPoint)
@@ -2662,7 +2675,7 @@ export class AccuDraw {
     IModelApp.toolAdmin.updateDynamics(undefined, undefined, true);
   }
 
-  /** @hidden */
+  /** @internal */
   public upgradeToActiveState(): boolean {
     if (!this.isEnabled)
       return false;
@@ -2710,7 +2723,7 @@ export class AccuDraw {
     return false;
   }
 
-  /** @hidden */
+  /** @internal */
   public downgradeInactiveState(): boolean {
     if (!this.isEnabled)
       return false;
@@ -3045,12 +3058,12 @@ export class AccuDraw {
   }
 }
 
-/**
- * AccuDrawHintBuilder is a Tool helper class that facilitates AccuDraw interaction.
+/** AccuDrawHintBuilder is a Tool helper class that facilitates AccuDraw interaction.
  * The tool does not directly change the current AccuDraw state; the tool's job is merely
  * to supply "hints" to AccuDraw regarding its preferred AccuDraw configuration for the
  * current tool state. User settings such as "Context Sensitivity" and "Floating Origin"
  * affect how/which hints get applied.
+ * @beta
  */
 export class AccuDrawHintBuilder {
   private _flagOrigin = false;

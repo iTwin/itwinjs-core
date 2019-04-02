@@ -175,7 +175,7 @@ import { XYAndZ } from '@bentley/geometry-core';
 import { XYZ } from '@bentley/geometry-core';
 import { XYZProps } from '@bentley/geometry-core';
 
-// @public
+// @beta
 export class AccuDraw {
     // (undocumented)
     accountForAuxRotationPlane(rot: ThreeAxes, plane: RotationMode): void;
@@ -235,7 +235,7 @@ export class AccuDraw {
     doLockAngle(isSnapped: boolean): void;
     // (undocumented)
     dontMoveFocus: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     downgradeInactiveState(): boolean;
     // (undocumented)
     enableForSession(): void;
@@ -344,7 +344,7 @@ export class AccuDraw {
     processHints(): void;
     // (undocumented)
     readonly published: AccudrawData;
-    // (undocumented)
+    // @internal (undocumented)
     refreshDecorationsAndDynamics(): void;
     // (undocumented)
     restoreState(stateBuffer: SavedState): void;
@@ -396,7 +396,7 @@ export class AccuDraw {
     updateFieldLock(index: ItemField, locked: boolean): void;
     // (undocumented)
     updateRotation(animate?: boolean, newRotationIn?: Matrix3d): void;
-    // (undocumented)
+    // @internal (undocumented)
     upgradeToActiveState(): boolean;
     // (undocumented)
     readonly vector: Vector3d;
@@ -406,7 +406,7 @@ export class AccuDraw {
     protected readonly _yColor: ColorDef;
     }
 
-// @public (undocumented)
+// @beta (undocumented)
 export class AccudrawData {
     // (undocumented)
     angle: number;
@@ -426,7 +426,7 @@ export class AccudrawData {
     zero(): void;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export const enum AccuDrawFlags {
     // (undocumented)
     AlwaysSetOrigin = 2097156,
@@ -474,7 +474,7 @@ export const enum AccuDrawFlags {
     UpdateRotation = 8388608
 }
 
-// @public
+// @beta
 export class AccuDrawHintBuilder {
     // (undocumented)
     enableSmartRotation: boolean;
@@ -525,16 +525,26 @@ export class AccuDrawShortcuts {
     static defineACSByPoints(): void;
     // (undocumented)
     static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldAcceptInput" is marked as @public, but its signature references "ItemField" which is marked as @beta
+    // 
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldLockToggle" is marked as @public, but its signature references "ItemField" which is marked as @beta
+    // 
     // (undocumented)
     static itemFieldLockToggle(index: ItemField): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNavigate" is marked as @public, but its signature references "ItemField" which is marked as @beta
+    // 
     // (undocumented)
     static itemFieldNavigate(index: ItemField, str: string, forward: boolean): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNewInput" is marked as @public, but its signature references "ItemField" which is marked as @beta
+    // 
     // (undocumented)
     static itemFieldNewInput(index: ItemField): void;
     // (undocumented)
     static itemFieldUnlockAll(): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemRotationModeChange" is marked as @public, but its signature references "RotationMode" which is marked as @beta
+    // 
     // (undocumented)
     static itemRotationModeChange(rotation: RotationMode): void;
     // (undocumented)
@@ -571,6 +581,8 @@ export class AccuDrawShortcuts {
     static rotateToElement(updateCurrentACS: boolean): void;
     // (undocumented)
     static setOrigin(explicitOrigin?: Point3d): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "setStandardRotation" is marked as @public, but its signature references "RotationMode" which is marked as @beta
+    // 
     // (undocumented)
     static setStandardRotation(rotation: RotationMode): void;
     // (undocumented)
@@ -593,6 +605,8 @@ export abstract class AccuDrawTool {
     static installTool(shortcut: AccuDrawTool): boolean;
     // (undocumented)
     onDecorate(_context: DecorateContext): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "onManipulationComplete" is marked as @public, but its signature references "AccuDrawFlags" which is marked as @beta
+    // 
     // (undocumented)
     onManipulationComplete(): AccuDrawFlags;
     // (undocumented)
@@ -614,7 +628,7 @@ export class AccuSnap implements Decorator {
     currHit?: HitDetail;
     // (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     destroy(): void;
     // (undocumented)
     displayToolTip(viewPt: XAndY, vp: ScreenViewport, uorPt?: Point3d): void;
@@ -642,7 +656,7 @@ export class AccuSnap implements Decorator {
     readonly keypointDivisor: number;
     readonly needFlash: Set<Viewport>;
     onEnabledStateChange(_isEnabled: boolean, _wasEnabled: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     onInitialized(): void;
     onMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -670,7 +684,7 @@ export class AccuSnap implements Decorator {
     resetButton(): Promise<SnapStatus>;
     // (undocumented)
     setCurrHit(newHit?: HitDetail): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _settings: AccuSnap.Settings;
     // (undocumented)
     showElemInfo(viewPt: XAndY, vp: ScreenViewport, hit: HitDetail): void;
@@ -679,9 +693,9 @@ export class AccuSnap implements Decorator {
     // (undocumented)
     suspend(doSuspend: boolean): void;
     synchSnapMode(): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly toolState: AccuSnap.ToolState;
-    // (undocumented)
+    // @internal (undocumented)
     touchCursor?: TouchCursor;
     }
 
@@ -1318,7 +1332,7 @@ export interface ColorEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.ColorData;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export const enum CompassMode {
     // (undocumented)
     Polar = 0,
@@ -1326,7 +1340,7 @@ export const enum CompassMode {
     Rectangular = 1
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export const enum ContextMode {
     // (undocumented)
     Locked = 0,
@@ -1407,7 +1421,7 @@ export const enum CoordSystem {
     World = 2
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class CurrentInputState {
     // (undocumented)
     adjustLastDataPoint(ev: BeButtonEvent): void;
@@ -1483,7 +1497,7 @@ export class CurrentInputState {
     readonly wasMotion: boolean;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export const enum CurrentState {
     // (undocumented)
     Active = 3,
@@ -1554,7 +1568,7 @@ export interface Decorator {
     testDecorationHit?(id: string): boolean;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class DefaultViewTouchTool extends ViewManip {
     constructor(startEv: BeTouchEvent, _ev: BeTouchEvent);
     // (undocumented)
@@ -1885,16 +1899,18 @@ export const enum ElemSource {
 export class EmphasizeElements implements FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, vp: Viewport): void;
     static clear(vp: Viewport, inactiveOnly?: boolean): void;
+    // @internal
     clearAlwaysDrawnElements(vp: Viewport): boolean;
     clearEmphasizedElements(vp: Viewport): boolean;
     clearHiddenElements(vp: Viewport): boolean;
     clearIsolatedElements(vp: Viewport): boolean;
+    // @internal
     clearNeverDrawnElements(vp: Viewport): boolean;
     clearOverriddenElements(vp: Viewport, key?: number): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected createAppearanceFromKey(key: number): FeatureSymbology.Appearance;
     createDefaultAppearance(): FeatureSymbology.Appearance;
-    // (undocumented)
+    // @internal (undocumented)
     protected createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
     readonly defaultAppearance: FeatureSymbology.Appearance | undefined;
     emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean): boolean;
@@ -1902,13 +1918,16 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     // (undocumented)
     fromJSON(props: EmphasizeElementsProps, vp: Viewport): boolean;
     static get(vp: Viewport): EmphasizeElements | undefined;
+    // @internal
     getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined;
     getEmphasizedElements(vp: Viewport): Id64Set | undefined;
     getHiddenElements(vp: Viewport): Id64Set | undefined;
     getIsolatedElements(vp: Viewport): Id64Set | undefined;
+    // @internal
     getNeverDrawnElements(vp: Viewport): Id64Set | undefined;
     static getOrCreate(vp: Viewport): EmphasizeElements;
     getOverriddenElements(): Map<number, Id64Set> | undefined;
+    // @internal
     getOverriddenElementsByKey(key: number): Id64Set | undefined;
     getOverrideFromKey(key: number, color: ColorDef): FeatureOverrideType;
     hideElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
@@ -1918,7 +1937,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     isolateSelectedElements(vp: Viewport, replace?: boolean, clearSelection?: boolean): boolean;
     overrideElements(ids: Id64Arg, vp: Viewport, color: ColorDef, override?: FeatureOverrideType, replace?: boolean): boolean;
     overrideSelectedElements(vp: Viewport, color: ColorDef, override?: FeatureOverrideType, replace?: boolean, clearSelection?: boolean): boolean;
+    // @internal
     setAlwaysDrawnElements(ids: Id64Arg, vp: Viewport, exclusive?: boolean, replace?: boolean): boolean;
+    // @internal
     setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
     // (undocumented)
     toJSON(vp: Viewport): EmphasizeElementsProps;
@@ -2158,31 +2179,6 @@ export namespace FeatureSymbology {
 }
 
 // @public
-export const enum FenceClipMode {
-    Copy = 3,
-    None = 0,
-    Original = 1
-}
-
-// @public
-export class FenceParams {
-    // (undocumented)
-    clip?: ClipVector;
-    // (undocumented)
-    clipMode: FenceClipMode;
-    // (undocumented)
-    readonly fenceRangeNPC: Range3d;
-    // (undocumented)
-    hasOverlaps: boolean;
-    // (undocumented)
-    onTolerance: number;
-    // (undocumented)
-    overlapMode: boolean;
-    // (undocumented)
-    viewport?: Viewport;
-}
-
-// @public
 export class FitViewTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot: boolean, doAnimate?: boolean, isolatedOnly?: boolean);
     // (undocumented)
@@ -2201,7 +2197,7 @@ export class FitViewTool extends ViewTool {
     static toolId: string;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export class Flags {
     // (undocumented)
     animateRotation: boolean;
@@ -2723,25 +2719,26 @@ export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 
 // @public
 export class IModelApp {
+    // Warning: (ae-incompatible-release-tags) The symbol "accuDraw" is marked as @public, but its signature references "AccuDraw" which is marked as @beta
     static accuDraw: AccuDraw;
     static accuSnap: AccuSnap;
     static applicationId: string;
     static applicationVersion: string;
     static authorizationClient: IAuthorizationClient | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly features: FeatureGates;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly hasRenderSystem: boolean;
     static i18n: I18N;
-    // (undocumented)
+    // @internal (undocumented)
     static iModelClient: IModelClient;
-    // (undocumented)
+    // @internal (undocumented)
     protected static _imodelClient?: IModelClient;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly initialized: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected static _initialized: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     static locateManager: ElementLocateManager;
     static notifications: NotificationManager;
     protected static onStartup(): void;
@@ -2751,9 +2748,11 @@ export class IModelApp {
     static settings: SettingsAdmin;
     static shutdown(): void;
     static startup(imodelClient?: IModelClient, renderSysOpt?: RenderSystem.Options): void;
+    // @internal
     protected static supplyI18NOptions(): I18NOptions | undefined;
+    // @internal
     protected static supplyRenderSystem(options?: RenderSystem.Options): RenderSystem;
-    // (undocumented)
+    // @internal (undocumented)
     static tentativePoint: TentativePoint;
     // Warning: (ae-incompatible-release-tags) The symbol "tileAdmin" is marked as @public, but its signature references "TileAdmin" which is marked as @alpha
     static tileAdmin: TileAdmin;
@@ -2764,15 +2763,18 @@ export class IModelApp {
 
 // @public
 export class IModelConnection extends IModel {
+    // @internal
     attachChangeCache(): Promise<void>;
     cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
     cartographicToSpatialFromGcs(cartographic: Cartographic, result?: Point3d): Promise<Point3d>;
+    // @internal
     changeCacheAttached(): Promise<boolean>;
     close(): Promise<void>;
     // @beta
     closeSnapshot(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
+    // @internal
     detachChangeCache(): Promise<void>;
     readonly elements: IModelConnection.Elements;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
@@ -2784,6 +2786,7 @@ export class IModelConnection extends IModel {
     readonly isReadonly: boolean;
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
+    // @internal
     protected _noGcsDefined?: boolean;
     static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<IModelConnection>;
@@ -2800,6 +2803,7 @@ export class IModelConnection extends IModel {
     readonly selectionSet: SelectionSet;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
+    // @internal
     readonly tiles: IModelConnection.Tiles;
     readonly transientIds: TransientIdSequence;
     updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
@@ -2809,11 +2813,13 @@ export class IModelConnection extends IModel {
 // @public (undocumented)
 export namespace IModelConnection {
     export class CodeSpecs {
+        // @internal
         constructor(_iModel: IModelConnection);
         getById(codeSpecId: Id64String): Promise<CodeSpec>;
         getByName(name: string): Promise<CodeSpec>;
         }
     export class Elements {
+        // @internal
         constructor(_iModel: IModelConnection);
         getProps(arg: Id64Arg): Promise<ElementProps[]>;
         queryIds(params: EntityQueryParams): Promise<Id64Set>;
@@ -2821,6 +2827,7 @@ export namespace IModelConnection {
         readonly rootSubjectId: Id64String;
     }
     export class Models {
+        // @internal
         constructor(_iModel: IModelConnection);
         getLoaded(id: string): ModelState | undefined;
         getProps(modelIds: Id64Arg): Promise<ModelProps[]>;
@@ -2831,6 +2838,7 @@ export namespace IModelConnection {
         queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]>;
         readonly repositoryModelId: string;
     }
+    // @internal
     export class Tiles {
         constructor(iModel: IModelConnection);
         // (undocumented)
@@ -2839,6 +2847,7 @@ export namespace IModelConnection {
         getTileTreeProps(id: string): Promise<TileTreeProps>;
         }
     export class Views {
+        // @internal
         constructor(_iModel: IModelConnection);
         getThumbnail(viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
@@ -2955,7 +2964,7 @@ export class IntersectDetail extends SnapDetail {
     readonly otherPrimitive: CurvePrimitive;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export const enum ItemField {
     // (undocumented)
     ANGLE_Item = 1,
@@ -2977,7 +2986,7 @@ export interface JsonEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.JSON;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export enum KeyinStatus {
     // (undocumented)
     DontUpdate = 2,
@@ -3038,7 +3047,7 @@ export class LocateResponse {
     snapStatus: SnapStatus;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export const enum LockedStates {
     // (undocumented)
     ANGLE_BM = 7,
@@ -3150,12 +3159,12 @@ export type MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElemen
 // @public
 export abstract class MarkerSet<T extends Marker> {
     addDecoration(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _entries: Array<T | Cluster<T>>;
     protected abstract getClusterMarker(cluster: Cluster<T>): Marker;
     readonly markers: Set<T>;
     minimumClusterSize: number;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _worldToViewMap: Matrix4d;
 }
 
@@ -3165,7 +3174,7 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 // @public (undocumented)
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
-// @public (undocumented)
+// @internal (undocumented)
 export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedSegments: {
@@ -3242,7 +3251,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     protected updateTotals(): Promise<void>;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class MeasureLocationTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedLocations: MeasureMarker[];
@@ -3700,7 +3709,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class OidcClientWrapper {
     // (undocumented)
     static initialize(requestContext: ClientRequestContext, config: OidcFrontendClientConfiguration): Promise<void>;
@@ -4011,7 +4020,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     abstract onRestartTool(): void;
     onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void;
     onUndoPreviousStep(): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
     redoPreviousStep(): Promise<boolean>;
     requireWriteableTarget(): boolean;
     run(): boolean;
@@ -4022,7 +4031,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     targetModelId?: string;
     // (undocumented)
     targetView?: Viewport;
-    // (undocumented)
+    // @internal (undocumented)
     undoPreviousStep(): Promise<boolean>;
 }
 
@@ -4398,7 +4407,7 @@ export namespace RenderMemory {
     }
 }
 
-// @public (undocumented)
+// @internal
 export class RenderPlan {
     // (undocumented)
     readonly aaLines: AntiAliasPref;
@@ -4440,14 +4449,10 @@ export class RenderPlan {
     selectTerrainFrustum(): void;
     // (undocumented)
     selectViewFrustum(): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "terrainFrustum" is marked as @public, but its signature references "ViewFrustum" which is marked as @internal
-    // 
     // (undocumented)
     readonly terrainFrustum: ViewFrustum | undefined;
     // (undocumented)
     readonly viewFlags: ViewFlags;
-    // Warning: (ae-incompatible-release-tags) The symbol "viewFrustum" is marked as @public, but its signature references "ViewFrustum" which is marked as @internal
-    // 
     // (undocumented)
     readonly viewFrustum: ViewFrustum;
 }
@@ -4602,7 +4607,7 @@ export class RotateViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export const enum RotationMode {
     // (undocumented)
     ACS = 5,
@@ -4618,7 +4623,7 @@ export const enum RotationMode {
     View = 4
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export class RoundOff {
     // (undocumented)
     active: boolean;
@@ -4626,7 +4631,7 @@ export class RoundOff {
     units: Set<number>;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export class SavedState {
     // (undocumented)
     auxRotationPlane: number;
@@ -5364,7 +5369,7 @@ export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams 
     type: PropertyEditorParamTypes.SuppressUnitLabel;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class SuspendedToolState {
     constructor();
     // (undocumented)
@@ -5714,7 +5719,7 @@ export interface TextureImage {
     image: HTMLImageElement | undefined;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export class ThreeAxes {
     // (undocumented)
     clone(): ThreeAxes;
@@ -6217,6 +6222,7 @@ export class ToolAdmin {
     acsPlaneSnapLock: boolean;
     readonly activeTool: InteractiveTool | undefined;
     readonly activeToolChanged: BeEvent<(tool: Tool, start: StartOrResume) => void>;
+    // @internal
     addEvent(ev: Event, vp?: ScreenViewport): void;
     // (undocumented)
     adjustPoint(pointActive: Point3d, vp: ScreenViewport, projectToACS?: boolean, applyLocks?: boolean): void;
@@ -6227,37 +6233,39 @@ export class ToolAdmin {
     // (undocumented)
     adjustSnapPoint(perpendicular?: boolean): void;
     assemblyLock: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     beginDynamics(): void;
-    // (undocumented)
+    // @internal (undocumented)
     callOnCleanup(): void;
     convertTouchEndToButtonUp(ev: BeTouchEvent, button?: BeButton): Promise<void>;
     convertTouchMoveStartToButtonDownAndMotion(startEv: BeTouchEvent, ev: BeTouchEvent, button?: BeButton): Promise<void>;
     convertTouchMoveToMotion(ev: BeTouchEvent): Promise<void>;
     convertTouchStartToButtonDown(ev: BeTouchEvent, button?: BeButton): Promise<void>;
     convertTouchTapToButtonDownAndUp(ev: BeTouchEvent, button?: BeButton): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     readonly currentInputState: CurrentInputState;
     readonly currentTool: InteractiveTool;
     readonly cursorView: ScreenViewport | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
+    // @internal
     defaultToolArgs: any[] | undefined;
+    // @internal
     defaultToolId: string;
     doRedoOperation(): Promise<boolean>;
     doUndoOperation(): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
     endDynamics(): void;
-    // (undocumented)
+    // @internal (undocumented)
     exitInputCollector(): void;
-    // (undocumented)
+    // @internal (undocumented)
     exitViewTool(): void;
-    // (undocumented)
+    // @internal (undocumented)
     fillEventFromCursorLocation(ev: BeButtonEvent): void;
-    // (undocumented)
+    // @internal (undocumented)
     fillEventFromLastDataButton(ev: BeButtonEvent): void;
     protected filterViewport(vp: Viewport): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     gridLock: boolean;
@@ -6267,58 +6275,59 @@ export class ToolAdmin {
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
     // (undocumented)
     markupView?: ScreenViewport;
-    // (undocumented)
+    // @internal (undocumented)
     onInitialized(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onInstallTool(tool: InteractiveTool): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onMouseLeave(vp: ScreenViewport): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     onPostInstallTool(tool: InteractiveTool): void;
-    // (undocumented)
+    // @internal (undocumented)
     onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void;
-    // (undocumented)
+    // @internal (undocumented)
     onShutDown(): void;
     // (undocumented)
     readonly primitiveTool: PrimitiveTool | undefined;
     processWheelEvent(ev: BeWheelEvent, doUpdate: boolean): Promise<EventHandled>;
-    // (undocumented)
+    // @internal (undocumented)
     sendButtonEvent(ev: BeButtonEvent): Promise<any>;
     // (undocumented)
     sendEndDragEvent(ev: BeButtonEvent): Promise<any>;
-    // (undocumented)
+    // @internal (undocumented)
     setAdjustedDataPoint(ev: BeButtonEvent): void;
     // (undocumented)
     setCursor(cursor: string | undefined): void;
-    // (undocumented)
+    // @internal (undocumented)
     setIncompatibleViewportCursor(restore: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     setInputCollector(newTool?: InputCollector): void;
     // (undocumented)
     setLocateCircleOn(locateOn: boolean): void;
     // (undocumented)
     setLocateCursor(enableLocate: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     setPrimitiveTool(newTool?: PrimitiveTool): void;
-    // (undocumented)
+    // @internal (undocumented)
     setViewTool(newTool?: ViewTool): void;
+    // @internal
     startDefaultTool(): void;
-    // (undocumented)
+    // @internal (undocumented)
     startEventLoop(): void;
-    // (undocumented)
+    // @internal (undocumented)
     startInputCollector(newTool: InputCollector): void;
-    // (undocumented)
+    // @internal (undocumented)
     startPrimitiveTool(newTool?: PrimitiveTool): void;
-    // (undocumented)
+    // @internal (undocumented)
     startViewTool(newTool: ViewTool): void;
     syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void;
-    // (undocumented)
+    // @internal (undocumented)
     testDecorationHit(id: string): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     toolSettingsChangeHandler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     readonly toolState: ToolState;
-    // (undocumented)
+    // @internal (undocumented)
     updateDynamics(ev?: BeButtonEvent, useLastData?: boolean, adjustPoint?: boolean): void;
     // (undocumented)
     readonly viewTool: ViewTool | undefined;
@@ -6403,7 +6412,7 @@ export class ToolSettingsValue implements PrimitiveValue {
     readonly valueFormat = PropertyValueFormat.Primitive;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class ToolState {
     // (undocumented)
     clone(): ToolState;
@@ -6426,7 +6435,7 @@ export interface ToolTipOptions {
 // @public (undocumented)
 export type ToolType = typeof Tool;
 
-// @public
+// @internal
 export class TouchCursor implements CanvasDecoration {
     protected constructor(vp: ScreenViewport);
     // (undocumented)
@@ -6568,7 +6577,7 @@ export class ViewFrustum {
     readonly zClipAdjusted: boolean;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class ViewHandleArray {
     constructor(viewTool: ViewManip);
     // (undocumented)
@@ -6646,7 +6655,7 @@ export const enum ViewHandleWeight {
     VeryBold = 4
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export abstract class ViewingToolHandle {
     constructor(viewTool: ViewManip);
     // (undocumented)
@@ -6835,6 +6844,8 @@ export abstract class ViewManip extends ViewTool {
     updateTargetCenter(): void;
     // (undocumented)
     protected static _useViewAlignedVolume: boolean;
+    // Warning: (ae-incompatible-release-tags) The symbol "viewHandles" is marked as @public, but its signature references "ViewHandleArray" which is marked as @internal
+    // 
     // (undocumented)
     viewHandles: ViewHandleArray;
     // (undocumented)
@@ -7416,7 +7427,7 @@ export class WalkViewTool extends ViewManip {
 // @internal (undocumented)
 export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_half_float" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays";
 
-// @public
+// @internal
 export class WheelEventProcessor {
     // (undocumented)
     static process(ev: BeWheelEvent, doUpdate: boolean): Promise<void>;

@@ -7,9 +7,11 @@ import { Point2d, XAndY } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
 
-/** Describes the type and behavior of a [[NotifyMessageDetails]]. */
+/** Describes the type and behavior of a [[NotifyMessageDetails]].
+ * @public
+ */
 export const enum OutputMessageType {
-  /** Temporary messagebox that displays at the bottom of the screen. */
+  /** Temporary message box that displays at the bottom of the screen. */
   Toast = 0,
   Pointer = 1,
   Sticky = 2,
@@ -18,7 +20,9 @@ export const enum OutputMessageType {
   Alert = 4,
 }
 
-/** Classifies a [[NotifyMessageDetails]] by its level of importance. */
+/** Classifies a [[NotifyMessageDetails]] by its level of importance.
+ * @public
+ */
 export const enum OutputMessagePriority {
   None = 0,
   Error = 10,
@@ -28,14 +32,18 @@ export const enum OutputMessagePriority {
   Fatal = 17,
 }
 
-/** Describes the alert behavior of a [[NotifyMessageDetails]]. */
+/** Describes the alert behavior of a [[NotifyMessageDetails]].
+ * @public
+ */
 export const enum OutputMessageAlert {
   None = 0,
   Dialog = 1,
   Balloon = 2,
 }
 
-/** Relative Position for setPointerTypeDetails */
+/** Relative Position for setPointerTypeDetails
+ * @public
+ */
 export const enum RelativePosition {
   Left = 0,
   Top = 1,
@@ -47,13 +55,17 @@ export const enum RelativePosition {
   BottomRight = 7,
 }
 
-/** Reason for ending the activity message via endActivityMessage */
+/** Reason for ending the activity message via endActivityMessage
+ * @public
+ */
 export const enum ActivityMessageEndReason {
   Completed = 0,
   Cancelled = 1,
 }
 
-/** Describes the set of buttons displayed in a messagebox opened using [[NotificationManager.openMessageBox]]. */
+/** Describes the set of buttons displayed in a message box opened using [[NotificationManager.openMessageBox]].
+ * @public
+ */
 export const enum MessageBoxType {
   OkCancel,
   Ok,
@@ -63,7 +75,9 @@ export const enum MessageBoxType {
   YesNo,
 }
 
-/** Describes the icon displayed in a messagebox opened using [[NotificationManager.openMessageBox]]. */
+/** Describes the icon displayed in a messagebox opened using [[NotificationManager.openMessageBox]].
+ * @public
+ */
 export const enum MessageBoxIconType {
   NoSymbol = 0,   // Means Don't draw Symbol
   Information = 1,   // Lower Case i
@@ -72,7 +86,9 @@ export const enum MessageBoxIconType {
   Critical = 4,   // Stop Sign
 }
 
-/** Describes the possible return values produced when the user clicks a button in a messagebox opened using [[NotificationManager.openMessageBox]]. */
+/** Describes the possible return values produced when the user clicks a button in a messagebox opened using [[NotificationManager.openMessageBox]].
+ * @public
+ */
 export const enum MessageBoxValue {
   Apply = 1,
   Reset = 2,
@@ -88,13 +104,17 @@ export const enum MessageBoxValue {
   NoToAll = 12,
 }
 
-/** Describes the behavior of a tooltip created using [[NotificationManager.openToolTip]]. */
+/** Describes the behavior of a tooltip created using [[NotificationManager.openToolTip]].
+ * @public
+ */
 export interface ToolTipOptions {
   duration?: BeDuration;
   placement?: string;
 }
 
-/** Describes a message to be displayed to the user. */
+/** Describes a message to be displayed to the user.
+ * @public
+ */
 export class NotifyMessageDetails {
   public displayTime = BeDuration.fromSeconds(3.5);
   public viewport?: HTMLElement;
@@ -122,8 +142,8 @@ export class NotifyMessageDetails {
   }
 }
 
-/**
- * Specifies the details of an activity message to be displayed to the user.
+/** Specifies the details of an activity message to be displayed to the user.
+ * @public
  */
 export class ActivityMessageDetails {
   public wasCancelled = false;
@@ -143,10 +163,10 @@ export class ActivityMessageDetails {
   public onActivityCompleted() { this.wasCancelled = false; }
 }
 
-/**
- * The NotificationManager controls the interaction with the user for prompts, error messages, and alert dialogs.
+/** The NotificationManager controls the interaction with the user for prompts, error messages, and alert dialogs.
  * Implementations of the NotificationManager may present the information in different ways. For example, in
  * non-interactive sessions, these messages may be saved to a log file or simply discarded.
+ * @public
  */
 export class NotificationManager {
   public readonly toolTipLocation = new Point2d();

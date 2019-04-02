@@ -9,7 +9,7 @@
     "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "clean": "rimraf lib package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./imodeljs-frontend.ts --onlyJson %TYPEDOC_THEME% --excludes=webgl/**/*,**/primitives",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-frontend --ignoreMissingTags=false",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-frontend --ignoreMissingTags",
     "lint": "tslint --project . 1>&2",
     "test": "npm run webpackTests && node ./node_modules/@bentley/certa/bin/certa.js -r chrome",
     "cover": "npm test -- --cover",

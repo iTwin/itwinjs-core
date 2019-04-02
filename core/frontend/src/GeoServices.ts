@@ -151,10 +151,8 @@ class IMCtoGCResultCache {
   }
 }
 
-/**
- * The GeoConverter class communicates with the backend to convert longitude/latitude coordinates to iModel coordinates and vice-versa
+/** The GeoConverter class communicates with the backend to convert longitude/latitude coordinates to iModel coordinates and vice-versa
  * @internal
- * @hidden
  */
 export class GeoConverter {
   private _datum: string;
@@ -177,10 +175,8 @@ export class GeoConverter {
   }
 }
 
-/**
- * The Geographic Services available for an [[IModelConnection]].
+/** The Geographic Services available for an [[IModelConnection]].
  * @internal
- * @hidden
  */
 export class GeoServices {
   private _iModel: IModelConnection;

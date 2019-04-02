@@ -14,6 +14,7 @@ import { DecorateContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { Viewport, CoordSystem } from "./Viewport";
 
+/** @public */
 export const enum ACSType {
   None = 0,
   Rectangular = 1,
@@ -21,6 +22,7 @@ export const enum ACSType {
   Spherical = 3,
 }
 
+/** @public */
 export const enum ACSDisplayOptions {
   None = 0, // used for testing individual bits.
   Active = (1 << 0),
@@ -44,7 +46,9 @@ const enum ACSDisplaySizes {
   LabelWidth = 0.15,
 }
 
-/** The state of an AuxCoordSystem element in the frontend */
+/** The state of an AuxCoordSystem element in the frontend
+ * @public
+ */
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
   public type: number;
   public description?: string;
@@ -60,8 +64,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     return new AuxCoordSystemSpatialState(props, iModel);
   }
 
-  /**
-   * Create a new AuxCoordSystemState.
+  /** Create a new AuxCoordSystemState.
    * @param acsName the name for the new AuxCoordSystem
    * @param iModel the iModel for which the ACS applies.
    * @note call this method with the appropriate subclass (e.g. AuxCoordSystemSpatialState, AuxCoordSystem2dState, etc), not on AuxCoordSystemState directly
@@ -284,7 +287,9 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   }
 }
 
-/** The state of an AuxCoordSystem2d element in the frontend */
+/** The state of an AuxCoordSystem2d element in the frontend
+ * @public
+ */
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
   public readonly origin: Point2d;
   public angle: number; // in degrees
@@ -313,7 +318,9 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
   }
 }
 
-/** The state of an AuxCoordSystem3d element in the frontend */
+/** The state of an AuxCoordSystem3d element in the frontend
+ * @public
+ */
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
   public readonly origin: Point3d;
   public yaw: number;
@@ -352,6 +359,8 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
   }
 }
 
-/** The state of an AuxCoordSystemSpatial element in the frontend */
+/** The state of an AuxCoordSystemSpatial element in the frontend
+ * @public
+ */
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
 }

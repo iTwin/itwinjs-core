@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
 
-import { HitSource, HitDetail, HitList, HitPriority } from "./HitDetail";
-import { Point3d, Point2d } from "@bentley/geometry-core";
-import { Viewport, ViewRect, ScreenViewport } from "./Viewport";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { Point2d, Point3d } from "@bentley/geometry-core";
+import { HitDetail, HitList, HitPriority, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
 import { InputSource, InteractiveTool } from "./tools/Tool";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { ScreenViewport, Viewport, ViewRect } from "./Viewport";
 
 /** The possible actions for which a locate filter can be called.
  * @public
@@ -71,16 +71,19 @@ export class LocateOptions {
   public init() { this.allowDecorations = this.allowNonLocatable = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
 }
 
+/** @public */
 export class LocateResponse {
   public snapStatus = SnapStatus.Success;
   public reason?: string;
   public explanation = "";
 }
 
+/** @public */
 export interface HitListHolder {
   setHitList(list: HitList<HitDetail> | undefined): void;
 }
 
+/** @public */
 export class ElementPicker {
   public viewport?: Viewport;
   public readonly pickPointWorld = new Point3d();
@@ -207,6 +210,7 @@ export class ElementPicker {
   }
 }
 
+/** @public */
 export class ElementLocateManager {
   public hitList?: HitList<HitDetail>;
   public currHit?: HitDetail;
