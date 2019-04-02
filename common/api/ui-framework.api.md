@@ -2898,6 +2898,18 @@ export interface TaskPropsList {
 // @beta
 export const ThemeManager: any;
 
+// Warning: (ae-forgotten-export) The symbol "TileLoadingIndicatorState" needs to be exported by the entry point ui-framework.d.ts
+// 
+// @internal
+export class TileLoadingIndicator extends React_2.PureComponent<CommonProps, TileLoadingIndicatorState> {
+    constructor(props?: any, context?: any);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    render(): JSX.Element;
+    }
+
 // @public
 export class ToolActivatedEvent extends UiEvent<ToolActivatedEventArgs> {
 }

@@ -89,6 +89,7 @@
 - [State]($framework:State)
 - [StatusBar]($framework:StatusBar)
 - [SyncUi]($framework:SyncUi)
+- [TileLoadingIndicator]($framework:TileLoading)
 - [Tools]($framework:Tools)
 - [ToolSettings]($framework:ToolSettings)
 - [Utilities]($framework:Utilities)

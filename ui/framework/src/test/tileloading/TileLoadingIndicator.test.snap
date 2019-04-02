@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TileLoadingIndicator should render correctly 1`] = `
+<div
+  className="uifw-tile-loading-bar"
+>
+  <span />
+  <LoadingBar
+    barHeight={5}
+    percent={0}
+  />
+</div>
+`;

@@ -80,6 +80,8 @@ export * from "./ui-framework/zones/toolsettings/ToolUiManager";
 export * from "./ui-framework/zones/toolsettings/ToolUiProvider";
 export * from "./ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
 
+export * from "./ui-framework/tileloading/TileLoadingIndicator";
+
 export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 
@@ -218,6 +220,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description WorkflowTask
  * Classes for working a Workflow or Task
+ */
+/**
+ * @docs-group-description TileLoadingIndicator
+ * Classes for displaying tile loading status
  */
 /**
  * @docs-group-description Tools
