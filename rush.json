@@ -214,6 +214,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/perf-tools",
+      "projectFolder": "tools/perf-tools",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "example-code-snippets",
       "projectFolder": "example-code/snippets",
       "reviewCategory": "internal",
