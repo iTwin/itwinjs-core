@@ -38,6 +38,7 @@
 - [Color]($components:Color)
 - [DragDrop]($components:DragDrop)
 - [Filtering]($components:Filtering)
+- [OIDC]($components:OIDC)
 - [Properties]($components:Properties)
 - [PropertyEditors]($components:PropertyEditors)
 - [PropertyGrid]($components:PropertyGrid)

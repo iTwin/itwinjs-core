@@ -49,6 +49,8 @@ export * from "./ui-components/editors/ColorEditor";
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
 
+export * from "./ui-components/oidc/SignIn";
+
 export * from "./ui-components/properties/ValueRendererManager";
 
 export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer";
@@ -145,6 +147,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Filtering
  * Classes for working with filtering.
+ */
+/**
+ * @docs-group-description OIDC
+ * Components for working with OIDC and Sign-in.
  */
 /**
  * @docs-group-description Properties

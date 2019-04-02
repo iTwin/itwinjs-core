@@ -2471,11 +2471,9 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
     title: string;
 }
 
-// Warning: (ae-forgotten-export) The symbol "SignInState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
-export class SignIn extends React_2.Component<SignInProps, SignInState> {
-    constructor(props: SignInProps, context?: any);
+export class SignIn extends React_2.Component<SignInProps> {
+    constructor(props: SignInProps);
     // (undocumented)
     render(): JSX.Element;
 }

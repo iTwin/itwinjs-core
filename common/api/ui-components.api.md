@@ -1840,6 +1840,23 @@ export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMe
     y: number;
 }
 
+// Warning: (ae-forgotten-export) The symbol "SignInState" needs to be exported by the entry point ui-components.d.ts
+// 
+// @public
+export class SignIn extends React.PureComponent<SignInProps, SignInState> {
+    constructor(props: SignInProps);
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @public
+export interface SignInProps {
+    // (undocumented)
+    onOffline?: () => void;
+    // (undocumented)
+    onSignIn: () => void;
+}
+
 // @public
 export class SimplePropertyDataProvider implements IPropertyDataProvider, PropertyData {
     // (undocumented)

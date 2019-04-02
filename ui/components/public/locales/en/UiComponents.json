@@ -31,5 +31,10 @@
   },
   "property": {
     "varies": "*** Varies ***"
+  },
+  "signIn": {
+    "prompt": "Please sign in to access your Bentley services.",
+    "signInButton": "Sign In",
+    "offlineButton": "Work Offline?"
   }
 }

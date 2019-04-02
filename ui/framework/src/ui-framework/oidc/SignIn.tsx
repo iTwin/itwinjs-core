@@ -5,13 +5,9 @@
 /** @module OIDC */
 
 import * as React from "react";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { SignIn as SignInBase } from "@bentley/ui-components";
 import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
-import "./SignIn.scss";
-
-/************************************************************************
- * SignInDialog - OIDC sign-in dialog.
- ***********************************************************************/
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
 /** Properties for the [[SignIn]] component
  * @public
@@ -21,38 +17,24 @@ export interface SignInProps {
   onSignedIn: () => void;
 }
 
-interface SignInState {
-  isSigningIn: boolean;
-}
-
 /**
- * SignIn React component
+ * SignIn React component.
+ * `OidcClientWrapper.oidcClient.signIn` is called when the "Sign In" button is pressed,
+ * then `props.onSignedIn` is called after sign-in has completed.
  * @public
  */
-export class SignIn extends React.Component<SignInProps, SignInState> {
-  constructor(props: SignInProps, context?: any) {
-    super(props, context);
+export class SignIn extends React.Component<SignInProps> {
 
-    this.state = { isSigningIn: false };
+  constructor(props: SignInProps) {
+    super(props);
   }
 
-  private _onSignInClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    this.setState(Object.assign({}, this.state, { isSigningIn: true }));
+  private _onStartSignin = async () => {
     await OidcClientWrapper.oidcClient.signIn(new ClientRequestContext());
     this.props.onSignedIn();
   }
 
   public render() {
-    return (
-      <div className="signin">
-        <div className="signin-content">
-          <span className="icon icon-user" />
-          <span className="prompt">Please sign in to access your Bentley Services.</span>
-          <button className="signin-button" type="button" disabled={this.state.isSigningIn} onClick={this._onSignInClick}>Sign In</button>
-          <a className="signin-offline" onClick={this.props.onOffline}>Work Offline?</a>
-        </div>
-      </div>
-    );
+    return <SignInBase onSignIn={this._onStartSignin} onOffline={this.props.onOffline} />;
   }
 }

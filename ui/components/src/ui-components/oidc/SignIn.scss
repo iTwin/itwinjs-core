@@ -1,0 +1,82 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+/************************************************************************
+ * SignIn2Dialog - OIDC sign-in dialog.
+ *    The SignIn dialog has not been reviewed by the UX team, so
+ *    markup and styling are sure to change.
+ ***********************************************************************/
+
+$signin-height: 315px; // 250px;
+$signin-width:  275px;
+
+$signin-background: $buic-background-dialog;
+$signin-logo-color: $buic-foreground-primary;
+$signin-text-color: $buic-text-color;
+$signin-font-size:  $uicore-font-size;
+$signin-hyperlink-color: $buic-foreground-primary;
+$signin-hyperlink-hover-color: $buic-foreground-primary-tone;
+
+/* sign in dialog */
+.components-signin {
+  font-family: Arial;
+  width:  $signin-width;
+  height: $signin-height;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: $signin-font-size;
+  color: $signin-text-color;
+  background-color: $signin-background;
+  transform: translate(-50%, -50%);
+  box-shadow: 2px 4px 8px 2px rgba(0,0,0,0.25);
+
+  /* content area */
+  .components-signin-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    position: relative;
+    padding: 1.75em;
+  }
+
+  /* Avatar logo */
+  .icon {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    font-size: 5em;
+    color: $signin-logo-color;
+    background-color: transparent;
+    transform: translate(-50%, -50%);
+  }
+
+  /* sign-in prompt */
+  .components-signin-prompt {
+    margin-top: 3em;
+    text-align: center;
+  }
+
+  /* sign in button */
+  .components-signin-button {
+    @include uicore-buttons-primary;
+    margin-top: auto;
+  }
+
+  /* offline container */
+  .components-signin-offline {
+    align-self: center;
+    margin-top: 2.25em;
+
+    &:hover {
+      color: $signin-hyperlink-hover-color;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+
+}
