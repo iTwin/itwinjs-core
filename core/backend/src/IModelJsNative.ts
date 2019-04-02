@@ -37,6 +37,11 @@ export declare namespace IModelJsNative {
   export function initializeRegion(region: number): void;
   export function setUseTileCache(useTileCache: boolean): void;
   export function setCrashReporting(cfg: NativeCrashReportingConfig): void;
+  export function storeObjectInVault(obj: any, id: string): void;
+  export function getObjectFromVault(id: string): any;
+  export function dropObjectFromVault(id: string): void;
+  export function addReferenceToObjectInVault(id: string): void;
+  export function getObjectRefCountFromVault(id: string): number;
   export type TxnIdString = string;
 
   /** Logger categories used by the native addon */
