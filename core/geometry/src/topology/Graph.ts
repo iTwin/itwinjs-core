@@ -31,16 +31,21 @@ export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolea
  *      of graph manipulation.
  */
 export class HalfEdge {
-  // vertice index in coordinates array
+  /** Vertex index in some parent object's numbering. */
   public i: number;
-  // buffer of 4 bytes, used to mark nodes as part of a triangle (idx 0) or visited when flipping (idx 1)
+  /** bitmask bits, used to mark nodes as part of a triangle(idx 0) or visited when flipping(idx 1) */
   public maskBits: number;
-  // vertex coordinates
+  /** Vertex x coordinate */
   public x: number;
+  /** Vertex y coordinate */
   public y: number;
+  /** Vertex z coordinate */
   public z: number;
+  /** angle used for sort-around-vertex */
   public sortAngle?: number;  // used in sorting around vertex.
+
   private _id: any;   // immutable id useful for debuggging.
+  /** id assigned sequentially during construction --- useful for debugging. */
   public get id() { return this._id; }
 
   private _facePredecessor!: HalfEdge;
@@ -172,11 +177,11 @@ export class HalfEdge {
   }
 
   /**
-   * @returns Return the next outbound half edge around this vertex in the CCW direction
+   * Return the next outbound half edge around this vertex in the CCW direction
    */
   get vertexSuccessor(): HalfEdge { return this.facePredecessor.edgeMate; }
   /**
-   * @returns Return the next outbound half edge around this vertex in the CW direction
+   * Return the next outbound half edge around this vertex in the CW direction
    */
   get vertexPredecessor(): HalfEdge { return this.edgeMate.faceSuccessor; }
   /**
@@ -219,9 +224,7 @@ export class HalfEdge {
     } while (node !== this);
   }
 
-  /**
-   * @returns Returns the number of edges around this face.
-   */
+  /** Returns the number of edges around this face. */
   public countEdgesAroundFace(): number {
     let count = 0;
     let node: HalfEdge = this;
@@ -232,9 +235,7 @@ export class HalfEdge {
     return count;
   }
 
-  /**
-   * @returns Returns the number of edges around vertex.
-   */
+  /** Returns the number of edges around vertex. */
   public countEdgesAroundVertex(): number {
     let count = 0;
     let node: HalfEdge = this;
@@ -245,9 +246,7 @@ export class HalfEdge {
     return count;
   }
 
-  /**
-   * @returns Returns the number of nodes found with the given mask value around this vertex loop.
-   */
+  /** Returns the number of nodes found with the given mask value around this vertex loop. */
   public countMaskAroundFace(mask: HalfEdgeMask, value: boolean = true): number {
     let count = 0;
     let node: HalfEdge = this;
@@ -265,9 +264,7 @@ export class HalfEdge {
     return count;
   }
 
-  /**
-   * @returns Returns the number of nodes found with the given mask value around this vertex loop.
-   */
+  /** Returns the number of nodes found with the given mask value around this vertex loop.   */
   public countMaskAroundVertex(mask: HalfEdgeMask, value: boolean = true): number {
     let count = 0;
     let node: HalfEdge = this;
@@ -285,8 +282,7 @@ export class HalfEdge {
     return count;
   }
 
-  /**
-   * @returns the mask value prior to the call to this method.
+  /** Set a mask, and return prior value.
    * @param mask mask to apply
    */
   public testAndSetMask(mask: HalfEdgeMask): number {
@@ -338,20 +334,20 @@ export class HalfEdge {
    * * is the universal manipulator for manipulating a node's next and prev pointers
    * * swaps face precessors of nodeA and nodeB.
    * *  is its own inverse.
-   * *  does nothing if either node does not have a predecessor (this is obviously a logic error in the caller algorithm)
    * *  if nodeA, nodeB are in different face loops, the loops join to one loop.
    * *  if nodeA, nodeB are in the same face loop, the loop splits into two loops.
    */
   public static pinch(nodeA: HalfEdge, nodeB: HalfEdge) {
-    const predA = nodeA._facePredecessor;
-    const predB = nodeB._facePredecessor;
-    if (predA && predB) {
+    if (nodeA !== nodeB) {
+      const predA = nodeA._facePredecessor;
+      const predB = nodeB._facePredecessor;
       nodeB._facePredecessor = predA;
       nodeA._facePredecessor = predB;
       predB._faceSuccessor = nodeA;
       predA._faceSuccessor = nodeB;
     }
   }
+
   /** Turn all pointers to undefined so garbage collector can reuse the object.
    *  This is to be called only by a Graph object that is being decomissioned.
    */

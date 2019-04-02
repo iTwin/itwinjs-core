@@ -9,16 +9,24 @@ import { BeJSONFunctions, AngleProps, Geometry, TrigValues } from "../Geometry";
  * * The various access method are named so that callers can specify whether untyped numbers passed in or out are degrees or radians.
  */
 export class Angle implements BeJSONFunctions {
+    /** maximal accuracy value of pi/4 ( 45 degrees), in radians */
     public static readonly piOver4Radians = 7.85398163397448280000e-001;
+    /** maximal accuracy value of pi/2 ( 90 degrees), in radians */
     public static readonly piOver2Radians = 1.57079632679489660000e+000;
+    /** maximal accuracy value of pi ( 180 degrees), in radians */
     public static readonly piRadians = 3.14159265358979310000e+000;
+    /** maximal accuracy value of pi/2 ( 90 degrees), in radians */
     public static readonly pi2Radians = 6.28318530717958620000e+000;
+    /** scale factor for converting degees to radians */
     public static readonly degreesPerRadian = (45.0 / Angle.piOver4Radians);
+    /** scale factor for converting radians to degrees */
     public static readonly radiansPerDegree = (Angle.piOver4Radians / 45.0);
+    /** maximal accuracy value of pi/12 ( 15 degrees), in radians */
     public static readonly piOver12Radians = 0.26179938779914943653855361527329;
     private _radians: number;
     private _degrees?: number;
     private constructor(radians = 0, degrees?: number) { this._radians = radians; this._degrees = degrees; }
+    /** Return a new angle with the same content. */
     public clone(): Angle { return new Angle(this._radians, this._degrees); }
     public freeze() { Object.freeze(this); }
 
@@ -100,9 +108,9 @@ export class Angle implements BeJSONFunctions {
     /** Convert an Angle to a JSON object as a number in degrees */
     public toJSON(): AngleProps { return this.degrees; }
     public toJSONRadians(): AngleProps { return { radians: this.radians }; }
-    /** @returns Return the angle measured in radians. */
+    /**  Return the angle measured in radians. */
     public get radians(): number { return this._radians; }
-    /** @returns Return the angle measured in degrees. */
+    /**  Return the angle measured in degrees. */
     public get degrees(): number { return this._degrees !== undefined ? this._degrees : Angle.radiansToDegrees(this._radians); }
     /**
      * Convert an angle in degrees to radians.
@@ -131,15 +139,15 @@ export class Angle implements BeJSONFunctions {
         return 360.0 + 180 * ((radians - 2.0 * pi) / pi);
     }
     /**
-     * @returns Return the cosine of this Angle object's angle.
+     * Return the cosine of this Angle object's angle.
      */
     public cos(): number { return Math.cos(this._radians); }
     /**
-     * @returns Return the sine of this Angle object's angle.
+     * Return the sine of this Angle object's angle.
      */
     public sin(): number { return Math.sin(this._radians); }
     /**
-     * @returns Return the tangent of this Angle object's angle.
+     * Return the tangent of this Angle object's angle.
      */
     public tan(): number { return Math.tan(this._radians); }
     public static isFullCircleRadians(radians: number) { return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle; }
@@ -199,8 +207,11 @@ export class Angle implements BeJSONFunctions {
         // negative angle ...
         return -Angle.adjustRadiansMinusPiPlusPi(-radians);
     }
+    /** return a (newly allocated) Angle object with value 0 radians */
     public static zero() { return new Angle(0); }
+    /** Test if the angle is exactly zero. */
     public get isExactZero() { return this.radians === 0; }
+    /** Test if the angle is almost zero (within tolerance `Geometry.smallAngleRadians`) */
     public get isAlmostZero() { return Math.abs(this.radians) < Geometry.smallAngleRadians; }
     /** Create an angle object with degrees adjusted into 0..360. */
     public static createDegreesAdjustPositive(degrees: number): Angle { return Angle.createDegrees(Angle.adjustDegrees0To360(degrees)); }
@@ -316,8 +327,9 @@ export class Angle implements BeJSONFunctions {
         return Angle.trigValuesToHalfAngleTrigValues(rcos, rsin);
     }
     /**
+     * * Returns the angle between two vectors, with the vectors given as xyz components
      * * The returned angle is between 0 and PI
-     * @return the angle between two vectors, with the vectors given as xyz components
+     *
      * @param ux x component of vector u
      * @param uy y component of vector u
      * @param uz z component of vector u

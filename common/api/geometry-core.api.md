@@ -61,10 +61,8 @@ export class Angle implements BeJSONFunctions {
     static adjustRadians0To2Pi(radians: number): number;
     static adjustRadiansMinusPiPlusPi(radians: number): number;
     static cleanupTrigValue(value: number, tolerance?: number): number;
-    // (undocumented)
     clone(): Angle;
     cloneScaled(scale: number): Angle;
-    // (undocumented)
     cos(): number;
     static create360(): Angle;
     static createAtan2(numerator: number, denominator: number): Angle;
@@ -72,9 +70,7 @@ export class Angle implements BeJSONFunctions {
     static createDegreesAdjustPositive(degrees: number): Angle;
     static createDegreesAdjustSigned180(degrees: number): Angle;
     static createRadians(radians: number): Angle;
-    // (undocumented)
     readonly degrees: number;
-    // (undocumented)
     static readonly degreesPerRadian: number;
     static degreesToRadians(degrees: number): number;
     static dotProductsToHalfAngleTrigValues(dotUU: number, dotVV: number, dotUV: number, favorZero?: boolean): TrigValues;
@@ -86,9 +82,7 @@ export class Angle implements BeJSONFunctions {
     isAlmostEqualNoPeriodShift(other: Angle): boolean;
     static isAlmostEqualRadiansAllowPeriodShift(radiansA: number, radiansB: number): boolean;
     static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number): boolean;
-    // (undocumented)
     readonly isAlmostZero: boolean;
-    // (undocumented)
     readonly isExactZero: boolean;
     readonly isFullCircle: boolean;
     // (undocumented)
@@ -96,35 +90,25 @@ export class Angle implements BeJSONFunctions {
     readonly isHalfCircle: boolean;
     static isHalfCircleRadians(radians: number): boolean;
     static isPerpendicularDotSet(dotUU: number, dotVV: number, dotUV: number): boolean;
-    // (undocumented)
     static readonly pi2Radians = 6.283185307179586;
-    // (undocumented)
     static readonly piOver12Radians = 0.26179938779914946;
-    // (undocumented)
     static readonly piOver2Radians = 1.5707963267948966;
-    // (undocumented)
     static readonly piOver4Radians = 0.7853981633974483;
-    // (undocumented)
     static readonly piRadians = 3.141592653589793;
-    // (undocumented)
     readonly radians: number;
     static radiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
-    // (undocumented)
     static readonly radiansPerDegree: number;
     static radiansToDegrees(radians: number): number;
     setDegrees(degrees: number): void;
     setFrom(other: Angle): void;
     setFromJSON(json?: AngleProps, defaultValRadians?: number): void;
     setRadians(radians: number): void;
-    // (undocumented)
     sin(): number;
-    // (undocumented)
     tan(): number;
     toJSON(): AngleProps;
     // (undocumented)
     toJSONRadians(): AngleProps;
     static trigValuesToHalfAngleTrigValues(rCos2A: number, rSin2A: number): TrigValues;
-    // (undocumented)
     static zero(): Angle;
 }
 
@@ -1846,15 +1830,12 @@ export class Geometry {
     static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
     // (undocumented)
     static readonly fullCircleRadiansMinusSmallAngle: number;
-    // (undocumented)
     static hypotenuseSquaredXY(x: number, y: number): number;
     // (undocumented)
     static hypotenuseSquaredXYZ(x: number, y: number, z: number): number;
     // (undocumented)
     static hypotenuseSquaredXYZW(x: number, y: number, z: number, w: number): number;
-    // (undocumented)
     static hypotenuseXY(x: number, y: number): number;
-    // (undocumented)
     static hypotenuseXYZ(x: number, y: number, z: number): number;
     // (undocumented)
     static hypotenuseXYZW(x: number, y: number, z: number, w: number): number;
@@ -1903,15 +1884,10 @@ export class Geometry {
     // (undocumented)
     static lexicalXYZLessThan(a: XYZ, b: XYZ): 1 | 0 | -1;
     static lexicalYXLessThan(a: XY | XYZ, b: XY | XYZ): 1 | 0 | -1;
-    // (undocumented)
     static maxAbsDiff(a: number, b0: number, b1: number): number;
-    // (undocumented)
     static maxAbsXY(x: number, y: number): number;
-    // (undocumented)
     static maxAbsXYZ(x: number, y: number, z: number): number;
-    // (undocumented)
     static maxXY(a: number, b: number): number;
-    // (undocumented)
     static maxXYZ(a: number, b: number, c: number): number;
     static modulo(a: number, period: number): number;
     // (undocumented)
@@ -1927,7 +1903,6 @@ export class Geometry {
     // (undocumented)
     static readonly smallMetricDistanceSquared = 1e-12;
     static solveTrigForm(constCoff: number, cosCoff: number, sinCoff: number): Vector2d[] | undefined;
-    // (undocumented)
     static square(x: number): number;
     static stepCount(stepSize: number, total: number, minCount?: number, maxCount?: number): number;
     // (undocumented)
@@ -2209,13 +2184,9 @@ export class HalfEdge {
     clearMaskAroundVertex(mask: HalfEdgeMask): void;
     collectAroundFace(f?: NodeFunction): any[];
     collectAroundVertex(f?: NodeFunction): any[];
-    // (undocumented)
     countEdgesAroundFace(): number;
-    // (undocumented)
     countEdgesAroundVertex(): number;
-    // (undocumented)
     countMaskAroundFace(mask: HalfEdgeMask, value?: boolean): number;
-    // (undocumented)
     countMaskAroundVertex(mask: HalfEdgeMask, value?: boolean): number;
     // (undocumented)
     static createEdgeXYXY(id0: any, x0: number, y0: number, id1: any, x1: number, y1: number): HalfEdge;
@@ -2231,13 +2202,10 @@ export class HalfEdge {
     fractionToPoint2d(fraction: number, result?: Point2d): Point2d;
     getMask(mask: HalfEdgeMask): number;
     static horizontalScanFraction(node0: HalfEdge, y: number): number | undefined | HalfEdge;
-    // (undocumented)
     i: number;
-    // (undocumented)
     readonly id: any;
     isEqualXY(other: HalfEdge): boolean;
     isMaskSet(mask: HalfEdgeMask): boolean;
-    // (undocumented)
     maskBits: number;
     // (undocumented)
     static nodeToId(node: HalfEdge): any;
@@ -2264,14 +2232,12 @@ export class HalfEdge {
     // (undocumented)
     setMaskAroundVertex(mask: HalfEdgeMask): void;
     signedFaceArea(): number;
-    // (undocumented)
     sortAngle?: number;
     static splitEdge(base: undefined | HalfEdge, xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
     // (undocumented)
     steiner: boolean;
     sumAroundFace(f: NodeToNumberFunction): number;
     sumAroundVertex(f: NodeToNumberFunction): number;
-    // (undocumented)
     testAndSetMask(mask: HalfEdgeMask): number;
     // (undocumented)
     static testNodeMaskNotExterior(node: HalfEdge): boolean;
@@ -2280,15 +2246,10 @@ export class HalfEdge {
     vectorToFaceSuccessor(result?: Vector3d): Vector3d;
     // (undocumented)
     vectorToFaceSuccessorXY(result?: Vector2d): Vector2d;
-    // (undocumented)
     readonly vertexPredecessor: HalfEdge;
-    // (undocumented)
     readonly vertexSuccessor: HalfEdge;
-    // (undocumented)
     x: number;
-    // (undocumented)
     y: number;
-    // (undocumented)
     z: number;
     // (undocumented)
     zOrder: number;
@@ -3159,29 +3120,17 @@ export class Matrix3d implements BeJSONFunctions {
     clone(result?: Matrix3d): Matrix3d;
     // (undocumented)
     coffs: Float64Array;
-    // (undocumented)
     columnX(result?: Vector3d): Vector3d;
-    // (undocumented)
     columnXDotColumnY(): number;
-    // (undocumented)
     columnXMagnitude(): number;
-    // (undocumented)
     columnXMagnitudeSquared(): number;
-    // (undocumented)
     columnXYCrossProductMagnitude(): number;
-    // (undocumented)
     columnY(result?: Vector3d): Vector3d;
-    // (undocumented)
     columnYMagnitude(): number;
-    // (undocumented)
     columnYMagnitudeSquared(): number;
-    // (undocumented)
     columnZ(result?: Vector3d): Vector3d;
-    // (undocumented)
     columnZCrossVector(vector: XYZ, result?: Vector3d): Vector3d;
-    // (undocumented)
     columnZMagnitude(): number;
-    // (undocumented)
     columnZMagnitudeSquared(): number;
     computeCachedInverse(useCacheIfAvailable: boolean): boolean;
     conditionNumber(): number;
@@ -3205,7 +3154,6 @@ export class Matrix3d implements BeJSONFunctions {
     static createRigidViewAxesZTowardsEye(x: number, y: number, z: number, result?: Matrix3d): Matrix3d;
     // (undocumented)
     static createRotationAroundAxisIndex(axisIndex: AxisIndex, angle: Angle, result?: Matrix3d): Matrix3d;
-    // (undocumented)
     static createRotationAroundVector(axis: Vector3d, angle: Angle, result?: Matrix3d): Matrix3d | undefined;
     // (undocumented)
     static createRotationVectorToVector(vectorA: Vector3d, vectorB: Vector3d, result?: Matrix3d): Matrix3d | undefined;
@@ -3220,23 +3168,14 @@ export class Matrix3d implements BeJSONFunctions {
     // (undocumented)
     static createZero(): Matrix3d;
     determinant(): number;
-    // (undocumented)
     dotColumnX(vector: XYZ): number;
-    // (undocumented)
     dotColumnY(vector: XYZ): number;
-    // (undocumented)
     dotColumnZ(vector: XYZ): number;
-    // (undocumented)
     dotRowX(vector: XYZ): number;
-    // (undocumented)
     dotRowXXYZ(x: number, y: number, z: number): number;
-    // (undocumented)
     dotRowY(vector: XYZ): number;
-    // (undocumented)
     dotRowYXYZ(x: number, y: number, z: number): number;
-    // (undocumented)
     dotRowZ(vector: XYZ): number;
-    // (undocumented)
     dotRowZXYZ(x: number, y: number, z: number): number;
     factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean;
     factorRigidWithSignedScale(): {
@@ -3247,7 +3186,6 @@ export class Matrix3d implements BeJSONFunctions {
     // (undocumented)
     static flatIndexOf(row: number, column: number): number;
     freeze(): void;
-    // (undocumented)
     static fromJSON(json?: Matrix3dProps): Matrix3d;
     getAxisAndAngleOfRotation(): {
         axis: Vector3d;
@@ -3303,13 +3241,10 @@ export class Matrix3d implements BeJSONFunctions {
     // (undocumented)
     originPlusMatrixTimesXY(origin: XYZ, x: number, y: number, result?: Point3d): Point3d;
     rowX(result?: Vector3d): Vector3d;
-    // (undocumented)
     rowXMagnitude(): number;
     rowY(result?: Vector3d): Vector3d;
-    // (undocumented)
     rowYMagnitude(): number;
     rowZ(result?: Vector3d): Vector3d;
-    // (undocumented)
     rowZMagnitude(): number;
     sameDiagonalScale(): number | undefined;
     scale(scale: number, result?: Matrix3d): Matrix3d;
@@ -3374,13 +3309,9 @@ export class Matrix4d implements BeJSONFunctions {
     columnDotColumn(columnIndexThis: number, other: Matrix4d, columnIndexOther: number): number;
     // (undocumented)
     columnDotRow(columnIndexThis: number, other: Matrix4d, rowIndexOther: number): number;
-    // (undocumented)
     columnW(): Point4d;
-    // (undocumented)
     columnX(): Point4d;
-    // (undocumented)
     columnY(): Point4d;
-    // (undocumented)
     columnZ(): Point4d;
     static createBoxToBox(lowA: Point3d, highA: Point3d, lowB: Point3d, highB: Point3d, result?: Matrix4d): Matrix4d | undefined;
     static createIdentity(result?: Matrix4d): Matrix4d;
@@ -3423,13 +3354,9 @@ export class Matrix4d implements BeJSONFunctions {
     // (undocumented)
     rowDotRow(rowIndexThis: number, other: Matrix4d, rowIndexOther: number): number;
     rowOperation(rowIndexA: number, rowIndexB: number, firstColumnIndex: number, scale: number): void;
-    // (undocumented)
     rowW(): Point4d;
-    // (undocumented)
     rowX(): Point4d;
-    // (undocumented)
     rowY(): Point4d;
-    // (undocumented)
     rowZ(): Point4d;
     scaleRowsInPlace(ax: number, ay: number, az: number, aw: number): void;
     // (undocumented)
@@ -3797,13 +3724,9 @@ export class Path extends CurveChain {
 
 // @public
 export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
-    // (undocumented)
     altitude(spacePoint: Point3d): number;
-    // (undocumented)
     altitudeToPoint(altitude: number, result?: Point3d): Point3d;
-    // (undocumented)
     altitudeXYZ(x: number, y: number, z: number): number;
-    // (undocumented)
     altitudeXYZW(x: number, y: number, z: number, w: number): number;
     // (undocumented)
     clone(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal;
@@ -3816,14 +3739,11 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
     static createZXPlane(origin?: Point3d): Plane3dByOriginAndUnitNormal;
     // (undocumented)
     static fromJSON(json?: any): Plane3dByOriginAndUnitNormal;
-    // (undocumented)
     getNormalRef(): Vector3d;
-    // (undocumented)
     getOriginRef(): Point3d;
     // (undocumented)
     isAlmostEqual(other: Plane3dByOriginAndUnitNormal): boolean;
     isPointInPlane(spacePoint: Point3d): boolean;
-    // (undocumented)
     projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     set(origin: Point3d, normal: Vector3d): void;
     setFrom(source: Plane3dByOriginAndUnitNormal): void;
@@ -3834,7 +3754,6 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
     velocity(spaceVector: Vector3d): number;
     // (undocumented)
     velocityXYZ(x: number, y: number, z: number): number;
-    // (undocumented)
     weightedAltitude(spacePoint: Point4d): number;
 }
 
@@ -4078,7 +3997,6 @@ export class Point4d implements BeJSONFunctions {
     altitude(point: Point3d): number;
     // (undocumented)
     clone(result?: Point4d): Point4d;
-    // (undocumented)
     static create(x?: number, y?: number, z?: number, w?: number, result?: Point4d): Point4d;
     static createAdd2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d;
     static createAdd3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d;
@@ -4091,7 +4009,6 @@ export class Point4d implements BeJSONFunctions {
     static createRealPoint3dDefault000(x: number, y: number, z: number, w: number, result?: Point3d): Point3d;
     // (undocumented)
     static createZero(): Point4d;
-    // (undocumented)
     crossWeightedMinus(other: Point4d, result?: Vector3d): Vector3d;
     static determinantIndexed3X3(pointA: Point4d, pointB: Point4d, pointC: Point4d, i: number, j: number, k: number): number;
     distanceSquaredXYZW(other: Point4d): number;
@@ -4109,14 +4026,10 @@ export class Point4d implements BeJSONFunctions {
     isAlmostEqualXYZW(x: number, y: number, z: number, w: number): boolean;
     // (undocumented)
     readonly isAlmostZero: boolean;
-    // (undocumented)
     magnitudeSquaredXYZ(): number;
-    // (undocumented)
     magnitudeXYZW(): number;
-    // (undocumented)
     maxAbs(): number;
     maxDiff(other: Point4d): number;
-    // (undocumented)
     minus(other: Point4d, result?: Point4d): Point4d;
     negate(result?: Point4d): Point4d;
     // (undocumented)
@@ -4124,7 +4037,6 @@ export class Point4d implements BeJSONFunctions {
     normalizeWeight(result?: Point4d): Point4d | undefined;
     normalizeXYZW(result?: Point4d): Point4d | undefined;
     static perpendicularPoint4dPlane(pointA: Point4d, pointB: Point4d, pointC: Point4d): Point4d;
-    // (undocumented)
     plus(other: Point4d, result?: Point4d): Point4d;
     plus2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d;
     plus3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d;
@@ -4151,16 +4063,12 @@ export class Point4d implements BeJSONFunctions {
     static unitZ(): Point4d;
     velocity(vector: Vector3d): number;
     velocityXYZ(x: number, y: number, z: number): number;
-    // (undocumented)
     w: number;
     weightedAltitude(point: Point4d): number;
-    // (undocumented)
     x: number;
     // (undocumented)
     xyzw: Float64Array;
-    // (undocumented)
     y: number;
-    // (undocumented)
     z: number;
 }
 

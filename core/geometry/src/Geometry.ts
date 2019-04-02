@@ -246,39 +246,39 @@ export class Geometry {
     if (axisIndex === 2) return AxisOrder.ZXY;
     return Geometry.axisIndexToRightHandedAxisOrder(Geometry.cyclic3dAxis(axisIndex));
   }
-  /** @returns the largest absolute distance from a to either of b0 or b1 */
+  /** Return the largest absolute distance from a to either of b0 or b1 */
   public static maxAbsDiff(a: number, b0: number, b1: number): number { return Math.max(Math.abs(a - b0), Math.abs(a - b1)); }
-  /** @returns the largest absolute absolute value among x,y,z */
+  /** Return the largest absolute absolute value among x,y,z */
   public static maxAbsXYZ(x: number, y: number, z: number): number {
     return Geometry.maxXYZ(Math.abs(x), Math.abs(y), Math.abs(z));
   }
-  /** @returns the largest absolute absolute value among x,y */
+  /** Return the largest absolute absolute value among x,y */
   public static maxAbsXY(x: number, y: number): number {
     return Geometry.maxXY(Math.abs(x), Math.abs(y));
   }
 
-  /** @returns the largest signed value among a, b, c */
+  /** Return the largest signed value among a, b, c */
   public static maxXYZ(a: number, b: number, c: number): number {
     let q = a;
     if (b > q) q = b;
     if (c > q) q = c;
     return q;
   }
-  /** @returns the largest signed value among a, b*/
+  /** Return the largest signed value among a, b */
   public static maxXY(a: number, b: number): number {
     let q = a;
     if (b > q) q = b;
     return q;
   }
 
-  /** @returns Return the hypotenuse sqrt(x\*x + y\*y). This is much faster than Math.hypot(x,y).*/
+  /** Return the hypotenuse sqrt(x\*x + y\*y). This is much faster than Math.hypot(x,y). */
   public static hypotenuseXY(x: number, y: number) { return Math.sqrt(x * x + y * y); }
-  /** @returns Return the squared hypotenuse (x\*x + y\*y). */
+  /** Return the squared hypotenuse (x\*x + y\*y). */
   public static hypotenuseSquaredXY(x: number, y: number) { return x * x + y * y; }
-  /** @returns Return the square of x */
+  /** Return the square of x */
   public static square(x: number) { return x * x; }
 
-  /** @returns Return the hypotenuse sqrt(x\*x + y\*y). This is much faster than Math.hypot(x,y, z).*/
+  /** Return the hypotenuse sqrt(x\*x + y\*y). This is much faster than Math.hypot(x,y, z). */
   public static hypotenuseXYZ(x: number, y: number, z: number) { return Math.sqrt(x * x + y * y + z * z); }
   public static hypotenuseSquaredXYZ(x: number, y: number, z: number) { return x * x + y * y + z * z; }
 
@@ -385,12 +385,12 @@ export class Geometry {
       columnA.y, columnB.y, columnC.y,
       columnA.w, columnB.w, columnC.w);
   }
-  /**  2D cross product of vectors layed out as scalars. */
+  /** 2D cross product of vectors layed out as scalars. */
   public static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
     return ux * vy - uy * vx;
   }
 
-  /**  3D cross product of vectors layed out as scalars. */
+  /** 3D cross product of vectors layed out as scalars. */
   public static crossProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d): Vector3d {
     return Vector3d.create(
       uy * vz - uz * vy,
@@ -398,14 +398,14 @@ export class Geometry {
       ux * vy - uy * vx, result);
   }
 
-  /**  magnitude of 3D cross product of vectors, with the vectors presented as */
+  /** magnitude of 3D cross product of vectors, with the vectors presented as */
   public static crossProductMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return Geometry.hypotenuseXYZ(
       uy * vz - uz * vy,
       uz * vx - ux * vz,
       ux * vy - uy * vx);
   }
-  /**  3D dot product of vectors layed out as scalars. */
+  /** 3D dot product of vectors layed out as scalars. */
   public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return ux * vx + uy * vy + uz * vz;
   }

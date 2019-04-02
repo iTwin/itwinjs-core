@@ -239,21 +239,21 @@ export class Matrix4d implements BeJSONFunctions {
   public getSteppedPoint(i0: number, step: number, result?: Point4d): Point4d {
     return Point4d.create(this._coffs[i0], this._coffs[i0 + step], this._coffs[i0 + 2 * step], this._coffs[i0 + 3 * step], result);
   }
-  /** @returns Return column 0 as Point4d. */
+  /** Return column 0 as Point4d. */
   public columnX(): Point4d { return this.getSteppedPoint(0, 4); }
-  /** @returns Return column 1 as Point4d. */
+  /** Return column 1 as Point4d. */
   public columnY(): Point4d { return this.getSteppedPoint(1, 4); }
-  /** @returns Return column 2 as Point4d. */
+  /** Return column 2 as Point4d. */
   public columnZ(): Point4d { return this.getSteppedPoint(2, 4); }
-  /** @returns Return column 3 as Point4d. */
+  /** Return column 3 as Point4d. */
   public columnW(): Point4d { return this.getSteppedPoint(3, 4); }
-  /** @returns Return row 0 as Point4d. */
+  /** Return row 0 as Point4d. */
   public rowX(): Point4d { return this.getSteppedPoint(0, 1); }
-  /** @returns Return row 1 as Point4d. */
+  /** Return row 1 as Point4d. */
   public rowY(): Point4d { return this.getSteppedPoint(4, 1); }
-  /** @returns Return row 2 as Point4d. */
+  /** Return row 2 as Point4d. */
   public rowZ(): Point4d { return this.getSteppedPoint(8, 1); }
-  /** @returns Return row 3 as Point4d. */
+  /** Return row 3 as Point4d. */
   public rowW(): Point4d { return this.getSteppedPoint(12, 1); }
   /**
    * @returns true if the 2 row has content other than [0,0,0,1]

@@ -44,16 +44,16 @@ export class Point4d implements BeJSONFunctions {
     this.xyzw[3] = w;
     return this;
   }
-  /** @returns Return the x component of this point. */
+  /** Return the x component of this point. */
   public get x() { return this.xyzw[0]; }
   public set x(val: number) { this.xyzw[0] = val; }
-  /** @returns Return the y component of this point. */
+  /** Return the y component of this point. */
   public get y() { return this.xyzw[1]; }
   public set y(val: number) { this.xyzw[1] = val; }
-  /** @returns Return the z component of this point. */
+  /** Return the z component of this point. */
   public get z() { return this.xyzw[2]; }
   public set z(val: number) { this.xyzw[2] = val; }
-  /** @returns Return the w component of this point. */
+  /** Return the w component of this point. */
   public get w() { return this.xyzw[3]; }
   public set w(val: number) { this.xyzw[3] = val; }
   protected constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {
@@ -63,7 +63,7 @@ export class Point4d implements BeJSONFunctions {
     this.xyzw[2] = z;
     this.xyzw[3] = w;
   }
-  /** @returns Return a Point4d with specified x,y,z,w */
+  /** Return a Point4d with specified x,y,z,w */
   public static create(x: number = 0, y: number = 0, z: number = 0, w: number = 0, result?: Point4d): Point4d {
     return result ? result.set(x, y, z, w) : new Point4d(x, y, z, w);
   }
@@ -142,30 +142,30 @@ export class Point4d implements BeJSONFunctions {
   public maxDiff(other: Point4d): number {
     return Math.max(Math.abs(other.xyzw[0] - this.xyzw[0]), Math.abs(other.xyzw[1] - this.xyzw[1]), Math.abs(other.xyzw[2] - this.xyzw[2]), Math.abs(other.xyzw[3] - this.xyzw[3]));
   }
-  /** @returns Return the largest absolute entry of all 4 components x,y,z,w */
+  /** Return the largest absolute entry of all 4 components x,y,z,w */
   public maxAbs(): number {
     return Math.max(Math.abs(this.xyzw[0]), Math.abs(this.xyzw[1]), Math.abs(this.xyzw[2]), Math.abs(this.xyzw[3]));
   }
-  /**  @returns Returns the magnitude including all 4 components x,y,z,w */
+  /** Returns the magnitude including all 4 components x,y,z,w */
   public magnitudeXYZW(): number {
     return Geometry.hypotenuseXYZW(this.xyzw[0], this.xyzw[1], this.xyzw[2], this.xyzw[3]);
   }
-  /**  @returns Returns the magnitude of the leading xyz components.  w is ignored.  (i.e. the leading xyz are NOT divided by w.) */
+  /** Returns the magnitude of the leading xyz components.  w is ignored.  (i.e. the leading xyz are NOT divided by w.) */
   public magnitudeSquaredXYZ(): number {
     return Geometry.hypotenuseSquaredXYZ(this.xyzw[0], this.xyzw[1], this.xyzw[2]);
   }
 
-  /** @returns Return the difference (this-other) using all 4 components x,y,z,w */
+  /** Return the difference (this-other) using all 4 components x,y,z,w */
   public minus(other: Point4d, result?: Point4d): Point4d {
     return Point4d.create(this.xyzw[0] - other.xyzw[0], this.xyzw[1] - other.xyzw[1], this.xyzw[2] - other.xyzw[2], this.xyzw[3] - other.xyzw[3], result);
   }
-  /** @returns Return `((other.w * this) -  (this.w * other))` */
+  /** Return `((other.w * this) -  (this.w * other))` */
   public crossWeightedMinus(other: Point4d, result?: Vector3d): Vector3d {
     const wa = this.xyzw[3];
     const wb = other.xyzw[3];
     return Vector3d.create(wb * this.xyzw[0] - wa * other.xyzw[0], wb * this.xyzw[1] - wa * other.xyzw[1], wb * this.xyzw[2] - wa * other.xyzw[2], result);
   }
-  /** @returns Return the sum of this and other, using all 4 components x,y,z,w */
+  /** Return the sum of this and other, using all 4 components x,y,z,w */
   public plus(other: Point4d, result?: Point4d): Point4d {
     return Point4d.create(this.xyzw[0] + other.xyzw[0], this.xyzw[1] + other.xyzw[1], this.xyzw[2] + other.xyzw[2], this.xyzw[3] + other.xyzw[3], result);
   }

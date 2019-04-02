@@ -1846,4 +1846,50 @@ export class Sample {
       segments.push(LineSegment3d.create(points[n - 1], points[0]));
     return segments;
   }
+  /**
+   * Create a star by alternating radii (with equal anguar steps)
+   * @param r0 first point radius
+   * @param r1 second point radius
+   * @param numPoint number of points
+   * @param close true to add closure edge.
+   */
+  public static createStar(cx: number, cy: number, cz: number, r0: number, r1: number, numPoint: number, close: boolean): Point3d[] {
+    const points = [];
+    const angleStepRadians = Math.PI / numPoint;
+    let radians;
+    for (let i = 0; i < numPoint; i++) {
+      radians = 2 * i * angleStepRadians;
+      points.push(Point3d.create(cx + r0 * Math.cos(radians), cy + r0 * Math.sin(radians), cz));
+      radians = (2 * i + 1) * angleStepRadians;
+      points.push(Point3d.create(cx + r1 * Math.cos(radians), cy + r1 * Math.sin(radians), cz));
+    }
+    if (close)
+      points.push(points[0].clone());
+    return points;
+  }
+  /**
+   * Create an outer star A
+   * Place multiple inner stars B with centers on circle C
+   * @param rA0 radius to star tips on starA
+   * @param rA1 radius to star tips on starA
+   * @param numAPoint number of points on starA
+   * @param rB0 radius to star B tips
+   * @param rB1 radius to star B  tips
+   * @param numBPoint
+   * @param rC radius for inner star centers
+   * @param numC number of inner stars
+   */
+  public static createStarsInStars(rA0: number, rA1: number, numAPoint: number, rB0: number, rB1: number, numBPoint: number, rC: number, numC: number, close: boolean): Point3d[][] {
+    const loops: Point3d[][] = [];
+    loops.push(this.createStar(0, 0, 0, rA0, rA1, numAPoint, close));
+    if (numC > 0) {
+      const radiansStep = Math.PI * 2.0 / numC;
+      for (let i = 0; i < numC; i++) {
+        const radians = i * radiansStep;
+        loops.push(
+          this.createStar(rC * Math.cos(radians), rC * Math.sin(radians), 0.0, rB0, rB1, numBPoint, close));
+      }
+    }
+    return loops;
+  }
 }

@@ -96,9 +96,9 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
     result.setFromJSON(json);
     return result;
   }
-  /** @returns a reference to the origin. */
+  /** Return a reference to the origin. */
   public getOriginRef(): Point3d { return this._origin; }
-  /** @returns a reference to the unit normal. */
+  /** Return a reference to the unit normal. */
   public getNormalRef(): Vector3d { return this._normal; }
   /** Copy coordinates from the given origin and normal. */
   public set(origin: Point3d, normal: Vector3d): void {
@@ -125,14 +125,14 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   public setFrom(source: Plane3dByOriginAndUnitNormal): void {
     this.set(source._origin, source._normal);
   }
-  /** @returns Return the altitude of spacePoint above or below the plane.  (Below is negative) */
+  /** Return the altitude of spacePoint above or below the plane.  (Below is negative) */
   public altitude(spacePoint: Point3d): number { return this._normal.dotProductStartEnd(this._origin, spacePoint); }
 
-  /** @returns Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
+  /** Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
   public weightedAltitude(spacePoint: Point4d): number {
     return this._normal.dotProductStart3dEnd4d(this._origin, spacePoint); }
 
-  /** @returns return a point at specified (signed) altitude */
+  /** return a point at specified (signed) altitude */
   public altitudeToPoint(altitude: number, result?: Point3d): Point3d {
     return this._origin.plusScaled(this._normal, altitude, result);
   }
@@ -144,18 +144,18 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
    * for a point moving at speed one along the spaceVector.
    */
   public velocity(spaceVector: Vector3d): number { return this._normal.dotProduct(spaceVector); }
-  /** @returns the altitude of a point given as separate x,y,z components. */
+  /** Return the altitude of a point given as separate x,y,z components. */
   public altitudeXYZ(x: number, y: number, z: number): number {
     return this._normal.dotProductStartEndXYZ(this._origin, x, y, z);
   }
-  /** @returns the altitude of a point given as separate x,y,z,w components. */
+  /** Return the altitude of a point given as separate x,y,z,w components. */
   public altitudeXYZW(x: number, y: number, z: number, w: number): number {
     return this._normal.dotProductStartEndXYZW(this._origin, x, y, z, w);
   }
-  /** @returns Return the projection of spacePoint onto the plane. */
+  /** Return the projection of spacePoint onto the plane. */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
     return spacePoint.plusScaled(this._normal, -this._normal.dotProductStartEnd(this._origin, spacePoint), result);
   }
-  /** @return Returns true of spacePoint is within distance tolerance of the plane. */
+  /** Returns true of spacePoint is within distance tolerance of the plane. */
   public isPointInPlane(spacePoint: Point3d): boolean { return Geometry.isSmallMetricDistance(this.altitude(spacePoint)); }
 }

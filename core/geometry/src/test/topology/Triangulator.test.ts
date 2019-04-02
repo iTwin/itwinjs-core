@@ -37,7 +37,7 @@ describe("Triangulation", () => {
 
   it("TriangulateLoops", () => {
     let yShift = 0;
-    const dx = 20.0;
+    const dx = 40.0;
     const dy = 30.0;
     const allGeometry: GeometryQuery[] = [];
     for (const myLoops of [
@@ -67,8 +67,18 @@ describe("Triangulation", () => {
       // rectangle with 2 holes, duplicate points here and there
       [[Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)],
       [Point3d.create(1, 1, 0), Point3d.create(2, 2, 0), Point3d.create(2, 1, 0), Point3d.create(2, 1, 0)],
-      [Point3d.create(3, 1.5, 0), Point3d.create(4, 3, 0), Point3d.create(4, 1.5, 0), Point3d.create(3, 1.5, 0)]]]) {
+      [Point3d.create(3, 1.5, 0), Point3d.create(4, 3, 0), Point3d.create(4, 1.5, 0), Point3d.create(3, 1.5, 0)]],
+      Sample.createStarsInStars(11, 8, 5, 2, 1, 4, 3, 3, false),
+      Sample.createStarsInStars(10, 10, 2, 2, 2, 4, 3, 3, false),
+      Sample.createStarsInStars(14, 8, 6, 2, 0.4, 5, 3, 4, false)]) {
+
       let xShift = 0;
+      for (const loop of myLoops) {
+        const g = LineString3d.create(loop);
+        g.tryTranslateInPlace(xShift, yShift, 0);
+        allGeometry.push(g);
+      }
+      xShift += dx;
       // triangulate and flip in the outer loop only . . .
       const graph1 = Triangulator.createTriangulatedGraphFromSingleLoop(myLoops[0]);
       const unflippedOuter = PolyfaceBuilder.graphToPolyface(graph1);

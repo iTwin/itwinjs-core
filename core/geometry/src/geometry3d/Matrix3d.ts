@@ -224,7 +224,7 @@ export class Matrix3d implements BeJSONFunctions {
         0, 0, 1);
     }
   }
-  /** @returns Return a new Matrix3d constructed from contents of the json value. */
+  /** Return a new Matrix3d constructed from contents of the json value. */
   public static fromJSON(json?: Matrix3dProps): Matrix3d { const result = Matrix3d.createIdentity(); result.setFromJSON(json); return result; }
   /** Test if this Matrix3d and other are within tolerance in all numeric entries.
    * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
@@ -425,7 +425,7 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
 
-  /** @returns return a rotation of specified angle around an axis */
+  /** return a rotation of specified angle around an axis */
   public static createRotationAroundVector(axis: Vector3d, angle: Angle, result?: Matrix3d): Matrix3d | undefined {
     const c = angle.cos();
     const s = angle.sin();
@@ -771,42 +771,42 @@ export class Matrix3d implements BeJSONFunctions {
     }
   }
 
-  /** @returns Return (a copy of) the X column */
+  /** Return (a copy of) the X column */
   public columnX(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[0], this.coffs[3], this.coffs[6], result); }
-  /** @returns Return (a copy of)the Y column */
+  /** Return (a copy of)the Y column */
   public columnY(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[1], this.coffs[4], this.coffs[7], result); }
-  /** @returns Return (a copy of)the Z column */
+  /** Return (a copy of)the Z column */
   public columnZ(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[2], this.coffs[5], this.coffs[8], result); }
 
-  /** @returns Return the X column magnitude squared */
+  /** Return the X column magnitude squared */
   public columnXMagnitudeSquared(): number { return Geometry.hypotenuseSquaredXYZ(this.coffs[0], this.coffs[3], this.coffs[6]); }
-  /** @returns Return the Y column magnitude squared */
+  /** Return the Y column magnitude squared */
   public columnYMagnitudeSquared(): number { return Geometry.hypotenuseSquaredXYZ(this.coffs[1], this.coffs[4], this.coffs[7]); }
-  /** @returns Return the Z column magnitude squared */
+  /** Return the Z column magnitude squared */
   public columnZMagnitudeSquared(): number { return Geometry.hypotenuseSquaredXYZ(this.coffs[2], this.coffs[5], this.coffs[8]); }
 
-  /** @returns Return the X column magnitude */
+  /** Return the X column magnitude */
   public columnXMagnitude(): number { return Math.hypot(this.coffs[0], this.coffs[3], this.coffs[6]); }
-  /** @returns Return the Y column magnitude */
+  /** Return the Y column magnitude */
   public columnYMagnitude(): number { return Math.hypot(this.coffs[1], this.coffs[4], this.coffs[7]); }
-  /** @returns Return the Z column magnitude */
+  /** Return the Z column magnitude */
   public columnZMagnitude(): number { return Math.hypot(this.coffs[2], this.coffs[5], this.coffs[8]); }
 
-  /** @returns Return magntiude of columnX cross columnY. */
+  /** Return magntiude of columnX cross columnY. */
   public columnXYCrossProductMagnitude(): number {
     return Geometry.crossProductMagnitude(
       this.coffs[0], this.coffs[3], this.coffs[6],
       this.coffs[1], this.coffs[4], this.coffs[7]);
   }
 
-  /** @returns Return the X row magnitude d */
+  /** Return the X row magnitude d */
   public rowXMagnitude(): number { return Math.hypot(this.coffs[0], this.coffs[1], this.coffs[2]); }
-  /** @returns Return the Y row magnitude  */
+  /** Return the Y row magnitude  */
   public rowYMagnitude(): number { return Math.hypot(this.coffs[3], this.coffs[4], this.coffs[5]); }
-  /** @returns Return the Z row magnitude  */
+  /** Return the Z row magnitude  */
   public rowZMagnitude(): number { return Math.hypot(this.coffs[6], this.coffs[7], this.coffs[8]); }
-  /** @returns the dot product of column X with column Y */
-  /** @returns the dot product of column X with column Y */
+  /** Return the dot product of column X with column Y */
+  /** Return the dot product of column X with column Y */
   public columnXDotColumnY(): number {
     return this.coffs[0] * this.coffs[1]
       + this.coffs[3] * this.coffs[4]
@@ -819,28 +819,28 @@ export class Matrix3d implements BeJSONFunctions {
   /** Return (a copy of) the Z row */
   public rowZ(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[6], this.coffs[7], this.coffs[8], result); }
 
-  /** @returns Return the dot product of the vector parameter with the X column. */
+  /** Return the dot product of the vector parameter with the X column. */
   public dotColumnX(vector: XYZ): number { return vector.x * this.coffs[0] + vector.y * this.coffs[3] + vector.z * this.coffs[6]; }
-  /** @returns Return the dot product of the vector parameter with the Y column. */
+  /** Return the dot product of the vector parameter with the Y column. */
   public dotColumnY(vector: XYZ): number { return vector.x * this.coffs[1] + vector.y * this.coffs[4] + vector.z * this.coffs[7]; }
-  /** @returns Return the dot product of the vector parameter with the Z column. */
+  /** Return the dot product of the vector parameter with the Z column. */
   public dotColumnZ(vector: XYZ): number { return vector.x * this.coffs[2] + vector.y * this.coffs[5] + vector.z * this.coffs[8]; }
 
-  /** @returns Return the dot product of the vector parameter with the X row. */
+  /** Return the dot product of the vector parameter with the X row. */
   public dotRowX(vector: XYZ): number { return vector.x * this.coffs[0] + vector.y * this.coffs[1] + vector.z * this.coffs[2]; }
-  /** @returns Return the dot product of the vector parameter with the Y row. */
+  /** Return the dot product of the vector parameter with the Y row. */
   public dotRowY(vector: XYZ): number { return vector.x * this.coffs[3] + vector.y * this.coffs[4] + vector.z * this.coffs[5]; }
-  /** @returns Return the dot product of the vector parameter with the Z row. */
+  /** Return the dot product of the vector parameter with the Z row. */
   public dotRowZ(vector: XYZ): number { return vector.x * this.coffs[6] + vector.y * this.coffs[7] + vector.z * this.coffs[8]; }
 
-  /** @returns Return the dot product of the x,y,z with the X row. */
+  /** Return the dot product of the x,y,z with the X row. */
   public dotRowXXYZ(x: number, y: number, z: number): number { return x * this.coffs[0] + y * this.coffs[1] + z * this.coffs[2]; }
-  /** @returns Return the dot product of the x,y,z with the Y row. */
+  /** Return the dot product of the x,y,z with the Y row. */
   public dotRowYXYZ(x: number, y: number, z: number): number { return x * this.coffs[3] + y * this.coffs[4] + z * this.coffs[5]; }
-  /** @returns Return the dot product of the x,y,z with the Z row. */
+  /** Return the dot product of the x,y,z with the Z row. */
   public dotRowZXYZ(x: number, y: number, z: number): number { return x * this.coffs[6] + y * this.coffs[7] + z * this.coffs[8]; }
 
-  /** @returns Return the (vector) cross product of the Z column with the vector parameter. */
+  /** Return the (vector) cross product of the Z column with the vector parameter. */
   public columnZCrossVector(vector: XYZ, result?: Vector3d): Vector3d {
     return Geometry.crossProductXYZXYZ(this.coffs[2], this.coffs[5], this.coffs[8], vector.x, vector.y, vector.z, result);
   }
