@@ -20,7 +20,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   public static getClient(): IModelTileRpcInterface { return RpcManager.getClientForInterface(IModelTileRpcInterface); }
 
   /** The semantic version of the interface. */
-  public static version = "0.2.0";
+  public static version = "0.3.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.

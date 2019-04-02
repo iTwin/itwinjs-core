@@ -61,8 +61,7 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
   }
 
   public formResourceName(id: TileContentIdentifier): string {
-    const contextId = id.iModelToken.contextId || "snapshot";
     const changeSetId = id.iModelToken.changeSetId || "first";
-    return `tiles/${contextId}/${changeSetId}/${id.treeId}/${id.contentId}`;
+    return `tiles/${id.treeId}/${changeSetId}/${id.contentId}`;
   }
 }
