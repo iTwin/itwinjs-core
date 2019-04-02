@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added missing package prefix to some CSS class names in ui-core, ui-components & ui-framework",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}

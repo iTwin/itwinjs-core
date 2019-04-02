@@ -226,7 +226,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     const { childNodes } = this.state;
     const renderTable = this.props.renderTable ? this.props.renderTable : this.renderTable;
     return (
-      <div className="breadcrumb-details">
+      <div className="components-breadcrumb-details">
         {
           this.state.table && childNodes &&
           renderTable({

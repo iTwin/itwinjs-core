@@ -114,10 +114,10 @@ export class StagePanel extends React.Component<StagePanelProps> {
       }
 
       classes = classnames("uifw-stagepanel",
-        (location === StagePanelLocation.Top || location === StagePanelLocation.TopMost) && "stagepanel-top",
-        location === StagePanelLocation.Left && "stagepanel-left",
-        location === StagePanelLocation.Right && "stagepanel-right",
-        (location === StagePanelLocation.Bottom || location === StagePanelLocation.BottomMost) && "stagepanel-bottom",
+        (location === StagePanelLocation.Top || location === StagePanelLocation.TopMost) && "uifw-stagepanel-top",
+        location === StagePanelLocation.Left && "uifw-stagepanel-left",
+        location === StagePanelLocation.Right && "uifw-stagepanel-right",
+        (location === StagePanelLocation.Bottom || location === StagePanelLocation.BottomMost) && "uifw-stagepanel-bottom",
       );
       cssProperties = this.getDivProperties(size, location);
     }

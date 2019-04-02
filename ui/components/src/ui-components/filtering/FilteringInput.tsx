@@ -110,16 +110,17 @@ export class FilteringInput extends React.Component<FilteringInputProps, Filteri
 
   public render() {
     return (
-      <div className="filtering-input filtering-input-preload-images" onKeyDown={this._onFilterKeyDown}>
-        <span className="filtering-input-input">
+      // TODO: What is filtering-input-preload-images?
+      <div className="components-filtering-input filtering-input-preload-images" onKeyDown={this._onFilterKeyDown}>
+        <span className="components-filtering-input-input">
           <input type="text"
             onKeyDown={this._onFilterKeyDown}
             value={this.state.searchText}
             onChange={this._onInputChanged} />
 
-          <span className="filtering-input-input-components">
+          <span className="components-filtering-input-input-components">
             {this.state.context === InputContext.FilteringInProgress ?
-              <div className="filtering-input-loader">
+              <div className="components-filtering-input-loader">
                 <Spinner size={SpinnerSize.Medium} />
               </div>
               : undefined}
@@ -130,15 +131,15 @@ export class FilteringInput extends React.Component<FilteringInputProps, Filteri
         </span>
 
         {this.state.context === InputContext.ReadyToFilter ?
-          <button className="filtering-input-button"
+          <button className="components-filtering-input-button"
             onClick={this._onSearchButtonClick}>{UiComponents.i18n.translate("UiComponents:button.label.search")}</button> : undefined}
 
         {this.state.context === InputContext.FilteringInProgress ?
-          <button className="filtering-input-button"
+          <button className="components-filtering-input-button"
             onClick={this._onCancelButtonClick}>{UiComponents.i18n.translate("UiComponents:button.label.cancel")}</button> : undefined}
 
         {this.state.context === InputContext.FilteringFinishedWithNoStepping || this.state.context === InputContext.FilteringFinished ?
-          <button className="filtering-input-clear icon icon-close" onClick={this._onClearButtonClick}></button> :
+          <button className="components-filtering-input-clear icon icon-close" onClick={this._onClearButtonClick}></button> :
           undefined}
 
       </div>

@@ -78,12 +78,12 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
     return (
       <div
         ref={(el) => { this._root = el; }}
-        className={classnames("radial-menu", { opened: this.props.opened })}
+        className={classnames("core-radial-menu", { opened: this.props.opened })}
         style={{ left: x, top: y }}>
         <svg
           xmlns="http://w3.org/2000/svg" version="1.1"
           width={width} height={width}
-          className={"radial-menu-container"}>
+          className={"core-radial-menu-container"}>
           {React.Children.map(this.props.children, (child, index) => {
             if (!child || typeof child !== "object" || !("props" in child))
               return child;
@@ -215,13 +215,13 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
         onMouseOut={this._handleMouseOut}
         onClick={this._handleClick}>
         <path
-          className={classnames("radial-menu-sector", { selected: this.state.hover })}
+          className={classnames("core-radial-menu-sector", { selected: this.state.hover })}
           d={path}>
         </path>
-        <foreignObject transform={t} x={p.x - size / 2} y={p.y - 16} width={size} height={size} className={"radial-menu-button-svg"}>
-          <div {...{ xmlns: "http://www.w3.org/1999/xhtml" }} className={"radial-menu-button-container"}>
-            <div className={classnames("radial-menu-button-icon", "icon", this.props.icon)} />
-            <div className={"radial-menu-button-content"}>
+        <foreignObject transform={t} x={p.x - size / 2} y={p.y - 16} width={size} height={size} className={"core-radial-menu-button-svg"}>
+          <div {...{ xmlns: "http://www.w3.org/1999/xhtml" }} className={"core-radial-menu-button-container"}>
+            <div className={classnames("core-radial-menu-button-icon", "icon", this.props.icon)} />
+            <div className={"core-radial-menu-button-content"}>
               {this.props.children}
             </div>
           </div>

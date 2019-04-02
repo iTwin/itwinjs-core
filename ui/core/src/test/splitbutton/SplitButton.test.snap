@@ -2,24 +2,24 @@
 
 exports[`<SplitButton /> renders correctly 1`] = `
 <div
-  className="split-button"
-  data-testid="split-button-root"
+  className="core-split-button"
+  data-testid="core-split-button-root"
 >
   <div
-    className="split-button-label"
-    data-testid="split-button-label"
+    className="core-split-button-label"
+    data-testid="core-split-button-label"
   >
      
     test
   </div>
   <div
-    className="split-button-arrow"
+    className="core-split-button-arrow"
     onClick={[Function]}
     onKeyUp={[Function]}
     tabIndex={0}
   >
     <div
-      className="split-button-arrow-icon icon icon-chevron-down"
+      className="core-split-button-arrow-icon icon icon-chevron-down"
     />
     <ContextMenu
       autoflip={false}
@@ -39,12 +39,12 @@ exports[`<SplitButton /> renders correctly 1`] = `
 
 exports[`<SplitButton /> renders with icon correctly 1`] = `
 <div
-  className="split-button"
-  data-testid="split-button-root"
+  className="core-split-button"
+  data-testid="core-split-button-root"
 >
   <div
-    className="split-button-label"
-    data-testid="split-button-label"
+    className="core-split-button-label"
+    data-testid="core-split-button-label"
   >
     <span
       className="icon icon-placeholder"
@@ -53,13 +53,13 @@ exports[`<SplitButton /> renders with icon correctly 1`] = `
     test
   </div>
   <div
-    className="split-button-arrow"
+    className="core-split-button-arrow"
     onClick={[Function]}
     onKeyUp={[Function]}
     tabIndex={0}
   >
     <div
-      className="split-button-arrow-icon icon icon-chevron-down"
+      className="core-split-button-arrow-icon icon icon-chevron-down"
     />
     <ContextMenu
       autoflip={false}

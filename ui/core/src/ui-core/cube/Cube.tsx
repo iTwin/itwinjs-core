@@ -40,7 +40,7 @@ export class Cube extends React.Component<CubeProps> {
   public render(): React.ReactNode {
     const { faces, rotMatrix, className, ...props } = this.props;
     return (
-      <div className={classnames("cube-css3d", className)} {...props}>
+      <div className={classnames("core-cube-css3d", className)} {...props}>
         {[Face.Front, Face.Back, Face.Right, Face.Left, Face.Top, Face.Bottom]
           .map((face: Face) => {
             const content = faces && faces[face];

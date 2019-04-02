@@ -2,7 +2,7 @@
 
 exports[`Cube <Cube /> renders correctly 1`] = `
 <div
-  className="cube-css3d"
+  className="core-cube-css3d"
 >
   <CubeFace
     face={4}
@@ -147,7 +147,7 @@ exports[`Cube <Cube /> renders correctly 1`] = `
 
 exports[`Cube <Cube /> renders with faces correctly 1`] = `
 <div
-  className="cube-css3d"
+  className="core-cube-css3d"
 >
   <CubeFace
     face={4}

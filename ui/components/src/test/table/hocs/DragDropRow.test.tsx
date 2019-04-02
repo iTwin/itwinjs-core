@@ -50,7 +50,7 @@ describe("DragDropRow", () => {
     });
     it("should not change hoverMode when isOver is false", async () => {
       const component = render(<DragDropRowWrapper style={{ position: "absolute", top: 0, left: 0, height: 10, width: 100 }} canDrop={true} isOver={false} canDropOn={false} />);
-      const dropTarget = component.getByTestId("table-drop-target");
+      const dropTarget = component.getByTestId("components-table-drop-target");
 
       dropTarget.dispatchEvent(createBubbledEvent("dragover", { clientY: 7.5 }));
       expect(dropTarget.className).to.not.contain("below");
@@ -59,7 +59,7 @@ describe("DragDropRow", () => {
     describe("canDropOn = false", () => {
       it("should render with above classname when hovered on top half and canDropOn is false", async () => {
         const component = render(<DragDropRowWrapper style={{ position: "absolute", top: 0, left: 0, height: 10, width: 100 }} canDrop={true} isOver={true} canDropOn={false} />);
-        const dropTarget = component.getByTestId("table-drop-target");
+        const dropTarget = component.getByTestId("components-table-drop-target");
 
         dropTarget.dispatchEvent(createBubbledEvent("dragover", { clientY: 7.5 }));
         expect(dropTarget.className).to.contain("below");
@@ -69,7 +69,7 @@ describe("DragDropRow", () => {
       });
       it("should not change hoverMode when dragged from above location to another above location", async () => {
         const component = render(<DragDropRowWrapper style={{ position: "absolute", top: 0, left: 0, height: 10, width: 100 }} canDrop={true} isOver={true} canDropOn={false} />);
-        const dropTarget = component.getByTestId("table-drop-target");
+        const dropTarget = component.getByTestId("components-table-drop-target");
 
         dropTarget.dispatchEvent(createBubbledEvent("dragover", { clientY: 7.5 }));
         expect(dropTarget.className).to.contain("below");
@@ -82,14 +82,14 @@ describe("DragDropRow", () => {
       });
       it("should render with below classname when hovered on bottom half and canDropOn is false", async () => {
         const component = render(<DragDropRowWrapper style={{ position: "absolute", top: 0, left: 0, height: 10, width: 100 }} canDrop={true} isOver={true} canDropOn={false} />);
-        const dropTarget = component.getByTestId("table-drop-target");
+        const dropTarget = component.getByTestId("components-table-drop-target");
 
         dropTarget.dispatchEvent(createBubbledEvent("dragover", { clientY: 7.5 }));
         expect(dropTarget.className).to.contain("below");
       });
       it("should not change hoverMode when dragged from below location to another below location", async () => {
         const component = render(<DragDropRowWrapper style={{ position: "absolute", top: 0, left: 0, height: 10, width: 100 }} canDrop={true} isOver={true} canDropOn={false} />);
-        const dropTarget = component.getByTestId("table-drop-target");
+        const dropTarget = component.getByTestId("components-table-drop-target");
 
         dropTarget.dispatchEvent(createBubbledEvent("dragover", { clientY: 7.5 }));
         expect(dropTarget.className).to.contain("below");
@@ -101,7 +101,7 @@ describe("DragDropRow", () => {
     describe("canDropOn = true", () => {
       it("should render with above classname when hovered on top third and canDropOn is true", async () => {
         const component = render(<DragDropRowWrapper style={{ position: "absolute", top: 0, left: 0, height: 10, width: 100 }} canDrop={true} isOver={true} canDropOn={true} />);
-        const dropTarget = component.getByTestId("table-drop-target");
+        const dropTarget = component.getByTestId("components-table-drop-target");
 
         dropTarget.dispatchEvent(createBubbledEvent("dragover", { clientY: 8.33 }));
         expect(dropTarget.className).to.contain("below");
@@ -111,7 +111,7 @@ describe("DragDropRow", () => {
       });
       it("should not change hoverMode when dragged from above location to another above location", async () => {
         const component = render(<DragDropRowWrapper style={{ position: "absolute", top: 0, left: 0, height: 10, width: 100 }} canDrop={true} isOver={true} canDropOn={true} />);
-        const dropTarget = component.getByTestId("table-drop-target");
+        const dropTarget = component.getByTestId("components-table-drop-target");
 
         dropTarget.dispatchEvent(createBubbledEvent("dragover", { clientY: 8.33 }));
         expect(dropTarget.className).to.contain("below");
@@ -124,14 +124,14 @@ describe("DragDropRow", () => {
       });
       it("should render with below classname when hovered on center third and canDropOn is true", async () => {
         const component = render(<DragDropRowWrapper style={{ position: "absolute", top: 0, left: 0, height: 10, width: 100 }} canDrop={true} isOver={true} canDropOn={true} />);
-        const dropTarget = component.getByTestId("table-drop-target");
+        const dropTarget = component.getByTestId("components-table-drop-target");
 
         dropTarget.dispatchEvent(createBubbledEvent("dragover", { clientY: 5 }));
         expect(dropTarget.className).to.contain("on");
       });
       it("should not change hoverMode when dragged from on location to another on location", async () => {
         const component = render(<DragDropRowWrapper style={{ position: "absolute", top: 0, left: 0, height: 10, width: 100 }} canDrop={true} isOver={true} canDropOn={true} />);
-        const dropTarget = component.getByTestId("table-drop-target");
+        const dropTarget = component.getByTestId("components-table-drop-target");
 
         dropTarget.dispatchEvent(createBubbledEvent("dragover", { clientY: 5 }));
         expect(dropTarget.className).to.contain("on");
@@ -141,14 +141,14 @@ describe("DragDropRow", () => {
       });
       it("should render with below classname when hovered on bottom third and canDropOn is true", async () => {
         const component = render(<DragDropRowWrapper style={{ position: "absolute", top: 0, left: 0, height: 10, width: 100 }} canDrop={true} isOver={true} canDropOn={true} />);
-        const dropTarget = component.getByTestId("table-drop-target");
+        const dropTarget = component.getByTestId("components-table-drop-target");
 
         dropTarget.dispatchEvent(createBubbledEvent("dragover", { clientY: 8.33 }));
         expect(dropTarget.className).to.contain("below");
       });
       it("should not change hoverMode when dragged from below location to another below location", async () => {
         const component = render(<DragDropRowWrapper style={{ position: "absolute", top: 0, left: 0, height: 10, width: 100 }} canDrop={true} isOver={true} canDropOn={true} />);
-        const dropTarget = component.getByTestId("table-drop-target");
+        const dropTarget = component.getByTestId("components-table-drop-target");
 
         dropTarget.dispatchEvent(createBubbledEvent("dragover", { clientY: 8.33 }));
         expect(dropTarget.className).to.contain("below");

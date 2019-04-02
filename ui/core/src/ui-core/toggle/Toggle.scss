@@ -6,7 +6,7 @@
 
 //$toggle-handle-inset: 2px;
 
-.toggle {
+.core-toggle {
   width: 64px;
   height: 34px;
   position: relative;
@@ -19,14 +19,14 @@
   cursor: pointer;
 }
 
-.toggle-input {
+.core-toggle-input {
   position: absolute;
   top: 0;
   left: 0;
   opacity: 0;
 }
 
-.toggle-label {
+.core-toggle-label {
   position: relative;
   display: block;
   height: inherit;
@@ -36,16 +36,16 @@
 }
 
 /* Blue (default) */
-.toggle-input:checked+.toggle-label {
+.core-toggle-input:checked+.core-toggle-label {
   background: $uicore-blue;
 }
 
 /* Green (primary) */
-.toggle-primary>.toggle-input:checked~.toggle-label {
+.core-toggle-primary>.core-toggle-input:checked~.core-toggle-label {
   background: $uicore-green;
 }
 
-.toggle-handle {
+.core-toggle-handle {
   position: absolute;
   background: #FFF;
   border-radius: 3px;
@@ -56,16 +56,16 @@
 }
 
 /* Disabled toggle */
-.toggle.disabled {
+.core-toggle.disabled {
   opacity: .4;
   cursor: default;
 }
 
-.toggle.rounded .toggle-handle {
+.core-toggle.rounded .core-toggle-handle {
   border-radius: 50%;
 }
 
-.toggle-checkmark {
+.core-toggle-checkmark {
   position: absolute;
   left: 0px;
   top: 50%;
@@ -77,7 +77,7 @@
   transition: left .2s ease-out;
 }
 
-.toggle-input:checked~.toggle-checkmark.visible {
+.core-toggle-input:checked~.core-toggle-checkmark.visible {
   opacity: 1;
   color: $uicore-white;
   font-size: inherit;

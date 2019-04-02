@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../index.scss";
 
-.dialog {
+.core-dialog {
   @include uicore-font-family;
 
   display: none;
@@ -23,12 +23,12 @@
     display: block;
   }
 
-  &.dialog-hidden {
+  &.core-dialog-hidden {
     width: 0;
     height: 0;
   }
 
-  .dialog-container {
+  .core-dialog-container {
     position: fixed;
 
     &.top-left {
@@ -88,7 +88,7 @@
     display: flex;
     flex-direction: column;
 
-    .dialog-area {
+    .core-dialog-area {
       display: flex;
       flex-grow: 1;
       flex-direction: column;
@@ -98,7 +98,7 @@
       color: $buic-text-color;
       padding: 0;
 
-      > .dialog-head {
+      > .core-dialog-head {
         flex-shrink: 0;
         align-items: center;
         background-color: $buic-background-titlebar;
@@ -107,11 +107,11 @@
         padding: 6px;
 
         /* padding: $uicore-unbordered-padding; */
-        &.dialog-movable {
+        &.core-dialog-movable {
           cursor: move;
         }
 
-        > .dialog-title {
+        > .core-dialog-title {
           flex: 1 1;
 
           @include uicore-text-title;
@@ -120,7 +120,7 @@
           margin: 0;
         }
 
-        > .dialog-close {
+        > .core-dialog-close {
           cursor: pointer;
           height: $uicore-font-size-title;
           width: $uicore-font-size-title;
@@ -135,7 +135,7 @@
         }
       }
 
-      > .dialog-content {
+      > .core-dialog-content {
         overflow: auto;
         flex: 1 1;
 
@@ -147,11 +147,11 @@
         @include uicore-scrollbar();
       }
 
-      > .dialog-footer {
+      > .core-dialog-footer {
         flex-shrink: 0;
         padding: $uicore-unbordered-padding;
 
-        > .dialog-buttons {
+        > .core-dialog-buttons {
           display: flex;
           justify-content: flex-end;
 
@@ -170,30 +170,30 @@
 
     $dialog-resize-bar-width: 8px;
 
-    .dialog-drag {
+    .core-dialog-drag {
       position: absolute;
       z-index: auto;
       padding: 0px;
 
-      &:not(.dialog-drag-enabled) {
+      &:not(.core-dialog-drag-enabled) {
         display: none;
       }
 
-      &.dialog-drag-right {
+      &.core-dialog-drag-right {
         right: -$dialog-resize-bar-width / 2;
         width: $dialog-resize-bar-width;
         height: 100%;
         cursor: ew-resize;
       }
 
-      &.dialog-drag-bottom-mid {
+      &.core-dialog-drag-bottom-mid {
         bottom: -$dialog-resize-bar-width / 2;
         height: $dialog-resize-bar-width;
         width: 100%;
         cursor: ns-resize;
       }
 
-      &.dialog-drag-bottom-right {
+      &.core-dialog-drag-bottom-right {
         right: -$dialog-resize-bar-width / 2;
         bottom: -$dialog-resize-bar-width / 2;
         height: $dialog-resize-bar-width;

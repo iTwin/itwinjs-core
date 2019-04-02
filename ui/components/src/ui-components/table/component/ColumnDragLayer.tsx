@@ -32,7 +32,7 @@ export class ColumnDragLayer extends React.Component<DragLayerProps> {
       width,
     };
     return (
-      <div className="column-drag-layer" style={dragLayerStyle}>
+      <div className="components-column-drag-layer" style={dragLayerStyle}>
         {column.name}
       </div>
     );

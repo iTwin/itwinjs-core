@@ -32,7 +32,7 @@ describe("<Toggle />", () => {
       <Toggle isOn={false} onChange={handleChange} />,
     );
 
-    const input = wrapper.find("input.toggle-input");
+    const input = wrapper.find("input.core-toggle-input");
     input.should.exist;
 
     input.simulate("change", { checked: true });
@@ -48,7 +48,7 @@ describe("<Toggle />", () => {
       <Toggle isOn={false} onBlur={spyMethod} />,
     );
 
-    const input = wrapper.find("input.toggle-input");
+    const input = wrapper.find("input.core-toggle-input");
     input.should.exist;
 
     input.simulate("blur");

@@ -1681,6 +1681,8 @@ export interface PropertyViewProps extends SharedRendererProps {
     valueElement?: React.ReactNode;
 }
 
+// Warning: (ae-forgotten-export) The symbol "ResultSelectorState" needs to be exported by the entry point ui-components.d.ts
+// 
 // @public
 export class ResultSelector extends React.Component<ResultSelectorProps, ResultSelectorState> {
     // @internal
@@ -1697,13 +1699,6 @@ export class ResultSelector extends React.Component<ResultSelectorProps, ResultS
 export interface ResultSelectorProps {
     onSelectedChanged: (index: number) => void;
     resultCount: number;
-}
-
-// @public
-export interface ResultSelectorState {
-    selectedResultEdit: string;
-    selectedResultId: number;
-    selectedResultInEditMode: boolean;
 }
 
 // @public

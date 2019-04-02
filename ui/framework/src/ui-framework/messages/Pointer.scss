@@ -23,11 +23,11 @@
     color: $buic-foreground-alert;
   }
 
-  .popup-message-brief {
+  .uifw-popup-message-brief {
     @include uicore-text(body);
   }
 
-  .popup-message-detailed {
+  .uifw-popup-message-detailed {
     @include uicore-text(small);
   }
 }

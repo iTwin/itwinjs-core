@@ -14,7 +14,7 @@ describe("Popup />", () => {
 
   it("renders correctly", () => {
     const component = render(<Popup isOpen={true} top={30} left={70} />);
-    expect(component.getByTestId("popup")).to.exist;
+    expect(component.getByTestId("core-popup")).to.exist;
   });
   it("mounts and unmounts correctly", () => {
     const wrapper = render(<Popup isOpen={true} top={30} left={70} />);
@@ -73,56 +73,56 @@ describe("Popup />", () => {
     it("should render TopLeft", () => {
       const wrapper = mount(<Popup isOpen={false} position={Position.TopLeft} />);
       wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.popup-top-left");
+      const popup = wrapper.find("div.core-popup-top-left");
       expect(popup.length).be.eq(1);
     });
 
     it("should render TopRight", () => {
       const wrapper = mount(<Popup isOpen={false} position={Position.TopRight} />);
       wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.popup-top-right");
+      const popup = wrapper.find("div.core-popup-top-right");
       expect(popup.length).be.eq(1);
     });
 
     it("should render BottomLeft", () => {
       const wrapper = mount(<Popup isOpen={false} position={Position.BottomLeft} />);
       wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.popup-bottom-left");
+      const popup = wrapper.find("div.core-popup-bottom-left");
       expect(popup.length).be.eq(1);
     });
 
     it("should render BottomRight", () => {
       const wrapper = mount(<Popup isOpen={false} position={Position.BottomRight} />);
       wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.popup-bottom-right");
+      const popup = wrapper.find("div.core-popup-bottom-right");
       expect(popup.length).be.eq(1);
     });
 
     it("should render Top", () => {
       const wrapper = mount(<Popup isOpen={false} position={Position.Top} />);
       wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.popup-top");
+      const popup = wrapper.find("div.core-popup-top");
       expect(popup.length).be.eq(1);
     });
 
     it("should render Left", () => {
       const wrapper = mount(<Popup isOpen={false} position={Position.Left} />);
       wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.popup-left");
+      const popup = wrapper.find("div.core-popup-left");
       expect(popup.length).be.eq(1);
     });
 
     it("should render Right", () => {
       const wrapper = mount(<Popup isOpen={false} position={Position.Right} />);
       wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.popup-right");
+      const popup = wrapper.find("div.core-popup-right");
       expect(popup.length).be.eq(1);
     });
 
     it("should render Bottom", () => {
       const wrapper = mount(<Popup isOpen={false} position={Position.Bottom} />);
       wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.popup-bottom");
+      const popup = wrapper.find("div.core-popup-bottom");
       expect(popup.length).be.eq(1);
     });
   });

@@ -25,7 +25,7 @@ export class DragDropBreadcrumbNodeComponent extends React.Component<DragDropBre
   public render() {
     const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropBreadcrumbNodeProps;
     const classes = classnames(
-      "breadcrumb-drop-target",
+      "components-breadcrumb-drop-target",
       {
         hover: canDrop && isOver,
         dragging: isDragging,

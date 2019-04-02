@@ -99,10 +99,10 @@ describe("StagePanel", () => {
     const wrapper = mount(<FrontstageComposer />);
 
     expect(wrapper.find("div.uifw-stagepanel").length).to.eq(6);
-    expect(wrapper.find("div.stagepanel-top").length).to.eq(2);
-    expect(wrapper.find("div.stagepanel-left").length).to.eq(1);
-    expect(wrapper.find("div.stagepanel-right").length).to.eq(1);
-    expect(wrapper.find("div.stagepanel-bottom").length).to.eq(2);
+    expect(wrapper.find("div.uifw-stagepanel-top").length).to.eq(2);
+    expect(wrapper.find("div.uifw-stagepanel-left").length).to.eq(1);
+    expect(wrapper.find("div.uifw-stagepanel-right").length).to.eq(1);
+    expect(wrapper.find("div.uifw-stagepanel-bottom").length).to.eq(2);
 
     wrapper.unmount();
   });

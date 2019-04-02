@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-.filtering-input {
+.components-filtering-input {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -12,12 +12,12 @@
 }
 
 // Input wrapper
-.filtering-input-input{
+.components-filtering-input-input{
   position: relative;
   flex: 1;
 
   // The input itself
-  input{
+  input {
     @include uicore-inputs-input;
     box-sizing:border-box;
   }
@@ -27,7 +27,7 @@
   }
 }
 
-.filtering-input-input-components{
+.components-filtering-input-input-components {
   display: flex;
   position: absolute;
   right: 8px;
@@ -40,17 +40,17 @@
   margin-left: 6px;
 }
 
-.filtering-input-button{
+.components-filtering-input-button {
   @include filtering-button-base;
 }
 
-.filtering-input-clear{
+.components-filtering-input-clear {
   @include filtering-button-base;
   color: $uicore-gray-5;
   font-size: "12px";
 }
 
-.filtering-input-loader {
+.components-filtering-input-loader {
   margin-bottom: auto;
   margin-top: auto;
 }

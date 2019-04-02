@@ -102,19 +102,19 @@ export class MessageContainer extends React.Component<MessageContainerProps> {
 
     switch (severity) {
       case MessageSeverity.Information:
-        iconClassName = hollow ? "icon-info-hollow" : "icon-info" + " message-box-information";
+        iconClassName = hollow ? "icon-info-hollow" : "icon-info" + " core-message-box-information";
         break;
       case MessageSeverity.Question:
-        iconClassName = hollow ? "icon-help-hollow" : "icon-help" + " message-box-question";
+        iconClassName = hollow ? "icon-help-hollow" : "icon-help" + " core-message-box-question";
         break;
       case MessageSeverity.Warning:
-        iconClassName = hollow ? "icon-status-warning" : "icon-status-warning" + " message-box-warning";  // TODO - need icon-status-warning-hollow icon
+        iconClassName = hollow ? "icon-status-warning" : "icon-status-warning" + " core-message-box-warning";  // TODO - need icon-status-warning-hollow icon
         break;
       case MessageSeverity.Error:
-        iconClassName = hollow ? "icon-status-error-hollow" : "icon-status-error" + " message-box-error";
+        iconClassName = hollow ? "icon-status-error-hollow" : "icon-status-error" + " core-message-box-error";
         break;
       case MessageSeverity.Fatal:
-        iconClassName = hollow ? "icon-status-rejected" : "icon-status-rejected" + " message-box-fatal"; // TODO - need icon-status-rejected-hollow icon
+        iconClassName = hollow ? "icon-status-rejected" : "icon-status-rejected" + " core-message-box-fatal"; // TODO - need icon-status-rejected-hollow icon
         break;
     }
 
@@ -124,14 +124,14 @@ export class MessageContainer extends React.Component<MessageContainerProps> {
   public render(): JSX.Element {
     const iconClassName = classnames(
       "icon",
-      "message-box-icon",
+      "core-message-box-icon",
       MessageContainer.getIconClassName(this.props.severity),
     );
 
     return (
-      <div className={"message-box-container"}>
+      <div className={"core-message-box-container"}>
         <div className={iconClassName} />
-        <div className={"message-box-content"}>
+        <div className={"core-message-box-content"}>
           {this.props.children}
         </div>
       </div>

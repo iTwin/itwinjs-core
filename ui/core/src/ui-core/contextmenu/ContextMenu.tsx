@@ -176,18 +176,18 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
     }
     return (
       <div
-        className={classnames("context-menu", this.props.className)}
+        className={classnames("core-context-menu", this.props.className)}
         onKeyUp={this._handleKeyUp}
         onClick={this._handleClick}
-        data-testid="context-menu-root"
+        data-testid="core-context-menu-root"
         {...props}
         ref={this._rootRef}>
         <DivWithOutsideClick onOutsideClick={onOutsideClick}>
           <div
             ref={this._menuRef}
             tabIndex={0}
-            data-testid="context-menu-container"
-            className={classnames("context-menu-container", { opened, floating }, dir)}>
+            data-testid="core-context-menu-container"
+            className={classnames("core-context-menu-container", { opened, floating }, dir)}>
             {this._injectedChildren}
           </div>
         </DivWithOutsideClick>
@@ -378,11 +378,11 @@ export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
   constructor(props: GlobalContextMenuProps) {
     super(props);
     this._container = document.createElement("div");
-    this._container.id = props.identifier !== undefined ? `context-menu-${props.identifier}` : "context-menu";
-    let rt = document.getElementById("context-menu-root") as HTMLDivElement;
+    this._container.id = props.identifier !== undefined ? `core-context-menu-${props.identifier}` : "core-context-menu";
+    let rt = document.getElementById("core-context-menu-root") as HTMLDivElement;
     if (!rt) {
       rt = document.createElement("div");
-      rt.id = "context-menu-root";
+      rt.id = "core-context-menu-root";
       document.body.appendChild(rt);
     }
     rt.appendChild(this._container);
@@ -403,7 +403,7 @@ export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
     const CtxMenu = contextMenuComponent || ContextMenu; // tslint:disable-line:variable-name
 
     return ReactDOM.createPortal(
-      <div className="context-menu-global" style={positioningStyle}>
+      <div className="core-context-menu-global" style={positioningStyle}>
         <CtxMenu
           {...props} />
       </div >
@@ -468,12 +468,12 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps, Conte
         onFocus={this._handleFocus}
         onKeyUp={this._handleKeyUp}
         onMouseOver={this._handleMouseOver}
-        data-testid={"context-menu-item"}
-        className={classnames(className, "context-menu-item", { disabled, "is-selected": isSelected })}>
-        <div className={classnames("context-menu-icon", "icon", typeof icon === "string" ? icon : undefined)}>
+        data-testid={"core-context-menu-item"}
+        className={classnames(className, "core-context-menu-item", { disabled, "is-selected": isSelected })}>
+        <div className={classnames("core-context-menu-icon", "icon", typeof icon === "string" ? icon : undefined)}>
           {typeof icon !== "string" ? icon : undefined}
         </div>
-        <div className={"context-menu-content"}>
+        <div className={"core-context-menu-content"}>
           {this._parsedChildren}
         </div>
       </div>
@@ -536,7 +536,7 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps, Conte
 export class ContextMenuDivider extends React.Component {
   public render(): JSX.Element {
     return (
-      <div {...this.props} data-testid="context-menu-divider" className="context-menu-divider">
+      <div {...this.props} data-testid="core-context-menu-divider" className="core-context-menu-divider">
       </div>
     );
   }
@@ -617,11 +617,11 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
         <div
           onClick={this._handleClick}
           ref={(el) => { this._menuButtonElement = el; }}
-          className={classnames("context-menu-item context-submenu-container", { disabled, "is-selected": isSelected })}
+          className={classnames("core-context-menu-item context-submenucontainer", { disabled, "is-selected": isSelected })}
         >
-          <div className={classnames("context-menu-icon", "icon", icon)} />
-          <div className={"context-menu-content"}>{this._parsedLabel}</div>
-          <div className={classnames("context-submenu-arrow", "icon", "icon-caret-right")} />
+          <div className={classnames("core-context-menu-icon", "icon", icon)} />
+          <div className={"core-context-menu-content"}>{this._parsedLabel}</div>
+          <div className={classnames("context-submenuarrow", "icon", "icon-caret-right")} />
         </div>
         <ContextMenu
           ref={(el) => { this._menuElement = el; }}

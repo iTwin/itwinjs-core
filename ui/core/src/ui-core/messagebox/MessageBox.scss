@@ -4,35 +4,35 @@
 *--------------------------------------------------------------------------------------------*/
  @import "../index.scss";
 
-.message-box-container {
+.core-message-box-container {
   display: flex;
   color: $buic-foreground-body;
 
-  .message-box-icon {
+  .core-message-box-icon {
     flex: 0 0;
     font-size: $uicore-icons-medium;
     padding: 0 $uicore-unbordered-padding $uicore-unbordered-padding $uicore-unbordered-padding;
     margin-top: 10px;
   }
 
-  .message-box-content {
+  .core-message-box-content {
     flex: 1 1;
   }
 }
 
-.message-box-success {
+.core-message-box-success {
   color: $buic-foreground-success;
 }
-.message-box-information {
+.core-message-box-information {
   color: $buic-foreground-primary;
 }
-.message-box-question {
+.core-message-box-question {
   color: $uicore-yellow;
 }
-.message-box-warning {
+.core-message-box-warning {
   color: $buic-foreground-warning;
 }
-.message-box-error, .message-box-fatal {
+.core-message-box-error, .core-message-box-fatal {
   color: $buic-foreground-alert;
 }
 

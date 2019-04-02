@@ -181,21 +181,21 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     if (!this._isPositionAbsolute()) {
       switch (position) {
         case Position.TopLeft:
-          return "popup-top-left";
+          return "core-popup-top-left";
         case Position.TopRight:
-          return "popup-top-right";
+          return "core-popup-top-right";
         case Position.BottomLeft:
-          return "popup-bottom-left";
+          return "core-popup-bottom-left";
         case Position.BottomRight:
-          return "popup-bottom-right";
+          return "core-popup-bottom-right";
         case Position.Top:
-          return "popup-top";
+          return "core-popup-top";
         case Position.Left:
-          return "popup-left";
+          return "core-popup-left";
         case Position.Right:
-          return "popup-right";
+          return "core-popup-right";
         case Position.Bottom:
-          return "popup-bottom";
+          return "core-popup-bottom";
       }
     }
 
@@ -392,9 +392,9 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 
   public render() {
     const className = classnames(
-      "popup",
+      "core-popup",
       this._getClassNameByPosition(this.state.position),
-      this.props.showShadow && "popup-shadow",
+      this.props.showShadow && "core-popup-shadow",
       this.props.showArrow && "arrow",
       this.props.className,
     );
@@ -405,7 +405,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 
     return ReactDOM.createPortal(
       (
-        <div className={className} data-testid="popup" style={{ top: this.state.top, left: this.state.left }} ref={(element) => { this._popup = element; }}>
+        <div className={className} data-testid="core-popup" style={{ top: this.state.top, left: this.state.left }} ref={(element) => { this._popup = element; }}>
           {this.props.children}
         </div>
       ), document.body);

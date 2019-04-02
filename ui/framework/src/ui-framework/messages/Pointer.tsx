@@ -126,14 +126,14 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
         {
           this.state.message &&
           <span
-            className="popup-message-brief"
+            className="uifw-popup-message-brief"
             dangerouslySetInnerHTML={{ __html: this.state.message }}
           />
         }
         {
           this.state.detailedMessage &&
           <div
-            className="popup-message-detailed"
+            className="uifw-popup-message-detailed"
             dangerouslySetInnerHTML={{ __html: this.state.detailedMessage }}
           />
         }

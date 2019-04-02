@@ -96,11 +96,11 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
 
   public render(): JSX.Element {
     const halfHeight = this.state.height / 2;
-    const checkmarkClassName = classnames("toggle-checkmark icon icon-checkmark", this.props.showCheckmark && "visible");
+    const checkmarkClassName = classnames("core-toggle-checkmark icon icon-checkmark", this.props.showCheckmark && "visible");
     const toggleStyle: React.CSSProperties = { borderRadius: this.props.rounded ? halfHeight : 3, fontSize: halfHeight };
     const toggleClassName = classnames(
-      "toggle",
-      this.props.buttonType === ToggleButtonType.Primary && "toggle-primary",
+      "core-toggle",
+      this.props.buttonType === ToggleButtonType.Primary && "core-toggle-primary",
       this.props.rounded && "rounded",
       { disabled: this.props.disabled },
       this.props.className);
@@ -113,10 +113,10 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
     };
     return (
       <label ref={(el) => { if (el) this._setHeight(el.clientHeight, el.clientWidth); }} style={toggleStyle} className={toggleClassName}>
-        <input checked={this.props.isOn} className="toggle-input" disabled={this.props.disabled} type="checkbox" onChange={this._handleChange} onBlur={this._handleBlur} />
-        <span className="toggle-label" />
+        <input checked={this.props.isOn} className="core-toggle-input" disabled={this.props.disabled} type="checkbox" onChange={this._handleChange} onBlur={this._handleBlur} />
+        <span className="core-toggle-label" />
         <span className={checkmarkClassName} />
-        <span className="toggle-handle" style={toggleHandleStyle} />
+        <span className="core-toggle-handle" style={toggleHandleStyle} />
       </label>
     );
   }

@@ -23,11 +23,13 @@ import { MessageContainer, MessageSeverity, SmallText } from "@bentley/ui-core";
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
 
+import "./StatusBar.scss";
+
 // tslint:disable-next-line: variable-name
 const MessageLabel = (props: { text: string }) => {
   return (
     <div
-      className="StatusBarMessageLabel"
+      className="uifw-statusbar-message-label"
       dangerouslySetInnerHTML={{ __html: props.text }} />
   );
 };

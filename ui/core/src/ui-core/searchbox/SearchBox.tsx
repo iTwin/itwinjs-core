@@ -49,10 +49,10 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
 
   /** @internal */
   public render(): React.ReactNode {
-    const searchClassName = classnames("searchbox", this.props.className);
+    const searchClassName = classnames("core-searchbox", this.props.className);
     const emptyString = this.state.value === "";
     const iconClassName = classnames(
-      "searchbox-icon",
+      "core-searchbox-icon",
       "icon",
       {
         "icon-search": emptyString,
@@ -69,7 +69,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
           onCut={this._trackChange}
           placeholder={this.props.placeholder ? this.props.placeholder : UiCore.i18n.translate("UiCore:searchbox.search")}
         ></input>
-        <div className="searchbox-button" onClick={this._handleIconClick}>
+        <div className="core-searchbox-button" onClick={this._handleIconClick}>
           <span className={iconClassName} />
         </div>
       </div>

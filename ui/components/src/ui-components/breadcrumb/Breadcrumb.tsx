@@ -313,15 +313,15 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   public render(): React.ReactNode {
     if (!this.state.modelReady) {
       return (
-        <div className={classnames("breadcrumb", { background: this.props.background })} />
+        <div className={classnames("components-breadcrumb", { background: this.props.background })} />
       );
     }
     const node = this.state.current ? this.state.model.node(this.state.current.id) : undefined;
     return (
       <div
-        className={classnames("breadcrumb", { background: this.props.background })}>
-        <div className="breadcrumb-head"
-          data-testid="breadcrumb-dropdown-input-parent">
+        className={classnames("components-breadcrumb", { background: this.props.background })}>
+        <div className="components-breadcrumb-head"
+          data-testid="components-breadcrumb-dropdown-input-parent">
           {this.props.dropdownOnly || this.props.staticOnly ?
             <BreadcrumbDropdown
               tree={this.state.model}
@@ -399,7 +399,7 @@ export class InputSwitchComponent extends React.PureComponent<InputSwitchProps> 
       case BreadcrumbMode.Input:
         return <BreadcrumbInput tree={tree} node={node} onNodeChange={onNodeChange} onCancel={onInputCancel} parentsOnly={this.props.parentsOnly} delimiter={delimiter} width={width} pathString={this.props.pathString} />;
       default:
-        return <div data-testid="breadcrumb-error-unknown-mode">{UiComponents.i18n.translate("UiComponents:breadcrumb.errorUnknownMode")}</div>;
+        return <div data-testid="components-breadcrumb-error-unknown-mode">{UiComponents.i18n.translate("UiComponents:breadcrumb.errorUnknownMode")}</div>;
     }
   }
 }
@@ -443,17 +443,17 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
   public render(): JSX.Element {
     return (
-      <div className="breadcrumb-input-root" data-testid="breadcrumb-input-root">
+      <div className="components-breadcrumb-input-root" data-testid="components-breadcrumb-input-root">
         <input
-          className="breadcrumb-input"
-          data-testid="breadcrumb-input"
+          className="components-breadcrumb-input"
+          data-testid="components-breadcrumb-input"
           type="text"
           ref={(e) => { this._inputElement = e; }}
           style={{ width: this.props.width }}
           onKeyDown={this._handleKeyDown} onKeyUp={this._handleKeyUp}
           onChange={this._handleChange} onPaste={this._handleChange} onCut={this._handleChange} onFocus={this._handleChange} onClick={this._handleChange}
           spellCheck={false}></input>
-        <div className="breadcrumb-close icon icon-close" data-testid="breadcrumb-input-close" onClick={this._handleClose} />
+        <div className="components-breadcrumb-close icon icon-close" data-testid="components-breadcrumb-input-close" onClick={this._handleClose} />
         <ContextMenu
           ref={(el) => { this._autocomplete = el; }}
           style={{ width: "100%" }}
@@ -494,7 +494,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
                     event.stopPropagation();
                   }
                 }}>
-                <span className="breadcrumb-selected">{listItem.substr(0, l)}</span>{listItem.substr(l)}
+                <span className="components-breadcrumb-selected">{listItem.substr(0, l)}</span>{listItem.substr(l)}
               </ContextMenuItem>
             );
           })}
@@ -725,16 +725,16 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
     }
     return (
       <div
-        className="breadcrumb-dropdown"
-        data-testid="breadcrumb-dropdown-background"
+        className="components-breadcrumb-dropdown"
+        data-testid="components-breadcrumb-dropdown-background"
         style={{ width: this.props.width! }}
         onClick={this._focusInput}>
-        {!this.props.staticOnly && this.props.showUpDir ? <div data-testid="breadcrumb-up-dir" className={classnames("breadcrumb-up-dir", "icon", "icon-sort-up", {
+        {!this.props.staticOnly && this.props.showUpDir ? <div data-testid="components-breadcrumb-up-dir" className={classnames("components-breadcrumb-up-dir", "icon", "icon-sort-up", {
           root: this.props.node === undefined,
         })
         } onClick={this._handleUpClick} /> : undefined}
-        <div className="breadcrumb-crumb-list"
-          data-testid="breadcrumb-crumb-list">
+        <div className="components-breadcrumb-crumb-list"
+          data-testid="components-breadcrumb-crumb-list">
           <BreadcrumbDropdownNode
             key={-1}
             tree={this.props.tree}
@@ -814,14 +814,14 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
       nodeChildren = nodeChildren.filter((child) => child.hasOrWillHaveChildren());
     if (nodeChildren.length > 0) {
       if (this.props.staticOnly) {
-        return <span data-testid="breadcrumb-static-button" className="breadcrumb-split-button static">
+        return <span data-testid="components-breadcrumb-static-button" className="components-breadcrumb-split-button static">
           {renderNode({ label, icon }, n, parent)}
           {!this.props.last ? <span className="static-arrow-icon icon icon-chevron-right" /> : undefined}
         </span>;
       }
       return (
         <SplitButton
-          className="breadcrumb-split-button"
+          className="components-breadcrumb-split-button"
           onClick={(event) => {
             event.stopPropagation();
             this.props.onNodeSelected(n);
@@ -844,7 +844,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
       );
     } else {
       return (
-        <span className={classnames("breadcrumb-end-node", { static: this.props.staticOnly })}>
+        <span className={classnames("components-breadcrumb-end-node", { static: this.props.staticOnly })}>
           {renderNode({ label, icon }, n, parent)}
         </span>
       );
@@ -875,7 +875,7 @@ export interface BreadcrumbNodeProps {
 export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
   public render(): React.ReactNode {
     const { icon, label } = this.props;
-    return <span data-testid="breadcrumb-node"><span className={classnames("icon", icon)} /> {label}</span>;
+    return <span data-testid="components-breadcrumb-node"><span className={classnames("icon", icon)} /> {label}</span>;
   }
 
   public componentDidMount() {

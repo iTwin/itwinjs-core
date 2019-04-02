@@ -25,7 +25,7 @@ describe("ResultSelector", () => {
         onSelectedChanged={() => callCount++}
         resultCount={10} />);
 
-    const buttons = resultSelector.find(".result-selector-button");
+    const buttons = resultSelector.find(".components-result-selector-button");
 
     buttons.at(1).simulate("click");
     buttons.at(0).simulate("click");
@@ -41,7 +41,7 @@ describe("ResultSelector", () => {
         onSelectedChanged={() => callCount++}
         resultCount={1} />);
 
-    const buttons = resultSelector.find(".result-selector-button");
+    const buttons = resultSelector.find(".components-result-selector-button");
 
     buttons.at(0).simulate("click");
     buttons.at(1).simulate("click");
@@ -52,7 +52,7 @@ describe("ResultSelector", () => {
   it("input field to edit current selection appears after clicking on 'x of n'", () => {
     const resultSelector = enzyme.mount(<ResultSelector onSelectedChanged={() => { }} resultCount={1} />);
 
-    resultSelector.find(".result-selector-current-result").first().simulate("click");
+    resultSelector.find(".components-result-selector-current-result").first().simulate("click");
 
     expect(resultSelector.find("input[type=\"number\"]").first().exists()).to.be.true;
   });
@@ -60,7 +60,7 @@ describe("ResultSelector", () => {
   it("current selection gets submitted after pressing 'Enter' key while in edit mode", () => {
     const resultSelector = enzyme.mount(<ResultSelector onSelectedChanged={() => { }} resultCount={1} />);
 
-    resultSelector.find(".result-selector-current-result").first().simulate("click");
+    resultSelector.find(".components-result-selector-current-result").first().simulate("click");
 
     let inputElement = resultSelector.find("input[type=\"number\"]").first();
 
@@ -76,14 +76,14 @@ describe("ResultSelector", () => {
   it("current selection gets submitted after clicking '<' or '>' button while in edit mode", () => {
     const resultSelector = enzyme.mount(<ResultSelector onSelectedChanged={() => { }} resultCount={1} />);
 
-    resultSelector.find(".result-selector-current-result").first().simulate("click");
+    resultSelector.find(".components-result-selector-current-result").first().simulate("click");
 
-    const buttons = resultSelector.find(".result-selector-button");
+    const buttons = resultSelector.find(".components-result-selector-button");
 
     buttons.at(0).simulate("click");
     expect(resultSelector.find("input[type=\"number\"]").first().exists()).to.be.false;
 
-    resultSelector.find(".result-selector-current-result").first().simulate("click");
+    resultSelector.find(".components-result-selector-current-result").first().simulate("click");
     buttons.at(1).simulate("click");
 
     expect(resultSelector.find("input[type=\"number\"]").first().exists()).to.be.false;
@@ -123,7 +123,7 @@ describe("ResultSelector", () => {
   it("nothing happens if more than result count symbols get typed while editing current selection", () => {
     const resultSelector = enzyme.mount(<ResultSelector onSelectedChanged={() => { }} resultCount={11} />);
 
-    resultSelector.find(".result-selector-current-result").first().simulate("click");
+    resultSelector.find(".components-result-selector-current-result").first().simulate("click");
 
     let inputElement = resultSelector.find("input[type=\"number\"]").first();
 
@@ -140,8 +140,8 @@ describe("ResultSelector", () => {
     let selectedResult = 0;
     const resultSelector = enzyme.mount(<ResultSelector onSelectedChanged={(value) => selectedResult = value} resultCount={11} />);
 
-    const nextButton = resultSelector.find(".result-selector-button").at(1);
-    const resultInfo = resultSelector.find(".result-selector-current-result").first();
+    const nextButton = resultSelector.find(".components-result-selector-button").at(1);
+    const resultInfo = resultSelector.find(".components-result-selector-current-result").first();
 
     resultInfo.simulate("click");
 

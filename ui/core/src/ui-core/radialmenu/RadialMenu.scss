@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../index.scss";
 
-.radial-menu {
+.core-radial-menu {
   visibility: hidden;
 
   &.opened {
@@ -14,11 +14,11 @@
   position: fixed;
   z-index: 9999;
 
-  > .radial-menu-container {
+  > .core-radial-menu-container {
     margin-left: -50%;
     margin-top: -50%;
 
-    .radial-menu-sector {
+    .core-radial-menu-sector {
       stroke: $buic-background-panel-stroke;
       fill: $buic-background-control;
       stroke-width: 1px;
@@ -28,20 +28,20 @@
       }
     }
 
-    .radial-menu-button-svg {
-      .radial-menu-button-container {
+    .core-radial-menu-button-svg {
+      .core-radial-menu-button-container {
         display: flex;
         flex-direction: column;
         align-items: center;
 
-        .radial-menu-button-icon {
+        .core-radial-menu-button-icon {
           height: $uicore-icons-small;
           width: $uicore-icons-small;
           line-height: $uicore-icons-small;
           color: $buic-icon-color;
         }
 
-        .radial-menu-button-content {
+        .core-radial-menu-button-content {
           cursor: default;
           color: $buic-text-color;
           font-size: $uicore-font-size-small;

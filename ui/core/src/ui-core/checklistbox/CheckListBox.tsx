@@ -41,7 +41,7 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
   }
 
   public render() {
-    const className = classnames("chk-listboxitem-checkbox");
+    const className = classnames("core-chk-listboxitem-checkbox");
     return (
       <li>
         <Checkbox checked={this.props.checked} disabled={this.props.disabled} className={className} label={this.props.label} onClick={this._onClick} />
@@ -56,7 +56,7 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
 // tslint:disable-next-line:variable-name
 export const CheckListBoxSeparator: React.StatelessComponent = () => {
   return (
-    <div className="chk-listboxseparator" />
+    <div className="core-chk-listboxseparator" />
   );
 };
 
@@ -73,7 +73,7 @@ export interface CheckListBoxProps {
  */
 export class CheckListBox extends React.Component<CheckListBoxProps> {
   public render() {
-    const className = classnames("chk-listbox", this.props.className);
+    const className = classnames("core-chk-listbox", this.props.className);
     return (
       <ul className={className}>
         {this.props.children}

@@ -190,58 +190,58 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
     const buttons = this.getFooterButtons(this.props);
 
-    const footerElement = footer || (<div className={"dialog-buttons"}>{buttons}</div>);
+    const footerElement = footer || (<div className={"core-dialog-buttons"}>{buttons}</div>);
 
     return (
       <div
         className={classnames(
-          "dialog",
-          { "dialog-hidden": !modal, opened },
+          "core-dialog",
+          { "core-dialog-hidden": !modal, opened },
         )}
         style={this.props.backgroundStyle}
-        data-testid="dialog-root"
+        data-testid="core-dialog-root"
         {...props}
       >
         {opened &&
           <DivWithOutsideClick onOutsideClick={this.props.onOutsideClick}>
             <div
-              className={classnames("dialog-container", alignment)}
+              className={classnames("core-dialog-container", alignment)}
               style={containerStyle}
-              data-testid="dialog-container"
+              data-testid="core-dialog-container"
             >
-              <div className={"dialog-area"} ref={this._containerRef}>
+              <div className={"core-dialog-area"} ref={this._containerRef}>
                 <div className={classnames(
-                  "dialog-head",
-                  { "dialog-movable": this.props.movable })}
-                  data-testid="dialog-head"
+                  "core-dialog-head",
+                  { "core-dialog-movable": this.props.movable })}
+                  data-testid="core-dialog-head"
                   onPointerDown={this._handleStartMove}>
-                  <div className={"dialog-title"}>{this.props.title}</div>
+                  <div className={"core-dialog-title"}>{this.props.title}</div>
                   <span
-                    className={"dialog-close icon icon-close"}
-                    data-testid="dialog-close"
+                    className={"core-dialog-close icon icon-close"}
+                    data-testid="core-dialog-close"
                     onClick={this.props.onClose}
                   />
                 </div>
-                <div className={"dialog-content"} style={this.props.style}>
+                <div className={"core-dialog-content"} style={this.props.style}>
                   {this.props.children}
                 </div>
-                <div className={"dialog-footer"} style={this.props.footerStyle}>
+                <div className={"core-dialog-footer"} style={this.props.footerStyle}>
                   {footerElement}
                 </div>
               </div>
               <div
-                className={classnames("dialog-drag", "dialog-drag-right", { "dialog-drag-enabled": this.props.resizable })}
-                data-testid="dialog-drag-right"
+                className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": this.props.resizable })}
+                data-testid="core-dialog-drag-right"
                 onPointerDown={this._handleStartResizeRight}
               ></div>
               <div
-                className={classnames("dialog-drag", "dialog-drag-bottom-mid", { "dialog-drag-enabled": this.props.resizable })}
-                data-testid="dialog-drag-bottom"
+                className={classnames("core-dialog-drag", "core-dialog-drag-bottom-mid", { "core-dialog-drag-enabled": this.props.resizable })}
+                data-testid="core-dialog-drag-bottom"
                 onPointerDown={this._handleStartResizeDown}
               > </div>
               <div
-                className={classnames("dialog-drag", "dialog-drag-bottom-right", { "dialog-drag-enabled": this.props.resizable })}
-                data-testid="dialog-drag-bottom-right"
+                className={classnames("core-dialog-drag", "core-dialog-drag-bottom-right", { "core-dialog-drag-enabled": this.props.resizable })}
+                data-testid="core-dialog-drag-bottom-right"
                 onPointerDown={this._handleStartResizeDownRight}
               ></div>
             </div>
@@ -256,7 +256,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     if (props.buttonCluster) {
       props.buttonCluster.forEach((button: DialogButton, index: number) => {
         let buttonText = "";
-        let buttonClass = classnames("dialog-button", `dialog-button-${button.type}`);
+        let buttonClass = classnames("core-dialog-button", `dialog-button-${button.type}`);
         switch (button.type) {
           case DialogButtonType.OK:
             buttonText = UiCore.i18n.translate("UiCore:dialog.ok");
@@ -409,11 +409,11 @@ export class GlobalDialog extends React.Component<GlobalDialogProps> {
   constructor(props: GlobalDialogProps) {
     super(props);
     this._container = document.createElement("div");
-    this._container.id = props.identifier !== undefined ? `dialog-${props.identifier}` : "dialog";
-    let rt = document.getElementById("dialog-root") as HTMLDivElement;
+    this._container.id = props.identifier !== undefined ? `dialog-${props.identifier}` : "core-dialog";
+    let rt = document.getElementById("core-dialog-root") as HTMLDivElement;
     if (!rt) {
       rt = document.createElement("div");
-      rt.id = "dialog-root";
+      rt.id = "core-dialog-root";
       document.body.appendChild(rt);
     }
     rt.appendChild(this._container);

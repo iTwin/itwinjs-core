@@ -8,9 +8,9 @@ import * as React from "react";
 import "./ResultSelector.scss";
 
 /** [[ResultSelector]] React Component state
- * @public
+ * @internal
  */
-export interface ResultSelectorState {
+interface ResultSelectorState {
   /** Currently selected result/entry index */
   selectedResultId: number;
   /** Input string */
@@ -113,13 +113,13 @@ export class ResultSelector extends React.Component<ResultSelectorProps, ResultS
   /** @internal */
   public render() {
     return (
-      <span className="result-selector">
-        <button className="result-selector-button icon icon-chevron-left"
+      <span className="components-result-selector">
+        <button className="components-result-selector-button icon icon-chevron-left"
           onClick={this._onClickPrevious}
           disabled={this.props.resultCount <= 0} />
 
         <span style={{ pointerEvents: this.props.resultCount ? "auto" : "none" }}
-          className="result-selector-current-result"
+          className="components-result-selector-current-result"
           onClick={this._onSelectedResultClick}>
           {this.state.selectedResultInEditMode ?
             <input type="number"
@@ -133,7 +133,7 @@ export class ResultSelector extends React.Component<ResultSelectorProps, ResultS
           <span>{this.props.resultCount}</span>
         </span>
 
-        <button className="result-selector-button icon icon-chevron-right"
+        <button className="components-result-selector-button icon icon-chevron-right"
           onClick={this._onClickNext}
           disabled={this.props.resultCount <= 0} />
       </span>

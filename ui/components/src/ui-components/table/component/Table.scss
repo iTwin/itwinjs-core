@@ -107,6 +107,7 @@
     pointer-events: none;
   }
 
+  /* TODO: Is property-name-cell old? */
   .property-name-cell span {
     height: 100%;
     display: inline-block;
@@ -114,6 +115,7 @@
     padding: 0 0 2px 6px;
   }
 
+  /* TODO: Is property-name-cell old? */
   .property-name-cell be-svg-icon {
     width: 24px;
     height: 16px;
@@ -148,6 +150,6 @@
   }
 }
 
-.table-header-drag-drop .react-grid-HeaderCell {
+.components-table-header-drag-drop .react-grid-HeaderCell {
   height: 100%;
 }

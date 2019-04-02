@@ -45,7 +45,7 @@ class HeaderWrapper extends React.Component<HeaderWrapperProps> {
     }
 
     const classes = classnames(
-      "table-header-drag-drop",
+      "components-table-header-drag-drop",
       {
         left: canDrop && !isDragging && isOver && mode === -1,
         right: canDrop && !isDragging && isOver && mode === 1,

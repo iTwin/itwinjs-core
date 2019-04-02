@@ -6,24 +6,24 @@ exports[`InputFieldMessage should render correctly 1`] = `
     <body>
       <button />
       <div
-        id="context-menu-root"
+        id="core-context-menu-root"
       >
         <div
-          id="context-menu-keyboard-shortcut-menu"
+          id="core-context-menu-keyboard-shortcut-menu"
         >
           <div
-            class="context-menu-global"
+            class="core-context-menu-global"
             style="left: 0px; top: 0px;"
           >
             <div
-              class="context-menu"
-              data-testid="context-menu-root"
+              class="core-context-menu"
+              data-testid="core-context-menu-root"
             >
               <div>
                 <div>
                   <div
-                    class="context-menu-container opened floating bottom right"
-                    data-testid="context-menu-container"
+                    class="core-context-menu-container opened floating bottom right"
+                    data-testid="core-context-menu-container"
                     tabindex="0"
                   />
                 </div>
@@ -32,21 +32,21 @@ exports[`InputFieldMessage should render correctly 1`] = `
           </div>
         </div>
         <div
-          id="context-menu-keyboard-shortcut-menu"
+          id="core-context-menu-keyboard-shortcut-menu"
         >
           <div
-            class="context-menu-global"
+            class="core-context-menu-global"
             style="left: 0px; top: 0px;"
           >
             <div
-              class="context-menu"
-              data-testid="context-menu-root"
+              class="core-context-menu"
+              data-testid="core-context-menu-root"
             >
               <div>
                 <div>
                   <div
-                    class="context-menu-container opened floating bottom right"
-                    data-testid="context-menu-container"
+                    class="core-context-menu-container opened floating bottom right"
+                    data-testid="core-context-menu-container"
                     tabindex="0"
                   />
                 </div>

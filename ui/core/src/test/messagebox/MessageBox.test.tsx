@@ -23,7 +23,7 @@ describe("MessageBox", () => {
   describe("renders", () => {
     it("should render", () => {
       const wrapper = mount(<MessageBox opened={true} severity={MessageSeverity.Information} buttonCluster={buttonCluster} />);
-      const icon = wrapper.find("div.message-box-information");
+      const icon = wrapper.find("div.core-message-box-information");
       expect(icon.length).to.eq(1);
       wrapper.unmount();
     });
@@ -36,22 +36,22 @@ describe("MessageBox", () => {
   describe("renders different severities", () => {
     it("MessageSeverity.Question", () => {
       const wrapper = mount(<MessageBox opened={true} severity={MessageSeverity.Question} buttonCluster={buttonCluster} />);
-      const icon = wrapper.find("div.message-box-question");
+      const icon = wrapper.find("div.core-message-box-question");
       expect(icon.length).to.eq(1);
     });
     it("MessageSeverity.Warning", () => {
       const wrapper = mount(<MessageBox opened={true} severity={MessageSeverity.Warning} buttonCluster={buttonCluster} />);
-      const icon = wrapper.find("div.message-box-warning");
+      const icon = wrapper.find("div.core-message-box-warning");
       expect(icon.length).to.eq(1);
     });
     it("MessageSeverity.Error", () => {
       const wrapper = mount(<MessageBox opened={true} severity={MessageSeverity.Error} buttonCluster={buttonCluster} />);
-      const icon = wrapper.find("div.message-box-error");
+      const icon = wrapper.find("div.core-message-box-error");
       expect(icon.length).to.eq(1);
     });
     it("MessageSeverity.Fatal", () => {
       const wrapper = mount(<MessageBox opened={true} severity={MessageSeverity.Fatal} buttonCluster={buttonCluster} />);
-      const icon = wrapper.find("div.message-box-fatal");
+      const icon = wrapper.find("div.core-message-box-fatal");
       expect(icon.length).to.eq(1);
     });
   });
