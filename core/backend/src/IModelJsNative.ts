@@ -39,6 +39,7 @@ export declare namespace IModelJsNative {
     DgnCore = "DgnCore",
     ECDb = "ECDb",
     ECObjectsNative = "ECObjectsNative",
+    UnitsNative = "UnitsNative",
   }
 
   /** The return type of synchronous functions that may return an error or a successful result. */

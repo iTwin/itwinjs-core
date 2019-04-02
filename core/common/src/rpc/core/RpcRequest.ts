@@ -18,6 +18,7 @@ import { RpcResponseCacheControl, RpcRequestEvent, RpcRequestStatus, RpcProtocol
 
 const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
+/** @public */
 export class ResponseLike implements Response {
   private _data: Promise<any>;
   public get body() { return null; }
@@ -42,16 +43,24 @@ export class ResponseLike implements Response {
   }
 }
 
-/** Supplies an IModelToken for an RPC request. */
+/** Supplies an IModelToken for an RPC request.
+ * @public
+ */
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined;
 
-/** Supplies the initial retry interval for an RPC request. */
+/** Supplies the initial retry interval for an RPC request.
+ * @public
+ */
 export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number;
 
-/** Notification callback for an RPC request. */
+/** Notification callback for an RPC request.
+ * @public
+ */
 export type RpcRequestCallback_T = (request: RpcRequest) => void;
 
-/** Determines if caching is permitted for a RPC response. */
+/** Determines if caching is permitted for a RPC response.
+ * @public
+ */
 export type RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl;
 
 /** Runtime information related to the operation load of one or more RPC interfaces.
@@ -62,10 +71,14 @@ export interface RpcOperationsProfile {
   readonly lastResponse: number;
 }
 
-/** Handles RPC request events. */
+/** Handles RPC request events.
+ * @public
+ */
 export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void;
 
-/** Resolves "not found" responses for RPC requests. */
+/** Resolves "not found" responses for RPC requests.
+ * @public
+ */
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
 /** A RPC operation request.

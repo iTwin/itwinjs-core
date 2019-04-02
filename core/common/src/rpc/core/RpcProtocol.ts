@@ -69,7 +69,9 @@ export namespace RpcRequestFulfillment {
   }
 }
 
-/** Handles RPC protocol events. */
+/** Handles RPC protocol events.
+ * @public
+ */
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation) => void;
 
 /** An application protocol for an RPC interface.

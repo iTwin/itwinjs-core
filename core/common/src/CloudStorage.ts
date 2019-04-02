@@ -2,17 +2,20 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @beta */
 export enum CloudStorageProvider {
   Azure,
   Amazon,
   AliCloud,
 }
 
+/** @beta */
 export interface CloudStorageContainerDescriptor {
   provider?: CloudStorageProvider;
   name: string;
 }
 
+/** @beta */
 export interface CloudStorageContainerUrl {
   descriptor: CloudStorageContainerDescriptor;
   valid: number;
@@ -22,6 +25,7 @@ export interface CloudStorageContainerUrl {
   headers?: Record<string, string>;
 }
 
+/** @beta */
 export namespace CloudStorageContainerUrl {
   export function empty(): CloudStorageContainerUrl {
     return {
@@ -33,6 +37,7 @@ export namespace CloudStorageContainerUrl {
   }
 }
 
+/** @beta */
 export abstract class CloudStorageCache<TContentId, TContentType> {
   private _containers: Map<string, CloudStorageContainerUrl>;
 

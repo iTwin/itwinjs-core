@@ -6,12 +6,14 @@ import { IModelToken } from "./IModel";
 import { CloudStorageCache, CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "./CloudStorage";
 import { IModelTileRpcInterface } from "./rpc/IModelTileRpcInterface";
 
+/** @beta */
 export interface TileContentIdentifier {
   iModelToken: IModelToken;
   treeId: string;
   contentId: string;
 }
 
+/** @beta */
 export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
   private static _instance: CloudStorageTileCache;
 

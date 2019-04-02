@@ -15,7 +15,9 @@ export interface PageOptions {
   /** load on main loop */
   stepsPerTick?: number;
 }
-/** Default option used when caller does not provide one */
+/** Default option used when caller does not provide one
+ * @beta Remove nonstandard "k" prefix?
+ */
 export const kPagingDefaultOptions: PageOptions = { start: 0, size: 512, stepsPerTick: 20 };
 
 /** @public */

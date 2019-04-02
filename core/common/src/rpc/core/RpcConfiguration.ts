@@ -12,6 +12,7 @@ import { INSTANCE } from "./RpcRegistry";
 import { RpcRequest } from "./RpcRequest";
 import { RpcRequestContext } from "./RpcRequestContext";
 
+/** @public */
 export type RpcConfigurationSupplier = () => { new(): RpcConfiguration };
 
 /** A RpcConfiguration specifies how calls on an RPC interface will be marshalled, plus other operating parameters.

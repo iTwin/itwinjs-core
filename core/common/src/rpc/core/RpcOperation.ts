@@ -101,10 +101,10 @@ export class RpcOperation {
   }
 }
 
+/** @public */
 export type RpcOperationPolicyProps = Partial<RpcOperationPolicy>;
 
 /** @public */
-
 export namespace RpcOperation {
   function obtainInstance(obj: RpcOperationPolicy | RpcOperationPolicyProps) {
     if (obj instanceof RpcOperationPolicy) {

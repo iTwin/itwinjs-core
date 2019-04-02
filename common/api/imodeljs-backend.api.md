@@ -2245,7 +2245,9 @@ export namespace IModelJsNative {
         // (undocumented)
         ECDb = "ECDb",
         // (undocumented)
-        ECObjectsNative = "ECObjectsNative"
+        ECObjectsNative = "ECObjectsNative",
+        // (undocumented)
+        UnitsNative = "UnitsNative"
     }
     // (undocumented)
     export interface NativeCrashReportingConfig {

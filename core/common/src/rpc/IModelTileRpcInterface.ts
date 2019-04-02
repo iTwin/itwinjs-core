@@ -27,6 +27,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
 
+  /** @beta */
   public async getTileCacheContainerUrl(_iModelToken: IModelToken, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     return this.forward(arguments);
   }

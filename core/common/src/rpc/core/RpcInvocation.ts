@@ -16,7 +16,9 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
-/** Notification callback for an RPC invocation. */
+/** Notification callback for an RPC invocation.
+ * @public
+ */
 export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
 
 /** An RPC operation invocation in response to a request.

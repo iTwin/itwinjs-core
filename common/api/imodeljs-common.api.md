@@ -563,7 +563,7 @@ export enum ChangeOpCode {
 
 export { ChangeSetStatus }
 
-// @public (undocumented)
+// @beta (undocumented)
 export abstract class CloudStorageCache<TContentId, TContentType> {
     constructor();
     // (undocumented)
@@ -584,7 +584,7 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
     protected supplyUrlBase(_container: CloudStorageContainerUrl, _id: TContentId): string | undefined;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export interface CloudStorageContainerDescriptor {
     // (undocumented)
     name: string;
@@ -592,7 +592,7 @@ export interface CloudStorageContainerDescriptor {
     provider?: CloudStorageProvider;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export interface CloudStorageContainerUrl {
     // (undocumented)
     descriptor: CloudStorageContainerDescriptor;
@@ -608,13 +608,13 @@ export interface CloudStorageContainerUrl {
     valid: number;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export namespace CloudStorageContainerUrl {
     // (undocumented)
     export function empty(): CloudStorageContainerUrl;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export enum CloudStorageProvider {
     // (undocumented)
     AliCloud = 2,
@@ -624,7 +624,7 @@ export enum CloudStorageProvider {
     Azure = 0
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
     // (undocumented)
     formContainerName(id: TileContentIdentifier): string;
@@ -2382,7 +2382,7 @@ export { IModelStatus }
 export abstract class IModelTileRpcInterface extends RpcInterface {
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
-    // (undocumented)
+    // @beta (undocumented)
     getTileCacheContainerUrl(_iModelToken: IModelToken, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
     // (undocumented)
     getTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array>;
@@ -2463,7 +2463,7 @@ export function isPowerOfTwo(num: number): boolean;
 // @internal (undocumented)
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 
-// @public
+// @beta
 export const kPagingDefaultOptions: PageOptions;
 
 // @public (undocumented)
@@ -4543,7 +4543,7 @@ export interface ThumbnailProps extends ThumbnailFormatProps {
     image: Uint8Array;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export interface TileContentIdentifier {
     // (undocumented)
     contentId: string;

@@ -42,8 +42,7 @@ export const enum Npc {
 /** The 8 corners of an [[Npc]] Frustum.
  * @public
  */
-// tslint:disable-next-line:variable-name
-export const NpcCorners = [
+export const NpcCorners = [ // tslint:disable-line:variable-name
   new Point3d(0.0, 0.0, 0.0),
   new Point3d(1.0, 0.0, 0.0),
   new Point3d(0.0, 1.0, 0.0),
@@ -56,9 +55,10 @@ export const NpcCorners = [
 NpcCorners.forEach((corner) => Object.freeze(corner));
 Object.freeze(NpcCorners);
 
-/** The center point of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube. */
-// tslint:disable-next-line:variable-name
-export const NpcCenter = new Point3d(.5, .5, .5);
+/** The center point of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
+ * @public
+ */
+export const NpcCenter = new Point3d(.5, .5, .5); // tslint:disable-line:variable-name
 Object.freeze(NpcCenter);
 
 /** The region of physical (3d) space that appears in a view. It forms the field-of-view of a camera.
