@@ -69,10 +69,10 @@ export class DevTools {
     }, undefined);
 
     const max: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
-      if (!acc) return curr;
-      if (!curr) return acc;
+      if (typeof acc === "undefined") return undefined;
+      if (!curr) return curr;
       return Math.max(acc, curr);
-    }, undefined);
+    }, 0);
 
     const total: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
       if (typeof acc === "undefined") return undefined;

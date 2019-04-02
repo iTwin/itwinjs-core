@@ -127,8 +127,11 @@ export class IModelApp {
     requestContext.enter();
 
     IModelApp._initialized = true;
-    IModelApp.sessionId = Guid.createValue();
-    IModelApp.applicationVersion = this.getApplicationVersion();
+
+    // Initialize basic application details before log messages are sent out
+    this.sessionId = Guid.createValue();
+    if (!IModelApp.applicationId) IModelApp.applicationId = "2686";  // Default to product id of iModel.js
+    if (!IModelApp.applicationVersion) IModelApp.applicationVersion = this.getApplicationVersion();
 
     if (imodelClient !== undefined)
       this._imodelClient = imodelClient;
@@ -150,7 +153,6 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!IModelApp.applicationId) IModelApp.applicationId = "2686";  // Default to product id of iModel.js
     if (!IModelApp.settings) IModelApp.settings = new ConnectSettingsClient(IModelApp.applicationId);
     if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem(renderSysOpt);
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
