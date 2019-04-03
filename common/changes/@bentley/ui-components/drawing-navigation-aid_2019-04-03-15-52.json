@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added viewport synchronization for 2d drawing navigation aid",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Simeon.McGraw@bentley.com"
+}

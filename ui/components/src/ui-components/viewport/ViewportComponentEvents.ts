@@ -6,7 +6,21 @@
 
 import { IModelApp, Viewport, SelectedViewportChangedArgs, StandardViewId } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
-import { Matrix3d } from "@bentley/geometry-core";
+import { Matrix3d, Point3d, Vector3d } from "@bentley/geometry-core";
+
+/** Arguments for [[DrawingViewportChangeEvent]]
+ * @public
+ */
+export interface DrawingViewportChangeEventArgs {
+  rotation: Matrix3d;
+  origin: Point3d;
+  complete: boolean;
+}
+
+/** Drawing View Change event
+ * @public
+ */
+export class DrawingViewportChangeEvent extends UiEvent<DrawingViewportChangeEventArgs> { }
 
 /** Arguments for [[CubeRotationChangeEvent]]
  * @public
@@ -88,7 +102,10 @@ export class ViewportComponentEvents {
       this._removeListener = IModelApp.viewManager.onSelectedViewportChanged.addListener(ViewportComponentEvents.handleSelectedViewportChanged);
   }
 
-  public static readonly rMatrix = Matrix3d.createIdentity();
+  public static readonly origin = Point3d.createZero();
+  public static readonly extents = Vector3d.createZero();
+  public static readonly rotationMatrix = Matrix3d.createIdentity();
+  public static readonly onDrawingViewportChangeEvent = new DrawingViewportChangeEvent();
   public static readonly onCubeRotationChangeEvent = new CubeRotationChangeEvent();
   public static readonly onStandardRotationChangeEvent = new StandardRotationChangeEvent();
   public static readonly onViewRotationChangeEvent = new ViewRotationChangeEvent();
@@ -101,8 +118,12 @@ export class ViewportComponentEvents {
   }
 
   public static setCubeMatrix(rotMatrix: Matrix3d, animationTime?: number): void {
-    this.rMatrix.setFrom(rotMatrix);
+    this.rotationMatrix.setFrom(rotMatrix);
     this.onCubeRotationChangeEvent.emit({ rotMatrix, animationTime });
+  }
+
+  public static setDrawingViewportState(origin: Point3d, rotation: Matrix3d, complete: boolean = false): void {
+    this.onDrawingViewportChangeEvent.emit({ origin, rotation, complete });
   }
 
   public static setStandardRotation(standardRotation: StandardViewId): void {
@@ -112,7 +133,9 @@ export class ViewportComponentEvents {
   public static setViewMatrix(viewport: Viewport, animationTime?: number): void {
     // When handling onViewChanged, use setTimeout
     setTimeout(() => {
-      this.rMatrix.setFrom(viewport.rotation);
+      this.origin.setFrom(viewport.view.getOrigin());
+      this.extents.setFrom(viewport.view.getExtents());
+      this.rotationMatrix.setFrom(viewport.rotation);
       this.onViewRotationChangeEvent.emit({ viewport, animationTime });
     });
   }

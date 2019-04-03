@@ -93,7 +93,7 @@ export class ViewportContentControl extends ContentControl {
         navigationAidId = "SheetNavigationAid";
         break;
       case "DrawingViewDefinition":
-        navigationAidId = ""; // TODO - need to implement a 2D Drawing Navigation Aid
+        navigationAidId = "DrawingNavigationAid";
         break;
       case "SpatialViewDefinition":
       case "OrthographicViewDefinition":

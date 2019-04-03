@@ -102,6 +102,7 @@ export * from "./ui-framework/backstage/Separator";
 
 export * from "./ui-framework/navigationaids/CubeNavigationAid";
 export * from "./ui-framework/navigationaids/SheetNavigationAid";
+export * from "./ui-framework/navigationaids/DrawingNavigationAid";
 export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 

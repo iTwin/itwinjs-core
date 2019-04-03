@@ -31,6 +31,7 @@ import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { OutputMessageType } from '@bentley/imodeljs-frontend';
+import { Point3d } from '@bentley/geometry-core';
 import { Primitives } from '@bentley/imodeljs-frontend';
 import { PropertyDescription } from '@bentley/imodeljs-frontend';
 import { PropertyRecord } from '@bentley/imodeljs-frontend';
@@ -42,6 +43,7 @@ import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { TimeFormat } from '@bentley/ui-core';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
+import { Vector3d } from '@bentley/geometry-core';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 
@@ -825,6 +827,20 @@ export interface DragSourceProps<DragDropObject = any> {
     objectType?: ((data?: DragDropObject) => string | symbol) | string | symbol;
     onDragSourceBegin?: (data: DragSourceArguments<DragDropObject>) => DragSourceArguments<DragDropObject>;
     onDragSourceEnd?: (data: DragSourceArguments<DragDropObject>) => void;
+}
+
+// @public
+export class DrawingViewportChangeEvent extends UiEvent<DrawingViewportChangeEventArgs> {
+}
+
+// @public
+export interface DrawingViewportChangeEventArgs {
+    // (undocumented)
+    complete: boolean;
+    // (undocumented)
+    origin: Point3d;
+    // (undocumented)
+    rotation: Matrix3d;
 }
 
 // @beta
@@ -2512,9 +2528,13 @@ export class ViewportComponent extends React.Component<ViewportProps> {
 // @public
 export class ViewportComponentEvents {
     // (undocumented)
+    static readonly extents: Vector3d;
+    // (undocumented)
     static initialize(): void;
     // (undocumented)
     static readonly onCubeRotationChangeEvent: CubeRotationChangeEvent;
+    // (undocumented)
+    static readonly onDrawingViewportChangeEvent: DrawingViewportChangeEvent;
     // (undocumented)
     static readonly onStandardRotationChangeEvent: StandardRotationChangeEvent;
     // (undocumented)
@@ -2524,9 +2544,13 @@ export class ViewportComponentEvents {
     // (undocumented)
     static readonly onViewRotationChangeEvent: ViewRotationChangeEvent;
     // (undocumented)
-    static readonly rMatrix: Matrix3d;
+    static readonly origin: Point3d;
+    // (undocumented)
+    static readonly rotationMatrix: Matrix3d;
     // (undocumented)
     static setCubeMatrix(rotMatrix: Matrix3d, animationTime?: number): void;
+    // (undocumented)
+    static setDrawingViewportState(origin: Point3d, rotation: Matrix3d, complete?: boolean): void;
     // (undocumented)
     static setStandardRotation(standardRotation: StandardViewId): void;
     // (undocumented)

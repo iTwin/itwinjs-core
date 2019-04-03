@@ -708,6 +708,11 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
  * @internal
  */
 export class TildeFinder {
+  /**
+   * Find character following a tilde character within a React.ReactNode.
+   * @param node react node to search within for a tilde.
+   * @returns character that was found, and the same node with tilde removed, and following character with an underline.
+   */
   public static findAfterTilde = (node: React.ReactNode): { character: string | undefined, node: React.ReactNode } => {
     if (typeof node === "string") {
       // String

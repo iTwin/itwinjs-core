@@ -43,6 +43,7 @@ import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
+import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-ninezone';
 import { PresentationTreeDataProvider } from '@bentley/presentation-components';
@@ -71,6 +72,7 @@ import { UiEvent } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { Viewport } from '@bentley/imodeljs-frontend';
+import { ViewState } from '@bentley/imodeljs-frontend';
 import { WidgetZoneIndex } from '@bentley/ui-ninezone';
 import { XAndY } from '@bentley/geometry-core';
 import { ZonePropsBase } from '@bentley/ui-ninezone';
@@ -995,6 +997,115 @@ export interface DragDropLayerRendererProps {
         x: number;
         y: number;
     };
+}
+
+// Warning: (ae-incompatible-release-tags) The symbol "DrawingNavigationAid" is marked as @alpha, but its signature references "DrawingNavigationAidProps" which is marked as @internal
+// Warning: (ae-incompatible-release-tags) The symbol "DrawingNavigationAid" is marked as @alpha, but its signature references "DrawingNavigationAidState" which is marked as @internal
+// 
+// @alpha
+export class DrawingNavigationAid extends React_2.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
+    constructor(props: DrawingNavigationAidProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React_2.ReactNode;
+    // (undocumented)
+    readonly state: Readonly<DrawingNavigationAidState>;
+    }
+
+// @alpha
+export class DrawingNavigationAidControl extends NavigationAidControl {
+    constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    getSize(): string | undefined;
+}
+
+// @internal (undocumented)
+export interface DrawingNavigationAidProps {
+    // (undocumented)
+    animationTime?: number;
+    // (undocumented)
+    closeSize?: Vector3d | (() => Vector3d);
+    // (undocumented)
+    iModelConnection: IModelConnection;
+    // (undocumented)
+    initialMapMode?: MapMode;
+    // (undocumented)
+    onAnimationEnd?: () => void;
+    // (undocumented)
+    onRender?: () => void;
+    // (undocumented)
+    openSize?: Vector3d | (() => Vector3d);
+}
+
+// @internal (undocumented)
+export interface DrawingNavigationAidState {
+    // (undocumented)
+    animation: number;
+    // (undocumented)
+    drawingZoom: number;
+    // (undocumented)
+    extents: Vector3d;
+    // (undocumented)
+    isMoving: boolean;
+    // (undocumented)
+    isPanning: boolean;
+    // (undocumented)
+    mapExtents: Vector3d;
+    // (undocumented)
+    mapOrigin: Point3d;
+    // (undocumented)
+    mode: MapMode;
+    // (undocumented)
+    mouseStart: Point2d;
+    // (undocumented)
+    origin: Point3d;
+    // (undocumented)
+    panningDirection: Vector3d;
+    // (undocumented)
+    rotateMinimapWithView: boolean;
+    // (undocumented)
+    rotation: Matrix3d;
+    // (undocumented)
+    startDrawingZoom: number;
+    // (undocumented)
+    startMapExtents: Vector3d;
+    // (undocumented)
+    startMapOrigin: Point3d;
+    // (undocumented)
+    startOrigin: Point3d;
+    // (undocumented)
+    startRotation: Matrix3d;
+}
+
+// @internal (undocumented)
+export class DrawingNavigationCanvas extends React_2.Component<DrawingNavigationCanvasProps> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(oldProps: DrawingNavigationCanvasProps): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React_2.ReactNode;
+    }
+
+// @internal (undocumented)
+export interface DrawingNavigationCanvasProps {
+    // (undocumented)
+    extents: Vector3d;
+    // (undocumented)
+    origin: Point3d;
+    // (undocumented)
+    rotation: Matrix3d;
+    // (undocumented)
+    view: ViewState | undefined;
+    // (undocumented)
+    zoom: number;
 }
 
 // @internal
@@ -1984,6 +2095,14 @@ export interface ListPickerPropsExtended extends ListPickerProps {
     enableAllFunc?: () => void;
     // (undocumented)
     invertFunc?: () => void;
+}
+
+// @alpha
+export enum MapMode {
+    // (undocumented)
+    Closed = "map-closed",
+    // (undocumented)
+    Opened = "map-opened"
 }
 
 // @public

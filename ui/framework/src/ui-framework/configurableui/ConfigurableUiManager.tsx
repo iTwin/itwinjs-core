@@ -17,6 +17,7 @@ import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
+import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAid";
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAid";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 
@@ -36,6 +37,7 @@ export class ConfigurableUiManager {
     // Register core controls
     ConfigurableUiManager.registerControl("StandardRotationNavigationAid", StandardRotationNavigationAidControl);
     ConfigurableUiManager.registerControl("SheetNavigationAid", SheetNavigationAidControl);
+    ConfigurableUiManager.registerControl("DrawingNavigationAid", DrawingNavigationAidControl);
     ConfigurableUiManager.registerControl("CubeNavigationAid", CubeNavigationAidControl);
 
     // Initialize SyncUiEventDispatcher so it can register event callbacks.

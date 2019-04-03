@@ -1162,7 +1162,6 @@ export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement> {
 
 // @internal
 export class TildeFinder {
-    // (undocumented)
     static findAfterTilde: (node: React.ReactNode) => {
         character: string | undefined;
         node: React.ReactNode;

@@ -30,6 +30,10 @@
     "left": "LEFT",
     "right": "RIGHT"
   },
+  "drawing": {
+    "unrotate": "Un-Rotate",
+    "rotateStyle": "Toggle background-rotate"
+  },
   "messageCenter": {
     "messages": "Messages",
     "all": "All",

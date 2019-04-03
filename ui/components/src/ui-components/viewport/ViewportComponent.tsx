@@ -18,6 +18,7 @@ import {
   ViewportComponentEvents,
   CubeRotationChangeEventArgs,
   StandardRotationChangeEventArgs,
+  DrawingViewportChangeEventArgs,
 } from "./ViewportComponentEvents";
 
 import { Transform } from "@bentley/geometry-core";
@@ -77,6 +78,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
       this.props.viewportRef(this._vp);
 
     ViewportComponentEvents.initialize();
+    ViewportComponentEvents.onDrawingViewportChangeEvent.addListener(this._handleDrawingViewportChangeEvent, this);
     ViewportComponentEvents.onCubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent, this);
     ViewportComponentEvents.onStandardRotationChangeEvent.addListener(this._handleStandardRotationChangeEvent, this);
 
@@ -91,8 +93,17 @@ export class ViewportComponent extends React.Component<ViewportProps> {
       this._vp.onViewChanged.removeListener(this._handleViewChanged, this);
     }
 
+    ViewportComponentEvents.onDrawingViewportChangeEvent.removeListener(this._handleDrawingViewportChangeEvent, this);
     ViewportComponentEvents.onCubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent, this);
     ViewportComponentEvents.onStandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent, this);
+  }
+
+  private _handleDrawingViewportChangeEvent = (args: DrawingViewportChangeEventArgs) => {
+    if (this._vp && IModelApp.viewManager.selectedView === this._vp) {
+      this._vp.view.setOrigin(args.origin);
+      this._vp.view.setRotation(args.rotation);
+      this._vp.synchWithView(args.complete === true ? true : false);
+    }
   }
 
   private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
