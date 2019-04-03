@@ -49,7 +49,7 @@ http.createServer((req, res) => {
         fs.unlinkSync(originalName);
 
       try {
-        fs.rename(breakPadUpload.path, originalName);
+        fs.renameSync(breakPadUpload.path, originalName);
 
         fs.appendFileSync(path.join(originalName + ".txt"), JSON.stringify(fields));
 
