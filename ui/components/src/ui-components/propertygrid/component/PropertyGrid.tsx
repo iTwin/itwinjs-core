@@ -89,8 +89,8 @@ interface PropertyGridState {
   editingPropertyKey?: string;
   /** Actual orientation used by the property grid */
   orientation: Orientation;
-  /** Is property grid currently loading data */
-  isLoading?: boolean;
+  /** If property grid currently loading data, the loading start time  */
+  loadStart?: Date;
 }
 
 /** PropertyGrid React component.
@@ -188,7 +188,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       return;
     }
 
-    this.setState({ isLoading: true });
+    this.setState((prev) => prev.loadStart ? null : { loadStart: new Date() });
 
     this._isInDataRequest = true;
     let propertyData: PropertyData;
@@ -215,7 +215,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       };
       categories.push(gridCategory);
     });
-    this.setState({ categories, isLoading: false });
+    this.setState({ categories, loadStart: undefined });
   }
 
   private _onExpansionToggled = (categoryName: string) => {
@@ -293,10 +293,10 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
 
   /** @internal */
   public render() {
-    if (this.state.isLoading) {
+    if (this.state.loadStart) {
       return (
         <div className="components-property-grid-loader">
-          <Spinner size={SpinnerSize.Large} />
+          <DelayedSpinner loadStart={this.state.loadStart} />
         </div>
       );
     }
@@ -329,3 +329,33 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     );
   }
 }
+
+interface DelayedSpinnerProps {
+  loadStart?: Date;
+  delay?: number;
+}
+// tslint:disable-next-line: variable-name
+const DelayedSpinner = (props: DelayedSpinnerProps) => {
+  const delay = props.delay || 500;
+  const [loadStart] = React.useState(props.loadStart || new Date());
+
+  const currTime = new Date();
+  const diff = (currTime.getTime() - loadStart.getTime());
+
+  const update = useForceUpdate();
+  React.useEffect(() => {
+    if (diff >= delay)
+      return;
+    const timer = setTimeout(update, diff);
+    return () => clearTimeout(timer);
+  });
+
+  if (diff < delay)
+    return null;
+
+  return (<Spinner size={SpinnerSize.Large} />);
+};
+const useForceUpdate = () => {
+  const [value, set] = React.useState(true);
+  return () => set(!value);
+};

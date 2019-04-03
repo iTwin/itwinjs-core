@@ -17,7 +17,6 @@ $text-font-color: $buic-text-color;
   }
 
   .components-property-record-value {
-    min-height: 20px;
     font-size: $text-font-size;
     color: $text-font-color;
   }
@@ -30,8 +29,8 @@ $text-font-color: $buic-text-color;
     color: $text-font-color;
     margin-top: 0px;
     margin-bottom: 0px;
-    padding-top: 6px;
-    padding-bottom: 0px;
+    padding-top: 4px;
+    padding-bottom: 4px;
   }
 
   .components-property-record-value {
@@ -42,13 +41,15 @@ $text-font-color: $buic-text-color;
     margin-bottom: 0px;
 
     padding-top: 0px;
-    padding-bottom: 4px;
+    padding-bottom: 3px;
   }
 }
 
 @mixin record-cell {
-  display: flex;
+  display: block;
   align-items: center;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .components-property-record-label {
@@ -57,6 +58,9 @@ $text-font-color: $buic-text-color;
 
 .components-property-record-value {
   @include record-cell;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 
   .core-underlined-button {
     // Offset by 2px, because value is centered vertically

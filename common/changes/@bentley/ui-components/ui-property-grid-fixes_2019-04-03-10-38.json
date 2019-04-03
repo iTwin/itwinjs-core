@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Property Grid: Show loading spinner only after half a second delay",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.p@gmail.com"
+}
