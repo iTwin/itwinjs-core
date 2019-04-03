@@ -201,6 +201,13 @@ export class DisplayStyle2dState extends DisplayStyleState {
   }
 }
 
+/** ###TODO: Generalize this into something like a PromiseOrValue<T> type which can contain
+ * either a Promise<T> or a resolved T.
+ * This is used to avoid flickering when loading skybox - don't want to load asynchronously unless we have to.
+ * @internal
+ */
+export type SkyBoxParams = Promise<SkyBox.CreateParams | undefined> | SkyBox.CreateParams | undefined;
+
 /** The SkyBox is part of an [[Environment]] drawn in the background of spatial views to provide context.
  * Several types of skybox are supported:
  *  - A cube with a texture image mapped to each face;
@@ -242,7 +249,7 @@ export abstract class SkyBox implements SkyBoxProps {
   }
 
   /** @internal */
-  public abstract async loadParams(_system: RenderSystem, _iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined>;
+  public abstract loadParams(_system: RenderSystem, _iModel: IModelConnection): SkyBoxParams;
 }
 
 /** The SkyBox is part of an [[Environment]] drawn in the background of spatial views to provide context.
@@ -332,8 +339,8 @@ export class SkyGradient extends SkyBox {
   }
 
   /** @internal */
-  public async loadParams(_system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams> {
-    return Promise.resolve(SkyBox.CreateParams.createForGradient(this, iModel.globalOrigin.z));
+  public loadParams(_system: RenderSystem, iModel: IModelConnection): SkyBoxParams {
+    return SkyBox.CreateParams.createForGradient(this, iModel.globalOrigin.z);
   }
 }
 
@@ -369,13 +376,14 @@ export class SkySphere extends SkyBox {
   }
 
   /** @internal */
-  public async loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
-    const texture = await system.loadTexture(this.textureId, iModel);
-    if (undefined === texture)
-      return undefined;
-
+  public loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams {
     const rotation = 0.0; // ###TODO: from where do we obtain rotation?
-    return SkyBox.CreateParams.createForSphere(new SkyBox.SphereParams(texture, rotation), iModel.globalOrigin.z);
+    const createParams = (tex?: RenderTexture) => undefined !== tex ? SkyBox.CreateParams.createForSphere(new SkyBox.SphereParams(tex, rotation), iModel.globalOrigin.z) : undefined;
+    const texture = system.findTexture(this.textureId, iModel);
+    if (undefined !== texture)
+      return createParams(texture);
+    else
+      return system.loadTexture(this.textureId, iModel).then((tex) => createParams(tex));
   }
 }
 
@@ -456,16 +464,14 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
   }
 
   /** @internal */
-  public async loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
+  public loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams {
     // ###TODO: We never cache the actual texture *images* used here to create a single cubemap texture...
     const textureIds = new Set<string>([this.front, this.back, this.top, this.bottom, this.right, this.left]);
     const promises = new Array<Promise<TextureImage | undefined>>();
     for (const textureId of textureIds)
       promises.push(system.loadTextureImage(textureId, iModel));
 
-    try {
-      const images = await Promise.all(promises);
-
+    return Promise.all(promises).then((images) => {
       // ###TODO there's gotta be a simpler way to map the unique images back to their texture Ids...
       const idToImage = new Map<string, HTMLImageElement>();
       let index = 0;
@@ -485,9 +491,9 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
 
       const texture = system.createTextureFromCubeImages(textureImages[0], textureImages[1], textureImages[2], textureImages[3], textureImages[4], textureImages[5], iModel, params);
       return undefined !== texture ? SkyBox.CreateParams.createForCube(texture) : undefined;
-    } catch (_err) {
+    }).catch((_err) => {
       return undefined;
-    }
+    });
   }
 }
 
@@ -529,6 +535,17 @@ export class DisplayStyle3dState extends DisplayStyleState {
   private _environment?: Environment;
   private _settings: DisplayStyle3dSettings;
 
+  /** @internal */
+  public clone(iModel: IModelConnection): this {
+    const clone = super.clone(iModel);
+    if (undefined === iModel || this.iModel === iModel) {
+      clone._skyBoxParams = this._skyBoxParams;
+      clone._skyBoxParamsLoaded = this._skyBoxParamsLoaded;
+    }
+
+    return clone;
+  }
+
   public get settings(): DisplayStyle3dSettings { return this._settings; }
 
   public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
@@ -555,22 +572,25 @@ export class DisplayStyle3dState extends DisplayStyleState {
     }
   }
 
+  private onLoadSkyBoxParams(params?: SkyBox.CreateParams, vp?: Viewport): void {
+    this._skyBoxParams = params;
+    this._skyBoxParamsLoaded = true;
+    if (undefined !== vp)
+      vp.invalidateDecorations();
+  }
+
   /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise.
    * @internal
    */
   public loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined {
     if (undefined === this._skyBoxParamsLoaded) {
-      this._skyBoxParamsLoaded = false;
-      const skybox = this.environment.sky;
-      skybox.loadParams(system, this.iModel).then((params?: SkyBox.CreateParams) => {
-        this._skyBoxParams = params;
-        this._skyBoxParamsLoaded = true;
-        if (undefined !== vp)
-          vp.invalidateDecorations();
-      }).catch((_err) => {
-        this._skyBoxParamsLoaded = true;
-        this._skyBoxParams = undefined;
-      });
+      const params = this.environment.sky.loadParams(system, this.iModel);
+      if (undefined === params || params instanceof SkyBox.CreateParams) {
+        this.onLoadSkyBoxParams(params, vp);
+      } else {
+        this._skyBoxParamsLoaded = false; // indicates we're currently loading them.
+        params.then((result?: SkyBox.CreateParams) => this.onLoadSkyBoxParams(result, vp)).catch((_err) => this.onLoadSkyBoxParams(undefined));
+      }
     }
 
     return this._skyBoxParams;

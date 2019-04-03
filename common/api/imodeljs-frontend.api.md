@@ -1616,6 +1616,8 @@ export class DisplayStyle2dState extends DisplayStyleState {
 // @public
 export class DisplayStyle3dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
+    // @internal (undocumented)
+    clone(iModel: IModelConnection): this;
     environment: Environment;
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
@@ -4956,7 +4958,7 @@ export abstract class SkyBox implements SkyBoxProps {
     static createFromJSON(json?: SkyBoxProps): SkyBox;
     display: boolean;
     // @internal (undocumented)
-    abstract loadParams(_system: RenderSystem, _iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined>;
+    abstract loadParams(_system: RenderSystem, _iModel: IModelConnection): SkyBoxParams;
     // (undocumented)
     toJSON(): SkyBoxProps;
 }
@@ -4990,6 +4992,9 @@ export namespace SkyBox {
     }
 }
 
+// @internal
+export type SkyBoxParams = Promise<SkyBox.CreateParams | undefined> | SkyBox.CreateParams | undefined;
+
 // @public
 export class SkyCube extends SkyBox implements SkyCubeProps {
     readonly back: Id64String;
@@ -5000,7 +5005,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
     readonly front: Id64String;
     readonly left: Id64String;
     // @internal (undocumented)
-    loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined>;
+    loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams;
     readonly right: Id64String;
     // (undocumented)
     toJSON(): SkyBoxProps;
@@ -5013,7 +5018,7 @@ export class SkyGradient extends SkyBox {
     readonly groundColor: ColorDef;
     readonly groundExponent: number;
     // @internal (undocumented)
-    loadParams(_system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams>;
+    loadParams(_system: RenderSystem, iModel: IModelConnection): SkyBoxParams;
     readonly nadirColor: ColorDef;
     readonly skyColor: ColorDef;
     readonly skyExponent: number;
@@ -5027,7 +5032,7 @@ export class SkyGradient extends SkyBox {
 export class SkySphere extends SkyBox {
     static fromJSON(json: SkyBoxProps): SkySphere | undefined;
     // @internal (undocumented)
-    loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined>;
+    loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams;
     textureId: Id64String;
     // (undocumented)
     toJSON(): SkyBoxProps;
