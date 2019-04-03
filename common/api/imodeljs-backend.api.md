@@ -665,20 +665,32 @@ export namespace ConcurrencyControl {
     }
 }
 
-// @public (undocumented)
+// @public
 export interface CrashReportingConfig {
     // (undocumented)
     crashDumpDir: string; /** The directory to which .dmp files are written. */
     // (undocumented)
     maxDumpsInDir?: number; /** The directory to which .dmp files are written. */
     // (undocumented)
+    maxReportsPerDay?: number; /** The directory to which .dmp files are written. */
+    // (undocumented)
     maxUploadRetries?: number; /** The directory to which .dmp files are written. */
+    // (undocumented)
+    params?: CrashReportingConfigNameValuePair[]; /** The directory to which .dmp files are written. */
     // (undocumented)
     uploadRetryWaitInterval?: number; /** The directory to which .dmp files are written. */
     // (undocumented)
     uploadUrl?: string; /** The directory to which .dmp files are written. */
     // (undocumented)
-    wantFullMemory?: boolean; /** Want a full-memory dump? Defaults to false. */
+    wantFullMemory?: boolean; /** custom parameters to send to the crash server. Put your product name and GPRID in here. If you are using a commercial crash server, this is the place to put your API key. */
+}
+
+// @public (undocumented)
+export interface CrashReportingConfigNameValuePair {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    value: string;
 }
 
 // @public
@@ -1717,6 +1729,8 @@ export class IModelJsFsStats {
 
 // @internal
 export namespace IModelJsNative {
+    // (undocumented)
+    export function addReferenceToObjectInVault(id: string): void;
     export interface BriefcaseManagerOnConflictPolicy {
         deleteVsUpdate: number;
         updateVsDelete: number;
@@ -1967,6 +1981,8 @@ export namespace IModelJsNative {
         dispose(): void;
     }
     // (undocumented)
+    export function dropObjectFromVault(id: string): void;
+    // (undocumented)
     export class ECDb implements IDisposable {
         constructor();
         // (undocumented)
@@ -2020,16 +2036,6 @@ export namespace IModelJsNative {
         Success = 0
     }
     // (undocumented)
-    export class ECSchemaXmlContext {
-        constructor();
-        // (undocumented)
-        addSchemaPath(path: string): void;
-        // (undocumented)
-        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
-        // (undocumented)
-        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
-    }
-    // (undocumented)
     export namespace ECSchemaXmlContext {
         // (undocumented)
         export interface SchemaKey {
@@ -2057,6 +2063,16 @@ export namespace IModelJsNative {
             // (undocumented)
             LatestWriteCompatible = 2
         }
+    }
+    // (undocumented)
+    export class ECSchemaXmlContext {
+        constructor();
+        // (undocumented)
+        addSchemaPath(path: string): void;
+        // (undocumented)
+        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
+        // (undocumented)
+        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
     }
     // (undocumented)
     export class ECSqlBinder {
@@ -2214,6 +2230,10 @@ export namespace IModelJsNative {
         result?: ResultType;
     }
     // (undocumented)
+    export function getObjectFromVault(id: string): any;
+    // (undocumented)
+    export function getObjectRefCountFromVault(id: string): number;
+    // (undocumented)
     export class ImportContext implements IDisposable {
         constructor(sourceDb: DgnDb, targetDb: DgnDb);
         // (undocumented)
@@ -2256,13 +2276,24 @@ export namespace IModelJsNative {
         // (undocumented)
         maxDumpsInDir?: number; /** The directory to which .dmp files are written. */
         // (undocumented)
+        maxReportsPerDay?: number; /** The directory to which .dmp files are written. */
+        // (undocumented)
         maxUploadRetries?: number; /** The directory to which .dmp files are written. */
+        // (undocumented)
+        params?: NativeCrashReportingConfigNameValuePair[]; /** The directory to which .dmp files are written. */
         // (undocumented)
         uploadRetryWaitInterval?: number; /** The directory to which .dmp files are written. */
         // (undocumented)
         uploadUrl?: string; /** The directory to which .dmp files are written. */
         // (undocumented)
-        wantFullMemory?: boolean; /** Want a full-memory dump? Defaults to false. */
+        wantFullMemory?: boolean;
+    }
+    // (undocumented)
+    export interface NativeCrashReportingConfigNameValuePair {
+        // (undocumented)
+        name: string;
+        // (undocumented)
+        value: string;
     }
     export class NativeDevTools {
         // (undocumented)
@@ -2332,6 +2363,8 @@ export namespace IModelJsNative {
         // (undocumented)
         stepAsync(callback: (result: DbResult) => void): void;
     }
+    // (undocumented)
+    export function storeObjectInVault(obj: any, id: string): void;
     // (undocumented)
     export type TxnIdString = string;
 }

@@ -5,6 +5,12 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to node process",
+      "processId": "${command:PickProcess}"
+    },
+    {
       "name": "Frontend Tests",
       "type": "chrome",
       "request": "attach",
@@ -61,6 +67,17 @@
         "--debug",
         "--offline"
       ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "CrashCollectionServer",
+      "program": "${workspaceFolder}/core/backend/lib/test/standalone/CrashCollectionServer.js",
+      "cwd": "${workspaceFolder}/core/backend",
+      "args": [],
       "port": 9229,
       "protocol": "inspector",
       "outputCapture": "std"

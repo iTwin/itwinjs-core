@@ -29,13 +29,21 @@ import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 
 const loggerCategory: string = LoggerCategory.IModelHost;
 
+export interface CrashReportingConfigNameValuePair {
+  name: string;
+  value: string;
+}
+
+/** Configuration of the crash-reporting system. */
 export interface CrashReportingConfig {
   crashDumpDir: string; /** The directory to which .dmp files are written. */
-  uploadUrl?: string; /** The webserver to which .dmp are uploaded. If not specified, dumps are not uploaded. */
-  maxDumpsInDir?: number; /** max # .dmp files that may exist in crashDumpDir */
-  maxUploadRetries?: number; /** max # times to retry uploading .dmp file to server. Defaults to 0. */
-  uploadRetryWaitInterval?: number; /** Amount of time in milliseconds to wait before retrying uploading .dmp file to server. Defaults to 1000. */
+  uploadUrl?: string; /** The webserver to which .dmp files are uploaded. If not specified, dumps are left in crashDumpDir. */
+  maxDumpsInDir?: number; /** max # .dmp files that may exist in crashDumpDir. Defaults to 50. */
+  maxReportsPerDay?: number; /** max # crashes that will be uploaded to the server per day. Defaults to 1000. */
+  maxUploadRetries?: number; /** max # times to retry uploading .dmp file to server. Defaults to 5. */
+  uploadRetryWaitInterval?: number; /** Amount of time in milliseconds to wait before retrying uploading .dmp file to server. Defaults to 10000. */
   wantFullMemory?: boolean; /** Want a full-memory dump? Defaults to false. */
+  params?: CrashReportingConfigNameValuePair[]; /** custom parameters to send to the crash server. Put your product name and GPRID in here. If you are using a commercial crash server, this is the place to put your API key. */
 }
 
 /** Configuration of imodeljs-backend.
@@ -219,6 +227,10 @@ export class IModelHost {
     // if (!configuration.crashReportingConfig) {
     //   configuration.crashReportingConfig = {
     //     crashDumpDir: path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/CrashDumps/")),
+    //     uploadUrl: "http://localhost:3000/crashreports",
+    //     params: [{ name: "foo", value: "bar" }],
+    //     maxDumpsInDir: 10,
+    //     maxReportsPerDay: 2,
     //   };
     // }
 

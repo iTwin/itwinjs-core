@@ -58,6 +58,7 @@
     "@bentley/imodeljs-clients-backend": "0.191.0-dev.30",
     "@bentley/imodeljs-common": "0.191.0-dev.30",
     "@types/chai": "^4.1.4",
+    "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/js-base64": "^2.3.1",
@@ -69,6 +70,7 @@
     "@types/lru-cache": "^5.1.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
+    "formidable": "^1.2.1",
     "mocha": "^5.2.0",
     "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
@@ -82,7 +84,7 @@
     "asn1": "0.2.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "~0.113.0",
+    "@bentley/imodeljs-native": "~0.114.2",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",
