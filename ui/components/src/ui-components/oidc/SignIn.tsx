@@ -35,7 +35,7 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
   private _offlineButton = UiComponents.i18n.translate("UiComponents:signIn.offlineButton");
 
   constructor(props: SignInProps) {
-    super(props, context);
+    super(props);
 
     this.state = { isSigningIn: false };
   }
