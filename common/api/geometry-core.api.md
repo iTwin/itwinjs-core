@@ -7,23 +7,15 @@
 // @public
 export abstract class AbstractNewtonIterator {
     protected constructor(stepSizeTolerance?: number, successiveConvergenceTarget?: number, maxIterations?: number);
-    // (undocumented)
     abstract applyCurrentStep(isFinalStep: boolean): boolean;
     abstract computeStep(): boolean;
     abstract currentStepSize(): number;
-    // (undocumented)
     protected _maxIterations: number;
-    // (undocumented)
     protected _numAccepted: number;
-    // (undocumented)
     numIterations: number;
-    // (undocumented)
     runIterations(): boolean;
-    // (undocumented)
     protected _stepSizeTolerance: number;
-    // (undocumented)
     protected _successiveConvergenceTarget: number;
-    // (undocumented)
     testConvergence(delta: number): boolean;
 }
 
@@ -146,7 +138,6 @@ export class AngleSweep implements BeJSONFunctions {
     fractionToAngle(fraction: number): Angle;
     fractionToRadians(fraction: number): number;
     static fromJSON(json?: AngleSweepProps): AngleSweep;
-    // (undocumented)
     interpolate(fraction: number, other: AngleSweep): AngleSweep;
     isAlmostEqual(other: AngleSweep): boolean;
     isAlmostEqualAllowPeriodShift(other: AngleSweep): boolean;
@@ -157,9 +148,7 @@ export class AngleSweep implements BeJSONFunctions {
     readonly isFullLatitudeSweep: boolean;
     isRadiansInSweep(radians: number): boolean;
     radiansArraytoPositivePeriodicFractions(data: GrowableFloat64Array): void;
-    // (undocumented)
     radiansToPositivePeriodicFraction(radians: number): number;
-    // (undocumented)
     radiansToSignedPeriodicFraction(radians: number): number;
     reverseInPlace(): void;
     setFrom(other: AngleSweep): void;
@@ -192,10 +181,10 @@ export class AnnotatedLineString3d {
     vecturU?: GrowableXYZArray;
 }
 
-// @public (undocumented)
+// @public
 export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
 
-// @public (undocumented)
+// @public
 export type AnnounceNumberNumber = (a0: number, a1: number) => void;
 
 // @public
@@ -209,89 +198,57 @@ export type AnyRegion = Loop | ParityRegion | UnionRegion;
 
 // @public
 export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
-    // (undocumented)
     allPerpendicularAngles(spacePoint: Point3d, _extend?: boolean, _endpoints?: boolean): number[];
-    // (undocumented)
     angleToPointAndDerivative(theta: Angle, result?: Ray3d): Ray3d;
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
-    // (undocumented)
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     readonly center: Point3d;
     circularRadius(): number | undefined;
-    // (undocumented)
     clone(): Arc3d;
     clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined;
-    // (undocumented)
     cloneTransformed(transform: Transform): CurvePrimitive;
-    // (undocumented)
     closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
-    // (undocumented)
     static create(center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d;
     static createCircularStartMiddleEnd(pointA: XYAndZ, pointB: XYAndZ, pointC: XYAndZ, result?: Arc3d): Arc3d | LineString3d | undefined;
-    // (undocumented)
     static createRefs(center: Point3d, matrix: Matrix3d, sweep: AngleSweep, result?: Arc3d): Arc3d;
-    // (undocumented)
     static createScaledXYColumns(center: Point3d, matrix: Matrix3d, radius0: number, radius90: number, sweep: AngleSweep, result?: Arc3d): Arc3d;
-    // (undocumented)
     static createUnitCircle(): Arc3d;
-    // (undocumented)
     static createXY(center: Point3d, radius: number, sweep?: AngleSweep): Arc3d;
-    // (undocumented)
     static createXYEllipse(center: Point3d, radiusA: number, radiusB: number, sweep?: AngleSweep): Arc3d;
     curveLength(): number;
     curveLengthBetweenFractions(fraction0: number, fraction1: number): number;
-    // (undocumented)
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
     emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
-    // (undocumented)
     endPoint(result?: Point3d): Point3d;
-    // (undocumented)
     extendRange(range: Range3d, transform?: Transform): void;
-    // (undocumented)
     fractionToPoint(fraction: number, result?: Point3d): Point3d;
     fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
-    // (undocumented)
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     getFractionToDistanceScale(): number | undefined;
-    // (undocumented)
     isAlmostEqual(otherGeometry: GeometryQuery): boolean;
-    // (undocumented)
     readonly isCircular: boolean;
     readonly isExtensibleFractionSpace: boolean;
-    // (undocumented)
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
-    // (undocumented)
     isSameGeometryClass(other: GeometryQuery): boolean;
     readonly matrix: Matrix3d;
     maxVectorLength(): number;
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: false, result?: CurveLocationDetail): CurveLocationDetail;
-    // (undocumented)
     static readonly quadratureGuassCount = 5;
     static readonly quadratureIntervalAngleDegrees = 10;
     quickEccentricity(): number;
     quickLength(): number;
-    // (undocumented)
     radiansToPointAndDerivative(radians: number, result?: Ray3d): Ray3d;
-    // (undocumented)
     reverseInPlace(): void;
-    // (undocumented)
     set(center: Point3d, matrix: Matrix3d, sweep: AngleSweep | undefined): void;
-    // (undocumented)
     setFrom(other: Arc3d): void;
-    // (undocumented)
     setFromJSON(json?: any): void;
-    // (undocumented)
     setRefs(center: Point3d, matrix: Matrix3d, sweep: AngleSweep): void;
-    // (undocumented)
     setVector0Vector90(vector0: Vector3d, vector90: Vector3d): void;
-    // (undocumented)
     startPoint(result?: Point3d): Point3d;
-    // (undocumented)
     sweep: AngleSweep;
     toJSON(): any;
-    // (undocumented)
     toScaledMatrix3d(): {
         center: Point3d;
         axes: Matrix3d;
@@ -317,7 +274,6 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         vector90: Vector3d;
         sweep: AngleSweep;
     };
-    // (undocumented)
     tryTransformInPlace(transform: Transform): boolean;
     readonly vector0: Vector3d;
     readonly vector90: Vector3d;
@@ -1661,14 +1617,12 @@ export abstract class CurvePrimitive extends GeometryQuery {
     curveLengthWithFixedIntervalCountQuadrature(fraction0: number, fraction1: number, numInterval: number, numGauss?: number): number;
     abstract emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void;
     abstract emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
-    // (undocumented)
     endPoint(result?: Point3d): Point3d;
     fractionAndDistanceToPointOnTangent(fraction: number, distance: number): Point3d;
     fractionToFrenetFrame(fraction: number, result?: Transform): Transform | undefined;
     abstract fractionToPoint(fraction: number, result?: Point3d): Point3d;
     abstract fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
     abstract fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
-    // (undocumented)
     fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d;
     getFractionToDistanceScale(): number | undefined;
     static installStrokeCountMap(curve: CurvePrimitive, curveMap: StrokeCountMap, parentMap?: StrokeCountMap): void;
@@ -3396,33 +3350,25 @@ export class MomentData {
     sums: Matrix4d;
 }
 
-// @public (undocumented)
+// @public
 export class Newton1dUnbounded extends AbstractNewtonIterator {
     constructor(func: NewtonEvaluatorRtoRD);
-    // (undocumented)
     applyCurrentStep(): boolean;
     computeStep(): boolean;
-    // (undocumented)
     currentStepSize(): number;
-    // (undocumented)
     getX(): number;
-    // (undocumented)
     setTarget(y: number): void;
-    // (undocumented)
     setX(x: number): boolean;
     }
 
 // @public
 export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterator {
     constructor(func: NewtonEvaluatorRtoR);
-    // (undocumented)
     applyCurrentStep(): boolean;
     computeStep(): boolean;
-    // (undocumented)
     currentStepSize(): number;
     // (undocumented)
     derivativeH: number;
-    // (undocumented)
     getX(): number;
     // (undocumented)
     setX(x: number): boolean;
@@ -3453,19 +3399,14 @@ export abstract class NewtonEvaluatorRRtoRRD {
 
 // @public
 export abstract class NewtonEvaluatorRtoR {
-    // (undocumented)
     currentF: number;
-    // (undocumented)
     abstract evaluate(x: number): boolean;
 }
 
 // @public
 export abstract class NewtonEvaluatorRtoRD {
-    // (undocumented)
     currentdFdX: number;
-    // (undocumented)
     currentF: number;
-    // (undocumented)
     abstract evaluate(x: number): boolean;
 }
 
