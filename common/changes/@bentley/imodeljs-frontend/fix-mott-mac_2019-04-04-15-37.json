@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix scenario in which lower-resolution tiles would be inappropriately substituted for tiles of appropriate resolution.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

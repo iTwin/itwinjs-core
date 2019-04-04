@@ -429,18 +429,20 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         selected.length = initialSize;
     }
 
-    if (this.hasGraphics) {
-      if (!canSkipThisTile) {
-        // This tile is too coarse, but we require loading it before we can start loading higher-res children.
-        ++args.context.viewport.numReadyTiles;
+    if (this.isReady) {
+      if (this.hasGraphics) {
+        selected.push(this);
+        if (!canSkipThisTile) {
+          // This tile is too coarse, but we require loading it before we can start loading higher-res children.
+          ++args.context.viewport.numReadyTiles;
+        }
       }
 
-      selected.push(this);
       return Tile.SelectParent.No;
     }
 
     // This tile is not ready to be drawn. Request it *only* if we cannot skip it.
-    if (!this.isReady && !canSkipThisTile)
+    if (!canSkipThisTile)
       args.insertMissing(this);
 
     return this.isParentDisplayable ? Tile.SelectParent.Yes : Tile.SelectParent.No;
