@@ -7,7 +7,7 @@
 import * as React from "react";
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
-import { KeySet, isInstanceNodeKey, Ruleset, InstanceKey, RegisteredRuleset, Descriptor, ContentFlags } from "@bentley/presentation-common";
+import { KeySet, isInstanceNodeKey, Ruleset, InstanceKey, RegisteredRuleset, ContentFlags, DescriptorOverrides } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { IPresentationTreeDataProvider, PresentationTreeDataProvider, treeWithUnifiedSelection, ContentDataProvider } from "@bentley/presentation-components";
 import {
@@ -98,6 +98,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
       }
       if (this.props.activeView)
         this._visibilityHandler = new VisibilityHandler(this.props.activeView, this.onVisibilityChange);
+      this.setState({ checkboxInfo: this.createCheckBoxInfoCallback() });
     }
   }
 
@@ -330,13 +331,16 @@ export class VisibilityHandler implements IDisposable {
   private async changeElementState(id: Id64String, on: boolean) {
     const currNeverDrawn = new Set(this._vp.neverDrawn ? this._vp.neverDrawn : []);
     const currAlwaysDrawn = new Set(this._vp.alwaysDrawn ? this._vp.alwaysDrawn : []);
-    if (on) {
-      currNeverDrawn.delete(id);
-      currAlwaysDrawn.add(id);
-    } else {
-      currAlwaysDrawn.delete(id);
-      currNeverDrawn.add(id);
-    }
+    const elementIds = [id, ...await this.getAssemblyElementIds(id)];
+    elementIds.forEach((elementId) => {
+      if (on) {
+        currNeverDrawn.delete(elementId);
+        currAlwaysDrawn.add(elementId);
+      } else {
+        currAlwaysDrawn.delete(elementId);
+        currNeverDrawn.add(elementId);
+      }
+    });
     this._vp.setNeverDrawn(currNeverDrawn);
     this._vp.setAlwaysDrawn(currAlwaysDrawn);
   }
@@ -377,22 +381,47 @@ export class VisibilityHandler implements IDisposable {
     }
     return this._subjectModelIdsCache.get(subjectId)!;
   }
+
+  private async getAssemblyElementIds(assemblyId: Id64String): Promise<Id64String[]> {
+    const provider = new AssemblyElementIdsProvider(this._vp.iModel, assemblyId);
+    return provider.getElementIds();
+  }
 }
 
-class SubjectModelIdsProvider extends ContentDataProvider {
-  constructor(imodel: IModelConnection, subjectId: Id64String) {
-    super(imodel, RULESET.id, "SubjectModelsRequest");
-    this.keys = new KeySet([{ className: "BisCore:Subject", id: subjectId }]);
+class RulesetDrivenRecursiveIdsProvider extends ContentDataProvider {
+  constructor(imodel: IModelConnection, displayType: string, parentKey: InstanceKey) {
+    super(imodel, RULESET.id, displayType);
+    this.keys = new KeySet([parentKey]);
   }
-  protected configureContentDescriptor(defaultDescriptor: Readonly<Descriptor>): Descriptor {
-    const descriptor = Object.create(Descriptor.prototype);
-    return Object.assign(descriptor, defaultDescriptor, Descriptor, {
-      contentFlags: defaultDescriptor.contentFlags | ContentFlags.KeysOnly,
-    });
+  protected shouldConfigureContentDescriptor() { return false; }
+  protected getDescriptorOverrides(): DescriptorOverrides {
+    return {
+      displayType: this.displayType,
+      contentFlags: ContentFlags.KeysOnly,
+      hiddenFieldNames: [],
+    };
   }
-  public async getModelIds() {
+  protected async getChildrenIds() {
     const content = await this.getContent();
     return content ? content.contentSet.map((item) => item.primaryKeys[0].id) : [];
+  }
+}
+
+class SubjectModelIdsProvider extends RulesetDrivenRecursiveIdsProvider {
+  constructor(imodel: IModelConnection, subjectId: Id64String) {
+    super(imodel, "SubjectModelsRequest", { className: "BisCore:Subject", id: subjectId });
+  }
+  public async getModelIds() {
+    return this.getChildrenIds();
+  }
+}
+
+class AssemblyElementIdsProvider extends RulesetDrivenRecursiveIdsProvider {
+  constructor(imodel: IModelConnection, assemblyId: Id64String) {
+    super(imodel, "AssemblyElementsRequest", { className: "BisCore:Element", id: assemblyId });
+  }
+  public async getElementIds() {
+    return this.getChildrenIds();
   }
 }
 

@@ -60,7 +60,7 @@ exports[`VisibilityTree #integration renders component with real data and no act
                     class="core-tree-node-icon"
                   >
                     <span
-                      class="bui-webfont-icon icon-archived"
+                      class="bui-webfont-icon icon-table-of-contents"
                     />
                   </div>
                   <div
@@ -104,280 +104,266 @@ Array [
           Object {
             "children": Array [
               Object {
-                "children": Array [
-                  Object {
-                    "children": Array [
-                      Object {
-                        "icon": "icon-image",
-                        "label": "Physical Object-0-38",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "Physical Object-0-39",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                      Object {
-                        "icon": "icon-image",
-                        "label": "TestClass",
-                      },
-                    ],
-                    "hasChildren": true,
-                    "icon": "icon-layers",
-                    "label": "Uncategorized",
-                  },
-                ],
-                "hasChildren": true,
-                "icon": "icon-3d",
-                "label": "Properties_60InstancesWithUrl2",
+                "icon": "icon-item",
+                "label": "Physical Object-0-38",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "Physical Object-0-39",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
+              },
+              Object {
+                "icon": "icon-item",
+                "label": "TestClass",
               },
             ],
             "hasChildren": true,
-            "icon": "icon-archived",
-            "label": "Properties_60InstancesWithUrl2",
+            "icon": "icon-layers",
+            "label": "Uncategorized",
           },
         ],
         "hasChildren": true,
-        "icon": "icon-archived",
-        "label": "DgnV8Bridge:D:\\\\Temp\\\\Properties_60InstancesWithUrl2.dgn, Default",
+        "icon": "icon-model",
+        "label": "Properties_60InstancesWithUrl2",
       },
     ],
     "hasChildren": true,
-    "icon": "icon-archived",
+    "icon": "icon-table-of-contents",
     "label": "DgnV8Bridge",
   },
 ]

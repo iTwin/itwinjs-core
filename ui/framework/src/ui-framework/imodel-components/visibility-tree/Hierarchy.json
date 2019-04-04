@@ -46,6 +46,28 @@
               "Subject"
             ]
           },
+          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR json_extract(this.JsonProperties, \"$.Subject.Model.Type\") = \"Hierarchy\"",
+          "hideNodesInHierarchy": true,
+          "groupByClass": false,
+          "groupByLabel": false
+        },
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "SubjectOwnsSubjects"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Subject"
+            ]
+          },
+          "instanceFilter": "NOT (json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR json_extract(this.JsonProperties, \"$.Subject.Model.Type\") = \"Hierarchy\")",
+          "hideNodesInHierarchy": false,
           "groupByClass": false,
           "groupByLabel": false
         },
@@ -61,7 +83,8 @@
           "relatedClasses": {
             "schemaName": "BisCore",
             "classNames": [
-              "PhysicalPartition"
+              "PhysicalPartition",
+              "SpatialLocationPartition"
             ]
           },
           "hideNodesInHierarchy": true,
@@ -72,7 +95,7 @@
     },
     {
       "ruleType": "ChildNodes",
-      "condition": "ParentNode.IsOfClass(\"PhysicalPartition\", \"BisCore\")",
+      "condition": "ParentNode.IsOfClass(\"InformationPartitionElement\", \"BisCore\")",
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
@@ -89,6 +112,28 @@
               "GeometricModel3d"
             ]
           },
+          "instanceFilter": "json_extract(parent.JsonProperties, \"$.PhysicalPartition.Model.Content\") <> NULL",
+          "hideNodesInHierarchy": true,
+          "groupByClass": false,
+          "groupByLabel": false
+        },
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ModelModelsElement"
+            ]
+          },
+          "requiredDirection": "Backward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "GeometricModel3d"
+            ]
+          },
+          "instanceFilter": "json_extract(parent.JsonProperties, \"$.PhysicalPartition.Model.Content\") = NULL",
+          "hideNodesInHierarchy": false,
           "groupByClass": false,
           "groupByLabel": false
         }
@@ -171,12 +216,12 @@
     {
       "ruleType": "ImageIdOverride",
       "condition": "ThisNode.IsOfClass(\"Subject\", \"BisCore\")",
-      "imageIdExpression": "\"icon-archived\""
+      "imageIdExpression": "\"icon-table-of-contents\""
     },
     {
       "ruleType": "ImageIdOverride",
       "condition": "ThisNode.IsOfClass(\"Model\", \"BisCore\")",
-      "imageIdExpression": "\"icon-3d\""
+      "imageIdExpression": "\"icon-model\""
     },
     {
       "ruleType": "ImageIdOverride",
@@ -186,7 +231,7 @@
     {
       "ruleType": "ImageIdOverride",
       "condition": "ThisNode.IsOfClass(\"Element\", \"BisCore\")",
-      "imageIdExpression": "\"icon-image\""
+      "imageIdExpression": "\"icon-item\""
     },
     {
       "ruleType": "Content",
@@ -210,6 +255,29 @@
           },
           "isRecursive": true,
           "instanceFilter": "this.IsOfClass(\"PhysicalPartition\", \"BisCore\") ANDALSO this.HasRelatedInstance(\"BisCore:ModelModelsElement\", \"Backward\", \"BisCore:GeometricModel3d\")"
+        }
+      ]
+    },
+    {
+      "ruleType": "Content",
+      "condition": "ContentDisplayType = \"AssemblyElementsRequest\"",
+      "specifications": [
+        {
+          "specType": "ContentRelatedInstances",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementOwnsChildElements"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Element"
+            ]
+          },
+          "isRecursive": true
         }
       ]
     }

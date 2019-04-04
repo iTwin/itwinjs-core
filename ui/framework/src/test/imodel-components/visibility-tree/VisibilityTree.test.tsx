@@ -650,16 +650,24 @@ describe("VisibilityTree", () => {
 
           it("makes element visible by removing from never displayed list and adding to always displayed list", async () => {
             const key = createElementNode().extendedData.key.instanceKey;
+            const assemblyChildrenIds = ["0x1", "0x2"];
 
             const alwaysDisplayed = new Set();
             const neverDisplayed = new Set([key.id]);
             const vpMock = mockViewport();
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
             vpMock.setup((x) => x.neverDrawn).returns(() => neverDisplayed);
-            vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => (set.size === 1 && set.has(key.id))))).verifiable();
+            vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => {
+              return set.size === 3
+                && set.has(key.id)
+                && assemblyChildrenIds.reduce((result, id) => (result && set.has(id)), true);
+            }))).verifiable();
             vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
 
             await using(new VisibilityHandler(vpMock.object, () => { }), async (handler) => {
+              // note: need to override to avoid running a query on the imodel
+              (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
+
               await handler.changeVisibility(key, true);
               vpMock.verifyAll();
             });
@@ -667,6 +675,7 @@ describe("VisibilityTree", () => {
 
           it("makes element hidden by removing from always displayed list and adding to never displayed list", async () => {
             const key = createElementNode().extendedData.key.instanceKey;
+            const assemblyChildrenIds = ["0x1", "0x2"];
 
             const alwaysDisplayed = new Set([key.id]);
             const neverDisplayed = new Set();
@@ -674,9 +683,16 @@ describe("VisibilityTree", () => {
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
             vpMock.setup((x) => x.neverDrawn).returns(() => neverDisplayed);
             vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
-            vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => (set.size === 1 && set.has(key.id))))).verifiable();
+            vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => {
+              return set.size === 3
+                && set.has(key.id)
+                && assemblyChildrenIds.reduce((result, id) => (result && set.has(id)), true);
+            }))).verifiable();
 
             await using(new VisibilityHandler(vpMock.object, () => { }), async (handler) => {
+              // note: need to override to avoid running a query on the imodel
+              (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
+
               await handler.changeVisibility(key, false);
               vpMock.verifyAll();
             });

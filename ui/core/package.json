@@ -112,7 +112,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/icons-generic-webfont": "^0.0.9",
+    "@bentley/icons-generic-webfont": "^0.0.14",
     "classnames": "^2.2.5",
     "react": "^16.4.2",
     "react-dom": "^16.4.2"
