@@ -28,9 +28,14 @@ Object.defineProperty(Base, "useColors", {
 });
 
 class BentleyMochaReporter extends Spec {
-  constructor(...args: any[]) {
-    super(...args);
-    this._junitReporter = new MochaJUnitReporter(...args);
+  constructor(_runner: any, options: any) {
+    super(...arguments);
+    this._junitReporter = new MochaJUnitReporter(...arguments);
+
+    // Force rush test to fail CI builds if describe.only or it.only is used.
+    // These should only be used for debugging and must not be committed, otherwise we may be accidentally skipping lots of tests.
+    if (isCI)
+      options.forbidOnly = true;
   }
 
   public epilogue(...args: any[]) {
@@ -50,15 +55,6 @@ class BentleyMochaReporter extends Spec {
         logBuildWarning(`${this.stats.pending} tests skipped in ${currentPackage}`);
     }
   }
-
-  public run(...args: any[]) {
-    // Force rush test to fail CI builds if describe.only or it.only is used.
-    // These should only be used for debugging and must not be committed, otherwise we may be accidentally skipping lots of tests.
-    if (isCI)
-      this.forbidOnly();
-    super.run(...args);
-  }
-
 }
 
 module.exports = BentleyMochaReporter;

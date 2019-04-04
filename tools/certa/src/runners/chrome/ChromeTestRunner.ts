@@ -36,6 +36,10 @@ export class ChromeTestRunner {
     };
     const webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv);
 
+    // FIXME: Do we really want to always enforce this behavior?
+    if (process.env.CI || process.env.TF_BUILD)
+      (config.mochaOptions as any).forbidOnly = true;
+
     const { failures, coverage } = await runTestsInPuppeteer(config, process.env.CERTA_PORT!);
     webserverProcess.kill();
 

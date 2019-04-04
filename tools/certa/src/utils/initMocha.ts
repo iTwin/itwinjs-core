@@ -40,6 +40,8 @@ if (typeof _CertaConsole !== "undefined") {
     mocha.grep(mochaOpts.grep);
   if (mochaOpts.invert)
     mocha.invert();
+  if (mochaOpts.forbidOnly)
+    mocha.forbidOnly();
 
   // Disable timeouts when debugging.
   if (config.debug)
