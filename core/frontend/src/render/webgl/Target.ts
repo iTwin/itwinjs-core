@@ -173,13 +173,17 @@ export class PerformanceMetrics {
   public endFrame(operationName?: string) {
     const newTimePoint = BeTimePoint.now();
     let sum = 0;
-    this.frameTimings.forEach((value) => {
-      sum += value;
+    let prevGPUTime = 0;
+    this.frameTimings.forEach((value, key) => {
+      if (key === "Finish GPU Queue")
+        prevGPUTime = value;
+      else
+        sum += value;
     });
-    this.frameTimings.set("Total RenderFrame Time", sum);
-    const gpuTime = (newTimePoint.milliseconds - this._lastTimePoint.milliseconds);
-    this.frameTimings.set(operationName ? operationName : "Finish GPU Queue", gpuTime);
-    this.frameTimings.set("Total Time w/ GPU", sum + gpuTime);
+    this.frameTimings.set("Total Render Time", sum);
+    const lastTiming = (newTimePoint.milliseconds - this._lastTimePoint.milliseconds);
+    this.frameTimings.set(operationName ? operationName : "Finish GPU Queue", lastTiming);
+    this.frameTimings.set("Total Time", sum + prevGPUTime + lastTiming);
     this._lastTimePoint = BeTimePoint.now();
   }
 }
@@ -768,12 +772,11 @@ export abstract class Target extends RenderTarget {
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
       this.recordPerformanceMetric("Init Commands");
       this.compositor.drawForReadPixels(this._renderCommands);
-      this.recordPerformanceMetric("Draw Read Pixels");
       this._stack.pop();
 
       this._isReadPixelsInProgress = false;
     } else {
-      this.recordPerformanceMetric("Begin Draw Planar Classifierss");
+      this.recordPerformanceMetric("Begin Draw Planar Classifiers");
       this.drawPlanarClassifiers();
       this.recordPerformanceMetric("Begin Paint");
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
@@ -852,6 +855,8 @@ export abstract class Target extends RenderTarget {
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
+    if (this.performanceMetrics) this.performanceMetrics.startNewFrame();
+
     // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
     // to the pick buffers and others we don't want - such as non-pickable decorations - do.
     // Render to an offscreen buffer so that we don't destroy the current color buffer.
@@ -938,14 +943,26 @@ export abstract class Target extends RenderTarget {
     this._renderCommands.setCheckRange(rectFrust);
     this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
     this._renderCommands.clearCheckRange();
+    this.recordPerformanceMetric("Init Commands");
 
     // Draw the scene
     this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
+
+    if (this.performanceMetrics && this.performanceMetrics.gatherGlFinish) {
+      // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
+      const gl = System.instance.context;
+      const bytes = new Uint8Array(4);
+      System.instance.frameBufferStack.execute(this._fbo!, true, () => {
+        gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
+      });
+      this.recordPerformanceMetric("Finish GPU Queue");
+    }
 
     // Restore the state
     this._stack.pop();
 
     const result = this.compositor.readPixels(rect, selector);
+    if (this.performanceMetrics) this.performanceMetrics.endFrame("Read Pixels");
     this._isReadPixelsInProgress = false;
     return result;
   }

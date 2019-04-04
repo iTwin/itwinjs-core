@@ -34,7 +34,6 @@ export function createFilePath(filePath: string) {
 }
 
 export function createNewCsvFile(filePath: string, fileName: string, data: Map<string, number | string>): boolean {
-  console.log("---Start createNewCsvFile"); // tslint:disable-line
   let fd;
   let file = filePath;
   const lastChar = filePath[filePath.length - 1];
@@ -75,7 +74,8 @@ function addColumn(origFile: string, newName: string, columnsIndex: number): str
         curIndex++;
       }
       if (pos < 0) pos = line.length;
-      newFile += line.slice(0, pos) + (pos !== 0 ? "," : "") + (lineIndex === 0 ? newName : 0) + (line[pos] !== "," ? "," : "") + line.slice(pos) + "\r\n";
+      newFile += line.slice(0, pos) + (pos !== 0 ? "," : "") + (lineIndex === 0 ? newName : (newName === "ReadPixels Selector" ? "" : 0))
+        + (line[pos] !== "," ? "," : "") + line.slice(pos) + "\r\n";
     }
   });
   return newFile;
@@ -133,12 +133,13 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
     let stringData = "";
     columns.forEach((colName, index) => {
       let value = data.get(colName);
-      if (index < 2) {
-        if (value === undefined) value = "";
-      } else {
-        if (value === undefined) value = 0;
+      if (value === undefined) {
+        if (index < 2 || colName === "ReadPixels Selector")
+          value = "";
+        else
+          value = 0;
       }
-      if (colName === "iModel" || colName === "View Flags")
+      if (colName === "iModel" || colName === "View Flags" || colName === "Disabled Ext" || colName === "ReadPixels Selector")
         stringData += "\"" + value + "\",";
       else if (colName !== "" || index !== columns.length - 1)
         stringData += value + ",";

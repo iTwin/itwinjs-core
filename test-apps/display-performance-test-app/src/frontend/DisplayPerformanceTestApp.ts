@@ -3,18 +3,21 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode, StopWatch } from "@bentley/bentleyjs-core";
-import { Config, HubIModel, Project, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { Id64, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { Config, HubIModel, OidcFrontendClientConfiguration, Project } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
-  IModelTileRpcInterface, IModelToken, RpcConfiguration, RpcOperation, RenderMode,
-  ViewDefinitionProps, ViewFlag, MobileRpcConfiguration, MobileRpcManager, SnapshotIModelRpcInterface,
+  IModelTileRpcInterface, IModelToken, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
+  SnapshotIModelRpcInterface, ViewDefinitionProps, ViewFlag,
 } from "@bentley/imodeljs-common";
-import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
+import {
+  AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection,
+  OidcClientWrapper, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, Viewport, ViewRect, ViewState, WebGLExtensionName,
+} from "@bentley/imodeljs-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { WebGLExtensionName, RenderSystem, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, Viewport, ViewState, ScreenViewport, OidcClientWrapper, PerformanceMetrics, Target, FrontendRequestContext, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
-import { IModelApi } from "./IModelApi";
+import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
 import { initializeIModelHub } from "./ConnectEnv";
+import { IModelApi } from "./IModelApi";
 
 let curDisabledExts = new Set<WebGLExtensionName>(); // Keep track of disabled webgl extensions
 
@@ -166,7 +169,7 @@ function getRenderMode(): string {
 }
 
 function getDisabledExts(): string {
-  let extString = "";
+  let extString = curDisabledExts.size > 0 ? " " : "";
   curDisabledExts.forEach((ext) => {
     switch (ext) {
       case "WEBGL_draw_buffers":
@@ -267,7 +270,7 @@ async function waitForTilesToLoad(modelLocation?: string) {
   curTileLoadingTime = timer.current.milliseconds;
 }
 
-function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: DefaultConfigs): Map<string, number | string> {
+function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: DefaultConfigs, pixSelectStr?: string): Map<string, number | string> {
   const rowData = new Map<string, number | string>();
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
@@ -276,26 +279,46 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   rowData.set("Render Mode", getRenderMode());
   rowData.set("View Flags", " " + getViewFlagsString());
   rowData.set("Disabled Ext", getDisabledExts());
+  if (pixSelectStr) rowData.set("ReadPixels Selector", " " + pixSelectStr);
   rowData.set("Tile Loading Time", curTileLoadingTime);
 
   // Calculate average timings
-  for (const colName of finalFrameTimings[0].keys()) {
-    let sum = 0;
-    finalFrameTimings.forEach((timing) => {
-      const data = timing!.get(colName);
-      sum += data ? data : 0;
-    });
-    rowData.set(colName, sum / finalFrameTimings.length);
+  if (pixSelectStr) { // timing read pixels
+    let gpuTime = 0;
+    for (const colName of finalFrameTimings[0].keys()) {
+      let sum = 0;
+      finalFrameTimings.forEach((timing) => {
+        const data = timing!.get(colName);
+        sum += data ? data : 0;
+      });
+      if (colName === "Finish GPU Queue")
+        gpuTime = sum / finalFrameTimings.length;
+      else if (colName === "Read Pixels") {
+        rowData.set("Finish GPU Queue", gpuTime);
+        rowData.set(colName, sum / finalFrameTimings.length);
+      } else
+        rowData.set(colName, sum / finalFrameTimings.length);
+    }
+  } else { // timing render frame
+    for (const colName of finalFrameTimings[0].keys()) {
+      let sum = 0;
+      finalFrameTimings.forEach((timing) => {
+        const data = timing!.get(colName);
+        sum += data ? data : 0;
+      });
+      rowData.set(colName, sum / finalFrameTimings.length);
+    }
   }
-  rowData.set("Effective FPS", (1000.0 / Number(rowData.get("Total Time w/ GPU"))).toFixed(2));
+  rowData.set("Effective FPS", (1000.0 / Number(rowData.get("Total Time"))).toFixed(2));
   return rowData;
 }
 
-function getImageString(configs: DefaultConfigs): string {
+function getImageString(configs: DefaultConfigs, prefix = ""): string {
   let output = configs.outputPath ? configs.outputPath : "";
   const lastChar = output[output.length - 1];
   if (lastChar !== "/" && lastChar !== "\\")
     output += "\\";
+  output += prefix;
   output += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
   output += configs.viewName ? "_" + configs.viewName : "";
   output += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
@@ -446,7 +469,7 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
     canvas.style.height = String(viewSize.height) + "px";
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
-    (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
+    (theViewport!.target as Target).performanceMetrics = undefined;
     await _changeView(state.viewState!);
   }
 }
@@ -587,38 +610,134 @@ async function runTest(testConfig: DefaultConfigs) {
   if (testConfig.testType === "image" || testConfig.testType === "both")
     await savePng(getImageString(testConfig));
 
-  if (testConfig.testType === "timing" || testConfig.testType === "both") {
+  if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels") {
     // Throw away the first n renderFrame times, until it's more consistent
     for (let i = 0; i < 15; ++i) {
       theViewport!.sync.setRedrawPending();
       theViewport!.renderFrame();
     }
 
+    // Turn on performance metrics to start collecting data when we render things
+    (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
+
     // Add a pause so that user can start the GPU Performance Capture program
     // await resolveAfterXMilSeconds(7000);
 
     const finalFrameTimings: Array<Map<string, number>> = [];
-    const timer = new StopWatch(undefined, true);
     const numToRender = 50;
-    for (let i = 0; i < numToRender; ++i) {
-      theViewport!.sync.setRedrawPending();
-      theViewport!.renderFrame();
-      finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
-    }
-    timer.stop();
-    if (wantConsoleOutput) {
-      debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
-      debugPrint("Tile Loading Time: " + curTileLoadingTime);
-      for (const t of finalFrameTimings) {
-        let timingsString = "[";
-        t.forEach((val) => {
-          timingsString += val + ", ";
-        });
-        debugPrint(timingsString + "]");
+    if (testConfig.testType === "readPixels") {
+      const width = testConfig.view!.width;
+      const height = testConfig.view!.height;
+      const viewRect = new ViewRect(0, 0, width, height);
+      const testReadPix = async (pixSelect: Pixel.Selector, pixSelectStr: string) => {
+        for (let i = 0; i < numToRender; ++i) {
+          theViewport!.readPixels(viewRect, pixSelect, (_pixels) => { return; });
+          finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
+          finalFrameTimings[i].delete("Scene Time");
+        }
+        const rowData = getRowData(finalFrameTimings, testConfig, pixSelectStr);
+        await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
+      };
+      // Test each combo of pixel selectors
+      await testReadPix(Pixel.Selector.Feature, "+feature");
+      await testReadPix(Pixel.Selector.GeometryAndDistance, "+geom+dist");
+      await testReadPix(Pixel.Selector.All, "+feature+geom+dist");
+
+      // Create images from the elementID, depth (i.e. distance), and type (i.e. order)
+      if (theViewport && theViewport.canvas) {
+        const ctx = theViewport.canvas.getContext("2d");
+        if (ctx) {
+          ctx.clearRect(0, 0, theViewport.canvas.width, theViewport.canvas.height);
+          const elemIdImgData = ctx.createImageData(width, height);
+          const depthImgData = ctx.createImageData(width, height);
+          const typeImgData = ctx.createImageData(width, height);
+
+          theViewport.readPixels(viewRect, Pixel.Selector.All, (pixels) => {
+            if (undefined === pixels)
+              return;
+            for (let y = viewRect.top; y < viewRect.bottom; ++y) {
+              for (let x = viewRect.left; x < viewRect.right; ++x) {
+                const index = (x * 4) + (y * 4 * viewRect.right);
+                const pixel = pixels.getPixel(x, y);
+                // // RGB for element ID
+                const elemId = Id64.getLowerUint32(pixel.elementId ? pixel.elementId : "");
+                elemIdImgData.data[index + 0] = elemId % 256;
+                elemIdImgData.data[index + 1] = (Math.floor(elemId / 256)) % 256;
+                elemIdImgData.data[index + 2] = (Math.floor(elemId / (256 ^ 2))) % 256;
+                // RGB for Depth
+                const distColor = pixels.getPixel(x, y).distanceFraction * 255;
+                const type = pixels.getPixel(x, y).type;
+                depthImgData.data[index + 0] = depthImgData.data[index + 1] = depthImgData.data[index + 2] = distColor;
+                // RGB for type
+                switch (type) {
+                  case Pixel.GeometryType.None: // White
+                    typeImgData.data[index + 0] = 255;
+                    typeImgData.data[index + 1] = 255;
+                    typeImgData.data[index + 2] = 255;
+                    break;
+                  case Pixel.GeometryType.Surface: // Red
+                    typeImgData.data[index + 0] = 255;
+                    typeImgData.data[index + 1] = 0;
+                    typeImgData.data[index + 2] = 0;
+                    break;
+                  case Pixel.GeometryType.Linear: // Green
+                    typeImgData.data[index + 0] = 0;
+                    typeImgData.data[index + 1] = 255;
+                    typeImgData.data[index + 2] = 0;
+                    break;
+                  case Pixel.GeometryType.Edge: // Blue
+                    typeImgData.data[index + 0] = 0;
+                    typeImgData.data[index + 1] = 0;
+                    typeImgData.data[index + 2] = 255;
+                    break;
+                  case Pixel.GeometryType.Silhouette: // Purple
+                    typeImgData.data[index + 0] = 255;
+                    typeImgData.data[index + 1] = 0;
+                    typeImgData.data[index + 2] = 255;
+                    break;
+                  case Pixel.GeometryType.Unknown: // Black
+                  default:
+                    typeImgData.data[index + 0] = 0;
+                    typeImgData.data[index + 1] = 0;
+                    typeImgData.data[index + 2] = 0;
+                    break;
+                }
+                // Alpha for all - set to 100% opaque
+                elemIdImgData.data[index + 3] = depthImgData.data[index + 3] = typeImgData.data[index + 3] = 255;
+              }
+            }
+            return;
+          });
+          ctx.putImageData(elemIdImgData, 0, 0);
+          await savePng(getImageString(testConfig, "elemId_"));
+          ctx.putImageData(depthImgData, 0, 0);
+          await savePng(getImageString(testConfig, "depth_"));
+          ctx.putImageData(typeImgData, 0, 0);
+          await savePng(getImageString(testConfig, "type_"));
+        }
       }
+    } else {
+      const timer = new StopWatch(undefined, true);
+      for (let i = 0; i < numToRender; ++i) {
+        theViewport!.sync.setRedrawPending();
+        theViewport!.renderFrame();
+        finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
+      }
+      timer.stop();
+      if (wantConsoleOutput) {
+        debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
+        debugPrint("Tile Loading Time: " + curTileLoadingTime);
+        for (const t of finalFrameTimings) {
+          let timingsString = "[";
+          t.forEach((val) => {
+            timingsString += val + ", ";
+          });
+          debugPrint(timingsString + "]");
+        }
+      }
+      const rowData = getRowData(finalFrameTimings, testConfig);
+      await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
     }
-    const rowData = getRowData(finalFrameTimings, testConfig);
-    await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
   }
 
   // Close the imodel

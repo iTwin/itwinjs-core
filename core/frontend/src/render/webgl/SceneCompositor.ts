@@ -613,14 +613,18 @@ abstract class Compositor extends SceneCompositor {
     }
 
     this.clearOpaque(false);
+    this.target.recordPerformanceMetric("Render Background");
 
     // On entry the RenderCommands has been initialized for all scene graphics and pickable decorations with the exception of world overlays.
     // It's possible we have no pickable scene graphics or decorations, but do have pickable world overlays.
     const haveRenderCommands = !commands.isEmpty;
     if (haveRenderCommands) {
       this.target.pushActiveVolume();
+      this.target.recordPerformanceMetric("Enable Clipping");
       this.renderOpaque(commands, CompositeFlags.None, true);
+      this.target.recordPerformanceMetric("Render Opaque");
       this.renderClassification(commands, false, true);
+      this.target.recordPerformanceMetric("Render Stencils");
       this.target.popActiveVolume();
     }
 
@@ -645,6 +649,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Render overlays as opaque into the pick buffers
     this.renderOpaque(commands, CompositeFlags.None, true);
+    this.target.recordPerformanceMetric("Overlay Draws");
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
