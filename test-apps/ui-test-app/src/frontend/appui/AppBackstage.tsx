@@ -3,8 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { connect } from "react-redux";
+
 import {
-  SampleAppIModelApp, SampleAppUiActionId,
+  SampleAppIModelApp, SampleAppUiActionId, RootState,
 } from "..";
 import { SettingsModalFrontstage } from "../appui/frontstages/Settings";
 import {
@@ -16,12 +18,27 @@ import {
   BooleanSyncUiListener,
   TaskLaunchBackstageItem,
 } from "@bentley/ui-framework";
+import { AccessToken } from "@bentley/imodeljs-clients";
 
-export class AppBackstage extends React.Component {
+interface AppBackstageProps {
+  /** AccessToken from sign-in */
+  accessToken: AccessToken | undefined;
+}
+
+function mapStateToProps(state: RootState) {
+  const appState = state.sampleAppState;
+
+  if (!appState)
+    return undefined;
+
+  return { accessToken: appState.accessToken };
+}
+
+class AppBackstageComponent extends React.Component<AppBackstageProps> {
 
   public render(): React.ReactNode {
     return (
-      <Backstage accessToken={SampleAppIModelApp.store.getState().sampleAppState.accessToken} >
+      <Backstage accessToken={this.props.accessToken} >
         <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="SampleApp:backstage.testFrontstage1" iconSpec="icon icon-placeholder" />
         <FrontstageLaunchBackstageItem frontstageId="Test2" labelKey="SampleApp:backstage.testFrontstage2" iconSpec="icon icon-placeholder" />
         <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
@@ -47,4 +64,8 @@ export class AppBackstage extends React.Component {
   }
 }
 
-export default AppBackstage;
+/**
+ * Application Backstage.
+ * This React component is Redux connected.
+ */
+export const AppBackstage = connect(mapStateToProps)(AppBackstageComponent); // tslint:disable-line:variable-name

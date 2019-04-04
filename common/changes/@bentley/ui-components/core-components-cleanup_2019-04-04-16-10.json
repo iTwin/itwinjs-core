@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added 'Register' link back to SignIn component. Added ExternalIModel test widget. Made AppBackstage in ui-test-app Redux connected again.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

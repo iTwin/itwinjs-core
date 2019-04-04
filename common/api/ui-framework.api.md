@@ -2602,6 +2602,8 @@ export interface SignInProps {
     // (undocumented)
     onOffline?: () => void;
     // (undocumented)
+    onRegister?: () => void;
+    // (undocumented)
     onSignedIn: () => void;
 }
 

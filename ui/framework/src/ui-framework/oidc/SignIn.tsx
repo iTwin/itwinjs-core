@@ -13,8 +13,9 @@ import { ClientRequestContext } from "@bentley/bentleyjs-core";
  * @public
  */
 export interface SignInProps {
-  onOffline?: () => void;
   onSignedIn: () => void;
+  onRegister?: () => void;
+  onOffline?: () => void;
 }
 
 /**
@@ -35,6 +36,6 @@ export class SignIn extends React.Component<SignInProps> {
   }
 
   public render() {
-    return <SignInBase onSignIn={this._onStartSignin} onOffline={this.props.onOffline} />;
+    return <SignInBase onSignIn={this._onStartSignin} onRegister={this.props.onRegister} onOffline={this.props.onOffline} />;
   }
 }

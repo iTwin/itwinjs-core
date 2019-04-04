@@ -103,6 +103,9 @@ export class ContentGroup {
   }
 
   public getControlFromElement(node: React.ReactNode): ContentControl | undefined {
+    if (this._contentSetMap.size === 0)
+      this.getContentNodes();
+
     return this._contentSetMap.get(node);
   }
 

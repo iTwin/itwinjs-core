@@ -1870,6 +1870,8 @@ export interface SignInProps {
     // (undocumented)
     onOffline?: () => void;
     // (undocumented)
+    onRegister?: () => void;
+    // (undocumented)
     onSignIn: () => void;
 }
 

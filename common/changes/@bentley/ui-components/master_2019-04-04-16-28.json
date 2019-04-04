@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Locked react-data-grid at 6.0.1 and @types/react-data-grid at 4.0.2",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

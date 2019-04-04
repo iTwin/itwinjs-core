@@ -42,16 +42,16 @@ function mapStateToProps(state: any) {
 class ThemeManagerComponent extends React.Component<ThemeProps> {
 
   public componentDidMount() {
-    this._addTheme(this.props.theme);
+    this._setTheme(this.props.theme);
   }
 
-  public componentWillReceiveProps(nextProps: ThemeProps) {
-    if (nextProps.theme !== this.props.theme) {
-      this._addTheme(nextProps.theme);
+  public componentDidUpdate(prevProps: ThemeProps) {
+    if (this.props.theme !== prevProps.theme) {
+      this._setTheme(this.props.theme);
     }
   }
 
-  private _addTheme = (theme: string) => {
+  private _setTheme = (theme: string) => {
     document.documentElement.classList.add("theme-transition");
     document.documentElement.setAttribute("data-theme", theme);
     window.setTimeout(() => document.documentElement.classList.remove("theme-transition"), 1000);

@@ -203,9 +203,7 @@ export class SampleAppIModelApp extends IModelApp {
   }
 
   public static async handleWorkOffline() {
-    if (!FrontstageManager.activeFrontstageDef) {
-      await SampleAppIModelApp.showFrontstage("Test4");
-    }
+    await SampleAppIModelApp.showFrontstage("Test4");
   }
 
   public static async showIModelIndex(contextId: string, iModelId: string) {

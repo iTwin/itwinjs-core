@@ -49,7 +49,7 @@ describe("ViewportContentControl", () => {
     viewportMock.setup((viewport) => viewport.view).returns(() => viewMock.object);
   });
 
-  it("ViewportContentControl used in a Frontstage", () => {
+  it("ViewportContentControl used in a Frontstage", async () => {
 
     class Frontstage1 extends FrontstageProvider {
 
@@ -87,34 +87,34 @@ describe("ViewportContentControl", () => {
 
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
-      if (frontstageProvider.frontstageDef) {
-        expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
 
-        const contentControl = ContentViewManager.getActiveContentControl();
-        expect(contentControl).to.not.be.undefined;
+    if (frontstageProvider.frontstageDef) {
+      expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
 
-        if (contentControl) {
-          expect(contentControl.isViewport).to.be.true;
-          expect(contentControl.viewport).to.not.be.undefined;
-          expect(contentControl.getType()).to.eq(ConfigurableUiControlType.Viewport);
+      const contentControl = ContentViewManager.getActiveContentControl();
+      expect(contentControl).to.not.be.undefined;
 
-          expect(contentControl.navigationAidControl).to.eq("SheetNavigationAid");
+      if (contentControl) {
+        expect(contentControl.isViewport).to.be.true;
+        expect(contentControl.viewport).to.not.be.undefined;
+        expect(contentControl.getType()).to.eq(ConfigurableUiControlType.Viewport);
 
-          viewMock.reset();
-          viewMock.setup((view) => view.classFullName).returns(() => "DrawingViewDefinition");
-          expect(contentControl.navigationAidControl).to.eq("");  // TODO
+        expect(contentControl.navigationAidControl).to.eq("SheetNavigationAid");
 
-          viewMock.reset();
-          viewMock.setup((view) => view.classFullName).returns(() => "SpatialViewDefinition");
-          expect(contentControl.navigationAidControl).to.eq("CubeNavigationAid");
+        viewMock.reset();
+        viewMock.setup((view) => view.classFullName).returns(() => "DrawingViewDefinition");
+        expect(contentControl.navigationAidControl).to.eq("DrawingNavigationAid");
 
-          viewMock.reset();
-          viewMock.setup((view) => view.classFullName).returns(() => "OrthographicViewDefinition");
-          expect(contentControl.navigationAidControl).to.eq("CubeNavigationAid");
-        }
+        viewMock.reset();
+        viewMock.setup((view) => view.classFullName).returns(() => "SpatialViewDefinition");
+        expect(contentControl.navigationAidControl).to.eq("CubeNavigationAid");
+
+        viewMock.reset();
+        viewMock.setup((view) => view.classFullName).returns(() => "OrthographicViewDefinition");
+        expect(contentControl.navigationAidControl).to.eq("CubeNavigationAid");
       }
-    });
+    }
 
   });
 

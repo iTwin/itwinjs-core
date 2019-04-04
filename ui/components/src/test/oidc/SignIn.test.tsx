@@ -45,4 +45,17 @@ describe("SignIn", () => {
     wrapper.unmount();
   });
 
+  it("should handle offline button click", () => {
+    const spyMethod = sinon.spy();
+    const registerSpy = sinon.spy();
+    const wrapper = mount(<SignIn onSignIn={spyMethod} onRegister={registerSpy} />);
+    expect(wrapper).not.to.be.undefined;
+
+    const span = wrapper.find("span.components-signin-register");
+    span.find("a").simulate("click");
+    expect(registerSpy.calledOnce).to.be.true;
+
+    wrapper.unmount();
+  });
+
 });

@@ -244,7 +244,6 @@ export class WidgetDef {
           if (this._widgetControl.getType() !== type) {
             throw Error("WidgetDef.widgetControl error: classId '" + this.classId + "' is registered to a control that is NOT a Widget");
           }
-          this._widgetControl.initialize();
         }
       } else {
         const info = new ConfigurableCreateInfo(this.classId.name, this.id, this.id);
@@ -253,6 +252,7 @@ export class WidgetDef {
 
       if (this._widgetControl) {
         this._widgetControl.widgetDef = this;
+        this._widgetControl.initialize();
       }
     }
 

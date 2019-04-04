@@ -131,11 +131,14 @@ export class ViewportComponentEvents {
   }
 
   public static setViewMatrix(viewport: Viewport, animationTime?: number): void {
-    // When handling onViewChanged, use setTimeout
-    setTimeout(() => {
+    if (viewport.view) {
       this.origin.setFrom(viewport.view.getOrigin());
       this.extents.setFrom(viewport.view.getExtents());
-      this.rotationMatrix.setFrom(viewport.rotation);
+    }
+    this.rotationMatrix.setFrom(viewport.rotation);
+
+    // When handling onViewChanged, use setTimeout
+    setTimeout(() => {
       this.onViewRotationChangeEvent.emit({ viewport, animationTime });
     });
   }
