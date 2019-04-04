@@ -50,7 +50,7 @@ exports[`<Tools /> renders correctly with reduced gap 1`] = `
 
 exports[`<Tools /> renders navigation correctly 1`] = `
 <div
-  className="nz-widget-tools nz-is-navigation"
+  className="nz-widget-tools nz-navigation"
 >
   <div
     className="nz-app-button"

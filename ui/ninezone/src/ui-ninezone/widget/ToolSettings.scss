@@ -3,12 +3,18 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "tool-settings/_variables";
 
 .nz-widget-toolSettings {
-  display: grid;
-
-  > * {
-    display: grid;
-    justify-content: center;
+  border: {
+    color: $nz-widget-border-color;
+    radius: $nz-widget-border-radius;
+    style: solid;
+    width: $nz-widget-border-width;
   }
+
+  background-color: $nz-widget-background-color;
+  height: fit-content;
+  // overflow: hidden;
+  pointer-events: auto;
 }

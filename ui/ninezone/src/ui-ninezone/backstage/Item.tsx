@@ -30,12 +30,16 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
   public render() {
     const className = classnames(
       "nz-backstage-item",
-      this.props.isActive && "nz-is-active",
-      this.props.isDisabled && "nz-is-disabled",
+      this.props.isActive && "nz-active",
+      this.props.isDisabled && "nz-disabled",
       this.props.className);
 
     return (
-      <li className={className} style={this.props.style} onClick={this.props.onClick}>
+      <li
+        className={className}
+        onClick={this.props.onClick}
+        style={this.props.style}
+      >
         {this.props.icon}
         <div>
           <span>{this.props.label}</span>

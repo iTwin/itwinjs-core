@@ -13,9 +13,9 @@ exports[`<Footer /> renders correctly 1`] = `
 </div>
 `;
 
-exports[`<Footer /> renders correctly in widget mode 1`] = `
+exports[`<Footer /> renders correctly in footer mode 1`] = `
 <div
-  className="nz-footer-footer nz-widget-mode"
+  className="nz-footer-footer nz-footer-mode"
 >
   <div
     className="nz-message"

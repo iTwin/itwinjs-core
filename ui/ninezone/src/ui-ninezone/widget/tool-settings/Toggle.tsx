@@ -17,13 +17,13 @@ export interface ToggleProps extends CommonProps, NoChildrenProps {
   content?: React.ReactNode;
   /** Function called when the toggle is clicked. */
   onClick?: () => void;
-  /** Content of the popover. */
-  popoverContent?: React.ReactChild;
+  /** Content of the popup. */
+  popupContent?: React.ReactChild;
 }
 
 /**
  * Tool settings toggle component.
- * @note Used as content in [[ToolSettings]] and [[Nested]] components
+ * @note Used in [[ToolSettings]] component
  */
 export class Toggle extends React.PureComponent<ToggleProps> {
   public render() {
@@ -45,11 +45,11 @@ export class Toggle extends React.PureComponent<ToggleProps> {
           </div>
           <div className="nz-triangle" />
         </div>
-        {!this.props.popoverContent ? undefined :
+        {!this.props.popupContent ? undefined :
           <TrianglePopover
-            className="nz-popover"
+            className="nz-popup"
             direction={Direction.Bottom}
-            content={this.props.popoverContent}
+            content={this.props.popupContent}
           />
         }
       </div>

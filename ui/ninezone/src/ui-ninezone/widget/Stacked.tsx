@@ -7,7 +7,6 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { Edge, RectangleProps, Rectangle } from "../utilities/Rectangle";
-import { WidgetContent } from "./rectangular/Content";
 import { ResizeGrip, ResizeDirection } from "./rectangular/ResizeGrip";
 import { ResizeHandle } from "./rectangular/ResizeHandle";
 import { CommonProps, NoChildrenProps } from "../utilities/Props";
@@ -63,7 +62,7 @@ export class VerticalAnchorHelpers {
 
 /** Properties of [[Stacked]] component. */
 export interface StackedProps extends CommonProps, NoChildrenProps {
-  /** Content of this widget. */
+  /** Content of this widget. I.e. [[WidgetContent]] */
   content?: React.ReactNode;
   /** Describes if the widget should fill the zone. */
   fillZone?: boolean;
@@ -101,9 +100,9 @@ export class Stacked extends React.PureComponent<StackedProps> {
       "nz-widget-stacked",
       HorizontalAnchorHelpers.getCssClassName(this.props.horizontalAnchor),
       VerticalAnchorHelpers.getCssClassName(this.props.verticalAnchor),
-      !this.props.isOpen && "nz-is-closed",
-      this.props.isDragged && "nz-is-dragged",
-      this.props.isFloating && "nz-is-floating",
+      !this.props.isOpen && "nz-closed",
+      this.props.isDragged && "nz-dragged",
+      this.props.isFloating && "nz-floating",
       this.props.fillZone && "nz-fill-zone",
       this.props.className);
 
@@ -114,10 +113,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
         ref={this._widget}
       >
         <div className="nz-content-area">
-          <WidgetContent
-            anchor={this.props.horizontalAnchor}
-            content={this.props.content}
-          />
+          {this.props.content}
           <ResizeGrip
             className="nz-bottom-grip"
             direction={ResizeDirection.NorthSouth}

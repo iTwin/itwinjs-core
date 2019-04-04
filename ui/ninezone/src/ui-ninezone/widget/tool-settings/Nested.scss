@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "_variables";
+
 .nz-widget-toolSettings-nested {
   display: block;
 
@@ -11,13 +13,14 @@
     justify-items: center;
     grid-template-columns: auto 1fr;
     grid-column-gap: 5px;
-    margin-bottom: 5px;
+    padding: {
+      left: $nz-content-padding;
+      top: $nz-content-padding;
+      right: $nz-content-padding;
+    }
 
     > .nz-button {
       grid-row: 1;
-      width: 25px;
-      height: 25px;
-      font-size: 16px;
     }
 
     > .nz-label {

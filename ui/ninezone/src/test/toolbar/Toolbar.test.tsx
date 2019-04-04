@@ -41,7 +41,7 @@ describe("<Toolbar />", () => {
   });
 });
 
-class ItemComponent extends React.Component implements ToolbarItem {
+class Item extends React.Component implements ToolbarItem {
   public panel = document.createElement("div");
   public history = document.createElement("div");
 
@@ -50,9 +50,9 @@ class ItemComponent extends React.Component implements ToolbarItem {
   }
 }
 
-class ExpandableItem extends React.Component<ToolbarItemProps<ItemComponent>> {
+class ExpandableItem extends React.Component<ToolbarItemProps<Item>> {
   public render() {
-    return <ItemComponent ref={this.props.toolbarItemRef} />;
+    return <Item ref={this.props.toolbarItemRef} />;
   }
 }
 

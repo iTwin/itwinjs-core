@@ -21,7 +21,7 @@
   >.nz-label {
     grid-row: 1;
   }
-  &.nz-is-active {
+  &.nz-active {
     color: $buic-foreground-primary;
   }
   &:hover {
@@ -29,7 +29,7 @@
   }
 }
 
-.nz-footer-snapMode-snap.nz-is-active::before {
+.nz-footer-snapMode-snap.nz-active::before {
   content: '';
   display: block;
   position: absolute;

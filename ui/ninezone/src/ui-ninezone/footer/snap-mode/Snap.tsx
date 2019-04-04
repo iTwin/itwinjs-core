@@ -26,7 +26,7 @@ export class Snap extends React.PureComponent<SnapProps> {
   public render() {
     const dialogClassName = classnames(
       "nz-footer-snapMode-snap",
-      this.props.isActive && "nz-is-active",
+      this.props.isActive && "nz-active",
       this.props.className);
 
     return (

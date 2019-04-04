@@ -13,7 +13,7 @@ import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 import {
-  ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, ZoneComponent as NZ_Zone, RectangleProps,
+  ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, Zone as NZ_Zone, RectangleProps,
   GhostOutline, HorizontalAnchor, VerticalAnchor, PointProps,
 } from "@bentley/ui-ninezone";
 

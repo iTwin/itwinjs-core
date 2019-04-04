@@ -24,7 +24,7 @@ export interface ScrollableAreaState {
 }
 
 /**
- * Scrollable area with no scroll bar showed. Scrolling is controlled with two arrow buttons.
+ * Displays two arrow buttons instead of scroll bar.
  * @note Used as content in [[ToolSettings]] and [[Nested]] components
  */
 export class ScrollableArea extends React.PureComponent<ScrollableAreaProps, ScrollableAreaState> {
@@ -83,7 +83,7 @@ export class ScrollableArea extends React.PureComponent<ScrollableAreaProps, Scr
       if (!content)
         return;
 
-      const bottomOverflow = content.scrollHeight - content.clientHeight - content.scrollTop;
+      const bottomOverflow = Math.floor(content.scrollHeight - content.clientHeight - content.scrollTop);
       return {
         isBottomIndicatorVisible: (bottomOverflow > 0),
         isTopIndicatorVisible: (content.scrollTop > 0),

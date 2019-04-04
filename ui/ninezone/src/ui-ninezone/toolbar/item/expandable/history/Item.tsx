@@ -31,8 +31,8 @@ export class HistoryItem extends React.PureComponent<HistoryItemProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-history-item",
-      this.props.isActive && "nz-is-active",
-      this.props.isDisabled && "nz-is-disabled",
+      this.props.isActive && "nz-active",
+      this.props.isDisabled && "nz-disabled",
       this.props.className);
 
     return (

@@ -59,17 +59,17 @@
     }
   }
 
-  &:active:not(.nz-is-disabled) {
+  &:active:not(.nz-disabled) {
     background: $buic-foreground-primary-tone;
     color: $buic-text-color-reverse;
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
   }
 
-  &.nz-is-active {
+  &.nz-active {
     background: $buic-background-control;
 
-    &:not(:active):not(.nz-is-disabled) {
+    &:not(:active):not(.nz-disabled) {
       transition-duration: 0s;
 
       >.nz-icon {
@@ -97,7 +97,7 @@
     }
   }
 
-  &.nz-is-disabled {
+  &.nz-disabled {
     >.nz-icon {
       color: $disabled-icon-color;
     }

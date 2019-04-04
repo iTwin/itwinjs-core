@@ -6,8 +6,9 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import rafSchedule, { ScheduleFn } from "raf-schd";
 import { Timer, withTimeout, Button, ButtonType, ButtonProps, Omit, withOnOutsideClick } from "@bentley/ui-core";
-import { App } from "@src/app/App";
-import { Content } from "@src/app/Content";
+import { Backstage } from "@src/backstage/Backstage";
+import { BackstageItem } from "@src/backstage/Item";
+import { BackstageSeparator } from "@src/backstage/Separator";
 import { AppButton } from "@src/widget/tools/button/App";
 import { MouseTracker } from "@src/context/MouseTracker";
 import { Footer } from "@src/footer/Footer";
@@ -49,10 +50,10 @@ import { Toast } from "@src/footer/message/Toast";
 import { Nested } from "@src/widget/tool-settings/Nested";
 import { ScrollableArea } from "@src/widget/tool-settings/ScrollableArea";
 import { Toggle } from "@src/widget/tool-settings/Toggle";
-import { ToolSettings } from "@src/widget/tool-settings/Settings";
+import { ToolSettingsContent } from "@src/widget/tool-settings/Content";
 import { ToolSettingsTooltip } from "@src/widget/tool-settings/Tooltip";
 import { ToolSettingsTab } from "@src/widget/tool-settings/Tab";
-import { ToolSettingsWidget } from "@src/widget/ToolSettings";
+import { ToolSettings } from "@src/widget/ToolSettings";
 import { ExpandableItem } from "@src/toolbar/item/expandable/Expandable";
 import { Overflow } from "@src/toolbar/item/Overflow";
 import { GroupColumn } from "@src/toolbar/item/expandable/group/Column";
@@ -68,22 +69,24 @@ import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
 import { PointProps, Point } from "@src/utilities/Point";
 import { Size, SizeProps } from "@src/utilities/Size";
+import { WidgetContent } from "@src/widget/rectangular/Content";
 import { ResizeHandle } from "@src/widget/rectangular/ResizeHandle";
 import { TabSeparator } from "@src/widget/rectangular/tab/Separator";
 import { TabGroup, HandleMode } from "@src/widget/rectangular/tab/Group";
 import { Tab, TabMode } from "@src/widget/rectangular/tab/Tab";
 import { Stacked, HorizontalAnchor, VerticalAnchor } from "@src/widget/Stacked";
 import { Tools as ToolsWidget } from "@src/widget/Tools";
-import { FooterZone } from "@src/zones/Footer";
 import { NineZone, getDefaultNineZoneProps, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
 import { DefaultStateManager } from "@src/zones/state/Manager";
 import { WidgetProps, DraggingWidgetProps } from "@src/zones/state/Widget";
 import { TargetType, TargetZoneProps } from "@src/zones/state/Target";
-import { ZonePropsBase, DropTarget, StatusZone } from "@src/zones/state/Zone";
+import { ZonePropsBase, DropTarget, StatusZoneManager } from "@src/zones/state/Zone";
 import { Container } from "@src/zones/target/Container";
 import { Merge } from "@src/zones/target/Merge";
 import { Back } from "@src/zones/target/Back";
-import { ZoneComponent } from "@src/zones/Zone";
+import { Zone } from "@src/zones/Zone";
+import { StatusZone } from "@src/zones/Status";
+import { ToolSettingsZone } from "@src/zones/ToolSettings";
 import { Zones } from "@src/zones/Zones";
 import { GhostOutline } from "@src/zones/GhostOutline";
 import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
@@ -186,7 +189,7 @@ enum MessageCenterActiveTab {
   Problems,
 }
 
-enum ToolSettingsWidgetMode {
+enum ToolSettingsMode {
   Minimized,
   Open,
 }
@@ -452,7 +455,7 @@ class FooterMessageExample extends React.PureComponent<FooterMessageExampleProps
 interface StatusZoneExampleProps extends MessageProps {
   bounds: RectangleProps;
   dropTarget: DropTarget;
-  isInWidgetMode: boolean;
+  isInFooterMode: boolean;
   message: Message;
   onHideMessage: () => void;
   onTargetChanged: TargetChangedHandler;
@@ -477,12 +480,12 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
   public render() {
     return (
       <React.Fragment>
-        <FooterZone
-          isInFooterMode={!this.props.isInWidgetMode}
+        <StatusZone
+          isInFooterMode={this.props.isInFooterMode}
           bounds={this.props.bounds}
         >
           <Footer
-            isInWidgetMode={this.props.isInWidgetMode}
+            isInFooterMode={this.props.isInFooterMode}
             message={
               <FooterMessageExample
                 toastMessageKey={this.props.toastMessageKey}
@@ -535,7 +538,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                     </>
                   }
                   onClick={this._handleToggleToolAssistanceDialog}
-                  stepString={this.props.isInWidgetMode ? undefined : "Start Point"}
+                  stepString={this.props.isInFooterMode ? "Start Point" : undefined}
                 />
                 <div ref={this._messageCenterIndicatorContainer}>
                   <MessageCenterIndicator
@@ -646,12 +649,12 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                           onOutsideClick={this._handleOnOutsideDialogClick}
                         />
                     }
-                    label={this.props.isInWidgetMode ? undefined : "Message(s):"}
+                    label={this.props.isInFooterMode ? "Message(s):" : undefined}
                     onClick={this._handleToggleMessageCenterDialog}
                   />
                 </div>
                 <SnapModeIndicator
-                  label={this.props.isInWidgetMode ? undefined : "Snap Mode"}
+                  label={this.props.isInFooterMode ? "Snap Mode" : undefined}
                   onClick={this._handleToggleSnapModeDialog}
                   icon={
                     <SnapModeIcon>k</SnapModeIcon>
@@ -705,10 +708,10 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
               </>
             }
           />
-        </FooterZone>
+        </StatusZone>
         <ZoneTargetExample
           bounds={this.props.targetBounds}
-          zoneIndex={StatusZone.id}
+          zoneIndex={StatusZoneManager.id}
           dropTarget={this.props.dropTarget}
           onTargetChanged={this.props.onTargetChanged}
         />
@@ -773,7 +776,7 @@ class FloatingZone extends React.PureComponent<FloatingZoneProps> {
   public render() {
     return (
       <>
-        <ZoneComponent
+        <Zone
           bounds={this.props.bounds}
         >
           {this.props.zone.widgets.length > 0 &&
@@ -797,7 +800,7 @@ class FloatingZone extends React.PureComponent<FloatingZoneProps> {
               zone={this.props.zone}
             />
           }
-        </ZoneComponent>
+        </Zone>
         <ZoneTargetExample
           bounds={this.props.targetBounds}
           dropTarget={this.props.dropTarget}
@@ -835,7 +838,8 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
       <Stacked
         content={
           activeWidget &&
-          <WidgetContent
+          <WidgetContentExample
+            anchor={this.props.horizontalAnchor}
             onChangeTheme={this.props.onChangeTheme}
             onOpenActivityMessage={this.props.onOpenActivityMessage}
             onOpenModalMessage={this.props.onOpenModalMessage}
@@ -1077,7 +1081,7 @@ interface TargetExampleProps {
 class ZoneTargetExample extends React.PureComponent<TargetExampleProps> {
   public render() {
     return (
-      <ZoneComponent
+      <Zone
         bounds={this.props.bounds}
       >
         <Container>
@@ -1093,7 +1097,7 @@ class ZoneTargetExample extends React.PureComponent<TargetExampleProps> {
             />
           }
         </Container>
-      </ZoneComponent>
+      </Zone>
     );
   }
 
@@ -1215,11 +1219,11 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
   }
 }
 
-interface ContentExampleProps {
+interface ContentProps {
   onClick: () => void;
 }
 
-class ContentExample extends React.PureComponent<ContentExampleProps> {
+class Content extends React.PureComponent<ContentProps> {
   private _canvas = React.createRef<HTMLCanvasElement>();
   private _ctx?: CanvasRenderingContext2D;
 
@@ -1246,9 +1250,9 @@ class ContentExample extends React.PureComponent<ContentExampleProps> {
   public render() {
     return (
       <canvas
-        className="content"
-        ref={this._canvas}
         onClick={this.props.onClick}
+        style={{ cursor: "crosshair" }}
+        ref={this._canvas}
       />
     );
   }
@@ -1408,25 +1412,29 @@ class Widget9Tab1Content extends React.PureComponent {
 }
 
 interface WidgetContentProps extends Widget6Tab1ContentProps, Widget7Tab1ContentProps {
-  widgetId: WidgetZoneIndex;
+  anchor: HorizontalAnchor;
   tabIndex: number;
+  widgetId: WidgetZoneIndex;
 }
 
-class WidgetContent extends React.PureComponent<WidgetContentProps> {
+class WidgetContentExample extends React.PureComponent<WidgetContentProps> {
   public render() {
+    let content: React.ReactNode;
     switch (this.props.widgetId) {
       case 4: {
-        return `Hello world from zone4! (${this.props.tabIndex})`;
+        content = (`Hello world from zone4! (${this.props.tabIndex})`);
+        break;
       }
       case 6: {
-        return (
+        content = (
           <Widget6Tab1Content
             onChangeTheme={this.props.onChangeTheme}
             theme={this.props.theme} />
         );
+        break;
       }
       case 7: {
-        return (
+        content = (
           <Widget7Tab1Content
             onOpenActivityMessage={this.props.onOpenActivityMessage}
             onOpenModalMessage={this.props.onOpenModalMessage}
@@ -1435,24 +1443,34 @@ class WidgetContent extends React.PureComponent<WidgetContentProps> {
             onShowTooltip={this.props.onShowTooltip}
             onToggleFooterMode={this.props.onToggleFooterMode} />
         );
+        break;
       }
       case 8: {
-        return "Footer :)";
+        content = "Footer :)";
+        break;
       }
       case 9: {
         switch (this.props.tabIndex) {
           case 1: {
-            return (
+            content = (
               <Widget9Tab1Content />
             );
+            break;
           }
           case 2: {
-            return "Hello world 2!";
+            content = "Hello world 2!";
+            break;
           }
         }
+        break;
       }
     }
-    return undefined;
+    return (
+      <WidgetContent
+        anchor={this.props.anchor}
+        content={content}
+      />
+    );
   }
 }
 
@@ -1721,6 +1739,7 @@ class GroupColumnTool extends React.PureComponent<GroupColumnToolProps> {
 interface Zone1Props {
   bounds: RectangleProps;
   horizontalTools: Tools;
+  onAppButtonClick: () => void;
   onHistoryItemClick: (item: HistoryItem) => void;
   onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
   onOpenPanelGroup: (toolId: string, trayId: string | undefined) => void;
@@ -1731,27 +1750,17 @@ interface Zone1Props {
   verticalTools: Tools;
 }
 
-const getNumberOfVisibleTools = (tools: Tools) => {
-  return Object.keys(tools).reduce<number>((acc, toolId) => {
-    const tool = tools[toolId];
-    if (tool.isHidden)
-      return acc;
-    return acc + 1;
-  }, 0);
-};
-
 class Zone1 extends React.PureComponent<Zone1Props> {
   private _appButton = (
     <AppButton
-      icon={
-        <i className="icon icon-home" />
-      }
+      icon={<i className="icon icon-home" />}
+      onClick={this.props.onAppButtonClick}
     />
   );
 
   public render() {
     return (
-      <ZoneComponent
+      <Zone
         bounds={this.props.bounds}
       >
         <ToolsWidget
@@ -1787,19 +1796,19 @@ class Zone1 extends React.PureComponent<Zone1Props> {
             />
           }
         />
-      </ZoneComponent>
+      </Zone>
     );
   }
 }
 
-interface Zone3Props extends Zone1Props {
+interface Zone3Props extends Omit<Zone1Props, "onAppButtonClick"> {
   onToolbarScroll: () => void;
 }
 
 class Zone3 extends React.PureComponent<Zone3Props> {
   public render() {
     return (
-      <ZoneComponent
+      <Zone
         bounds={this.props.bounds}
       >
         <ToolsWidget
@@ -1836,7 +1845,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
             />
           }
         />
-      </ZoneComponent>
+      </Zone>
     );
   }
 }
@@ -1942,12 +1951,110 @@ class ToolZoneScrollableToolbar extends React.PureComponent<ScrollableToolbarPro
   }
 }
 
+interface BackstageItemExampleProps {
+  id: number;
+  isActive?: boolean;
+  isDisabled?: boolean;
+  onClick: (id: number) => void;
+}
+
+class BackstageItemExample extends React.PureComponent<BackstageItemExampleProps> {
+  public render() {
+    return (
+      <BackstageItem
+        icon={<i className="icon icon-placeholder" />}
+        isActive={this.props.isActive}
+        isDisabled={this.props.isDisabled}
+        label={`Item ${this.props.id}`}
+        onClick={this._handleClick}
+      />
+    );
+  }
+
+  private _handleClick = () => {
+    this.props.onClick(this.props.id);
+  }
+}
+
+interface BackstageExampleProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+interface BackstageExampleState {
+  activeItem: number;
+}
+
+class BackstageExample extends React.PureComponent<BackstageExampleProps, BackstageExampleState> {
+  public readonly state = {
+    activeItem: 0,
+  };
+
+  public render() {
+    return (
+      <Backstage
+        isOpen={this.props.isOpen}
+        items={
+          <>
+            <BackstageItemExample
+              id={0}
+              isActive={this.state.activeItem === 0}
+              onClick={this._handleItemClick}
+            />
+            <BackstageItemExample
+              id={1}
+              isActive={this.state.activeItem === 1}
+              onClick={this._handleItemClick}
+              isDisabled
+            />
+            <BackstageItemExample
+              id={2}
+              isActive={this.state.activeItem === 2}
+              onClick={this._handleItemClick}
+            />
+            <BackstageSeparator />
+            <BackstageItemExample
+              id={3}
+              isActive={this.state.activeItem === 3}
+              onClick={this._handleItemClick}
+            />
+            <BackstageItemExample
+              id={4}
+              isActive={this.state.activeItem === 4}
+              onClick={this._handleItemClick}
+            />
+          </>
+        }
+        onClose={this.props.onClose}
+      />
+    );
+  }
+
+  private _handleItemClick = (activeItem: number) => {
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        activeItem,
+      };
+    });
+  }
+}
+
 type WidgetTabDragFn = (dragged: PointProps) => void;
 type ZoneResizeFn = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
 
 const placeholderIcon = (
   <i className="icon icon-placeholder" />
 );
+
+const getNumberOfVisibleTools = (tools: Tools) => {
+  return Object.keys(tools).reduce<number>((acc, toolId) => {
+    const tool = tools[toolId];
+    if (tool.isHidden)
+      return acc;
+    return acc + 1;
+  }, 0);
+};
 
 const hiddenZoneTools: HiddenZoneTools = {
   1: {
@@ -2198,6 +2305,7 @@ const directionKeys: Array<keyof DirectionTools> = ["horizontal", "vertical"];
 const initialTheme: Theme = "light";
 
 interface State {
+  isBackstageOpen: boolean;
   isNestedPopoverOpen: boolean;
   isPopoverOpen: boolean;
   isTemporaryMessageVisible: number;
@@ -2206,7 +2314,7 @@ interface State {
   nineZone: NineZoneProps;
   openWidget: FooterWidget;
   theme: Theme;
-  toolSettingsWidget: ToolSettingsWidgetMode;
+  toolSettingsMode: ToolSettingsMode;
   tools: ZoneTools | HiddenZoneTools;
   toastMessageKey: number;
 }
@@ -2216,6 +2324,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   private _scheduleZoneResize: ScheduleFn<ZoneResizeFn>;
 
   public readonly state = {
+    isBackstageOpen: false,
     isNestedPopoverOpen: false,
     isPopoverOpen: false,
     isTemporaryMessageVisible: 0,
@@ -2230,7 +2339,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     theme: initialTheme,
     toastMessageKey: 0,
     tools: zoneTools,
-    toolSettingsWidget: ToolSettingsWidgetMode.Open,
+    toolSettingsMode: ToolSettingsMode.Open,
   };
 
   public constructor(p: {}) {
@@ -2254,23 +2363,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   public render() {
-    return (
-      <App
-        className={"nzdemo-pages-zones"}
-      >
-        {this.getZones()}
-        {this.getBackstage()}
-        {this.getContent()}
-        {this.state.message === Message.Modal &&
-          <ModalMessage
-            onHideMessage={this._handleHideMessage}
-          />
-        }
-      </App>
-    );
-  }
-
-  private getZones() {
     const zones = Object.keys(this.state.nineZone.zones)
       .map((key) => Number(key) as WidgetZoneIndex)
       .sort((id1, id2) => {
@@ -2287,112 +2379,116 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
         return z1.floating.stackId - z2.floating.stackId;
       });
-    return (
-      <Zones>
-        <TooltipExample
-          containerSize={this.state.nineZone.size}
-          isTemporaryMessageVisible={this.state.isTemporaryMessageVisible}
-          isTooltipVisible={this.state.isTooltipVisible || false}
-          onMessageHidden={this._handleTooltipMessageHidden}
-          onTooltipTimeout={this._handleTooltipTimeout}
-        />
-        {zones.map((z) => this.getZone(z))}
-      </Zones>
-    );
-  }
 
-  private getBackstage() {
-    return undefined;
-  }
-
-  private getContent() {
     return (
-      <Content>
-        <ContentExample
+      <div
+        className={"nzdemo-pages-zones"}
+      >
+        <Content
           onClick={this._handleContentClick}
         />
-      </Content>
+        <Zones>
+          <TooltipExample
+            containerSize={this.state.nineZone.size}
+            isTemporaryMessageVisible={this.state.isTemporaryMessageVisible}
+            isTooltipVisible={this.state.isTooltipVisible || false}
+            onMessageHidden={this._handleTooltipMessageHidden}
+            onTooltipTimeout={this._handleTooltipTimeout}
+          />
+          {zones.map((z) => this.getZone(z))}
+        </Zones>
+        <BackstageExample
+          isOpen={this.state.isBackstageOpen}
+          onClose={this._handleBackstageClose}
+        />
+        {this.state.message === Message.Modal &&
+          <ModalMessage
+            onHideMessage={this._handleHideMessage}
+          />
+        }
+      </div>
     );
   }
 
-  private getToolSettingsWidget() {
-    const tab = (
-      <ToolSettingsTab
-        isActive={this.state.toolSettingsWidget === ToolSettingsWidgetMode.Open}
-        onClick={this._handleToolSettingsWidgetTabClick}
+  private getToolSettings() {
+    if (this.state.toolSettingsMode === ToolSettingsMode.Minimized)
+      return (
+        <ToolSettingsTab
+          onClick={this._handleToolSettingsTabClick}
+        >
+          {placeholderIcon}
+        </ToolSettingsTab>
+      );
+
+    return (
+      <ToolSettings
+        buttons={
+          <DialogButton
+            onClick={this._handleToolSettingsTabClick}
+            title="Minimize"
+          >
+            <i className={"icon icon-chevron-up"} />
+          </DialogButton>
+        }
+        title="Tool Settings"
       >
-        {placeholderIcon}
-      </ToolSettingsTab>
-    );
-    switch (this.state.toolSettingsWidget) {
-      case ToolSettingsWidgetMode.Minimized: {
-        return (
-          <ToolSettingsWidget
-            tab={tab}
-          />
-        );
-      }
-      case ToolSettingsWidgetMode.Open: {
-        return (
-          <ToolSettingsWidget
-            tab={tab}
-            content={
-              <ToolSettings>
-                <Toggle
-                  content={"Toggle"}
-                  onClick={this._handlePopoverToggleClick}
-                  popoverContent={
-                    !this.state.isPopoverOpen ? undefined :
-                      <ToolSettings>
-                        <Toggle
-                          content={"Toggle for nested popover"}
-                          onClick={this._handleNestedPopoverToggleClick}
-                          popoverContent={
-                            !this.state.isNestedPopoverOpen ? undefined :
-                              <Nested
-                                label="Nested"
-                                backButton={
-                                  <HollowButton
-                                    onClick={this._handleNestedToolSettingsBackClick}
-                                    style={{ padding: "5px", lineHeight: "0" }}
-                                  >
-                                    <i className="icon icon-progress-backward-2" />
-                                  </HollowButton>
-                                }
-                              >
-                                <ScrollableArea>
-                                  1. Settings
-                                  2. SettingsSettingsSettings
-                                  3. Settings
-                                  4. Settings
-                                  5. Settings
-                                  6. Settings
-                                  7. Settings
-                                  8. Settings
-                                  9. Settings
-                                  10. Settings
-                                  11. Settings
-                                  12. Settings
-                                  13. Settings
-                                  14. Settings
-                                  15. Settings
-                                  16. Settings
-                                  17. Settings
-                                  18. Settings
-                                  19. Settings
-                                </ScrollableArea>
-                              </Nested>
+        <ToolSettingsContent>
+          <Toggle
+            content={"Toggle"}
+            onClick={this._handlePopoverToggleClick}
+            popupContent={
+              !this.state.isPopoverOpen ? undefined : (
+                <ToolSettingsContent>
+                  <Toggle
+                    content={"Toggle for nested popover"}
+                    onClick={this._handleNestedPopoverToggleClick}
+                    popupContent={
+                      !this.state.isNestedPopoverOpen ? undefined : (
+                        <Nested
+                          label="Nested"
+                          backButton={
+                            <HollowButton
+                              onClick={this._handleNestedToolSettingsBackClick}
+                              style={{ padding: "5px", lineHeight: "0", margin: "0" }}
+                            >
+                              <i className="icon icon-progress-backward-2" />
+                            </HollowButton>
                           }
-                        />
-                      </ToolSettings>
-                  }
-                />
-              </ToolSettings>
+                        >
+                          <ScrollableArea>
+                            <ToolSettingsContent>
+                              1. Settings<br />
+                              2. Settings<br />
+                              3. Settings<br />
+                              4. Settings<br />
+                              5. Settings<br />
+                              6. Settings<br />
+                              7. Settings<br />
+                              8. Settings<br />
+                              9. Settings<br />
+                              10. Settings<br />
+                              11. Settings<br />
+                              12. Settings<br />
+                              13. Settings<br />
+                              14. Settings<br />
+                              15. Settings<br />
+                              16. Settings<br />
+                              17. Settings<br />
+                              18. Settings<br />
+                              19. Settings
+                            </ToolSettingsContent>
+                          </ScrollableArea>
+                        </Nested>
+                      )
+                    }
+                  />
+                </ToolSettingsContent>
+              )
             }
           />
-        );
-      }
-    }
+        </ToolSettingsContent>
+      </ToolSettings>
+    );
   }
 
   private getZone(zoneId: WidgetZoneIndex) {
@@ -2418,6 +2514,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         bounds={this.state.nineZone.zones[zoneId].bounds}
         horizontalTools={this.state.tools[zoneId].horizontal}
         key={zoneId}
+        onAppButtonClick={this._handleAppButtonClick}
         onHistoryItemClick={this._handleHistoryItemClick}
         onIsHistoryExtendedChange={this._handleIsToolHistoryExtendedChange}
         onOpenPanelGroup={this._handleExpandPanelGroup}
@@ -2433,12 +2530,12 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   private getZone2() {
     const zoneId = 2;
     return (
-      <ZoneComponent
+      <ToolSettingsZone
         bounds={this.state.nineZone.zones[zoneId].bounds}
         key={zoneId}
       >
-        {this.state.tools[1].horizontal.toolSettings.isActive && this.getToolSettingsWidget()}
-      </ZoneComponent>
+        {this.state.tools[1].horizontal.toolSettings.isActive && this.getToolSettings()}
+      </ToolSettingsZone>
     );
   }
 
@@ -2499,7 +2596,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   private getStatusZone() {
-    const zoneId = StatusZone.id;
+    const zoneId = StatusZoneManager.id;
     const nineZone = new NineZone(this.state.nineZone);
     const statusZone = nineZone.getStatusZone();
     const isRectangularWidget = statusZone.props.widgets.length > 1;
@@ -2514,7 +2611,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       <StatusZoneExample
         bounds={bounds}
         dropTarget={dropTarget}
-        isInWidgetMode={!statusZone.props.isInFooterMode}
+        isInFooterMode={statusZone.props.isInFooterMode}
         key={zoneId}
         onTargetChanged={this._handleTargetChanged}
         outlineBounds={outlineBounds}
@@ -2741,7 +2838,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       case "toolSettings": {
         return {
           ...state,
-          toolSettingsWidget: ToolSettingsWidgetMode.Open,
+          toolSettingsMode: ToolSettingsMode.Open,
         };
       }
       case "disableTools": {
@@ -2906,6 +3003,18 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     });
   }
 
+  private _handleAppButtonClick = () => {
+    this.setState(() => ({
+      isBackstageOpen: true,
+    }));
+  }
+
+  private _handleBackstageClose = () => {
+    this.setState(() => ({
+      isBackstageOpen: false,
+    }));
+  }
+
   private _handleHistoryItemClick = (item: HistoryItem) => {
     this.setState((prevState) => {
       const location = this.getToolLocation(item.toolId, prevState);
@@ -3015,7 +3124,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       nineZone: DefaultStateManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone),
     }));
 
-    if (widgetId === StatusZone.id)
+    if (widgetId === StatusZoneManager.id)
       this._handleWidgetTabDragEnd();
   }
 
@@ -3117,7 +3226,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private _handleToggleFooterMode = () => {
     this.setState((prevState) => ({
-      nineZone: DefaultStateManager.setIsInFooterMode(!prevState.nineZone.zones[StatusZone.id].isInFooterMode, prevState.nineZone),
+      nineZone: DefaultStateManager.setIsInFooterMode(!prevState.nineZone.zones[StatusZoneManager.id].isInFooterMode, prevState.nineZone),
       openWidget: FooterWidget.None,
     }));
   }
@@ -3159,9 +3268,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  private _handleToolSettingsWidgetTabClick = () => {
+  private _handleToolSettingsTabClick = () => {
     this.setState((prevState) => ({
-      toolSettingsWidget: prevState.toolSettingsWidget === ToolSettingsWidgetMode.Minimized ? ToolSettingsWidgetMode.Open : ToolSettingsWidgetMode.Minimized,
+      toolSettingsMode: prevState.toolSettingsMode === ToolSettingsMode.Minimized ? ToolSettingsMode.Open : ToolSettingsMode.Minimized,
     }));
   }
 }

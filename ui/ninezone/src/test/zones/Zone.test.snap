@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<ZoneComponent /> renders correctly 1`] = `
+exports[`<Zone /> renders correctly 1`] = `
 <div
   className="nz-zones-zone"
   style={

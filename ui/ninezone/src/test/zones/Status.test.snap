@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<StatusZone /> renders correctly 1`] = `
+<Zone
+  bounds={
+    Object {
+      "bottom": 10,
+      "left": 0,
+      "right": 10,
+      "top": 0,
+    }
+  }
+  className="nz-zones-status"
+/>
+`;
+
+exports[`<StatusZone /> renders correctly in footer mode 1`] = `
+<Zone
+  bounds={
+    Object {
+      "bottom": 10,
+      "left": 0,
+      "right": 10,
+      "top": 0,
+    }
+  }
+  className="nz-zones-status nz-footer-mode"
+/>
+`;

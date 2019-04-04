@@ -14,8 +14,4 @@ describe("<ToolSettingsTab />", () => {
   it("renders correctly", () => {
     shallow(<ToolSettingsTab />).should.matchSnapshot();
   });
-
-  it("renders active correctly", () => {
-    shallow(<ToolSettingsTab isActive />).should.matchSnapshot();
-  });
 });

@@ -60,7 +60,7 @@ import { SelectionMode } from '@bentley/ui-components';
 import { SnapMode } from '@bentley/imodeljs-frontend';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { Status } from '@bentley/ui-ninezone';
-import { StatusZoneProps } from '@bentley/ui-ninezone';
+import { StatusZoneManagerProps } from '@bentley/ui-ninezone';
 import { Store } from 'redux';
 import { TargetType } from '@bentley/ui-ninezone';
 import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
@@ -2824,18 +2824,11 @@ export abstract class StatusBarWidgetControl extends WidgetControl {
     getType(): ConfigurableUiControlType;
 }
 
-// Warning: (ae-forgotten-export) The symbol "StatusBarZoneState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @internal
-export class StatusBarZone extends React_2.Component<StatusBarZoneProps, StatusBarZoneState> {
-    constructor(props: StatusBarZoneProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
+export class StatusBarZone extends React_2.Component<StatusBarZoneProps> {
     // (undocumented)
     render(): React_2.ReactNode;
-    }
+}
 
 // @internal
 export interface StatusBarZoneProps {
@@ -2850,7 +2843,7 @@ export interface StatusBarZoneProps {
     // (undocumented)
     widgetControl?: StatusBarWidgetControl;
     // (undocumented)
-    zoneProps: StatusZoneProps;
+    zoneProps: StatusZoneManagerProps;
 }
 
 // @public

@@ -5,7 +5,6 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { Link } from "react-router-dom";
-
 import "./Navigation.scss";
 
 export interface Props {
@@ -24,9 +23,6 @@ export class Navigation extends React.PureComponent<Props> {
         <ul>
           <li>
             <Link to="/zones">Zones</Link>
-          </li>
-          <li>
-            <Link to="/backstage">Backstage</Link>
           </li>
           <li>
             <Link to="/popovers">Popovers</Link>

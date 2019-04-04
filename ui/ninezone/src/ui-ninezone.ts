@@ -2,9 +2,6 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-export * from "./ui-ninezone/app/App";
-export * from "./ui-ninezone/app/Content";
-
 export * from "./ui-ninezone/backstage/Backstage";
 export * from "./ui-ninezone/backstage/Item";
 export * from "./ui-ninezone/backstage/Separator";
@@ -117,15 +114,15 @@ export * from "./ui-ninezone/widget/rectangular/tab/Group";
 export * from "./ui-ninezone/widget/rectangular/tab/Separator";
 export * from "./ui-ninezone/widget/rectangular/tab/Tab";
 
+export * from "./ui-ninezone/widget/tool-settings/Content";
 export * from "./ui-ninezone/widget/tool-settings/Nested";
 export * from "./ui-ninezone/widget/tool-settings/ScrollableArea";
-export * from "./ui-ninezone/widget/tool-settings/Settings";
 export * from "./ui-ninezone/widget/tool-settings/Tab";
 export * from "./ui-ninezone/widget/tool-settings/Toggle";
 export * from "./ui-ninezone/widget/tool-settings/Tooltip";
 
-export * from "./ui-ninezone/zones/Footer";
 export * from "./ui-ninezone/zones/GhostOutline";
+export * from "./ui-ninezone/zones/Status";
 export * from "./ui-ninezone/zones/Zone";
 export * from "./ui-ninezone/zones/Zones";
 

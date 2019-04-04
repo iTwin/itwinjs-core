@@ -17,17 +17,17 @@ export interface FooterProps extends CommonProps, NoChildrenProps {
    */
   indicators?: React.ReactNode;
   /** Specifies if the footer is in widget mode.  */
-  isInWidgetMode?: boolean;
+  isInFooterMode?: boolean;
   /** One of footer messages: [[Toast]], [[Temporary]], [[Sticky]], [[Modal]], [[Activity]] */
   message?: React.ReactNode;
 }
 
-/** Footer component. Should be used in [[FooterZone]] */
+/** Footer component. Should be used in [[StatusZone]] */
 export class Footer extends React.PureComponent<FooterProps> {
   public render() {
     const className = classnames(
       "nz-footer-footer",
-      this.props.isInWidgetMode && "nz-widget-mode",
+      this.props.isInFooterMode && "nz-footer-mode",
       this.props.className);
 
     return (

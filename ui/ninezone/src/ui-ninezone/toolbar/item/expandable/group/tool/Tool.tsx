@@ -32,9 +32,9 @@ export class GroupTool extends React.PureComponent<GroupToolProps> {
   public render() {
     const itemClassName = classnames(
       "nz-toolbar-item-expandable-group-tool-item",
-      this.props.isActive && "nz-is-active",
-      this.props.isFocused && "nz-is-focused",
-      this.props.isDisabled && "nz-is-disabled",
+      this.props.isActive && "nz-active",
+      this.props.isFocused && "nz-focused",
+      this.props.isDisabled && "nz-disabled",
       this.props.className);
 
     return (

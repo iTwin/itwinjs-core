@@ -24,7 +24,7 @@ export class StatusBarText extends React.PureComponent<StatusBarTextProps> {
   public render() {
     const combinedClassName = classnames(
       "nz-footer-text",
-      this.props.isInFooterMode && "nz-is-in-footer-mode",
+      this.props.isInFooterMode && "nz-footer-mode",
       this.props.className);
 
     return (

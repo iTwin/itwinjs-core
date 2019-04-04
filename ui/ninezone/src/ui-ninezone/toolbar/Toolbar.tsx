@@ -199,6 +199,7 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
   }
 }
 
+/** Defines toolbar item component. */
 export interface ToolbarItem {
   readonly panel: HTMLElement;
   readonly history: HTMLElement;

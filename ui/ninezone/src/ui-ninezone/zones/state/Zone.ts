@@ -42,13 +42,13 @@ export interface FloatingProps {
 }
 
 /** @hidden */
-export interface StatusZoneProps extends ZonePropsBase {
+export interface StatusZoneManagerProps extends ZonePropsBase {
   readonly id: StatusZoneIndex;
   readonly isInFooterMode: boolean;
 }
 
 /** @hidden */
-export const isStatusZone = (zone: ZonePropsBase): zone is StatusZoneProps => {
+export const isStatusZone = (zone: ZonePropsBase): zone is StatusZoneManagerProps => {
   if (zone.id === 8)
     return true;
   return false;
@@ -73,7 +73,7 @@ export const getDefaultZoneProps = (id: WidgetZoneIndex): ZonePropsBase => {
 };
 
 /** @hidden */
-export const getDefaultStatusZoneProps = (): StatusZoneProps => {
+export const getDefaultStatusZoneProps = (): StatusZoneManagerProps => {
   return {
     id: 8,
     isInFooterMode: true,
@@ -130,7 +130,7 @@ export class LayoutFactory {
 }
 
 /** A standard area on the screen for users to read and interact with data applicable to the current task. */
-export class Zone {
+export class ZoneManager {
   private readonly _id: ZoneIndex;
   protected _widgets: Widget[] | undefined = undefined;
   protected _isWidgetOpen: boolean | undefined = undefined;
@@ -152,7 +152,7 @@ export class Zone {
     return false;
   }
 
-  public equals(other: Zone) {
+  public equals(other: ZoneManager) {
     return this.id === other.id;
   }
 
@@ -168,17 +168,17 @@ export class Zone {
     return false;
   }
 
-  public isFirst(zones: ReadonlyArray<Zone>) {
+  public isFirst(zones: ReadonlyArray<ZoneManager>) {
     return zones.every((z) => z.id >= this.id);
   }
 
-  public isLast(zones: ReadonlyArray<Zone>) {
+  public isLast(zones: ReadonlyArray<ZoneManager>) {
     return zones.every((z) => z.id <= this.id);
   }
 }
 
 /** @hidden */
-export class WidgetZone extends Zone {
+export class WidgetZone extends ZoneManager {
   protected _layout: WidgetZoneLayout | undefined = undefined;
   protected _widgets: Widget[] | undefined = undefined;
   protected _widget: Widget | undefined = undefined;
@@ -505,9 +505,9 @@ export class WidgetZone extends Zone {
 }
 
 /** @hidden */
-export class StatusZone extends WidgetZone {
+export class StatusZoneManager extends WidgetZone {
   public static readonly id: StatusZoneIndex = 8;
-  public constructor(nineZone: NineZone, public readonly props: StatusZoneProps) {
+  public constructor(nineZone: NineZone, public readonly props: StatusZoneManagerProps) {
     super(nineZone, props);
   }
 
@@ -523,7 +523,7 @@ export class StatusZone extends WidgetZone {
 }
 
 /** @hidden */
-export class ContentZone extends Zone {
+export class ContentZone extends ZoneManager {
   public static readonly id: ContentZoneIndex = 5;
 
   public constructor(nineZone: NineZone) {

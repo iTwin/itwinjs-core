@@ -27,7 +27,7 @@
     }
   }
 
-  &.nz-is-extended {
+  &.nz-extended {
     > .nz-items {
       > * {
         display: block;
@@ -146,7 +146,7 @@
     }
   }
 
-  &.nz-extend-is-visible {
+  &.nz-extend-visible {
     > .nz-extend-indicator {
       display: flex;
     }

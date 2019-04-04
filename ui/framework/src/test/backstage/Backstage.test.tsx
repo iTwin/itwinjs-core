@@ -111,7 +111,7 @@ describe("Backstage", () => {
       const spyMethod = sinon.spy();
       const wrapper = mount(<Backstage isVisible={true} onClose={spyMethod} />);
       expect(Backstage.isBackstageVisible).to.be.true;
-      const overlay = wrapper.find("div.nz-backstage-backstage_Overlay");
+      const overlay = wrapper.find("div.nz-backstage-backstage_overlay");
       overlay.simulate("click");
       expect(Backstage.isBackstageVisible).to.be.false;
       expect(spyMethod.calledOnce).to.be.true;

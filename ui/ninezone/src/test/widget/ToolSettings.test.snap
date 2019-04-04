@@ -1,14 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<ToolSettingsWidget /> renders correctly 1`] = `
+exports[`<ToolSettings /> renders correctly 1`] = `
 <div
   className="nz-widget-toolSettings"
 >
-  <div
-    className="nz-content"
-  />
-  <div
-    className="nz-tab"
+  <TitleBar
+    title={
+      <DialogTitle
+        text={undefined}
+      />
+    }
   />
 </div>
 `;

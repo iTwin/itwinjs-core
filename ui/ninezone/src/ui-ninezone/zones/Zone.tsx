@@ -15,15 +15,16 @@ import { CssProperties } from "../utilities/Css";
 export interface ZoneProps extends CommonProps {
   /** Actual bounds of this [[Zone]]. */
   bounds: RectangleProps;
-  /** Zone content. I.e. available widgets: [[Stacked]], [[Tools]], [[ToolSettings]] */
+  /** Zone content. Available widgets: [[Stacked]], [[Tools]] */
   children?: React.ReactNode;
 }
 
 /**
  * A zone that may contain widgets.
- * @note For status zone (zone 8) [[FooterZone]] component should be used.
+ * @note For zone 2 use [[ToolSettingsZone]] component.
+ * @note For zone 8 use [[StatusZone]] component.
  */
-export class ZoneComponent extends React.PureComponent<ZoneProps> {
+export class Zone extends React.PureComponent<ZoneProps> {
   public render() {
     const className = classnames(
       "nz-zones-zone",

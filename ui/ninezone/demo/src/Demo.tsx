@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { HashRouter, Route } from "react-router-dom";
-import Backstage from "./pages/Backstage";
 import Home from "./pages/Home/Home";
 import Popovers from "./pages/Popovers";
 import Zones from "./pages/Zones";
@@ -21,7 +20,6 @@ export default class Demo extends React.PureComponent {
         <>
           <Route exact path="/" component={Home} />
           <Route path="/zones" component={Zones} />
-          <Route path="/backstage" component={Backstage} />
           <Route path="/popovers" component={openPopovers} />
           <Route path="/zone-targets" component={ZoneTargets} />
           <Route path="/footer" component={Footer} />

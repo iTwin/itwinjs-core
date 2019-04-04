@@ -29,14 +29,12 @@ export type BackstageDefaultProps = Pick<BackstageProps, "showOverlay">;
 
 /** Backstage component of 9-zone UI app. */
 export class Backstage extends React.PureComponent<BackstageProps> {
-  public static defaultProps: BackstageDefaultProps = {
+  public static readonly defaultProps: BackstageDefaultProps = {
     showOverlay: true,
   };
 
   private _onClose = () => {
-    if (this.props.onClose) {
-      this.props.onClose();
-    }
+    this.props.onClose && this.props.onClose();
   }
 
   public componentDidMount(): void {
@@ -56,12 +54,18 @@ export class Backstage extends React.PureComponent<BackstageProps> {
   }
 
   public render() {
-    const overlayClassName = classnames("nz-backstage-backstage_Overlay", this.props.isOpen && "nz-open", this.props.showOverlay && "nz-show");
-    const backstageClassName = classnames("nz-backstage-backstage", this.props.isOpen && "nz-open", this.props.className);
+    const overlayClassName = classnames(
+      "nz-backstage-backstage_overlay",
+      this.props.isOpen && "nz-open",
+      this.props.showOverlay && "nz-show");
+    const backstageClassName = classnames(
+      "nz-backstage-backstage",
+      this.props.isOpen && "nz-open",
+      this.props.className);
     return (
       <>
         <div className={overlayClassName} onClick={this._onClose} />
-        <div className={backstageClassName}>
+        <div className={backstageClassName} style={this.props.style}>
           {this.props.header &&
             <div className="nz-header">
               {this.props.header}

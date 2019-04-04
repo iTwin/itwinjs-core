@@ -19,13 +19,13 @@
     padding-right: 4px;
   }
 
-  &.nz-is-in-footer-mode {
+  &.nz-footer-mode {
     padding-left: $nz-footer-horizontal-padding;
     padding-right: $nz-footer-horizontal-padding;
     width: $nz-footer-selectioncount-width;
   }
 
-  &:not(.nz-is-in-footer-mode) {
+  &:not(.nz-footer-mode) {
     padding-left: $nz-footer-open-horizontal-padding;
     padding-right: $nz-footer-open-horizontal-padding;
     width: $nz-footer-selectioncount-width;

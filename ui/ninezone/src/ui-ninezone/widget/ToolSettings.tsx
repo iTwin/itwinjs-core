@@ -6,22 +6,26 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../utilities/Props";
+import { CommonProps } from "../utilities/Props";
+import { TitleBar } from "../footer/message/content/dialog/TitleBar";
+import { DialogTitle } from "../footer/message/content/dialog/Title";
 import "./ToolSettings.scss";
 
 /** Properties of [[ToolSettings]] component. */
-export interface ToolSettingsWidgetProps extends CommonProps, NoChildrenProps {
-  /** Content of this ToolSettings widget. See: [[Nested]], [[ToolSettings]] */
-  content?: React.ReactNode;
-  /** Tab to control the content. See [[ToolSettingsTab]] */
-  tab?: React.ReactNode;
+export interface ToolSettingsProps extends CommonProps {
+  /** Title bar buttons. I.e.: [[DialogButton]] */
+  buttons?: React.ReactNode;
+  /** Tool settings content. I.e.: [[ToolSettingsContent]], [[Nested]], [[ScrollableArea]] */
+  children?: React.ReactNode;
+  /** Widget title. */
+  title?: string;
 }
 
 /**
  * Tool settings widget is used to display Tool Settings and Tool Assistance (Zone 2 in 9-Zone UI).
  * @note Should be placed in [[Zone]] component.
  */
-export class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps> {
+export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings",
@@ -32,12 +36,13 @@ export class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetPr
         className={className}
         style={this.props.style}
       >
-        <div className="nz-content">
-          {this.props.content}
-        </div>
-        <div className="nz-tab">
-          {this.props.tab}
-        </div>
+        <TitleBar
+          buttons={this.props.buttons}
+          title={
+            <DialogTitle text={this.props.title} />
+          }
+        />
+        {this.props.children}
       </div>
     );
   }

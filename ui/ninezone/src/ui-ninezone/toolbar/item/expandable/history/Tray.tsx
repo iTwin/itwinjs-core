@@ -75,8 +75,8 @@ export class HistoryTray extends React.PureComponent<HistoryTrayProps> {
     const className = classnames(
       "nz-toolbar-item-expandable-history-tray",
       DirectionHelpers.getCssClassName(this.props.direction || Direction.Left),
-      isExtendIndicatorVisible && "nz-extend-is-visible",
-      this.props.isExtended && "nz-is-extended",
+      isExtendIndicatorVisible && "nz-extend-visible",
+      this.props.isExtended && "nz-extended",
       this.props.className);
 
     return (

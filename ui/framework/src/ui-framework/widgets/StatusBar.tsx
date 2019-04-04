@@ -101,7 +101,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
       <Footer
         message={this.getFooterMessage()}
         indicators={footerSections}
-        isInWidgetMode={!this.props.isInFooterMode}
+        isInFooterMode={this.props.isInFooterMode}
       />
     );
   }

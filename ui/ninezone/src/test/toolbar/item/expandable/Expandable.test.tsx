@@ -20,13 +20,13 @@ describe("<ExpandableItem />", () => {
   it("renders active correctly", () => {
     const sut = mount(<ExpandableItem isActive />);
     const button = sut.getDOMNode() as HTMLElement;
-    button.classList.contains("nz-is-active").should.true;
+    button.classList.contains("nz-active").should.true;
   });
 
   it("renders disabled correctly", () => {
     const sut = mount(<ExpandableItem isDisabled />);
     const button = sut.getDOMNode() as HTMLElement;
-    button.classList.contains("nz-is-disabled").should.true;
+    button.classList.contains("nz-disabled").should.true;
   });
 
   it("should invoke onIsHistoryExtendedChange when mouse enters", () => {

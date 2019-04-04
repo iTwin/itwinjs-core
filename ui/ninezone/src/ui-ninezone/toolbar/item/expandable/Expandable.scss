@@ -43,8 +43,8 @@
     @include triangle-bottom-right-color($pressed-icon-color);
   }
 
-  &.nz-is-active {
-    &:not(:active):not(.nz-is-disabled) {
+  &.nz-active {
+    &:not(:active):not(.nz-disabled) {
       > .nz-triangle {
         filter: $no-shadow;
 
@@ -53,7 +53,7 @@
     }
   }
 
-  &.nz-is-disabled {
+  &.nz-disabled {
     > .nz-triangle {
       @include triangle-bottom-right-color($disabled-icon-color);
     }

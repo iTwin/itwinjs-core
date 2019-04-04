@@ -8,6 +8,6 @@ exports[`<MessageCenterTab /> renders correctly 1`] = `
 
 exports[`<MessageCenterTab /> should set is-open class 1`] = `
 <div
-  className="nz-footer-messageCenter-tab nz-is-open"
+  className="nz-footer-messageCenter-tab nz-open"
 />
 `;

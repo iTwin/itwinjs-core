@@ -39,7 +39,11 @@ export class UserProfile extends React.PureComponent<UserProfileProps> {
   public render() {
     const color = getUserColor(this.props.email);
     return (
-      <div className="nz-backstage-userprofile" onClick={this.props.onClick}>
+      <div
+        className="nz-backstage-userprofile"
+        onClick={this.props.onClick}
+        style={this.props.style}
+      >
         <span style={{ backgroundColor: color }}>{this._getInitials()}</span>
         <span>{this._getFullName()}</span>
       </div>

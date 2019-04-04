@@ -6,32 +6,29 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { ZoneComponent, ZoneProps } from "./Zone";
-import "./Footer.scss";
+import { Zone, ZoneProps } from "./Zone";
+import "./Status.scss";
 
-/** Properties of [[FooterZone]] component. */
-export interface FooterZoneProps extends ZoneProps {
+/** Properties of [[StatusZone]] component. */
+export interface StatusZoneProps extends ZoneProps {
   /** Describes if the zone is in footer mode (stretched through the bottom of the app). */
   isInFooterMode?: boolean;
-  /** Describes if the zone is hidden. */
-  isHidden?: boolean;
 }
 
 /**
- * A footer zone that should contain [[Footer]]. This component is used for zone 8 (status zone).
- * @note For other zones use the [[ZoneComponent]] component.
+ * A footer zone that should contain [[Footer]].
+ * @note It is an eight zone in 9-Zone UI pattern. For other zones use [[Zone]] or [[ToolSettingsZone]] components.
  */
-export class FooterZone extends React.PureComponent<FooterZoneProps> {
+export class StatusZone extends React.PureComponent<StatusZoneProps> {
   public render() {
-    const { isInFooterMode, className, isHidden, ...props } = this.props;
+    const { isInFooterMode, className, ...props } = this.props;
     const zoneClassName = classnames(
-      "nz-zones-footer",
-      isInFooterMode && "nz-is-in-footer-mode",
-      isHidden && "nz-is-hidden",
+      "nz-zones-status",
+      isInFooterMode && "nz-footer-mode",
       className);
 
     return (
-      <ZoneComponent
+      <Zone
         className={zoneClassName}
         {...props}
       />

@@ -4,15 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
+import { StatusZone } from "../../ui-ninezone";
 
-import { Content } from "../../ui-ninezone";
-
-describe("<Content />", () => {
+describe("<StatusZone />", () => {
   it("should render", () => {
-    mount(<Content />);
+    mount(<StatusZone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Content />).should.matchSnapshot();
+    shallow(<StatusZone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />).should.matchSnapshot();
+  });
+
+  it("renders correctly in footer mode", () => {
+    shallow(<StatusZone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} isInFooterMode />).should.matchSnapshot();
   });
 });

@@ -55,7 +55,7 @@
     }
   }
 
-  &:hover:not(.nz-is-disabled) {
+  &:hover:not(.nz-disabled) {
     color: $hovered-label-color;
 
     @include body1;
@@ -65,7 +65,7 @@
     }
   }
 
-  &:active:not(.nz-is-disabled) {
+  &:active:not(.nz-disabled) {
     background: $buic-row-selection;
     color: $pressed-label-color;
 
@@ -74,7 +74,7 @@
     }
   }
 
-  &.nz-is-focused:not(.nz-is-disabled) {
+  &.nz-focused:not(.nz-disabled) {
     color: $focused-label-color;
     border-color: $buic-foreground-primary;
     border-width: $item-border-width;
@@ -87,7 +87,7 @@
     }
   }
 
-  &.nz-is-active:not(.nz-is-disabled) {
+  &.nz-active:not(.nz-disabled) {
     color: $active-label-color;
 
     @include body1;
@@ -109,7 +109,7 @@
     }
   }
 
-  &.nz-is-disabled {
+  &.nz-disabled {
     color: $disabled-label-color;
   }
 

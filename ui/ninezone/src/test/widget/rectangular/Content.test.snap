@@ -2,7 +2,7 @@
 
 exports[`<WidgetContent /> renders correctly 1`] = `
 <div
-  className="nz-widget-rectangular-content"
+  className="nz-widget-rectangular-content nz-right-anchor"
 >
   <div
     className="nz-container"

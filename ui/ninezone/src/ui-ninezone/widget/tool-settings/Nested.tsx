@@ -6,18 +6,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { ToolSettings, ToolSettingsProps } from "./Settings";
+import { CommonProps } from "../../utilities/Props";
 import "./Nested.scss";
 
 /** Properties of [[Nested]] component. */
-export interface NestedProps extends ToolSettingsProps {
+export interface NestedProps extends CommonProps {
   /** Nested settings label. */
   label?: string;
   /** Back button icon. */
   backButton?: React.ReactNode;
 }
 
-/** Nested tool settings component. Used as content of [[ToolSettings]]. */
+/** Nested tool settings component. Used as content in [[ToolSettings]] and [[Toggle]] components. */
 export class Nested extends React.PureComponent<NestedProps> {
   public render() {
     const className = classnames(
@@ -25,7 +25,7 @@ export class Nested extends React.PureComponent<NestedProps> {
       this.props.className);
 
     return (
-      <ToolSettings
+      <div
         className={className}
         style={this.props.style}
       >
@@ -38,7 +38,7 @@ export class Nested extends React.PureComponent<NestedProps> {
           </div>
         </div>
         {this.props.children}
-      </ToolSettings>
+      </div>
     );
   }
 }

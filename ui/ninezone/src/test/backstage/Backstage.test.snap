@@ -3,7 +3,7 @@
 exports[`<Backstage /> renders correctly 1`] = `
 <Fragment>
   <div
-    className="nz-backstage-backstage_Overlay nz-show"
+    className="nz-backstage-backstage_overlay nz-show"
     onClick={[Function]}
   />
   <div
@@ -17,7 +17,7 @@ exports[`<Backstage /> renders correctly 1`] = `
 exports[`<Backstage /> should render footer 1`] = `
 <Fragment>
   <div
-    className="nz-backstage-backstage_Overlay nz-show"
+    className="nz-backstage-backstage_overlay nz-show"
     onClick={[Function]}
   />
   <div
@@ -36,7 +36,7 @@ exports[`<Backstage /> should render footer 1`] = `
 exports[`<Backstage /> should render header 1`] = `
 <Fragment>
   <div
-    className="nz-backstage-backstage_Overlay nz-show"
+    className="nz-backstage-backstage_overlay nz-show"
     onClick={[Function]}
   />
   <div
@@ -55,7 +55,7 @@ exports[`<Backstage /> should render header 1`] = `
 exports[`<Backstage /> should set is-open class 1`] = `
 <Fragment>
   <div
-    className="nz-backstage-backstage_Overlay nz-open nz-show"
+    className="nz-backstage-backstage_overlay nz-open nz-show"
     onClick={[Function]}
   />
   <div

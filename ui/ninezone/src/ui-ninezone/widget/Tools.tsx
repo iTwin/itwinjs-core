@@ -43,7 +43,7 @@ export class Tools extends React.PureComponent<ToolsProps> {
       "nz-widget-tools",
       noGap && "nz-no-gap",
       reducedGap && "nz-reduced-gap",
-      this.props.isNavigation && "nz-is-navigation",
+      this.props.isNavigation && "nz-navigation",
       this.props.className);
 
     return (

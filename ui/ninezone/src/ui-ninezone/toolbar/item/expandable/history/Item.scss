@@ -17,13 +17,13 @@
   position: relative;
 
   &:active {
-    &:not(.nz-is-disabled) {
+    &:not(.nz-disabled) {
       background-color: $pressed-fill-color;
     }
   }
 
-  &.nz-is-active {
-    &:not(:active):not(.nz-is-disabled) {
+  &.nz-active {
+    &:not(:active):not(.nz-disabled) {
       &:before {
         content: '';
         display: block;

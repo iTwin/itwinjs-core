@@ -9,10 +9,9 @@ import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/Frontsta
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { StatusBar } from "../widgets/StatusBar";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 
 // import TemporaryMessage from "@bentley/ui-ninezone/messages/Temporary";
-import { StatusZoneProps as NZ_ZoneProps, DropTarget, FooterZone as NZ_FooterZone, RectangleProps, GhostOutline } from "@bentley/ui-ninezone";
+import { StatusZoneManagerProps as NZ_ZoneProps, DropTarget, StatusZone, RectangleProps, GhostOutline } from "@bentley/ui-ninezone";
 
 /** Properties for the [[StatusBarZone]] component
  * @internal
@@ -26,39 +25,15 @@ export interface StatusBarZoneProps {
   dropTarget: DropTarget;
 }
 
-interface StatusBarZoneState {
-  isUiVisible: boolean;
-}
-
 /** Status Bar Zone React component.
  * @internal
  */
-export class StatusBarZone extends React.Component<StatusBarZoneProps, StatusBarZoneState> {
-
-  constructor(props: StatusBarZoneProps) {
-    super(props);
-
-    this.state = { isUiVisible: UiFramework.getIsUiVisible() };
-  }
-
-  public componentDidMount() {
-    UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
-  }
-
-  public componentWillUnmount() {
-    UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
-  }
-
-  private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
-    this.setState({ isUiVisible: args.visible });
-  }
-
+export class StatusBarZone extends React.Component<StatusBarZoneProps> {
   public render(): React.ReactNode {
     return (
       <>
-        <NZ_FooterZone
+        <StatusZone
           isInFooterMode={this.props.zoneProps.isInFooterMode}
-          isHidden={!this.state.isUiVisible}
           bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}
         >
           {
@@ -68,19 +43,19 @@ export class StatusBarZone extends React.Component<StatusBarZoneProps, StatusBar
               widgetControl={this.props.widgetControl}
             />
           }
-        </NZ_FooterZone>
-        <NZ_FooterZone bounds={this.props.zoneProps.bounds}>
+        </StatusZone>
+        <StatusZone bounds={this.props.zoneProps.bounds}>
           <ZoneTargets
             zoneId={this.props.zoneProps.id}
             dropTarget={this.props.dropTarget}
             targetChangeHandler={this.props.targetChangeHandler}
           />
-        </NZ_FooterZone>
+        </StatusZone>
         {
           this.props.targetedBounds &&
-          <NZ_FooterZone bounds={this.props.targetedBounds}>
+          <StatusZone bounds={this.props.targetedBounds}>
             <GhostOutline />
-          </NZ_FooterZone>
+          </StatusZone>
         }
       </>
     );

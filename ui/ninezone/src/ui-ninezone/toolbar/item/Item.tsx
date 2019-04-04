@@ -27,16 +27,15 @@ export interface ItemProps extends CommonProps {
   title?: string;
 }
 
-/** Toolbar item component. Used in [[Toolbar]] */
-class ItemComponent extends React.PureComponent<ItemProps> implements ToolbarItem {
+class ActualItem extends React.PureComponent<ItemProps> implements ToolbarItem {
   public readonly panel = document.createElement("div");
   public readonly history = document.createElement("div");
 
   public render() {
     const className = classnames(
       "nz-toolbar-item-item",
-      this.props.isActive && "nz-is-active",
-      this.props.isDisabled && "nz-is-disabled",
+      this.props.isActive && "nz-active",
+      this.props.isDisabled && "nz-disabled",
       this.props.className);
 
     const panel = ReactDOM.createPortal(<div className="nz-panel"></div>, this.panel);
@@ -60,11 +59,12 @@ class ItemComponent extends React.PureComponent<ItemProps> implements ToolbarIte
   }
 }
 
+/** Toolbar item component. Used in [[Toolbar]] */
 export class Item extends React.PureComponent<ItemProps> {
   public render() {
-    const toolbarItemProps = this.props as ToolbarItemProps<ItemComponent>;
+    const toolbarItemProps = this.props as ToolbarItemProps<ActualItem>;
     return (
-      <ItemComponent
+      <ActualItem
         {...this.props}
         ref={toolbarItemProps.toolbarItemRef}
       />

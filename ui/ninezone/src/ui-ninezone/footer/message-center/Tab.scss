@@ -19,13 +19,13 @@
   position: relative;
   color: $buic-foreground-muted;
 
-  &:not(.nz-is-open) {
+  &:not(.nz-open) {
     border-bottom: 1px solid $buic-background-dialog-stroke;
     background-color: $buic-background-tab-inactive;
     color: $buic-text-color;
   }
 
-  &.nz-is-open {
+  &.nz-open {
     color: $buic-foreground-primary;
 
     &:after {

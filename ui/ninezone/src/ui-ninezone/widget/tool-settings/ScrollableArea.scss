@@ -11,8 +11,6 @@
   $triangle-height: 8px;
   $max-height: 100px;
   $triangle-color: $buic-background-widget-stroke;
-  $indicator-color: $nz-widget-background-color;
-
   position: relative;
 
   > .nz-content {
@@ -31,7 +29,9 @@
     height: 20px;
     left: 0;
     top: 0;
-    background: linear-gradient(rgba($indicator-color, 1), rgba($indicator-color, 1), rgba($indicator-color, 0.5));
+    background: linear-gradient($nz-widget-background-color 15%, transparent);
+    box-sizing: border-box;
+    padding: 3px;
 
     > .nz-triangle {
       cursor: pointer;
@@ -43,7 +43,7 @@
       align-items: flex-end;
       top: unset;
       bottom: 0;
-      background: linear-gradient(rgba($indicator-color, 0.5), rgba($indicator-color, 1), rgba($indicator-color, 1));
+      background: linear-gradient(transparent, $nz-widget-background-color 85%);
 
       > .nz-triangle {
         @include triangle-bottom($height: $triangle-height, $width: $triangle-width, $color: $triangle-color);

@@ -31,7 +31,8 @@ module.exports = {
         loader: 'tslint-loader',
         options: {
           emitErrors: true,
-          failOnHint: true
+          failOnHint: true,
+          configFile: path.resolve(__dirname, 'tslint.json')
         },
         test: /\.tsx?$/
       },
@@ -43,6 +44,9 @@ module.exports = {
         test: /\.scss$/
       },
     ],
+  },
+  performance: {
+    hints: false
   },
   plugins: [
     new HtmlWebpackPlugin({

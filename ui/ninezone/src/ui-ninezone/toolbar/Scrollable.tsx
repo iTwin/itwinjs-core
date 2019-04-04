@@ -261,11 +261,11 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
 
     const leftIndicatorClassName = classnames(
       "nz-left",
-      isLeftScrollIndicatorVisible && "nz-is-visible",
+      isLeftScrollIndicatorVisible && "nz-visible",
     );
     const rightIndicatorClassName = classnames(
       "nz-right",
-      isRightScrollIndicatorVisible && "nz-is-visible",
+      isRightScrollIndicatorVisible && "nz-visible",
     );
 
     const viewportStyle = this.getViewportStyle(direction);

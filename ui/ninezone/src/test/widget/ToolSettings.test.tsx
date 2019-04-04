@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import { ToolSettingsWidget } from "../../ui-ninezone";
+import { ToolSettings } from "../../ui-ninezone";
 
-describe("<ToolSettingsWidget />", () => {
+describe("<ToolSettings />", () => {
   it("should render", () => {
-    mount(<ToolSettingsWidget />);
+    mount(<ToolSettings />);
   });
 
   it("renders correctly", () => {
-    shallow(<ToolSettingsWidget />).should.matchSnapshot();
+    shallow(<ToolSettings />).should.matchSnapshot();
   });
 });

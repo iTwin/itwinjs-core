@@ -2,7 +2,7 @@
 
 exports[`<GroupTool /> renders active correctly 1`] = `
 <div
-  className="nz-toolbar-item-expandable-group-tool-item nz-is-active"
+  className="nz-toolbar-item-expandable-group-tool-item nz-active"
   onClick={[Function]}
 >
   <div
@@ -30,7 +30,7 @@ exports[`<GroupTool /> renders correctly 1`] = `
 
 exports[`<GroupTool /> renders disabled correctly 1`] = `
 <div
-  className="nz-toolbar-item-expandable-group-tool-item nz-is-disabled"
+  className="nz-toolbar-item-expandable-group-tool-item nz-disabled"
   onClick={[Function]}
 >
   <div
@@ -44,7 +44,7 @@ exports[`<GroupTool /> renders disabled correctly 1`] = `
 
 exports[`<GroupTool /> renders focused correctly 1`] = `
 <div
-  className="nz-toolbar-item-expandable-group-tool-item nz-is-focused"
+  className="nz-toolbar-item-expandable-group-tool-item nz-focused"
   onClick={[Function]}
 >
   <div

@@ -16,7 +16,7 @@ describe("<Footer />", () => {
     shallow(<Footer />).should.matchSnapshot();
   });
 
-  it("renders correctly in widget mode", () => {
-    shallow(<Footer isInWidgetMode />).should.matchSnapshot();
+  it("renders correctly in footer mode", () => {
+    shallow(<Footer isInFooterMode />).should.matchSnapshot();
   });
 });

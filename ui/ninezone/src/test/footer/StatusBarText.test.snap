@@ -8,6 +8,6 @@ exports[`<StatusBarText /> renders correctly 1`] = `
 
 exports[`<StatusBarText /> renders correctly in footer mode 1`] = `
 <div
-  className="nz-footer-text nz-is-in-footer-mode"
+  className="nz-footer-text nz-footer-mode"
 />
 `;

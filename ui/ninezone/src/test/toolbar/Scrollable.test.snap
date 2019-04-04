@@ -70,7 +70,7 @@ exports[`<Scrollable /> renders vertical with overflow scrolled left correctly 1
       }
     />
     <Indicator
-      className="nz-left nz-is-visible"
+      className="nz-left nz-visible"
       direction={0}
       onClick={[Function]}
     />
@@ -136,7 +136,7 @@ exports[`<Scrollable /> renders vertical with overflow scrolled right most corre
       }
     />
     <Indicator
-      className="nz-left nz-is-visible"
+      className="nz-left nz-visible"
       direction={0}
       onClick={[Function]}
     />

@@ -24,7 +24,7 @@ export class MessageCenterTab extends React.PureComponent<MessageCenterTabProps>
   public render() {
     const className = classnames(
       "nz-footer-messageCenter-tab",
-      this.props.isOpen && "nz-is-open",
+      this.props.isOpen && "nz-open",
       this.props.className);
 
     return (

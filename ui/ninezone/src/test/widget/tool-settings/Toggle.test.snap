@@ -17,7 +17,7 @@ exports[`<Toggle /> renders correctly 1`] = `
 </div>
 `;
 
-exports[`<Toggle /> renders popover content correctly 1`] = `
+exports[`<Toggle /> renders popup content correctly 1`] = `
 <div
   className="nz-widget-toolSettings-toggle"
 >
@@ -32,7 +32,7 @@ exports[`<Toggle /> renders popover content correctly 1`] = `
     />
   </div>
   <TrianglePopover
-    className="nz-popover"
+    className="nz-popup"
     content="abc"
     direction={3}
   />

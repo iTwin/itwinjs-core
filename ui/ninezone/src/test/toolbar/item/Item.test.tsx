@@ -20,13 +20,13 @@ describe("<Item />", () => {
   it("renders active correctly", () => {
     const sut = mount(<Item isActive />);
     const button = sut.find("button").getDOMNode() as HTMLElement;
-    button.classList.contains("nz-is-active").should.true;
+    button.classList.contains("nz-active").should.true;
   });
 
   it("renders disabled correctly", () => {
     const sut = mount(<Item isDisabled />);
     const button = sut.find("button").getDOMNode() as HTMLElement;
-    button.classList.contains("nz-is-disabled").should.true;
+    button.classList.contains("nz-disabled").should.true;
   });
 
   it("should invoke onClick handler", () => {

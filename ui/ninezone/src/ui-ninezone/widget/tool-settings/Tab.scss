@@ -37,29 +37,4 @@
       filter: $nz-tab-no-shadow;
     }
   }
-
-  &.nz-is-active {
-    margin-top: -$nz-widget-border-width;
-    background-color: $nz-widget-background-color;
-    color: $nz-active-tab-color;
-    border-top: 0;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    height: $nz-active-tab-height;
-
-    &:after {
-      content: '';
-      position: absolute;
-      background-color: $nz-active-tab-color;
-      border-radius: 2px;
-      width: $nz-tab-width - $nz-tab-strip-margin * 2;
-      height: $nz-tab-strip-width;
-      left: $nz-tab-strip-margin;
-      bottom: $nz-tab-strip-margin;
-    }
-
-    &:hover:after {
-      background-color: $nz-hovered-tab-color;
-    }
-  }
 }

@@ -42,6 +42,7 @@
     border-bottom-left-radius: $nz-widget-border-radius;
     border-bottom-right-radius: $nz-widget-border-radius;
     pointer-events: auto;
+    overflow: hidden;
 
     > .nz-bottom-grip {
       width: 100%;
@@ -126,11 +127,11 @@
     }
   }
 
-  &.nz-is-dragged {
+  &.nz-dragged {
     @include uicore-z-index(dragged-widget);
   }
 
-  &.nz-is-closed {
+  &.nz-closed {
     height: 100%;
     align-items: center;
 
@@ -153,7 +154,7 @@
 
       > .nz-tabs {
         > * {
-          &.nz-is-active {
+          &.nz-active {
             margin-right: unset;
           }
         }
@@ -169,7 +170,7 @@
     height: 100%;
   }
 
-  &.nz-is-floating {
+  &.nz-floating {
     > .nz-content-area {
       > .nz-content-grip {
         display: block;

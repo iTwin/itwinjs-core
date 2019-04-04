@@ -2,7 +2,7 @@
 
 exports[`<Snap /> renders active correctly 1`] = `
 <div
-  className="nz-footer-snapMode-snap nz-is-active"
+  className="nz-footer-snapMode-snap nz-active"
 >
   <div />
   <div />

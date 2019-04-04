@@ -9,12 +9,10 @@ import * as React from "react";
 import { CommonProps } from "../../utilities/Props";
 import "./Tab.scss";
 
-/** Properties of [[ToolSettings]] component. */
+/** Properties of [[ToolSettingsTab]] component. */
 export interface ToolSettingsTabProps extends CommonProps {
   /** Tab icon. */
   children?: React.ReactNode;
-  /** Describes if the tab is active. */
-  isActive?: boolean;
   /** Function called when the tab is clicked. */
   onClick?: () => void;
   /** Function called when a key is pressed. */
@@ -25,13 +23,12 @@ export interface ToolSettingsTabProps extends CommonProps {
 
 /**
  * Tool settings widget tab.
- * @note Used in [[ToolSettings]] component.
+ * @note Used in [[ToolSettingsZone]] component.
  */
 export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings-tab",
-      this.props.isActive && "nz-is-active",
       this.props.className);
 
     return (

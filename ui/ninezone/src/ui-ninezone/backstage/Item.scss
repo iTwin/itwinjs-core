@@ -20,16 +20,16 @@
     color: $nz-backstage-item-color;
   }
 
-  &.nz-is-active {
+  &.nz-active {
     background: $nz-backstage-item-active-background;
   }
 
-  &.nz-is-disabled {
+  &.nz-disabled {
     color: $nz-backstage-item-color-disabled;
     pointer-events: none;
   }
 
-  &.nz-is-active:before{
+  &.nz-active:before{
     content: '';
     position: absolute;
     top: 0;

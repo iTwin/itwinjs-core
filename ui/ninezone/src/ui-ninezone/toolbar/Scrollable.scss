@@ -58,7 +58,7 @@
     > .nz-left, > .nz-right {
       position: absolute;
 
-      &:not(.nz-is-visible) {
+      &:not(.nz-visible) {
         display: none;
       }
     }

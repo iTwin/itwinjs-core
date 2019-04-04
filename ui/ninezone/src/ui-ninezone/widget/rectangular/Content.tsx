@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "../../utilities/Props";
-import { HorizontalAnchor } from "../Stacked";
+import { HorizontalAnchor, HorizontalAnchorHelpers } from "../Stacked";
 import "./Content.scss";
 
 /** Properties of [[WidgetContent]] component. */
@@ -23,7 +23,7 @@ export class WidgetContent extends React.PureComponent<WidgetContentProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-content",
-      this.props.anchor === HorizontalAnchor.Left && "nz-left-anchor",
+      HorizontalAnchorHelpers.getCssClassName(this.props.anchor),
       this.props.className);
 
     return (

@@ -51,7 +51,7 @@
     @include nz-footer-separator;
   }
 
-  &.nz-widget-mode {
+  &:not(.nz-footer-mode) {
     >.nz-indicators {
       >*:not(:last-child) {
         &:after {

@@ -55,7 +55,7 @@ describe("<Backstage />", () => {
     const handler = sinon.spy();
     const component = mount(<Backstage onClose={handler} />);
 
-    component.find(".nz-backstage-backstage_Overlay").simulate("click");
+    component.find(".nz-backstage-backstage_overlay").simulate("click");
     handler.calledOnce.should.true;
   });
 

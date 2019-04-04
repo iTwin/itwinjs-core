@@ -11,7 +11,7 @@ import "./Zones.scss";
 
 /** Properties of [[Zones]] component. */
 export interface ZonesProps extends CommonProps {
-  /** Actual zones here (i.e. [[FooterZone]], [[Zone]]) */
+  /** Actual zones here (i.e. [[StatusZone]], [[Zone]]) */
   children?: React.ReactNode;
   /** Describes if the zones component is hidden. */
   isHidden?: boolean;
@@ -21,7 +21,10 @@ export interface ZonesProps extends CommonProps {
 export class Zones extends React.PureComponent<ZonesProps> {
   public render() {
     const { isHidden } = this.props;
-    const className = classnames("nz-zones-zones", isHidden && "nz-is-hidden", this.props.className);
+    const className = classnames(
+      "nz-zones-zones",
+      isHidden && "nz-hidden",
+      this.props.className);
     return (
       <div className={className} style={this.props.style}>
         {this.props.children}

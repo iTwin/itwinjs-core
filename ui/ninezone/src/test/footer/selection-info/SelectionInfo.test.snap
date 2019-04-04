@@ -8,6 +8,6 @@ exports[`<SelectionInfo /> renders correctly 1`] = `
 
 exports[`<SelectionInfo /> renders correctly in footer mode 1`] = `
 <div
-  className="nz-footer-selectionInfo-selectionInfo nz-is-in-footer-mode"
+  className="nz-footer-selectionInfo-selectionInfo nz-footer-mode"
 />
 `;

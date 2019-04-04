@@ -14,13 +14,13 @@
 
   font-size: $text-font-size;
 
-  &.nz-is-in-footer-mode {
+  &.nz-footer-mode {
     padding-left: $nz-footer-horizontal-padding;
     padding-right: $nz-footer-horizontal-padding;
     width: $nz-footer-prompt-width;
   }
 
-  &:not(.nz-is-in-footer-mode) {
+  &:not(.nz-footer-mode) {
     padding-left: $nz-footer-open-horizontal-padding;
     padding-right: $nz-footer-open-horizontal-padding;
     width: $nz-footer-open-prompt-width;
@@ -30,13 +30,13 @@
   @media only screen and (max-width: 600px) {
     font-size: $text-font-size-small;
 
-    &.nz-is-in-footer-mode {
+    &.nz-footer-mode {
       padding-left: $nz-footer-horizontal-padding-small;
       padding-right: $nz-footer-horizontal-padding-small;
       width: $nz-footer-prompt-width-small;
     }
 
-    &:not(.nz-is-in-footer-mode) {
+    &:not(.nz-footer-mode) {
       padding-left: $nz-footer-open-horizontal-padding-small;
       padding-right: $nz-footer-open-horizontal-padding-small;
       width: $nz-footer-open-prompt-width-small;
@@ -47,13 +47,13 @@
   @media only screen and (max-width: 768px) {
     font-size: $text-font-size-medium;
 
-    &.nz-is-in-footer-mode {
+    &.nz-footer-mode {
       padding-left: $nz-footer-horizontal-padding-medium;
       padding-right: $nz-footer-horizontal-padding-medium;
       width: $nz-footer-prompt-width-medium;
     }
 
-    &:not(.nz-is-in-footer-mode) {
+    &:not(.nz-footer-mode) {
       padding-left: $nz-footer-open-horizontal-padding-medium;
       padding-right: $nz-footer-open-horizontal-padding-medium;
       width: $nz-footer-open-prompt-width-medium;

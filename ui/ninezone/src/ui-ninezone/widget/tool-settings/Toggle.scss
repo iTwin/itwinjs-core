@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "../../_geometry";
-@import "../_variables";
+@import "_variables";
 
 .nz-widget-toolSettings-toggle {
   $triangle-width: 4px;
@@ -31,9 +31,22 @@
     }
   }
 
-  > .nz-popover {
+  > .nz-popup {
     left: 50%;
     transform: translateX(-50%);
-    color: $nz-widget-border-color;
+
+    > .nz-triangle {
+      color: $nz-widget-border-color;
+    }
+
+    > .nz-content {
+      background-color: $nz-widget-background-color;
+      border: {
+        color: $nz-widget-border-color;
+        radius: $nz-widget-border-radius;
+        style: solid;
+        width: $nz-widget-border-width;
+      }
+    }
   }
 }

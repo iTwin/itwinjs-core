@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { ToolSettings } from "../../../ui-ninezone";
+import { ToolSettingsContent } from "../../../ui-ninezone";
 
-describe("<ToolSettings />", () => {
+describe("<ToolSettingsContent />", () => {
   it("should render", () => {
-    mount(<ToolSettings />);
+    mount(<ToolSettingsContent />);
   });
 
   it("renders correctly", () => {
-    shallow(<ToolSettings />).should.matchSnapshot();
+    shallow(<ToolSettingsContent />).should.matchSnapshot();
   });
 });

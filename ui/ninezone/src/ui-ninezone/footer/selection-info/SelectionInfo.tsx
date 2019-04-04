@@ -24,7 +24,7 @@ export class SelectionInfo extends React.PureComponent<SelectionInfoProps> {
   public render() {
     const combinedClassName = classnames(
       "nz-footer-selectionInfo-selectionInfo",
-      this.props.isInFooterMode && "nz-is-in-footer-mode",
+      this.props.isInFooterMode && "nz-footer-mode",
       this.props.className);
 
     return (

@@ -2,14 +2,11 @@
 
 exports[`<Stacked /> renders correctly 1`] = `
 <div
-  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed"
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed"
 >
   <div
     className="nz-content-area"
   >
-    <WidgetContent
-      anchor={1}
-    />
     <ResizeGrip
       className="nz-bottom-grip"
       direction={1}
@@ -50,14 +47,11 @@ exports[`<Stacked /> renders correctly 1`] = `
 
 exports[`<Stacked /> renders correctly to fill zone 1`] = `
 <div
-  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed nz-fill-zone"
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed nz-fill-zone"
 >
   <div
     className="nz-content-area"
   >
-    <WidgetContent
-      anchor={1}
-    />
     <ResizeGrip
       className="nz-bottom-grip"
       direction={1}
@@ -98,14 +92,11 @@ exports[`<Stacked /> renders correctly to fill zone 1`] = `
 
 exports[`<Stacked /> renders dragged correctly 1`] = `
 <div
-  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed nz-is-dragged"
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed nz-dragged"
 >
   <div
     className="nz-content-area"
   >
-    <WidgetContent
-      anchor={1}
-    />
     <ResizeGrip
       className="nz-bottom-grip"
       direction={1}
@@ -146,14 +137,11 @@ exports[`<Stacked /> renders dragged correctly 1`] = `
 
 exports[`<Stacked /> renders floating correctly 1`] = `
 <div
-  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed nz-is-floating"
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed nz-floating"
 >
   <div
     className="nz-content-area"
   >
-    <WidgetContent
-      anchor={1}
-    />
     <ResizeGrip
       className="nz-bottom-grip"
       direction={1}
