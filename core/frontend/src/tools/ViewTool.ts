@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipVector, ClipUtilities } from "@bentley/geometry-core";
 import { ColorDef, Frustum, Npc, NpcCenter } from "@bentley/imodeljs-common";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
@@ -520,6 +520,22 @@ export abstract class ViewManip extends ViewTool {
     return (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
   }
 
+  private static getClippedRange(range: Range3d, clip: ClipVector): Range3d {
+    const clipRange = range.clone();
+    for (const clipPrim of clip.clips) {
+      const clipPlaneSet = clipPrim.fetchClipPlanesRef();
+      if (undefined === clipPlaneSet)
+        continue;
+      for (const convexSet of clipPlaneSet.convexSets) {
+        const thisRange = ClipUtilities.rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet, clipRange);
+        if (thisRange.isNull)
+          return thisRange;
+        clipRange.setFrom(thisRange);
+      }
+    }
+    return clipRange;
+  }
+
   protected static _useViewAlignedVolume: boolean = false;
   public static fitView(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
@@ -528,12 +544,9 @@ export abstract class ViewManip extends ViewTool {
 
     const clip = viewport.view.getViewClip();
     if (undefined !== clip) {
-      const clipRange = clip.getRange();
-      if (undefined !== clipRange) {
-        range.intersect(clipRange, clipRange);
-        if (!clipRange.isNull)
-          range.setFrom(clipRange);
-      }
+      const clipRange = this.getClippedRange(range, clip);
+      if (!clipRange.isNull)
+        range.setFrom(clipRange);
     }
 
     if (this._useViewAlignedVolume)
