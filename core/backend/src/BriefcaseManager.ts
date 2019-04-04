@@ -523,14 +523,11 @@ export class BriefcaseManager {
     requestContext.enter();
     if (changeSetId === "")
       return 0; // the first version
-    try {
-      const changeSet: ChangeSet = (await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
-      requestContext.enter();
 
-      return +changeSet.index!;
-    } catch (err) {
-      throw new IModelError(ChangeSetStatus.InvalidId, "Could not determine index of change set", Logger.logError, loggerCategory, () => ({ iModelId, changeSetId }));
-    }
+    const changeSet: ChangeSet = (await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().byId(changeSetId)))[0];
+    requestContext.enter();
+
+    return +changeSet.index!;
   }
 
   /** Open a briefcase */
