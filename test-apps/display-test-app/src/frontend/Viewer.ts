@@ -260,6 +260,12 @@ export class Viewer {
       click: () => IModelApp.tools.run("View.Redo", this.viewport),
     }));
 
+    this.toolBar.addItem(createToolButton({
+      className: "rd-icon-measure-distance",
+      click: () => IModelApp.tools.run("Measure.Distance", IModelApp.viewManager.selectedView!),
+      tooltip: "Measure distance",
+    }));
+
     this.toolBar.addDropDown({
       className: "bim-icon-animation",
       createDropDown: async (container: HTMLElement) => new AnimationPanel(this.viewport, container),
