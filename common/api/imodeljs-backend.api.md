@@ -93,6 +93,7 @@ import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
+import * as os from 'os';
 import { PageableECSql } from '@bentley/imodeljs-common';
 import { PageOptions } from '@bentley/imodeljs-common';
 import { Placement2d } from '@bentley/imodeljs-common';
@@ -726,7 +727,54 @@ export class DevTools {
     static ping(): boolean;
     static setLogLevel(inLoggerCategory: string, newLevel: LogLevel): LogLevel | undefined;
     static signal(signalType: number): boolean;
-    static stats(): any;
+    static stats(): DevToolsStats;
+    static versions(): {
+        application: string;
+        iModelJs: any;
+    };
+}
+
+// @internal
+export interface DevToolsOsStats {
+    // (undocumented)
+    cpus: os.CpuInfo[];
+    // (undocumented)
+    cpuUsage: number;
+    // (undocumented)
+    freemem: number;
+    // (undocumented)
+    hostname: string;
+    // (undocumented)
+    platform: NodeJS.Platform;
+    // (undocumented)
+    totalmem: number;
+    // (undocumented)
+    uptime: number;
+}
+
+// @internal
+export interface DevToolsProcessStats {
+    // (undocumented)
+    memoryUsage: NodeJS.MemoryUsage;
+    // (undocumented)
+    pid: number;
+    // (undocumented)
+    ppid: number;
+    // (undocumented)
+    uptime: number;
+}
+
+// @internal
+export interface DevToolsStats {
+    // (undocumented)
+    os: DevToolsOsStats;
+    // (undocumented)
+    process: DevToolsProcessStats;
+}
+
+// @internal
+export class DevToolsStatsFormatter {
+    static toFormattedJson(stats: any): any;
 }
 
 // @public

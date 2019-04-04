@@ -36,6 +36,7 @@ import { ColorDefProps } from '@bentley/imodeljs-common';
 import { ColorIndex } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { CurvePrimitive } from '@bentley/geometry-core';
+import { DevToolsStatsOptions } from '@bentley/imodeljs-common';
 import { Dictionary } from '@bentley/bentleyjs-core';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
@@ -1603,7 +1604,9 @@ export class DevTools {
     ping(count: number): Promise<PingTestResult>;
     setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
     signal(signalType: number): Promise<boolean>;
-    stats(): Promise<any>;
+    stats(options?: DevToolsStatsOptions): Promise<any>;
+    // (undocumented)
+    versions(): Promise<any>;
 }
 
 // @public

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { RpcInterface, RpcManager, DevToolsRpcInterface, IModelToken } from "@bentley/imodeljs-common";
-import { DevTools } from "../DevTools";
+import { RpcInterface, RpcManager, DevToolsRpcInterface, IModelToken, DevToolsStatsOptions } from "@bentley/imodeljs-common";
+import { DevTools, DevToolsStatsFormatter } from "../DevTools";
 
 /** The backend implementation of WipRpcInterface.
  * @internal
@@ -25,8 +25,17 @@ export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterfac
   }
 
   // Returns JSON object with statistics
-  public async stats(_iModelToken: IModelToken): Promise<any> {
-    return DevTools.stats();
+  public async stats(_iModelToken: IModelToken, options: DevToolsStatsOptions): Promise<any> {
+    const stats = DevTools.stats();
+    if (options === DevToolsStatsOptions.None)
+      return stats;
+    const formattedStats = DevToolsStatsFormatter.toFormattedJson(stats);
+    return formattedStats;
+  }
+
+  // Returns JSON object with backend versions (application and iModelJs)
+  public async versions(_iModelToken: IModelToken): Promise<any> {
+    return DevTools.versions();
   }
 
   // Sets up a log level at the backend

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { DevTools } from "../../imodeljs-backend";
+import { DevTools, DevToolsStatsFormatter } from "../../imodeljs-backend";
 import { assert } from "chai";
 import { IModelTestUtils } from "../IModelTestUtils";
 import * as os from "os";
@@ -45,6 +45,28 @@ describe("DevTools", () => {
     }
   });
 
+  it("can serialize stats from backend appropriately", () => {
+    const stats = DevTools.stats();
+    const formattedStats = DevToolsStatsFormatter.toFormattedJson(stats);
+
+    assert.isTrue((formattedStats.os.totalmem as string).endsWith("MB"));
+    assert.isTrue((formattedStats.os.freemem as string).endsWith("MB"));
+    assert.isTrue((formattedStats.os.uptime as string).endsWith("secs"));
+    assert.isTrue((formattedStats.os.cpus[0].speed as string).endsWith("MHz"));
+    assert.isTrue((formattedStats.os.cpus[0].times.user as string).endsWith("%"));
+    assert.isTrue((formattedStats.os.cpus[0].times.nice as string).endsWith("%"));
+    assert.isTrue((formattedStats.os.cpus[0].times.sys as string).endsWith("%"));
+    assert.isTrue((formattedStats.os.cpus[0].times.idle as string).endsWith("%"));
+    assert.isTrue((formattedStats.os.cpus[0].times.irq as string).endsWith("%"));
+    assert.isTrue((formattedStats.os.cpuUsage! as string).endsWith("%"));
+
+    assert.isTrue((formattedStats.process.uptime as string).endsWith("secs"));
+    assert.isTrue((formattedStats.process.memoryUsage.rss as string).endsWith("MB"));
+    assert.isTrue((formattedStats.process.memoryUsage.heapTotal as string).endsWith("MB"));
+    assert.isTrue((formattedStats.process.memoryUsage.heapUsed as string).endsWith("MB"));
+    assert.isTrue((formattedStats.process.memoryUsage.external as string).endsWith("MB"));
+  });
+
   it("can ping backend", () => {
     const ret = DevTools.ping();
     assert.isTrue(ret);
@@ -62,6 +84,12 @@ describe("DevTools", () => {
 
     const actualNewLevel = Logger.getLevel(loggerCategory);
     assert.equal(actualNewLevel, expectedNewLevel);
+  });
+
+  it("Get the backend versions", () => {
+    const versions = DevTools.versions();
+    assert.isDefined(versions.application);
+    assert.isDefined(versions.iModelJs);
   });
 });
 

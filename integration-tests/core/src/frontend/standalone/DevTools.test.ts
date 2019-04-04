@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { IModelToken } from "@bentley/imodeljs-common";
+import { IModelToken, DevToolsStatsOptions } from "@bentley/imodeljs-common";
 import { DevTools, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
 
@@ -25,10 +25,16 @@ describe("DevTools", () => {
   });
 
   it("can fetch stats from backend", async () => {
-    const stats = await devTools.stats();
+    const stats = await devTools.stats(DevToolsStatsOptions.None);
     assert.isDefined(stats);
     assert.isDefined(stats.os);
     assert.isDefined(stats.process);
+
+    const formattedStats = await devTools.stats();
+    assert.isTrue((formattedStats.os.totalmem as string).endsWith("MB"));
+    assert.isTrue((formattedStats.os.uptime as string).endsWith("secs"));
+    assert.isTrue((formattedStats.os.cpus[0].speed as string).endsWith("MHz"));
+    assert.isTrue((formattedStats.os.cpus[0].times.user as string).endsWith("%"));
   });
 
   it("can ping backend", async () => {
@@ -54,5 +60,11 @@ describe("DevTools", () => {
     const thirdLevel = LogLevel.Error;
     const acutalSecondLevel = await devTools.setLogLevel(loggerCategory, thirdLevel);
     assert.equal(acutalSecondLevel, secondLevel);
+  });
+
+  it("Get the backend versions", async () => {
+    const versions = await devTools.versions();
+    assert.isDefined(versions.application);
+    assert.isDefined(versions.iModelJs);
   });
 });

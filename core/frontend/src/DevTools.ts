@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { DevToolsRpcInterface, IModelToken } from "@bentley/imodeljs-common";
+import { DevToolsRpcInterface, IModelToken, DevToolsStatsOptions } from "@bentley/imodeljs-common";
 
 /**
  * Results of the ping test
@@ -48,17 +48,14 @@ export class DevTools {
   public async ping(count: number): Promise<PingTestResult> {
     const pings = new Array<Promise<number | undefined>>(count);
 
-    const startFn = async (): Promise<number> => {
-      return Promise.resolve(Date.now());
-    };
-
-    const pingFn = async (start: number): Promise<number> => {
+    const pingFn = async (): Promise<number> => {
+      const start = Date.now();
       await DevToolsRpcInterface.getClient().ping(this._iModelToken);
       return Promise.resolve(Date.now() - start);
     };
 
     for (let ii = 0; ii < count; ii++)
-      pings[ii] = startFn().then(pingFn).catch(() => Promise.resolve(undefined));
+      pings[ii] = pingFn().catch(() => Promise.resolve(undefined));
 
     const pingTimes: Array<number | undefined> = await Promise.all(pings);
 
@@ -85,8 +82,13 @@ export class DevTools {
   }
 
   /** Returns JSON object with backend statistics */
-  public async stats(): Promise<any> {
-    return DevToolsRpcInterface.getClient().stats(this._iModelToken);
+  public async stats(options: DevToolsStatsOptions = DevToolsStatsOptions.FormatUnits): Promise<any> {
+    return DevToolsRpcInterface.getClient().stats(this._iModelToken, options);
+  }
+
+  // Returns JSON object with backend versions (application and iModelJs)
+  public async versions(): Promise<any> {
+    return DevToolsRpcInterface.getClient().versions(this._iModelToken);
   }
 
   /** Sets up a log level at the backend and returns the old log level */

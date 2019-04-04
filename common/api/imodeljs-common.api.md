@@ -1126,9 +1126,18 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
     // (undocumented)
     signal(_iModelToken: IModelToken, _signalType: number): Promise<boolean>;
     // (undocumented)
-    stats(_iModelToken: IModelToken): Promise<any>;
+    stats(_iModelToken: IModelToken, _options: DevToolsStatsOptions): Promise<any>;
     static types: () => (typeof IModelToken | typeof IModelNotFoundResponse)[];
     static version: string;
+    // (undocumented)
+    versions(_iModelToken: IModelToken): Promise<any>;
+}
+
+// @internal
+export const enum DevToolsStatsOptions {
+    FormatUnits = 1,
+    // (undocumented)
+    None = 0
 }
 
 // @beta
