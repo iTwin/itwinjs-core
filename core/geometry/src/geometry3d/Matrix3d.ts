@@ -1225,7 +1225,7 @@ export class Matrix3d implements BeJSONFunctions {
       (this.coffs[6] * v.x + this.coffs[7] * v.y + this.coffs[8] * v.z));
   }
 
-  public static xyzMinusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYZ, result?: Point3d): Point3d {
+  public static xyzMinusMatrixTimesXYZ(origin: XYAndZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;

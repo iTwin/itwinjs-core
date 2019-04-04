@@ -2150,12 +2150,19 @@ export class HalfEdge {
     distanceXY(other: HalfEdge): number;
     readonly edgeMate: HalfEdge;
     readonly facePredecessor: HalfEdge;
+    faceStepY(numStep: number): number;
     readonly faceSuccessor: HalfEdge;
     static filterIsMaskOff(node: HalfEdge, mask: HalfEdgeMask): boolean;
     static filterIsMaskOn(node: HalfEdge, mask: HalfEdgeMask): boolean;
+    fractionAlongAndPerpendicularToPoint2d(fractionAlong: number, fractionPerpendicular: number, result?: Point2d): Point2d;
     fractionToPoint2d(fraction: number, result?: Point2d): Point2d;
+    // (undocumented)
+    fractionToX(fraction: number): number;
+    // (undocumented)
+    fractionToY(fraction: number): number;
     getMask(mask: HalfEdgeMask): number;
     static horizontalScanFraction(node0: HalfEdge, y: number): number | undefined | HalfEdge;
+    static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined;
     i: number;
     readonly id: any;
     isEqualXY(other: HalfEdge): boolean;
@@ -3236,7 +3243,7 @@ export class Matrix3d implements BeJSONFunctions {
     // (undocumented)
     static xyPlusMatrixTimesXY(origin: XAndY, matrix: Matrix3d, vector: XAndY, result?: Point2d): Point2d;
     // (undocumented)
-    static xyzMinusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYZ, result?: Point3d): Point3d;
+    static xyzMinusMatrixTimesXYZ(origin: XYAndZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d;
     // (undocumented)
     static xyzPlusMatrixTimesCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Point3d): Point3d;
     static xyzPlusMatrixTimesCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Float64Array): Float64Array;
@@ -3885,6 +3892,7 @@ export class Point3dArray {
     static clonePoint2dArray(data: XYAndZ[]): Point2d[];
     // (undocumented)
     static clonePoint3dArray(data: XYAndZ[]): Point3d[];
+    static cloneWithMaxEdgeLength(points: Point3d[], maxEdgeLength: number): Point3d[];
     static closestPointIndex(data: XYAndZ[], spacePoint: XYAndZ): number;
     static evaluateTrilinearDerivativeTransform(points: Point3d[], u: number, v: number, w: number, result?: Transform): Transform;
     static evaluateTrilinearPoint(points: Point3d[], u: number, v: number, w: number, result?: Point3d): Point3d;
@@ -4108,6 +4116,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     // (undocumented)
     addGeometryQuery(g: GeometryQuery): void;
     addGraph(graph: HalfEdgeGraph, needParams: boolean, acceptFaceFunction?: HalfEdgeToBooleanFunction): void;
+    addGraphFaces(_graph: HalfEdgeGraph, faces: HalfEdge[]): void;
     addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform?: Transform): void;
     // (undocumented)
     addLinearSweep(surface: LinearSweep): void;
@@ -4140,6 +4149,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     findOrAddPoint(xyz: Point3d): number;
     findOrAddPointInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndex?: number): number | undefined;
     findOrAddPointXYZ(x: number, y: number, z: number): number;
+    // (undocumented)
+    static graphFacesToPolyface(graph: HalfEdgeGraph, faces: HalfEdge[]): IndexedPolyface;
     // (undocumented)
     static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction?: HalfEdgeToBooleanFunction): IndexedPolyface;
     // (undocumented)
@@ -4279,10 +4290,7 @@ export class PolygonOps {
     static centroidAndAreaXY(points: Point2d[], centroid: Point2d): number | undefined;
     // (undocumented)
     static centroidAreaNormal(points: Point3d[]): Ray3d | undefined;
-    static parity(pPoint: Point2d, pPointArray: Point2d[] | Point3d[], tol?: number): number;
-    static parityVectorTest(pPoint: Point2d, theta: number, pPointArray: Point2d[] | Point3d[], tol: number): number | undefined;
-    static parityXTest(pPoint: Point2d, pPointArray: Point2d[] | Point3d[], tol: number): number | undefined;
-    static parityYTest(pPoint: Point2d, pPointArray: Point2d[] | Point3d[], tol: number): number | undefined;
+    static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
     static sumTriangleAreas(points: Point3d[]): number;
     static sumTriangleAreasXY(points: Point3d[]): number;
     static testXYPolygonTurningDirections(pPointArray: Point2d[] | Point3d[]): number;
@@ -5151,7 +5159,7 @@ export class Transform implements BeJSONFunctions {
     clone(result?: Transform): Transform;
     // (undocumented)
     cloneRigid(axisOrder?: AxisOrder): Transform | undefined;
-    static createFixedPointAndMatrix(fixedPoint: Point3d, matrix: Matrix3d, result?: Transform): Transform;
+    static createFixedPointAndMatrix(fixedPoint: XYAndZ, matrix: Matrix3d, result?: Transform): Transform;
     static createIdentity(result?: Transform): Transform;
     static createMatrixPickupPutdown(matrix: Matrix3d, pointA: Point3d, pointB: Point3d, result?: Transform): Transform;
     static createOriginAndMatrix(origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform): Transform;
@@ -5311,6 +5319,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
 
 // @public (undocumented)
 export class Triangulator {
+    static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: XAndY[] | GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined;
     static createTriangulatedGraphFromLoops(loops: GrowableXYZArray[] | XAndY[][]): HalfEdgeGraph | undefined;
     static createTriangulatedGraphFromSingleLoop(data: XAndY[]): HalfEdgeGraph;
     static flipTriangles(graph: HalfEdgeGraph): void;

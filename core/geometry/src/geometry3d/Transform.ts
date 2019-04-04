@@ -213,7 +213,7 @@ export class Transform implements BeJSONFunctions {
   /** Create a transform with the specified matrix. Compute an origin (different from the given fixedPoint)
    * so that the fixedPoint maps back to itself.
    */
-  public static createFixedPointAndMatrix(fixedPoint: Point3d, matrix: Matrix3d, result?: Transform): Transform {
+  public static createFixedPointAndMatrix(fixedPoint: XYAndZ, matrix: Matrix3d, result?: Transform): Transform {
     const origin = Matrix3d.xyzMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
     return Transform.createRefs(origin, matrix.clone(), result);
   }

@@ -57,14 +57,6 @@ import { SolidPrimitive } from "../solid/SolidPrimitive";
 
 /* tslint:disable:no-console */
 
-/** Access the last point in the array. push another shifted by dx,dy,dz */
-function pushMove(data: Point3d[], dx: number, dy: number, dz: number = 0.0) {
-  if (data.length > 0) {
-    const back = data[data.length - 1];
-    data.push(Point3d.create(back.x + dx, back.y + dy, back.z + dz));
-  }
-}
-
 export class Sample {
   public static readonly point2d: Point2d[] = [
     Point2d.create(0, 0),
@@ -157,6 +149,23 @@ export class Sample {
       Point3d.create(x0, y0, z),
     ];
   }
+  /** Access the last point in the array. push another shifted by dx,dy,dz.
+   * * No push if all are 0.
+   * * If array is empty, push a leading 000
+   */
+  public static pushMove(data: Point3d[], dx: number, dy: number, dz: number = 0.0) {
+    if (data.length === 0)
+      data.push(Point3d.create(0, 0, 0));
+    const back = data[data.length - 1];
+    if (dx !== 0 || dy !== 0 || dz !== 0)
+      data.push(Point3d.create(back.x + dx, back.y + dy, back.z + dz));
+  }
+  /** push a clone of the data[0] */
+  public static pushClosure(data: Point3d[]) {
+    if (data.length > 0)
+      data.push(data[data.length - 1].clone());
+  }
+
   public static createUnitCircle(numPoints: number): Point3d[] {
     const points: Point3d[] = [];
     const dTheta = Geometry.safeDivideFraction(Math.PI * 2, numPoints - 1, 0.0);
@@ -675,18 +684,70 @@ export class Sample {
   public static createSquareWave(origin: Point3d, dx0: number, dy: number, dx1: number, numPhase: number, dyReturn: number): Point3d[] {
     const result = [origin.clone()];
     for (let i = 0; i < numPhase; i++) {
-      pushMove(result, dx0, 0);
-      pushMove(result, 0, dy);
-      pushMove(result, dx1, 0);
-      pushMove(result, 0, -dy);
+      this.pushMove(result, dx0, 0);
+      this.pushMove(result, 0, dy);
+      this.pushMove(result, dx1, 0);
+      this.pushMove(result, 0, -dy);
     }
-    pushMove(result, dx0, 0);
+    this.pushMove(result, dx0, 0);
     if (dyReturn !== 0.0) {
-      pushMove(result, 0, dyReturn);
-      result.push(Point3d.create(0, dyReturn));
+      this.pushMove(result, 0, dyReturn);
+      result.push(Point3d.create(origin.x, origin.y + dyReturn));
       result.push(result[0].clone());
     }
     return result;
+  }
+  /**
+   * Append numPhase teeth.  Each tooth starts with dxLow dwell at inital y, then sloped rise, then dwell at top, then sloped fall
+   * If no points are present, start with 000.  (this happends in pushMove) Otherwise start from final point.
+   * @param points point array to receive points
+   * @param dxLow starting step along x direction
+   * @param riseX width of rising and falling parts
+   * @param riseY height of rise
+   * @param dxHigh width at top
+   * @param numPhase number of phases.
+   */
+  public static appendSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number) {
+    for (let i = 0; i < numPhase; i++) {
+      this.pushMove(points, dxLow, 0, 0);
+      this.pushMove(points, riseX, riseY, 0);
+      this.pushMove(points, dxHigh, 0, 0);
+      this.pushMove(points, riseX, -riseY, 0);
+    }
+  }
+  /**
+   * Create a pair of sawtooth patterns, one (nominally) outbound and up, the other inbound and down.
+   * * return phase count adjusted to end at start x
+   * * enter return dx values as lengths -- sign will be negated in construction.
+   * @param origin start of entire path.
+   * @param dxLow low outbound dwell
+   * @param riseX x part of outbound rise and fall
+   * @param riseY y part of outbound rise and fall
+   * @param dxHigh high outbound dwell
+   * @param numPhaseOutbound number of phases outbuond.  Final phase followed by dxLow dwell.
+   * @param dyFinal rise after final dwell.
+   * @param dxLowReturn dwell at return high
+   * @param riseXReturn rise x part of return
+   * @param riseYReturn rise y part of return
+   * @param dxHighReturn  dwell at return high
+   */
+  public static createBidirectionalSawtooth(origin: Point3d, dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhaseOutbound: number,
+    dyFinal: number,
+    dxLowReturn: number, riseXReturn: number, riseYReturn: number, dxHighReturn: number): Point3d[] {
+    const data = [origin.clone()];
+    const x0 = data[0].x;
+    this.appendSawTooth(data, dxLow, riseX, riseY, dxHigh, numPhaseOutbound);
+    this.pushMove(data, dxLow, 0, 0);
+    this.pushMove(data, 0, dyFinal);
+    const x1 = data[data.length - 1].x;
+    const returnPhase = Math.abs(dxLowReturn + 2 * riseXReturn + dxHighReturn);
+    const totalDX = Math.abs(x1 - x0);
+    const numReturnPhase = Math.floor(Math.abs(totalDX / returnPhase));
+    this.appendSawTooth(data, -dxLowReturn, -riseXReturn, riseYReturn, -dxHighReturn, numReturnPhase);
+    const x2 = data[data.length - 1].x;
+    this.pushMove(data, x0 - x2, 0, 0);
+    data.push(data[0].clone());
+    return data;
   }
   /** append to a linestring, taking steps along given vector directions
    * If the linestring is empty, a 000 point is added.

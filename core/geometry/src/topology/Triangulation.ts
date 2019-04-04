@@ -271,7 +271,7 @@ export class Triangulator {
    * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
    * * If start and end are both zero, use the whole array.
    */
-  private static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: XAndY[] | GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+  public static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: XAndY[] | GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
     const base = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
     return Triangulator.maskAndOrientNewFaceLoop(graph, base, returnPositiveAreaLoop, markExterior);
   }

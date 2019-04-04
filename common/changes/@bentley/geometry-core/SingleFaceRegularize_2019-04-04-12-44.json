@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "New code for regularizing a single face.",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

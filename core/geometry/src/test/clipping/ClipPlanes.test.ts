@@ -14,7 +14,7 @@ import { Segment1d } from "../../geometry3d/Segment1d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Transform } from "../../geometry3d/Transform";
-import { PolygonOps } from "../../geometry3d/PointHelpers";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { LineString3d } from "../../curve/LineString3d";

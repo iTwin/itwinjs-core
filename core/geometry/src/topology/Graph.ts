@@ -59,7 +59,18 @@ export class HalfEdge {
   /** Half edge on the other side of this edge.
    */
   public get edgeMate(): HalfEdge { return this._edgeMate; }
-
+  /** Take numStep face steps and return y coordinate
+   * * positive steps are through faceSuccessor
+   * * negative steps are through facePredecessor
+   */
+  public faceStepY(numStep: number): number {
+    let node: HalfEdge = this;
+    if (numStep > 0)
+      for (let i = 0; i < numStep; i++) node = node.faceSuccessor;
+    else if (numStep < 0)
+      for (let i = 0; i > numStep; i++) node = node.facePredecessor;
+    return node.y;
+  }
   /**
    * * Create 2 half edges.
    * * The two edges are joined as edgeMate pair.
@@ -535,6 +546,39 @@ export class HalfEdge {
       result);
   }
   /**
+   * * interpolate xy coordinates at fractionAlong between this node and its face successor.
+   * * shift to left by fractionPerpendicular
+   * @param fraction fractional position along this edge.
+   * @param result xy coordinates
+   */
+  public fractionAlongAndPerpendicularToPoint2d(fractionAlong: number, fractionPerpendicular: number, result?: Point2d): Point2d {
+    const node1 = this.faceSuccessor;
+    const dx = node1.x - this.x;
+    const dy = node1.y - this.y;
+    return Point2d.create(
+      this.x + dx * fractionAlong - dy * fractionPerpendicular,
+      this.y + dy * fractionAlong + dx * fractionPerpendicular,
+      result);
+  }
+
+  /**
+   * @returns interpolated x coordinate between this node and its face successor.
+   * @param fraction fractional position along this edge.
+   */
+  public fractionToX(fraction: number): number {
+    const node1 = this.faceSuccessor;
+    return this.x + (node1.x - this.x) * fraction;
+  }
+  /**
+   * @returns interpolated x coordinate between this node and its face successor.
+   * @param fraction fractional position along this edge.
+   */
+  public fractionToY(fraction: number): number {
+    const node1 = this.faceSuccessor;
+    return this.y + (node1.y - this.y) * fraction;
+  }
+
+  /**
    * * Compute fractional coordintes of the intersection of edges from given base nodes
    * * If parallel or colinear, return undefined.
    * * If (possibly extended) lines intersect, return the fractions of intersection as x,y in the result.
@@ -573,6 +617,25 @@ export class HalfEdge {
     return Geometry.conditionalDivideFraction(y - node0.y, dy);
   }
 
+  /**
+   * * Compute fractional coordintes of the intersection of a horizontal line with an edge.
+   * * If the edge is horizontal return undefined (no test for horizontal at y!!!)
+   * * If the edge is not horizontal and y is between its end y's, return the fraction
+   * @param nodeA Base node of edge
+   * @param result optional preallocated result
+   */
+  public static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined {
+    const node1 = node0.faceSuccessor;
+    const dy = node1.y - node0.y;
+    if (Geometry.isSameCoordinate(y, node0.y) && Geometry.isSameCoordinate(y, node1.y))
+      return undefined;
+    if (Geometry.isSameCoordinate(dy, 0.0))
+      return undefined;
+    const fraction = Geometry.conditionalDivideFraction(y - node0.y, dy);
+    if (fraction !== undefined && fraction >= 0.0 && fraction <= 1.0)
+      return fraction;
+    return undefined;
+  }
 }
 /**
  * A HalfEdgeGraph has:

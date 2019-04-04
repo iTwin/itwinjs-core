@@ -1308,9 +1308,35 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         return true;
       });
   }
+  /**
+   *
+   * * Visit all faces
+   * * Test each face with f(node) for any node on the face.
+   * * For each face that passes, pass its coordinates to the builder.
+   * * Rely on the builder's compress step to find common vertex coordinates
+   */
+  public addGraphFaces(_graph: HalfEdgeGraph, faces: HalfEdge[]) {
+    let index = 0;
+    for (const seed of faces) {
+      let node = seed;
+      do {
+        index = this.findOrAddPointXYZ(node.x, node.y, node.z);
+        this._polyface.addPointIndex(index);
+        node = node.faceSuccessor;
+      } while (node !== seed);
+      this._polyface.terminateFacet();
+    }
+  }
+
   public static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction: HalfEdgeToBooleanFunction = HalfEdge.testNodeMaskNotExterior): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
     builder.addGraph(graph, builder.options.needParams, acceptFaceFunction);
+    builder.endFace();
+    return builder.claimPolyface();
+  }
+  public static graphFacesToPolyface(graph: HalfEdgeGraph, faces: HalfEdge[]): IndexedPolyface {
+    const builder = PolyfaceBuilder.create();
+    builder.addGraphFaces(graph, faces);
     builder.endFace();
     return builder.claimPolyface();
   }

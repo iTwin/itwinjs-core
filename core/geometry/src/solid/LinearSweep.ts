@@ -15,7 +15,7 @@ import { Path } from "../curve/Path";
 import { CurveCollection } from "../curve/CurveCollection";
 import { LineString3d } from "../curve/LineString3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
-import { PolygonOps } from "../geometry3d/PointHelpers";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { SweepContour } from "./SweepContour";
 import { SolidPrimitive } from "./SolidPrimitive";

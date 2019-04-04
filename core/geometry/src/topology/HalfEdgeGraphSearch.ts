@@ -6,6 +6,8 @@
 /** @module Topology */
 
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
+import { XYParitySearchContext } from "./XYParitySearchContext";
+
 // Search services for HalfEdgeGraph
 export class HalfEdgeGraphSearch {
 
@@ -23,12 +25,13 @@ export class HalfEdgeGraphSearch {
 
   /**
    * Search an array of faceSeed nodes for the face with the most negative area.
+   * @param oneCandidateNodePerFace array containing one node from each face to be considered.
    */
-  public static findMinimumAreaFace(nodes: HalfEdge[]): HalfEdge {
-    let mostNegativeAreaNode: HalfEdge = nodes[0];
+  public static findMinimumAreaFace(oneCandidateNodePerFace: HalfEdge[]): HalfEdge {
+    let mostNegativeAreaNode: HalfEdge = oneCandidateNodePerFace[0];
     let mostNegArea = Number.MAX_VALUE;
 
-    for (const node of nodes) {
+    for (const node of oneCandidateNodePerFace) {
       const area = node.signedFaceArea();
       if (area < 0 && area < mostNegArea) {
         mostNegArea = area;
@@ -39,7 +42,12 @@ export class HalfEdgeGraphSearch {
   }
 
   /**
-   *
+   * Search to all accessible faces from given seed.
+   * * The returned array contains one representative node in each face of the connected component.
+   * * If (nonnull) parity mask is given, on return:
+   *    * It is entirely set or entirely clear around each face
+   *    * It is entirely set on all faces that are an even number of face-to-face steps away from the seed.
+   *    * It is entirely clear on all faces that are an odd number of face-to-face steps away from the seed.
    * @param seedEdge first edge to search.
    * @param visitMask mask applied to all faces as visited.
    * @param parityMask mask to apply (a) to first face, (b) to faces with alternating parity during the search.
@@ -89,7 +97,7 @@ export class HalfEdgeGraphSearch {
   }
   /** Apply correctParityInSingleComponent to each array in components. (Quick exit if mask in NULL_MASK) */
   private static correctParityInComponentArrays(graph: HalfEdgeGraph, mask: HalfEdgeMask, components: HalfEdge[][]) {
-    if (mask === 0)
+    if (mask === HalfEdgeMask.NULL_MASK)
       return;
     for (const facesInComponent of components)
       HalfEdgeGraphSearch.correctParityInSingleComponent(graph, mask, facesInComponent);
@@ -112,5 +120,39 @@ export class HalfEdgeGraphSearch {
     }
     HalfEdgeGraphSearch.correctParityInComponentArrays(graph, parityMask, components);
     return components;
+  }
+  /**
+   * Test if (x,y) is inside (1), on an edge (0) or outside (-1) a face.
+   * @param seedNode any node on the face loop
+   * @param x x coordinate of test point.
+   * @param y y coordinate of test point.
+   */
+  public static pointInOrOnFaceXY(seedNode: HalfEdge, x: number, y: number): number | undefined {
+    const context = new XYParitySearchContext(x, y);
+    // walk around looking for an accepted node to start the search (seedNode is usually ok!)
+    let nodeA = seedNode;
+    let nodeB = seedNode.faceSuccessor;
+    for (; ; nodeA = nodeB) {
+      if (context.tryStartEdge(nodeA.x, nodeA.y, nodeB.x, nodeB.y))
+        break;
+      if (nodeB === seedNode) {
+        // umm.. the face is all on the x axis?
+        return context.classifyCounts();
+      }
+      nodeB = nodeA.faceSuccessor;
+    }
+
+    // nodeB is the real start node for search ... emit ends of each edge around the face,
+    //   stopping after emitting ndoeB as an edge end.
+    let node = nodeB.faceSuccessor;
+    for (; ;) {
+      if (!context.advance(node.x, node.y)) {
+        return context.classifyCounts();
+      }
+      if (node === nodeB)
+        break;
+      node = node.faceSuccessor;
+    }
+    return context.classifyCounts();
   }
 }

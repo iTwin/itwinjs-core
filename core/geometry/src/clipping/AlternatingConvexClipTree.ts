@@ -10,7 +10,7 @@ import { Range1d } from "../geometry3d/Range";
 import { Angle } from "../geometry3d/Angle";
 import { ClipPlane } from "./ClipPlane";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { PolygonOps } from "../geometry3d/PointHelpers";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
