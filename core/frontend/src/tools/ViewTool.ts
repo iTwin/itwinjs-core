@@ -521,17 +521,13 @@ export abstract class ViewManip extends ViewTool {
   }
 
   private static getClippedRange(range: Range3d, clip: ClipVector): Range3d {
-    const clipRange = range.clone();
+    const clipRange = Range3d.create();
     for (const clipPrim of clip.clips) {
       const clipPlaneSet = clipPrim.fetchClipPlanesRef();
       if (undefined === clipPlaneSet)
         continue;
-      for (const convexSet of clipPlaneSet.convexSets) {
-        const thisRange = ClipUtilities.rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet, clipRange);
-        if (thisRange.isNull)
-          return thisRange;
-        clipRange.setFrom(thisRange);
-      }
+      for (const convexSet of clipPlaneSet.convexSets)
+        clipRange.extendRange(ClipUtilities.rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet, range));
     }
     return clipRange;
   }
