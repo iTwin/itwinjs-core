@@ -1,6 +1,6 @@
 {
   "name": "@bentley/express-server",
-  "version": "0.191.0-dev.31",
+  "version": "0.191.0-dev.32",
   "description": "iModel.js express utilities",
   "main": "lib/ExpressServer.js",
   "typings": "lib/ExpressServer",
@@ -32,8 +32,8 @@
   },
   "peerDependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "0.191.0-dev.31",
-    "@bentley/imodeljs-common": "0.191.0-dev.31",
+    "@bentley/build-tools": "0.191.0-dev.32",
+    "@bentley/imodeljs-common": "0.191.0-dev.32",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
     "@types/node": "10.14.1",
