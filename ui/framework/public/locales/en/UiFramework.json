@@ -68,15 +68,16 @@
     "FourQuadrants": "Four Quadrants"
   },
   "pickerButtons": {
-    "all": "All",
-    "none": "None",
+    "showAll": "Show All",
+    "hideAll": "Hide All",
     "invert": "Invert",
     "separator": "Separator"
   },
   "categoriesModels": {
     "categories": "Categories",
     "models": "Models",
-    "loadingMessage": "Loading..."
+    "loadingMessage": "Loading...",
+    "options": "Options"
   },
   "realityData": {
     "title": "Reality Data",

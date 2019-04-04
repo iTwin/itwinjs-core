@@ -1,0 +1,108 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.contextmenu-portal {
+  cursor: default;
+  position: absolute;
+  box-sizing: border-box;
+  z-index: 100;
+  // background: $buic-white;
+  background: white;
+  top: 0;
+  left: 0;
+  border-radius: 3px;
+  max-width: 250px;
+  border: 1px solid #c7ccd1;
+  animation-duration: .3s;
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+  animation-name: animate-context-menu;
+  box-shadow: 0px 3px 5px 0 rgba(0, 0, 0, 0.2);
+
+  > ul {
+    margin: 0;
+    padding: 6px 0;
+    list-style: none;
+
+    > .separator {
+      padding: .5em 0;
+      position: relative;
+
+      &:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 32px;
+        // right: $buic-xs;
+        right: 8px;
+        width: auto;
+        height: 1px;
+        background: #dce0e3;
+        transform: translateY(-50%);
+      }
+    }
+
+    .contextmenu-portal-item {
+      display: flex;
+      align-items: center;
+      margin: 0;
+      padding: .5em 0;
+      // color: rgba($buic-black, .85);
+      color: rgba(black, .85);
+      // font-size: $buic-font-size;
+      font-size: 14;
+      position: relative;
+      user-select: none;
+
+      > .user-icon,
+      > .icon-checkmark {
+        position: absolute;
+        left: 10px;
+      }
+
+      // text
+      > span:last-child {
+        padding-left: 32px;
+        padding-right: 1em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      &:hover:not(.disabled) {
+        // background: rgba($buic-blue, .1);
+        background: rgba(blue, .1);
+        // color: rgba($buic-black, 1);
+        color: rgba(black, 1);
+        cursor: pointer;
+      }
+
+      &.disabled {
+        // color: rgba($buic-text-color, .25);
+        color: rgba(black, .25);
+        cursor: default;
+      }
+
+      > .icon-checkmark {
+        // color: $buic-blue;
+        color: blue;
+      }
+    }
+  }
+}
+
+@keyframes animate-context-menu {
+  from {
+    // visibility: hidden;
+ // transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    // visibility: visible;
+  //  transform: scale(1);
+     opacity: 1;
+  }
+}

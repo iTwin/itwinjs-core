@@ -2245,34 +2245,25 @@ export interface ModalFrontstageProps {
     title: string;
 }
 
+// Warning: (ae-forgotten-export) The symbol "ModelSelectorWidgetProps" needs to be exported by the entry point ui-framework.d.ts
 // Warning: (ae-forgotten-export) The symbol "ModelSelectorWidgetState" needs to be exported by the entry point ui-framework.d.ts
 // 
-// @beta
+// @alpha
 export class ModelSelectorWidget extends React_2.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
     constructor(props: ModelSelectorWidgetProps);
+    // @internal (undocumented)
     componentDidMount(): void;
-    componentDidUpdate(_prevProps: ModelSelectorWidgetProps, prevState: ModelSelectorWidgetState): void;
+    // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
     updateCategoriesState(): Promise<void>;
     updateModelsState(): Promise<void>;
-    updateState(): Promise<void>;
-}
+    }
 
-// @beta
+// @alpha
 export class ModelSelectorWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
-}
-
-// @beta
-export interface ModelSelectorWidgetProps {
-    // (undocumented)
-    activeView?: Viewport;
-    // (undocumented)
-    allViewports?: boolean;
-    // (undocumented)
-    iModelConnection: IModelConnection;
 }
 
 // @public

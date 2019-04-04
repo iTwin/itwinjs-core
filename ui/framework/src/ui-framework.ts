@@ -26,7 +26,7 @@ export * from "./ui-framework/oidc/SignOut";
 export * from "./ui-framework/imodel-components/visibility-tree/VisibilityTree";
 
 export * from "./ui-framework/pickers/ListPicker";
-export * from "./ui-framework/pickers/ModelSelector";
+export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
 export * from "./ui-framework/messages/AppNotificationManager";
@@ -123,6 +123,8 @@ export * from "./ui-framework/utils/PropsHelper";
 
 export * from "./ui-framework/syncui/SyncUiEventDispatcher";
 export * from "./ui-framework/syncui/BooleanListener";
+
+export * from "./ui-framework/theme/ThemeManager";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
