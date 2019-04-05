@@ -38,7 +38,7 @@ export class ContextMenuItem extends React.Component<MenuItem> {
 
   public render() {
     const menuClassName = classnames (
-      "contextmenu-portal-item",
+      "contextmenu-item-wip",
       this.props.disabled && "disabled",
       this.props.checked && "checked",
     );
@@ -77,7 +77,7 @@ export class ContextMenu extends React.Component<ContextMenuProps> {
     const { items, parent, position, isOpened, onClickOutside } = this.props;
     return (
       <Popup isOpen={isOpened} target={parent} position={position} onClose={onClickOutside}>
-        <div className="contextmenu-portal">
+        <div className="contextmenu-wip">
           <ul>
             {items && items.map((item: MenuItem, index: number) => (
               <ContextMenuItem key={index} name={item.name} icon={item.icon} disabled={item.disabled} onClick={item.onClick} isSeparator={item.isSeparator} />

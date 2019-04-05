@@ -254,7 +254,6 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
   }
 
   private _onSliderStart = () => {
-    alert ("slider");
   }
 
   public render() {

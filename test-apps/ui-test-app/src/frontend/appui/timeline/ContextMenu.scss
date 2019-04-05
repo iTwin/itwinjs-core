@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-.contextmenu-portal {
+.contextmenu-wip {
   cursor: default;
   box-sizing: border-box;
   z-index: 100;
@@ -36,7 +36,7 @@
   }
 }
 
-.contextmenu-portal-item {
+.contextmenu-item-wip {
   display: flex;
   align-items: center;
   margin: 0;
