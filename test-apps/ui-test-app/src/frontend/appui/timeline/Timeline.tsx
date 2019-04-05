@@ -1,12 +1,13 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import classnames from "classnames";
 import { CommonProps } from "@bentley/ui-ninezone";
 import { Slider, Rail, Handles, Ticks, SliderItem } from "react-compound-slider";
 import { Milestone } from "@bentley/ui-components";
 import "./Timeline.scss";
-
-// const oneDay = 86400000;
-// const oneHour = oneDay / 24;
 
 const formatDate = (value: number) => {
   let date = new Date();
@@ -16,18 +17,18 @@ const formatDate = (value: number) => {
 };
 
 // *******************************************************
-// SCRUBBER
+// NEEDLE
 // *******************************************************
-interface ScrubberProps {
+interface NeedleProps {
   startDate: Date;
   endDate: Date;
   selectedDate: Date;
 }
 
-function Scrubber({ startDate, endDate, selectedDate }: ScrubberProps) {
+function Needle({ startDate, endDate, selectedDate }: NeedleProps) {
   const percent = (selectedDate.getTime() - startDate.getTime()) / (endDate.getTime() - startDate.getTime()) * 100;
   return (
-    <div className="handle" style={{ left: `${percent}%` }} />
+    <div className="needle" style={{ left: `${percent}%` }} />
   );
 }
 
@@ -55,10 +56,6 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     super(props);
 
     this.state = { value: null, percent: null };
-  }
-
-  public componentDidMount() {
-    //  document.addEventListener("mousedown", this._onMouseDown);
   }
 
   private _onMouseEnter = () => {
@@ -166,7 +163,7 @@ class Handle extends React.Component<HandleProps, HandleState> {
           aria-valuemin={min}
           aria-valuemax={max}
           aria-valuenow={value}
-          className="handle3"
+          className="handle"
           style={{ left: `${percent}%` }}
           {...getHandleProps(id, {
             onMouseEnter: this._onMouseEnter,
@@ -250,21 +247,22 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
     const handles: number[] = [];
 
     if (milestones) {
-      milestones.forEach((milestone: Milestone) => { handles.push(milestone.date.getTime()); });
+      milestones.forEach((milestone: Milestone) => handles.push(milestone.date.getTime()) );
     }
 
     return handles;
   }
 
+  private _onSliderStart = () => {
+    alert ("slider");
+  }
+
   public render() {
-    const { startDate, endDate, selectedDate, milestones, onChange, onUpdate, onSlideStart } = this.props;
+    const { startDate, endDate, selectedDate, milestones, onChange, onUpdate } = this.props;
     const domain = [startDate.getTime(), endDate.getTime()];
-    const className = classnames("timeline", this.props.className);
-    if (0 === this._milestones().length)
-      return null;
 
     return (
-      <div className={className}>
+      <div className={classnames("timeline", this.props.className)}>
         <Slider
           mode={1}
           step={1}
@@ -272,7 +270,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
           rootStyle={{ position: "relative", height: "100%", margin: "0 60px" }}
           onUpdate={onUpdate}
           onChange={onChange}
-          onSlideStart={onSlideStart}
+          onSlideStart={this._onSliderStart}
           values={this._milestones()}
         >
           <Rail>
@@ -294,7 +292,6 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
               </div>
             )}
           </Handles>
-          {this.state.ticks.length > 0} &&
           <Ticks values={this.state.ticks}>
             {({ ticks }) => (
               <div className="slider-ticks">
@@ -308,7 +305,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
               </div>
             )}
           </Ticks>
-          <Scrubber startDate={startDate} endDate={endDate} selectedDate={selectedDate} />
+          <Needle startDate={startDate} endDate={endDate} selectedDate={selectedDate} />
         </Slider>
       </div>
     );

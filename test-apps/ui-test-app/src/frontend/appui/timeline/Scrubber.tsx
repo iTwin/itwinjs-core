@@ -1,7 +1,97 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-ninezone";
 import { Slider, Rail, Handles, SliderItem, Tracks, GetTrackProps } from "react-compound-slider";
 import "./Scrubber.scss";
+
+const formatDate = (value: number) => {
+  const addZero = (i: number) => {
+    return (i < 10) ? "0" + i : i;
+  };
+
+  const date = new Date(value);
+  const minutes = date.getUTCMinutes();
+  const seconds = date.getUTCSeconds();
+  return `${addZero(minutes)}:${addZero(seconds)}`;
+};
+
+// *******************************************************
+// TOOLTIP RAIL
+// *******************************************************
+interface TooltipRailProps {
+  activeHandleID?: string;
+  getRailProps: (props: object) => object;
+  getEventData: (e: Event) => object;
+}
+
+interface TooltipRailState {
+  value: number | null;
+  percent: number | null;
+}
+
+class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
+
+  public static defaultProps = {
+    disabled: false,
+  };
+
+  constructor(props: TooltipRailProps) {
+    super(props);
+
+    this.state = { value: null, percent: null };
+  }
+
+  public componentDidMount() {
+    //  document.addEventListener("mousedown", this._onMouseDown);
+  }
+
+  private _onMouseEnter = () => {
+    document.addEventListener("mousemove", this._onMouseMove);
+  }
+
+  private _onMouseLeave = () => {
+    this.setState({ value: null, percent: null });
+    document.removeEventListener("mousemove", this._onMouseMove);
+  }
+
+  private _onMouseMove = (e: Event) => {
+    const { activeHandleID, getEventData } = this.props;
+
+    if (activeHandleID) {
+      this.setState({ value: null, percent: null });
+    } else {
+      this.setState(getEventData(e));
+    }
+  }
+
+  public render() {
+    const { value, percent } = this.state;
+    const { activeHandleID, getRailProps } = this.props;
+
+    return (
+      <>
+        {!activeHandleID && value ? (
+          <div className="tooltip-rail" style={{ left: `${percent}%` }}>
+            <div className="tooltip">
+              <span className="tooltip-text">{formatDate(value)}</span>
+            </div>
+          </div>
+        ) : null}
+        <div
+          className="rail"
+          {...getRailProps({
+            onMouseEnter: this._onMouseEnter,
+            onMouseLeave: this._onMouseLeave,
+          })}
+        />
+        <div className="rail-center" />
+      </>
+    );
+  }
+}
 
 // *******************************************************
 // HANDLE COMPONENT
@@ -113,9 +203,7 @@ export class Scrubber extends React.Component<ScrubberProps> {
         values={[currentDuration]}
       >
         <Rail>
-          {({ getRailProps }) => (
-            <div className="scrubber-rail" {...getRailProps()} />
-          )}
+            {(railProps) => <TooltipRail {...railProps} />}
         </Rail>
         <Handles>
           {({ handles, getHandleProps }) => (
