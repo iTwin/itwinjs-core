@@ -1789,6 +1789,19 @@ export class WindowAreaTool extends ViewTool {
   public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (this._haveFirstPoint) { this.onReinitialize(); return EventHandled.Yes; } return super.onResetButtonUp(ev); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (undefined === ev.viewport) {
+      return EventHandled.Yes;
+    } else if (undefined === this.viewport) {
+      this.viewport = ev.viewport;
+    } else if (this.viewport.view.iModel !== ev.viewport.view.iModel) {
+      if (this._haveFirstPoint)
+        return EventHandled.Yes;
+      this.viewport = ev.viewport;
+      this._lastPtView = ev.viewPoint;
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+      return EventHandled.Yes;
+    }
+
     if (this._haveFirstPoint) {
       this._secondPtWorld.setFrom(ev.point);
       this.doManipulation(ev, false);
@@ -1850,7 +1863,9 @@ export class WindowAreaTool extends ViewTool {
   }
 
   public decorate(context: DecorateContext): void {
-    const vp = this.viewport!;
+    if (undefined === this.viewport || this.viewport.view.iModel !== context.viewport!.view.iModel)
+      return;
+    const vp = this.viewport;
     const color = vp.getContrastToBackgroundColor();
     if (this._haveFirstPoint) {
       const corners = this.computeWindowCorners();
@@ -1902,6 +1917,10 @@ export class WindowAreaTool extends ViewTool {
   private doManipulation(ev: BeButtonEvent, inDynamics: boolean): void {
     this._secondPtWorld.setFrom(ev.point);
     if (inDynamics) {
+      if (undefined !== this.viewport && undefined !== ev.viewport && this.viewport.view.iModel !== ev.viewport.view.iModel) {
+        this._lastPtView = undefined;
+        return;
+      }
       this._lastPtView = ev.viewPoint;
       IModelApp.viewManager.invalidateDecorationsAllViews();
       return;

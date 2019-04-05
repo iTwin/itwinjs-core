@@ -470,6 +470,9 @@ export class ToolAdmin {
 
   private async onWheel(event: ToolEvent): Promise<EventHandled> {
     const ev = event.ev as WheelEvent;
+    const vp = event.vp!;
+    if (this.filterViewport(vp))
+      return EventHandled.Yes;
     const current = this.currentInputState;
     current.setKeyQualifiers(ev);
 
@@ -489,7 +492,6 @@ export class ToolAdmin {
         break;
     }
 
-    const vp = event.vp!;
     const pt2d = this.getMousePosition(event);
 
     vp.removeAnimator();
@@ -1076,11 +1078,11 @@ export class ToolAdmin {
   }
 
   private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {
-    if (this.filterViewport(vp))
-      return;
-
+    const filtered = this.filterViewport(vp);
     if (undefined === this._viewTool && button === BeButton.Data)
       IModelApp.viewManager.setSelectedView(vp);
+    if (filtered)
+      return;
 
     vp.removeAnimator();
     const ev = new BeButtonEvent();
