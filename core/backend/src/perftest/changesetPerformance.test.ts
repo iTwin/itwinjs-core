@@ -40,6 +40,24 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   assert.strictEqual<string>(imodeldb1.briefcase.currentChangeSetId, secondChangeSetId);
   imodeldb1.close(requestContext).catch();
   fs.appendFileSync(csvPath, "Open, From Cache second cs," + elapsedTime1 + "\n");
+
+  // open imodel from local cache with first revision
+  const startTime2 = new Date().getTime();
+  const imodeldb2: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.first());
+  const endTime2 = new Date().getTime();
+  assert.exists(imodeldb2);
+  const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
+  imodeldb2.close(requestContext).catch();
+  fs.appendFileSync(csvPath, "Open, From Cache First CS," + elapsedTime2 + "\n");
+
+  // open imodel from local cache with latest revision
+  const startTime3 = new Date().getTime();
+  const imodeldb3: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.latest());
+  const endTime3 = new Date().getTime();
+  assert.exists(imodeldb3);
+  const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
+  imodeldb3.close(requestContext).catch();
+  fs.appendFileSync(csvPath, "Open, From Cache Latest CS," + elapsedTime3 + "\n");
 }
 
 async function pushImodelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, csvPath: string, projectId: string, imodelPushId: string) {

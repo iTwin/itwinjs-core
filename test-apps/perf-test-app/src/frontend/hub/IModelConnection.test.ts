@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, OpenMode, Logger, LogLevel, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { OpenMode, Logger, LogLevel, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { TestUtility } from "./TestUtility";
@@ -35,10 +35,11 @@ describe("IModelConnection (#integration)", () => {
 
     assert(MockRender.App.authorizationClient);
 
-    testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
+    testProjectId = await TestUtility.getTestProjectId("Bridge866");
+    testIModelId = await TestUtility.getTestIModelId(testProjectId, "Building");
 
-    iModel = await IModelConnection.open(testProjectId, testIModelId);
+    iModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    await iModel.close();
   });
 
   after(async () => {
@@ -48,8 +49,8 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to open an IModel", async () => {
-    const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const iModelId = await TestUtility.getTestIModelId(projectId, "NoVersionsTest");
+    const projectId = await TestUtility.getTestProjectId("Bridge866");
+    const iModelId = await TestUtility.getTestIModelId(projectId, "Building");
 
     // time to open an imodel with latest revision
     const startTime1 = new Date().getTime();
@@ -59,6 +60,7 @@ describe("IModelConnection (#integration)", () => {
     assert.exists(noVersionsIModel);
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with latest revision", elapsedTime1);
+    await noVersionsIModel.close();
 
     // time to open an imodel with first revision
     const startTime = new Date().getTime();
@@ -68,24 +70,20 @@ describe("IModelConnection (#integration)", () => {
     assert.exists(noVersionsIModel2);
     const elapsedTime = (endTime - startTime) / 1000.0;
     await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with first revision", elapsedTime);
+    await noVersionsIModel2.close();
   });
 
   it("Execute a ECSQL Query", async () => {
+    iModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(iModel);
 
     // time to execute a query
     const startTime1 = new Date().getTime();
-    const rows = await executeQuery(iModel, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
+    const rows = await executeQuery(iModel, "SELECT * FROM BisCore.LineStyle");
     const endTime1 = new Date().getTime();
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     await TestRpcInterface.getClient().saveCSV("ExecuteQuery", "Execute an ECSQL query", elapsedTime1);
-
-    assert.equal(rows.length, 1);
-    const row: any = rows[0];
-    assert.isTrue(Id64.isValidId64(row.id));
-    assert.isDefined(row.geometryStream);
-    const geomStream: Uint8Array = row.geometryStream;
-    assert.isAtLeast(geomStream.byteLength, 1);
+    assert.equal(rows.length, 7);
   });
 
 });
