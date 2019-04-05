@@ -19,7 +19,7 @@ async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: 
   return rows;
 }
 
-describe("IModelConnection (#integration)", () => {
+describe.skip("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
   let testProjectId: string;
   let testIModelId: string;
