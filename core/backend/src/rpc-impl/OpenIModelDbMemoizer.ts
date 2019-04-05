@@ -3,10 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, BeDuration, Logger } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModel, IModelToken, IModelVersion, RpcPendingResponse } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams } from "../IModelDb";
+import { IModelDb, OpenParams, AccessMode } from "../IModelDb";
 import { LoggerCategory } from "../LoggerCategory";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 
@@ -22,6 +22,10 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
 
   public constructor() {
     super(IModelDb.open, (requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): string => {
+      // Ignore access token when opening a shared, read-only connection
+      if (openParams.accessMode === AccessMode.Shared && openParams.openMode === OpenMode.Readonly)
+        return `${contextId}:${iModelId}:${JSON.stringify(openParams)}:${JSON.stringify(version)}`;
+
       return `${requestContext.accessToken.toTokenString()}:${contextId}:${iModelId}:${JSON.stringify(openParams)}:${JSON.stringify(version)}`;
     });
   }
