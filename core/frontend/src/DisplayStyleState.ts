@@ -86,12 +86,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     for (const contextRealityModel of this._contextRealityModels) { func(contextRealityModel); }
   }
 
-  /** Performs logical comparison against another display style.
+  /** Performs logical comparison against another display style. Two display styles are logically equivalent if they have the same name, Id, and settings.
    * @param other The display style to which to compare.
-   * @returns true if the specified display style is logically equivalent to this display style - i.e., both styles have the same values for all of their settings.
+   * @returns true if the specified display style is logically equivalent to this display style.
    */
   public equalState(other: DisplayStyleState): boolean {
-    return JSON.stringify(this.settings) === JSON.stringify(other.settings);
+    if (this.name !== other.name || this.id !== other.id)
+      return false;
+    else
+      return JSON.stringify(this.settings) === JSON.stringify(other.settings);
   }
 
   /** @internal */

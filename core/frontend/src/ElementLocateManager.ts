@@ -254,7 +254,7 @@ export class ElementLocateManager {
     }
 
     if (undefined !== hit.subCategoryId) {
-      const appearance = hit.viewport.view.getSubCategoryAppearance(hit.subCategoryId);
+      const appearance = hit.viewport.getSubCategoryAppearance(hit.subCategoryId);
       if (appearance.dontLocate) {
         out.reason = ElementLocateManager.getFailureMessageKey("NotLocatable");
         return LocateFilterStatus.Reject;

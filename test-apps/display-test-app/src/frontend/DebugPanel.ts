@@ -8,9 +8,35 @@ import { MemoryTracker } from "./MemoryTracker";
 import { StatsTracker } from "./TileStatisticsTracker";
 import { createCheckBox, CheckBox } from "./CheckBox";
 import { createComboBox } from "./ComboBox";
-import { Viewport, Tile } from "@bentley/imodeljs-frontend";
+import { ChangeFlag, ChangeFlags, Tile, Viewport } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 import { FrustumDecorator } from "./FrustumDecoration";
+
+const flagNames: Array<[ChangeFlag, string]> = [
+  [ ChangeFlag.AlwaysDrawn, "Always Drawn" ],
+  [ ChangeFlag.NeverDrawn, "Never Drawn" ],
+  [ ChangeFlag.ViewedCategories, "Categories" ],
+  [ ChangeFlag.ViewedModels, "Models" ],
+  [ ChangeFlag.DisplayStyle, "DisplayStyle" ],
+  [ ChangeFlag.FeatureOverrideProvider, "FeatureOverrideProvider" ],
+];
+
+function onViewportChanged(_vp: Viewport, flags: ChangeFlags): void {
+  const names = [];
+  if (flags.areAllSet(ChangeFlag.All)) {
+    names.push("All");
+  } else {
+    for (const flagName of flagNames)
+      if (flags.isSet(flagName[0]))
+        names.push(flagName[1]);
+  }
+
+  if (flags.areFeatureOverridesDirty)
+    names.push("FeatureOverrides");
+
+  const msg = "Changed: " + names.join();
+  console.log(msg); // tslint:disable-line
+}
 
 export class DebugPanel extends ToolBarDropDown {
   private readonly _viewport: Viewport;
@@ -45,6 +71,19 @@ export class DebugPanel extends ToolBarDropDown {
       handler: (cb) => this.toggleFrustumSnapshot(cb.checked),
       id: "debugPanel_frustumSnapshot",
       tooltip: "Draw the current frustum as a decoration graphic",
+    });
+
+    createCheckBox({
+      parent: this._element,
+      name: "Log viewport state changes",
+      handler: (cb) => {
+        if (cb.checked)
+          this._viewport.onViewportChanged.addListener(onViewportChanged);
+        else
+          this._viewport.onViewportChanged.removeListener(onViewportChanged);
+      },
+      id: "debugPanel_logViewportChanges",
+      tooltip: "Output Viewport.onViewportChanged events to the console",
     });
 
     this.addBoundingBoxDropdown(this._element);

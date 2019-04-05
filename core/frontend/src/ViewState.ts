@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert, BeTimePoint, Id64, Id64Arg, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
   Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, ColorDef, Frustum, GraphicParams, Npc, RenderMaterial, SpatialViewDefinitionProps,
-  SubCategoryAppearance, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
+  SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
   ViewFlags, ViewStateProps, BatchType,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -94,195 +94,18 @@ export interface ExtentLimits {
   max: number;
 }
 
-/** A cancelable paginated request for subcategory information.
- * @see ViewSubCategories
- * @internal
- */
-export class SubCategoriesRequest {
-  private readonly _imodel: IModelConnection;
-  private readonly _ecsql: string[] = [];
-  private readonly _pages: SubCategoriesRequest.Result = [];
-  private readonly _pageSize: number;
-  private _canceled = false;
-  private _curECSqlIndex = 0;
-  private _curPageIndex = 0;
-
-  public constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery = 200, maxSubCategoriesPerPage = 1000) {
-    this._imodel = imodel;
-    this._pageSize = maxSubCategoriesPerPage;
-
-    const catIds = [...categoryIds];
-    while (catIds.length !== 0) {
-      const end = (catIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : catIds.length;
-      const where = catIds.splice(0, end).join(",");
-      this._ecsql.push("SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")");
-    }
-  }
-
-  public cancel() { this._canceled = true; }
-
-  public async dispatch(): Promise<SubCategoriesRequest.Result | undefined> {
-    if (this._canceled || this._curECSqlIndex >= this._ecsql.length) // handle case of empty category Id set...
-      return undefined;
-
-    let rows: SubCategoriesRequest.ResultRow[] | undefined;
-    try {
-      const ecsql = this._ecsql[this._curECSqlIndex];
-      rows = Array.from(await this._imodel.queryPage(ecsql, undefined, { start: this._curPageIndex, size: this._pageSize }));
-    } catch (_) {
-      // ###TODO: detect cases in which retry is warranted
-      // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
-      // incomplete results. Since we're not retrying, that's the best we can do.
-      rows = undefined;
-    }
-
-    // NB: from hereafter, we only check the cancellation flag if more results need to be obtained.
-    if (undefined !== rows && rows.length > 0) {
-      this._pages.push(rows);
-      if (rows.length >= this._pageSize) {
-        // More rows (may) exist for current ecsql query. If canceled, abort.
-        if (this._canceled)
-          return undefined;
-
-        // Obtain the next page of results for current ECSql query.
-        ++this._curPageIndex;
-        return this.dispatch();
-      }
-    }
-
-    // Finished with current ECSql query. Dispatch the next if one exists.
-    this._curPageIndex = 0;
-    if (++this._curECSqlIndex < this._ecsql.length) {
-      if (this._canceled)
-        return undefined;
-      else
-        return this.dispatch();
-    }
-
-    // Even if we were canceled, we've retrieved all the rows. Might as well process them to prevent another request for some of the same rows from being enqueued.
-    return this._pages;
-  }
-}
-
-/** @internal */
-export namespace SubCategoriesRequest {
-  /** @internal */
-  export interface ResultRow {
-    parentId: Id64String;
-    id: Id64String;
-    appearance: SubCategoryAppearance.Props;
-  }
-
-  /** @internal */
-  export type ResultPage = ResultRow[];
-  /** @internal */
-  export type Result = ResultPage[];
-}
-
-/** Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
- * @internal
- */
-export class ViewSubCategories {
-  private readonly _byCategoryId = new Map<string, Id64Set>();
-  private readonly _appearances = new Map<string, SubCategoryAppearance>();
-  private _request?: SubCategoriesRequest;
-
-  /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
-  public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
-
-  /** Get the base appearance of the subcategory with the specified Id, or undefined if no such information is present. */
-  public getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId.toString()); }
-
-  /**
-   * Asynchronously populates this cache with information about subcategories belonging to the specified set of categories.
-   * This function is invoked on initial loading of a ViewState to obtain subcategory information for the set of
-   * categories in the ViewState's [[CategorySelector]].
-   */
-  public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
-    return 0 < categoryIds.size ? this.request(categoryIds, iModel) : Promise.resolve();
-  }
-
-  /**
-   * If information for subcategories belonging to the specified categories is not present, enqueues an asynchronous request to load it.
-   * This function is invoked by ViewState.changeCategoryDisplay() to ensure subcategory information is present for any newly-enabled
-   * categories.
-   */
-  public async update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
-    this.cancelRequest(); // Just in case current request has obtained (some of) the data we want
-
-    let missing: Set<string> | undefined;
-    for (const catId of addedCategoryIds) {
-      if (undefined === this._byCategoryId.get(catId)) {
-        if (undefined === missing)
-          missing = new Set<string>();
-
-        missing.add(catId);
-      }
-    }
-
-    return undefined !== missing ? this.request(missing, iModel) : Promise.resolve();
-  }
-
-  private async request(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
-    this.cancelRequest();
-    this._request = new SubCategoriesRequest(categoryIds, iModel);
-    return this._request.dispatch().then((pages?: SubCategoriesRequest.Result) => {
-      if (undefined !== pages)
-        this.processResults(pages);
-    });
-  }
-
-  private cancelRequest(): void {
-    if (undefined !== this._request) {
-      this._request.cancel();
-      this._request = undefined;
-    }
-  }
-
-  private static createSubCategoryAppearance(json?: any) {
-    let props: SubCategoryAppearance | undefined;
-    if ("string" === typeof json && 0 < json.length)
-      props = JSON.parse(json);
-
-    return new SubCategoryAppearance(props);
-  }
-
-  private processResults(pages: SubCategoriesRequest.Result): void {
-    for (const rows of pages)
-      for (const row of rows)
-        this.add(row.parentId as string, row.id as string, ViewSubCategories.createSubCategoryAppearance(row.appearance));
-  }
-
-  private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
-    let set = this._byCategoryId.get(categoryId);
-    if (undefined === set)
-      this._byCategoryId.set(categoryId, set = new Set<string>());
-
-    set.add(subCategoryId);
-    this._appearances.set(subCategoryId, appearance);
-  }
-}
-
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
  * * @see [Views]($docs/learning/frontend/Views.md)
  * @public
  */
 export abstract class ViewState extends ElementState {
-  protected _featureOverridesDirty = true;
-  protected _selectionSetDirty = true;
   private _auxCoordSystem?: AuxCoordSystemState;
-  private _scheduleTime: number = 0.0;
   private _extentLimits?: ExtentLimits;
   public description?: string;
   public isPrivate?: boolean;
   /** Time this ViewState was saved in view undo. */
   public undoTime?: BeTimePoint;
-  /** A cache of information about subcategories belonging to categories present in this view's [[CategorySelectorState]].
-   * It is populated on-demand as new categories are added to the selector.
-   * @internal
-   */
-  public readonly subCategories = new ViewSubCategories();
   public static get className() { return "ViewDefinition"; }
 
   /** @internal */
@@ -293,7 +116,6 @@ export abstract class ViewState extends ElementState {
     if (categorySelector instanceof ViewState) { // from clone, 3rd argument is source ViewState
       this.categorySelector = categorySelector.categorySelector.clone();
       this.displayStyle = categorySelector.displayStyle.clone();
-      this.subCategories = categorySelector.subCategories; // NB: This is a cache. No reason to deep-copy.
       this._extentLimits = categorySelector._extentLimits;
     }
   }
@@ -313,26 +135,11 @@ export abstract class ViewState extends ElementState {
    *  ```ts
    */
   public get viewFlags(): ViewFlags { return this.displayStyle.viewFlags; }
-  /** Set the ViewFlags and mark them as dirty if they have changed. */
-  public set viewFlags(newFlags: ViewFlags) {
-    if (!this.viewFlags.equals(newFlags)) {
-      this.setFeatureOverridesDirty();
-      this.displayStyle.viewFlags = newFlags;
-    }
-  }
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
   public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.analysisStyle; }
 
   /** Get the RenderSchedule.Script from the displayStyle of this viewState */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this.displayStyle.scheduleScript; }
-  public get scheduleTime() { return this._scheduleTime; }
-  public set scheduleTime(time: number) {
-    if (this.scheduleTime !== time) {
-      this._scheduleTime = time;
-      if (undefined !== this.scheduleScript && this.scheduleScript.containsFeatureOverrides)
-        this.setFeatureOverridesDirty();
-    }
-  }
 
   /** Determine whether this ViewState exactly matches another.
    * @see [[ViewState.equalState]] for determining broader equivalence of two ViewStates.
@@ -343,12 +150,12 @@ export abstract class ViewState extends ElementState {
    * @see [[ViewState.equals]] for determining exact equality.
    */
   public equalState(other: ViewState): boolean {
-    return (this.isPrivate === other.isPrivate &&
-      this.categorySelector.id === other.categorySelector.id &&
-      this.displayStyle.id === other.displayStyle.id &&
-      this.categorySelector.equalState(other.categorySelector) &&
-      this.displayStyle.equalState(other.displayStyle) &&
-      JSON.stringify(this.getDetails()) === JSON.stringify(other.getDetails()));
+    if (this.isPrivate !== other.isPrivate || this.name !== other.name || this.id !== other.id)
+      return false;
+    else if (!this.categorySelector.equalState(other.categorySelector) || !this.displayStyle.equalState(other.displayStyle))
+      return false;
+    else
+      return JSON.stringify(this.getDetails()) === JSON.stringify(other.getDetails());
   }
 
   public toJSON(): ViewDefinitionProps {
@@ -372,7 +179,11 @@ export abstract class ViewState extends ElementState {
       this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
     }
 
-    return this.subCategories.load(this.categorySelector.categories, this.iModel);
+    const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
+    if (undefined !== subcategories)
+      await subcategories.promise;
+
+    return Promise.resolve();
   }
 
   /** @internal */
@@ -392,51 +203,17 @@ export abstract class ViewState extends ElementState {
   /** Get this view's background color. */
   public get backgroundColor(): ColorDef { return this.displayStyle.backgroundColor; }
 
-  /** Remove any [[SubCategoryOverride]] for the specified subcategory.
-   * @param id The Id of the subcategory.
-   * @see [[overrideSubCategory]]
-   */
-  public dropSubCategoryOverride(id: Id64String) {
-    this.displayStyle.dropSubCategoryOverride(id);
-    this.setFeatureOverridesDirty();
-  }
-
-  /** Override the symbology of geometry belonging to a specific subcategory when rendered within this view.
-   * @param id The Id of the subcategory.
-   * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
-   * @see [[dropSubCategoryOverride]]
-   */
-  public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) {
-    this.displayStyle.overrideSubCategory(id, ovr);
-    this.setFeatureOverridesDirty();
-  }
-
-  /** Query the symbology overrides applied to geometry belonging to a specific subcategory when rendered within this view.
+  /** Query the symbology overrides applied to geometry belonging to a specific subcategory when rendered using this ViewState.
    * @param id The Id of the subcategory.
    * @return The symbology overrides applied to all geometry belonging to the specified subcategory, or undefined if no such overrides exist.
-   * @see [[overrideSubCategory]]
    */
-  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.displayStyle.getSubCategoryOverride(id); }
-
-  /** Query the symbology with which geometry belonging to a specific subcategory is rendered within this view.
-   * Every [[SubCategory]] defines a base symbology independent of any [[ViewState]].
-   * If a [[SubCategoryOverride]] has been applied to the subcategory within the context of this [[ViewState]], it will be applied to the subcategory's base symbology.
-   * @param id The Id of the subcategory.
-   * @return The symbology of the subcategory within this view, including any overrides.
-   * @see [[overrideSubCategory]]
-   */
-  public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
-    const app = this.subCategories.getSubCategoryAppearance(id);
-    if (undefined === app)
-      return SubCategoryAppearance.defaults;
-
-    const ovr = this.getSubCategoryOverride(id);
-    return undefined !== ovr ? ovr.override(app) : app;
+  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
+    return this.displayStyle.getSubCategoryOverride(id);
   }
 
   /** @internal */
   public isSubCategoryVisible(id: Id64String): boolean {
-    const app = this.subCategories.getSubCategoryAppearance(id.toString());
+    const app = this.iModel.subcategories.getSubCategoryAppearance(id);
     if (undefined === app)
       return false;
 
@@ -447,69 +224,6 @@ export abstract class ViewState extends ElementState {
       return !ovr.invisible;
   }
 
-  /** Enable or disable display of elements belonging to a set of categories specified by Id.
-   * Visibility of individual subcategories belonging to a category can be controlled separately through the use of [[SubCategoryOverride]]s.
-   * By default, enabling display of a category does not affect display of subcategories thereof which have been overridden to be invisible.
-   * @param categories The Id(s) of the categories to which the change should be applied. No other categories will be affected.
-   * @param display Whether or not elements on the specified categories should be displayed in the view.
-   * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
-   */
-  public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
-    if (display) {
-      this.categorySelector.addCategories(categories);
-      const categoryIds = Id64.toIdSet(categories);
-
-      this.subCategories.update(categoryIds, this.iModel).then(() => { // tslint:disable-line:no-floating-promises
-        this.setFeatureOverridesDirty();
-        if (enableAllSubCategories) {
-          for (const categoryId of categoryIds) {
-            const subCategoryIds = this.subCategories.getSubCategories(categoryId);
-            if (undefined !== subCategoryIds) {
-              for (const subCategoryId of subCategoryIds)
-                this.changeSubCategoryDisplay(subCategoryId, true);
-            }
-          }
-        }
-      });
-    } else {
-      this.categorySelector.dropCategories(categories);
-    }
-
-    this.setFeatureOverridesDirty();
-  }
-
-  private changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
-    const app = this.subCategories.getSubCategoryAppearance(subCategoryId);
-    if (undefined === app)
-      return; // category is not enabled or subcategory does not exist
-
-    const curOvr = this.getSubCategoryOverride(subCategoryId);
-    const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
-    if (isAlreadyVisible === display)
-      return;
-
-    // Preserve existing overrides - just flip the visibility flag.
-    const json = undefined !== curOvr ? curOvr.toJSON() : {};
-    json.invisible = !display;
-    this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json));
-  }
-
-  /** @internal */
-  public get areFeatureOverridesDirty(): boolean { return this._featureOverridesDirty; }
-  /** @internal */
-  public get isSelectionSetDirty(): boolean { return this._selectionSetDirty; }
-
-  /** Mark the [[FeatureSymbology.Overrides]] associated with this view as "dirty".
-   * Typically this is handled internally.
-   * Conditions that may cause the overrides to become dirty include:
-   *  - Toggling the display of a category within the view.
-   *  - Changing the symbology associated with a [[SubCategory]] within the view by adding a [[SubCategoryOverride]]
-   *  - Changes in some application state that affects the [[FeatureOverrideProvider]] registered with [[Viewport]].
-   * The next time the [[Viewport]] associated with this [[ViewState]] is rendered, the symbology overrides will be regenerated if they have been marked "dirty".
-   */
-  public setFeatureOverridesDirty(dirty: boolean = true): void { this._featureOverridesDirty = dirty; }
-  /** @internal */
-  public setSelectionSetDirty(dirty: boolean = true): void { this._selectionSetDirty = dirty; }
   /** Returns true if this ViewState is-a [[ViewState3d]] */
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   /** Returns true if this ViewState is-a [[ViewState2d]] */
@@ -1715,9 +1429,6 @@ export class SpatialViewState extends ViewState3d {
 
   public equalState(other: SpatialViewState): boolean {
     if (!super.equalState(other))
-      return false;
-
-    if (this.modelSelector.id !== other.modelSelector.id)
       return false;
 
     return this.modelSelector.equalState(other.modelSelector);

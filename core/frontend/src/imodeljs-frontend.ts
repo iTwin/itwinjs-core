@@ -41,6 +41,7 @@ export * from "./SelectionSet";
 export * from "./Sheet";
 export * from "./Sprites";
 export * from "./StandardView";
+export * from "./SubCategoriesCache";
 export * from "./TentativePoint";
 export * from "./QuantityFormatter";
 export * from "./ViewContext";

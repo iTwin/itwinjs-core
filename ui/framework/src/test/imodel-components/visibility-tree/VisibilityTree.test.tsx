@@ -9,7 +9,7 @@ import { render, cleanup, waitForElement, within, fireEvent } from "react-testin
 import { expect } from "chai";
 import TestUtils from "../../TestUtils";
 import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
-import { IModelConnection, ViewState, Viewport, ViewState3d, SpatialViewState, CategorySelectorState, ModelSelectorState } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ViewState, Viewport, ViewState3d, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { KeySet, ECInstanceNodeKey, StandardNodeTypes, BaseNodeKey } from "@bentley/presentation-common";
 import { SelectionManager, Presentation, SelectionChangeEvent } from "@bentley/presentation-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
@@ -222,7 +222,8 @@ describe("VisibilityTree", () => {
 
       interface ViewportMockProps {
         viewState?: ViewState;
-        onViewChanged?: BeEvent<(vp: Viewport) => void>;
+        onViewedCategoriesChanged?: BeEvent<(vp: Viewport) => void>;
+        onViewedModelsChanged?: BeEvent<(vp: Viewport) => void>;
         onAlwaysDrawnChanged?: BeEvent<() => void>;
         onNeverDrawnChanged?: BeEvent<() => void>;
       }
@@ -231,15 +232,18 @@ describe("VisibilityTree", () => {
           props = {};
         if (!props.viewState)
           props.viewState = moq.Mock.ofType<ViewState>().object;
-        if (!props.onViewChanged)
-          props.onViewChanged = new BeEvent<(vp: Viewport) => void>();
+        if (!props.onViewedCategoriesChanged)
+          props.onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
+        if (!props.onViewedModelsChanged)
+          props.onViewedModelsChanged = new BeEvent<(vp: Viewport) => void>();
         if (!props.onAlwaysDrawnChanged)
           props.onAlwaysDrawnChanged = new BeEvent<() => void>();
         if (!props.onNeverDrawnChanged)
           props.onNeverDrawnChanged = new BeEvent<() => void>();
         const vpMock = moq.Mock.ofType<Viewport>();
         vpMock.setup((x) => x.view).returns(() => props!.viewState!);
-        vpMock.setup((x) => x.onViewChanged).returns(() => props!.onViewChanged!);
+        vpMock.setup((x) => x.onViewedCategoriesChanged).returns(() => props!.onViewedCategoriesChanged!);
+        vpMock.setup((x) => x.onViewedModelsChanged).returns(() => props!.onViewedModelsChanged!);
         vpMock.setup((x) => x.onAlwaysDrawnChanged).returns(() => props!.onAlwaysDrawnChanged!);
         vpMock.setup((x) => x.onNeverDrawnChanged).returns(() => props!.onNeverDrawnChanged!);
         return vpMock;
@@ -250,7 +254,8 @@ describe("VisibilityTree", () => {
         it("should subscribe for viewport change events", () => {
           const vpMock = mockViewport();
           new VisibilityHandler(vpMock.object, () => { });
-          expect(vpMock.object.onViewChanged.numberOfListeners).to.eq(1);
+          expect(vpMock.object.onViewedCategoriesChanged.numberOfListeners).to.eq(1);
+          expect(vpMock.object.onViewedModelsChanged.numberOfListeners).to.eq(1);
           expect(vpMock.object.onAlwaysDrawnChanged.numberOfListeners).to.eq(1);
           expect(vpMock.object.onNeverDrawnChanged.numberOfListeners).to.eq(1);
         });
@@ -263,7 +268,8 @@ describe("VisibilityTree", () => {
           const vpMock = mockViewport();
           using(new VisibilityHandler(vpMock.object, () => { }), (_) => {
           });
-          expect(vpMock.object.onViewChanged.numberOfListeners).to.eq(0);
+          expect(vpMock.object.onViewedCategoriesChanged.numberOfListeners).to.eq(0);
+          expect(vpMock.object.onViewedModelsChanged.numberOfListeners).to.eq(0);
           expect(vpMock.object.onAlwaysDrawnChanged.numberOfListeners).to.eq(0);
           expect(vpMock.object.onNeverDrawnChanged.numberOfListeners).to.eq(0);
         });
@@ -480,62 +486,55 @@ describe("VisibilityTree", () => {
           it("does nothing for non-spatial views", async () => {
             const key = createSubjectNode().extendedData.key.instanceKey;
 
-            const viewStateMock = moq.Mock.ofType<SpatialViewState>();
+            const viewStateMock = moq.Mock.ofType<ViewState>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => false);
-            viewStateMock.setup((x) => x.addViewedModel(moq.It.isAny())).verifiable(moq.Times.never());
-            viewStateMock.setup((x) => x.clone()).returns(() => viewStateMock.object);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeView(viewStateMock.object)).verifiable(moq.Times.never());
+            vpMock.setup((x) => x.changeModelDisplay(moq.It.isAny(), moq.It.isAny())).verifiable(moq.Times.never());
 
             await using(new VisibilityHandler(vpMock.object, () => { }), async (handler) => {
               // note: need to override to avoid running a query on the imodel
               (handler as any).getSubjectModelIds = async () => ["0x1", "0x2"];
 
               await handler.changeVisibility(key, true);
-              viewStateMock.verifyAll();
               vpMock.verifyAll();
             });
           });
 
           it("makes all subject models visible", async () => {
             const key = createSubjectNode().extendedData.key.instanceKey;
+            const subjectModelIds = ["0x1", "0x2"];
 
             const viewStateMock = moq.Mock.ofType<SpatialViewState>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
-            viewStateMock.setup((x) => x.addViewedModel(moq.It.isAny())).verifiable(moq.Times.exactly(2));
-            viewStateMock.setup((x) => x.clone()).returns(() => viewStateMock.object);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeView(viewStateMock.object)).verifiable();
+            vpMock.setup((x) => x.changeModelDisplay(subjectModelIds, true)).verifiable();
 
             await using(new VisibilityHandler(vpMock.object, () => { }), async (handler) => {
               // note: need to override to avoid running a query on the imodel
-              (handler as any).getSubjectModelIds = async () => ["0x1", "0x2"];
+              (handler as any).getSubjectModelIds = async () => subjectModelIds;
 
               await handler.changeVisibility(key, true);
-              viewStateMock.verifyAll();
               vpMock.verifyAll();
             });
           });
 
           it("makes all subject models hidden", async () => {
             const key = createSubjectNode().extendedData.key.instanceKey;
+            const subjectModelIds = ["0x1", "0x2"];
 
             const viewStateMock = moq.Mock.ofType<SpatialViewState>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
-            viewStateMock.setup((x) => x.removeViewedModel(moq.It.isAny())).verifiable(moq.Times.exactly(2));
-            viewStateMock.setup((x) => x.clone()).returns(() => viewStateMock.object);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeView(viewStateMock.object)).verifiable();
+            vpMock.setup((x) => x.changeModelDisplay(subjectModelIds, false)).verifiable();
 
             await using(new VisibilityHandler(vpMock.object, () => { }), async (handler) => {
               // note: need to override to avoid running a query on the imodel
-              (handler as any).getSubjectModelIds = async () => ["0x1", "0x2"];
+              (handler as any).getSubjectModelIds = async () => subjectModelIds;
 
               await handler.changeVisibility(key, false);
-              viewStateMock.verifyAll();
               vpMock.verifyAll();
             });
           });
@@ -547,17 +546,14 @@ describe("VisibilityTree", () => {
           it("does nothing for non-spatial views", async () => {
             const key = createModelNode().extendedData.key.instanceKey;
 
-            const viewStateMock = moq.Mock.ofType<SpatialViewState>();
+            const viewStateMock = moq.Mock.ofType<ViewState>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => false);
-            viewStateMock.setup((x) => x.addViewedModel(key.id)).verifiable(moq.Times.never());
-            viewStateMock.setup((x) => x.clone()).returns(() => viewStateMock.object);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeView(viewStateMock.object)).verifiable(moq.Times.never());
+            vpMock.setup((x) => x.changeModelDisplay(moq.It.isAny(), moq.It.isAny())).verifiable(moq.Times.never());
 
             await using(new VisibilityHandler(vpMock.object, () => { }), async (handler) => {
               await handler.changeVisibility(key, true);
-              viewStateMock.verifyAll();
               vpMock.verifyAll();
             });
           });
@@ -567,15 +563,12 @@ describe("VisibilityTree", () => {
 
             const viewStateMock = moq.Mock.ofType<SpatialViewState>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
-            viewStateMock.setup((x) => x.addViewedModel(key.id)).verifiable();
-            viewStateMock.setup((x) => x.clone()).returns(() => viewStateMock.object);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeView(viewStateMock.object)).verifiable();
+            vpMock.setup((x) => x.changeModelDisplay([key.id], true)).verifiable();
 
             await using(new VisibilityHandler(vpMock.object, () => { }), async (handler) => {
               await handler.changeVisibility(key, true);
-              viewStateMock.verifyAll();
               vpMock.verifyAll();
             });
           });
@@ -585,15 +578,12 @@ describe("VisibilityTree", () => {
 
             const viewStateMock = moq.Mock.ofType<SpatialViewState>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
-            viewStateMock.setup((x) => x.removeViewedModel(key.id)).verifiable();
-            viewStateMock.setup((x) => x.clone()).returns(() => viewStateMock.object);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeView(viewStateMock.object)).verifiable();
+            vpMock.setup((x) => x.changeModelDisplay([key.id], false)).verifiable();
 
             await using(new VisibilityHandler(vpMock.object, () => { }), async (handler) => {
               await handler.changeVisibility(key, false);
-              viewStateMock.verifyAll();
               vpMock.verifyAll();
             });
           });
@@ -605,20 +595,11 @@ describe("VisibilityTree", () => {
           it("makes category visible", async () => {
             const key = createCategoryNode().extendedData.key.instanceKey;
 
-            const categorySelectorMock = moq.Mock.ofType<CategorySelectorState>();
-            categorySelectorMock.setup((x) => x.categories).returns(() => new Set());
-            categorySelectorMock.setup((x) => x.changeCategoryDisplay(key.id, true)).verifiable();
-
-            const viewStateMock = moq.Mock.ofType<SpatialViewState>();
-            viewStateMock.setup((x) => x.clone()).returns(() => viewStateMock.object);
-            viewStateMock.setup((x) => x.categorySelector).returns(() => categorySelectorMock.object);
-
-            const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeView(viewStateMock.object)).verifiable();
+            const vpMock = mockViewport();
+            vpMock.setup((x) => x.changeCategoryDisplay([key.id], true)).verifiable();
 
             await using(new VisibilityHandler(vpMock.object, () => { }), async (handler) => {
               await handler.changeVisibility(key, true);
-              categorySelectorMock.verifyAll();
               vpMock.verifyAll();
             });
           });
@@ -626,20 +607,11 @@ describe("VisibilityTree", () => {
           it("makes category hidden", async () => {
             const key = createCategoryNode().extendedData.key.instanceKey;
 
-            const categorySelectorMock = moq.Mock.ofType<CategorySelectorState>();
-            categorySelectorMock.setup((x) => x.categories).returns(() => new Set());
-            categorySelectorMock.setup((x) => x.changeCategoryDisplay(key.id, false)).verifiable();
-
-            const viewStateMock = moq.Mock.ofType<SpatialViewState>();
-            viewStateMock.setup((x) => x.clone()).returns(() => viewStateMock.object);
-            viewStateMock.setup((x) => x.categorySelector).returns(() => categorySelectorMock.object);
-
-            const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeView(viewStateMock.object)).verifiable();
+            const vpMock = mockViewport();
+            vpMock.setup((x) => x.changeCategoryDisplay([key.id], false)).verifiable();
 
             await using(new VisibilityHandler(vpMock.object, () => { }), async (handler) => {
               await handler.changeVisibility(key, false);
-              categorySelectorMock.verifyAll();
               vpMock.verifyAll();
             });
           });
@@ -704,112 +676,44 @@ describe("VisibilityTree", () => {
 
       describe("visibility change callback", () => {
 
-        describe("after `onViewChanged` callback", () => {
-
-          it("doesn't call the callback if neither categories nor models visibility changed", () => {
-            const evt = new BeEvent();
-
-            const categories = new Set(["0x1", "0x2"]);
-            const categorySelectorMock = moq.Mock.ofType<CategorySelectorState>();
-            categorySelectorMock.setup((x) => x.categories).returns(() => categories);
-
-            const models = new Set(["0x3", "0x4"]);
-            const modelsSelectorMock = moq.Mock.ofType<ModelSelectorState>();
-            modelsSelectorMock.setup((x) => x.models).returns(() => models);
-
-            const viewStateMock = moq.Mock.ofType<SpatialViewState>();
-            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
-            viewStateMock.setup((x) => x.modelSelector).returns(() => modelsSelectorMock.object);
-            viewStateMock.setup((x) => x.categorySelector).returns(() => categorySelectorMock.object);
-
-            const vpMock = mockViewport({ viewState: viewStateMock.object, onViewChanged: evt });
-            const spy = sinon.spy();
-            using(new VisibilityHandler(vpMock.object, spy), (_) => {
-              evt.raiseEvent(vpMock.object);
-              expect(spy).to.not.be.called;
-            });
+        it("calls the callback on `onAlwaysDrawnChanged` event", () => {
+          const evt = new BeEvent();
+          const vpMock = mockViewport({ onAlwaysDrawnChanged: evt });
+          const spy = sinon.spy();
+          using(new VisibilityHandler(vpMock.object, spy), (_) => {
+            evt.raiseEvent(vpMock.object);
+            expect(spy).to.be.calledOnce;
           });
-
-          it("calls the callback if categories visibility changes", () => {
-            const evt = new BeEvent();
-
-            const categories = new Set(["0x1"]);
-            const categorySelectorMock = moq.Mock.ofType<CategorySelectorState>();
-            categorySelectorMock.setup((x) => x.categories).returns(() => categories);
-
-            const models = new Set(["0x3", "0x4"]);
-            const modelsSelectorMock = moq.Mock.ofType<ModelSelectorState>();
-            modelsSelectorMock.setup((x) => x.models).returns(() => models);
-
-            const viewStateMock = moq.Mock.ofType<SpatialViewState>();
-            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
-            viewStateMock.setup((x) => x.modelSelector).returns(() => modelsSelectorMock.object);
-            viewStateMock.setup((x) => x.categorySelector).returns(() => categorySelectorMock.object);
-
-            const vpMock = mockViewport({ viewState: viewStateMock.object, onViewChanged: evt });
-            const spy = sinon.spy();
-            using(new VisibilityHandler(vpMock.object, spy), (_) => {
-              categories.clear();
-              categories.add("0x2");
-              evt.raiseEvent(vpMock.object);
-              expect(spy).to.be.calledOnce;
-            });
-          });
-
-          it("calls the callback if models visibility changes", () => {
-            const evt = new BeEvent();
-
-            const categories = new Set(["0x1", "0x2"]);
-            const categorySelectorMock = moq.Mock.ofType<CategorySelectorState>();
-            categorySelectorMock.setup((x) => x.categories).returns(() => categories);
-
-            const models = new Set(["0x3"]);
-            const modelsSelectorMock = moq.Mock.ofType<ModelSelectorState>();
-            modelsSelectorMock.setup((x) => x.models).returns(() => models);
-
-            const viewStateMock = moq.Mock.ofType<SpatialViewState>();
-            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
-            viewStateMock.setup((x) => x.modelSelector).returns(() => modelsSelectorMock.object);
-            viewStateMock.setup((x) => x.categorySelector).returns(() => categorySelectorMock.object);
-
-            const vpMock = mockViewport({ viewState: viewStateMock.object, onViewChanged: evt });
-            const spy = sinon.spy();
-            using(new VisibilityHandler(vpMock.object, spy), (_) => {
-              models.delete("0x3");
-              models.add("0x4");
-              evt.raiseEvent(vpMock.object);
-              expect(spy).to.be.calledOnce;
-            });
-          });
-
         });
 
-        describe("after `onAlwaysDrawnChanged` callback", () => {
-
-          it("calls the callback", () => {
-            const evt = new BeEvent();
-            const vpMock = mockViewport({ onAlwaysDrawnChanged: evt });
-            const spy = sinon.spy();
-            using(new VisibilityHandler(vpMock.object, spy), (_) => {
-              evt.raiseEvent(vpMock.object);
-              expect(spy).to.be.calledOnce;
-            });
+        it("calls the callback on `onNeverDrawnChanged` event", () => {
+          const evt = new BeEvent();
+          const vpMock = mockViewport({ onNeverDrawnChanged: evt });
+          const spy = sinon.spy();
+          using(new VisibilityHandler(vpMock.object, spy), (_) => {
+            evt.raiseEvent(vpMock.object);
+            expect(spy).to.be.calledOnce;
           });
-
         });
 
-        describe("after `onNeverDrawnChanged` callback", () => {
-
-          it("calls the callback", () => {
-            const evt = new BeEvent();
-            const vpMock = mockViewport({ onNeverDrawnChanged: evt });
-            const spy = sinon.spy();
-            using(new VisibilityHandler(vpMock.object, spy), (_) => {
-              evt.raiseEvent(vpMock.object);
-              expect(spy).to.be.calledOnce;
-            });
+        it("calls the callback on `onViewedCategoriesChanged` event", () => {
+          const evt = new BeEvent();
+          const vpMock = mockViewport({ onViewedCategoriesChanged: evt });
+          const spy = sinon.spy();
+          using(new VisibilityHandler(vpMock.object, spy), (_) => {
+            evt.raiseEvent(vpMock.object);
+            expect(spy).to.be.calledOnce;
           });
+        });
 
+        it("calls the callback on `onViewedModelsChanged` event", () => {
+          const evt = new BeEvent();
+          const vpMock = mockViewport({ onViewedModelsChanged: evt });
+          const spy = sinon.spy();
+          using(new VisibilityHandler(vpMock.object, spy), (_) => {
+            evt.raiseEvent(vpMock.object);
+            expect(spy).to.be.calledOnce;
+          });
         });
 
       });

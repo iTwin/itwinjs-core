@@ -208,20 +208,20 @@ export class VisibilityHandler implements IDisposable {
   private _subjectModelIdsCache = new Map<Id64String, Id64String[]>();
   private _elementDisplayCache = new Map<Id64String, boolean | Promise<boolean>>();
   private _elementCategoryAndModelLoader: ElementCategoryAndModelRequestor;
-  private _currentSelectorsState: ViewSelectorsState;
 
   constructor(vp: Viewport, onVisibilityChange: () => void) {
     this._vp = vp;
     this._onVisibilityChange = onVisibilityChange;
     this._elementCategoryAndModelLoader = new ElementCategoryAndModelRequestor(vp.iModel);
-    this._currentSelectorsState = new ViewSelectorsState(vp);
-    vp.onViewChanged.addListener(this.onViewChanged);
+    vp.onViewedCategoriesChanged.addListener(this.onViewChanged);
+    vp.onViewedModelsChanged.addListener(this.onViewChanged);
     vp.onAlwaysDrawnChanged.addListener(this.onElementAlwaysDrawnChanged);
     vp.onNeverDrawnChanged.addListener(this.onElementNeverDrawnChanged);
   }
 
   public dispose() {
-    this._vp.onViewChanged.removeListener(this.onViewChanged);
+    this._vp.onViewedCategoriesChanged.removeListener(this.onViewChanged);
+    this._vp.onViewedModelsChanged.removeListener(this.onViewChanged);
     this._vp.onAlwaysDrawnChanged.removeListener(this.onElementAlwaysDrawnChanged);
     this._vp.onNeverDrawnChanged.removeListener(this.onElementNeverDrawnChanged);
   }
@@ -299,33 +299,19 @@ export class VisibilityHandler implements IDisposable {
     if (!this._vp.view.isSpatialView())
       return;
 
-    const viewState = this._vp.view.clone();
     const modelIds = await this.getSubjectModelIds(id);
-    modelIds.forEach((modelId) => {
-      if (on)
-        viewState.addViewedModel(modelId);
-      else
-        viewState.removeViewedModel(modelId);
-    });
-    this._vp.changeView(viewState);
+    this._vp.changeModelDisplay(modelIds, on);
   }
 
   private changeModelState(id: Id64String, on: boolean) {
     if (!this._vp.view.isSpatialView())
       return;
 
-    const viewState = this._vp.view.clone();
-    if (on)
-      viewState.addViewedModel(id);
-    else
-      viewState.removeViewedModel(id);
-    this._vp.changeView(viewState);
+    this._vp.changeModelDisplay([id], on);
   }
 
   private changeCategoryState(id: Id64String, on: boolean) {
-    const viewState = this._vp.view.clone();
-    viewState.categorySelector.changeCategoryDisplay(id, on);
-    this._vp.changeView(viewState);
+    this._vp.changeCategoryDisplay([id], on);
   }
 
   private async changeElementState(id: Id64String, on: boolean) {
@@ -346,14 +332,7 @@ export class VisibilityHandler implements IDisposable {
   }
 
   // tslint:disable-next-line: naming-convention
-  private onViewChanged = (vp: Viewport) => {
-    // note: this event is fired way too much than we need - need to filter out
-    // cases where model or category state changes
-    const newSelectorsState = new ViewSelectorsState(vp);
-    if (newSelectorsState.equals(this._currentSelectorsState))
-      return;
-
-    this._currentSelectorsState = newSelectorsState;
+  private onViewChanged = (_vp: Viewport) => {
     this.clearDisplayCache();
     this._onVisibilityChange();
   }
@@ -483,29 +462,4 @@ class ElementCategoryAndModelRequestor extends DelayedRequestor<Id64String, Cate
     return this._imodel.query(q, elementIds);
   }
   public getCategoryAndModelId = async (elementId: Id64String) => this.getResult(elementId);
-}
-
-class ViewSelectorsState {
-  public readonly categorySelector: Set<Id64String>;
-  public readonly modelSelector: Set<Id64String>;
-
-  public constructor(vp?: Viewport) {
-    this.categorySelector = new Set(vp ? vp.view.categorySelector.categories : []);
-    this.modelSelector = new Set(vp && vp.view.isSpatialView() ? vp.view.modelSelector.models : []);
-  }
-
-  public equals(other: ViewSelectorsState) {
-    return areSetsEqual(this.categorySelector, other.categorySelector)
-      && areSetsEqual(this.modelSelector, other.modelSelector);
-  }
-}
-
-function areSetsEqual<TValue>(lhs: Set<TValue>, rhs: Set<TValue>) {
-  if (lhs.size !== rhs.size)
-    return false;
-  for (const value of lhs) {
-    if (!rhs.has(value))
-      return false;
-  }
-  return true;
 }

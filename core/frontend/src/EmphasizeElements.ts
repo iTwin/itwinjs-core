@@ -177,7 +177,8 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     } else {
       this._overrideAppearance = undefined;
     }
-    vp.view.setFeatureOverridesDirty(true);
+
+    vp.setFeatureOverrideProviderChanged();
     return true;
   }
 
@@ -315,8 +316,10 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const selection = vp.view.iModel.selectionSet;
     if (!selection.isActive || !this.emphasizeElements(selection.elements, vp, defaultAppearance, replace))
       return false;
+
     if (clearSelection)
       selection.emptyAll();
+
     return true;
   }
 
@@ -333,31 +336,39 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const ovrKey = this.createOverrideKey(color, override);
     if (undefined === ovrKey)
       return false;
+
     const overrideIds = new Set<string>();
     Id64.toIdSet(ids).forEach((id) => { overrideIds.add(id); });
     if (0 === overrideIds.size)
       return false;
+
     const existingIds = (!replace ? this.getOverriddenElementsByKey(ovrKey) : undefined);
     const oldSize = (undefined !== existingIds ? existingIds.size : 0);
     if (0 !== oldSize && undefined !== existingIds)
       for (const id of existingIds)
         overrideIds.add(id);
+
     if (oldSize === overrideIds.size)
       return false;
+
     if (undefined === this._overrideAppearance) {
       this._overrideAppearance = new Map<number, Id64Set>();
     } else {
       for (const [key, otherIds] of this._overrideAppearance) {
         if (key === ovrKey) // Make sure these ids are unique to this color/transparency key...
           continue;
+
         Id64.toIdSet(ids).forEach((id) => { otherIds.delete(id); });
         if (0 !== otherIds.size)
           continue;
+
         this._overrideAppearance.delete(key);
       }
     }
+
     this._overrideAppearance.set(ovrKey, overrideIds);
-    vp.view.setFeatureOverridesDirty(true);
+    vp.setFeatureOverrideProviderChanged();
+
     return true;
   }
 

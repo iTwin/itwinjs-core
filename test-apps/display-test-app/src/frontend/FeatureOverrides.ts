@@ -69,7 +69,7 @@ export class Provider implements FeatureOverrideProvider {
     this.sync();
   }
 
-  private sync(): void { this._vp.view.setFeatureOverridesDirty(); }
+  private sync(): void { this._vp.setFeatureOverrideProviderChanged(); }
 
   public static get(vp: Viewport): Provider | undefined {
     return vp.featureOverrideProvider instanceof Provider ? vp.featureOverrideProvider : undefined;

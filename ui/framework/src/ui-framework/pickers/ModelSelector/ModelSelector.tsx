@@ -228,7 +228,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       // Only act on viewports that are both 3D or both 2D. Important if we have multiple viewports opened and we
       // are using 'allViewports' property
       if (IModelApp.viewManager.selectedView && IModelApp.viewManager.selectedView.view.is3d() === vp.view.is3d()) {
-        vp.view.changeCategoryDisplay(keys, checked);
+        vp.changeCategoryDisplay(keys, checked);
       }
     };
 

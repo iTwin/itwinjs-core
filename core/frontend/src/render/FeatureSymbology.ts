@@ -152,14 +152,14 @@ export namespace FeatureSymbology {
     private rgbIsEqual(rgb?: RgbColor): boolean { return undefined === this.rgb ? undefined === rgb ? true : false : undefined === rgb ? false : this.rgb.equals(rgb); }
   }
 
-  /** Allows a [[ViewState]] to customize the appearance of individual [Feature]($common)s within it.
+  /** Allows a [[Viewport]] to customize the appearance of individual [Feature]($common)s within it.
    *
-   * The ViewState computes its base Overrides based on the following:
+   * The Viewport computes its base Overrides based on the following:
    *  - The set of categories enabled for display in its [[CategorySelectorState]]. Every [[SubCategory]] belonging to an enabled [[Category]] is added to the set of visible subcategories - all other subcategories are assumed to be invisible.
    *  - For the set of visible subcategories, any [[SubCategoryOverride]]s defined by the view's [[DisplayStyleState]] are applied. This may render some subcategories invisible, and change the symbology of others.
    *  - The visibility of each [GeometryClass]($common) is set based on the view's [[ViewFlags]].
    *  - The line weight is overridden to 1 pixel for all Features if line weight has been disabled by the view's [[ViewFlags]].
-   *  - The sets of elements which are always drawn and never drawn are initialized from the [[ViewState]]'s sets.
+   *  - The sets of elements which are always drawn and never drawn are initialized from the [[Viewport]]'s sets.
    * An application can further customize the symbology of any Features by registering a [[FeatureOverrideProvider]] with a [[Viewport]]. That provider's addFeatureOverrides function will be invoked
    * whenever the Overrides need to be regenerated.
    *
@@ -172,7 +172,6 @@ export namespace FeatureSymbology {
    * be merged, causing the Feature's geometry to draw 25% transparent red. On the other hand, if subcategory "A" is specified to draw in red and element "0x123" to draw in green,
    * the color specified by the element override will take precedence over that specified for the subcategory, resulting in a green Feature.
    *
-   * @see [[ViewState.setFeatureOverridesDirty]] for explicitly regenerating a view's Overrides.
    * @see [[Viewport.alwaysDrawn]]
    * @see [[Viewport.neverDrawn]]
    */
@@ -423,7 +422,7 @@ export namespace FeatureSymbology {
         this._defaultOverrides = appearance;
     }
 
-    /** Initialize these Overrides based on the [[ViewState]]'s settings.
+    /** Initialize these Overrides based on a specific view.
      * @internal
      */
     public initFromView(view: ViewState) {
@@ -444,7 +443,7 @@ export namespace FeatureSymbology {
       this._lineWeights = viewFlags.weights;
 
       for (const categoryId of view.categorySelector.categories) {
-        const subCategoryIds = view.subCategories.getSubCategories(categoryId);
+        const subCategoryIds = view.iModel.subcategories.getSubCategories(categoryId);
         if (undefined === subCategoryIds)
           continue;
 
@@ -461,13 +460,16 @@ export namespace FeatureSymbology {
             }
           }
         }
-        if (view.scheduleScript) {
-          view.scheduleScript.getSymbologyOverrides(this, view.scheduleTime);
-        }
       }
     }
-    /** Create an Overrides based on the supplied [[ViewState]]. */
-    constructor(view?: ViewState) { if (undefined !== view) this.initFromView(view); }
+
+    /** Construct a new Overrides. The result is an empty set of overrides if no view is supplied.
+     * @param view If supplied, the overrides will be initialized based on the view's current state.
+     */
+    public constructor(view?: ViewState) {
+      if (undefined !== view)
+        this.initFromView(view);
+    }
 
     /** Returns true if geometry belonging to the specified subcategory will be drawn. */
     public isSubCategoryIdVisible(id: Id64String): boolean { return this.isSubCategoryVisible(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }

@@ -73,13 +73,8 @@ export class ModelPicker extends ToolBarDropDown {
 
       const id = prop.id;
       const cb = this.addCheckbox(prop.name, id, selector.has(id), (enabled: boolean) => {
-        if (enabled)
-          selector.addModels(id);
-        else
-          selector.dropModels(id);
-
+        this._vp.changeModelDisplay(id, enabled);
         this._toggleAll!.checked = areAllEnabled();
-        this._vp.invalidateScene();
       });
 
       this._modelCheckBoxes.push(cb.checkbox);
@@ -181,13 +176,7 @@ export class ModelPicker extends ToolBarDropDown {
 
   private toggleAll(enable: boolean): void {
     if (this._vp.view.isSpatialView()) {
-      const selector = this._vp.view.modelSelector;
-      if (enable)
-        selector.addModels(this._models);
-      else
-        selector.dropModels(this._models);
-
-      this._vp.invalidateScene();
+      this._vp.changeViewedModels(enable ? this._models : new Set<string>());
     }
 
     for (const checkbox of this._modelCheckBoxes)

@@ -199,6 +199,18 @@ export class SubCategoryOverride {
     return val;
   }
 
+  /** Perform equality comparison against another SubCategoryOverride. */
+  public equals(other: SubCategoryOverride): boolean {
+    if (this.invisible !== other.invisible || this.weight !== other.weight || this.style !== other.style
+      || this.priority !== other.priority || this.material !== other.material || this.transparency !== other.transparency)
+      return false;
+
+    if (undefined !== this.color && undefined !== other.color)
+      return this.color.tbgr === other.color.tbgr;
+    else
+      return undefined === this.color && undefined === other.color;
+  }
+
   /** Create a new SubCategoryOverride from a JSON object */
   public static fromJSON(json?: SubCategoryAppearance.Props): SubCategoryOverride {
     return undefined !== json ? new SubCategoryOverride(json) : this.defaults;

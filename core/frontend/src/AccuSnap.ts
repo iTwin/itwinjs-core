@@ -594,7 +594,7 @@ export class AccuSnap implements Decorator {
 
   public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined> {
     if (undefined !== thisHit.subCategoryId) {
-      const appearance = thisHit.viewport.view.getSubCategoryAppearance(thisHit.subCategoryId);
+      const appearance = thisHit.viewport.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
         if (out) out.snapStatus = SnapStatus.NotSnappable;
         return undefined;

@@ -20,6 +20,7 @@ import { ModelState } from "./ModelState";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
+import { SubCategoriesCache } from "./SubCategoriesCache";
 
 const loggerCategory: string = LoggerCategory.IModelConnection;
 
@@ -45,6 +46,10 @@ export class IModelConnection extends IModel {
    * @internal
    */
   public readonly tiles: IModelConnection.Tiles;
+  /** A cache of information about SubCategories chiefly used for rendering.
+   * @internal
+   */
+  public readonly subcategories: SubCategoriesCache;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
   /** The Geographic location services available for this iModelConnection */
@@ -56,6 +61,16 @@ export class IModelConnection extends IModel {
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
+
+  /** Check if the IModelConnection is still open. Returns false after [[IModelConnection.close]] has been called.
+   * @alpha
+   */
+  public get isOpen(): boolean { return undefined !== (this._token as any); }
+
+  /** Check if the IModelConnection has been closed. Returns true after [[IModelConnection.close]] has been called.
+   * @alpha
+   */
+  public get isClosed(): boolean { return !this.isOpen; }
 
   /** Event called immediately before an IModelConnection is closed.
    * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
@@ -118,6 +133,7 @@ export class IModelConnection extends IModel {
     this.hilited = new HilitedSet(this);
     this.selectionSet = new SelectionSet(this);
     this.tiles = new IModelConnection.Tiles(this);
+    this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
   }
 
@@ -257,6 +273,7 @@ export class IModelConnection extends IModel {
       await closePromise;
     } finally {
       (this._token as any) = undefined; // prevent closed connection from being reused
+      this.subcategories.onIModelConnectionClose();
     }
   }
 
@@ -283,6 +300,7 @@ export class IModelConnection extends IModel {
       await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.iModelToken);
     } finally {
       (this._token as any) = undefined; // prevent closed connection from being reused
+      this.subcategories.onIModelConnectionClose();
     }
   }
 

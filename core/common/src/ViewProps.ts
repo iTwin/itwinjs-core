@@ -552,8 +552,23 @@ export class DisplayStyleSettings {
       if (updateJson) {
         const index = this.findIndexOfSubCategoryOverrideInJSON(id, true);
         this._json.subCategoryOvr![index] = ovr.toJSON();
+        this._json.subCategoryOvr![index].subCategory = id;
       }
     }
+  }
+
+  /** @internal */
+  public equalSubCategoryOverrides(other: DisplayStyleSettings): boolean {
+    if (this._subCategoryOverrides.size !== other._subCategoryOverrides.size)
+      return false;
+
+    for (const [key, value] of this._subCategoryOverrides.entries()) {
+      const otherValue = other._subCategoryOverrides.get(key);
+      if (undefined === otherValue || !value.equals(otherValue))
+        return false;
+    }
+
+    return true;
   }
 }
 

@@ -1185,6 +1185,8 @@ export class DisplayStyleSettings {
     backgroundMap: BackgroundMapProps | undefined;
     dropExcludedElement(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
+    // @internal (undocumented)
+    equalSubCategoryOverrides(other: DisplayStyleSettings): boolean;
     readonly excludedElements: Set<Id64String>;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     readonly hasSubCategoryOverride: boolean;
@@ -4369,6 +4371,7 @@ export class SubCategoryOverride {
     readonly anyOverridden: boolean;
     readonly color?: ColorDef;
     static defaults: SubCategoryOverride;
+    equals(other: SubCategoryOverride): boolean;
     static fromJSON(json?: SubCategoryAppearance.Props): SubCategoryOverride;
     readonly invisible?: boolean;
     readonly material?: Id64String;

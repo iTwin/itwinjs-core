@@ -1266,6 +1266,61 @@ export class CategorySelectorState extends ElementState {
     toJSON(): CategorySelectorProps;
 }
 
+// @beta
+export const enum ChangeFlag {
+    // (undocumented)
+    All = 63,
+    // (undocumented)
+    AlwaysDrawn = 1,
+    // (undocumented)
+    DisplayStyle = 16,
+    // (undocumented)
+    FeatureOverrideProvider = 32,
+    // (undocumented)
+    Initial = 28,
+    // (undocumented)
+    NeverDrawn = 2,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Overrides = 55,
+    // (undocumented)
+    ViewedCategories = 4,
+    // (undocumented)
+    ViewedModels = 8
+}
+
+// @beta
+export class ChangeFlags {
+    constructor(flags?: ChangeFlag);
+    readonly alwaysDrawn: boolean;
+    areAllSet(flags: ChangeFlag): boolean;
+    readonly areFeatureOverridesDirty: boolean;
+    clear(flags?: ChangeFlag): void;
+    readonly displayStyle: boolean;
+    readonly featureOverrideProvider: boolean;
+    readonly hasChanges: boolean;
+    isSet(flags: ChangeFlag): boolean;
+    readonly neverDrawn: boolean;
+    set(flags: ChangeFlag): void;
+    // (undocumented)
+    setAlwaysDrawn(): void;
+    // (undocumented)
+    setDisplayStyle(): void;
+    // (undocumented)
+    setFeatureOverrideProvider(): void;
+    // (undocumented)
+    setNeverDrawn(): void;
+    // (undocumented)
+    setViewedCategories(): void;
+    // (undocumented)
+    setViewedModels(): void;
+    // (undocumented)
+    readonly value: ChangeFlag;
+    readonly viewedCategories: boolean;
+    readonly viewedModels: boolean;
+}
+
 // @public
 export interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
     // (undocumented)
@@ -2788,6 +2843,10 @@ export class IModelConnection extends IModel {
     readonly geoServices: GeoServices;
     getToolTipMessage(id: string): Promise<string[]>;
     readonly hilited: HilitedSet;
+    // @alpha
+    readonly isClosed: boolean;
+    // @alpha
+    readonly isOpen: boolean;
     readonly isReadonly: boolean;
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
@@ -2808,6 +2867,8 @@ export class IModelConnection extends IModel {
     readonly selectionSet: SelectionSet;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
     spatialToCartographicFromGcs(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
+    // @internal
+    readonly subcategories: SubCategoriesCache;
     // @internal
     readonly tiles: IModelConnection.Tiles;
     readonly transientIds: TransientIdSequence;
@@ -5339,16 +5400,27 @@ export interface StructValue extends BasePropertyValue {
 }
 
 // @internal
-export class SubCategoriesRequest {
-    constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery?: number, maxSubCategoriesPerPage?: number);
+export class SubCategoriesCache {
+    constructor(imodel: IModelConnection);
+    getSubCategories(categoryId: string): Id64Set | undefined;
+    getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined;
+    load(categoryIds: Id64Set): SubCategoriesRequest | undefined;
     // (undocumented)
-    cancel(): void;
-    // (undocumented)
-    dispatch(): Promise<SubCategoriesRequest.Result | undefined>;
+    onIModelConnectionClose(): void;
     }
 
-// @internal (undocumented)
-export namespace SubCategoriesRequest {
+// @internal
+export namespace SubCategoriesCache {
+    // (undocumented)
+    export class Request {
+        constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery?: number, maxSubCategoriesPerPage?: number);
+        // (undocumented)
+        cancel(): void;
+        // (undocumented)
+        dispatch(): Promise<Result | undefined>;
+        // (undocumented)
+        readonly wasCanceled: boolean;
+    }
     // (undocumented)
     export type Result = ResultPage[];
     // (undocumented)
@@ -5362,6 +5434,13 @@ export namespace SubCategoriesRequest {
         // (undocumented)
         parentId: Id64String;
     }
+}
+
+// @internal
+export interface SubCategoriesRequest {
+    cancel(): void;
+    readonly missingCategoryIds: Id64Set;
+    readonly promise: Promise<boolean>;
 }
 
 // @public
@@ -6893,9 +6972,16 @@ export abstract class Viewport implements IDisposable {
     readonly auxCoordSystem: AuxCoordSystemState;
     // @internal (undocumented)
     readonly backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined;
+    changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
     // @internal (undocumented)
     changeDynamics(dynamics: GraphicList | undefined): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "_changeFlags" is marked as @public, but its signature references "ChangeFlags" which is marked as @beta
+    // 
+    // (undocumented)
+    protected _changeFlags: ChangeFlags;
+    changeModelDisplay(models: Id64Arg, display: boolean): boolean;
     changeView(view: ViewState): void;
+    changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
     clearNeverDrawn(): void;
     // @internal (undocumented)
@@ -6906,8 +6992,10 @@ export abstract class Viewport implements IDisposable {
     // Warning: (ae-incompatible-release-tags) The symbol "debugBoundingBoxes" is marked as @public, but its signature references "Tile" which is marked as @internal
     debugBoundingBoxes: Tile.DebugBoundingBoxes;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
+    displayStyle: DisplayStyleState;
     // (undocumented)
     dispose(): void;
+    dropSubCategoryOverride(id: Id64String): void;
     featureOverrideProvider: FeatureOverrideProvider | undefined;
     // @internal
     flashDuration: number;
@@ -6930,6 +7018,10 @@ export abstract class Viewport implements IDisposable {
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
+    // @internal (undocumented)
+    getSubCategories(categoryId: Id64String): Id64Set | undefined;
+    getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
+    getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     getWorldFrustum(box?: Frustum): Frustum;
     hilite: Hilite.Settings;
     readonly iModel: IModelConnection;
@@ -6951,8 +7043,11 @@ export abstract class Viewport implements IDisposable {
     readonly isPointAdjustmentRequired: boolean;
     // @internal (undocumented)
     readonly isSnapAdjustmentRequired: boolean;
+    isSubCategoryVisible(id: Id64String): boolean;
     // @internal
     lastFlashedElem?: string;
+    // @internal (undocumented)
+    markSelectionSetDirty(): void;
     // @internal
     static nearScale24: number;
     readonly neverDrawn: Id64Set | undefined;
@@ -6963,10 +7058,25 @@ export abstract class Viewport implements IDisposable {
     numReadyTiles: number;
     readonly numRequestedTiles: number;
     numSelectedTiles: number;
+    // @beta
     readonly onAlwaysDrawnChanged: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onDisplayStyleChanged: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
+    // @beta
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onViewedModelsChanged: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onViewportChanged: BeEvent<(vp: Viewport, changed: ChangeFlags) => void>;
+    overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     pixelsFromInches(inches: number): number;
     // @internal (undocumented)
     readonly pixelsPerInch: number;
@@ -6981,6 +7091,7 @@ export abstract class Viewport implements IDisposable {
     readonly rotation: Matrix3d;
     scroll(screenDist: Point2d, options?: ViewChangeOptions): void;
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
+    setFeatureOverrideProviderChanged(): void;
     // @internal
     setFlashed(id: string | undefined, duration: number): void;
     setNeverDrawn(ids: Id64Set): void;
@@ -7000,7 +7111,7 @@ export abstract class Viewport implements IDisposable {
     view4dToWorld(input: Point4d, out?: Point3d): Point3d;
     view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void;
     readonly viewDelta: Vector3d;
-    readonly viewFlags: ViewFlags;
+    viewFlags: ViewFlags;
     // @internal (undocumented)
     readonly viewFrustum: ViewFrustum;
     // @internal
@@ -7008,6 +7119,7 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     protected readonly _viewRange: ViewRect;
     abstract readonly viewRect: ViewRect;
+    viewsModel(modelId: Id64String): boolean;
     viewToNpc(pt: Point3d, out?: Point3d): Point3d;
     viewToNpcArray(pts: Point3d[]): void;
     viewToWorld(input: XYAndZ, out?: Point3d): Point3d;
@@ -7085,14 +7197,11 @@ export abstract class ViewState extends ElementState {
     readonly analysisStyle: AnalysisStyle | undefined;
     // @internal (undocumented)
     readonly areAllTileTreesLoaded: boolean;
-    // @internal (undocumented)
-    readonly areFeatureOverridesDirty: boolean;
     readonly auxiliaryCoordinateSystem: AuxCoordSystemState;
     readonly backgroundColor: ColorDef;
     calculateFrustum(result?: Frustum): Frustum | undefined;
     // (undocumented)
     categorySelector: CategorySelectorState;
-    changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
     // (undocumented)
     static readonly className: string;
     abstract computeFitRange(): Range3d;
@@ -7119,12 +7228,9 @@ export abstract class ViewState extends ElementState {
     displayStyle: DisplayStyleState;
     // @internal (undocumented)
     drawGrid(context: DecorateContext): void;
-    dropSubCategoryOverride(id: Id64String): void;
     equals(other: this): boolean;
     equalState(other: ViewState): boolean;
     extentLimits: ExtentLimits;
-    // (undocumented)
-    protected _featureOverridesDirty: boolean;
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
     // Warning: (ae-incompatible-release-tags) The symbol "forEachTileTreeModel" is marked as @public, but its signature references "TileTreeModelState" which is marked as @beta
     forEachTileTreeModel(func: (model: TileTreeModelState) => void): void;
@@ -7147,7 +7253,6 @@ export abstract class ViewState extends ElementState {
     abstract getRotation(): Matrix3d;
     // @internal (undocumented)
     static getStandardViewMatrix(id: StandardViewId): Matrix3d;
-    getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     getTargetPoint(result?: Point3d): Point3d;
     getViewClip(): ClipVector | undefined;
@@ -7159,8 +7264,6 @@ export abstract class ViewState extends ElementState {
     is3d(): this is ViewState3d;
     // (undocumented)
     isPrivate?: boolean;
-    // @internal (undocumented)
-    readonly isSelectionSetDirty: boolean;
     isSpatialView(): this is SpatialViewState;
     // @internal (undocumented)
     isSubCategoryVisible(id: Id64String): boolean;
@@ -7170,17 +7273,12 @@ export abstract class ViewState extends ElementState {
     readonly name: string;
     // @internal
     abstract onRenderFrame(_viewport: Viewport): void;
-    overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal
     peekDetail(name: string): any;
     // @internal
     removeDetail(name: string): void;
     resetExtentLimits(): void;
     readonly scheduleScript: RenderScheduleState.Script | undefined;
-    // (undocumented)
-    scheduleTime: number;
-    // (undocumented)
-    protected _selectionSetDirty: boolean;
     setAspectRatioSkew(val: number): void;
     setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState): void;
     setCategorySelector(categories: CategorySelectorState): void;
@@ -7189,26 +7287,21 @@ export abstract class ViewState extends ElementState {
     // (undocumented)
     setDisplayStyle(style: DisplayStyleState): void;
     abstract setExtents(viewDelta: Vector3d): void;
-    setFeatureOverridesDirty(dirty?: boolean): void;
     setGridSettings(orientation: GridOrientationType, spacing: Point2d, gridsPerRef: number): void;
     abstract setOrigin(viewOrg: Point3d): void;
     abstract setRotation(viewRot: Matrix3d): void;
     setRotationAboutPoint(rotation: Matrix3d, point?: Point3d): void;
-    // @internal (undocumented)
-    setSelectionSetDirty(dirty?: boolean): void;
     setStandardRotation(id: StandardViewId): void;
     setupFromFrustum(inFrustum: Frustum): ViewStatus;
     setViewClip(clip?: ClipVector): void;
     // @internal (undocumented)
     showFrustumErrorMessage(status: ViewStatus): void;
-    // @internal
-    readonly subCategories: ViewSubCategories;
     // (undocumented)
     toJSON(): ViewDefinitionProps;
     undoTime?: BeTimePoint;
     // @internal (undocumented)
     validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus;
-    viewFlags: ViewFlags;
+    readonly viewFlags: ViewFlags;
     viewsCategory(id: Id64String): boolean;
     abstract viewsModel(modelId: Id64String): boolean;
 }
@@ -7375,14 +7468,6 @@ export const enum ViewStatus {
     Success = 0,
     // (undocumented)
     ViewNotInitialized = 1
-}
-
-// @internal
-export class ViewSubCategories {
-    getSubCategories(categoryId: string): Id64Set | undefined;
-    getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined;
-    load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void>;
-    update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void>;
 }
 
 // @public

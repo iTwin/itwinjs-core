@@ -44,6 +44,20 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   /** @internal */
   public componentDidMount() {
     this._isMounted = true;
+    this.props.activeView.onViewedModelsChanged.addListener(this._onViewedModelsChanged);
+    this.props.activeView.onViewedCategoriesChanged.addListener(this._onViewedCategoriesChanged);
+  }
+
+  /** @internal */
+  public componentDidUpdate(prevProps: CategoryModelTreeProps, _prevState: CategoryModelTreeState) {
+    if (prevProps.activeView) {
+      this.props.activeView.onViewedModelsChanged.removeListener(this._onViewedModelsChanged);
+      this.props.activeView.onViewedCategoriesChanged.removeListener(this._onViewedCategoriesChanged);
+    }
+    if (this.props.activeView) {
+      this.props.activeView.onViewedModelsChanged.addListener(this._onViewedModelsChanged);
+      this.props.activeView.onViewedCategoriesChanged.addListener(this._onViewedCategoriesChanged);
+    }
   }
 
   /** @internal */
@@ -58,6 +72,13 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     else if (group === Groups.Categories)
       this._setCategoriesFromViewState(); // tslint:disable-line:no-floating-promises
 
+  }
+
+  private _onViewedModelsChanged = () => {
+    this._setModelsFromViewState(); // tslint:disable-line:no-floating-promises
+  }
+  private _onViewedCategoriesChanged = () => {
+    this._setCategoriesFromViewState(); // tslint:disable-line:no-floating-promises
   }
 
   /** Set model selection state based on ViewState */

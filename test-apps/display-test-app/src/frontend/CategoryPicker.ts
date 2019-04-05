@@ -65,17 +65,24 @@ export class CategoryPicker extends ToolBarDropDown {
 
       const name = getCategoryName(row);
       this.addCheckbox(name, row.id, view.categorySelector.has(row.id), (enabled: boolean) => {
-        this._vp.view.changeCategoryDisplay(row.id, enabled);
+        this._vp.changeCategoryDisplay(row.id, enabled);
         toggleAll.checked = areAllEnabled();
       });
     }
 
     // Remove any unused categories from category selector (otherwise areAllEnabled criterion is broken).
-    for (const categoryId of view.categorySelector.categories)
-      if (!this._categories.has(categoryId))
-        view.categorySelector.categories.delete(categoryId);
+    let unusedCategories: Set<string> | undefined;
+    for (const categoryId of view.categorySelector.categories) {
+      if (!this._categories.has(categoryId)) {
+        if (undefined === unusedCategories)
+          unusedCategories = new Set<string>();
 
-    view.setFeatureOverridesDirty();
+        unusedCategories.add(categoryId);
+      }
+    }
+
+    if (undefined !== unusedCategories)
+      this._vp.changeCategoryDisplay(unusedCategories, false);
 
     toggleAll.checked = areAllEnabled();
   }
@@ -86,7 +93,7 @@ export class CategoryPicker extends ToolBarDropDown {
   public get onViewChanged(): Promise<void> { return this.populate(); }
 
   private toggleAll(enable: boolean): void {
-    this._vp.view.changeCategoryDisplay(this._categories, enable);
+    this._vp.changeCategoryDisplay(this._categories, enable);
     for (const checkbox of this._checkboxes)
       checkbox.checked = enable;
   }

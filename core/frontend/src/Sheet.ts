@@ -126,10 +126,10 @@ export namespace Attachments {
         return currentState;
       }
 
-      const view = this.view;
-      if (view.areFeatureOverridesDirty) {
-        this.target.overrideFeatureSymbology(new FeatureSymbology.Overrides(view));
-        view.setFeatureOverridesDirty(false);
+      if (this._changeFlags.areFeatureOverridesDirty) {
+        const ovrs = new FeatureSymbology.Overrides(this.view);
+        this.target.overrideFeatureSymbology(ovrs);
+        this._changeFlags.clear();
       }
 
       if (!this.sync.isValidController)
@@ -137,12 +137,12 @@ export namespace Attachments {
 
       this._scene = [];
       const sceneContext = this.createSceneContext();
-      view.createScene(sceneContext);
+      this.view.createScene(sceneContext);
 
       sceneContext.requestMissingTiles();
 
       // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-      if (!view.areAllTileTreesLoaded || sceneContext.hasMissingTiles)
+      if (!this.view.areAllTileTreesLoaded || sceneContext.hasMissingTiles)
         return State.Loading;
 
       return State.Ready;
@@ -609,7 +609,6 @@ export namespace Attachments {
       this.view = view;
       this.viewRoot = viewRoot;
 
-      // Ensure elements inside the view attachment are not affected to changes to category display for the sheet view
       this.symbologyOverrides = new FeatureSymbology.Overrides(view);
 
       const attachRange = attachment.placement.calculateRange();

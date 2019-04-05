@@ -267,7 +267,7 @@ export class ViewManager {
   /** Force each registered [[Viewport]] to regenerate its [[Decorations]] on the next frame. */
   public invalidateDecorationsAllViews(): void { this.forEachViewport((vp) => vp.invalidateDecorations()); }
   /** @internal */
-  public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.view.setSelectionSetDirty()); }
+  public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.markSelectionSetDirty()); }
   /** @internal */
   public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.invalidateScene()); }
   /** @internal */

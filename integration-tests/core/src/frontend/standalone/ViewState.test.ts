@@ -20,7 +20,7 @@ import {
   SpatialViewState,
   StandardView,
   StandardViewId,
-  SubCategoriesRequest,
+  SubCategoriesCache,
   ViewState3d,
   ViewStatus,
 } from "@bentley/imodeljs-frontend";
@@ -136,7 +136,7 @@ describe("ViewState", () => {
     vf.transparency = !vf.transparency;
     vf.visibleEdges = !vf.visibleEdges;
     vf.weights = !vf.weights;
-    vs0.viewFlags = vf;
+    vs0.displayStyle.viewFlags = vf;
 
     const vs0DisplayStyle3d = (vs0 as ViewState3d).getDisplayStyle3d();
 
@@ -435,7 +435,7 @@ describe("ViewState", () => {
 
     // Now construct a paged SubCategoryRequests object to query same data as above.
     // Allow only 1 category to be sent per query, and only 1 row in each page of results.
-    let request = new SubCategoriesRequest(ecsqlCats, imodel, 1, 1);
+    let request = new SubCategoriesCache.Request(ecsqlCats, imodel, 1, 1);
     let result = await request.dispatch();
 
     // Result is an array of pages, each of which is an array of rows, each containing id=subcategoryId and parentId=categoryId
@@ -456,21 +456,61 @@ describe("ViewState", () => {
     expect(resultCats.size).to.equal(ecsqlCats.size);
 
     // Now request 2 categories per query and 100 rows per page
-    request = new SubCategoriesRequest(ecsqlCats, imodel, 2, 100);
+    request = new SubCategoriesCache.Request(ecsqlCats, imodel, 2, 100);
     result = await request.dispatch();
     expect(result!.length).to.equal(3);
 
     // Now request 100 categories per query and 4 rows per page
-    request = new SubCategoriesRequest(ecsqlCats, imodel, 100, 4);
+    request = new SubCategoriesCache.Request(ecsqlCats, imodel, 100, 4);
     result = await request.dispatch();
     expect(result!.length).to.equal(2);
     expect(result![0].length).to.equal(4);
     expect(result![1].length).to.equal(2);
 
     // Request using default limits.
-    request = new SubCategoriesRequest(ecsqlCats, imodel);
+    request = new SubCategoriesCache.Request(ecsqlCats, imodel);
     result = await request.dispatch();
     expect(result!.length).to.equal(1);
     expect(result![0].length).to.equal(6);
+  });
+
+  it("should not repeatedly request same categories", async () => {
+    const catIds = new Set<string>();
+    catIds.add("0x2f"); // contains 2 subcategories: 0x33 and 0x30
+    catIds.add("0x17"); // contains 1 subcategory: 0x18
+
+    // Request the categories and await the result
+    const subcats = new SubCategoriesCache(imodel);
+    const req1 = subcats.load(catIds);
+    expect(req1).not.to.be.undefined;
+    expect(req1!.missingCategoryIds.size).to.equal(catIds.size);
+    for (const catId of catIds)
+      expect(req1!.missingCategoryIds.has(catId)).to.be.true;
+
+    const res1 = await req1!.promise;
+    expect(res1).to.be.true; // indicates all info loaded
+
+    // Request the same categories again - should be a no-op as they are already loaded.
+    const req2 = subcats.load(catIds);
+    expect(req2).to.be.undefined;
+
+    // Now request some "categories" using Ids that do not identify category elements
+    catIds.clear();
+    catIds.add("0x1a"); // is a subcategory Id, not a category Id
+    catIds.add("0x12345678"); // does not identify an existent element
+    catIds.add("lalala"); // is an invalid Id64String
+
+    const req3 = subcats.load(catIds);
+    expect(req3).not.to.be.undefined;
+    expect(req3!.missingCategoryIds.size).to.equal(catIds.size);
+    for (const catId of catIds)
+      expect(req3!.missingCategoryIds.has(catId)).to.be.true;
+
+    const res3 = await req3!.promise;
+    expect(res3).to.be.true;
+
+    // Repeat the request - should be a no-op - we should cache the result even if the query returned no subcategory info
+    const req4 = subcats.load(catIds);
+    expect(req4).to.be.undefined;
   });
 });

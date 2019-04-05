@@ -34,16 +34,13 @@ export class ModelSelectorState extends ElementState {
   }
 
   /** Determine if this model selector is logically equivalent to the specified model selector. Two model selectors are logically equivalent is
-   * they have the same name and contain the same set of models.
+   * they have the same name and Id and contain the same set of models.
    * @param other The model selector to which to compare.
    * @returns true if the model selectors are logically equivalent.
    * @public
    */
   public equalState(other: ModelSelectorState): boolean {
-    if (this.models.size !== other.models.size)
-      return false;
-
-    if (this.name !== other.name)
+    if (this.models.size !== other.models.size || this.id !== other.id || this.name !== other.name)
       return false;
 
     const otherIter = other.models.keys();

@@ -33,13 +33,10 @@ export class CategorySelectorState extends ElementState {
   }
 
   /** Returns true if this category selector is logically equivalent to the specified category selector.
-   * Two category selectors are logically equivalent if they have the same name and contain the same set of category Ids.
+   * Two category selectors are logically equivalent if they have the same name and Id and contain the same set of category Ids.
    */
   public equalState(other: CategorySelectorState): boolean {
-    if (this.categories.size !== other.categories.size)
-      return false;
-
-    if (this.name !== other.name)
+    if (this.categories.size !== other.categories.size || this.name !== other.name || this.id !== other.id)
       return false;
 
     const otherIter = other.categories.keys();

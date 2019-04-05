@@ -293,9 +293,9 @@ export class ViewAttributes {
 
   private addViewFlagAttribute(parent: HTMLElement, label: string, flag: ViewFlag, only3d: boolean = false): void {
     const elems = this.addCheckbox(label, (enabled: boolean) => {
-      const vf = this._vp.view.viewFlags.clone(this._scratchViewFlags);
+      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
       vf[flag] = enabled;
-      this._vp.view.viewFlags = vf;
+      this._vp.viewFlags = vf;
       this.sync();
     }, parent);
 
@@ -313,7 +313,7 @@ export class ViewAttributes {
     const elems = this.addCheckbox("Lights", (enabled: boolean) => {
       const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
       vf.solarLight = vf.cameraLights = vf.sourceLights = enabled;
-      this._vp.view.viewFlags = vf;
+      this._vp.viewFlags = vf;
       this.sync();
     }, parent);
 
@@ -420,9 +420,9 @@ export class ViewAttributes {
     };
 
     const enableAO = (enabled: boolean) => {
-      const vf = this._vp.view.viewFlags.clone(this._scratchViewFlags);
+      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
       vf.ambientOcclusion = enabled;
-      this._vp.view.viewFlags = vf;
+      this._vp.viewFlags = vf;
       showHideDropDowns(enabled);
       this.sync();
     };
@@ -581,9 +581,9 @@ export class ViewAttributes {
     };
 
     const enableMap = (enabled: boolean) => {
-      const vf = this._vp.view.viewFlags.clone(this._scratchViewFlags);
+      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
       vf.backgroundMap = enabled;
-      this._vp.view.viewFlags = vf;
+      this._vp.viewFlags = vf;
       showHideDropDowns(enabled);
       this.sync();
     };
