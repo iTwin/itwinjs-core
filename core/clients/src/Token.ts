@@ -230,8 +230,9 @@ export class AccessToken extends Token {
     if (saml)
       return (includePrefix === IncludePrefix.Yes) ? AccessToken._samlTokenPrefix + " " + saml : saml;
 
-    if (this._foreignJwt)
-      return this._foreignJwt;
+    if (this._foreignJwt) {
+      return Base64.encode(this._foreignJwt); // TODO: migrate iModelBank to support Oidc tokens (_jwt)
+    }
 
     throw new BentleyError(BentleyStatus.ERROR, "Cannot convert invalid access token to string");
   }

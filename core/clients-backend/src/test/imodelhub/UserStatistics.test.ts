@@ -68,6 +68,9 @@ describe("iModelHubClient UserStatisticsHandler", () => {
   const user2PushedChangesetsCount = 0;
 
   before(async function (this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableIModelBank) {
+      this.skip();
+    }
 
     const superAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     const managerAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.manager);

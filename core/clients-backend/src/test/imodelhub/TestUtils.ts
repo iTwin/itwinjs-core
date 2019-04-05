@@ -6,7 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as chai from "chai";
 import { Base64 } from "js-base64";
-import { GuidString, Guid, Id64, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { GuidString, Guid, Id64, Id64String, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import {
   ECJsonTypeMap, AccessToken, UserInfo, Project, ProgressInfo,
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, ChangeSet, Version,
@@ -22,6 +22,8 @@ import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
+
+const loggingCategory = "imodeljs-clients-backend.TestUtils";
 
 const bankProjects: string[] = [];
 
@@ -756,16 +758,45 @@ export class ProgressTracker {
   }
 }
 
-let cloudEnv: IModelCloudEnvironment;
+let cloudEnv: IModelCloudEnvironment | undefined;
 
-export function getCloudEnv() {
-  if (cloudEnv !== undefined)
-    return cloudEnv;
+if (!TestConfig.enableIModelBank || TestConfig.enableMocks) {
+  cloudEnv = new TestIModelHubCloudEnv();
+} else {
+  [cloudEnv, _imodelBankClient] = getIModelBankCloudEnv();
+}
+if (cloudEnv === undefined)
+  throw new Error("could not create cloudEnv");
 
-  if ((process.env.IMODELJS_CLIENTS_TEST_IMODEL_BANK === undefined) || TestConfig.enableMocks) {
-    return cloudEnv = new TestIModelHubCloudEnv();
+cloudEnv.startup()
+  .catch((_err) => {
+    Logger.logError(loggingCategory, "Error starting cloudEnv");
+  });
+
+// TRICKY! All of the "describe" functions are called first. Many of them call getCloudEnv,
+//  but they don't try to use it.
+
+export function getCloudEnv(): IModelCloudEnvironment {
+  return cloudEnv!;
+}
+
+// TRICKY! After all describe functions are called, the following global before function is called
+// before any test suite's before function is called. So, we do have a chance to wait for the
+// iModel server to finish starting up.
+
+before(async () => {
+  if (cloudEnv === undefined) {
+    Logger.logError(loggingCategory, "cloudEnv was not defined before tests began");
+    return Promise.reject();
   }
 
-  [cloudEnv, _imodelBankClient] = getIModelBankCloudEnv();
-  return cloudEnv;
-}
+  Logger.logInfo(loggingCategory, "Waiting for cloudEnv to startup...");
+  await cloudEnv.startup();
+  Logger.logInfo(loggingCategory, "cloudEnv started.");
+  return Promise.resolve();
+});
+
+after(async () => {
+  if (cloudEnv !== undefined)
+    await cloudEnv.shutdown();
+});

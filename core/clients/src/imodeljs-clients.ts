@@ -21,9 +21,9 @@ export * from "./SettingsAdmin";
 export * from "./SettingsClient";
 export * from "./AuthorizedClientRequestContext";
 
-export * from "./IModelBank/IModelBankClient";
-export * from "./IModelBank/IModelBankHandler";
-export * from "./IModelBank/IModelBankFileSystemContextClient";
+export * from "./imodelbank/IModelBankClient";
+export * from "./imodelbank/IModelBankHandler";
+export * from "./imodelbank/IModelBankFileSystemContextClient";
 
 export * from "./imodelhub/BaseHandler";
 export * from "./imodelhub/Client";

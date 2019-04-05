@@ -24,4 +24,6 @@ export interface IModelCloudEnvironment {
   readonly isIModelHub: boolean;
   readonly authorization: IModelAuthorizationClient;
   readonly contextMgr: ContextManagerClient;
+  startup(): Promise<void>;
+  shutdown(): Promise<number>;
 }

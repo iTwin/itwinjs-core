@@ -16,7 +16,9 @@ import { TestUsers } from "./TestUsers";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
-const logFileStream = fs.createWriteStream(path.join(__dirname, "./iModelClientsTests.log"), { flags: "a" });
+const logFilePath = path.join(__dirname, "./iModelClientsTests.log");
+const logFileStream = fs.createWriteStream(logFilePath, { flags: "a" });
+console.log("Log File created at: " + logFilePath);
 
 // The Request URLs are captured separate. The log file is used by the Hub URL whitelist validation.
 export const urlLogPath = path.join(__dirname, "./requesturls.log");
@@ -40,7 +42,7 @@ Logger.initialize(
 // Note: Turn this off unless really necessary - it causes Error messages on the
 // console with the existing suite of tests, and this is quite misleading,
 // especially when diagnosing CI job failures.
-const loggingConfigFile: string | undefined = process.env.imjs_test_logging_config;
+const loggingConfigFile: string = Config.App.get("imjs_test_logging_config", "");
 if (!!loggingConfigFile) {
   // tslint:disable-next-line:no-var-requires
   Logger.configureLevels(require(loggingConfigFile));
@@ -60,6 +62,7 @@ export class TestConfig {
   /** Name of project used by most tests */
   public static readonly projectName: string = "iModelJsTest";
   public static readonly enableMocks: boolean = isOfflineSet();
+  public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank_run_orchestrator");
 
   /** Login the specified user and return the AuthorizationToken */
   public static async login(user: ImsUserCredentials = TestUsers.regular): Promise<AuthorizationToken> {

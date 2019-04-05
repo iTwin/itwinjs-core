@@ -163,7 +163,11 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(version[0].changeSetId).to.be.equal(expectedVersion.changeSetId);
   });
 
-  it("should get named versions with thumbnail id", async () => {
+  it("should get named versions with thumbnail id", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableIModelBank) {
+      this.skip();
+    }
+
     let mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId2, `?$filter=Name+eq+%27Version%201%27`, ...mockedVersions);
     let versions: Version[] = await iModelClient.versions.get(requestContext, imodelId2, new VersionQuery().byName(firstVersionName));

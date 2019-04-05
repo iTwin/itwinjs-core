@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "add support for imodelbank use in clients-backend",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "evan.preslar@bentley.com"
+}
