@@ -154,25 +154,35 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
   }
 
   private async _getView() {
-    const viewQueryParams: ViewQueryParams = { wantPrivate: false };
-    let viewProps: ViewDefinitionProps[] = [];
-    try {
-      let firstViewId;
-      // find first view with animation data
-      viewProps = await this.props.iModelConnection.views.queryProps(viewQueryParams);
-      for (const view of viewProps) {
-        const viewState = await this.props.iModelConnection.views.load(view.id!);
-        if (viewState) {
-          if (this._setTimelineDataProvider(viewState))
-            return;
-          if (undefined === firstViewId)
-            firstViewId = view.id!;
-        }
+    const savedAnimationViewId = SampleAppIModelApp.getAnimationViewId();
+    if (savedAnimationViewId && savedAnimationViewId.length > 0) {
+      const viewState = await this.props.iModelConnection.views.load(savedAnimationViewId);
+      SampleAppIModelApp.saveAnimationViewId(""); // clear out the saved viewId
+      if (viewState) {
+        if (this._setTimelineDataProvider(viewState))
+          return;
       }
-      this.setState({ viewId: firstViewId });
-    } catch (e) {
-      // tslint:disable-next-line:no-console
-      console.log("error getting views", e);
+    } else {
+      const viewQueryParams: ViewQueryParams = { wantPrivate: false };
+      let viewProps: ViewDefinitionProps[] = [];
+      try {
+        let firstViewId;
+        // find first view with animation data
+        viewProps = await this.props.iModelConnection.views.queryProps(viewQueryParams);
+        for (const view of viewProps) {
+          const viewState = await this.props.iModelConnection.views.load(view.id!);
+          if (viewState) {
+            if (this._setTimelineDataProvider(viewState))
+              return;
+            if (undefined === firstViewId)
+              firstViewId = view.id!;
+          }
+        }
+        this.setState({ viewId: firstViewId });
+      } catch (e) {
+        // tslint:disable-next-line:no-console
+        console.log("error getting views", e);
+      }
     }
   }
 

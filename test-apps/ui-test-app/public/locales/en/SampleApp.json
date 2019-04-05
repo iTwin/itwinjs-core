@@ -119,7 +119,8 @@
     "shortcutsSubMenu": "Shortcuts Submenu Sample",
     "openNestedFrontstage1": "Open Nested Frontstage",
     "switchLayout": "Switch layouts",
-    "showhideZones": "Toggle Zone Visibility"
+    "showhideZones": "Toggle Zone Visibility",
+    "openNestedAnimationStage": "Open Stage to Play Animations"
   },
   "tools": {
     "ToolWithSettings": {

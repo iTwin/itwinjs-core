@@ -44,6 +44,8 @@ import {
   ContentViewManager,
   BooleanSyncUiListener,
   StagePanel,
+  FrontstageManager,
+  CommandItemDef,
 } from "@bentley/ui-framework";
 
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
@@ -66,6 +68,7 @@ import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
 import { ExternalIModelWidgetControl } from "../widgets/ExternalIModel";
+import { NestedAnimationStage } from "./NestedAnimationStage";
 
 export class ViewsFrontstage extends FrontstageProvider {
 
@@ -213,6 +216,37 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
+  /** Command that opens a nested Frontstage */
+  private get _openNestedAnimationStage() {
+    return new CommandItemDef({
+      iconSpec: "icon-camera-animation",
+      labelKey: "SampleApp:buttons.openNestedAnimationStage",
+      execute: async () => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl && activeContentControl.viewport &&
+          (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript)) {
+          const frontstageProvider = new NestedAnimationStage();
+          const frontstageDef = frontstageProvider.initializeDef();
+          SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
+          await FrontstageManager.openNestedFrontstage(frontstageDef);
+        }
+      },
+      isVisible: false, // default to not show and then allow stateFunc to redefine.
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl && activeContentControl.viewport &&
+          (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
+          returnState.isVisible = true;
+        else
+          returnState.isVisible = false;
+        return returnState;
+      },
+
+    });
+  }
+
   /** Tool that will start a sample activity and display ActivityMessage.
    */
   private _tool3 = async () => {
@@ -310,12 +344,15 @@ class FrontstageToolWidget extends React.Component {
     IModelApp.tools.run("Plugin", ["MeasurePoints.js"]);
   }
 
+  /* No longer used  <ActionItemButton actionItem={CoreTools.analysisAnimationCommand} /> */
+
   private _horizontalToolbar =
     <Toolbar
       expandsTo={Direction.Bottom}
       items={
         <>
           <ActionItemButton actionItem={AppTools.appSelectElementCommand} />
+          <ActionItemButton actionItem={this._openNestedAnimationStage} />
           <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" labelKey="SampleApp:tools.Measure.Points.flyover"
             execute={this.executeMeasureByPoints} stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
           <PopupButton iconSpec="icon-arrow-down" label="Popup Test">
@@ -327,7 +364,6 @@ class FrontstageToolWidget extends React.Component {
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
             {(enabled: boolean, otherProps: any) => <ActionItemButton actionItem={AppTools.tool2} isEnabled={enabled} {...otherProps} />}
           </BooleanSyncUiListener>
-          <ActionItemButton actionItem={CoreTools.analysisAnimationCommand} />
           <ActionItemButton actionItem={AppTools.toolWithSettings} />
           <ActionItemButton actionItem={AppTools.toggleHideShowItemsCommand} />
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
