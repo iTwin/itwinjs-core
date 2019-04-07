@@ -39,6 +39,6 @@
 
     > .is-expanded + .is-expanded {
 
-        margin-top:                 $uicore-unbordered-padding;
+        margin-top:                 0; // $uicore-unbordered-padding;
     }
 }

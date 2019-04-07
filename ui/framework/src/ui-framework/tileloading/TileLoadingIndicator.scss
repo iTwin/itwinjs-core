@@ -13,8 +13,12 @@
   > span {
     font-family: sans-serif;
     font-size: 10px;
-    margin-right: 0 5px;
+    margin-right: 5px;
     position: relative;
+  }
+
+  > core-lb {
+    flex: 1;
   }
 }
 

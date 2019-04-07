@@ -90,7 +90,7 @@ export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileL
 
   /** Renders TileLoadingIndicator */
   public render() {
-    const classes = classnames("uifw-tile-loading-bar", this.props.className, this.state.enabled && "uifw-tile-loading-bar-visible");
+    const classes = classnames("uifw-tile-loading-bar", this.state.enabled && "uifw-tile-loading-bar-visible", this.props.className);
     return (
       <div className={classes} style={this.props.style}>
         <span>{this.state.label}</span>

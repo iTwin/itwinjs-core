@@ -82,7 +82,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     if (!indentation)
       return 0;
 
-    return indentation * 20;
+    return indentation * 17;
   }
 
   private async updateDisplayValue(props: PropertyRendererProps) {
