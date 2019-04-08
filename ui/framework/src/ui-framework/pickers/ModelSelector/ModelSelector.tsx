@@ -62,8 +62,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   private _initialize = async () => {
-    this._initModelState();
-    this._initCategoryState();
+    await this._initModelState();
+    await this._initCategoryState();
     this._initGroups();
 
     if (this._isMounted)
@@ -85,7 +85,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** Initialize models */
-  private _initModelState = () => {
+  private _initModelState = async () => {
     Presentation.presentation.rulesets().add(require("../../../../rulesets/Models.json")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         this._modelRuleset = ruleset;
@@ -97,7 +97,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** Initialize categories */
-  private _initCategoryState = () => {
+  private _initCategoryState = async () => {
     Presentation.presentation.rulesets().add(require("../../../../rulesets/Categories.json")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         this._categoryRuleset = ruleset;
