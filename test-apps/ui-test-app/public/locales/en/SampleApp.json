@@ -184,7 +184,23 @@
     "pan": "Pan",
     "walk": "Walk",
     "fly": "Fly",
-    "toggleCamera": "Toggle Camera"
+    "toggleCamera": "Toggle Camera",
+    "AnalysisAnimation": {
+      "keyin": "Analysis Animation",
+      "description": "Animate analysis solutions",
+      "flyover": "Analysis Animation",
+      "Prompts": {
+        "SelectView": "Select View and press Play button"
+      },
+      "ToolSettings": {
+        "duration": "Duration:",
+        "seconds": "sec",
+        "loop": "Loop",
+        "play": "Play",
+        "pause": "Pause",
+        "stop": "Stop"
+      }
+    }
   },
   "widgets": {
     "NavigationTree": "Navigation Tree",

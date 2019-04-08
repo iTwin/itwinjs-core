@@ -17,6 +17,8 @@ import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "../tools/ToolWithSettings";
 import { AppSelectTool } from "../tools/AppSelectTool";
+import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
+
 // cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { AppUi } from "../appui/AppUi";
@@ -59,6 +61,28 @@ export class AppTools {
       labelKey: "SampleApp:tools.ToolWithSettings.flyover",
       tooltipKey: "SampleApp:tools.ToolWithSettings.description",
       execute: () => { IModelApp.tools.run(ToolWithSettings.toolId); },
+    });
+  }
+
+  public static get analysisAnimationCommand() {
+    return new ToolItemDef({
+      toolId: AnalysisAnimationTool.toolId,
+      iconSpec: "icon-camera-animation",
+      label: () => AnalysisAnimationTool.flyover,
+      tooltip: () => AnalysisAnimationTool.description,
+      execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
+      isVisible: false, // default to not show and then allow stateFunc to redefine.
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+
+        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle))
+          returnState.isVisible = true;
+        else
+          returnState.isVisible = false;
+        return returnState;
+      },
     });
   }
 

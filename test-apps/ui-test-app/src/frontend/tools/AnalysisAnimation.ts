@@ -8,7 +8,7 @@
 
 import { Point3d } from "@bentley/geometry-core";
 import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
+import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { AnalysisAnimationToolSettingsProvider } from "./AnalysisAnimationToolSettings";
 
 /** Tool that shows animation of Analysis information stored as a 'special' property in the display style.

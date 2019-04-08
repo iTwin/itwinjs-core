@@ -7,12 +7,12 @@
 import * as React from "react";
 
 // cSpell:Ignore configurableui
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
-import { ContentViewManager } from "../content/ContentViewManager";
 import { Item, Direction, Toolbar } from "@bentley/ui-ninezone";
-import { Icon } from "../shared/IconComponent";
-import { UiFramework } from "../UiFramework";
+
+import {
+  Icon, UiFramework, ContentViewManager, ToolUiProvider, ConfigurableCreateInfo,
+} from "@bentley/ui-framework";
+
 import "./AnalysisAnimationToolSettings.scss";
 
 /** State for [[AnalysisAnimationToolSettings]] */

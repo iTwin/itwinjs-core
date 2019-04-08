@@ -196,30 +196,6 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
               }
             }
           />
-          <ActionItemButton
-            actionItem={
-              ToolItemDef {
-                "_commandHandler": Object {
-                  "execute": [Function],
-                  "getCommandArgs": undefined,
-                  "parameters": undefined,
-                },
-                "_label": [Function],
-                "_tooltip": [Function],
-                "execute": [Function],
-                "iconSpec": "icon-camera-animation",
-                "isActive": false,
-                "isEnabled": true,
-                "isPressed": false,
-                "isVisible": false,
-                "stateFunc": [Function],
-                "stateSyncIds": Array [
-                  "activecontentchanged",
-                ],
-                "toolId": "AnalysisAnimation",
-              }
-            }
-          />
         </UNDEFINED>
       }
       panelAlignment={0}

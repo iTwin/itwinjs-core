@@ -30,6 +30,7 @@ import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { AppSelectTool } from "./tools/AppSelectTool";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
+import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
@@ -187,6 +188,8 @@ export class SampleAppIModelApp extends IModelApp {
     Tool2.register(this.sampleAppNamespace);
     ToolWithSettings.register(this.sampleAppNamespace);
     AppSelectTool.register();
+    AnalysisAnimationTool.register(this.sampleAppNamespace);
+
     IModelApp.toolAdmin.defaultToolId = AppSelectTool.toolId;
   }
 

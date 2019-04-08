@@ -344,7 +344,7 @@ class FrontstageToolWidget extends React.Component {
     IModelApp.tools.run("Plugin", ["MeasurePoints.js"]);
   }
 
-  /* No longer used  <ActionItemButton actionItem={CoreTools.analysisAnimationCommand} /> */
+  /* No longer used  <ActionItemButton actionItem={AppTools.analysisAnimationCommand} /> */
 
   private _horizontalToolbar =
     <Toolbar

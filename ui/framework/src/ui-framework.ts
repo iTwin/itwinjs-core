@@ -114,9 +114,6 @@ export * from "./ui-framework/statusfields/SelectionInfo";
 
 export * from "./ui-framework/theme/ThemeManager";
 
-export * from "./ui-framework/tools/AnalysisAnimation";
-export * from "./ui-framework/tools/AnalysisAnimationToolSettings";
-
 export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/redux-ts";
 export * from "./ui-framework/utils/PropsHelper";

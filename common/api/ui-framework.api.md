@@ -8,7 +8,6 @@ import * as _ from 'lodash';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
-import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CheckBoxInfo } from '@bentley/ui-core';
 import { CommonProps } from '@bentley/ui-ninezone';
@@ -19,7 +18,6 @@ import { DndComponentClass } from 'react-dnd';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { DropTarget } from '@bentley/ui-ninezone';
-import { EventHandled } from '@bentley/imodeljs-frontend';
 import { Face } from '@bentley/ui-core';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -47,7 +45,6 @@ import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-ninezone';
 import { PresentationTreeDataProvider } from '@bentley/presentation-components';
-import { PrimitiveTool } from '@bentley/imodeljs-frontend';
 import * as PropTypes from 'prop-types';
 import * as React_2 from 'react';
 import { RectangleProps } from '@bentley/ui-ninezone';
@@ -191,40 +188,6 @@ export interface ActivityMessageEventArgs {
 
 // @public
 export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArgs> {
-}
-
-// @public
-export class AnalysisAnimationTool extends PrimitiveTool {
-    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onPostInstall(): void;
-    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
-    onRestartTool(): void;
-    onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void;
-    // (undocumented)
-    readonly points: Point3d[];
-    requireWriteableTarget(): boolean;
-    setupAndPromptForNextAction(): void;
-    // (undocumented)
-    static toolId: string;
-}
-
-// Warning: (ae-forgotten-export) The symbol "AnimationState" needs to be exported by the entry point ui-framework.d.ts
-// 
-// @public
-export class AnalysisAnimationToolSettings extends React_2.Component<{}, AnimationState> {
-    constructor(props: {});
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): React_2.ReactNode;
-    }
-
-// @public
-export class AnalysisAnimationToolSettingsProvider extends ToolUiProvider {
-    constructor(info: ConfigurableCreateInfo, options: any);
-    // (undocumented)
-    execute(): void;
 }
 
 // @public
@@ -843,8 +806,6 @@ export class ContentViewManager {
 
 // @public
 export class CoreTools {
-    // (undocumented)
-    static readonly analysisAnimationCommand: ToolItemDef;
     // (undocumented)
     static readonly fitViewCommand: ToolItemDef;
     // (undocumented)
