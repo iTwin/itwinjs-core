@@ -29,17 +29,15 @@ const selectionOptionDescription: PropertyDescription = {
     name: "enum-buttongroup",
     params: [
       {
-        type: PropertyEditorParamTypes.JSON,
-        json: {
-          buttonGroupData: [
-            { icon: "select-single" },
-            { icon: "select-line" },
-            { icon: "select-box" },
-            { icon: "view-layouts" },
-            { icon: "select-plus" },
-            { icon: "select-minus", syncUiEvents: ["UISyncMsgId.SelectionChanged"], enableExpression: "DgnClientFx.isSelectionActive" },
-          ],
-        },
+        type: PropertyEditorParamTypes.ButtonGroupData,
+        buttons: [
+          { iconClass: "select-single" },
+          { iconClass: "select-line" },
+          { iconClass: "select-box" },
+          { iconClass: "view-layouts" },
+          { iconClass: "select-plus" },
+          { iconClass: "select-minus" },
+        ],
       },
     ],
   },

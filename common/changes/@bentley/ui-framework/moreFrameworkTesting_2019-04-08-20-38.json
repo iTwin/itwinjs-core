@@ -1,0 +1,9 @@
+{
+  "changes": [{
+    "comment": "Add unmount component test.",
+    "packageName": "@bentley/ui-framework",
+    "type": "none"
+  }],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}

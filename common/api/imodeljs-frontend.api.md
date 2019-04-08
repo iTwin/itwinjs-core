@@ -1321,7 +1321,7 @@ export class ChangeFlags {
     readonly viewedModels: boolean;
 }
 
-// @public
+// @alpha
 export interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     offIconDefinition?: IconDefinition;
@@ -2729,7 +2729,7 @@ export interface IconDefinition {
     isEnabledFunction?: () => boolean;
 }
 
-// @public
+// @alpha
 export interface IconEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     definition: IconDefinition;
@@ -3044,7 +3044,7 @@ export const enum ItemField {
     Z_Item = 4
 }
 
-// @public
+// @alpha
 export interface JsonEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     json: any;
@@ -3601,7 +3601,7 @@ export const enum ModifyElementSource {
     Unknown = 0
 }
 
-// @public
+// @alpha
 export interface MultilineTextEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     heightInRows: number;
@@ -4042,7 +4042,7 @@ export class PluginAdmin {
     static register(plugin: Plugin): string[] | undefined;
     }
 
-// @public (undocumented)
+// @public
 export namespace Primitives {
     // (undocumented)
     export type Boolean = boolean | string | {} | [];
@@ -4136,7 +4136,7 @@ export interface PropertyEditorInfo {
 }
 
 // @public
-export type PropertyEditorParams = JsonEditorParams | RangeEditorParams | SliderEditorParams | ButtonGroupEditorParams | MultilineTextEditorParams | IconEditorParams | CheckBoxIconsEditorParams | SuppressUnitLabelEditorParams | SuppressLabelEditorParams | InputEditorSizeParams | ColorEditorParams;
+export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams;
 
 // @public
 export enum PropertyEditorParamTypes {
@@ -4249,7 +4249,7 @@ export enum QuantityType {
     Volume = 4
 }
 
-// @public
+// @alpha
 export interface RangeEditorParams extends BasePropertyEditorParams {
     maximum?: number;
     minimum?: number;
@@ -5102,7 +5102,7 @@ export class SkySphere extends SkyBox {
     toJSON(): SkyBoxProps;
 }
 
-// @public
+// @alpha
 export interface SliderEditorParams extends BasePropertyEditorParams {
     intervals?: boolean;
     maximum: number;
@@ -5450,7 +5450,7 @@ export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.SuppressEditorLabel;
 }
 
-// @public
+// @alpha
 export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     type: PropertyEditorParamTypes.SuppressUnitLabel;
