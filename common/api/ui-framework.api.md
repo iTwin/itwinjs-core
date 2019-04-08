@@ -21,7 +21,6 @@ import { DropTarget } from '@bentley/ui-ninezone';
 import { Face } from '@bentley/ui-core';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
-import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InstanceKey } from '@bentley/presentation-common';
@@ -1627,31 +1626,6 @@ export interface IconProps {
 
 // @public
 export type IconSpec = string | React_2.ReactNode;
-
-// Warning: (ae-forgotten-export) The symbol "IModelIndexState" needs to be exported by the entry point ui-framework.d.ts
-// 
-// @beta
-export class IModelIndex extends React_2.Component<IModelIndexProps, IModelIndexState> {
-    constructor(props?: any, context?: any);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    static RegisterCategory(_label: string, _render: () => JSX.Element | undefined): void;
-    // (undocumented)
-    render(): JSX.Element;
-    // (undocumented)
-    static UnregisterCategory(_label: string): void;
-}
-
-// @beta
-export interface IModelIndexProps {
-    accessToken: AccessToken;
-    iModelConnection: IModelConnection;
-    // (undocumented)
-    onOpen?: (viewIds: Id64String[]) => void;
-}
 
 // @internal
 export interface IModelInfo {
@@ -3330,7 +3304,7 @@ export class VisibilityTree extends React_2.PureComponent<VisibilityTreeProps, V
     componentWillUnmount(): void;
     // (undocumented)
     static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): {
-        dataProvider: PresentationTreeDataProvider | IPresentationTreeDataProvider;
+        dataProvider: IPresentationTreeDataProvider | PresentationTreeDataProvider;
         prevProps: VisibilityTreeProps;
         ruleset: Ruleset;
         checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;

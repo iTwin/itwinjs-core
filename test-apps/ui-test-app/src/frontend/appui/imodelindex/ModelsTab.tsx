@@ -2,8 +2,6 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module IModelIndex */
-
 import * as React from "react";
 import { IModelConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/imodeljs-clients";
@@ -13,7 +11,7 @@ import { CheckBoxState, LoadingSpinner } from "@bentley/ui-core";
 import { CheckListBox, CheckListBoxItem, CheckBox } from "./CheckListBox";
 import { Presentation } from "@bentley/presentation-frontend";
 import { RegisteredRuleset, isInstanceNodeKey, ECInstanceNodeKey } from "@bentley/presentation-common";
-import { UiFramework } from "../../ui-framework";
+import { UiFramework } from "@bentley/ui-framework";
 import { Tree, TreeNodeItem, DelayLoadedTreeNodeItem } from "@bentley/ui-components";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import "./ModelsTab.scss";
@@ -174,7 +172,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   }
 
   private async loadModelsFromPresentationRules() {
-    Presentation.presentation.rulesets().add(require("./Models"))
+    Presentation.presentation.rulesets().add(require("../../../../rulesets/Models"))
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
           return;

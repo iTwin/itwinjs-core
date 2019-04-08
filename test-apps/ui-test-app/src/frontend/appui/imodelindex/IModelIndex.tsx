@@ -2,8 +2,6 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module IModelIndex */
-
 import * as React from "react";
 import { Tab, Tabs } from "./Tabs";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -11,7 +9,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { AccessToken, IModelHubClient, IModelClient, IModelQuery, VersionQuery, Version, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
-import { UiFramework } from "../../ui-framework";
+import { UiFramework } from "@bentley/ui-framework";
 import { LoadingSpinner } from "@bentley/ui-core";
 import "./IModelIndex.scss";
 

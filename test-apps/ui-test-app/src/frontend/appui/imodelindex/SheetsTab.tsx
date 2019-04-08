@@ -2,17 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module IModelIndex */
-
 import * as React from "react";
 import * as classnames from "classnames";
 import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { ViewsList } from "../pickers/views//ViewsList";
+import { ViewsList } from "./ViewsList";
 import { SearchBox, Timer, LoadingBar } from "@bentley/ui-core";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
+import { UiFramework } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { UiFramework } from "../../ui-framework";
 import "./SheetsTab.scss";
 
 /** @internal */

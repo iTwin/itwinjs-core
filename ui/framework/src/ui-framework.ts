@@ -15,8 +15,6 @@ export * from "./ui-framework/clientservices/ProjectServices";
 export * from "./ui-framework/feedback/ValidationTextbox";
 export * from "./ui-framework/feedback/ElementTooltip";
 
-export * from "./ui-framework/imodelindex/IModelIndex";
-
 export * from "./ui-framework/messages/InputField";
 export * from "./ui-framework/messages/Pointer";
 
@@ -167,10 +165,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description IModelComponents
  * Classes for displaying information about an iModel
- */
-/**
- * @docs-group-description IModelIndex
- * Classes for displaying information about Models, Sheets and Views in an iModelConnection
  */
 /**
  * @docs-group-description Item
