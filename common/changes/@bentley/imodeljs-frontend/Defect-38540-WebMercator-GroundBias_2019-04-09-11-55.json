@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix root tile range on webmercator tile tree for ground bias.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}
