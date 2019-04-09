@@ -38,7 +38,7 @@ type EnvironmentAspect = "ground" | "sky";
 type SkyboxType = "2colors" | "4colors";
 
 export class ViewAttributes {
-  private static _expandViewFlags = true;
+  private static _expandViewFlags = false;
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
   private readonly _updates: UpdateAttribute[] = [];
@@ -61,6 +61,7 @@ export class ViewAttributes {
   private _eeNadirColor?: ColorInput;
   private _eeSkyExponent?: Slider;
   private _eeGroundExponent?: Slider;
+  private _eeBackgroundInput?: ColorInput;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
@@ -73,12 +74,30 @@ export class ViewAttributes {
     this.addRenderMode();
     this._element.appendChild(document.createElement("hr"));
 
-    const flagsToggle = document.createElement("div");
-    flagsToggle.innerText = "View Attributes";
-    this._element.appendChild(flagsToggle);
+    const flagsHeader = document.createElement("div");
+    flagsHeader.style.width = "100%";
+
+    const flagsToggle = document.createElement("span");
+    flagsToggle.innerText = "View Flags";
+    flagsHeader.appendChild(flagsToggle);
+
+    const toggleFlagsButton = createButton({
+      parent: flagsHeader,
+      inline: true,
+      handler: () => {
+        ViewAttributes._expandViewFlags = !ViewAttributes._expandViewFlags;
+        flagsDiv.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
+        toggleFlagsButton.button.value = ViewAttributes._expandViewFlags ? "-" : "+";
+      },
+      value: ViewAttributes._expandViewFlags ? "-" : "+",
+    });
+
+    toggleFlagsButton.div.style.cssFloat = "right";
+
+    flagsHeader.appendChild(document.createElement("hr"));
+    this._element.appendChild(flagsHeader);
 
     const flagsDiv = document.createElement("div");
-    flagsDiv.appendChild(document.createElement("hr"));
     this._element.appendChild(flagsDiv);
 
     this.addViewFlagAttribute(flagsDiv, "ACS Triad", "acsTriad");
@@ -98,14 +117,10 @@ export class ViewAttributes {
     this.addLightingToggle(flagsDiv);
     this.addCameraToggle(flagsDiv);
 
-    this.addEnvimornmentEditor();
-
     // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
-    parent.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
-    flagsToggle.addEventListener("click", () => {
-      ViewAttributes._expandViewFlags = !ViewAttributes._expandViewFlags;
-      parent.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
-    });
+    flagsDiv.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
+
+    this.addEnvironmentEditor();
 
     this.addBackgroundMap();
     this.addAmbientOcclusion();
@@ -121,28 +136,38 @@ export class ViewAttributes {
     this._parent.removeChild(this._element);
   }
 
-  private addEnvimornmentEditor() {
-    const style = (this._vp.view as ViewState3d).getDisplayStyle3d();
-    const currentEvnimorment = style.environment.sky as SkyGradient;
-    const eeDiv = document.createElement("div");
+  private addEnvironmentEditor() {
+    const is3d = this._vp.view.is3d();
+    const view2d = this._vp.view;
 
-    this.addEnvAttribute(this._element, "Sky Box", "sky", (enabled) => {
-      eeDiv.hidden = !enabled;
-      eebackgroundInput.div.style.display = enabled ? "none" : "block";
-    });
-
-    const eebackgroundInput = createColorInput({
-      value: style.backgroundColor.toHexString(),
+    this._eeBackgroundInput = createColorInput({
+      value: this._vp.view.backgroundColor.toHexString(),
       handler: (value) => {
-        (this._vp.view as ViewState3d).getDisplayStyle3d().backgroundColor = new ColorDef(value);
+        this._vp.view.displayStyle.backgroundColor = new ColorDef(value);
         this.sync();
       },
       id: this._nextId,
       label: "Background Color",
-      parent: this._element,
-      display: "none",
+      display: is3d ? "none" : "block",
     });
-    eebackgroundInput.div.style.textAlign = "right";
+    this._eeBackgroundInput.div.style.textAlign = "right";
+
+    if (!is3d) {
+      this._element.appendChild(this._eeBackgroundInput.div);
+      return;
+    }
+    const eeDiv = document.createElement("div");
+    const style = (view2d as ViewState3d).getDisplayStyle3d();
+    const currentEvnimorment = style.environment.sky as SkyGradient;
+
+    const showSkyboxControls = (enabled: boolean) => {
+      eeDiv.hidden = !enabled;
+      this._eeBackgroundInput!.div.style.display = enabled ? "none" : "block";
+    };
+
+    this.addEnvAttribute(this._element, "Sky Box", "sky", showSkyboxControls);
+
+    this._element.appendChild(this._eeBackgroundInput.div);
 
     this._eeSkyboxType = createRadioBox({
       id: this._nextId,
@@ -151,7 +176,7 @@ export class ViewAttributes {
         { value: "4colors", label: "4 Colors" },
       ],
       handler: (value) => {
-        this.updateEnvimornment({ twoColor: value === "2colors" });
+        this.updateEnvironment({ twoColor: value === "2colors" });
 
         // Hide elements not relevant to 2 colors
         this._eeSkyColor!.div.hidden = value !== "4colors";
@@ -164,7 +189,7 @@ export class ViewAttributes {
     });
 
     this._eeZenithColor = createColorInput({
-      handler: (value: string) => this.updateEnvimornment({ zenithColor: new ColorDef(value) }),
+      handler: (value: string) => this.updateEnvironment({ zenithColor: new ColorDef(value) }),
       value: currentEvnimorment.zenithColor.toHexString(),
       label: "Zenith Color",
       parent: eeDiv,
@@ -172,7 +197,7 @@ export class ViewAttributes {
     this._eeZenithColor.div.style.textAlign = "right";
 
     this._eeSkyColor = createColorInput({
-      handler: (value: string) => this.updateEnvimornment({ skyColor: new ColorDef(value) }),
+      handler: (value: string) => this.updateEnvironment({ skyColor: new ColorDef(value) }),
       value: currentEvnimorment.skyColor.toHexString(),
       label: "Sky Color",
       parent: eeDiv,
@@ -180,7 +205,7 @@ export class ViewAttributes {
     this._eeSkyColor.div.style.textAlign = "right";
 
     this._eeGroundColor = createColorInput({
-      handler: (value: string) => this.updateEnvimornment({ groundColor: new ColorDef(value) }),
+      handler: (value: string) => this.updateEnvironment({ groundColor: new ColorDef(value) }),
       value: currentEvnimorment.groundColor.toHexString(),
       label: "Ground Color",
       parent: eeDiv,
@@ -188,7 +213,7 @@ export class ViewAttributes {
     this._eeGroundColor.div.style.textAlign = "right";
 
     this._eeNadirColor = createColorInput({
-      handler: (value: string) => this.updateEnvimornment({ nadirColor: new ColorDef(value) }),
+      handler: (value: string) => this.updateEnvironment({ nadirColor: new ColorDef(value) }),
       value: currentEvnimorment.nadirColor.toHexString(),
       label: "Nadir Color",
       parent: eeDiv,
@@ -203,7 +228,7 @@ export class ViewAttributes {
       step: "0.25",
       max: "20.0",
       value: currentEvnimorment.skyExponent.toString(),
-      handler: (slider) => this.updateEnvimornment({ skyExponent: parseFloat(slider.value) }),
+      handler: (slider) => this.updateEnvironment({ skyExponent: parseFloat(slider.value) }),
     });
     this._eeSkyExponent.div.style.textAlign = "right";
 
@@ -215,7 +240,7 @@ export class ViewAttributes {
       step: "0.25",
       max: "20.0",
       value: currentEvnimorment.groundExponent.toString(),
-      handler: (slider) => this.updateEnvimornment({ groundExponent: parseFloat(slider.value) }),
+      handler: (slider) => this.updateEnvironment({ groundExponent: parseFloat(slider.value) }),
     });
     this._eeGroundExponent.div.style.textAlign = "right";
 
@@ -226,7 +251,7 @@ export class ViewAttributes {
       id: "viewAttr_EEReset",
       value: "Reset",
       inline: true,
-      handler: () => this.resetEnvimornmentEditor(),
+      handler: () => this.resetEnvironmentEditor(),
     });
     createButton({
       parent: buttonDiv,
@@ -244,11 +269,22 @@ export class ViewAttributes {
     buttonDiv.style.textAlign = "center";
     eeDiv.appendChild(buttonDiv);
 
+    showSkyboxControls(currentEvnimorment.display);
     this._element.appendChild(eeDiv);
+    this._updates.push((view) => {
+      let skyboxEnabled = false;
+      if (view.is3d()) {
+        const env = (view as ViewState3d).getDisplayStyle3d().environment.sky;
+        skyboxEnabled = env.display;
+      }
+
+      showSkyboxControls(skyboxEnabled);
+      this.updateEnvironmentEditorUI(view);
+    });
     this.addEnvAttribute(this._element, "Ground Plane", "ground");
   }
 
-  private updateEnvimornment(newEnv: SkyBoxProps): void {
+  private updateEnvironment(newEnv: SkyBoxProps): void {
     const oldEnv = (this._vp.view as ViewState3d).getDisplayStyle3d().environment.sky as SkyGradient;
     newEnv = {
       display: (oldEnv as SkyBox).display,
@@ -267,28 +303,31 @@ export class ViewAttributes {
     this.sync();
   }
 
-  private updateEnvimornmentEditorUI(view: ViewState): void {
-    const getSkyEnvimornment = (v: ViewState) => (v as ViewState3d).getDisplayStyle3d().environment.sky;
+  private updateEnvironmentEditorUI(view: ViewState): void {
+    this._eeBackgroundInput!.input.value = view.backgroundColor.toHexString();
+    if (view.is2d())
+      return;
 
-    const skyEnvimornment = getSkyEnvimornment(view) as SkyGradient;
+    const getSkyEnvironment = (v: ViewState) => (v as ViewState3d).getDisplayStyle3d().environment.sky;
+    const skyEnvironment = getSkyEnvironment(view) as SkyGradient;
 
-    this._eeSkyboxType!.setValue(skyEnvimornment.twoColor ? "2colors" : "4colors");
-    this._eeZenithColor!.input.value = skyEnvimornment.zenithColor.toHexString();
-    this._eeSkyColor!.input.value = skyEnvimornment.skyColor.toHexString();
-    this._eeGroundColor!.input.value = skyEnvimornment.groundColor.toHexString();
-    this._eeNadirColor!.input.value = skyEnvimornment.nadirColor.toHexString();
-    this._eeSkyExponent!.slider.value = skyEnvimornment.skyExponent!.toString();
-    this._eeGroundExponent!.slider.value = skyEnvimornment.groundExponent!.toString();
+    this._eeSkyboxType!.setValue(skyEnvironment.twoColor ? "2colors" : "4colors");
+    this._eeZenithColor!.input.value = skyEnvironment.zenithColor.toHexString();
+    this._eeSkyColor!.input.value = skyEnvironment.skyColor.toHexString();
+    this._eeGroundColor!.input.value = skyEnvironment.groundColor.toHexString();
+    this._eeNadirColor!.input.value = skyEnvironment.nadirColor.toHexString();
+    this._eeSkyExponent!.slider.value = skyEnvironment.skyExponent!.toString();
+    this._eeGroundExponent!.slider.value = skyEnvironment.groundExponent!.toString();
   }
 
-  private resetEnvimornmentEditor(): void {
-    const skyEnvimornment = (this._vp.view as ViewState3d).getDisplayStyle3d().environment.sky;
+  private resetEnvironmentEditor(): void {
+    const skyEnvironment = (this._vp.view as ViewState3d).getDisplayStyle3d().environment.sky;
     (this._vp.view as ViewState3d).getDisplayStyle3d().environment = new Environment(
       {
-        sky: { display: (skyEnvimornment as SkyBox).display },
+        sky: { display: (skyEnvironment as SkyBox).display },
       });
     this.sync();
-    this.updateEnvimornmentEditorUI(this._vp.view);
+    this.updateEnvironmentEditorUI(this._vp.view);
   }
 
   private addViewFlagAttribute(parent: HTMLElement, label: string, flag: ViewFlag, only3d: boolean = false): void {

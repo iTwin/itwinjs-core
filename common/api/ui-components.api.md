@@ -354,7 +354,7 @@ export interface BeInspireTreeProps<TNodePayload> {
 export type BeInspireTreeRenderer<TPayload> = (rootNodes: Array<BeInspireTreeNode<TPayload>>) => void;
 
 // Warning: (ae-forgotten-export) The symbol "BooleanEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @beta
 export class BooleanEditor extends React.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
     // (undocumented)
@@ -392,7 +392,7 @@ export class BooleanTypeConverter extends TypeConverter {
 }
 
 // Warning: (ae-forgotten-export) The symbol "BreadcrumbState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @beta
 export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState> {
     // @internal
@@ -416,7 +416,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
 }
 
 // Warning: (ae-forgotten-export) The symbol "BreadcrumbDetailsState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @beta
 export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, BreadcrumbDetailsState> {
     // @internal
@@ -608,7 +608,7 @@ export interface CellItem {
 }
 
 // Warning: (ae-forgotten-export) The symbol "ColorEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @beta
 export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
     constructor(props: PropertyEditorProps);
@@ -629,7 +629,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 }
 
 // Warning: (ae-forgotten-export) The symbol "ColorPickerState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @beta
 export class ColorPickerButton extends React.PureComponent<ColorPickerProps, ColorPickerState> {
     // @internal
@@ -917,7 +917,7 @@ export interface EditorContainerProps {
 }
 
 // Warning: (ae-forgotten-export) The symbol "EnumEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @beta
 export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumEditorState_2> implements TypeEditor {
     // @internal
@@ -941,7 +941,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
 }
 
 // Warning: (ae-forgotten-export) The symbol "EnumEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @beta
 export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEditorState> implements TypeEditor {
     // @internal (undocumented)
@@ -988,7 +988,7 @@ export class EventsMuteContext implements IDisposable {
     }
 
 // Warning: (ae-forgotten-export) The symbol "FilteringInputState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @public
 export class FilteringInput extends React.Component<FilteringInputProps, FilteringInputState> {
     constructor(props: FilteringInputProps);
@@ -1288,17 +1288,17 @@ export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
 }
 
 // Warning: (ae-forgotten-export) The symbol "TreeNodeProps" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @internal
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
 // Warning: (ae-forgotten-export) The symbol "OnItemsDeselectedCallback" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @internal
 export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
 
 // Warning: (ae-forgotten-export) The symbol "OnItemsSelectedCallback" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @internal
 export type NodesSelectedCallback = OnItemsSelectedCallback<TreeNodeItem>;
 
@@ -1319,7 +1319,7 @@ export interface NonPrimitivePropertyLabelRendererProps extends PrimitivePropert
 }
 
 // Warning: (ae-forgotten-export) The symbol "NonPrimitivePropertyRendererState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @public
 export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePropertyRendererProps, NonPrimitivePropertyRendererState> {
     // @internal (undocumented)
@@ -1544,7 +1544,7 @@ export interface PropertyEditorProps {
 }
 
 // Warning: (ae-forgotten-export) The symbol "PropertyGridState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @public
 export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGridState> {
     // @internal
@@ -1619,7 +1619,7 @@ export interface PropertyPopupState {
 }
 
 // Warning: (ae-forgotten-export) The symbol "PropertyRendererState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @public
 export class PropertyRenderer extends React.Component<PropertyRendererProps, PropertyRendererState> {
     // @internal (undocumented)
@@ -1698,7 +1698,7 @@ export interface PropertyViewProps extends SharedRendererProps {
 }
 
 // Warning: (ae-forgotten-export) The symbol "ResultSelectorState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @public
 export class ResultSelector extends React.Component<ResultSelectorProps, ResultSelectorState> {
     // @internal
@@ -1801,7 +1801,7 @@ export class ShortDateTypeConverter extends TypeConverter implements LessGreater
 }
 
 // Warning: (ae-forgotten-export) The symbol "ShowHideDialogState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @public
 export class ShowHideDialog<T extends ShowHideID> extends React.Component<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
     constructor(props: ShowHideDialogProps<T>);
@@ -1832,7 +1832,7 @@ export interface ShowHideItem<T extends ShowHideID> {
 }
 
 // Warning: (ae-forgotten-export) The symbol "ShowHideMenuState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @public
 export class ShowHideMenu<T extends ShowHideID> extends React.Component<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
     // @internal
@@ -1857,7 +1857,7 @@ export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMe
 }
 
 // Warning: (ae-forgotten-export) The symbol "SignInState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @public
 export class SignIn extends React.PureComponent<SignInProps, SignInState> {
     constructor(props: SignInProps);
@@ -2039,7 +2039,7 @@ export class StructPropertyValueRenderer implements IPropertyValueRenderer {
 }
 
 // Warning: (ae-forgotten-export) The symbol "TableState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @public
 export class Table extends React.Component<TableProps, TableState> {
     // @internal
@@ -2059,7 +2059,7 @@ export class Table extends React.Component<TableProps, TableState> {
     // @internal (undocumented)
     readonly state: TableState;
     // Warning: (ae-forgotten-export) The symbol "UpdateStatus" needs to be exported by the entry point ui-components.d.ts
-    // 
+    //
     // @internal (undocumented)
     update(): Promise<UpdateStatus>;
     // @internal (undocumented)
@@ -2218,7 +2218,7 @@ export class TableStructValueRenderer extends React.PureComponent<TableSpecificV
 }
 
 // Warning: (ae-forgotten-export) The symbol "TextEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @beta
 export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEditorState> implements TypeEditor {
     // @internal (undocumented)
@@ -2278,7 +2278,7 @@ export const enum TimelineScale {
 }
 
 // Warning: (ae-forgotten-export) The symbol "ToggleEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @beta
 export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
     // @internal (undocumented)
@@ -2310,7 +2310,7 @@ export const toNode: <TPayload>(inspireNode: Inspire.TreeNode) => BeInspireTreeN
 export const toNodes: <TPayload>(inspireNodes: Inspire.TreeNodes) => BeInspireTreeNodes<TPayload>;
 
 // Warning: (ae-forgotten-export) The symbol "TreeState" needs to be exported by the entry point ui-components.d.ts
-// 
+//
 // @public
 export class Tree extends React.Component<TreeProps, TreeState> {
     // @internal
@@ -2639,7 +2639,7 @@ export function withTreeDragDrop<P extends TreeProps, DragDropObject extends Tre
 
 
 // Warnings were encountered during analysis:
-// 
+//
 // src/ui-components/filtering/FilteringInput.tsx:64:7 - (ae-incompatible-release-tags) The symbol "context" is marked as @public, but its signature references "InputContext" which is marked as @internal
 
 // (No @packageDocumentation comment for this package)
