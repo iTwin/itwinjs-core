@@ -5,8 +5,11 @@ exports[`<Stacked /> renders correctly 1`] = `
   className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed"
 >
   <div
-    className="nz-content-area"
+    className="nz-content-container"
   >
+    <div
+      className="nz-content"
+    />
     <ResizeGrip
       className="nz-bottom-grip"
       direction={1}
@@ -50,8 +53,11 @@ exports[`<Stacked /> renders correctly to fill zone 1`] = `
   className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed nz-fill-zone"
 >
   <div
-    className="nz-content-area"
+    className="nz-content-container"
   >
+    <div
+      className="nz-content"
+    />
     <ResizeGrip
       className="nz-bottom-grip"
       direction={1}
@@ -95,8 +101,11 @@ exports[`<Stacked /> renders dragged correctly 1`] = `
   className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed nz-dragged"
 >
   <div
-    className="nz-content-area"
+    className="nz-content-container"
   >
+    <div
+      className="nz-content"
+    />
     <ResizeGrip
       className="nz-bottom-grip"
       direction={1}
@@ -140,8 +149,11 @@ exports[`<Stacked /> renders floating correctly 1`] = `
   className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed nz-floating"
 >
   <div
-    className="nz-content-area"
+    className="nz-content-container"
   >
+    <div
+      className="nz-content"
+    />
     <ResizeGrip
       className="nz-bottom-grip"
       direction={1}

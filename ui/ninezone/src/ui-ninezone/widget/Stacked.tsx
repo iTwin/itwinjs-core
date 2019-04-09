@@ -112,8 +112,10 @@ export class Stacked extends React.PureComponent<StackedProps> {
         style={this.props.style}
         ref={this._widget}
       >
-        <div className="nz-content-area">
-          {this.props.content}
+        <div className="nz-content-container">
+          <div className="nz-content">
+            {this.props.content}
+          </div>
           <ResizeGrip
             className="nz-bottom-grip"
             direction={ResizeDirection.NorthSouth}
