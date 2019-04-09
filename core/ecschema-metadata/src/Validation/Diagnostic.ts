@@ -51,6 +51,8 @@ export interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
   messageArgs: ARGS;
   /** The EC object associated with the diagnostic instance. */
   ecDefinition: TYPE;
+  /** The schema where the diagnostic originated. */
+  schema: Schema;
 }
 
 /**
@@ -82,6 +84,8 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
   public abstract get diagnosticType(): DiagnosticType;
   /** Gets the message associated with the diagnostic. */
   public abstract get messageText(): string;
+  /** Gets the schema where the diagnostic originated. */
+  public abstract get schema(): Schema;
 
   /** The EC object to associate with the diagnostic. */
   public ecDefinition: TYPE;
@@ -100,6 +104,10 @@ export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnosti
     super(schema, messageArgs);
   }
 
+  /** Gets the schema where the diagnostic originated. */
+  public get schema(): Schema { return this.ecDefinition; }
+
+  /** Gets the DiagnosticType. */
   public get diagnosticType(): DiagnosticType { return DiagnosticType.Schema; }
 }
 
@@ -107,13 +115,17 @@ export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnosti
  * An [[IDiagnostic]] implementation used for [[SchemaItem]] diagnostics.
  * @beta
  */
-export abstract class SchemaItemDiagnostic<TYPE extends AnyECType, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
+export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
   public static diagnosticType = DiagnosticType.SchemaItem;
 
-  constructor(ecDefinition: TYPE, messageArgs: ARGS) {
-    super(ecDefinition, messageArgs);
+  constructor(ecDefinition: SchemaItem, messageArgs: ARGS) {
+    super(ecDefinition as TYPE, messageArgs);
   }
 
+  /** Gets the schema where the diagnostic originated. */
+  public get schema(): Schema { return this.ecDefinition.schema; }
+
+  /** Gets the DiagnosticType. */
   public get diagnosticType(): DiagnosticType { return DiagnosticType.SchemaItem; }
 }
 
@@ -125,6 +137,9 @@ export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiag
   constructor(ecClass: AnyClass, messageArgs: ARGS) {
     super(ecClass, messageArgs);
   }
+
+  /** Gets the schema where the diagnostic originated. */
+  public get schema(): Schema { return this.ecDefinition.schema; }
 }
 
 /**
@@ -136,6 +151,10 @@ export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnos
     super(property, messageArgs);
   }
 
+  /** Gets the schema where the diagnostic originated. */
+  public get schema(): Schema { return this.ecDefinition.schema; }
+
+  /** Gets the DiagnosticType. */
   public get diagnosticType(): DiagnosticType { return DiagnosticType.Property; }
 }
 
@@ -148,6 +167,10 @@ export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> exten
     super(constraint, messageArgs);
   }
 
+  /** Gets the schema where the diagnostic originated. */
+  public get schema(): Schema { return this.ecDefinition.schema; }
+
+  /** Gets the DiagnosticType. */
   public get diagnosticType(): DiagnosticType { return DiagnosticType.RelationshipConstraint; }
 }
 
@@ -160,6 +183,10 @@ export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> ext
     super(container, messageArgs);
   }
 
+  /** Gets the schema where the diagnostic originated. */
+  public get schema(): Schema { return this.ecDefinition.schema; }
+
+  /** Gets the DiagnosticType. */
   public get diagnosticType(): DiagnosticType { return DiagnosticType.CustomAttributeContainer; }
 }
 

@@ -61,6 +61,7 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
     ecDefinition: TYPE;
     messageArgs: ARGS;
     abstract readonly messageText: string;
+    abstract readonly schema: Schema;
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "BaseRule" is marked as @public, but its signature references "AnyECType" which is marked as @beta
@@ -71,6 +72,7 @@ export type BaseRule<T extends AnyECType, U extends AnyECType> = IRule<T, U>;
 // @beta
 export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiagnostic<AnyClass, ARGS> {
     constructor(ecClass: AnyClass, messageArgs: ARGS);
+    readonly schema: Schema;
 }
 
 // @beta
@@ -118,6 +120,7 @@ export function createClassDiagnosticClass<ARGS extends any[]>(code: string, mes
         readonly code: string;
         readonly category: DiagnosticCategory;
         readonly messageText: string;
+        readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: AnyClass;
         messageArgs: ARGS;
@@ -131,6 +134,7 @@ export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]
         readonly code: string;
         readonly category: DiagnosticCategory;
         readonly messageText: string;
+        readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: CustomAttributeContainerProps;
         messageArgs: ARGS;
@@ -143,6 +147,7 @@ export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, 
         readonly code: string;
         readonly category: DiagnosticCategory;
         readonly messageText: string;
+        readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: AnyProperty;
         messageArgs: ARGS;
@@ -155,6 +160,7 @@ export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(
         readonly code: string;
         readonly category: DiagnosticCategory;
         readonly messageText: string;
+        readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: RelationshipConstraint;
         messageArgs: ARGS;
@@ -167,6 +173,7 @@ export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, me
         readonly code: string;
         readonly category: DiagnosticCategory;
         readonly messageText: string;
+        readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: Schema;
         messageArgs: ARGS;
@@ -176,10 +183,11 @@ export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, me
 
 // @beta
 export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
-    new (ecDefinition: ITEM, messageArgs: ARGS): {
+    new (ecDefinition: SchemaItem, messageArgs: ARGS): {
         readonly code: string;
         readonly category: DiagnosticCategory;
         readonly messageText: string;
+        readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: ITEM;
         messageArgs: ARGS;
@@ -211,8 +219,8 @@ export class CustomAttributeClass extends ECClass {
 // @beta
 export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> extends BaseDiagnostic<CustomAttributeContainerProps, ARGS> {
     constructor(container: CustomAttributeContainerProps, messageArgs: ARGS);
-    // (undocumented)
     readonly diagnosticType: DiagnosticType;
+    readonly schema: Schema;
 }
 
 // @beta
@@ -338,15 +346,6 @@ export const DiagnosticCodes: {
     EnumerationTypeUnsupported: string;
 };
 
-// @beta
-export abstract class DiagnosticReporterBase implements IDiagnosticReporter {
-    constructor(i18n?: I18N);
-    protected formatStringFromArgs(text: string, args: ArrayLike<string>, baseIndex?: number): string;
-    i18N?: I18N;
-    report(diagnostic: AnyDiagnostic): void;
-    protected abstract reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
-    }
-
 // @public
 export const Diagnostics: {
     BaseClassIsSealed: {
@@ -354,6 +353,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs: [string, string];
@@ -365,6 +365,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs: [string, string, string];
@@ -376,6 +377,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs: [string, string, string, string, string];
@@ -386,6 +388,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs: [string, string, string, string, string];
@@ -396,6 +399,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs: [string, string, string, string, string, string, string];
@@ -406,6 +410,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs: [string, string];
@@ -416,16 +421,18 @@ export const Diagnostics: {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs: [string, string];
         };
     };
     EnumerationTypeUnsupported: {
-        new (ecDefinition: Enumeration, messageArgs: [string]): {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string]): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs: [string];
@@ -433,10 +440,11 @@ export const Diagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     MixinAppliedToClassMustDeriveFromConstraint: {
-        new (ecDefinition: EntityClass, messageArgs: [string, string, string]): {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string]): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: EntityClass;
             messageArgs: [string, string, string];
@@ -448,16 +456,18 @@ export const Diagnostics: {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs: [string, string];
         };
     };
     AbstractConstraintMustNarrowBaseConstraints: {
-        new (ecDefinition: RelationshipClass, messageArgs: [string, string, string, string]): {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string]): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs: [string, string, string, string];
@@ -465,10 +475,11 @@ export const Diagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     DerivedConstraintsMustNarrowBaseConstraints: {
-        new (ecDefinition: RelationshipClass, messageArgs: [string, string, string, string]): {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string]): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs: [string, string, string, string];
@@ -476,10 +487,11 @@ export const Diagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     ConstraintClassesDeriveFromAbstractContraint: {
-        new (ecDefinition: RelationshipClass, messageArgs: [string, string, string, string]): {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string]): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs: [string, string, string, string];
@@ -955,6 +967,15 @@ export class Format extends SchemaItem {
     protected _uomSeparator: string;
 }
 
+// @beta
+export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticReporter {
+    constructor(suppressions?: Map<string, string[]>, i18n?: I18N);
+    protected formatStringFromArgs(text: string, args: ArrayLike<string>, baseIndex?: number): string;
+    i18N?: I18N;
+    protected abstract reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
+    reportInternal(diagnostic: AnyDiagnostic): void;
+    }
+
 // @internal
 export const formatStringRgx: RegExp;
 
@@ -1030,12 +1051,14 @@ export interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
     ecDefinition: TYPE;
     messageArgs: ARGS;
     messageText: string;
+    schema: Schema;
 }
 
 // @beta
 export interface IDiagnosticReporter {
     i18N?: I18N;
     report(diagnostic: AnyDiagnostic): void;
+    suppressions?: Map<string, string[]>;
 }
 
 // @beta
@@ -1247,7 +1270,7 @@ export type LazyLoadedUnit = LazyLoadedSchemaItem<Unit>;
 export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
 
 // @beta
-export class LoggingDiagnosticReporter extends DiagnosticReporterBase {
+export class LoggingDiagnosticReporter extends FormatDiagnosticReporter {
     // (undocumented)
     reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
 }
@@ -1602,8 +1625,8 @@ export class PropertyCategory extends SchemaItem {
 // @beta
 export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnostic<AnyProperty, ARGS> {
     constructor(property: AnyProperty, messageArgs: ARGS);
-    // (undocumented)
     readonly diagnosticType: DiagnosticType;
+    readonly schema: Schema;
 }
 
 // @beta (undocumented)
@@ -1782,8 +1805,8 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
 // @beta
 export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> extends BaseDiagnostic<RelationshipConstraint, ARGS> {
     constructor(constraint: RelationshipConstraint, messageArgs: ARGS);
-    // (undocumented)
     readonly diagnosticType: DiagnosticType;
+    readonly schema: Schema;
 }
 
 // @beta
@@ -1970,8 +1993,8 @@ export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnosti
     constructor(schema: Schema, messageArgs: ARGS);
     // (undocumented)
     static diagnosticType: DiagnosticType;
-    // (undocumented)
     readonly diagnosticType: DiagnosticType;
+    readonly schema: Schema;
 }
 
 // @alpha
@@ -2038,12 +2061,12 @@ export abstract class SchemaItem {
 }
 
 // @beta
-export abstract class SchemaItemDiagnostic<TYPE extends AnyECType, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
-    constructor(ecDefinition: TYPE, messageArgs: ARGS);
+export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
+    constructor(ecDefinition: SchemaItem, messageArgs: ARGS);
     // (undocumented)
     static diagnosticType: DiagnosticType;
-    // (undocumented)
     readonly diagnosticType: DiagnosticType;
+    readonly schema: Schema;
 }
 
 // @beta
@@ -2329,6 +2352,14 @@ export class StructProperty extends Property {
 }
 
 // @beta
+export abstract class SuppressionDiagnosticReporter implements IDiagnosticReporter {
+    constructor(suppressions?: Map<string, string[]>);
+    report(diagnostic: AnyDiagnostic): void;
+    protected abstract reportInternal(diagnostic: AnyDiagnostic): void;
+    readonly suppressions: Map<string, string[]> | undefined;
+    }
+
+// @beta
 export class Unit extends SchemaItem {
     constructor(schema: Schema, name: string);
     // (undocumented)
@@ -2379,18 +2410,18 @@ export class UnitSystem extends SchemaItem {
 
 // Warnings were encountered during analysis:
 // 
-// src/Validation/ECRules.ts:15:51 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyProperty" which is marked as @beta
 // src/Validation/ECRules.ts:40:9 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyClass" which is marked as @beta
-// src/Validation/ECRules.ts:52:9 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyClass" which is marked as @beta
-// src/Validation/ECRules.ts:64:9 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyProperty" which is marked as @beta
-// src/Validation/ECRules.ts:68:3 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "Enumeration" which is marked as @beta
-// src/Validation/ECRules.ts:68:3 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "RelationshipClass" which is marked as @beta
-// src/Validation/ECRules.ts:68:3 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "RelationshipClass" which is marked as @beta
-// src/Validation/ECRules.ts:70:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyProperty" which is marked as @beta
-// src/Validation/ECRules.ts:81:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "RelationshipConstraint" which is marked as @beta
-// src/Validation/ECRules.ts:92:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "RelationshipConstraint" which is marked as @beta
-// src/Validation/ECRules.ts:115:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "EntityClass" which is marked as @beta
-// src/Validation/ECRules.ts:162:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "RelationshipClass" which is marked as @beta
+// src/Validation/ECRules.ts:53:9 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyClass" which is marked as @beta
+// src/Validation/ECRules.ts:65:3 - (ae-incompatible-release-tags) The symbol "ecDefinition" is marked as @public, but its signature references "RelationshipClass" which is marked as @beta
+// src/Validation/ECRules.ts:66:9 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyProperty" which is marked as @beta
+// src/Validation/ECRules.ts:67:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyProperty" which is marked as @beta
+// src/Validation/ECRules.ts:79:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyProperty" which is marked as @beta
+// src/Validation/ECRules.ts:91:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "RelationshipConstraint" which is marked as @beta
+// src/Validation/ECRules.ts:103:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "RelationshipConstraint" which is marked as @beta
+// src/Validation/ECRules.ts:121:11 - (ae-incompatible-release-tags) The symbol "ecDefinition" is marked as @public, but its signature references "Enumeration" which is marked as @beta
+// src/Validation/ECRules.ts:134:11 - (ae-incompatible-release-tags) The symbol "ecDefinition" is marked as @public, but its signature references "EntityClass" which is marked as @beta
+// src/Validation/ECRules.ts:159:11 - (ae-incompatible-release-tags) The symbol "ecDefinition" is marked as @public, but its signature references "RelationshipClass" which is marked as @beta
+// src/Validation/ECRules.ts:172:11 - (ae-incompatible-release-tags) The symbol "ecDefinition" is marked as @public, but its signature references "RelationshipClass" which is marked as @beta
 
 // (No @packageDocumentation comment for this package)
 

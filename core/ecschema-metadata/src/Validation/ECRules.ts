@@ -17,6 +17,7 @@ import {
   ClassDiagnostic, PropertyDiagnostic, SchemaItemDiagnostic, RelationshipConstraintDiagnostic,
   createSchemaItemDiagnosticClass, createPropertyDiagnosticClass, createClassDiagnosticClass,
   createRelationshipConstraintDiagnosticClass, createCustomAttributeContainerDiagnosticClass,
+  CustomAttributeContainerDiagnostic,
 } from "./Diagnostic";
 import { IRuleSet } from "./Rules";
 
@@ -365,7 +366,7 @@ export async function* mixinAppliedToClassMustDeriveFromConstraint(entityClass: 
 }
 
 /** EC Rule: CustomAttribute instance must be of a concrete CustomAttributeClass. */
-export async function* customAttributeNotOfConcreteClass(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<SchemaItemDiagnostic<CustomAttributeContainerProps, any[]>> {
+export async function* customAttributeNotOfConcreteClass(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any []>> {
   const schema = container.schema;
   const caClass = await schema.lookupItem(customAttribute.className) as ECClass;
   if (!caClass)
