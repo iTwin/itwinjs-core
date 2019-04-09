@@ -649,6 +649,8 @@ export class HubUserInfo extends WsgInstance {
     lastName?: string;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "IAngularOidcFrontendClient" is marked as @public, but its signature references "IOidcFrontendClient" which is marked as @beta
+// 
 // @public
 export interface IAngularOidcFrontendClient extends IOidcFrontendClient {
     // (undocumented)
@@ -930,18 +932,15 @@ export class InstanceIdQuery extends Query {
     getId(): string | undefined;
 }
 
-// @public
+// @beta
 export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
-    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     hasExpired: boolean;
     hasSignedIn: boolean;
     initialize(requestContext: ClientRequestContext): Promise<void>;
     isAuthorized: boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "onUserStateChanged" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "signIn" is marked as @public, but its signature references "AccessToken" which is marked as @beta
-    signIn(requestContext: ClientRequestContext): Promise<AccessToken>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
 }
 
@@ -1085,7 +1084,7 @@ export abstract class OidcClient extends Client {
     static readonly searchKey: string;
 }
 
-// @public
+// @beta
 export interface OidcFrontendClientConfiguration {
     clientId: string;
     postSignoutRedirectUri?: string;

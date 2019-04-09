@@ -53,17 +53,17 @@ export const enum LoggerCategory {
     OidcDeviceClient = "imodeljs-clients-device.OidcDeviceClient"
 }
 
-// @public
+// @beta
 export class OidcAgentClient extends OidcBackendClient {
     constructor(agentConfiguration: OidcAgentClientConfiguration);
     getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
     refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
 }
 
-// @public (undocumented)
+// @beta
 export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
 
-// @public
+// @beta
 export abstract class OidcBackendClient extends OidcClient {
     constructor(configuration: OidcBackendClientConfiguration);
     // (undocumented)
@@ -77,13 +77,15 @@ export abstract class OidcBackendClient extends OidcClient {
     static parseUserInfo(jwt: string): UserInfo | undefined;
 }
 
-// @public
+// @beta
 export interface OidcBackendClientConfiguration {
     clientId: string;
     clientSecret: string;
     scope: string;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "OidcDelegationClient" is marked as @public, but its signature references "OidcBackendClient" which is marked as @beta
+// 
 // @public
 export class OidcDelegationClient extends OidcBackendClient {
     constructor(configuration: OidcDelegationClientConfiguration);
@@ -92,6 +94,8 @@ export class OidcDelegationClient extends OidcBackendClient {
     getSamlFromJwt(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "OidcDelegationClientConfiguration" is marked as @public, but its signature references "OidcBackendClientConfiguration" which is marked as @beta
+// 
 // @public (undocumented)
 export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
 
@@ -105,7 +109,7 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     initialize(requestContext: ClientRequestContext): Promise<void>;
     readonly isAuthorized: boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message: string) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<AccessToken>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
 

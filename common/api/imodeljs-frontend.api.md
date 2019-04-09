@@ -3760,18 +3760,17 @@ export class OffScreenViewport extends Viewport {
     readonly viewRect: ViewRect;
 }
 
-// @public
+// @beta
 export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient {
     constructor(_configuration: OidcFrontendClientConfiguration);
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    handleRedirectCallback(): Promise<boolean>;
     readonly hasExpired: boolean;
     readonly hasSignedIn: boolean;
     initialize(requestContext: FrontendRequestContext): Promise<void>;
     readonly isAuthorized: boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message: string) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<AccessToken>;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    signIn(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
 

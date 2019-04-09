@@ -2520,6 +2520,10 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
 export class SignIn extends React_2.Component<SignInProps> {
     constructor(props: SignInProps);
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
     render(): JSX.Element;
 }
 

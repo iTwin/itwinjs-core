@@ -118,6 +118,11 @@ The electron version used internally has  been updated to v4.10.0.
 
 * Any frontend methods that contact multiple services (and not just the backend through RPC) need to explicitly create the context at the top level, and manage the context through multiple service calls. Right before the RPC request is made, call  [ClientRequestContext.useContextForRpc]($bentley) or [AuthorizedClientRequestContext.useContextForRpc]($clients) to setup the use of that context (and the contained `activityId`) for the subsequent RPC request.
 
+### Changes to authorization for Single Page Applications
+
+[OidcBrowserClient]($frontend) attempts to silently sign-in during initialization, when signIn() is called, or when the accesss token expires. The signIn() calls also takes a successRedirectUri parameter that can be used to control the redirection after the entire authorization process is completed.
+
+
 ## Changes required for Usage Logging
 
 * Frontend applications must set the [IModelApp.applicationId]($frontend) and [IModelApp.applicationVersion]($frontend) fields to ensure the usage is logged. Bentley applications must set `applicationId` to the Bentley Global Product Registry Id (GPRID).

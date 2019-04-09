@@ -7,13 +7,16 @@ import { IDisposable, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-c
 import { AccessToken } from "../Token";
 import { IAuthorizationClient } from "../AuthorizationClient";
 
-/** Interface to implement a typical frontend client */
+/**
+ * Interface to implement a typical frontend client
+ * @beta
+ */
 export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
   /** Used to initialize the client - must be awaited before any other methods are called */
   initialize(requestContext: ClientRequestContext): Promise<void>;
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
-  signIn(requestContext: ClientRequestContext): Promise<AccessToken>;
+  signIn(requestContext: ClientRequestContext): Promise<void>;
 
   /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
   signOut(requestContext: ClientRequestContext): Promise<void>;
@@ -36,7 +39,10 @@ export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
   readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
 }
 
-/** Client configuration to generate OIDC/OAuth tokens for browser, desktop and mobile applications */
+/**
+ * Client configuration to generate OIDC/OAuth tokens for browser, desktop and mobile applications
+ * @beta
+ */
 export interface OidcFrontendClientConfiguration {
   /** Client application's identifier as registered with the Bentley IMS OIDC/OAuth2 provider. */
   clientId: string;
