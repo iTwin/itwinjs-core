@@ -82,7 +82,7 @@ describe("IModelConnection (#integration)", () => {
     const rows = await executeQuery(iModel, "SELECT * FROM BisCore.LineStyle");
     const endTime1 = new Date().getTime();
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-    await TestRpcInterface.getClient().saveCSV("ExecuteQuery", "Execute an ECSQL query", elapsedTime1);
+    await TestRpcInterface.getClient().saveCSV("ExecuteQuery", "Execute a simple ECSQL query", elapsedTime1);
     assert.equal(rows.length, 7);
   });
 
