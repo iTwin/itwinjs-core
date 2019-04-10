@@ -12,7 +12,7 @@ import { AnnularSector, Annulus, Point } from "./Annulus";
 import "./RadialMenu.scss";
 
 /** Properties for [[RadialMenu]]
- * @public
+ * @beta
  */
 export interface RadialMenuProps {
   /** Whether to show RadialMenu */
@@ -44,7 +44,7 @@ interface RadialMenuState {
 
 /**
  * A context menu arranged in a radial layout.
- * @public
+ * @beta
  */
 export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState> {
   private _root: HTMLDivElement | null = null;
@@ -155,7 +155,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
 }
 
 /** Properties for [[RadialButton]] component
- * @public
+ * @beta
  */
 export interface RadialButtonProps {
   /** Whether label is rotated to radial menu. Default: Inherit */
@@ -177,7 +177,7 @@ interface RadialButtonState {
 
 /**
  * Button for use within a [[RadialMenu]]
- * @public
+ * @beta
  */
 export class RadialButton extends React.Component<RadialButtonProps, RadialButtonState> {
 

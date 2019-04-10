@@ -104,7 +104,7 @@
         background-color: $buic-background-titlebar;
         color: $buic-text-color;
         display: flex;
-        padding: 6px;
+        padding: 4px;
 
         /* padding: $uicore-unbordered-padding; */
         &.core-dialog-movable {
@@ -114,10 +114,10 @@
         > .core-dialog-title {
           flex: 1 1;
 
-          @include uicore-text-title;
+          @include uicore-text-leading;
 
-          font-size: 20px;
           margin: 0;
+          margin-left: 4px;
         }
 
         > .core-dialog-close {
@@ -145,6 +145,11 @@
 
         @include uicore-touch-scrolling;
         @include uicore-scrollbar();
+
+        &.core-dialog-content-nopadding {
+          margin: 0;
+          padding: 0;
+        }
       }
 
       > .core-dialog-footer {

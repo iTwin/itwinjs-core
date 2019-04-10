@@ -7,7 +7,7 @@ import { mount } from "enzyme";
 import * as React from "react";
 import TestUtils from "../../../TestUtils";
 import { MergedPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/MergedPropertyValueRenderer";
-import UiComponents from "../../../../ui-components/UiComponents";
+import { UiComponents } from "../../../../ui-components/UiComponents";
 
 describe("MergedPropertyValueRenderer", () => {
   before(async () => {

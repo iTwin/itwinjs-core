@@ -11,7 +11,7 @@ import { Input, InputProps } from "./Input";
 import { InputStatus } from "./InputStatus";
 
 /** Properties for [[LabeledInput]] components
- * @public
+ * @beta
  */
 export interface LabeledInputProps extends InputProps {
   label: string;
@@ -20,7 +20,7 @@ export interface LabeledInputProps extends InputProps {
 }
 
 /** Text input wrapper that provides additional styling and labeling
- * @public
+ * @beta
  */
 export class LabeledInput extends React.Component<LabeledInputProps> {
   public render(): JSX.Element {

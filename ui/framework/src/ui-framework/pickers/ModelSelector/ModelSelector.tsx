@@ -337,6 +337,4 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 }
 
-export default ModelSelectorWidget;
-
 ConfigurableUiManager.registerControl("ModelSelectorWidget", ModelSelectorWidgetControl);

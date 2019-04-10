@@ -9,6 +9,7 @@ interface Point {
   y: number;
 }
 
+/** ContextMenu Position relative to the parent */
 export enum Position {
   TopLeft,
   TopRight,
@@ -256,6 +257,7 @@ export interface ContextMenuPortalProps extends CommonProps {
   offset: number;
 }
 
+/** React Portal for ContextMenu */
 export class ContextMenuPortal extends React.Component<ContextMenuPortalProps> {
   private _menu: HTMLElement | null = null;
 

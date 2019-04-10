@@ -10,7 +10,7 @@ import { CommonProps } from "../utils/Props";
 import "./Toggle.scss";
 
 /** Toggle display types
- * @public
+ * @beta
  */
 export enum ToggleButtonType {
   /** Primary (green) background */
@@ -20,7 +20,7 @@ export enum ToggleButtonType {
 }
 
 /** Properties for [[Toggle]] component
- * @public
+ * @beta
  */
 export interface ToggleProps extends CommonProps {
   /** Determine if the toggle is disabled or not */
@@ -48,13 +48,13 @@ interface ToggleState {
 
 /**
  * Toggle React component to show an "on" or "off state
- * @public
+ * @beta
  */
 export class Toggle extends React.Component<ToggleProps, ToggleState> {
   private _padding: number = 2;
 
-  constructor(props: ToggleProps, context?: any) {
-    super(props, context);
+  constructor(props: ToggleProps) {
+    super(props);
 
     this.state = { height: 0, width: 0, checked: this.props.isOn! };
   }

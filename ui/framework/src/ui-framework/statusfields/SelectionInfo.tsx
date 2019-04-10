@@ -23,8 +23,8 @@ interface SelectionInfoFieldProps {
  */
 class SelectionInfoFieldComponent extends React.Component<SelectionInfoFieldProps> {
 
-  constructor(props?: any, context?: any) {
-    super(props, context);
+  constructor(props: SelectionInfoFieldProps) {
+    super(props);
   }
 
   public render(): React.ReactNode {

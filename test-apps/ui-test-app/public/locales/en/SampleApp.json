@@ -20,7 +20,8 @@
     "SingleContent": "Single Content"
   },
   "Test": {
-    "my-label": "My Label"
+    "my-label": "My Label",
+    "loading": "Loading..."
   },
   "settingsStage": {
     "settings": "Settings",
@@ -113,6 +114,7 @@
     "toggleItemDisplay": "Toggle Hide/Show Test",
     "openRadial": "Open Radial Menu",
     "outputMessage": "Call outputMessage",
+    "openCloseProperties": "Open/Close Property Grid",
     "openPropertyGrid": "Open Property Grid",
     "closePropertyGrid": "Close Property Grid",
     "showShortcutsMenu": "Show Shortcuts Menu",
@@ -120,6 +122,11 @@
     "openNestedFrontstage1": "Open Nested Frontstage",
     "switchLayout": "Switch layouts",
     "showhideZones": "Toggle Zone Visibility",
+    "activityMessage": "Activity Message",
+    "pointerMessage": "Pointer Message",
+    "messageDemos": "Message Demos",
+    "dialogDemos": "Dialog Demos",
+    "viewportDialog": "Viewport Dialog",
     "openNestedAnimationStage": "Open Stage to Play Animations"
   },
   "tools": {

@@ -140,5 +140,3 @@ export function withTableDragDrop<P extends TableProps, DragDropObject extends T
 
   };
 }
-
-export default withTableDragDrop;

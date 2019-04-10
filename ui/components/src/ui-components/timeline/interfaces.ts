@@ -6,7 +6,7 @@
 
 /**
  * A range of time which can be used to focus in on activities scheduled around a milestone.
- * @beta
+ * @alpha
  */
 export interface MilestoneRange {
   start: Date;
@@ -15,7 +15,7 @@ export interface MilestoneRange {
 
 /**
  * A Milestone event that is to be noted in the timeline.
- * @beta
+ * @alpha
  */
 export interface Milestone {
   /** uniqueId of milestone */
@@ -35,7 +35,7 @@ export interface Milestone {
 }
 
 /** The amount of detail to be displayed in timeline.
- * @beta
+ * @alpha
  */
 export const enum TimelineDetail {
   /** Show duration and milestones if available. */
@@ -47,7 +47,7 @@ export const enum TimelineDetail {
 }
 
 /** The timeline scale to be displayed if TimelineDetail in NOT set to 'Minimal'.
- * @beta
+ * @alpha
  */
 export const enum TimelineScale {
   /** Show years */
@@ -63,7 +63,7 @@ export const enum TimelineScale {
 }
 
 /** Determines if data displayed to use is the actual date or the amount of time elapsed since project start.
- * @beta
+ * @alpha
  */
 export const enum TimelineDateDisplay {
   /** Display time axis using actual start/end dates */
@@ -74,7 +74,7 @@ export const enum TimelineDateDisplay {
 
 /**
  * Playback Settings.
- * @beta TODO: do we need a display StartDate/EndData this would allow user to show a timeline that extends beyond the 'start' and 'end' dates.
+ * @alpha TODO: do we need a display StartDate/EndData this would allow user to show a timeline that extends beyond the 'start' and 'end' dates.
  */
 export interface PlaybackSettings {
   /** time in milliseconds to play animation from start date to end date */
@@ -95,19 +95,19 @@ export interface PlaybackSettings {
 
 /**
  * An interface used to notify Handlers of the current pointer position in the timeline playback. Valid range is 0 to 1 and it determines percentage complete.
- * @beta
+ * @alpha
  */
 export type PlaybackPointerChangeHandler = (pointerValue: number) => void;
 
 /**
  * An interface used to notify Handlers of Playback Settings changes.
  * Contains the settings to be used.
- * @beta
+ * @alpha
  */
 export type PlaybackSettingsChangeHandler = (settings: PlaybackSettings) => void;
 
 /** Interface for a timeline data provider class
- * @beta
+ * @alpha
  */
 export interface TimelineDataProvider {
   /** uniqueId of provider */

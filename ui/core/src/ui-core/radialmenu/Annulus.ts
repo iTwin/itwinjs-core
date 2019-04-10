@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RadialMenu */
 
-/** @internal
+/**
  * 2D Point
+ * @internal
  */
 export class Point {
   public x: number = 0;
@@ -27,8 +28,9 @@ export class Point {
   public equals = (point: Point) => this.x === point.x && this.y === point.y;
 }
 
-/** @internal
+/**
  * 2D Line consisting of a start point, and an end point
+ * @internal
  */
 export class Line {
   public p1: Point;

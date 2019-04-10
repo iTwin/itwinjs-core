@@ -11,7 +11,7 @@ import { CommonProps } from "../utils/Props";
 import "./CheckListBox.scss";
 
 /** Properties for the [[CheckListBoxItem]] component
- * @public
+ * @beta
  */
 export interface CheckListBoxItemProps extends CommonProps {
   /** Label */
@@ -25,12 +25,12 @@ export interface CheckListBoxItemProps extends CommonProps {
 }
 
 /** Item with a checkbox added to a [[CheckListBox]].
- * @public
+ * @beta
  */
 export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
 
-  constructor(props: CheckListBoxItemProps, context?: any) {
-    super(props, context);
+  constructor(props: CheckListBoxItemProps) {
+    super(props);
   }
 
   private _onClick = () => {
@@ -51,7 +51,7 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
 }
 
 /** Separator added to a [[CheckListBox]].
- * @public
+ * @beta
  */
 // tslint:disable-next-line:variable-name
 export const CheckListBoxSeparator: React.StatelessComponent = () => {
@@ -61,7 +61,7 @@ export const CheckListBoxSeparator: React.StatelessComponent = () => {
 };
 
 /** Properties for the [[CheckListBox]] component
- * @public
+ * @beta
  */
 export interface CheckListBoxProps {
   /** CSS class name */
@@ -69,7 +69,7 @@ export interface CheckListBoxProps {
 }
 
 /** React component showing a list of Checkbox items.
- * @public
+ * @beta
  */
 export class CheckListBox extends React.Component<CheckListBoxProps> {
   public render() {

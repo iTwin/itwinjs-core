@@ -51,8 +51,8 @@ export class ViewportComponent extends React.Component<ViewportProps> {
   private _viewClassFullName: string = "";
   private _viewId: string = "";
 
-  public constructor(props: ViewportProps, context?: any) {
-    super(props, context);
+  public constructor(props: ViewportProps) {
+    super(props);
     this._viewportDiv = React.createRef<HTMLDivElement>();
   }
 

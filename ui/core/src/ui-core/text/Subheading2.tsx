@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
 /** Styled subheading text
- * @public
+ * @beta
  */
 
 export class Subheading2 extends React.Component<TextProps> {

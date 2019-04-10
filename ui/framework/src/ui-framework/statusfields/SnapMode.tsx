@@ -56,8 +56,8 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
     { label: UiFramework.i18n.translate("UiFramework:snapModeField.bisector"), value: SnapMode.Bisector as number, iconName: "snaps-bisector" },
   ];
 
-  constructor(props?: any, context?: any) {
-    super(props, context);
+  constructor(props: SnapModeFieldProps) {
+    super(props);
 
     const instance = this.constructor;
     this._className = instance.name;

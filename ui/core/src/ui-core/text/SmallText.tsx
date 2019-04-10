@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
 /** Styled small text
- * @public
+ * @beta
  */
 
 export class SmallText extends React.Component<TextProps> {

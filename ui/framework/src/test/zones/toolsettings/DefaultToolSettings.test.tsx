@@ -12,6 +12,8 @@ import {
 
 // import TestUtils from "../../TestUtils";
 
+// tslint:disable: completed-docs
+
 export enum SelectOptions {
   Method_Pick,
   Method_Line,

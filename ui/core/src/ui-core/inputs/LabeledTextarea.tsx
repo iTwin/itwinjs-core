@@ -11,7 +11,7 @@ import { Textarea, TextareaProps } from "./Textarea";
 import { InputStatus } from "./InputStatus";
 
 /** Properties for [[LabeledTextarea]] component
- * @public
+ * @beta
  */
 export interface LabeledTextareaProps extends TextareaProps {
   label: string;
@@ -20,7 +20,7 @@ export interface LabeledTextareaProps extends TextareaProps {
 }
 
 /** Textarea wrapper that allows for additional styling and labelling
- * @public
+ * @beta
  */
 export class LabeledTextarea extends React.Component<LabeledTextareaProps> {
   public render(): JSX.Element {

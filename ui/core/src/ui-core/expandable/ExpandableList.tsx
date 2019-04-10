@@ -27,8 +27,8 @@ interface ExpandableListState {
  */
 export class ExpandableList extends React.Component<ExpandableListProps, ExpandableListState> {
 
-  constructor(props: ExpandableListProps, context?: any) {
-    super(props, context);
+  constructor(props: ExpandableListProps) {
+    super(props);
 
     this.state = { activeBlock: this.props.defaultActiveBlock! };
   }

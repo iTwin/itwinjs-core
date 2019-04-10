@@ -8,7 +8,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 /** Properties for the [[HorizontalTabs]] component
- * @public
+ * @beta
  */
 export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListElement> {
   labels: string[];
@@ -18,7 +18,7 @@ export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListEl
 }
 
 /** Horizontal tabs meant to represent the current position in a page/section
- * @public
+ * @beta
  */
 export class HorizontalTabs extends React.Component<HorizontalTabsProps> {
   public render(): JSX.Element {

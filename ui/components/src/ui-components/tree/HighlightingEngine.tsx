@@ -28,7 +28,7 @@ export interface HighlightableTreeNodeProps {
 }
 
 /** @internal */
-export default class HighlightingEngine {
+export class HighlightingEngine {
   private _searchText: string;
   private _activeMatch?: ActiveMatchInfo;
   public static readonly ACTIVE_CLASS_NAME = "components-activehighlight";

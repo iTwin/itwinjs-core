@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
 /** Styled body text
- * @public
+ * @beta
  */
 export class BodyText extends React.Component<TextProps> {
   public render(): JSX.Element {

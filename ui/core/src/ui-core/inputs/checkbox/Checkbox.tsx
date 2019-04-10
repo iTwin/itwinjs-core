@@ -10,7 +10,7 @@ import { InputStatus } from "../InputStatus";
 import { Omit } from "../../utils/typeUtils";
 
 /** Properties for [[Checkbox]] React component
- * @public
+ * @beta
  */
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   /** Text that will be shown next to the checkbox. */
@@ -20,7 +20,7 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
 }
 
 /** A React component that renders a simple checkbox with label
- * @public
+ * @beta
  */
 // tslint:disable-next-line:variable-name
 export const Checkbox: React.FunctionComponent<CheckboxProps> = (props) => {

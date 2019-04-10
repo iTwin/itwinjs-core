@@ -7,7 +7,7 @@
 import * as React from "react";
 import classnames from "classnames";
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
-import HighlightingEngine, { HighlightableTreeNodeProps } from "../HighlightingEngine";
+import { HighlightingEngine, HighlightableTreeNodeProps } from "../HighlightingEngine";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
 import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";

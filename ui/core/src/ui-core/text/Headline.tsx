@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
 /** Styled headline text
- * @public
+ * @beta
  */
 
 export class Headline extends React.Component<TextProps> {

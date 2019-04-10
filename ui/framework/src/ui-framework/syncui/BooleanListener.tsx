@@ -43,8 +43,8 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
   /** @internal */
   public readonly state: BooleanListenerState;
 
-  constructor(props?: any, context?: any) {
-    super(props, context);
+  constructor(props: BooleanListenerProps) {
+    super(props);
     this.state = {
       boolValue: undefined !== props.defaultValue ? props.defaultValue : true,
     };

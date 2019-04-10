@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import "./SignIn.scss";
-import UiComponents from "../UiComponents";
+import { UiComponents } from "../UiComponents";
 
 /************************************************************************
  * SignInDialog - OIDC sign-in dialog.

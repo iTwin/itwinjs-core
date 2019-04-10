@@ -8,7 +8,7 @@ import * as React from "react";
 import { Key } from "ts-key-enum";
 import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
 import "./FilteringInput.scss";
-import UiComponents from "../UiComponents";
+import { UiComponents } from "../UiComponents";
 import { Spinner, SpinnerSize } from "@bentley/ui-core";
 
 /** [[FilteringInput]] React Component state

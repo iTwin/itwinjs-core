@@ -353,7 +353,7 @@ export interface BooleanListenerProps {
 // 
 // @public
 export class BooleanSyncUiListener extends React_2.Component<BooleanListenerProps, BooleanListenerState> {
-    constructor(props?: any, context?: any);
+    constructor(props: BooleanListenerProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1130,7 +1130,7 @@ export interface ElementTooltipProps {
 // 
 // @beta
 export class ExpandableSection extends React_2.Component<ExpandableSectionProps, ExpandableSectionState> {
-    constructor(props: ExpandableSectionProps, context: any);
+    constructor(props: ExpandableSectionProps);
     render(): JSX.Element;
 }
 
@@ -1255,7 +1255,7 @@ export interface FrontstageActivatedEventArgs {
 // 
 // @public
 export class FrontstageComposer extends React_2.Component<FrontstageComposerProps, FrontstageComposerState> implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider {
-    constructor(props: FrontstageComposerProps, context?: any);
+    constructor(props: FrontstageComposerProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -2259,7 +2259,7 @@ export class NavigationAidControl extends ConfigurableUiControl {
 // 
 // @public
 export class NavigationWidget extends React_2.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
-    constructor(props: NavigationWidgetPropsEx, context?: any);
+    constructor(props: NavigationWidgetPropsEx);
     componentDidMount(): void;
     componentWillUnmount(): void;
     // (undocumented)
@@ -2944,7 +2944,7 @@ export const ThemeManager: any;
 // 
 // @internal
 export class TileLoadingIndicator extends React_2.PureComponent<CommonProps, TileLoadingIndicatorState> {
-    constructor(props?: any, context?: any);
+    constructor(props: CommonProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -3082,7 +3082,7 @@ export class ToolUiProvider extends ConfigurableUiControl {
 // 
 // @public
 export class ToolWidget extends React_2.Component<ToolWidgetPropsEx, ToolWidgetState> {
-    constructor(props: ToolWidgetPropsEx, context?: any);
+    constructor(props: ToolWidgetPropsEx);
     // (undocumented)
     static getDerivedStateFromProps(newProps: ToolWidgetPropsEx, state: ToolWidgetState): ToolWidgetState | null;
     // (undocumented)

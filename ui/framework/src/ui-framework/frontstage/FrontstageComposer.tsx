@@ -83,8 +83,8 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
   /** @internal */
   public readonly state: Readonly<FrontstageComposerState>;
 
-  constructor(props: FrontstageComposerProps, context?: any) {
-    super(props, context);
+  constructor(props: FrontstageComposerProps) {
+    super(props);
 
     const activeFrontstageId = FrontstageManager.activeFrontstageId;
     this._frontstageDef = FrontstageManager.findFrontstageDef(activeFrontstageId);

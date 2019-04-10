@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
 /** Styled title text
- * @public
+ * @beta
  */
 export class Title2 extends React.Component<TextProps> {
   public render(): JSX.Element {

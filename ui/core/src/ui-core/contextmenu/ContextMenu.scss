@@ -125,12 +125,12 @@
       outline: 0px;
 
       > .core-context-menu-item.is-selected,
-      > .context-submenu > .core-context-menu-item.is-selected {
+      > .core-context-submenu > .core-context-menu-item.is-selected {
         background-color: $buic-row-selection;
       }
     }
 
-    .context-submenu {
+    .core-context-submenu {
       display: flex;
 
       &.top {
@@ -173,7 +173,7 @@
         align-items: flex-start;
       }
 
-      .context-submenucontainer .context-submenuarrow {
+      .core-context-submenucontainer .core-context-submenuarrow {
         flex-shrink: 0;
         flex-grow: 0;
         margin-left: $uicore-unbordered-padding;

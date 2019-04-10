@@ -8,7 +8,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 /** Properties for [[Textarea]] component
- * @public
+ * @beta
  */
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   /** textarea rows
@@ -18,7 +18,7 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 }
 
 /** Basic textarea component
- * @public
+ * @beta
  */
 export class Textarea extends React.Component<TextareaProps> {
   public static defaultProps: Partial<TextareaProps> = {

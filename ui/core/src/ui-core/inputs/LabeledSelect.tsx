@@ -11,7 +11,7 @@ import { Select, SelectProps } from "./Select";
 import { InputStatus } from "./InputStatus";
 
 /** Properties for [[LabeledSelect]] components
- * @public
+ * @beta
  */
 export interface LabeledSelectProps extends SelectProps {
   label: string;
@@ -20,7 +20,7 @@ export interface LabeledSelectProps extends SelectProps {
 }
 
 /** Dropdown wrapper that allows for additional styling and labelling
- * @public
+ * @beta
  */
 export class LabeledSelect extends React.Component<LabeledSelectProps> {
   public render(): JSX.Element {

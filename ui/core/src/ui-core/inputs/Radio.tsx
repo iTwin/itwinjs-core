@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { InputStatus } from "./InputStatus";
 
 /** Properties for [[Radio]] component
- * @public
+ * @beta
  */
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -17,7 +17,7 @@ export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 /** Basic radio input component
- * @public
+ * @beta
  */
 export class Radio extends React.Component<RadioProps> {
   public render(): JSX.Element {

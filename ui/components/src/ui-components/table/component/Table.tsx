@@ -229,8 +229,8 @@ export class Table extends React.Component<TableProps, TableState> {
   public readonly state = initialState;
 
   /** @internal */
-  constructor(props: TableProps, context?: any) {
-    super(props, context);
+  constructor(props: TableProps) {
+    super(props);
 
     if (props.pageAmount)
       this._pageAmount = props.pageAmount;

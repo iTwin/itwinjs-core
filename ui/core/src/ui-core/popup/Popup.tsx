@@ -17,7 +17,7 @@ interface Point {
 }
 
 /** Position of the popup relative to its target
- * @public
+ * @beta
  */
 export enum Position {
   TopLeft,
@@ -31,7 +31,7 @@ export enum Position {
 }
 
 /** Properties for the [[Popup]] component
- * @public
+ * @beta
  */
 export interface PopupProps extends CommonProps {
   /**  show or hide the box shadow */
@@ -65,13 +65,13 @@ interface PopupState {
 }
 
 /** Popup React component
- * @public
+ * @beta
  */
 export class Popup extends React.Component<PopupProps, PopupState> {
   private _popup: HTMLElement | null = null;
 
-  constructor(props: PopupProps, context?: any) {
-    super(props, context);
+  constructor(props: PopupProps) {
+    super(props);
 
     this.state = { isOpen: this.props.isOpen, top: 0, left: 0, position: this.props.position };
   }

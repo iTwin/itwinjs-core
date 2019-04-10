@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
 /** Styled leading text
- * @public
+ * @beta
  */
 
 export class LeadingText2 extends React.Component<TextProps> {

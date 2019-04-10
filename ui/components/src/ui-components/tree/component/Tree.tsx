@@ -34,9 +34,9 @@ import {
   OnItemsSelectedCallback, OnItemsDeselectedCallback,
 } from "../../common/selection/SelectionHandler";
 // node highlighting
-import HighlightingEngine, { HighlightableTreeProps } from "../HighlightingEngine";
+import { HighlightingEngine, HighlightableTreeProps } from "../HighlightingEngine";
 // misc
-import UiComponents from "../../UiComponents";
+import { UiComponents } from "../../UiComponents";
 import { CellEditingEngine, EditableTreeProps } from "../CellEditingEngine";
 import { ITreeImageLoader, TreeImageLoader } from "../ImageLoader";
 
@@ -254,8 +254,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   };
 
   /** @internal */
-  constructor(props: TreeProps, context?: any) {
-    super(props, context);
+  constructor(props: TreeProps) {
+    super(props);
 
     this._selectionHandler = new SelectionHandler(props.selectionMode!, this._onNodesSelected, this._onNodesDeselected);
     this._selectionHandler.onItemsSelectedCallback = this._onNodesSelected;
@@ -928,11 +928,14 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 }
 
-/** @internal
+/**
+ * @internal
  * @note Renamed 'Tree' namespace to 'TreeTest' because extract-api does not allow two different release tags for 'Tree.
  */
 // istanbul ignore next
 export namespace TreeTest {
+
+  /** @internal */
   export const enum TestId {
     Node = "tree-node",
     NodeContents = "tree-node-contents",

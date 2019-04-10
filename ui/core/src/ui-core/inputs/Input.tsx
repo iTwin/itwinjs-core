@@ -8,12 +8,12 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 /** Properties for the [[Input]] component
- * @public
+ * @beta
  */
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> { }
 
 /** Basic text input
- * @public
+ * @beta
  */
 export class Input extends React.Component<InputProps> {
   public render(): JSX.Element {

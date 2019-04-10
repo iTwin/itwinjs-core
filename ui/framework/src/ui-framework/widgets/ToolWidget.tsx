@@ -77,8 +77,8 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
   /** @internal */
   public readonly state: Readonly<ToolWidgetState>;
 
-  constructor(props: ToolWidgetPropsEx, context?: any) {
-    super(props, context);
+  constructor(props: ToolWidgetPropsEx) {
+    super(props);
 
     this.state = { toolWidgetProps: props, toolWidgetDef: new ToolWidgetDef(props) };
   }

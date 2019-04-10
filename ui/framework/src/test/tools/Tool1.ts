@@ -10,6 +10,8 @@ import {
 
 import { Point3d } from "@bentley/geometry-core";
 
+// tslint:disable: completed-docs
+
 export class Tool1 extends PrimitiveTool {
   public static toolId = "Tool1";
   public readonly points: Point3d[] = [];

@@ -13,25 +13,28 @@ import {
   ConfigurableUiManager,
   DrawingNavigationAid,
   DrawingNavigationAidControl,
+  AnyWidgetProps,
+  WidgetDefFactory,
+  NavigationWidgetDef,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import { TestUtils } from "../TestUtils";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { MapMode } from "../../ui-framework/navigationaids/DrawingNavigationAid";
 
-describe("CubeNavigationAid", () => {
+describe("DrawingNavigationAid", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    if (!ConfigurableUiManager.isControlRegistered("CubeNavigationAid"))
-      ConfigurableUiManager.registerControl("CubeNavigationAid", DrawingNavigationAidControl);
+    if (!ConfigurableUiManager.isControlRegistered("DrawingNavigationAid"))
+      ConfigurableUiManager.registerControl("DrawingNavigationAid", DrawingNavigationAidControl);
   });
 
   const connection = moq.Mock.ofType<IModelConnection>();
 
   afterEach(cleanup);
 
-  describe("<CubeNavigationAid />", () => {
+  describe("<DrawingNavigationAid />", () => {
     it("should render", () => {
       render(<DrawingNavigationAid iModelConnection={connection.object} />);
     });
@@ -91,4 +94,29 @@ describe("CubeNavigationAid", () => {
       expect(navAid2!.style.height).to.equal("300px");
     });
   });
+
+  describe("DrawingNavigationAidControl", () => {
+
+    const widgetProps: AnyWidgetProps = {
+      classId: "NavigationWidget",
+      isFreeform: true,
+      navigationAidId: "DrawingNavigationAid",
+    };
+
+    it("DrawingNavigationAidControl creates DrawingNavigationAid", () => {
+
+      const widgetDef = WidgetDefFactory.create(widgetProps);
+      expect(widgetDef).to.be.instanceof(NavigationWidgetDef);
+
+      const navigationWidgetDef = widgetDef as NavigationWidgetDef;
+
+      const reactElement = navigationWidgetDef.reactElement;
+      expect(reactElement).to.not.be.undefined;
+
+      const reactNode = navigationWidgetDef.renderCornerItem();
+      expect(reactNode).to.not.be.undefined;
+    });
+
+  });
+
 });

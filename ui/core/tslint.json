@@ -1,3 +1,94 @@
 {
-  "extends": "@bentley/build-tools/tslint.json"
+  "extends": "@bentley/build-tools/tslint.json",
+  "rules": {
+    "completed-docs": [
+      true,
+      {
+        "classes": {
+          "visibilities": [
+            "exported"
+          ],
+          "tags": {
+            "content": {},
+            "existence": [
+              "internal",
+              "alpha"
+            ]
+          }
+        },
+        "enums": {
+          "visibilities": [
+            "exported"
+          ],
+          "tags": {
+            "content": {},
+            "existence": [
+              "internal",
+              "alpha"
+            ]
+          }
+        },
+        "functions": {
+          "visibilities": [
+            "exported"
+          ],
+          "tags": {
+            "content": {},
+            "existence": [
+              "internal",
+              "alpha"
+            ]
+          }
+        },
+        "interfaces": {
+          "visibilities": [
+            "exported"
+          ],
+          "tags": {
+            "content": {},
+            "existence": [
+              "internal",
+              "alpha"
+            ]
+          }
+        },
+        "namespaces": {
+          "visibilities": [
+            "exported"
+          ],
+          "tags": {
+            "content": {},
+            "existence": [
+              "internal",
+              "alpha"
+            ]
+          }
+        },
+        "variables": {
+          "visibilities": [
+            "exported"
+          ],
+          "tags": {
+            "content": {},
+            "existence": [
+              "internal",
+              "alpha"
+            ]
+          }
+        },
+        "types": {
+          "visibilities": [
+            "exported"
+          ],
+          "tags": {
+            "content": {},
+            "existence": [
+              "internal",
+              "alpha"
+            ]
+          }
+        }
+      }
+    ]
+  }
 }

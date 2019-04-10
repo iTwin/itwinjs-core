@@ -23,8 +23,8 @@ interface PromptFieldProps {
  */
 class PromptFieldComponent extends React.Component<PromptFieldProps> {
 
-  constructor(props?: any, context?: any) {
-    super(props, context);
+  constructor(props: PromptFieldProps) {
+    super(props);
   }
 
   public render(): React.ReactNode {

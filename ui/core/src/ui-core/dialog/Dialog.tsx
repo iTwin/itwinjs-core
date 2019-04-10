@@ -15,9 +15,10 @@ import { UiCore } from "../UiCore";
 
 import "./Dialog.scss";
 import { Omit } from "../utils/typeUtils";
+import { CommonProps } from "../utils/Props";
 
 /** Enum for button types. Determines button label, and default button style.
- * @public
+ * @beta
  */
 export enum DialogButtonType {
   None = "",
@@ -30,7 +31,7 @@ export enum DialogButtonType {
 }
 
 /** Enum for button style.
- * @public
+ * @beta
  */
 export enum DialogButtonStyle {
   None = "",
@@ -40,7 +41,7 @@ export enum DialogButtonStyle {
 }
 
 /** Enum for dialog alignment
- * @public
+ * @beta
  */
 export enum DialogAlignment {
   TopLeft = "top-left", Top = "top", TopRight = "top-right",
@@ -49,7 +50,7 @@ export enum DialogAlignment {
 }
 
 /** Interface for a given button in a button cluster
- * @public
+ * @beta
  */
 export interface DialogButton {
   /** type of button */
@@ -63,9 +64,9 @@ export interface DialogButton {
 }
 
 /** Properties for the [[Dialog]] component
- * @public
+ * @beta
  */
-export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title"> {
+export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title">, CommonProps {
   /** whether to show dialog or not */
   opened: boolean;
   /** Default alignment of dialog. Default: DialogAlignment.Center */
@@ -110,6 +111,8 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   resizable?: boolean;
   /** Whether user can move dialog with cursor. Default: false */
   movable?: boolean;
+  /** Whether the content should be inset. Default: true */
+  inset?: boolean;
 }
 
 /** @internal */
@@ -127,7 +130,7 @@ interface DialogState {
 
 /**
  * Dialog React component with optional resizing and dragging functionality
- * @public
+ * @beta
  */
 export class Dialog extends React.Component<DialogProps, DialogState> {
   private _containerRef = React.createRef<HTMLDivElement>();
@@ -139,6 +142,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     resizable: false,
     movable: false,
     modal: true,
+    inset: true,
   };
 
   /** @internal */
@@ -159,14 +163,14 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       opened, title, footer, buttonCluster, onClose, onEscape, onOutsideClick,
       minWidth, minHeight, x, y, width, height, maxHeight, maxWidth,
       backgroundStyle, titleStyle, footerStyle,
-      modal, resizable, movable, className, alignment, ...props } = this.props;
+      modal, resizable, movable, className, alignment, inset, ...props } = this.props;
 
     const containerStyle: React.CSSProperties = {
       margin: "",
       left: x, top: y,
       width, height,
     };
-    if (this.props.movable && (this.state.x !== undefined || this.state.y !== undefined)) {
+    if (movable && (this.state.x !== undefined || this.state.y !== undefined)) {
       // istanbul ignore else
       if (this.state.x !== undefined) {
         containerStyle.marginLeft = "0";
@@ -190,15 +194,21 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
     const buttons = this.getFooterButtons(this.props);
 
-    const footerElement = footer || (<div className={"core-dialog-buttons"}>{buttons}</div>);
+    const footerElement = footer || (buttons.length > 0 && <div className={"core-dialog-buttons"}>{buttons}</div>);
+
+    const style: React.CSSProperties = {
+      ...this.props.backgroundStyle,
+      ...this.props.style,
+    };
 
     return (
       <div
         className={classnames(
           "core-dialog",
           { "core-dialog-hidden": !modal, opened },
+          this.props.className,
         )}
-        style={this.props.backgroundStyle}
+        style={style}
         data-testid="core-dialog-root"
         {...props}
       >
@@ -212,7 +222,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
               <div className={"core-dialog-area"} ref={this._containerRef}>
                 <div className={classnames(
                   "core-dialog-head",
-                  { "core-dialog-movable": this.props.movable })}
+                  { "core-dialog-movable": movable })}
                   data-testid="core-dialog-head"
                   onPointerDown={this._handleStartMove}>
                   <div className={"core-dialog-title"}>{this.props.title}</div>
@@ -222,12 +232,17 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
                     onClick={this.props.onClose}
                   />
                 </div>
-                <div className={"core-dialog-content"} style={this.props.style}>
+                <div className={classnames(
+                  "core-dialog-content",
+                  { "core-dialog-content-nopadding": !inset })}
+                  style={this.props.style}>
                   {this.props.children}
                 </div>
-                <div className={"core-dialog-footer"} style={this.props.footerStyle}>
-                  {footerElement}
-                </div>
+                {footerElement &&
+                  <div className={"core-dialog-footer"} style={this.props.footerStyle}>
+                    {footerElement}
+                  </div>
+                }
               </div>
               <div
                 className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": this.props.resizable })}
@@ -395,14 +410,14 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 }
 
 /** Properties for the [[GlobalDialog]] component
- * @public
+ * @beta
  */
 export interface GlobalDialogProps extends DialogProps {
   identifier?: string;
 }
 
 /** GlobalDialog React component used to display a [[Dialog]] on the top of screen
- * @public
+ * @beta
  */
 export class GlobalDialog extends React.Component<GlobalDialogProps> {
   private _container: HTMLDivElement;

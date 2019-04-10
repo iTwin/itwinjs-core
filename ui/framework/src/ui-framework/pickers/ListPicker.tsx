@@ -109,8 +109,8 @@ interface ExpandableSectionState {
  */
 export class ExpandableSection extends React.Component<ExpandableSectionProps, ExpandableSectionState> {
   /** Creates an ExpandableSection */
-  constructor(props: ExpandableSectionProps, context: any) {
-    super(props, context);
+  constructor(props: ExpandableSectionProps) {
+    super(props);
     this.state = { expanded: false };
   }
 

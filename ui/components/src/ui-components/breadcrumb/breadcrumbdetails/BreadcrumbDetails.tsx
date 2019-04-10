@@ -12,7 +12,7 @@ import { BreadcrumbTreeUtils, DataRowItem } from "../BreadcrumbTreeUtils";
 import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/component/BeInspireTree";
-import UiComponents from "../../UiComponents";
+import { UiComponents } from "../../UiComponents";
 
 /** Properties for the [[BreadcrumbDetails]] component
  * @beta

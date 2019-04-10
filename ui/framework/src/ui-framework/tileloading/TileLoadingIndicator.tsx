@@ -29,8 +29,8 @@ interface TileLoadingIndicatorState {
  * @internal
  */
 export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileLoadingIndicatorState> {
-  constructor(props?: any, context?: any) {
-    super(props, context);
+  constructor(props: CommonProps) {
+    super(props);
     this.state = { label: "", progress: 0, enabled: false, finished: true };
   }
 

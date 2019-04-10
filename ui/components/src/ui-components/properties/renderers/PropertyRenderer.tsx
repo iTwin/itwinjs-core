@@ -12,7 +12,7 @@ import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyCon
 import { PrimitiveRendererProps, PrimitivePropertyRenderer } from "./PrimitivePropertyRenderer";
 import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import UiComponents from "../../UiComponents";
+import { UiComponents } from "../../UiComponents";
 
 /** Properties shared by all renderers and PropertyView
  * @public

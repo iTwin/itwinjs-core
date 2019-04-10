@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
 /** Styled muted/gray text
- * @public
+ * @beta
  */
 
 export class MutedText extends React.Component<TextProps> {

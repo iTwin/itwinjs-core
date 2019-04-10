@@ -4,32 +4,73 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import {
-  WidgetControl, ConfigurableCreateInfo,
-} from "@bentley/ui-framework";
-import { ViewportComponent } from "@bentley/ui-components";
+
+import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { ConnectClient, Project, IModelQuery } from "@bentley/imodeljs-clients";
-import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
+
+import { LoadingSpinner } from "@bentley/ui-core";
+import { ViewportComponent } from "@bentley/ui-components";
+import { WidgetControl, ConfigurableCreateInfo } from "@bentley/ui-framework";
 
 /** ExternalIModel Widget Control */
 export class ExternalIModelWidgetControl extends WidgetControl {
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
+
+    this.reactElement = <ExternalIModelWidget projectName={options.projectName} imodelName={options.imodelName} />;
+  }
+}
+
+interface ExternalIModelWidgetProps {
+  projectName: string;
+  imodelName: string;
+}
+
+interface ExternalIModelWidgetState {
+  viewId?: Id64String;
+  iModelConnection?: IModelConnection;
+}
+
+/** Widget that displays a ViewportComponent or Loading message */
+class ExternalIModelWidget extends React.Component<ExternalIModelWidgetProps, ExternalIModelWidgetState> {
+  private _loading = IModelApp.i18n.translate("SampleApp:Test.loading");
+
+  public readonly state: Readonly<ExternalIModelWidgetState> = {
+    viewId: undefined,
+    iModelConnection: undefined,
+  };
+
+  public async componentDidMount() {
+    const externalIModel = new ExternalIModel(this.props.projectName, this.props.imodelName);
+    await externalIModel.openIModel();
+
+    if (externalIModel.viewId && externalIModel.iModelConnection) {
+      this.setState({
+        viewId: externalIModel.viewId,
+        iModelConnection: externalIModel.iModelConnection,
+      });
+    }
   }
 
-  /** Override - open the external iModel */
-  public async onInitialize() {
-    const externalIModel = new ExternalIModel("iModelHubTest", "86_Hospital");
-    await externalIModel.openIModel();
-    if (externalIModel.viewId && externalIModel.iModelConnection)
-      this.reactElement = <ViewportComponent viewDefinitionId={externalIModel.viewId} imodel={externalIModel.iModelConnection} />;
+  public render() {
+    const divStyle: React.CSSProperties = {
+      height: "100%",
+    };
+    let content: React.ReactNode;
+
+    if (this.state.viewId === undefined || this.state.iModelConnection === undefined)
+      content = <div className="uifw-centered" style={divStyle}> <LoadingSpinner message={this._loading} /> </div>;
+    else
+      content = <ViewportComponent viewDefinitionId={this.state.viewId} imodel={this.state.iModelConnection} />;
+
+    return content;
   }
 }
 
 /** Opens External IModel */
-class ExternalIModel {
+export class ExternalIModel {
   public viewId: Id64String | undefined;
   public iModelConnection: IModelConnection | undefined;
 

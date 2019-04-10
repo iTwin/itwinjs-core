@@ -10,7 +10,7 @@ import { CommonProps } from "../utils/Props";
 import "./ImageCheckBox.scss";
 
 /** Properties for the [[ImageCheckBox]] component
- * @public
+ * @beta
  */
 export interface ImageCheckBoxProps extends CommonProps {
   /** Image for the "checked" state */
@@ -28,7 +28,7 @@ export interface ImageCheckBoxProps extends CommonProps {
 /**
  * ImageCheckBox React component
  * Component to show a checked or unchecked image'
- * @public
+ * @beta
  */
 export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
 
