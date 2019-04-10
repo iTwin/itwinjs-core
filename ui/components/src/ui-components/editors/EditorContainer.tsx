@@ -9,6 +9,7 @@ import { PropertyRecord, PropertyValue } from "@bentley/imodeljs-frontend";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 import "./EditorContainer.scss";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Arguments for the Property Updated event callback
  * @beta
@@ -23,22 +24,32 @@ export interface PropertyUpdatedArgs {
 /** Properties for a property editor component
  * @beta
  */
-export interface PropertyEditorProps {
+export interface PropertyEditorProps extends CommonProps {
+  /** The property being updated. */
   propertyRecord?: PropertyRecord;
+  /** Handler for commit */
   onCommit?: (args: PropertyUpdatedArgs) => void;
+  /** Handler for cancel */
   onCancel?: () => void;
+  /** Handler for blur */
   onBlur?: (event: React.FocusEvent) => void;
+  /** Indicates whether the Property Editor should set focus */
   setFocus?: boolean;
 }
 
 /** [[EditorContainer]] React component properties
  * @beta
  */
-export interface EditorContainerProps {
+export interface EditorContainerProps extends CommonProps {
+  /** The property being updated. */
   propertyRecord: PropertyRecord;
+  /** Tooltip text */
   title?: string;
+  /** Handler for commit */
   onCommit: (args: PropertyUpdatedArgs) => void;
+  /** Handler for cancel */
   onCancel: () => void;
+  /** Indicates whether the Property Editor should set focus */
   setFocus?: boolean;
 
   /** @internal */
@@ -80,6 +91,8 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       onBlur: this._handleEditorBlur,
       propertyRecord: this.props.propertyRecord,
       setFocus: this.props.setFocus !== undefined ? this.props.setFocus : true,
+      className: this.props.className,
+      style: this.props.style,
     };
 
     let editorNode: React.ReactNode;

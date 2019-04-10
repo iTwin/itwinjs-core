@@ -5,14 +5,17 @@
 /** @module Color */
 
 import * as React from "react";
-import "./HueSlider.scss";
 import classnames from "classnames";
+
 import { HSVColor } from "@bentley/imodeljs-common";
+import { CommonProps } from "@bentley/ui-core";
+
+import "./HueSlider.scss";
 
 /** Properties for the [[HueSlider]] React component
  * @beta
  */
-export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
   /** true if slider is oriented horizontal, else vertical orientation is assumed */
   isHorizontal?: boolean;
   /** function to run when user selects color swatch */
@@ -169,6 +172,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
   public render(): React.ReactNode {
     const containerClasses = classnames(
       this.props.isHorizontal ? "components-hue-container-horizontal" : "components-hue-container-vertical",
+      this.props.className,
     );
 
     const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
@@ -179,7 +183,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
       };
 
     return (
-      <div className={containerClasses} data-testid="hue-container">
+      <div className={containerClasses} style={this.props.style} data-testid="hue-container">
         <div
           data-testid="hue-slider"
           role="slider" aria-label="Hue"

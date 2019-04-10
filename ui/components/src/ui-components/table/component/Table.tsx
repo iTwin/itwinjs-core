@@ -9,11 +9,14 @@ import * as React from "react";
 import ReactDataGrid from "react-data-grid";
 import ReactResizeDetector from "react-resize-detector";
 import classnames from "classnames";
+
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
+import { PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import {
   SortDirection, Dialog,
-  LocalUiSettings, UiSettings, UiSettingsStatus,
+  LocalUiSettings, UiSettings, UiSettingsStatus, CommonProps,
 } from "@bentley/ui-core";
+
 import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import {
@@ -22,14 +25,13 @@ import {
 } from "../../common/selection/SelectionHandler";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { PropertyValueRendererManager, PropertyDialogState } from "../../properties/ValueRendererManager";
-import { PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
 import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
 import { TableIconCellContent, TableCellContent, TableCell } from "./TableCell";
+import { TableRowStyleProvider } from "../../properties/ItemStyle";
 
 import "./Table.scss";
-import { TableRowStyleProvider } from "../../properties/ItemStyle";
 
 const TABLE_ROW_HEIGHT = 25;
 
@@ -45,7 +47,7 @@ export enum TableSelectionTarget {
 /** Properties for the Table React component
  * @public
  */
-export interface TableProps {
+export interface TableProps extends CommonProps {
   /** Data provider for the Table */
   dataProvider: TableDataProvider;
   /** Amount of rows per page */
@@ -1098,7 +1100,8 @@ export class Table extends React.Component<TableProps, TableState> {
     const visibleColumns = this._getVisibleColumns();
     return (
       <>
-        <div className="components-table" onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._showContextMenu : undefined}>
+        <div className={classnames("components-table", this.props.className)} style={this.props.style}
+          onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._showContextMenu : undefined}>
           {this.props.showHideColumns &&
             <ShowHideMenu
               opened={this.state.menuVisible}
@@ -1161,7 +1164,7 @@ export class Table extends React.Component<TableProps, TableState> {
  * Props for the [[TableRow]] component
  * @internal
  */
-export interface TableRowProps {
+export interface TableRowProps extends CommonProps {
   cells: { [key: string]: React.ReactNode };
   isSelected?: boolean;
 }

@@ -60,7 +60,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
       },
     );
     return (
-      <div className={searchClassName}>
+      <div className={searchClassName} style={this.props.style}>
         <input
           ref={(el) => { this._inputElement = el; }}
           onChange={this._trackChange}

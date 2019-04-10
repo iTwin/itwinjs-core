@@ -14,8 +14,10 @@ import { TextProps } from "./TextProps";
 
 export class MutedText extends React.Component<TextProps> {
   public render(): JSX.Element {
+    const { className, style, ...props } = this.props;
+
     return (
-      <span {...this.props} className={classnames("uicore-text-muted", this.props.className)}>
+      <span {...props} className={classnames("uicore-text-muted", className)} style={style}>
         {this.props.children}
       </span>
     );

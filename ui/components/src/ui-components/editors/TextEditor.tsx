@@ -130,7 +130,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
 
   /** @internal */
   public render() {
-    const className = classnames("cell", "components-cell-editor", "components-text-editor");
+    const className = classnames("cell", "components-cell-editor", "components-text-editor", this.props.className);
 
     return (
       <input
@@ -138,6 +138,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
         type="text"
         onBlur={this.props.onBlur}
         className={className}
+        style={this.props.style}
         readOnly={this.state.readonly}
         disabled={this.state.isDisabled}
         size={this.state.size}

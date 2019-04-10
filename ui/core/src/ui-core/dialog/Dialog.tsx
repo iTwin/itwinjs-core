@@ -113,6 +113,10 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   movable?: boolean;
   /** Whether the content should be inset. Default: true */
   inset?: boolean;
+  /** Custom CSS class name for the content */
+  contentClassName?: string;
+  /** Custom CSS Style for the content */
+  contentStyle?: React.CSSProperties;
 }
 
 /** @internal */
@@ -162,7 +166,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     const {
       opened, title, footer, buttonCluster, onClose, onEscape, onOutsideClick,
       minWidth, minHeight, x, y, width, height, maxHeight, maxWidth,
-      backgroundStyle, titleStyle, footerStyle,
+      backgroundStyle, titleStyle, footerStyle, style, contentStyle, contentClassName,
       modal, resizable, movable, className, alignment, inset, ...props } = this.props;
 
     const containerStyle: React.CSSProperties = {
@@ -185,7 +189,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       }
     }
 
-    if (this.props.resizable && (this.state.width !== undefined || this.state.height !== undefined)) {
+    if (resizable && (this.state.width !== undefined || this.state.height !== undefined)) {
       if (this.state.width !== undefined)
         containerStyle.width = this.state.width;
       if (this.state.height !== undefined)
@@ -196,9 +200,9 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
     const footerElement = footer || (buttons.length > 0 && <div className={"core-dialog-buttons"}>{buttons}</div>);
 
-    const style: React.CSSProperties = {
-      ...this.props.backgroundStyle,
-      ...this.props.style,
+    const divStyle: React.CSSProperties = {
+      ...backgroundStyle,
+      ...style,
     };
 
     return (
@@ -206,14 +210,14 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         className={classnames(
           "core-dialog",
           { "core-dialog-hidden": !modal, opened },
-          this.props.className,
+          className,
         )}
-        style={style}
+        style={divStyle}
         data-testid="core-dialog-root"
         {...props}
       >
         {opened &&
-          <DivWithOutsideClick onOutsideClick={this.props.onOutsideClick}>
+          <DivWithOutsideClick onOutsideClick={onOutsideClick}>
             <div
               className={classnames("core-dialog-container", alignment)}
               style={containerStyle}
@@ -225,37 +229,38 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
                   { "core-dialog-movable": movable })}
                   data-testid="core-dialog-head"
                   onPointerDown={this._handleStartMove}>
-                  <div className={"core-dialog-title"}>{this.props.title}</div>
+                  <div className={"core-dialog-title"}>{title}</div>
                   <span
                     className={"core-dialog-close icon icon-close"}
                     data-testid="core-dialog-close"
-                    onClick={this.props.onClose}
+                    onClick={onClose}
                   />
                 </div>
                 <div className={classnames(
                   "core-dialog-content",
-                  { "core-dialog-content-nopadding": !inset })}
-                  style={this.props.style}>
+                  { "core-dialog-content-nopadding": !inset },
+                  contentClassName)}
+                  style={contentStyle}>
                   {this.props.children}
                 </div>
                 {footerElement &&
-                  <div className={"core-dialog-footer"} style={this.props.footerStyle}>
+                  <div className={"core-dialog-footer"} style={footerStyle}>
                     {footerElement}
                   </div>
                 }
               </div>
               <div
-                className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": this.props.resizable })}
+                className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": resizable })}
                 data-testid="core-dialog-drag-right"
                 onPointerDown={this._handleStartResizeRight}
               ></div>
               <div
-                className={classnames("core-dialog-drag", "core-dialog-drag-bottom-mid", { "core-dialog-drag-enabled": this.props.resizable })}
+                className={classnames("core-dialog-drag", "core-dialog-drag-bottom-mid", { "core-dialog-drag-enabled": resizable })}
                 data-testid="core-dialog-drag-bottom"
                 onPointerDown={this._handleStartResizeDown}
               > </div>
               <div
-                className={classnames("core-dialog-drag", "core-dialog-drag-bottom-right", { "core-dialog-drag-enabled": this.props.resizable })}
+                className={classnames("core-dialog-drag", "core-dialog-drag-bottom-right", { "core-dialog-drag-enabled": resizable })}
                 data-testid="core-dialog-drag-bottom-right"
                 onPointerDown={this._handleStartResizeDownRight}
               ></div>

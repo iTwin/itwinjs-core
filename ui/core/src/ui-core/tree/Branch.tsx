@@ -8,14 +8,14 @@ import * as classnames from "classnames";
 import * as React from "react";
 
 import "./Branch.scss";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for [[TreeBranch]] React component
  * @public
  */
-export interface TreeBranchProps {
+export interface TreeBranchProps extends CommonProps {
+  /** Child nodes of the tree branch */
   children?: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
 }
 
 /** Presentation React component for a Tree branch

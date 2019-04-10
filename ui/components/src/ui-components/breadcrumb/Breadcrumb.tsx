@@ -10,7 +10,7 @@ import classnames from "classnames";
 import "./Breadcrumb.scss";
 import * as _ from "lodash";
 import { using } from "@bentley/bentleyjs-core";
-import { SplitButton, withOnOutsideClick, MessageSeverity, DialogButtonType, MessageBox, ContextMenu, ContextMenuItem } from "@bentley/ui-core";
+import { SplitButton, withOnOutsideClick, MessageSeverity, DialogButtonType, MessageBox, ContextMenu, ContextMenuItem, CommonProps } from "@bentley/ui-core";
 import { TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/component/BeInspireTree";
@@ -22,7 +22,7 @@ export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNod
 /** Properties for [[Breadcrumb]] component
  * @beta
  */
-export interface BreadcrumbProps {
+export interface BreadcrumbProps extends CommonProps {
   /** Manager to coordinate state between Breadcrumb element and BreadcrumbDetails element. */
   path?: BreadcrumbPath;
   /** Data provider for tree content  */
@@ -311,15 +311,17 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
 
   /** @internal */
   public render(): React.ReactNode {
+    const classNames = classnames("components-breadcrumb", this.props.background && "background", this.props.className);
+
     if (!this.state.modelReady) {
       return (
-        <div className={classnames("components-breadcrumb", { background: this.props.background })} />
+        <div className={classNames} style={this.props.style} />
       );
     }
     const node = this.state.current ? this.state.model.node(this.state.current.id) : undefined;
     return (
       <div
-        className={classnames("components-breadcrumb", { background: this.props.background })}>
+        className={classNames} style={this.props.style}>
         <div className="components-breadcrumb-head"
           data-testid="components-breadcrumb-dropdown-input-parent">
           {this.props.dropdownOnly || this.props.staticOnly ?

@@ -14,8 +14,10 @@ import { TextProps } from "./TextProps";
 
 export class Headline extends React.Component<TextProps> {
   public render(): JSX.Element {
+    const { className, style, ...props } = this.props;
+
     return (
-      <span {...this.props} className={classnames("uicore-text-headline", this.props.className)}>
+      <span {...props} className={classnames("uicore-text-headline", className)} style={style}>
         {this.props.children}
       </span>
     );

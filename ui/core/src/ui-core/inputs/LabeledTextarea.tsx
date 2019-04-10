@@ -8,33 +8,38 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 import { Textarea, TextareaProps } from "./Textarea";
-import { InputStatus } from "./InputStatus";
+import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 
 /** Properties for [[LabeledTextarea]] component
  * @beta
  */
-export interface LabeledTextareaProps extends TextareaProps {
-  label: string;
-  status?: InputStatus;
-  message?: string;
-}
+export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps { }
 
 /** Textarea wrapper that allows for additional styling and labelling
  * @beta
  */
 export class LabeledTextarea extends React.Component<LabeledTextareaProps> {
   public render(): JSX.Element {
+    const { label, status, className, style,
+      inputClassName, inputStyle,
+      labelClassName, labelStyle,
+      message, messageClassName, messageStyle,
+      ...props } = this.props;
+
     return (
-      <label className={classnames(
+      <label style={this.props.style} className={classnames(
         "uicore-inputs-labeled-textarea",
         { disabled: this.props.disabled },
         this.props.status,
         this.props.className,
       )}>
-        <div className={"label"}>{this.props.label}</div>
-        <Textarea disabled={this.props.disabled} {...this.props} />
-        {this.props.message &&
-          <div className={"message"}>{this.props.message}</div>}
+        {label &&
+          <div className={classnames("label", labelClassName)}> {label} </div>
+        }
+        <Textarea disabled={this.props.disabled} style={inputStyle} className={inputClassName} {...props} />
+        {message &&
+          <div className={classnames("message", messageClassName)} style={messageStyle}>{message}</div>
+        }
       </label>
     );
   }

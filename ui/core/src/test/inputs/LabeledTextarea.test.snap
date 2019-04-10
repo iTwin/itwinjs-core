@@ -7,10 +7,11 @@ exports[`<LabeledTextarea /> renders correctly 1`] = `
   <div
     className="label"
   >
+     
     textarea test
+     
   </div>
   <Textarea
-    label="textarea test"
     rows={3}
   />
 </label>
@@ -23,11 +24,11 @@ exports[`<LabeledTextarea /> renders message correctly 1`] = `
   <div
     className="label"
   >
+     
     textarea test
+     
   </div>
   <Textarea
-    label="textarea test"
-    message="Test message"
     rows={3}
   />
   <div
@@ -45,12 +46,12 @@ exports[`<LabeledTextarea /> renders status correctly 1`] = `
   <div
     className="label"
   >
+     
     textarea test
+     
   </div>
   <Textarea
-    label="textarea test"
     rows={3}
-    status="success"
   />
 </label>
 `;

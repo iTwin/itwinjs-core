@@ -7,14 +7,17 @@
 // third-party imports
 import _ from "lodash";
 import * as React from "react";
+import classnames from "classnames";
 import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedListRowProps } from "react-virtualized";
+
 // bentley imports
 import { using, Guid } from "@bentley/bentleyjs-core";
 import {
   Tree as TreeBase, TreeNodePlaceholder, shallowDiffers,
   CheckBoxState, CheckBoxInfo, NodeCheckboxRenderer,
-  Spinner, SpinnerSize,
+  Spinner, SpinnerSize, CommonProps,
 } from "@bentley/ui-core";
+
 // tree-related imports
 import {
   BeInspireTree, BeInspireTreeNode, BeInspireTreeNodes, BeInspireTreeNodeConfig,
@@ -59,7 +62,7 @@ export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNo
 /** Properties for the [[Tree]] component
  * @public
  */
-export interface TreeProps {
+export interface TreeProps extends CommonProps {
   /** Nodes provider */
   dataProvider: TreeDataProvider;
 
@@ -909,7 +912,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     };
 
     return (
-      <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown} className="components-tree">
+      <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown}
+        className={classnames("components-tree", this.props.className)} style={this.props.style}
+      >
         <AutoSizer>
           {({ width, height }: Size) => (
             <VirtualizedList

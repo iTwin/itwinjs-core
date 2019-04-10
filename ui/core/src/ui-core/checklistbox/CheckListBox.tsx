@@ -44,7 +44,7 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
     const className = classnames("core-chk-listboxitem-checkbox");
     return (
       <li>
-        <Checkbox checked={this.props.checked} disabled={this.props.disabled} className={className} label={this.props.label} onClick={this._onClick} />
+        <Checkbox checked={this.props.checked} disabled={this.props.disabled} inputClassName={className} label={this.props.label} onClick={this._onClick} />
       </li>
     );
   }

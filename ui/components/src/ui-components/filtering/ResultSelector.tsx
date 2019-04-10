@@ -5,7 +5,9 @@
 /** @module Filtering  */
 
 import * as React from "react";
+import classnames from "classnames";
 import "./ResultSelector.scss";
+import { CommonProps } from "@bentley/ui-core";
 
 /** [[ResultSelector]] React Component state
  * @internal
@@ -22,7 +24,7 @@ interface ResultSelectorState {
 /** [[ResultSelector]] React Component properties
  * @public
  */
-export interface ResultSelectorProps {
+export interface ResultSelectorProps extends CommonProps {
   /** Total number of results/entries */
   resultCount: number;
   /** Callback to currently selected result/entry change */
@@ -113,8 +115,8 @@ export class ResultSelector extends React.Component<ResultSelectorProps, ResultS
   /** @internal */
   public render() {
     return (
-      <span className="components-result-selector">
-        <button className="components-result-selector-button icon icon-chevron-left"
+      <span className={classnames("components-result-selector", this.props.className)} style={this.props.style}>
+        <button className={classnames("components-result-selector-button", "icon", "icon-chevron-left")}
           onClick={this._onClickPrevious}
           disabled={this.props.resultCount <= 0} />
 

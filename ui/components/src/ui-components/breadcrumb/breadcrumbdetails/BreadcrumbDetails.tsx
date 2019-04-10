@@ -5,6 +5,8 @@
 /** @module Breadcrumb */
 
 import * as React from "react";
+import classnames from "classnames";
+
 import { using } from "@bentley/bentleyjs-core";
 import { TableDataProvider, RowItem, ColumnDescription } from "../../table/TableDataProvider";
 import { Table, TableProps } from "../../table/component/Table";
@@ -13,11 +15,12 @@ import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, Imm
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/component/BeInspireTree";
 import { UiComponents } from "../../UiComponents";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for the [[BreadcrumbDetails]] component
  * @beta
  */
-export interface BreadcrumbDetailsProps {
+export interface BreadcrumbDetailsProps extends CommonProps {
   /** Path data object shared by Breadcrumb component */
   path: BreadcrumbPath;
   columns?: ColumnDescription[];
@@ -226,7 +229,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     const { childNodes } = this.state;
     const renderTable = this.props.renderTable ? this.props.renderTable : this.renderTable;
     return (
-      <div className="components-breadcrumb-details">
+      <div className={classnames("components-breadcrumb-details", this.props.className)} style={this.props.style}>
         {
           this.state.table && childNodes &&
           renderTable({

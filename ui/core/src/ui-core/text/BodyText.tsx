@@ -13,8 +13,10 @@ import { TextProps } from "./TextProps";
  */
 export class BodyText extends React.Component<TextProps> {
   public render(): JSX.Element {
+    const { className, style, ...props } = this.props;
+
     return (
-      <span {...this.props} className={classnames("uicore-text-block", this.props.className)}>
+      <span {...props} className={classnames("uicore-text-block", className)} style={style}>
         {this.props.children}
       </span>
     );

@@ -11,6 +11,7 @@ import * as classnames from "classnames";
 import "./ContextMenu.scss";
 import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
 import { Omit } from "../utils/typeUtils";
+import { CommonProps } from "../utils/Props";
 
 const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
@@ -27,7 +28,7 @@ export enum ContextMenuDirection {
 /** Properties for the [[ContextMenu]] component
  * @beta
  */
-export interface ContextMenuProps extends React.AllHTMLAttributes<HTMLDivElement> {
+export interface ContextMenuProps extends CommonProps {
   /** Whether ContextMenu is currently opened. */
   opened: boolean;
   /** Which direction the menu opens. Default: ContextMenuDirection.BottomRight */
@@ -414,7 +415,7 @@ export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
 /** Properties for the [[ContextMenuItem]] component
  * @beta
  */
-export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement> {
+export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
   onSelect?: (event: any) => any;
   /** @internal */
   onHotKeyParsed?: (hotKey: string) => void;
@@ -469,7 +470,7 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps, Conte
         onKeyUp={this._handleKeyUp}
         onMouseOver={this._handleMouseOver}
         data-testid={"core-context-menu-item"}
-        className={classnames(className, "core-context-menu-item", { disabled, "is-selected": isSelected })}>
+        className={classnames("core-context-menu-item", className, { disabled, "is-selected": isSelected })}>
         <div className={classnames("core-context-menu-icon", "icon", typeof icon === "string" ? icon : undefined)}>
           {typeof icon !== "string" ? icon : undefined}
         </div>
@@ -533,10 +534,11 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps, Conte
  * Menu Divider for [[ContextMenu]]. Inserts a line between items, used for list item grouping.
  * @beta
  */
-export class ContextMenuDivider extends React.Component {
+export class ContextMenuDivider extends React.Component<CommonProps> {
   public render(): JSX.Element {
+    const { className, ...props } = this.props;
     return (
-      <div {...this.props} data-testid="core-context-menu-divider" className="core-context-menu-divider">
+      <div {...props} data-testid="core-context-menu-divider" className={classnames("core-context-menu-divider", className)}>
       </div>
     );
   }

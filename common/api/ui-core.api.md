@@ -58,7 +58,7 @@ export class Button extends React.Component<ButtonProps> {
 }
 
 // @public
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     id?: string;
     onClick?: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void);
     size?: ButtonSize;
@@ -99,8 +99,12 @@ export interface CheckBoxInfo {
 }
 
 // @beta
-export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">, CommonProps {
+    inputClassName?: string;
+    inputStyle?: React.CSSProperties;
     label?: string;
+    labelClassName?: string;
+    labelStyle?: React.CSSProperties;
     status?: InputStatus;
 }
 
@@ -216,7 +220,7 @@ export enum ContextMenuDirection {
 }
 
 // @beta
-export class ContextMenuDivider extends React.Component {
+export class ContextMenuDivider extends React.Component<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -241,7 +245,7 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps, Conte
     }
 
 // @beta
-export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement> {
+export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
     disabled?: boolean;
     icon?: string | React.ReactNode;
     // (undocumented)
@@ -257,7 +261,7 @@ export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivEle
 }
 
 // @beta
-export interface ContextMenuProps extends React.AllHTMLAttributes<HTMLDivElement> {
+export interface ContextMenuProps extends CommonProps {
     autoflip?: boolean;
     direction?: ContextMenuDirection;
     edgeLimit?: boolean;
@@ -325,9 +329,7 @@ export interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
 }
 
 // @beta
-export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement> {
-    // (undocumented)
-    className?: string;
+export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
     // (undocumented)
     faces?: {
         [key: string]: React.ReactNode;
@@ -430,6 +432,8 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     alignment?: DialogAlignment;
     backgroundStyle?: React.CSSProperties;
     buttonCluster?: DialogButton[];
+    contentClassName?: string;
+    contentStyle?: React.CSSProperties;
     footer?: string | JSX.Element;
     footerStyle?: React.CSSProperties;
     height?: string | number;
@@ -461,7 +465,7 @@ export class ElementSeparator extends React.PureComponent<ElementSeparatorProps>
     }
 
 // @public
-export interface ElementSeparatorProps {
+export interface ElementSeparatorProps extends CommonProps {
     movableArea?: number;
     onRatioChanged: (ratio: number) => void;
     orientation: Orientation;
@@ -499,12 +503,8 @@ export class ExpandableList extends React.Component<ExpandableListProps, Expanda
     }
 
 // @public
-export interface ExpandableListProps {
-    // (undocumented)
-    className?: string;
-    // (undocumented)
+export interface ExpandableListProps extends CommonProps {
     defaultActiveBlock?: number;
-    // (undocumented)
     singleExpandOnly?: boolean;
 }
 
@@ -515,17 +515,13 @@ export class ExpansionToggle extends React.PureComponent<ExpansionToggleProps> {
 }
 
 // @public
-export interface ExpansionToggleProps {
-    // (undocumented)
-    className?: string;
+export interface ExpansionToggleProps extends CommonProps {
     // (undocumented)
     ["data-testid"]?: string;
     // (undocumented)
     isExpanded?: boolean;
     // (undocumented)
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
-    // (undocumented)
-    style?: React.CSSProperties;
 }
 
 // @beta
@@ -609,14 +605,10 @@ export class HorizontalTabs extends React.Component<HorizontalTabsProps> {
 }
 
 // @beta
-export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListElement> {
-    // (undocumented)
+export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
     activeIndex?: number;
-    // (undocumented)
     green?: boolean;
-    // (undocumented)
     labels: string[];
-    // (undocumented)
     onClickLabel?: (id: number) => any;
 }
 
@@ -632,6 +624,8 @@ export interface ImageCheckBoxProps extends CommonProps {
     disabled?: boolean;
     imageOff: string;
     imageOn: string;
+    inputClassName?: string;
+    inputStyle?: React.CSSProperties;
     onClick?: (checked: boolean) => any;
 }
 
@@ -642,7 +636,7 @@ export class Input extends React.Component<InputProps> {
 }
 
 // @beta
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
 }
 
 // @public
@@ -659,19 +653,23 @@ export enum InputStatus {
 export function isPromiseLike(obj: unknown): obj is PromiseLike<unknown>;
 
 // @beta
+export interface LabeledComponentProps {
+    inputClassName?: string;
+    inputStyle?: React.CSSProperties;
+    label?: string;
+    labelClassName?: string;
+    labelStyle?: React.CSSProperties;
+    status?: InputStatus;
+}
+
+// @beta
 export class LabeledInput extends React.Component<LabeledInputProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @beta
-export interface LabeledInputProps extends InputProps {
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    message?: string;
-    // (undocumented)
-    status?: InputStatus;
+export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps {
 }
 
 // @beta
@@ -681,13 +679,7 @@ export class LabeledSelect extends React.Component<LabeledSelectProps> {
 }
 
 // @beta
-export interface LabeledSelectProps extends SelectProps {
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    message?: string;
-    // (undocumented)
-    status?: InputStatus;
+export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, MessagedComponentProps {
 }
 
 // @beta
@@ -697,13 +689,7 @@ export class LabeledTextarea extends React.Component<LabeledTextareaProps> {
 }
 
 // @beta
-export interface LabeledTextareaProps extends TextareaProps {
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    message?: string;
-    // (undocumented)
-    status?: InputStatus;
+export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
 }
 
 // @beta
@@ -814,8 +800,10 @@ export class MessageBox extends React.Component<MessageBoxProps> {
 }
 
 // @beta
-export interface MessageBoxProps {
+export interface MessageBoxProps extends CommonProps {
     buttonCluster: DialogButton[];
+    contentClassName?: string;
+    contentStyle?: React.CSSProperties;
     height?: string | number;
     minHeight?: number;
     minWidth?: number;
@@ -837,9 +825,16 @@ export class MessageContainer extends React.Component<MessageContainerProps> {
 }
 
 // @beta
-export interface MessageContainerProps {
+export interface MessageContainerProps extends CommonProps {
     // (undocumented)
     severity: MessageSeverity;
+}
+
+// @beta
+export interface MessagedComponentProps {
+    message?: string;
+    messageClassName?: string;
+    messageStyle?: React.CSSProperties;
 }
 
 // @beta
@@ -967,7 +962,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
 }
 
 // @beta
-export interface RadialButtonProps {
+export interface RadialButtonProps extends CommonProps {
     // @internal (undocumented)
     annularSector?: AnnularSector;
     icon?: string;
@@ -996,7 +991,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
 }
 
 // @beta
-export interface RadialMenuProps {
+export interface RadialMenuProps extends CommonProps {
     innerRadius: number;
     labelRotate?: boolean;
     left?: number | string;
@@ -1015,11 +1010,7 @@ export class Radio extends React.Component<RadioProps> {
 }
 
 // @beta
-export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
-    // (undocumented)
-    label?: string;
-    // (undocumented)
-    status?: InputStatus;
+export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
 }
 
 // Warning: (ae-forgotten-export) The symbol "SearchBoxState" needs to be exported by the entry point ui-core.d.ts
@@ -1054,7 +1045,7 @@ export class Select extends React.Component<SelectProps> {
 }
 
 // @beta
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
     options: string[] | {
         [key: string]: string;
     };
@@ -1126,9 +1117,7 @@ export enum SplitButtonActionType {
 }
 
 // @beta
-export interface SplitButtonProps {
-    // (undocumented)
-    className?: string;
+export interface SplitButtonProps extends CommonProps {
     icon?: string;
     label: string | React.ReactNode;
     onClick?: (event: any) => any;
@@ -1155,12 +1144,12 @@ export class Textarea extends React.Component<TextareaProps> {
 }
 
 // @beta
-export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
     rows?: number;
 }
 
 // @beta
-export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement> {
+export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement>, CommonProps {
 }
 
 // @internal
@@ -1250,13 +1239,8 @@ export class TreeBranch extends React.PureComponent<TreeBranchProps> {
 }
 
 // @public
-export interface TreeBranchProps {
-    // (undocumented)
+export interface TreeBranchProps extends CommonProps {
     children?: React.ReactNode;
-    // (undocumented)
-    className?: string;
-    // (undocumented)
-    style?: React.CSSProperties;
 }
 
 // @public
@@ -1272,9 +1256,7 @@ export class TreeNodePlaceholder extends React.PureComponent<TreeNodePlaceholder
 }
 
 // @public
-export interface TreeNodePlaceholderProps {
-    // (undocumented)
-    className?: string;
+export interface TreeNodePlaceholderProps extends CommonProps {
     // (undocumented)
     ["data-testid"]?: string;
     // (undocumented)
@@ -1283,17 +1265,13 @@ export interface TreeNodePlaceholderProps {
     maxWidth?: number;
     // (undocumented)
     minWidth?: number;
-    // (undocumented)
-    style?: React.CSSProperties;
 }
 
 // @public
-export interface TreeNodeProps {
+export interface TreeNodeProps extends CommonProps {
     checkboxProps?: NodeCheckboxProps;
     // (undocumented)
     children?: React.ReactNode;
-    // (undocumented)
-    className?: string;
     // (undocumented)
     ["data-testid"]?: string;
     // (undocumented)
@@ -1327,24 +1305,18 @@ export interface TreeNodeProps {
     renderOverrides?: {
         renderCheckbox?: NodeCheckboxRenderer;
     };
-    // (undocumented)
-    style?: React.CSSProperties;
 }
 
 // @public
-export interface TreeProps {
+export interface TreeProps extends CommonProps {
     // (undocumented)
     children?: React.ReactNode;
-    // (undocumented)
-    className?: string;
     // (undocumented)
     onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
     // (undocumented)
     onMouseMove?: React.MouseEventHandler<HTMLDivElement>;
     // (undocumented)
     onMouseUp?: React.MouseEventHandler<HTMLDivElement>;
-    // (undocumented)
-    style?: React.CSSProperties;
 }
 
 // @public

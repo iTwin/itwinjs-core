@@ -5,6 +5,7 @@
 /** @module PropertyEditors */
 
 import * as React from "react";
+import classnames from "classnames";
 import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes, ColorEditorParams } from "@bentley/imodeljs-frontend"; //
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { ColorDef } from "@bentley/imodeljs-common";
@@ -140,7 +141,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
   public render() {
     const colorDef = new ColorDef(this.state.colorValue);
     return (
-      <div className="components-color-editor">
+      <div className={classnames("components-color-editor", this.props.className)} style={this.props.style}>
         <ColorPickerButton ref={(control) => this._control = control}
           activeColor={colorDef}
           colorDefs={this._availableColors.length > 0 ? this._availableColors : undefined}

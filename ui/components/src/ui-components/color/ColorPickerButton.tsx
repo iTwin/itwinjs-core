@@ -7,7 +7,7 @@
 import * as React from "react";
 import classnames from "classnames";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
-import { Popup, Position } from "@bentley/ui-core";
+import { Popup, Position, CommonProps } from "@bentley/ui-core";
 import { ColorSwatch } from "./Swatch";
 import "./ColorPickerButton.scss";
 
@@ -16,7 +16,7 @@ import "./ColorPickerButton.scss";
 /** Properties for the [[ColorPickerButton]] React component
  * @beta
  */
-export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** active color */
   activeColor: ColorDef;
   /** available colors */
@@ -119,15 +119,16 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
   public render() {
     const { b, g, r, t } = this.props.activeColor.colors as any;
     const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
-    const colorStyle = { backgroundColor: rgbaString } as React.CSSProperties;
-    const buttonName = classnames("components-colorpicker-button",
+    const buttonStyle = { backgroundColor: rgbaString, ...this.props.style } as React.CSSProperties;
+    const buttonClassNames = classnames("components-colorpicker-button",
       this.props.round && "round",
       this.props.readonly && "readonly",
-      this.props.className);
+      this.props.className,
+    );
 
     return (
       <>
-        <button data-testid="components-colorpicker-button" onClick={this._togglePopup} className={buttonName} style={colorStyle} disabled={this.props.disabled} ref={(element) => { this._target = element; }} />
+        <button data-testid="components-colorpicker-button" onClick={this._togglePopup} className={buttonClassNames} style={buttonStyle} disabled={this.props.disabled} ref={(element) => { this._target = element; }} />
         <Popup
           className="components-colorpicker-popup"
           isOpen={this.state.showPopup}

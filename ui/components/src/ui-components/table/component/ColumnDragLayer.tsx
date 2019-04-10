@@ -5,6 +5,7 @@
 /** @module Table */
 
 import * as React from "react";
+import classnames from "classnames";
 import { DragLayerProps } from "../../dragdrop/DragDropDef";
 
 /**
@@ -30,9 +31,10 @@ export class ColumnDragLayer extends React.Component<DragLayerProps> {
       transform: translate,
       WebkitTransform: translate,
       width,
+      ...this.props.style,
     };
     return (
-      <div className="components-column-drag-layer" style={dragLayerStyle}>
+      <div className={classnames("components-column-drag-layer", this.props.className)} style={dragLayerStyle}>
         {column.name}
       </div>
     );

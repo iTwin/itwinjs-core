@@ -10,11 +10,12 @@ import * as classnames from "classnames";
 import { AnnularSector, Annulus, Point } from "./Annulus";
 
 import "./RadialMenu.scss";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for [[RadialMenu]]
  * @beta
  */
-export interface RadialMenuProps {
+export interface RadialMenuProps extends CommonProps {
   /** Whether to show RadialMenu */
   opened: boolean;
   /** Radius of inner portion of RadialMenu */
@@ -75,11 +76,13 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
       if (y > window.innerHeight - width)
         y = window.innerHeight - width;
     }
+    const divStyle: React.CSSProperties = { left: x, top: y, ...this.props.style };
+
     return (
       <div
         ref={(el) => { this._root = el; }}
-        className={classnames("core-radial-menu", { opened: this.props.opened })}
-        style={{ left: x, top: y }}>
+        className={classnames("core-radial-menu", { opened: this.props.opened }, this.props.className)}
+        style={divStyle}>
         <svg
           xmlns="http://w3.org/2000/svg" version="1.1"
           width={width} height={width}
@@ -157,7 +160,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
 /** Properties for [[RadialButton]] component
  * @beta
  */
-export interface RadialButtonProps {
+export interface RadialButtonProps extends CommonProps {
   /** Whether label is rotated to radial menu. Default: Inherit */
   labelRotate?: boolean;
   /** which icon to display in on the menu button */
@@ -215,7 +218,8 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
         onMouseOut={this._handleMouseOut}
         onClick={this._handleClick}>
         <path
-          className={classnames("core-radial-menu-sector", { selected: this.state.hover })}
+          className={classnames("core-radial-menu-sector", { selected: this.state.hover }, this.props.className)}
+          style={this.props.style}
           d={path}>
         </path>
         <foreignObject transform={t} x={p.x - size / 2} y={p.y - 16} width={size} height={size} className={"core-radial-menu-button-svg"}>

@@ -16,14 +16,15 @@ import { DragSourceArguments, DropTargetArguments } from "../../dragdrop/DragDro
 import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
 import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
 import { ColumnDragLayer } from "./ColumnDragLayer";
+import { CommonProps } from "@bentley/ui-core";
 
 /** @internal */
-export interface DragDropHeaderCellProps {
+export interface DragDropHeaderCellProps extends CommonProps {
   onHeaderDrop?: (source: string, target: string) => void; // inherited by parent
   column: any; // inherited by parent
 }
 
-interface HeaderWrapperProps {
+interface HeaderWrapperProps extends CommonProps {
   item?: DropTargetArguments;
   type?: string;
   isDragging?: boolean;
@@ -51,9 +52,10 @@ class HeaderWrapper extends React.Component<HeaderWrapperProps> {
         right: canDrop && !isDragging && isOver && mode === 1,
         dragging: isDragging,
       },
+      this.props.className,
     );
     return (
-      <div className={classes}>
+      <div className={classes} style={this.props.style}>
         <HeaderCell {...props} />
       </div>
     );

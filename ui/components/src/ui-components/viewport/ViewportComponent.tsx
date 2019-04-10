@@ -13,6 +13,8 @@ import {
   ScreenViewport,
   Viewport,
 } from "@bentley/imodeljs-frontend";
+import { Transform } from "@bentley/geometry-core";
+import { CommonProps } from "@bentley/ui-core";
 
 import {
   ViewportComponentEvents,
@@ -21,13 +23,11 @@ import {
   DrawingViewportChangeEventArgs,
 } from "./ViewportComponentEvents";
 
-import { Transform } from "@bentley/geometry-core";
-
 /**
  * Properties for [[ViewportComponent]] component.
  * @public
  */
-export interface ViewportProps {
+export interface ViewportProps extends CommonProps {
   /** IModel to display */
   imodel: IModelConnection;
   /** Id of a default view definition to load as a starting point */
@@ -165,10 +165,16 @@ export class ViewportComponent extends React.Component<ViewportProps> {
   }
 
   public render() {
+    const divStyle: React.CSSProperties = {
+      height: "100%", width: "100%",
+      ...this.props.style,
+    };
+
     return (
       <div
         ref={this._viewportDiv}
-        style={{ height: "100%", width: "100%" }}
+        className={this.props.className}
+        style={divStyle}
         onContextMenu={this._handleContextMenu}
       />
     );

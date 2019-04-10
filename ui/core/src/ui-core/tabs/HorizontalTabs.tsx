@@ -6,14 +6,19 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[HorizontalTabs]] component
  * @beta
  */
-export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListElement> {
+export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
+  /** Text shown for each tab */
   labels: string[];
+  /** Handler for clicking on a label */
   onClickLabel?: (id: number) => any;
+  /** Index of the initial active tab */
   activeIndex?: number;
+  /** Indicates whether the  */
   green?: boolean;
 }
 
@@ -22,12 +27,14 @@ export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListEl
  */
 export class HorizontalTabs extends React.Component<HorizontalTabsProps> {
   public render(): JSX.Element {
+    const ulClassNames = classnames(
+      "uicore-tabs-horizontal",
+      this.props.green && "uicore-tabs-green",
+      this.props.className,
+    );
+
     return (
-      <ul className={classnames(
-        "uicore-tabs-horizontal",
-        { green: this.props.green },
-        this.props.className,
-      )}>
+      <ul className={ulClassNames} style={this.props.style}>
         {this.props.labels.map((label, index) =>
           <li key={index} className={classnames({ active: index === this.props.activeIndex })}>
             <a onClick={() => { this.props.onClickLabel && this.props.onClickLabel(index); }}>

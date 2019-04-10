@@ -5,9 +5,11 @@
 /** @module PropertyGrid */
 
 import * as React from "react";
+import classnames from "classnames";
 import ResizeObserver from "resize-observer-polyfill";
+
 import { DisposeFunc } from "@bentley/bentleyjs-core";
-import { Orientation, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { Orientation, Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
@@ -19,7 +21,7 @@ import "./PropertyGrid.scss";
 /** Properties for [[PropertyGrid]] React component
  * @public
  */
-export interface PropertyGridProps {
+export interface PropertyGridProps extends CommonProps {
   /** Property data provider */
   dataProvider: IPropertyDataProvider;
 
@@ -302,7 +304,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     }
 
     return (
-      <div className="components-property-grid-wrapper">
+      <div className={classnames("components-property-grid-wrapper", this.props.className)} style={this.props.style}>
         <div ref={this._gridRef} className="components-property-grid">
           {
             this.state.categories.map((gridCategory: PropertyGridCategory) => (

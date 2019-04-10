@@ -6,6 +6,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+import { CommonProps } from "../utils/Props";
 
 /** Sizes for [[Button]] component
  * @public
@@ -28,7 +29,7 @@ export enum ButtonType {
 /** Properties for [[Button]] component
  * @public
  */
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** Allow ID to be passed to Button */
   id?: string;
   /** Default and large sizes */
@@ -65,6 +66,6 @@ export class Button extends React.Component<ButtonProps> {
     if (this.props.size === ButtonSize.Large)
       className += "-large";
 
-    return <button {...this.props} className={classnames(className, this.props.className)} onClick={this.props.onClick} />;
+    return <button {...this.props} className={classnames(className, this.props.className)} style={this.props.style} onClick={this.props.onClick} />;
   }
 }

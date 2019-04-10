@@ -6,11 +6,12 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for [[Textarea]] component
  * @beta
  */
-export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
   /** textarea rows
    * Default: 3
    */
@@ -25,10 +26,12 @@ export class Textarea extends React.Component<TextareaProps> {
     rows: 3,
   };
   public render(): JSX.Element {
+    const { className, style, ...props } = this.props;
+
     return (
-      <textarea {...this.props}
+      <textarea {...props}
         rows={this.props.rows}
-        className={classnames("uicore-inputs-textarea", this.props.className)} />
+        className={classnames("uicore-inputs-textarea", className)} style={style} />
     );
   }
 }

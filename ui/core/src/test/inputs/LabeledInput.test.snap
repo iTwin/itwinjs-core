@@ -12,18 +12,9 @@ exports[`<LabeledInput /> renders correctly 1`] = `
      
   </div>
   <div
-    className="label"
-  >
-     
-    input test
-     
-  </div>
-  <div
     className="input"
   >
-    <Input
-      label="input test"
-    />
+    <Input />
   </div>
 </label>
 `;
@@ -40,19 +31,9 @@ exports[`<LabeledInput /> renders message correctly 1`] = `
      
   </div>
   <div
-    className="label"
-  >
-     
-    input test
-     
-  </div>
-  <div
     className="input"
   >
-    <Input
-      label="input test"
-      message="Test message"
-    />
+    <Input />
   </div>
   <div
     className="message"
@@ -74,19 +55,9 @@ exports[`<LabeledInput /> renders status correctly 1`] = `
      
   </div>
   <div
-    className="label"
-  >
-     
-    input test
-     
-  </div>
-  <div
     className="input with-icon"
   >
-    <Input
-      label="input test"
-      status="success"
-    />
+    <Input />
     <i
       className="icon icon-status-success"
     />

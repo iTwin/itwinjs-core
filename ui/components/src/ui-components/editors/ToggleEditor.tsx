@@ -110,13 +110,14 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 
   /** @internal */
   public render() {
-    const className = classnames("cell", "components-cell-editor", "components-toggle-editor");
+    const className = classnames("cell", "components-cell-editor", "components-toggle-editor", this.props.className);
     const inOn = this.state.toggleValue;
 
     return (
       <Toggle
         onBlur={this.props.onBlur}
         className={className}
+        style={this.props.style}
         isOn={inOn}
         onChange={this._updateToggleValue}
         data-testid="components-toggle-editor" />

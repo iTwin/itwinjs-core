@@ -13,6 +13,7 @@ import { Spinner, SpinnerSize } from "../loading/Spinner";
 import { Omit } from "../utils/typeUtils";
 
 import "./Node.scss";
+import { CommonProps } from "../utils/Props";
 
 /** Props for node checkbox renderer
  * @public
@@ -44,7 +45,7 @@ export interface NodeCheckboxProps {
 /** Properties for the [[TreeNode]] React component
  * @public
  */
-export interface TreeNodeProps {
+export interface TreeNodeProps extends CommonProps {
   label: React.ReactNode;
   level: number;
   icon?: React.ReactChild;
@@ -62,8 +63,6 @@ export interface TreeNodeProps {
   onMouseUp?: (e: React.MouseEvent) => void;
   onClickExpansionToggle?: () => void;
   children?: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
   /** Contains render overrides for different pieces of the node component */
   renderOverrides?: {
     /** Callback to render a checkbox. Only called when checkbox is displayed */

@@ -5,8 +5,12 @@
 /** @module OIDC */
 
 import * as React from "react";
-import "./SignIn.scss";
+import classnames from "classnames";
+
 import { UiComponents } from "../UiComponents";
+import { CommonProps } from "@bentley/ui-core";
+
+import "./SignIn.scss";
 
 /************************************************************************
  * SignInDialog - OIDC sign-in dialog.
@@ -15,9 +19,12 @@ import { UiComponents } from "../UiComponents";
 /** Properties for the [[SignIn]] component
  * @public
  */
-export interface SignInProps {
+export interface SignInProps extends CommonProps {
+  /** Handler for clicking the Sign-In button */
   onSignIn: () => void;
+  /** Handler for clicking the Register link */
   onRegister?: () => void;
+  /** Handler for clicking the Offline link */
   onOffline?: () => void;
 }
 
@@ -51,7 +58,7 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
 
   public render() {
     return (
-      <div className="components-signin">
+      <div className={classnames("components-signin", this.props.className)} style={this.props.style}>
         <div className="components-signin-content">
           <span className="icon icon-user" />
           <span className="components-signin-prompt">{this._prompt}</span>

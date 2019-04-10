@@ -97,7 +97,7 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
   public render(): JSX.Element {
     const halfHeight = this.state.height / 2;
     const checkmarkClassName = classnames("core-toggle-checkmark icon icon-checkmark", this.props.showCheckmark && "visible");
-    const toggleStyle: React.CSSProperties = { borderRadius: this.props.rounded ? halfHeight : 3, fontSize: halfHeight };
+    const toggleStyle: React.CSSProperties = { borderRadius: this.props.rounded ? halfHeight : 3, fontSize: halfHeight, ...this.props.style };
     const toggleClassName = classnames(
       "core-toggle",
       this.props.buttonType === ToggleButtonType.Primary && "core-toggle-primary",

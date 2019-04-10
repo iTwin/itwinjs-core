@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module DragDrop  */
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Enum for different DropEffects.
  * @beta
@@ -115,7 +116,7 @@ export interface DragDropArguments<DragDropObject = any> {
 /** Properties for DragLayer components
  * @beta
  */
-export interface DragLayerProps<DragDropObject = any> {
+export interface DragLayerProps<DragDropObject = any> extends CommonProps {
   args?: DragSourceArguments<DragDropObject>;
 }
 

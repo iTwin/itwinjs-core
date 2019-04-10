@@ -7,11 +7,12 @@
 import * as React from "react";
 import "./AlphaSlider.scss";
 import classnames from "classnames";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for the [[AlphaSlider]] React component
  * @beta
  */
-export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
   /** true if slider is oriented horizontal, else vertical orientation is assumed */
   isHorizontal?: boolean;
   /** function to run when user selects color swatch */
@@ -155,6 +156,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
   public render(): React.ReactNode {
     const containerClasses = classnames(
       this.props.isHorizontal ? "components-alpha-container-horizontal" : "components-alpha-container-vertical",
+      this.props.className,
     );
 
     const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
@@ -165,7 +167,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
       };
 
     return (
-      <div className={containerClasses} data-testid="alpha-container">
+      <div className={containerClasses} style={this.props.style} data-testid="alpha-container">
         <div
           data-testid="alpha-slider"
           role="slider" aria-label="Transparency"
