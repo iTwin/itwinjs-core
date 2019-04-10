@@ -33,16 +33,16 @@ export class WebAppRpcLogging {
   public static logProtocolEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): void {
     if (object instanceof WebAppRpcRequest) {
       switch (event) {
-        case RpcProtocolEvent.RequestCreated: return WebAppRpcLogging.logRequest("RpcInterface.frontend.request", object);
-        case RpcProtocolEvent.ResponseLoaded: return WebAppRpcLogging.logResponse("RpcInterface.frontend.response", object, object.metadata.status, object.elapsed);
+        case RpcProtocolEvent.RequestCreated: return WebAppRpcLogging.logRequest(LoggerCategory.RpcInterfaceFrontend, "RpcInterface.frontend.request", object);
+        case RpcProtocolEvent.ResponseLoaded: return WebAppRpcLogging.logResponse(LoggerCategory.RpcInterfaceFrontend, "RpcInterface.frontend.response", object, object.metadata.status, object.elapsed);
         case RpcProtocolEvent.ConnectionErrorReceived: return WebAppRpcLogging.logErrorFrontend("RpcInterface.frontend.connectionError", object);
         case RpcProtocolEvent.ConnectionAborted: return WebAppRpcLogging.logErrorFrontend("RpcInterface.frontend.connectionAborted", object);
       }
     } else if (object instanceof RpcInvocation) {
       switch (event) {
-        case RpcProtocolEvent.RequestReceived: return WebAppRpcLogging.logRequest("RpcInterface.backend.request", object.request);
+        case RpcProtocolEvent.RequestReceived: return WebAppRpcLogging.logRequest(LoggerCategory.RpcInterfaceBackend, "RpcInterface.backend.request", object.request);
         case RpcProtocolEvent.BackendErrorOccurred: return WebAppRpcLogging.logErrorBackend("RpcInterface.backend.error", object);
-        case RpcProtocolEvent.BackendResponseCreated: return WebAppRpcLogging.logResponse("RpcInterface.backend.response", object.request, object.status, object.elapsed);
+        case RpcProtocolEvent.BackendResponseCreated: return WebAppRpcLogging.logResponse(LoggerCategory.RpcInterfaceBackend, "RpcInterface.backend.response", object.request, object.status, object.elapsed);
       }
     }
   }
@@ -75,11 +75,11 @@ export class WebAppRpcLogging {
     return `${interfaceName}.${operationName}`;
   }
 
-  public static logRequest(message: string, object: WebAppRpcRequest | SerializedRpcRequest): void {
+  private static logRequest(loggerCategory: string, message: string, object: WebAppRpcRequest | SerializedRpcRequest): void {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(object.operation);
     const pathIds = WebAppRpcLogging.findPathIds(object.path);
 
-    Logger.logTrace(LoggerCategory.RpcInterfaceFrontend, `${message}.${operationDescriptor}`, () => ({
+    Logger.logTrace(loggerCategory, `${message}.${operationDescriptor}`, () => ({
       method: object.method,
       path: object.path,
       operation: object.operation.operationName,
@@ -92,11 +92,11 @@ export class WebAppRpcLogging {
     }));
   }
 
-  private static logResponse(message: string, object: WebAppRpcRequest | SerializedRpcRequest, status: number, elapsed: number): void {
+  private static logResponse(loggerCategory: string, message: string, object: WebAppRpcRequest | SerializedRpcRequest, status: number, elapsed: number): void {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(object.operation);
     const pathIds = WebAppRpcLogging.findPathIds(object.path);
 
-    Logger.logTrace(LoggerCategory.RpcInterfaceFrontend, `${message}.${operationDescriptor}`, () => ({
+    Logger.logTrace(loggerCategory, `${message}.${operationDescriptor}`, () => ({
       method: object.method,
       path: object.path,
       operation: object.operation.operationName,
