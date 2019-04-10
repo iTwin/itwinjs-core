@@ -4660,6 +4660,8 @@ export namespace ViewFlag {
         // (undocumented)
         setEdgeMask(val: number): void;
         // (undocumented)
+        setForceSurfaceDiscard(val: boolean): void;
+        // (undocumented)
         setIgnoreGeometryMap(val: boolean): void;
         // (undocumented)
         setMonochrome(val: boolean): void;
@@ -4723,6 +4725,8 @@ export namespace ViewFlag {
         // (undocumented)
         kFill = 8,
         // (undocumented)
+        kForceSurfaceDiscard = 24,
+        // (undocumented)
         kGeometryMap = 20,
         // (undocumented)
         kHiddenEdges = 12,
@@ -4767,6 +4771,7 @@ export interface ViewFlagProps {
     contRend?: boolean;
     // @internal
     edgeMask?: number;
+    forceSurfaceDiscard?: boolean;
     grid?: boolean;
     hidEdges?: boolean;
     hlMatColors?: boolean;
@@ -4810,6 +4815,7 @@ export class ViewFlags {
     // (undocumented)
     equals(other: ViewFlags): boolean;
     fill: boolean;
+    forceSurfaceDiscard: boolean;
     // (undocumented)
     static fromJSON(json?: ViewFlagProps): ViewFlags;
     grid: boolean;

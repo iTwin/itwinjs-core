@@ -33,7 +33,7 @@ import { createColorInput, ColorInput } from "./ColorInput";
 
 type UpdateAttribute = (view: ViewState) => void;
 
-type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume";
+type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume" | "forceSurfaceDiscard";
 type EnvironmentAspect = "ground" | "sky";
 type SkyboxType = "2colors" | "4colors";
 
@@ -113,6 +113,7 @@ export class ViewAttributes {
     this.addViewFlagAttribute(flagsDiv, "Line Weights", "weights");
     this.addViewFlagAttribute(flagsDiv, "Line Styles", "styles");
     this.addViewFlagAttribute(flagsDiv, "Clip Volume", "clipVolume", true);
+    this.addViewFlagAttribute(flagsDiv, "Force Surface Discard", "forceSurfaceDiscard", true);
 
     this.addLightingToggle(flagsDiv);
     this.addCameraToggle(flagsDiv);

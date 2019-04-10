@@ -534,6 +534,13 @@ export class ViewFlags {
   public edgeMask: number = 0;
   /** Controls whether ambient occlusion is used. */
   public ambientOcclusion: boolean = false;
+  /** Controls whether surface discard is always applied regardless of other ViewFlags.
+   * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
+   * non-planar surfaces always draw in front of those non-planar surfaces.
+   * When this view flag is set to false (the default), then for 3d views if the render mode is wireframe (only edges are displayed) or smooth shader with visible edges turned off (only surfaces are displayed),
+   * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
+   */
+  public forceSurfaceDiscard: boolean = false;
 
   public clone(out?: ViewFlags): ViewFlags { return ViewFlags.createFrom(this, out); }
   public static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags {
@@ -565,6 +572,7 @@ export class ViewFlags {
       val.backgroundMap = other.backgroundMap;
       val.edgeMask = other.edgeMask;
       val.ambientOcclusion = other.ambientOcclusion;
+      val.forceSurfaceDiscard = other.forceSurfaceDiscard;
     }
     return val;
   }
@@ -618,6 +626,7 @@ export class ViewFlags {
     if (this.backgroundMap) out.backgroundMap = true;
     if (this.edgeMask !== 0) out.edgeMask = this.edgeMask;
     if (this.ambientOcclusion) out.ambientOcclusion = true;
+    if (this.forceSurfaceDiscard) out.forceSurfaceDiscard = true;
 
     out.renderMode = this.renderMode;
     return out;
@@ -652,6 +661,7 @@ export class ViewFlags {
     val.hLineMaterialColors = JsonUtils.asBool(json.hlMatColors);
     val.backgroundMap = JsonUtils.asBool(json.backgroundMap);
     val.ambientOcclusion = JsonUtils.asBool(json.ambientOcclusion);
+    val.forceSurfaceDiscard = JsonUtils.asBool(json.forceSurfaceDiscard);
 
     const renderModeValue = JsonUtils.asInt(json.renderMode);
     if (renderModeValue < RenderMode.HiddenLine)
@@ -690,7 +700,8 @@ export class ViewFlags {
       && this.hLineMaterialColors === other.hLineMaterialColors
       && this.backgroundMap === other.backgroundMap
       && this.edgeMask === other.edgeMask
-      && this.ambientOcclusion === other.ambientOcclusion;
+      && this.ambientOcclusion === other.ambientOcclusion
+      && this.forceSurfaceDiscard === other.forceSurfaceDiscard;
   }
 }
 
@@ -722,6 +733,7 @@ export namespace ViewFlag {
     kHlineMaterialColors,
     kEdgeMask,
     kBackgroundMap,
+    kForceSurfaceDiscard,
   }
 
   /** Overrides a subset of ViewFlags.
@@ -775,6 +787,7 @@ export namespace ViewFlag {
     public setIgnoreGeometryMap(val: boolean) { this._values.noGeometryMap = val; this.setPresent(PresenceFlag.kGeometryMap); }
     public setShowBackgroundMap(val: boolean) { this._values.backgroundMap = val; this.setPresent(PresenceFlag.kBackgroundMap); }
     public setUseHlineMaterialColors(val: boolean) { this._values.hLineMaterialColors = val; this.setPresent(PresenceFlag.kHlineMaterialColors); }
+    public setForceSurfaceDiscard(val: boolean) { this._values.forceSurfaceDiscard = val; this.setPresent(PresenceFlag.kForceSurfaceDiscard); }
     public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(PresenceFlag.kEdgeMask); }
     public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(PresenceFlag.kRenderMode); }
     public anyOverridden() { return 0 !== this._present; }
@@ -805,6 +818,7 @@ export namespace ViewFlag {
       if (this.isPresent(PresenceFlag.kGeometryMap)) base.noGeometryMap = this._values.noGeometryMap;
       if (this.isPresent(PresenceFlag.kBackgroundMap)) base.backgroundMap = this._values.backgroundMap;
       if (this.isPresent(PresenceFlag.kHlineMaterialColors)) base.hLineMaterialColors = this._values.hLineMaterialColors;
+      if (this.isPresent(PresenceFlag.kForceSurfaceDiscard)) base.forceSurfaceDiscard = this._values.forceSurfaceDiscard;
       if (this.isPresent(PresenceFlag.kEdgeMask)) base.edgeMask = this._values.edgeMask;
       if (this.isPresent(PresenceFlag.kRenderMode)) base.renderMode = this._values.renderMode;
       return base;

@@ -107,6 +107,13 @@ export interface ViewFlagProps {
   backgroundMap?: boolean;
   /** If true, show ambient occlusion. */
   ambientOcclusion?: boolean;
+  /** Controls whether surface discard is always applied regardless of other ViewFlags.
+   * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
+   * non-planar surfaces always draw in front of those non-planar surfaces.
+   * When this view flag is set to false (the default), then for 3d views if the render mode is wireframe (only edges are displayed) or smooth shader with visible edges turned off (only surfaces are displayed),
+   * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
+   */
+  forceSurfaceDiscard?: boolean;
 }
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
