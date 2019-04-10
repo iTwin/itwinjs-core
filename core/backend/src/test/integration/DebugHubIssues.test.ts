@@ -24,7 +24,17 @@ describe.skip("DebugHubIssues (#integration)", () => {
     IModelTestUtils.setupLogging();
     await RequestHost.initialize();
     IModelTestUtils.setupDebugLogLevels();
-    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
+
+    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.super);
+  });
+
+  it.skip("should be able to upload a single file to the Hub", async () => {
+    const projectName = "iModelJsIntegrationTest";
+    const iModelName = "Orlando"; // Attempts to upload <iModelRootDir>/Orlando/Orlando.bim
+
+    const iModelDir = path.join(iModelRootDir, iModelName, iModelName + ".bim");
+    const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    await HubUtility.pushIModel(requestContext, projectId, iModelDir);
   });
 
   it.skip("should be able to validate change set operations from iModel on disk", async () => {
@@ -47,10 +57,18 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to download and backup required test files from the Hub", async () => {
-    const projectName = "DigOpsDev1";
-    const iModelName = "PnId2";
+    const projectName = "Oil and Gas for Digital Operations";
+    const iModelName = "OG_REF_SMALL";
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
+  });
+
+  it.skip("should be able to upload required test files to the Hub", async () => {
+    const projectName = "iModelJsIntegrationTest";
+
+    const iModelName = "OG_REF_SMALL";
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {

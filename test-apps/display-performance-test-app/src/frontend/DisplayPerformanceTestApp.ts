@@ -483,7 +483,7 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
-async function initializeOidc() {
+async function initializeOidc(requestContext: FrontendRequestContext) {
   if (OidcClientWrapper.oidcClient)
     return;
 
@@ -491,15 +491,25 @@ async function initializeOidc() {
   const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
   const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read" };
 
-  await OidcClientWrapper.initialize(new FrontendRequestContext(), oidcConfig);
+  await OidcClientWrapper.initialize(requestContext, oidcConfig);
   IModelApp.authorizationClient = OidcClientWrapper.oidcClient;
 }
 
-async function signIn() {
-  await initializeOidc();
-  if (OidcClientWrapper.oidcClient.hasSignedIn)
-    return;
-  await OidcClientWrapper.oidcClient.signIn(new FrontendRequestContext());
+// Wraps the signIn process
+// - called the first time to start the signIn process - resolves to false
+// - called the second time as the Authorization provider redirects to cause the application to refresh/reload - resolves to false
+// - called the third time as the application redirects back to complete the authorization - finally resolves to true
+// @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
+async function signIn(): Promise<boolean> {
+  const requestContext = new FrontendRequestContext();
+  await initializeOidc(requestContext);
+
+  if (!OidcClientWrapper.oidcClient.hasSignedIn) {
+    await OidcClientWrapper.oidcClient.signIn(new FrontendRequestContext());
+    return false;
+  }
+
+  return true;
 }
 
 // Retrieves the configuration for which project and imodel to open from connect-configuration.json file located in the built public folder
@@ -537,7 +547,9 @@ async function loadIModel(testConfig: DefaultConfigs) {
 
   // Open an iModel from the iModelHub
   if (!openLocalIModel && testConfig.iModelHubProject !== undefined) {
-    await signIn();
+    const signedIn: boolean = await signIn();
+    if (!signedIn)
+      return;
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
