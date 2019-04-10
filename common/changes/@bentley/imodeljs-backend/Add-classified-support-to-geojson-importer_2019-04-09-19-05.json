@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support spatial classification of context reality models.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ray.Bentley@bentley.com"
+}

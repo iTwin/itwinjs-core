@@ -9,7 +9,7 @@ import { ClipVector, IndexedPolyface, Plane3dByOriginAndUnitNormal, Point2d, Poi
 import {
   AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d,
-  QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion,
+  QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion, SpatialClassificationProps,
 } from "@bentley/imodeljs-common";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -22,8 +22,7 @@ import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
-import { GeometricModelState } from "../ModelState";
-import { SpatialClassification } from "../SpatialClassification";
+import { TileTreeModelState } from "../ModelState";
 import { TileTree } from "../tile/TileTree";
 import { SceneContext } from "../ViewContext";
 
@@ -881,7 +880,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public addSpatialClassificationModel(_modelId: Id64String, _classificationModel: RenderClassifierModel, _iModel: IModelConnection) { }
   /** @internal */
-  public createPlanarClassifier(_properties: SpatialClassification.Properties, _tileTree: TileTree, _classifiedModel: GeometricModelState, _sceneContext: SceneContext): RenderPlanarClassifier | undefined { return undefined; }
+  public createPlanarClassifier(_properties: SpatialClassificationProps.Properties, _tileTree: TileTree, _classifiedModel: TileTreeModelState, _sceneContext: SceneContext): RenderPlanarClassifier | undefined { return undefined; }
 
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {

@@ -3,10 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex, Arc3d } from "@bentley/geometry-core";
+import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex, Arc3d, Range3d } from "@bentley/geometry-core";
 import { Cartographic, Code, ColorDef, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, GeometryParams, AxisAlignedBox3d, EcefLocation, ViewFlags, IModel } from "@bentley/imodeljs-common";
 import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SpatialModel, ViewDefinition } from "@bentley/imodeljs-backend";
 import { GeoJson } from "./GeoJson";
+import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
 
 /** */
 export class GeoJsonImporter {
@@ -27,7 +28,8 @@ export class GeoJsonImporter {
    * @param iModelFileName the output iModel file name
    * @param geoJson the input GeoJson data
    */
-  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean) {
+  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, private _mapType?: string,
+    private _classifiedURL?: string, private _classifiedName?: string, private _classifiedOutside?: string, private _classifiedInside?: string) {
     this.iModelDb = appendToExisting ? IModelDb.openStandalone(iModelFileName, OpenMode.ReadWrite) : IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
     this._appendToExisting = appendToExisting;
@@ -38,7 +40,7 @@ export class GeoJsonImporter {
   }
 
   /** Perform the import */
-  public import(): void {
+  public async import(): Promise<void> {
     const categoryName = this._modelName ? this._modelName : "GeoJson Category";
     const modelName = this._modelName ? this._modelName : "GeoJson Model";
 
@@ -46,12 +48,16 @@ export class GeoJsonImporter {
       this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, modelName);
       const foundCategoryId = SpatialCategory.queryCategoryIdByName(this.iModelDb, IModel.dictionaryId, categoryName);
       this.featureCategoryId = (foundCategoryId !== undefined) ? foundCategoryId : this.addCategoryToExistingDb(categoryName);
-
       this.convertFeatureCollection();
+      const featureModel: SpatialModel = this.iModelDb.models.getModel(this.physicalModelId) as SpatialModel;
+      const featureModelExtents: AxisAlignedBox3d = featureModel.queryExtents();
+      const projectExtents = Range3d.createFrom(this.iModelDb.projectExtents);
+      projectExtents.extendRange(featureModelExtents);
+      this.iModelDb.updateProjectExtents(projectExtents);
     } else {
       this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "GeoJSON Definitions");
       this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, modelName);
-      this.featureCategoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, categoryName, { color: ColorDef.green });
+      this.featureCategoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, categoryName, { color: ColorDef.white });
       /** To geo-locate the project, we need to first scan the GeoJSon and extract range. This would not be required
        * if the bounding box was directly available.
        */
@@ -65,10 +71,13 @@ export class GeoJsonImporter {
 
       const featureModel: SpatialModel = this.iModelDb.models.getModel(this.physicalModelId) as SpatialModel;
       const featureModelExtents: AxisAlignedBox3d = featureModel.queryExtents();
-
-      this.insertSpatialView("Spatial View", featureModelExtents);
+      if (!this._classifiedURL)
+        this.insertSpatialView("Spatial View", featureModelExtents);
       this.iModelDb.updateProjectExtents(featureModelExtents);
     }
+    if (this._classifiedURL)
+      await insertClassifiedRealityModel(this._classifiedURL, this.physicalModelId, this.featureCategoryId, this.iModelDb, this._classifiedName ? this._classifiedName : this._modelName, this._mapType, this._classifiedInside, this._classifiedOutside);
+
     this.iModelDb.saveChanges();
   }
   private addCategoryToExistingDb(categoryName: string) {

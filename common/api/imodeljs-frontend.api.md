@@ -147,6 +147,7 @@ import { SkyCubeProps } from '@bentley/imodeljs-common';
 import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
 import { SortedArray } from '@bentley/bentleyjs-core';
+import { SpatialClassificationProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StopWatch } from '@bentley/bentleyjs-core';
 import { StrokeOptions } from '@bentley/geometry-core';
@@ -1417,8 +1418,18 @@ export class ContextRealityModelState implements TileTreeModelState {
     constructor(props: ContextRealityModelProps, iModel: IModelConnection);
     static findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
     // (undocumented)
+    readonly iModel: IModelConnection;
+    // (undocumented)
     protected _iModel: IModelConnection;
     intersectsProjectExtents(): Promise<boolean>;
+    // (undocumented)
+    readonly jsonProperties: {
+        [key: string]: any;
+    };
+    // (undocumented)
+    protected _jsonProperties: {
+        [key: string]: any;
+    };
     // (undocumented)
     readonly loadStatus: TileTree.LoadStatus;
     // (undocumented)
@@ -1707,6 +1718,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     readonly hasSubCategoryOverride: boolean;
     is3d(): this is DisplayStyle3dState;
+    // @internal (undocumented)
+    loadContextRealityModels(): Promise<void>;
     monochromeColor: ColorDef;
     readonly name: string;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
@@ -2405,20 +2418,14 @@ export class GeometricModel3dState extends GeometricModelState {
 // 
 // @public
 export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
-    // @beta
-    addSpatialClassifier(classifier: SpatialClassification.PropertiesProps): void;
     // @internal (undocumented)
     readonly asGeometricModel: GeometricModelState;
     // @internal (undocumented)
     readonly classifierTileTree: TileTree | undefined;
     // @internal (undocumented)
     protected _classifierTileTreeState: TileTreeState;
-    // @beta
-    getActiveSpatialClassifier(): number;
     // @internal
     getOrLoadTileTree(batchType: BatchType, edgesRequired: boolean): TileTree | undefined;
-    // @beta
-    getSpatialClassifier(index: number): SpatialClassification.Properties | undefined;
     readonly is2d: boolean;
     abstract readonly is3d: boolean;
     // @internal (undocumented)
@@ -2430,10 +2437,6 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     // @internal (undocumented)
     onIModelConnectionClose(): void;
     queryModelRange(): Promise<Range3d>;
-    // @beta
-    setActiveSpatialClassifier(classifierIndex: number, active: boolean): Promise<void>;
-    // @beta
-    setSpatialClassifier(index: number, classifier: SpatialClassification.Properties): void;
     // @internal
     readonly tileTree: TileTree | undefined;
     // @internal (undocumented)
@@ -2841,6 +2844,8 @@ export class IModelConnection extends IModel {
     fontMap?: FontMap;
     // Warning: (ae-incompatible-release-tags) The symbol "geoServices" is marked as @public, but its signature references "GeoServices" which is marked as @internal
     readonly geoServices: GeoServices;
+    // Warning: (ae-incompatible-release-tags) The symbol "getContextRealityModelTileTree" is marked as @public, but its signature references "TileTreeState" which is marked as @internal
+    getContextRealityModelTileTree(url: string): TileTreeState;
     getToolTipMessage(id: string): Promise<string[]>;
     readonly hilited: HilitedSet;
     // @alpha
@@ -4547,7 +4552,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
     // @internal (undocumented)
-    createPlanarClassifier(_properties: SpatialClassification.Properties, _tileTree: TileTree, _classifiedModel: GeometricModelState, _sceneContext: SceneContext): RenderPlanarClassifier | undefined;
+    createPlanarClassifier(_properties: SpatialClassificationProps.Properties, _tileTree: TileTree, _classifiedModel: TileTreeModelState, _sceneContext: SceneContext): RenderPlanarClassifier | undefined;
     // @internal (undocumented)
     createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -5191,72 +5196,20 @@ export const enum SnapStatus {
 // @beta
 export namespace SpatialClassification {
     // @internal (undocumented)
-    export function addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void;
+    export function addModelClassifierToScene(classifiedModel: TileTreeModelState, context: SceneContext): void;
+    export function addSpatialClassifier(model: TileTreeModelState, classifier: SpatialClassificationProps.PropertiesProps): void;
     // @internal (undocumented)
     export function createClassifier(id: Id64String, iModel: IModelConnection): Promise<RenderClassifierModel | undefined>;
-    export const enum Display {
-        Dimmed = 2,
-        ElementColor = 4,
-        Hilite = 3,
-        Off = 0,
-        On = 1
-    }
-    export class Flags implements FlagsProps {
-        constructor(inside?: Display, outside?: Display);
-        // (undocumented)
-        inside: Display;
-        // (undocumented)
-        outside: Display;
-        // (undocumented)
-        selected: Display;
-        // (undocumented)
-        type: number;
-    }
-    export interface FlagsProps {
-        // (undocumented)
-        inside: SpatialClassification.Display;
-        // (undocumented)
-        outside: SpatialClassification.Display;
-        // (undocumented)
-        selected: SpatialClassification.Display;
-        // (undocumented)
-        type: number;
-    }
+    export function getActiveSpatialClassifier(model: TileTreeModelState): number;
     // @internal (undocumented)
-    export function getClassifierProps(model: GeometricModelState): Properties | undefined;
+    export function getClassifierProps(model: TileTreeModelState): SpatialClassificationProps.Properties | undefined;
+    export function getSpatialClassifier(model: TileTreeModelState, index: number): SpatialClassificationProps.Properties | undefined;
     // @internal (undocumented)
     export function loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
     // @internal (undocumented)
     export function loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
-    export class Properties implements PropertiesProps {
-        constructor(props: PropertiesProps);
-        // (undocumented)
-        expand: number;
-        // (undocumented)
-        flags: Flags;
-        // (undocumented)
-        isActive: boolean;
-        // (undocumented)
-        modelId: Id64String;
-        // (undocumented)
-        name: string;
-    }
-    export interface PropertiesProps {
-        expand: number;
-        // (undocumented)
-        flags: Flags;
-        // (undocumented)
-        isActive: boolean;
-        modelId: Id64String;
-        // (undocumented)
-        name: string;
-    }
-    export const enum Type {
-        // (undocumented)
-        Planar = 0,
-        // (undocumented)
-        Volume = 1
-    }
+    export function setActiveSpatialClassifier(model: TileTreeModelState, classifierIndex: number, active: boolean): Promise<void>;
+    export function setSpatialClassifier(model: TileTreeModelState, index: number, classifier: SpatialClassificationProps.Properties): void;
 }
 
 // @public
@@ -6257,6 +6210,12 @@ export namespace TileTree {
 // @beta
 export interface TileTreeModelState {
     // @internal (undocumented)
+    readonly iModel: IModelConnection;
+    // @internal (undocumented)
+    readonly jsonProperties: {
+        [key: string]: any;
+    };
+    // @internal (undocumented)
     readonly loadStatus: TileTree.LoadStatus;
     // @internal (undocumented)
     loadTileTree(batchType: BatchType, edgesRequired: boolean, animationId?: Id64String, classifierExpansion?: number): TileTree.LoadStatus;
@@ -6279,6 +6238,8 @@ export class TileTreeState {
     readonly iModel: IModelConnection;
     // (undocumented)
     loadStatus: TileTree.LoadStatus;
+    // (undocumented)
+    readonly modelId: string;
     // (undocumented)
     setTileTree(props: TileTreeProps, loader: TileLoader): void;
     // (undocumented)
