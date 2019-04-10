@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex, Arc3d, Range3d } from "@bentley/geometry-core";
-import { Cartographic, Code, ColorDef, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, GeometryParams, AxisAlignedBox3d, EcefLocation, ViewFlags, IModel } from "@bentley/imodeljs-common";
+import { Cartographic, Code, ColorDef, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, GeometryParams, AxisAlignedBox3d, EcefLocation, ViewFlags, IModel, BackgroundMapProps, BackgroundMapType } from "@bentley/imodeljs-common";
 import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SpatialModel, ViewDefinition } from "@bentley/imodeljs-backend";
 import { GeoJson } from "./GeoJson";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
@@ -23,12 +23,14 @@ export class GeoJsonImporter {
   private readonly _labelProperty?: string;
   private readonly _pointRadius: number;
   private _colorIndex?: number;
+  private readonly _viewFlags: ViewFlags;
+  private readonly _backgroundMap: BackgroundMapProps | undefined;
 
   /** Construct a new GeoJsonImporter
    * @param iModelFileName the output iModel file name
    * @param geoJson the input GeoJson data
    */
-  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, private _mapType?: string,
+  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapType?: string, mapGroundBias?: number,
     private _classifiedURL?: string, private _classifiedName?: string, private _classifiedOutside?: string, private _classifiedInside?: string) {
     this.iModelDb = appendToExisting ? IModelDb.openStandalone(iModelFileName, OpenMode.ReadWrite) : IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
@@ -37,6 +39,25 @@ export class GeoJsonImporter {
     this._labelProperty = labelProperty;
     this._pointRadius = pointRadius === undefined ? .25 : pointRadius;
     this._colorIndex = pseudoColor ? 0 : undefined;
+    this._viewFlags = new ViewFlags();
+    switch (mapType) {
+      case "none":
+        this._viewFlags.backgroundMap = false;
+        break;
+      case "streets":
+        this._viewFlags.backgroundMap = true;
+        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Street } };
+        break;
+      case "aerial":
+        this._viewFlags.backgroundMap = true;
+        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Aerial } };
+        break;
+      default:
+      case "hybrid":
+        this._viewFlags.backgroundMap = true;
+        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Hybrid } };
+        break;
+    }
   }
 
   /** Perform the import */
@@ -76,7 +97,7 @@ export class GeoJsonImporter {
       this.iModelDb.updateProjectExtents(featureModelExtents);
     }
     if (this._classifiedURL)
-      await insertClassifiedRealityModel(this._classifiedURL, this.physicalModelId, this.featureCategoryId, this.iModelDb, this._classifiedName ? this._classifiedName : this._modelName, this._mapType, this._classifiedInside, this._classifiedOutside);
+      await insertClassifiedRealityModel(this._classifiedURL, this.physicalModelId, this.featureCategoryId, this.iModelDb, this._viewFlags, this._backgroundMap, this._classifiedName ? this._classifiedName : this._modelName, this._classifiedInside, this._classifiedOutside);
 
     this.iModelDb.saveChanges();
   }
@@ -262,9 +283,7 @@ export class GeoJsonImporter {
   protected insertSpatialView(viewName: string, range: AxisAlignedBox3d): Id64String {
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.featureCategoryId]);
-    const vf = new ViewFlags();
-    vf.backgroundMap = true;
-    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf });
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundMap: this._backgroundMap });
     return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
   }
 }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { JsonUtils, Id64String } from "@bentley/bentleyjs-core";
 import { StandardViewIndex, Range3d, Vector3d, Point3d, Transform, Matrix3d } from "@bentley/geometry-core";
-import { Cartographic, AxisAlignedBox3d, ViewFlags, IModel, SpatialClassificationProps, BackgroundMapType } from "@bentley/imodeljs-common";
+import { Cartographic, AxisAlignedBox3d, ViewFlags, IModel, SpatialClassificationProps, BackgroundMapProps } from "@bentley/imodeljs-common";
 import { CategorySelector, DisplayStyle3d, ModelSelector, OrthographicViewDefinition, IModelDb } from "@bentley/imodeljs-backend";
 import * as requestPromise from "request-promise-native";
 
@@ -88,36 +88,28 @@ function parseDisplayMode(defaultDisplay: SpatialClassificationProps.Display, op
       return defaultDisplay;
   }
 }
-export async function insertClassifiedRealityModel(url: string, classifierModelId: Id64String, classifierCategoryId: Id64String, iModelDb: IModelDb, inputName?: string, map?: string, inside?: string, outside?: string): Promise<void> {
+export async function insertClassifiedRealityModel(url: string, classifierModelId: Id64String, classifierCategoryId: Id64String, iModelDb: IModelDb, viewFlags: ViewFlags, backgroundMap?: BackgroundMapProps, inputName?: string, inside?: string, outside?: string): Promise<void> {
 
-  const vf = new ViewFlags();
   const name = inputName ? inputName : url;
-  const ecefRange = await RealityModelTileUtils.rangeFromUrl(url);
-  const range = iModelDb.getEcefTransform().inverse()!.multiplyRange(ecefRange);
-
   const classificationFlags = new SpatialClassificationProps.Flags();
   classificationFlags.inside = parseDisplayMode(SpatialClassificationProps.Display.ElementColor, inside);
   classificationFlags.outside = parseDisplayMode(SpatialClassificationProps.Display.Dimmed, outside);
 
   const classifier = { modelId: classifierModelId, name, flags: classificationFlags, isActive: true, expand: 1.0 };
-  let backgroundMap;
-  switch (map) {
-    case "none":
-      vf.backgroundMap = false;
-      break;
-    case "streets":
-      vf.backgroundMap = true;
-      backgroundMap = { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } };
-      break;
-    default:
-      vf.backgroundMap = true;
-      break;
 
-  }
   const realityModel = { tilesetUrl: url, name: name!, classifiers: [classifier] };
-  const displayStyleId = DisplayStyle3d.insert(iModelDb, IModel.dictionaryId, name!, { viewFlags: vf, backgroundMap, contextRealityModels: [realityModel] });
+  const displayStyleId = DisplayStyle3d.insert(iModelDb, IModel.dictionaryId, name!, { viewFlags, backgroundMap, contextRealityModels: [realityModel] });
 
   const projectExtents = Range3d.createFrom(iModelDb.projectExtents);
+  let range;
+  try {
+    const ecefRange = await RealityModelTileUtils.rangeFromUrl(url);
+    range = iModelDb.getEcefTransform().inverse()!.multiplyRange(ecefRange);
+  } catch (err) {
+    range = projectExtents;
+    range.low.z = -200.0;
+    range.high.z = 200.0;
+  }
   projectExtents.low.z = Math.min(range.low.z, projectExtents.low.z);
   projectExtents.high.z = Math.max(range.high.z, projectExtents.high.z);
   iModelDb.updateProjectExtents(projectExtents);
