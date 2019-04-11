@@ -85,6 +85,7 @@ import { DisplayStyleState } from "./DisplayStyleState";
  * If the provider's internal state changes such that the Viewport should recompute the symbology overrides, the provider should notify the viewport by
  * calling [[Viewport.setFeatureOverrideProviderChanged]].
  * @see [[Viewport.featureOverrideProvider]]
+ * @public
  */
 export interface FeatureOverrideProvider {
   addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
@@ -330,8 +331,8 @@ export class ViewRect {
 }
 
 /** The minimum and maximum values for the z-depth of a rectangle of screen space.
- *
  * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0.
+ * @public
  */
 export class DepthRangeNpc {
   /**

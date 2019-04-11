@@ -15,6 +15,7 @@ const loggerCategory: string = LoggerCategory.FrontendRequestContext;
  * Provides some generic context for downstream server applications to get details of a request that
  * originated at the frontend. The context is meant for use in applications that require authorization.
  * @see FrontendRequestContext
+ * @public
  */
 export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
 
@@ -48,13 +49,11 @@ export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestCon
  * Provides generic context for downstream server applications to get details of a request that
  * originated at the frontend. The context is meant for use in applications that do NOT require authorization.
  * @see AuthorizedFrontendRequestContext
+ * @public
  */
 export class FrontendRequestContext extends ClientRequestContext {
-  /**
-   * Create a new context for agent applications or long running frontend operations to pass to various services
-   */
+  /** Create a new context for agent applications or long running frontend operations to pass to various services */
   public constructor(activityId: string = Guid.createValue()) {
     super(activityId, IModelApp.applicationId, IModelApp.applicationVersion, IModelApp.sessionId);
   }
-
 }

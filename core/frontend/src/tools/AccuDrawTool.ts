@@ -21,6 +21,7 @@ function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): 
 /**
  * A shortcut may require no user input  (immediate) or it may install a viewing tool.Tool implementors should not use
  * this class to setup AccuDraw, instead use AccuDraw.setContext to provide hints.
+ * @beta
  */
 export class AccuDrawShortcuts {
   public static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean {
@@ -995,6 +996,7 @@ class AccuDrawShortcutsTool extends InputCollector {
   public exitTool() { super.exitTool(); AccuDrawShortcuts.requestInputFocus(); } // re-grab focus when auto-focus tool setting set...
 }
 
+/** @beta */
 export abstract class AccuDrawTool {
   public doManipulationStart() {
     if (this.activateAccuDrawOnStart())

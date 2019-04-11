@@ -516,7 +516,7 @@ export class AccuDrawHintBuilder {
     setXAxis2(xAxis: Vector3d): void;
 }
 
-// @public
+// @beta
 export class AccuDrawShortcuts {
     // (undocumented)
     static alignView(): void;
@@ -528,26 +528,16 @@ export class AccuDrawShortcuts {
     static defineACSByPoints(): void;
     // (undocumented)
     static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldAcceptInput" is marked as @public, but its signature references "ItemField" which is marked as @beta
-    // 
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldLockToggle" is marked as @public, but its signature references "ItemField" which is marked as @beta
-    // 
     // (undocumented)
     static itemFieldLockToggle(index: ItemField): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNavigate" is marked as @public, but its signature references "ItemField" which is marked as @beta
-    // 
     // (undocumented)
     static itemFieldNavigate(index: ItemField, str: string, forward: boolean): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNewInput" is marked as @public, but its signature references "ItemField" which is marked as @beta
-    // 
     // (undocumented)
     static itemFieldNewInput(index: ItemField): void;
     // (undocumented)
     static itemFieldUnlockAll(): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemRotationModeChange" is marked as @public, but its signature references "RotationMode" which is marked as @beta
-    // 
     // (undocumented)
     static itemRotationModeChange(rotation: RotationMode): void;
     // (undocumented)
@@ -584,8 +574,6 @@ export class AccuDrawShortcuts {
     static rotateToElement(updateCurrentACS: boolean): void;
     // (undocumented)
     static setOrigin(explicitOrigin?: Point3d): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "setStandardRotation" is marked as @public, but its signature references "RotationMode" which is marked as @beta
-    // 
     // (undocumented)
     static setStandardRotation(rotation: RotationMode): void;
     // (undocumented)
@@ -594,7 +582,7 @@ export class AccuDrawShortcuts {
     static writeACS(_acsName: string): BentleyStatus;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export abstract class AccuDrawTool {
     // (undocumented)
     activateAccuDrawOnStart(): boolean;
@@ -608,8 +596,6 @@ export abstract class AccuDrawTool {
     static installTool(shortcut: AccuDrawTool): boolean;
     // (undocumented)
     onDecorate(_context: DecorateContext): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "onManipulationComplete" is marked as @public, but its signature references "AccuDrawFlags" which is marked as @beta
-    // 
     // (undocumented)
     onManipulationComplete(): AccuDrawFlags;
     // (undocumented)
@@ -1368,7 +1354,7 @@ export const enum ClippingType {
     Planes = 2
 }
 
-// @public
+// @beta
 export const enum ClipResult {
     NewElements = 1,
     NotSupported = 0,
@@ -1474,7 +1460,7 @@ export class ContextRealityModelState implements TileTreeModelState {
     readonly url: string;
 }
 
-// @public
+// @alpha
 export class ConversionData implements UnitConversion {
     // (undocumented)
     factor: number;
@@ -1870,7 +1856,7 @@ export interface EditorPosition {
     rowPriority: number;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -1976,13 +1962,13 @@ export class ElementState extends EntityState implements ElementProps {
     readonly userLabel?: string;
 }
 
-// @public
+// @beta
 export const enum ElemMethod {
     Add = 0,
     Invert = 1
 }
 
-// @public
+// @beta
 export const enum ElemSource {
     Fence = 1,
     Pick = 0,
@@ -2108,7 +2094,7 @@ export class Environment implements EnvironmentProps {
     toJSON(): EnvironmentProps;
 }
 
-// @public
+// @beta
 export const enum ErrorNums {
     NoFence = 0,
     NoFenceElems = 1,
@@ -2566,7 +2552,7 @@ export const enum GridOrientationType {
     WorldYZ = 2
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export interface GroupMark {
     // (undocumented)
     source: ModifyElementSource;
@@ -2587,7 +2573,7 @@ export class HilitedSet {
     readonly size: number;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export const enum HilitedState {
     No = 2,
     Unknown = 0,
@@ -2803,7 +2789,7 @@ export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 
 // @public
 export class IModelApp {
-    // Warning: (ae-incompatible-release-tags) The symbol "accuDraw" is marked as @public, but its signature references "AccuDraw" which is marked as @beta
+    // @beta
     static accuDraw: AccuDraw;
     static accuSnap: AccuSnap;
     static applicationId: string;
@@ -2826,6 +2812,7 @@ export class IModelApp {
     static locateManager: ElementLocateManager;
     static notifications: NotificationManager;
     protected static onStartup(): void;
+    // @alpha
     static quantityFormatter: QuantityFormatter;
     static readonly renderSystem: RenderSystem;
     static sessionId: GuidString;
@@ -4147,6 +4134,7 @@ export interface PropertyDescription {
     enum?: EnumerationChoicesInfo;
     // (undocumented)
     name: string;
+    // Warning: (ae-incompatible-release-tags) The symbol "quantityType" is marked as @public, but its signature references "QuantityType" which is marked as @alpha
     quantityType?: QuantityType | string;
     // (undocumented)
     typename: string;
@@ -4221,7 +4209,7 @@ export enum PropertyValueFormat {
     Struct = 2
 }
 
-// @public
+// @alpha
 export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     protected _activeSystemIsImperial: boolean;
@@ -4258,7 +4246,7 @@ export class QuantityFormatter implements UnitsProvider {
     useImperialFormats: boolean;
 }
 
-// @public
+// @alpha
 export enum QuantityType {
     // (undocumented)
     Angle = 2,
@@ -6552,7 +6540,7 @@ export class TwoWayViewportSync {
     disconnect(): void;
     }
 
-// @public
+// @alpha
 export class Unit implements UnitProps {
     constructor(name: string, label: string, unitFamily: string);
     // (undocumented)
@@ -6565,21 +6553,21 @@ export class Unit implements UnitProps {
     unitFamily: string;
 }
 
-// @public
+// @beta
 export const enum UsesDragSelect {
     Box = 0,
     Line = 1,
     None = 2
 }
 
-// @public
+// @beta
 export const enum UsesFence {
     Check = 0,
     None = 2,
     Required = 1
 }
 
-// @public
+// @beta
 export const enum UsesSelection {
     Check = 0,
     None = 2,

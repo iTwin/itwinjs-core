@@ -2,16 +2,20 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { UnitProps, Format, Formatter, UnitsProvider, FormatterSpec, UnitConversion, BadUnit } from "@bentley/imodeljs-quantity";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { BadUnit, Format, Formatter, FormatterSpec, UnitConversion, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 
-/** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values. */
+/** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.
+ * @alpha
+ */
 export class ConversionData implements UnitConversion {
   public factor: number = 1.0;
   public offset: number = 0.0;
 }
 
-/** Class that implements the UnitProps interface so that it can be used by the UnitProvider to retrieve unit information. */
+/** Class that implements the UnitProps interface so that it can be used by the UnitProvider to retrieve unit information.
+ * @alpha
+ */
 export class Unit implements UnitProps {
   public name = "";
   public label = "";
@@ -85,8 +89,10 @@ const unitData: UnitDefinition[] = [
   { name: "Units.CUB_M", unitFamily: "Units.AREA", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m³", altDisplayLabels: [] },
 ];
 
-/** Defines standard format types for tools that need to display measurements to user. */
-export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6  }
+/** Defines standard format types for tools that need to display measurements to user.
+ * @alpha
+ */
+export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6 }
 
 // The following provide default formats for different the QuantityTypes. It is important to note that these default should reference
 // units that are available in schemas within the active iModel.
@@ -260,7 +266,7 @@ const defaultsFormats = {
       precision: 4,
       type: "Decimal",
     },
-  },  {
+  }, {
     type: 5/*LatLong*/, format: {
       composite: {
         includeZero: true,
@@ -305,8 +311,8 @@ const defaultsFormats = {
   ],
 };
 
-/**
- * Formats quantity values into strings.
+/** Formats quantity values into strings.
+ * @alpha
  */
 export class QuantityFormatter implements UnitsProvider {
   protected _activeSystemIsImperial = true;

@@ -12,6 +12,7 @@ import { IModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 
+/** @public */
 export const enum ModifyElementSource {
   /** The source for the element is unknown - not caused by a modification command. */
   Unknown = 0,
@@ -27,9 +28,9 @@ export const enum ModifyElementSource {
   DragSelect = 5,
 }
 
-/**
- * The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
+/** The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
  * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)
+ * @public
  */
 export abstract class PrimitiveTool extends InteractiveTool {
   public targetView?: Viewport;

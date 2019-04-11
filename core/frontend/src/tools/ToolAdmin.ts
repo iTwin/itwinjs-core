@@ -22,6 +22,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
 import { ViewTool } from "./ViewTool";
 
+/** @public */
 export const enum CoordinateLockOverrides {
   None = 0,
   ACS = 1 << 1,
@@ -29,12 +30,17 @@ export const enum CoordinateLockOverrides {
   All = 0xffff,
 }
 
+/** @public */
 export const enum StartOrResume { Start = 1, Resume = 2 }
+
+/** @public */
 export const enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
 
-/** Settings that control the behavior of built-in tools. Applications may modify these values. */
+/** Settings that control the behavior of built-in tools. Applications may modify these values.
+ * @public
+ */
 export class ToolSettings {
   /** Duration of animations of viewing operations. */
   public static animationTime = BeDuration.fromMilliseconds(260);
@@ -297,7 +303,9 @@ interface ToolEvent {
   vp?: ScreenViewport; // Viewport is optional - keyboard events aren't associated with a Viewport.
 }
 
-/** Controls operation of Tools. Administers the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
+/** Controls operation of Tools. Administers the current view, primitive, and idle tools. Forwards events to the appropriate tool.
+ * @public
+ */
 export class ToolAdmin {
   public markupView?: ScreenViewport;
   /** @internal */

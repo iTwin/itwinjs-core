@@ -16,11 +16,18 @@ import { CoordinateLockOverrides } from "./ToolAdmin";
 import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
 import { ToolSettingsPropertySyncItem, ToolSettingsPropertyRecord } from "../properties/ToolSettingsValue";
 
+/** @public */
 export type ToolType = typeof Tool;
+
+/** @public */
 export type ToolList = ToolType[];
+
+/** @public */
 export const enum BeButton { Data = 0, Reset = 1, Middle = 2 }
 
-/** The *source* that generated an event. */
+/** The *source* that generated an event.
+ * @public
+ */
 export const enum InputSource {
   /** Source not defined */
   Unknown = 0,
@@ -30,7 +37,9 @@ export const enum InputSource {
   Touch = 2,
 }
 
-/** The *source* that generated a coordinate. */
+/** The *source* that generated a coordinate.
+ * @public
+ */
 export const enum CoordSource {
   /** Event was created by an action from the user */
   User = 0,
@@ -42,9 +51,12 @@ export const enum CoordSource {
   ElemSnap = 3,
 }
 
-/** Numeric mask for a set of modifier keys (control, shift, and alt). */
+/** Numeric mask for a set of modifier keys (control, shift, and alt).
+ * @public
+ */
 export const enum BeModifierKeys { None = 0, Control = 1 << 0, Shift = 1 << 1, Alt = 1 << 2 }
 
+/** @public */
 export class BeButtonState {
   private readonly _downUorPt: Point3d = new Point3d();
   private readonly _downRawPt: Point3d = new Point3d();
@@ -70,6 +82,7 @@ export class BeButtonState {
   }
 }
 
+/** @public */
 export class BeButtonEvent {
   private readonly _point: Point3d = new Point3d();
   private readonly _rawPoint: Point3d = new Point3d();
@@ -131,7 +144,9 @@ export class BeButtonEvent {
   }
 }
 
-/** Specialization of ButtonEvent for touch input. */
+/** Specialization of ButtonEvent for touch input.
+ * @public
+ */
 export class BeTouchEvent extends BeButtonEvent {
   public get touchCount(): number { return this.touchInfo.targetTouches.length; }
   public get isSingleTouch(): boolean { return 1 === this.touchCount; }
@@ -188,7 +203,9 @@ export class BeTouchEvent extends BeButtonEvent {
   }
 }
 
-/** Information about movement of the mouse wheel. */
+/** Information about movement of the mouse wheel.
+ * @public
+ */
 export class BeWheelEvent extends BeButtonEvent {
   public constructor(public wheelDelta: number = 0) { super(); }
   public setFrom(src: BeWheelEvent): void {
@@ -202,10 +219,10 @@ export class BeWheelEvent extends BeButtonEvent {
   }
 }
 
-/**
- * Base Tool class for writing an immediate tool that executes it's assigned task immediately without further input.
+/** Base Tool class for writing an immediate tool that executes it's assigned task immediately without further input.
  * @see [[InteractiveTool]] for a base Tool class to handle user input events from a Viewport.
  * @see [Tools]($docs/learning/frontend/tools.md)
+ * @public
  */
 export class Tool {
   /** If true, this Tool will not appear in the list from [[ToolRegistry.getToolList]]. This should be overridden in subclasses to hide them. */
@@ -272,11 +289,12 @@ export class Tool {
   public run(..._arg: any[]): boolean { return true; }
 }
 
+/** @public */
 export enum EventHandled { No = 0, Yes = 1 }
 
-/**
- * A Tool that may be installed, via [[ToolAdmin]], to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
+/** A Tool that may be installed, via [[ToolAdmin]], to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
  * InputCollector, and IdleTool. Each must derive from this class and there may only be one of each type installed at a time.
+ * @public
  */
 export abstract class InteractiveTool extends Tool {
 
@@ -517,8 +535,8 @@ export abstract class InteractiveTool extends Tool {
   }
 }
 
-/**
- * The InputCollector class can be used to implement a command for gathering input (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
+/** The InputCollector class can be used to implement a command for gathering input (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
+ * @public
  */
 export abstract class InputCollector extends InteractiveTool {
   public run(): boolean {
@@ -536,9 +554,9 @@ export abstract class InputCollector extends InteractiveTool {
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
 }
 
-/**
- * The ToolRegistry holds a mapping between toolIds and their corresponding Tool class. This provides the mechanism to
+/** The ToolRegistry holds a mapping between toolIds and their corresponding Tool class. This provides the mechanism to
  * find Tools by their toolId, and also a way to iterate over the set of Tools available.
+ * @public
  */
 export class ToolRegistry {
   public readonly tools = new Map<string, ToolType>();

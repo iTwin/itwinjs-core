@@ -17,6 +17,7 @@ type rejectFunc = ((arg: Error) => void);
  * Base Plugin class for writing a demand-loaded module.
  * @see [[PluginAdmin]] for a description of how Plugins are loaded.
  * @see [Plugins]($docs/learning/frontend/plugins.md)
+ * @public
  */
 export abstract class Plugin {
   /**
@@ -82,6 +83,7 @@ class PendingPlugin {
 
 /**
  * Controls loading of Plugins and calls methods on newly loaded or reloaded Plugins
+ * @public
  */
 export class PluginAdmin {
   private static _pendingPlugins: Map<string, PendingPlugin> = new Map<string, PendingPlugin>();

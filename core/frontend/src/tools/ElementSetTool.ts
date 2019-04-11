@@ -8,7 +8,9 @@ import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ModifyElementSource } from "./PrimitiveTool";
 import { IModelConnection } from "../IModelConnection";
 
-/** The requested source for the elements to modify. */
+/** The requested source for the elements to modify.
+ * @beta Do we really want to propagate the *Elem* abbreviation?
+ */
 export const enum ElemSource {
   /** Populate ElementAgenda from a locate */
   Pick,
@@ -18,7 +20,9 @@ export const enum ElemSource {
   SelectionSet,
 }
 
-/** The method that will be used to update the tool's ElementAgenda. */
+/** The method that will be used to update the tool's ElementAgenda.
+ * @beta Do we really want to propagate the *Elem* abbreviation?
+ */
 export const enum ElemMethod {
   /** Entries will be added to ElementAgenda */
   Add,
@@ -26,7 +30,9 @@ export const enum ElemMethod {
   Invert,
 }
 
-/** Should the active fence be used, required, or ignored as a possible ElemSource. */
+/** Should the active fence be used, required, or ignored as a possible ElemSource.
+ * @beta
+ */
 export const enum UsesFence {
   /** Active Fence is allowed as ElemSource */
   Check,
@@ -36,7 +42,9 @@ export const enum UsesFence {
   None,
 }
 
-/** Should the active selection set be used, required, or ignored as a possible ElemSource. */
+/** Should the active selection set be used, required, or ignored as a possible ElemSource.
+ * @beta
+ */
 export const enum UsesSelection {
   /** Active Selection Set is allowed as ElemSource */
   Check,
@@ -46,7 +54,9 @@ export const enum UsesSelection {
   None,
 }
 
-/** Should ElemSource::Pick allow a drag select to identify elements. */
+/** Should ElemSource::Pick allow a drag select to identify elements.
+ * @beta
+ */
 export const enum UsesDragSelect {
   /** Drag selection using shape inside/overlap */
   Box,
@@ -56,7 +66,9 @@ export const enum UsesDragSelect {
   None,
 }
 
-/** Helps determine the action ModifyAgenda will take on the agenda elements after calling doFenceClip. */
+/** Helps determine the action ModifyAgenda will take on the agenda elements after calling doFenceClip.
+ * @beta
+ */
 export const enum ClipResult {
   /** Tool does not support fence clip */
   NotSupported,
@@ -66,7 +78,9 @@ export const enum ClipResult {
   OriginalElements,
 }
 
-/** ElemSource specific failures. */
+/** ElemSource specific failures.
+ * @beta
+ */
 export const enum ErrorNums {
   /** No fence is currently active */
   NoFence,
@@ -80,6 +94,7 @@ export const enum ErrorNums {
   NotSupportedElmType,
 }
 
+/** @beta */
 export const enum HilitedState {
   /**  this agenda is in an indeterminate state wrt hilite */
   Unknown = 0,
@@ -89,11 +104,13 @@ export const enum HilitedState {
   No = 2,
 }
 
+/** @beta */
 export interface GroupMark {
   start: number;
   source: ModifyElementSource;
 }
 
+/** @beta */
 export class ElementAgenda {
   public readonly elements: string[] = [];
   public readonly groupMarks: GroupMark[] = [];

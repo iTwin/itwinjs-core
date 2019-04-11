@@ -17,6 +17,7 @@ import { ToolSettings } from "./ToolAdmin";
 import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
 
+/** @public */
 export const enum ViewHandleWeight {
   Thin = 1,
   Normal = 2,
@@ -25,6 +26,7 @@ export const enum ViewHandleWeight {
   FatDot = 8,
 }
 
+/** @public */
 export const enum ViewHandleType {
   None = 0,
   Rotate = 1,
@@ -37,6 +39,7 @@ export const enum ViewHandleType {
   Look = 1 << 7,
 }
 
+/** @public */
 export const enum ViewManipPriority {
   Low = 1,
   Normal = 10,
@@ -44,6 +47,7 @@ export const enum ViewManipPriority {
   High = 1000,
 }
 
+/** @public */
 const enum OrientationResult {
   Success = 0,
   NoEvent = 1,
@@ -53,7 +57,9 @@ const enum OrientationResult {
 
 const enum NavigateMode { Pan = 0, Look = 1, Travel = 2 }
 
-/** An InteractiveTool that manipulates a view. */
+/** An InteractiveTool that manipulates a view.
+ * @public
+ */
 export abstract class ViewTool extends InteractiveTool {
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
@@ -208,7 +214,9 @@ export class ViewHandleArray {
   public hasHandle(handleType: ViewHandleType): boolean { return this.handles.some((handle) => handle.handleType === handleType); }
 }
 
-/** Base class for tools that manipulate the frustum of a Viewport. */
+/** Base class for tools that manipulate the frustum of a Viewport.
+ * @public
+ */
 export abstract class ViewManip extends ViewTool {
   public viewHandles: ViewHandleArray;
   public frustumValid = false;
@@ -1644,7 +1652,9 @@ class ViewFly extends ViewNavigate {
   }
 }
 
-/** The tool that performs a Pan view operation */
+/** The tool that performs a Pan view operation
+ * @public
+ */
 export class PanViewTool extends ViewManip {
   public static toolId = "View.Pan";
   constructor(vp: ScreenViewport | undefined, oneShot = false, isDraggingRequired = false) {
@@ -1653,7 +1663,9 @@ export class PanViewTool extends ViewManip {
   public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Pan.Prompts.FirstPoint"); }
 }
 
-/** A tool that performs a Rotate view operation */
+/** A tool that performs a Rotate view operation
+ * @public
+ */
 export class RotateViewTool extends ViewManip {
   public static toolId = "View.Rotate";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
@@ -1662,7 +1674,9 @@ export class RotateViewTool extends ViewManip {
   public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Rotate.Prompts.FirstPoint"); }
 }
 
-/** A tool that performs the look operation */
+/** A tool that performs the look operation
+ * @public
+ */
 export class LookViewTool extends ViewManip {
   public static toolId = "View.Look";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
@@ -1671,7 +1685,9 @@ export class LookViewTool extends ViewManip {
   public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Look.Prompts.FirstPoint"); }
 }
 
-/** A tool that performs the scroll operation */
+/** A tool that performs the scroll operation
+ * @public
+ */
 export class ScrollViewTool extends ViewManip {
   public static toolId = "View.Scroll";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
@@ -1680,7 +1696,9 @@ export class ScrollViewTool extends ViewManip {
   public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Scroll.Prompts.FirstPoint"); }
 }
 
-/** A tool that performs the zoom operation */
+/** A tool that performs the zoom operation
+ * @public
+ */
 export class ZoomViewTool extends ViewManip {
   public static toolId = "View.Zoom";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
@@ -1689,7 +1707,9 @@ export class ZoomViewTool extends ViewManip {
   public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Zoom.Prompts.FirstPoint"); }
 }
 
-/** A tool that performs the walk operation */
+/** A tool that performs the walk operation
+ * @public
+ */
 export class WalkViewTool extends ViewManip {
   public static toolId = "View.Walk";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
@@ -1698,7 +1718,9 @@ export class WalkViewTool extends ViewManip {
   public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Walk.Prompts.FirstPoint"); }
 }
 
-/** A tool that performs the fly operation */
+/** A tool that performs the fly operation
+ * @public
+ */
 export class FlyViewTool extends ViewManip {
   public static toolId = "View.Fly";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
@@ -1707,7 +1729,9 @@ export class FlyViewTool extends ViewManip {
   public onReinitialize(): void { super.onReinitialize(); ViewTool.showPrompt("Fly.Prompts.FirstPoint"); }
 }
 
-/** A tool that performs a fit view */
+/** A tool that performs a fit view
+ * @public
+ */
 export class FitViewTool extends ViewTool {
   public static toolId = "View.Fit";
   public oneShot: boolean;
@@ -1746,7 +1770,9 @@ export class FitViewTool extends ViewTool {
   }
 }
 
-/** A tool that rotates the view to one of the standard views. */
+/** A tool that rotates the view to one of the standard views.
+ * @public
+ */
 export class StandardViewTool extends ViewTool {
   public static toolId = "View.Standard";
   constructor(viewport: ScreenViewport, private _standardViewId: StandardViewId) { super(viewport); }
@@ -1773,7 +1799,9 @@ export class StandardViewTool extends ViewTool {
   }
 }
 
-/** A tool that performs a Window-area view operation */
+/** A tool that performs a Window-area view operation
+ * @public
+ */
 export class WindowAreaTool extends ViewTool {
   public static toolId = "View.WindowArea";
   private _haveFirstPoint: boolean = false;
@@ -2195,7 +2223,9 @@ export class DefaultViewTouchTool extends ViewManip {
 
 }
 
-/** A tool that performs view undo operation. An application could also just call Viewport.doUndo directly, creating a ViewTool isn't required. */
+/** A tool that performs view undo operation. An application could also just call Viewport.doUndo directly, creating a ViewTool isn't required.
+ * @public
+ */
 export class ViewUndoTool extends ViewTool {
   public static toolId = "View.Undo";
 
@@ -2206,7 +2236,9 @@ export class ViewUndoTool extends ViewTool {
   }
 }
 
-/** A tool that performs view redo operation. An application could also just call Viewport.doRedo directly, creating a ViewTool isn't required. */
+/** A tool that performs view redo operation. An application could also just call Viewport.doRedo directly, creating a ViewTool isn't required.
+ * @public
+ */
 export class ViewRedoTool extends ViewTool {
   public static toolId = "View.Redo";
 
@@ -2217,7 +2249,9 @@ export class ViewRedoTool extends ViewTool {
   }
 }
 
-/** A tool that toggles the camera on/off in a spatial view */
+/** A tool that toggles the camera on/off in a spatial view
+ * @public
+ */
 export class ViewToggleCameraTool extends ViewTool {
   public static toolId = "View.ToggleCamera";
 

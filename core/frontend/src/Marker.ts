@@ -13,10 +13,18 @@ import { BeButtonEvent } from "./tools/Tool";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { ToolTipOptions } from "./NotificationManager";
 
-/** The types that may be used  */
+/** The types that may be used
+ * @public
+ */
 export type MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap;
+
+/** @public */
 export type MarkerFillStyle = string | CanvasGradient | CanvasPattern;
+
+/** @public */
 export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
+
+/** @public */
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
 /** A Marker is a [[CanvasDecoration]], whose position follows a fixed location in world space.
