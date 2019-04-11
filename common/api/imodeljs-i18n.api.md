@@ -32,7 +32,7 @@ export class I18NNamespace {
     readFinished: Promise<void>;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface I18NOptions {
     // (undocumented)
     urlTemplate?: string;
