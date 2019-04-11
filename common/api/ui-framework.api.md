@@ -2192,8 +2192,6 @@ export class ModelSelectorWidget extends React_2.Component<ModelSelectorWidgetPr
     componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
-    updateCategoriesState(): Promise<void>;
-    updateModelsState(): Promise<void>;
     }
 
 // @alpha
