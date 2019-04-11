@@ -430,7 +430,9 @@ export class ViewAttributes {
       id: "viewAttr_renderMode",
       value: this._vp.viewFlags.renderMode,
       handler: (thing) => {
-        this._vp.viewFlags.renderMode = Number.parseInt(thing.value, 10);
+        const flags = this._vp.view.viewFlags.clone(this._scratchViewFlags);
+        flags.renderMode = Number.parseInt(thing.value, 10);
+        this._vp.viewFlags = flags;
         this.sync();
       },
     }).select;
