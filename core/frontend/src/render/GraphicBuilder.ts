@@ -237,13 +237,13 @@ export abstract class GraphicBuilder {
       p[Npc.RightTopRear],
       p[Npc.LeftTopRear],
       p[Npc.LeftBottomRear],
-      p[Npc.LeftBottomFront],
-      p[Npc.RightBottomFront],
+      p[Npc.LeftBottomFront].clone(),
+      p[Npc.RightBottomFront].clone(),
     ]);
 
-    this.addLineString([p[Npc.LeftTopFront], p[Npc.LeftTopRear]]);
-    this.addLineString([p[Npc.RightTopFront], p[Npc.RightTopRear]]);
-    this.addLineString([p[Npc.LeftBottomRear], p[Npc.RightBottomRear]]);
+    this.addLineString([p[Npc.LeftTopFront].clone(), p[Npc.LeftTopRear].clone()]);
+    this.addLineString([p[Npc.RightTopFront].clone(), p[Npc.RightTopRear].clone()]);
+    this.addLineString([p[Npc.LeftBottomRear].clone(), p[Npc.RightBottomRear].clone()]);
   }
 
   /** Sets the current active symbology for this builder. Any new geometry subsequently added will be drawn using the specified symbology.

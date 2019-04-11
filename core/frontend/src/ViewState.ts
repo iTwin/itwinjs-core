@@ -117,6 +117,7 @@ export abstract class ViewState extends ElementState {
       this.categorySelector = categorySelector.categorySelector.clone();
       this.displayStyle = categorySelector.displayStyle.clone();
       this._extentLimits = categorySelector._extentLimits;
+      this._auxCoordSystem = categorySelector._auxCoordSystem;
     }
   }
 

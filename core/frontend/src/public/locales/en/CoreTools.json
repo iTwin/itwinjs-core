@@ -91,6 +91,52 @@
         "flyover": "Standard View"
       }
     },
+    "ViewClip": {
+      "ByPlane": {
+        "keyin": "ViewClip ByPlane",
+        "description": "Section a view with a plane",
+        "flyover": "Section View",
+        "Prompts": {
+          "FirstPoint": "Identify point on section plane."
+        }
+      },
+      "ByShape": {
+        "keyin": "ViewClip ByShape",
+        "description": "Create a clip volume by shape points",
+        "flyover": "Clip Volume From Shape",
+        "Prompts": {
+          "FirstPoint": "Identify shape start point",
+          "SecondPoint": "Identify first edge endpoint",
+          "ThirdPoint": "Accept opposite corner (Ctrl to specify additional points)",
+          "NextPoint": "Accept shape (Ctrl to specify additional points)"
+        }
+      },
+      "ByRange": {
+        "keyin": "ViewClip ByRange",
+        "description": "Create a clip volume by range from 2 points",
+        "flyover": "Clip Volume From Range",
+        "Prompts": {
+          "FirstPoint": "Identify corner of clip volume.",
+          "NextPoint": "Identify opposite corner of clip volume."
+        }
+      },
+      "ByElement": {
+        "keyin": "ViewClip ByElement",
+        "description": "Create a clip volume from an element or selection set",
+        "flyover": "Clip Volume From Element",
+        "Prompts": {
+          "FirstPoint": "Identify element to use for clip volume."
+        }
+      },
+      "Clear": {
+        "keyin": "ViewClip Clear",
+        "description": "Remove clip volume or section planes from a view",
+        "flyover": "Unclip View",
+        "Prompts": {
+          "FirstPoint": "Identify view to unclip."
+        }
+      }
+    },
     "SelectView": "Select view",
     "Select": {
       "keyin": "Select Elements",

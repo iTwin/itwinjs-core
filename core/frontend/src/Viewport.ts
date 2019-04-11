@@ -972,6 +972,9 @@ export class ViewFrustum {
   }
 }
 
+/** @beta Event type for Viewport.onViewUndoRedo */
+export const enum ViewUndoEvent { Undo = 0, Redo = 1 }
+
 /** A Viewport renders the contents of one or more Models onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may
@@ -1004,6 +1007,10 @@ export abstract class Viewport implements IDisposable {
    * otherwise, avoid performing excessive computations in response to this event.
    */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called after reversing the most recent change to the Viewport from the undo stack or reapplying the most recently undone change to the Viewport from the redo stack.
+   * @beta
+   */
+  public readonly onViewUndoRedo = new BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>();
   /** Event called on the next frame after this viewport's set of always-drawn elements changes.
    * @beta
    */
@@ -2617,6 +2624,7 @@ export class ScreenViewport extends Viewport {
     this._forwardStack.push(this._currentBaseline!);
     this._currentBaseline = this._backStack.pop()!;
     this.applyViewState(this._currentBaseline, animationTime);
+    this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Undo);
   }
 
   /** Re-applies the most recently un-done change to the Viewport from the redo stack. */
@@ -2627,6 +2635,7 @@ export class ScreenViewport extends Viewport {
     this._backStack.push(this._currentBaseline!);
     this._currentBaseline = this._forwardStack.pop()!;
     this.applyViewState(this._currentBaseline, animationTime);
+    this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Redo);
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */

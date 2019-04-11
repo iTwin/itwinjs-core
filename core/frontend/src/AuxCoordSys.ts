@@ -323,9 +323,9 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
  */
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
   public readonly origin: Point3d;
-  public yaw: number;
-  public pitch: number;
-  public roll: number;
+  public yaw: number; // in degrees
+  public pitch: number; // in degrees
+  public roll: number; // in degrees
   private readonly _rMatrix: Matrix3d;
 
   constructor(props: AuxCoordSystem3dProps, iModel: IModelConnection) {
@@ -334,7 +334,7 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
     this.yaw = JsonUtils.asDouble(props.yaw);
     this.pitch = JsonUtils.asDouble(props.pitch);
     this.roll = JsonUtils.asDouble(props.roll);
-    const angles = new YawPitchRollAngles(Angle.createRadians(this.yaw), Angle.createRadians(this.pitch), Angle.createRadians(this.roll));
+    const angles = new YawPitchRollAngles(Angle.createDegrees(this.yaw), Angle.createDegrees(this.pitch), Angle.createDegrees(this.roll));
     this._rMatrix = angles.toMatrix3d();
   }
 
@@ -353,9 +353,9 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
   public setRotation(rMatrix: Matrix3d): void {
     this._rMatrix.setFrom(rMatrix);
     const angles = YawPitchRollAngles.createFromMatrix3d(rMatrix)!;
-    this.yaw = angles.yaw.radians;
-    this.pitch = angles.pitch.radians;
-    this.roll = angles.roll.radians;
+    this.yaw = angles.yaw.degrees;
+    this.pitch = angles.pitch.degrees;
+    this.roll = angles.roll.degrees;
   }
 }
 

@@ -35,6 +35,7 @@ import { ColorDef } from '@bentley/imodeljs-common';
 import { ColorDefProps } from '@bentley/imodeljs-common';
 import { ColorIndex } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
+import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { CurvePrimitive } from '@bentley/geometry-core';
 import { DevToolsStatsOptions } from '@bentley/imodeljs-common';
 import { Dictionary } from '@bentley/bentleyjs-core';
@@ -1338,6 +1339,26 @@ export const enum ClassifierType {
     Planar = 1,
     // (undocumented)
     Volume = 0
+}
+
+// @internal
+export const enum ClipOrientation {
+    // (undocumented)
+    Back = 4,
+    // (undocumented)
+    Bottom = 3,
+    // (undocumented)
+    Face = 7,
+    // (undocumented)
+    Front = 1,
+    // (undocumented)
+    Left = 2,
+    // (undocumented)
+    Right = 5,
+    // (undocumented)
+    Top = 0,
+    // (undocumented)
+    View = 6
 }
 
 // @public
@@ -6574,6 +6595,288 @@ export interface ViewChangeOptions {
 }
 
 // @internal
+export class ViewClipByElementTool extends ViewClipTool {
+    constructor(clipEventHandler?: ViewClipEventHandler, _alwaysUseRange?: boolean);
+    // (undocumented)
+    protected _alwaysUseRange: boolean;
+    // (undocumented)
+    protected doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange?: boolean): Promise<boolean>;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class ViewClipByPlaneTool extends ViewClipTool {
+    constructor(clipEventHandler?: ViewClipEventHandler, _orientation?: ClipOrientation, _clearExistingPlanes?: boolean);
+    // (undocumented)
+    protected _clearExistingPlanes: boolean;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    protected _orientation: ClipOrientation;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class ViewClipByRangeTool extends ViewClipTool {
+    // (undocumented)
+    protected _corner?: Point3d;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
+    // (undocumented)
+    protected getClipRange(range: Range3d, transform: Transform, ev: BeButtonEvent): boolean;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onUndoPreviousStep(): Promise<boolean>;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class ViewClipByShapeTool extends ViewClipTool {
+    constructor(clipEventHandler?: ViewClipEventHandler, _orientation?: ClipOrientation);
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
+    // (undocumented)
+    protected getClipPoints(ev: BeButtonEvent): Point3d[];
+    // (undocumented)
+    isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _matrix?: Matrix3d;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onUndoPreviousStep(): Promise<boolean>;
+    // (undocumented)
+    protected _orientation: ClipOrientation;
+    // (undocumented)
+    protected readonly _points: Point3d[];
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected _zHigh?: number;
+    // (undocumented)
+    protected _zLow?: number;
+}
+
+// @internal
+export class ViewClipClearTool extends ViewClipTool {
+    // (undocumented)
+    protected doClipClear(viewport: Viewport): boolean;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class ViewClipDecoration extends EditManipulator.HandleProvider {
+    constructor(_clipView: Viewport, _clipEventHandler?: ViewClipEventHandler | undefined);
+    // (undocumented)
+    static clear(): void;
+    // (undocumented)
+    protected clearControls(): void;
+    // (undocumented)
+    protected _clip?: ClipVector;
+    // (undocumented)
+    protected _clipEventHandler?: ViewClipEventHandler | undefined;
+    // (undocumented)
+    readonly clipId: string | undefined;
+    // (undocumented)
+    protected _clipId?: string;
+    // (undocumented)
+    protected _clipRange?: Range3d;
+    // (undocumented)
+    protected _clipView: Viewport;
+    // (undocumented)
+    protected _controlAxis: Vector3d[];
+    // (undocumented)
+    protected _controlIds: string[];
+    // (undocumented)
+    protected _controlPoint: Point3d[];
+    // (undocumented)
+    static create(vp: Viewport, clipEventHandler?: ViewClipEventHandler): string | undefined;
+    // (undocumented)
+    protected createControls(): Promise<boolean>;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string>;
+    // (undocumented)
+    protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean;
+    // (undocumented)
+    onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onManipulatorEvent(eventType: EditManipulator.EventType): void;
+    // (undocumented)
+    onViewClose(vp: ScreenViewport): void;
+    // (undocumented)
+    onViewUndoRedo(vp: Viewport, _event: ViewUndoEvent): void;
+    // (undocumented)
+    protected _removeViewCloseListener?: () => void;
+    // (undocumented)
+    protected _removeViewUndoRedoListener?: () => void;
+    // (undocumented)
+    protected stop(): void;
+    // (undocumented)
+    testDecorationHit(id: string): boolean;
+    // (undocumented)
+    static toggle(vp: Viewport, clipEventHandler?: ViewClipEventHandler): string | undefined;
+    // (undocumented)
+    protected updateDecorationListener(_add: boolean): void;
+}
+
+// @internal
+export class ViewClipDecorationProvider implements ViewClipEventHandler {
+    // (undocumented)
+    static clear(): void;
+    // (undocumented)
+    clearOnUnSelect(): boolean;
+    // (undocumented)
+    static create(): ViewClipDecorationProvider;
+    // (undocumented)
+    hideDecoration(): void;
+    // (undocumented)
+    onClearClip(_viewport: Viewport): void;
+    // (undocumented)
+    onModifyClip(_viewport: Viewport): void;
+    // (undocumented)
+    onNewClip(viewport: Viewport): void;
+    // (undocumented)
+    onNewClipPlane(viewport: Viewport): void;
+    // (undocumented)
+    selectOnCreate(): boolean;
+    // (undocumented)
+    showDecoration(vp: Viewport): void;
+    // (undocumented)
+    toggleDecoration(vp: Viewport): void;
+}
+
+// @internal
+export interface ViewClipEventHandler {
+    // (undocumented)
+    clearOnUnSelect(): boolean;
+    // (undocumented)
+    onClearClip(viewport: Viewport): void;
+    // (undocumented)
+    onModifyClip(viewport: Viewport): void;
+    // (undocumented)
+    onNewClip(viewport: Viewport): void;
+    // (undocumented)
+    onNewClipPlane(viewport: Viewport): void;
+    // (undocumented)
+    selectOnCreate(): boolean;
+}
+
+// @internal
+export class ViewClipModifyTool extends EditManipulator.HandleTool {
+    constructor(manipulator: EditManipulator.HandleProvider, hitId: string, ids: string[], base: Point3d[], axis: Vector3d[], vp: Viewport, clip: ClipVector);
+    // (undocumented)
+    protected accept(ev: BeButtonEvent): boolean;
+    // (undocumented)
+    protected _anchorIndex: number;
+    // (undocumented)
+    protected _axis: Vector3d[];
+    // (undocumented)
+    protected _base: Point3d[];
+    // (undocumented)
+    protected _clip: ClipVector;
+    // (undocumented)
+    protected _clipView: Viewport;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    protected _ids: string[];
+    // (undocumented)
+    protected init(): void;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected _restoreClip: boolean;
+}
+
+// @internal
+export class ViewClipTool extends PrimitiveTool {
+    constructor(_clipEventHandler?: ViewClipEventHandler | undefined);
+    // (undocumented)
+    protected _clipEventHandler?: ViewClipEventHandler | undefined;
+    // (undocumented)
+    static doClipClear(viewport: Viewport, saveInUndo: boolean): boolean;
+    // (undocumented)
+    static doClipToConvexClipPlaneSet(viewport: Viewport, saveInUndo: boolean, planes: ConvexClipPlaneSet): boolean;
+    // (undocumented)
+    static doClipToPlane(viewport: Viewport, saveInUndo: boolean, origin: Point3d, normal: Vector3d, clearExistingPlanes: boolean): boolean;
+    // (undocumented)
+    static doClipToRange(viewport: Viewport, saveInUndo: boolean, range: Range3d, transform?: Transform): boolean;
+    // (undocumented)
+    static doClipToShape(viewport: Viewport, saveInUndo: boolean, xyPoints: Point3d[], transform: Transform, zLow?: number, zHigh?: number): boolean;
+    // (undocumented)
+    static getClipOrientation(orientation: ClipOrientation, viewport: Viewport): Matrix3d | undefined;
+    // (undocumented)
+    static getPlaneInwardNormal(orientation: ClipOrientation, viewport: Viewport): Vector3d | undefined;
+    // (undocumented)
+    static hasClip(viewport: Viewport): boolean;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    static isSingleConvexClipPlaneSet(clip: ClipVector): ConvexClipPlaneSet | undefined;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    protected outputPrompt(prompt: string): void;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    static setViewClip(viewport: Viewport, saveInUndo: boolean, clip?: ClipVector): boolean;
+    // (undocumented)
+    protected showPrompt(): void;
+}
+
+// @internal
 export class ViewFrustum {
     protected adjustAspectRatio(origin: Point3d, delta: Vector3d): void;
     // (undocumented)
@@ -7036,6 +7339,8 @@ export abstract class Viewport implements IDisposable {
     readonly onViewedModelsChanged: BeEvent<(vp: Viewport) => void>;
     // @beta
     readonly onViewportChanged: BeEvent<(vp: Viewport, changed: ChangeFlags) => void>;
+    // @beta
+    readonly onViewUndoRedo: BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     pixelsFromInches(inches: number): number;
     // @internal (undocumented)
@@ -7458,6 +7763,14 @@ export abstract class ViewTool extends InteractiveTool {
     static showPrompt(prompt: string): void;
     // (undocumented)
     viewport?: ScreenViewport | undefined;
+}
+
+// @beta
+export const enum ViewUndoEvent {
+    // (undocumented)
+    Redo = 1,
+    // (undocumented)
+    Undo = 0
 }
 
 // @public
