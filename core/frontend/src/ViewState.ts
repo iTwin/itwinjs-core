@@ -368,7 +368,11 @@ export abstract class ViewState extends ElementState {
       let zFront = zBack + zDelta;            // Distance from eye to frontplane.
 
       if (zFront / zBack < Viewport.nearScale24) {
-        const maximumBackClip = 10000 * Constant.oneKilometer;
+        // In this case we are running up against the zBuffer resolution limitation (currently 24 bits).
+        // Set back clipping plane at 10 kilometer which gives us a front clipping plane about 3 meters.
+        // Decreasing the maximumBackClip (MicroStation uses 1 kilometer) will reduce the minimum front
+        // clip, but also reduce the back clip (so far geometry may not be visible).
+        const maximumBackClip = 10 * Constant.oneKilometer;
         if (-zBack > maximumBackClip) {
           zBack = -maximumBackClip;
           eyeToOrigin.z = zBack;
