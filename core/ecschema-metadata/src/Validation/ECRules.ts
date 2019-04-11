@@ -27,9 +27,11 @@ function getCode(code: number): string {
   return ruleSetName + ":" + code;
 }
 
-/** The unique diagnostic codes for ECObjects rules. */
-// tslint:disable-next-line:variable-name
-export const DiagnosticCodes = {
+/**
+ * The unique diagnostic codes for ECObjects rules.
+ * @beta
+ */
+export const DiagnosticCodes = { // tslint:disable-line:variable-name
   BaseClassIsSealed: getCode(100),
   BaseClassOfDifferentType: getCode(101),
   IncompatibleValueTypePropertyOverride: getCode(102),
@@ -47,9 +49,9 @@ export const DiagnosticCodes = {
 
 /**
  * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+ * @beta
  */
-// tslint:disable-next-line:variable-name
-export const Diagnostics = {
+export const Diagnostics = { // tslint:disable-line:variable-name
   /** Required message parameters: childClass.FullName, baseClass.FullName */
   BaseClassIsSealed: createClassDiagnosticClass<[string, string]>(DiagnosticCodes.BaseClassIsSealed,
     "Class '{0}' cannot derive from sealed base class '{1}'."),
@@ -103,9 +105,11 @@ export const Diagnostics = {
     "The constraint class '{0}' on the {1}-Constraint of '{2}' is not derived from the abstract constraint class '{3}'."),
 };
 
-/** All schema validation rules that fall under the category of ECObjects. */
-// tslint:disable-next-line:variable-name
-export const ECRuleSet: IRuleSet = {
+/**
+ * All schema validation rules that fall under the category of ECObjects.
+ * @beta
+ */
+export const ECRuleSet: IRuleSet = { // tslint:disable-line:variable-name
   name: ruleSetName,
   classRules: [
     baseClassIsSealed,
@@ -154,7 +158,7 @@ export async function* baseClassIsSealed(ecClass: AnyClass): AsyncIterable<Class
 
 /**
  * EC Rule: Base and child class must be of the same type (i.e. Entity, Mixin, Relationship, etc.)
- * @internal Should we make
+ * @internal
  */
 export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncIterable<ClassDiagnostic<any[]>> {
   if (!ecClass.baseClass)
@@ -366,7 +370,7 @@ export async function* mixinAppliedToClassMustDeriveFromConstraint(entityClass: 
 }
 
 /** EC Rule: CustomAttribute instance must be of a concrete CustomAttributeClass. */
-export async function* customAttributeNotOfConcreteClass(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any []>> {
+export async function* customAttributeNotOfConcreteClass(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
   const schema = container.schema;
   const caClass = await schema.lookupItem(customAttribute.className) as ECClass;
   if (!caClass)

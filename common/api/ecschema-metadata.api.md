@@ -64,9 +64,7 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
     abstract readonly schema: Schema;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "BaseRule" is marked as @public, but its signature references "AnyECType" which is marked as @beta
-// 
-// @public (undocumented)
+// @beta (undocumented)
 export type BaseRule<T extends AnyECType, U extends AnyECType> = IRule<T, U>;
 
 // @beta
@@ -329,7 +327,7 @@ export const enum DiagnosticCategory {
 // @beta (undocumented)
 export function diagnosticCategoryToString(category: DiagnosticCategory): "Error" | "Warning" | "Message" | "Suggestion";
 
-// @public
+// @beta
 export const DiagnosticCodes: {
     BaseClassIsSealed: string;
     BaseClassOfDifferentType: string;
@@ -346,7 +344,7 @@ export const DiagnosticCodes: {
     EnumerationTypeUnsupported: string;
 };
 
-// @public
+// @beta
 export const Diagnostics: {
     BaseClassIsSealed: {
         new (ecClass: AnyClass, messageArgs: [string, string]): {
@@ -688,9 +686,7 @@ export const enum ECObjectsStatus {
     UnableToLocateSchema = 35071
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "ECRuleSet" is marked as @public, but its signature references "IRuleSet" which is marked as @beta
-// 
-// @public
+// @beta
 export const ECRuleSet: IRuleSet;
 
 // @internal (undocumented)
@@ -1086,10 +1082,7 @@ export class InvertedUnit extends SchemaItem {
     protected _unitSystem?: LazyLoadedUnitSystem;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "IRule" is marked as @public, but its signature references "AnyECType" which is marked as @beta
-// Warning: (ae-incompatible-release-tags) The symbol "IRule" is marked as @public, but its signature references "BaseDiagnostic" which is marked as @beta
-// 
-// @public
+// @beta
 export type IRule<T extends AnyECType, U = {}> = (ecDefinition: T, ...args: U[]) => AsyncIterable<BaseDiagnostic<T, any[]>>;
 
 // @beta
@@ -2407,21 +2400,6 @@ export class UnitSystem extends SchemaItem {
     readonly schemaItemType: SchemaItemType.UnitSystem;
 }
 
-
-// Warnings were encountered during analysis:
-// 
-// src/Validation/ECRules.ts:40:9 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyClass" which is marked as @beta
-// src/Validation/ECRules.ts:53:9 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyClass" which is marked as @beta
-// src/Validation/ECRules.ts:65:3 - (ae-incompatible-release-tags) The symbol "ecDefinition" is marked as @public, but its signature references "RelationshipClass" which is marked as @beta
-// src/Validation/ECRules.ts:66:9 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyProperty" which is marked as @beta
-// src/Validation/ECRules.ts:67:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyProperty" which is marked as @beta
-// src/Validation/ECRules.ts:79:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "AnyProperty" which is marked as @beta
-// src/Validation/ECRules.ts:91:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "RelationshipConstraint" which is marked as @beta
-// src/Validation/ECRules.ts:103:7 - (ae-incompatible-release-tags) The symbol "__new" is marked as @public, but its signature references "RelationshipConstraint" which is marked as @beta
-// src/Validation/ECRules.ts:121:11 - (ae-incompatible-release-tags) The symbol "ecDefinition" is marked as @public, but its signature references "Enumeration" which is marked as @beta
-// src/Validation/ECRules.ts:134:11 - (ae-incompatible-release-tags) The symbol "ecDefinition" is marked as @public, but its signature references "EntityClass" which is marked as @beta
-// src/Validation/ECRules.ts:159:11 - (ae-incompatible-release-tags) The symbol "ecDefinition" is marked as @public, but its signature references "RelationshipClass" which is marked as @beta
-// src/Validation/ECRules.ts:172:11 - (ae-incompatible-release-tags) The symbol "ecDefinition" is marked as @public, but its signature references "RelationshipClass" which is marked as @beta
 
 // (No @packageDocumentation comment for this package)
 
