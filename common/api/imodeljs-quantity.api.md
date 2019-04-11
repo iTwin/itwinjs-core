@@ -175,16 +175,10 @@ export class Formatter {
     static formatQuantity(magnitude: number, spec: FormatterSpec): string;
     }
 
-// @public
+// @alpha
 export class FormatterSpec {
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "Format" which is marked as @alpha
     constructor(name: string, format: Format, conversions?: UnitConversionSpec[]);
-    // Warning: (ae-incompatible-release-tags) The symbol "create" is marked as @public, but its signature references "Format" which is marked as @alpha
-    // Warning: (ae-incompatible-release-tags) The symbol "create" is marked as @public, but its signature references "UnitsProvider" which is marked as @alpha
-    // Warning: (ae-incompatible-release-tags) The symbol "create" is marked as @public, but its signature references "UnitProps" which is marked as @alpha
     static create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec>;
-    // Warning: (ae-incompatible-release-tags) The symbol "format" is marked as @public, but its signature references "Format" which is marked as @alpha
-    // 
     // (undocumented)
     readonly format: Format;
     // (undocumented)
@@ -370,10 +364,8 @@ export interface UnitConversion {
     offset: number;
 }
 
-// @public
+// @alpha
 export interface UnitConversionSpec {
-    // Warning: (ae-incompatible-release-tags) The symbol "conversion" is marked as @public, but its signature references "UnitConversion" which is marked as @alpha
-    // 
     // (undocumented)
     conversion: UnitConversion;
     // (undocumented)
