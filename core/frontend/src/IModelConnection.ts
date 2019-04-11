@@ -225,6 +225,7 @@ export class IModelConnection extends IModel {
     });
 
     let openPromise: Promise<IModel>;
+    requestContext.useContextForRpc = true;
     if (openMode === OpenMode.ReadWrite)
       openPromise = IModelWriteRpcInterface.getClient().openForWrite(iModelToken);
     else
@@ -284,6 +285,7 @@ export class IModelConnection extends IModel {
     IModelConnection.onClose.raiseEvent(this);
     this.models.onIModelConnectionClose();  // free WebGL resources if rendering
 
+    requestContext.useContextForRpc = true;
     const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken); // Ensure the method isn't await-ed right away.
     try {
       await closePromise;
