@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Range3d, ClipVector, ClipMask, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d } from "@bentley/geometry-core";
+import { Range3d, ClipVector, ClipMaskXYZRangePlanes, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d } from "@bentley/geometry-core";
 import { Placement2d, Placement3d, Placement2dProps, ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { BeButtonEvent, EventHandled } from "./Tool";
@@ -122,7 +122,7 @@ export class ViewClipTool extends PrimitiveTool {
     if (range.isNull || range.isAlmostZeroX || range.isAlmostZeroY)
       return false;
     const clip = ClipVector.createEmpty();
-    const block = ClipShape.createBlock(range, range.isAlmostZeroZ ? ClipMask.XAndY : ClipMask.All, false, false, transform);
+    const block = ClipShape.createBlock(range, range.isAlmostZeroZ ? ClipMaskXYZRangePlanes.XAndY : ClipMaskXYZRangePlanes.All, false, false, transform);
     clip.appendReference(block);
     viewport.view.setViewClip(clip);
     viewport.synchWithView(true);

@@ -345,12 +345,14 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   /** multiply each xyz (as a vector) by matrix inverse transpse, renormalize the vector, replace values.
    * * This is the way to apply a matrix (possibly with skew and scale) to a surface normal, and
    *      have it end up perpendicular to the transformed in-surface vectors.
-   *
+   * * Return false if matrix is not invertible or if any normalization fails.
    */
-  public multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix: Matrix3d) {
+  public multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix: Matrix3d): boolean {
     const data = this._data;
     const nDouble = this.float64Length;
-    const coffs = matrix.coffs;
+    if (!matrix.computeCachedInverse(true))
+      return false;
+    const coffs = matrix.inverseCoffs!;
     const tol = 1.0e-15;
     let x = 0;
     let y = 0;
@@ -360,17 +362,19 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     let z1;
     let q;
     let a;
+    let numFail = 0;
     for (let i = 0; i + 2 <= nDouble; i += 3) {
       x = data[i];
       y = data[i + 1];
       z = data[i + 2];
-      x1 = coffs[0] * x + coffs[1] * y + coffs[2] * z;
-      y1 = coffs[3] * x + coffs[4] * y + coffs[5] * z;
-      z1 = coffs[6] * x + coffs[7] * y + coffs[8] * z;
+      x1 = coffs[0] * x + coffs[3] * y + coffs[6] * z;
+      y1 = coffs[1] * x + coffs[4] * y + coffs[7] * z;
+      z1 = coffs[2] * x + coffs[5] * y + coffs[8] * z;
       a = x1 * x1 + y1 * y1 + z1 * z1;
       if (a < tol) {
         // put the originals back ..
         x1 = x; y1 = y; z1 = z;
+        numFail++;
       } else if (Math.abs(a - 1.0) > tol) {
         q = 1.0 / Math.sqrt(a);
         x1 *= q;
@@ -381,6 +385,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
       data[i + 1] = y1;
       data[i + 2] = z1;
     }
+    return numFail === 0;
   }
 
   /** multiply each point by the transform, replace values. */

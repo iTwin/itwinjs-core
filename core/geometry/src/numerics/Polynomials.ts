@@ -489,32 +489,31 @@ export class AnalyticRoots {
       return (roots.atUncheckedIndex(i) > roots.atUncheckedIndex(i - 1));
     }
   }
-  private static newtonMethodAdjustment(coffs: Float64Array | number[], root: number, order: number) {
-    if (order === 3) {
-      const f = coffs[0] + root * (coffs[1] + root * (coffs[2] + root * coffs[3]));
-      const df = coffs[1] + root * (2.0 * coffs[2] + root * 3.0 * coffs[3]);
-      return f / df;
-    } else if (order === 4) {
-      const f = coffs[0] + root * (coffs[1] + root * (coffs[2] + root * (coffs[3] + root * coffs[4])));
-      const df = coffs[1] + root * (2.0 * coffs[2] + root * (3.0 * coffs[3] + root * 4.0 * coffs[4]));
-      return f / df;
-    } else {
-      return 0;
+  private static newtonMethodAdjustment(coffs: Float64Array | number[], root: number, degree: number): number | undefined {
+    let p = coffs[degree];
+    let q = 0.0;
+    for (let i = degree - 1; i >= 0; i--) {
+      q = p + root * q;
+      p = coffs[i] + root * p;
     }
+    if (Math.abs(q) >= 1.0e-14 * (1.0 + Math.abs(root))) {
+      return p / q;
+    }
+    return undefined;
   }
-  private static improveSortedRoots(coffs: Float64Array | number[], degree: number, roots: GrowableFloat64Array) {
+  private static improveRoots(coffs: Float64Array | number[], degree: number, roots: GrowableFloat64Array, restrictOrderChanges: boolean) {
     const relTol = 1.0e-10;
 
     // Loop through each root
     for (let i = 0; i < roots.length; i++) {
       let dx = this.newtonMethodAdjustment(coffs, roots.atUncheckedIndex(i), degree);
-      if (!dx) continue;  // skip if newton step had divide by zero.
+      if (dx === undefined || dx === 0.0) continue;  // skip if newton step had divide by zero.
       const originalValue = roots.atUncheckedIndex(i);
       let counter = 0;
       let convergenceCounter = 0;
 
       // Loop through applying changes to found root until dx is diminished or counter is hit
-      while (dx !== 0 && (counter < 10)) {
+      while (dx !== undefined && dx !== 0.0 && (counter < 10)) {
         // consider it converged if two successive iterations satisfy the (not too demanding) tolerance.
         if (Math.abs(dx) < relTol * (1.0 + Math.abs(roots.atUncheckedIndex(i)))) {
           if (++convergenceCounter > 1)
@@ -528,7 +527,7 @@ export class AnalyticRoots {
 
         // If root is thrown past one of its neighboring roots, unstable condition is assumed.. revert
         // to originally found root
-        if (!this.checkRootProximity(roots, i)) {
+        if (restrictOrderChanges && !this.checkRootProximity(roots, i)) {
           roots.reassign(i, originalValue);
           break;
         }
@@ -688,7 +687,7 @@ export class AnalyticRoots {
       results.push(origin + t * Math.cos(phi));
       results.push(origin - t * Math.cos(phi + Math.PI / 3));
       results.push(origin - t * Math.cos(phi - Math.PI / 3));
-      this.improveSortedRoots(c, 3, results);
+      this.improveRoots(c, 3, results, false);
 
       return;
     } else {    // One real solution
@@ -696,7 +695,7 @@ export class AnalyticRoots {
       const u = this.cbrt(sqrt_D - q);
       const v = -(this.cbrt(sqrt_D + q));
       results.push(origin + u + v);
-      this.improveSortedRoots(c, 3, results);
+      this.improveRoots(c, 3, results, false);
       return;
     }
   }
@@ -801,7 +800,7 @@ export class AnalyticRoots {
     this.addConstant(origin, results);
 
     results.sort();
-    this.improveSortedRoots(c, 4, results);
+    this.improveRoots(c, 4, results, true);
 
     return;
   }

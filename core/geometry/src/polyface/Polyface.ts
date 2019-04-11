@@ -510,14 +510,23 @@ export class IndexedPolyface extends Polyface {
  * * The readIndex value (as a number) is not promised to be sequential. (I.e. it might be a simple facet count or might be
  */
 export interface PolyfaceVisitor extends PolyfaceData {
+  /** Load data for the facet with given index. */
   moveToReadIndex(index: number): boolean;
+  /** Return  the readIndex of the currently loaded facet */
   currentReadIndex(): number;
+  /** Load data for th enext facet. */
   moveToNextFacet(): boolean;
+  /** Reset to initial state for reading all facets sequentially with moveToNextFacet */
   reset(): void;
+  /** Return the point index of vertex i within the currently loaded facet */
   clientPointIndex(i: number): number;
+  /** Return the param index of vertex i within the currently loaded facet */
   clientParamIndex(i: number): number;
+  /** Return the normal index of vertex i within the currently loaded facet */
   clientNormalIndex(i: number): number;
+  /** Return the color index of vertex i within the currently loaded facet */
   clientColorIndex(i: number): number;
+  /** Return the aux data index of vertex i within the currently loaded facet */
   clientAuxIndex(i: number): number;
 }
 
