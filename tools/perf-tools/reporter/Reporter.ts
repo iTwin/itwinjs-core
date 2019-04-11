@@ -41,7 +41,7 @@ export class PerfReporter {
       finalReport += "Test Suite,Test Name,Value Name,Value,Info\n";
     }
     for (const entry of this._entries) {
-      finalReport += `${entry.testName},${entry.testSuite},${entry.valueName},${entry.value},${entry.info}\n`;
+      finalReport += `${entry.testName},${entry.testSuite},${entry.valueName},${entry.value},${JSON.stringify(entry.info)}\n`;
     }
     fs.appendFileSync(fileName, finalReport);
   }
