@@ -11,11 +11,11 @@
     "lint": "tslint --project . 1>&2",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2",
     "test": "",
-    "test:chrome": "npm run test-integration:chrome -- --invert",
-    "test:electron": "npm run test-integration:electron -- --invert",
-    "test-integration": "npm run test-integration:chrome && npm run test-integration:electron",
-    "test-integration:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js  -r chrome --grep \"#integration\"",
-    "test-integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\""
+    "test:chrome": "npm run test-frontendBackend:chrome -- --invert",
+    "test:electron": "npm run test-frontendBackend:electron -- --invert",
+    "test-frontendBackend": "npm run test-frontendBackend:chrome && npm run test-frontendBackend:electron",
+    "test-frontendBackend:chrome": "node --max-http-header-size=16000 ./node_modules/@bentley/certa/bin/certa.js  -r chrome --grep \"#integration\"",
+    "test-frontendBackend:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron --grep \"#integration\""
   },
   "repository": {},
   "dependencies": {
