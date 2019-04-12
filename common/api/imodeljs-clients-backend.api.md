@@ -17,11 +17,13 @@ import { OidcClient } from '@bentley/imodeljs-clients';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { ProgressInfo } from '@bentley/imodeljs-clients';
 import { TokenSet } from 'openid-client';
+import { Transform } from 'stream';
+import { TransformCallback } from 'stream';
 import { UserInfo } from '@bentley/imodeljs-clients';
 
 // @public
 export class AzureFileHandler implements FileHandler {
-    constructor(threshold?: number);
+    constructor(useDownloadBuffer?: boolean, threshold?: number);
     // (undocumented)
     agent: https.Agent;
     basename(filePath: string): string;
@@ -31,6 +33,13 @@ export class AzureFileHandler implements FileHandler {
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    }
+
+// @internal
+export class BufferedStream extends Transform {
+    constructor(bufferSize: number);
+    _flush(callback: TransformCallback): void;
+    _transform(chunk: any, encoding: string, callback: TransformCallback): void;
 }
 
 // @public

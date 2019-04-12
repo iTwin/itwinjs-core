@@ -9,7 +9,7 @@ import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, ProgressInf
 import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
-import { Transform, TransformCallback } from "stream";
+import { Transform, TransformCallback, PassThrough } from "stream";
 import { LoggerCategory } from "../LoggerCategory";
 import WriteStreamAtomic = require("fs-write-stream-atomic");
 
@@ -17,36 +17,83 @@ const loggerCategory: string = LoggerCategory.IModelHub;
 
 /**
  * Stream that buffers writing to file.
+ * @internal
  */
-class BufferedStream extends Transform {
+export class BufferedStream extends Transform {
   private _buffer?: Buffer;
-  private _threshold: number;
-  public constructor(threshold: number) {
+  private _bufferPointer: number;
+  private _bufferSize: number;
+  public constructor(bufferSize: number) {
     super();
-    this._threshold = threshold;
+    this._bufferSize = bufferSize;
+    if (!Number.isInteger(this._bufferSize))
+      throw new TypeError(`BufferSize must be integer.`);
   }
 
-  // override
+  private allocNewBuffer(): void {
+    this._buffer = Buffer.allocUnsafe(this._bufferSize);
+    this._bufferPointer = 0;
+  }
+
+  /**
+   * Transforms the data passing through the stream into buffers.
+   * @param chunk The Buffer to be transformed.
+   * @param encoding Encoding type of chunk if chunk is string.
+   * @param callback A callback function (optionally with an error argument and data) to be called after the supplied chunk has been processed.
+   */
   public _transform(chunk: any, encoding: string, callback: TransformCallback): void {   // tslint:disable-line
     if (encoding !== "buffer" && encoding !== "binary")
       throw new TypeError(`Encoding '${encoding}' is not supported.`);
-    if (!this._buffer) {
-      this._buffer = Buffer.from("", "binary");
-    }
-    this._buffer = Buffer.concat([this._buffer, chunk]);
-    if (this._buffer.length > this._threshold) {
-      callback(undefined, this._buffer);
+
+    if (chunk.length >= this._bufferSize) {
+      if (!this._buffer) {
+        callback(undefined, chunk);
+        return;
+      }
+      this._buffer = this._buffer.slice(0, this._bufferPointer);
+      callback(undefined, Buffer.concat([this._buffer, chunk]));
+      this._bufferPointer = 0;
       this._buffer = undefined;
       return;
-    } else {
-      callback();
     }
 
+    if (!this._buffer) {
+      this.allocNewBuffer();
+    }
+
+    if (this._bufferPointer + chunk.length <= this._bufferSize) {
+      chunk.copy(this._buffer, this._bufferPointer, 0, chunk.length);
+      this._bufferPointer += chunk.length;
+      if (this._bufferPointer === this._bufferSize) {
+        callback(undefined, this._buffer);
+        this.allocNewBuffer();
+      } else {
+        callback();
+      }
+    } else {
+      const chunkEndPosition = (this._bufferSize - this._bufferPointer);
+      chunk.copy(this._buffer, this._bufferPointer, 0, chunkEndPosition);
+      this._bufferPointer += chunkEndPosition;
+      callback(undefined, this._buffer);
+
+      this.allocNewBuffer();
+      chunk.copy(this._buffer, this._bufferPointer, chunkEndPosition, chunk.length);
+      this._bufferPointer += chunk.length - chunkEndPosition;
+    }
   }
 
-  // override
+  /**
+   * This will be called when there is no more written data to be consumed, but before the 'end' event is emitted signaling the end of the Readable stream.
+   * @param callback A callback function (optionally with an error argument and data) to be called when remaining data has been flushed.
+   */
   public _flush(callback: TransformCallback): void {   // tslint:disable-line
-    callback(undefined, this._buffer);
+    if (!this._buffer) {
+      callback();
+      return;
+    }
+    callback(undefined, this._buffer.slice(0, this._bufferPointer));
+    this._buffer = undefined;
+    this._bufferPointer = 0;
   }
 }
 
@@ -57,13 +104,25 @@ export class AzureFileHandler implements FileHandler {
   /** @hidden */
   public agent: https.Agent;
   private _threshold: number;
+  private _useDownloadBuffer: boolean | undefined;
 
   /**
    * Constructor for AzureFileHandler.
+   * @param useDownloadBuffer Should Buffering be used when downloading files. If undefined, buffering is enabled only for Azure File Shares mounted with a UNC path.
    * @param threshold Minimum chunk size in bytes for a single file write.
    */
-  constructor(threshold = 1000000) {
+  constructor(useDownloadBuffer?: boolean, threshold = 1024 * 1024 * 20) {
     this._threshold = threshold;
+    this._useDownloadBuffer = useDownloadBuffer;
+  }
+
+  /** Check if using Azure File Share with UNC path. This is a temporary optimization for Design Review, until they move to using SSD disks. */
+  private useBufferedDownload(downloadPath: string): boolean {
+    if (this._useDownloadBuffer === undefined) {
+      return downloadPath.includes("file.core.windows.net");
+    } else {
+      return this._useDownloadBuffer;
+    }
   }
 
   /** Create a directory, recursively setting up the path as necessary. */
@@ -98,7 +157,13 @@ export class AzureFileHandler implements FileHandler {
 
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
 
-    const bufferedStream = new BufferedStream(this._threshold);
+    let bufferedStream: Transform;
+    if (this.useBufferedDownload(downloadToPathname)) {
+      bufferedStream = new BufferedStream(this._threshold);
+    } else {
+      bufferedStream = new PassThrough();
+    }
+
     const fileStream = new WriteStreamAtomic(downloadToPathname, { encoding: "binary" });
     let bytesWritten: number = 0;
 

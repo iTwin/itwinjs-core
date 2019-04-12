@@ -12,6 +12,7 @@ import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
+import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 function mockGetBriefcaseById(imodelId: GuidString, briefcase: Briefcase) {
   if (!TestConfig.enableMocks)
@@ -178,6 +179,25 @@ describe("iModelHub BriefcaseHandler", () => {
     await iModelClient.briefcases.download(requestContext, briefcase, downloadToPathname, progressTracker.track());
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
+  });
+
+  it("should download a Briefcase with Bufferring", async () => {
+    iModelClient.setFileHandler(new AzureFileHandler(true));
+    mockGetBriefcaseWithDownloadUrl(imodelId, utils.generateBriefcase(briefcaseId));
+    const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
+    chai.assert(briefcase.downloadUrl);
+
+    const fileName: string = briefcase.fileName!;
+    const downloadToPathname: string = path.join(utils.workDir, fileName);
+
+    utils.mockFileResponse();
+
+    const progressTracker = new utils.ProgressTracker();
+    await iModelClient.briefcases.download(requestContext, briefcase, downloadToPathname, progressTracker.track());
+    progressTracker.check();
+    fs.existsSync(downloadToPathname).should.be.equal(true);
+
+    iModelClient.setFileHandler(new AzureFileHandler());
   });
 
   it("should get error 409 and fail to get briefcase", async function (this: Mocha.ITestCallbackContext) {
