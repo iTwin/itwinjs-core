@@ -32,6 +32,7 @@ import { RenderGraphic } from "./System";
  * @note For those types for which depth-testing is disabled, the order in which the individual geometric primitives are drawn determines which geometry draws on top of other geometry.
  *  - Within a [[GraphicList]], each [[RenderGraphic]] is rendered in the order in which it appears in the list; and
  *  - Within a single [[RenderGraphic]], each geometric primitive is rendered in the ordered in which it was added to the GraphicBuilder.
+ * @public
  */
 export const enum GraphicType {
   /**
@@ -102,6 +103,7 @@ export const enum GraphicType {
  * @see [[RenderSystem.createGraphicBuilder]].
  * @see [[DecorateContext]].
  * @see [[DynamicsContext]].
+ * @public
  */
 export abstract class GraphicBuilder {
   private readonly _placement: Transform;

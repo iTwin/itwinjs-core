@@ -438,7 +438,9 @@ class Animator {
   }
 }
 
-/** Status for [[ViewportAnimator.animate]]. */
+/** Status for [[ViewportAnimator.animate]].
+ * @public
+ */
 export const enum RemoveMe { No = 0, Yes = 1 }
 
 /** An object to animate a transition of a [[Viewport]].
@@ -448,6 +450,7 @@ export const enum RemoveMe { No = 0, Yes = 1 }
  * The return value of animate() indicates whether to keep the animator active or to remove it.
  * The animator may also be removed in response to certain changes to the viewport - e.g., when
  * the viewport is closed, or its view controller changed, etc.
+ * @public
  */
 export interface ViewportAnimator {
   /** Apply animation to the viewport. Return `RemoveMe.Yes` when animation is completed, causing the animator to be removed from the viewport. */
@@ -463,6 +466,7 @@ export interface ViewportAnimator {
  * active, decorations will be invalidated on each frame. The animator's
  * animateDecorations() function will be invoked to update any animation state; then
  * decorations will be re-requested and rendered.
+ * @alpha
  */
 export class DecorationAnimator implements ViewportAnimator {
   private _start: BeTimePoint;
@@ -496,7 +500,9 @@ export class DecorationAnimator implements ViewportAnimator {
   }
 }
 
-/** Options that control how operations that change a view work. */
+/** Options that control how operations that change a view work.
+ * @public
+ */
 export interface ViewChangeOptions {
   /** Whether to save the result of this change into the view undo stack. Default is yes. */
   saveInUndo?: boolean;
@@ -508,7 +514,9 @@ export interface ViewChangeOptions {
   marginPercent?: MarginPercent;
 }
 
-/** Options to allow changing the view rotation with zoomTo methods. */
+/** Options to allow changing the view rotation with zoomTo methods.
+ * @public
+ */
 export interface ZoomToOptions {
   /** Set view rotation from standard view identifier. */
   standardViewId?: StandardViewId;
@@ -2925,6 +2933,7 @@ export class ScreenViewport extends Viewport {
 /** Forms a 2-way connection between 2 Viewports of the same iModel, such that any change of the parameters in one will be reflected in the other.
  * For example, Navigator uses this class to synchronize two views for revision comparison.
  * @note It is possible to synchronize two Viewports from two different [[IModelConnection]]s of the same iModel.
+ * @alpha
  */
 export class TwoWayViewportSync {
   private _removals: VoidFunction[] = [];

@@ -262,6 +262,7 @@ export class RenderPlan {
  *  - "Scene" graphics generated on the back-end to represent the contents of the models displayed in a [[Viewport]]; and
  *  - [[Decorations]] created on the front-end to be rendered along with the scene.
  * The latter are produced using a [[GraphicBuilder]].
+ * @public
  */
 export abstract class RenderGraphic implements IDisposable, RenderMemory.Consumer {
   public abstract dispose(): void;
@@ -270,7 +271,9 @@ export abstract class RenderGraphic implements IDisposable, RenderMemory.Consume
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
-/** Describes the type of a RenderClipVolume. */
+/** Describes the type of a RenderClipVolume.
+ * @beta
+ */
 export const enum ClippingType {
   /** No clip volume. */
   None,
@@ -280,36 +283,49 @@ export const enum ClippingType {
   Planes,
 }
 
-/** An opaque representation of a clip volume applied to geometry within a [[Viewport]]. */
+/** An opaque representation of a clip volume applied to geometry within a [[Viewport]].
+ * @beta
+ */
 export abstract class RenderClipVolume implements IDisposable {
   /** Returns the type of this clipping volume. */
   public abstract get type(): ClippingType;
   public abstract dispose(): void;
 }
 
-/** An opaque representation of a planar classifier applied to geometry within a [[Viewport]]. */
+/** An opaque representation of a planar classifier applied to geometry within a [[Viewport]].
+ * @beta
+ */
 export abstract class RenderPlanarClassifier implements IDisposable {
   public abstract dispose(): void;
 }
-/** Describes the type of a RenderClassifierModel  */
+
+/** Describes the type of a RenderClassifierModel
+ * @beta
+ */
 export const enum ClassifierType {
   Volume,
   Planar,
 }
 
+/** @beta */
 export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
 
-/** Models that may be used as classifiers.  Detecting their type requires a range query... */
+/** Models that may be used as classifiers.  Detecting their type requires a range query.
+ * @beta
+ */
 export class RenderClassifierModel {
   constructor(public readonly type: ClassifierType) { }
 }
 
-/** An array of [[RenderGraphic]]s. */
+/** An array of [[RenderGraphic]]s.
+ * @public
+ */
 export type GraphicList = RenderGraphic[];
 
 /** A [Decoration]($docs/learning/frontend/ViewDecorations#canvas-decorations))] that is drawn onto the
  * [2d canvas](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) on top of a ScreenViewport.
  * CanvasDecorations may be pickable by implementing [[pick]].
+ * @public
  */
 export interface CanvasDecoration {
   /**
@@ -353,10 +369,13 @@ export interface CanvasDecoration {
   decorationCursor?: string;
 }
 
-/** An array of [[CanvasDecoration]]s */
+/** An array of [[CanvasDecoration]]s.
+ * @public
+ */
 export type CanvasDecorationList = CanvasDecoration[];
 
 /** A set of [[RenderGraphic]]s and [[CanvasDecoration]]s produced by [[Tool]]s and [[Decorator]]s, used to decorate the contents of a [[Viewport]].
+ * @public
  */
 export class Decorations implements IDisposable {
   private _skyBox?: RenderGraphic;
@@ -402,6 +421,7 @@ export class Decorations implements IDisposable {
  * and a transform, symbology overrides, and clip volume which are to be applied when rendering them.
  * Branches can be nested to build an arbitrarily-complex scene graph.
  * @see [[RenderSystem.createBranch]]
+ * @public
  */
 export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
   /** The child nodes of this branch */
@@ -450,6 +470,7 @@ export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
  * @see [[Viewport.readPixels]]
+ * @beta
  */
 export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
@@ -521,6 +542,7 @@ export namespace Pixel {
   export type Receiver = (pixels: Buffer | undefined) => void;
 }
 
+/** @internal */
 export interface PackedFeature {
   elementId: Id64.Uint32Pair;
   subCategoryId: Id64.Uint32Pair;
@@ -531,6 +553,7 @@ export interface PackedFeature {
 /**
  * An immutable, packed representation of a [[FeatureTable]]. The features are packed into a single array of 32-bit integer values,
  * wherein each feature occupies 3 32-bit integers.
+ * @internal
  */
 export class PackedFeatureTable {
   private readonly _data: Uint32Array;
@@ -743,7 +766,9 @@ export abstract class RenderTarget implements IDisposable {
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
 }
 
-/** Describes a texture loaded from an HTMLImageElement */
+/** Describes a texture loaded from an HTMLImageElement
+ * @internal
+ */
 export interface TextureImage {
   /** The HTMLImageElement containing the texture's image data */
   image: HTMLImageElement | undefined;
@@ -765,6 +790,7 @@ export const enum RenderDiagnostics {
 
 /** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
  * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.
+ * @internal
  */
 export interface InstancedGraphicParams {
   /** The number of instances.
@@ -800,6 +826,7 @@ export interface InstancedGraphicParams {
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
  * @see [[IModelApp.renderSystem]].
+ * @public
  */
 export abstract class RenderSystem implements IDisposable {
   /** @internal */
@@ -1028,6 +1055,7 @@ export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint"
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
  * @see [[IModelApp.renderSystem]].
+ * @public
  */
 export namespace RenderSystem {
   /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup.

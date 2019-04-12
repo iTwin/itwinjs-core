@@ -17,7 +17,9 @@ function copyIdSetToUint32Set(dst: Id64.Uint32Set, src?: Set<string>): void {
   }
 }
 
-/** Contains types that enable an application to customize how [Feature]($common)s are drawn within a [[Viewport]]. */
+/** Contains types that enable an application to customize how [Feature]($common)s are drawn within a [[Viewport]].
+ * @public
+ */
 export namespace FeatureSymbology {
   /** Properties used to initialize a [[FeatureSymbology.Appearance]]. */
   export interface AppearanceProps {

@@ -1325,7 +1325,7 @@ export interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.CheckBoxIcons;
 }
 
-// @public
+// @beta
 export const enum ClassifierType {
     // (undocumented)
     Planar = 1,
@@ -1353,7 +1353,7 @@ export const enum ClipOrientation {
     View = 6
 }
 
-// @public
+// @beta
 export const enum ClippingType {
     Mask = 1,
     None = 0,
@@ -1615,7 +1615,7 @@ export class DecorateContext extends RenderContext {
     setViewBackground(graphic: RenderGraphic): void;
 }
 
-// @public
+// @alpha
 export class DecorationAnimator implements ViewportAnimator {
     constructor(duration: BeDuration);
     // (undocumented)
@@ -2979,11 +2979,10 @@ export const enum InputSource {
     Unknown = 0
 }
 
-// @public
+// @internal
 export interface InstancedGraphicParams {
     readonly count: number;
     readonly featureIds?: Uint8Array;
-    // @internal
     readonly symbologyOverrides?: Uint8Array;
     readonly transformCenter: Point3d;
     readonly transforms: Float32Array;
@@ -3883,7 +3882,7 @@ export const enum OutputMessageType {
     Toast = 0
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface PackedFeature {
     // (undocumented)
     animationNodeId: number;
@@ -3895,9 +3894,8 @@ export interface PackedFeature {
     subCategoryId: Id64.Uint32Pair;
 }
 
-// @public
+// @internal
 export class PackedFeatureTable {
-    // @internal
     constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
     // (undocumented)
     readonly anyDefined: boolean;
@@ -3905,12 +3903,12 @@ export class PackedFeatureTable {
     readonly byteLength: number;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number): Feature | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     getAnimationNodeId(featureIndex: number): number;
-    // @internal (undocumented)
+    // (undocumented)
     getElementIdPair(featureIndex: number): Id64.Uint32Pair;
     getFeature(featureIndex: number): Feature;
-    // @internal (undocumented)
+    // (undocumented)
     getPackedFeature(featureIndex: number): PackedFeature;
     // (undocumented)
     readonly isClassifier: boolean;
@@ -3997,12 +3995,13 @@ export interface PingTestResult {
     min: number | undefined;
 }
 
-// @public
+// @beta
 export namespace Pixel {
     export interface Buffer {
         getPixel(x: number, y: number): Data;
     }
     export class Data {
+        // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @beta, but its signature references "PackedFeatureTable" which is marked as @internal
         constructor(feature?: Feature | undefined, distanceFraction?: number, type?: GeometryType, planarity?: Planarity, featureTable?: PackedFeatureTable | undefined);
         // (undocumented)
         readonly distanceFraction: number;
@@ -4010,6 +4009,8 @@ export namespace Pixel {
         readonly elementId: Id64String | undefined;
         // (undocumented)
         readonly feature?: Feature | undefined;
+        // Warning: (ae-incompatible-release-tags) The symbol "featureTable" is marked as @beta, but its signature references "PackedFeatureTable" which is marked as @internal
+        // 
         // (undocumented)
         readonly featureTable?: PackedFeatureTable | undefined;
         // (undocumented)
@@ -4045,7 +4046,7 @@ export namespace Pixel {
     }
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
 
 // @internal
@@ -4324,14 +4325,14 @@ export const enum RemoveMe {
     Yes = 1
 }
 
-// @public
+// @beta
 export class RenderClassifierModel {
     constructor(type: ClassifierType);
     // (undocumented)
     readonly type: ClassifierType;
 }
 
-// @public
+// @beta
 export abstract class RenderClipVolume implements IDisposable {
     // (undocumented)
     abstract dispose(): void;
@@ -4341,6 +4342,8 @@ export abstract class RenderClipVolume implements IDisposable {
 // @public
 export class RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
+    // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderClipVolume" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderPlanarClassifier" which is marked as @beta
     createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
     // @internal (undocumented)
     protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
@@ -4562,7 +4565,7 @@ export class RenderPlan {
     readonly viewFrustum: ViewFrustum;
 }
 
-// @public
+// @beta
 export abstract class RenderPlanarClassifier implements IDisposable {
     // (undocumented)
     abstract dispose(): void;
@@ -4574,6 +4577,8 @@ export abstract class RenderSystem implements IDisposable {
     addSpatialClassificationModel(_modelId: Id64String, _classificationModel: RenderClassifierModel, _iModel: IModelConnection): void;
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
+    // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderClipVolume" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderPlanarClassifier" which is marked as @beta
     abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
     abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
@@ -4626,6 +4631,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     abstract readonly isValid: boolean;
     loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined>;
+    // Warning: (ae-incompatible-release-tags) The symbol "loadTextureImage" is marked as @public, but its signature references "TextureImage" which is marked as @internal
     loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined>;
     // @internal (undocumented)
     readonly maxTextureSize: number;
@@ -5813,7 +5819,7 @@ export class TentativePoint {
     viewport?: ScreenViewport;
 }
 
-// @public
+// @internal
 export interface TextureImage {
     format: ImageSourceFormat | undefined;
     image: HTMLImageElement | undefined;
@@ -6586,7 +6592,7 @@ export class TouchCursor implements CanvasDecoration {
     protected _yOffset: number;
 }
 
-// @public
+// @alpha
 export class TwoWayViewportSync {
     connect(view1: Viewport, view2: Viewport): void;
     disconnect(): void;
@@ -7322,7 +7328,9 @@ export abstract class Viewport implements IDisposable {
     getAuxCoordRotation(result?: Matrix3d): Matrix3d;
     getContrastToBackgroundColor(): ColorDef;
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
+    // Warning: (ae-incompatible-release-tags) The symbol "getPixelDataNpcPoint" is marked as @public, but its signature references "Pixel" which is marked as @beta
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
+    // Warning: (ae-incompatible-release-tags) The symbol "getPixelDataWorldPoint" is marked as @public, but its signature references "Pixel" which is marked as @beta
     getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
     // @internal (undocumented)
@@ -7396,6 +7404,7 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     pointToGrid(point: Point3d): void;
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
+    // Warning: (ae-incompatible-release-tags) The symbol "readPixels" is marked as @public, but its signature references "Pixel" which is marked as @beta
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     // @internal (undocumented)
     removeAnimator(): void;
