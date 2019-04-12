@@ -14,9 +14,9 @@ class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public pointerCallbackCalled = false;
   public settingsCallbackCalled = false;
 
-  public onPlaybackPointerChanged = (pointerValue: number) => {
+  public onAnimationFractionChanged = (animationFraction: number) => {
     this.pointerCallbackCalled = true;
-    this.pointerValue = pointerValue;
+    this.animationFraction = animationFraction;
   }
 
   public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
@@ -31,7 +31,7 @@ describe("Timeline", () => {
     const duration = 20;
     const loop = true;
     const displayDetail = TimelineDetail.Minimal;
-    const testPointerValue = 0.3;
+    const testanimationFraction = 0.3;
 
     class Test1TimelineDataProvider extends TestTimelineDataProvider {
       public async loadTimelineData(): Promise<boolean> {
@@ -55,7 +55,7 @@ describe("Timeline", () => {
       expect(settings.duration).to.be.equal(duration);
       expect(settings.loop).to.be.equal(loop);
       expect(timelineProvider.pointerCallbackCalled).to.be.false;
-      timelineProvider.onPlaybackPointerChanged(testPointerValue);
+      timelineProvider.onAnimationFractionChanged(testanimationFraction);
       expect(timelineProvider.pointerCallbackCalled).to.be.true;
     });
   });
@@ -66,7 +66,7 @@ describe("Timeline", () => {
     const displayDetail = TimelineDetail.Medium;
     const startDate = new Date(2014, 6, 6);
     const endDate = new Date(2016, 8, 12);
-    const testPointerValue = 0.3;
+    const testanimationFraction = 0.3;
 
     class Test2TimelineDataProvider extends TestTimelineDataProvider {
       public async loadTimelineData(): Promise<boolean> {
@@ -95,14 +95,14 @@ describe("Timeline", () => {
       expect(timelineProvider.end).to.be.equal(endDate);
 
       // simulate UI updating pointer to current playback time
-      timelineProvider.onPlaybackPointerChanged(testPointerValue);
+      timelineProvider.onAnimationFractionChanged(testanimationFraction);
       expect(timelineProvider.pointerCallbackCalled).to.be.true;
-      expect(timelineProvider.pointerValue).to.be.equal(testPointerValue);
+      expect(timelineProvider.animationFraction).to.be.equal(testanimationFraction);
     });
   });
 
   describe("Timelines with milestones", () => {
-    const testPointerValue = 0.3;
+    const testanimationFraction = 0.3;
     const duration = 20;
     const loop = true;
     const startDate = new Date(2014, 6, 6);
@@ -151,7 +151,7 @@ describe("Timeline", () => {
       expect(settings.duration).to.be.equal(duration);
       expect(settings.loop).to.be.equal(loop);
       expect(timelineProvider.pointerCallbackCalled).to.be.false;
-      timelineProvider.onPlaybackPointerChanged(testPointerValue);
+      timelineProvider.onAnimationFractionChanged(testanimationFraction);
       expect(timelineProvider.pointerCallbackCalled).to.be.true;
 
       expect(timelineProvider.settingsCallbackCalled).to.be.false;
@@ -165,7 +165,7 @@ describe("Timeline", () => {
   });
 
   describe("Timelines with milestones", () => {
-    const testPointerValue = 0.3;
+    const testanimationFraction = 0.3;
     const duration = 20;
     const loop = true;
     const startDate = new Date(2014, 6, 6);
@@ -228,7 +228,7 @@ describe("Timeline", () => {
       expect(settings.duration).to.be.equal(duration);
       expect(settings.loop).to.be.equal(loop);
       expect(timelineProvider.pointerCallbackCalled).to.be.false;
-      timelineProvider.onPlaybackPointerChanged(testPointerValue);
+      timelineProvider.onAnimationFractionChanged(testanimationFraction);
       expect(timelineProvider.pointerCallbackCalled).to.be.true;
 
       const foundMilestone = timelineProvider.findMilestoneById("3-3-3");

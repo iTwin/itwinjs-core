@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ViewportComponent, BaseTimelineDataProvider, PlaybackSettings, TimelineDetail, TimelineDataProvider, Milestone } from "@bentley/ui-components";
+import { ViewportComponent, TimelineDataProvider } from "@bentley/ui-components";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ViewportContentControl, ContentViewManager } from "@bentley/ui-framework";
 import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
@@ -13,99 +13,7 @@ import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { SampleAppIModelApp } from "../..";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { LoadingSpinner } from "@bentley/ui-core";
-
-/** ScheduleAnimation Timeline Data Provider - handles View that define 'scheduleScript' data. */
-class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvider {
-  private _viewState: ViewState;
-
-  constructor(viewState: ViewState) {
-    super();
-    this._viewState = viewState;
-    if (viewState && viewState.scheduleScript) {
-      this.supportsTimelineAnimation = true;
-    }
-  }
-
-  public async loadTimelineData(): Promise<boolean> {
-    if (this.supportsTimelineAnimation && this._viewState.scheduleScript) {
-      // for now just initial settings
-      this.updateSettings({
-        duration: 20 * 1000,
-        loop: true,
-        displayDetail: TimelineDetail.Medium,
-      });
-
-      const timeRange = this._viewState.scheduleScript!.duration;
-      this.start = new Date(timeRange.low * 1000);
-      this.end = new Date(timeRange.high * 1000);
-
-      const quarter = (this.end.getTime() - this.start.getTime()) / 4;
-      const milestones: Milestone[] = [];
-      milestones.push({ id: "1", label: "1st Floor Concrete", date: new Date(this.start.getTime() + quarter), readonly: true });
-      milestones.push({ id: "2", label: "2nd Floor Concrete", date: new Date(this.end.getTime() - quarter), readonly: true });
-      this._milestones = milestones;
-
-      return Promise.resolve(true);
-    }
-
-    return Promise.resolve(false);
-  }
-
-  // const fraction = (pointerValue.getTime() - this.start.getTime()) / (this.end.getTime() - this.start.getTime());
-
-  public onPlaybackPointerChanged = (pointerValue: number) => {
-    this.pointerValue = pointerValue;
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.animationFraction = pointerValue;
-    }
-  }
-
-  public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
-    this.updateSettings(settings);
-  }
-}
-
-/**  Analysis Timeline Data Provider - handles View that define 'analysisStyle' data. */
-
-class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvider {
-  private _viewState: ViewState;
-
-  constructor(viewState: ViewState) {
-    super();
-    this._viewState = viewState;
-    if (viewState && viewState.analysisStyle) {
-      this.supportsTimelineAnimation = true;
-    }
-  }
-
-  public async loadTimelineData(): Promise<boolean> {
-    if (this.supportsTimelineAnimation && this._viewState.analysisStyle) {
-      // for now just initial settings
-      this.updateSettings({
-        duration: 20 * 1000,
-        loop: true,
-        displayDetail: TimelineDetail.Minimal,
-      });
-
-      return Promise.resolve(true);
-    }
-
-    return Promise.resolve(false);
-  }
-
-  public onPlaybackPointerChanged = (pointerValue: number) => {
-    this.pointerValue = pointerValue;
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.animationFraction = pointerValue;
-    }
-  }
-
-  public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
-    this.updateSettings(settings);
-  }
-}
+import { ScheduleAnimationTimelineDataProvider, AnalysisAnimationTimelineDataProvider } from "../contentviews/AnimationViewOverlay";
 
 // create a HOC viewport component that supports unified selection
 // tslint:disable-next-line:variable-name
@@ -253,7 +161,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
               totalDuration={this.state.dataProvider.getSettings().duration}
               milestones={this.state.dataProvider.getMilestones()}
               hideTimeline={this.state.dataProvider.getMilestones().length === 0}
-              onChange={this.state.dataProvider.onPlaybackPointerChanged} />
+              onChange={this.state.dataProvider.onAnimationFractionChanged} />
           </div>
         }
       </div>

@@ -18,7 +18,7 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
   public start: Date | undefined;
   public end: Date | undefined;
   public supportsTimelineAnimation = false; // set to true when provider determines animation data is available.
-  public pointerValue: number = 0;
+  public animationFraction: number = 0; // value from 0.0 to 1.0 that specifies the percentage complete for the animation.
   protected _milestones: Milestone[] = [];
   private _settings: PlaybackSettings = {
     duration: 20,
@@ -28,6 +28,11 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
 
   public async loadTimelineData(): Promise<boolean> {
     return Promise.resolve(false);
+  }
+
+  /** Called to get the initial scrubber location */
+  public getInitialDuration(): number {
+    return this.getSettings().duration * this.animationFraction;
   }
 
   public getMilestonesCount(parent?: Milestone): number {
@@ -121,6 +126,6 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
   public onPlaybackSettingChanged = (_settings: PlaybackSettings) => {
   }
 
-  public onPlaybackPointerChanged = (_pointerValue: number) => {
+  public onAnimationFractionChanged = (_animationFraction: number) => {
   }
 }

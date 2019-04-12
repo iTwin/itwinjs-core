@@ -17,9 +17,11 @@ interface TimelineComponentProps {
   startDate?: Date; // start date
   endDate?: Date;   // end date
   totalDuration: number;  // total duration in milliseconds
+  initialDuration?: number;  // initial value for current duration in milliseconds
   milestones?: Milestone[]; // optional milestones
   hideTimeline?: boolean;  // show in mini-mode
   onChange?: (duration: number) => void; // callback with current value (as a fraction)
+  onPlayPause?: (playing: boolean) => void; // callback with play/pause button is pressed
 }
 
 interface TimelineComponentState {
@@ -44,7 +46,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       isSettingsOpen: false,
       isPlaying: false,
       hideTimeline: this.props.hideTimeline,
-      currentDuration: 0,
+      currentDuration: props.initialDuration ? props.initialDuration : 0,
       totalDuration: this.props.totalDuration,
       repeat: false,
     };
@@ -73,6 +75,9 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       this._replay();
     } else
       this._play();
+
+    if (this.props.onPlayPause)
+      this.props.onPlayPause(true);
   }
 
   // user clicked pause button
@@ -85,6 +90,9 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
     // stop playing
     this.setState({ isPlaying: false });
+
+    if (this.props.onPlayPause)
+      this.props.onPlayPause(false);
   }
 
   // user clicked on timeline rail or dragged scrubber handle
@@ -139,7 +147,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
   private _replay = () => {
     // timeline was complete, restart from the beginning
-    this.setState ( {currentDuration: 0}, (() => this._play() ));
+    this.setState({ currentDuration: 0 }, (() => this._play()));
   }
 
   private _displayTime(millisec: number) {
@@ -170,19 +178,19 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   }
 
   private _onSettingsClick = () => {
-    this.setState ({ isSettingsOpen: !this.state.isSettingsOpen });
+    this.setState({ isSettingsOpen: !this.state.isSettingsOpen });
   }
 
   private _onCloseSettings = () => {
-    this.setState ({ isSettingsOpen: false });
+    this.setState({ isSettingsOpen: false });
   }
 
   private _onHideTimelineChanged = () => {
-    this.setState ({ hideTimeline: !this.state.hideTimeline, isSettingsOpen: false });
+    this.setState({ hideTimeline: !this.state.hideTimeline, isSettingsOpen: false });
   }
 
   private _onLoopChanged = () => {
-    this.setState ({ repeat: !this.state.repeat, isSettingsOpen: false });
+    this.setState({ repeat: !this.state.repeat, isSettingsOpen: false });
   }
 
   private _currentDate = (): Date => {
@@ -195,7 +203,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   }
 
   private _renderSettings = () => {
-    const className = classnames ("timeline-settings icon icon-more-vertical-2", this.state.hideTimeline && "mini-mode");
+    const className = classnames("timeline-settings icon icon-more-vertical-2", this.state.hideTimeline && "mini-mode");
     const expandName = (this.state.hideTimeline) ? "Expand" : "Minimize";
     return (
       <>
@@ -210,13 +218,14 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
   public render() {
     const { startDate, endDate, milestones } = this.props;
-    const { totalDuration } = this.state;
+    const { currentDuration, totalDuration, hideTimeline } = this.state;
     const currentDate = this._currentDate();
-    const durationString = this._displayTime(totalDuration);
+    const durationString = this._displayTime(currentDuration);
+    const totalDurationString = this._displayTime(totalDuration);
     // const miniMode = this.state.hideTimeline || undefined === startDate || undefined === endDate;
     // const hasMilestones = this.props.milestones && this.props.milestones.length > 0 ? true : false;
-    const hasDates = this.props.startDate && this.props.endDate ? true : false;
-    const miniMode = this.state.hideTimeline || !hasDates;
+    const hasDates = startDate && endDate ? true : false;
+    const miniMode = hideTimeline || !hasDates;
 
     return (
       <div className="timeline-component">
@@ -247,7 +256,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
         }
         <div className="scrubber">
           {miniMode && <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />}
-          <span className="start-time">00:00</span>
+          <span className="start-time">{durationString}</span>
           <Scrubber
             className="scrubber-scrubber"
             currentDuration={this.state.currentDuration}
@@ -255,7 +264,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
             isPlaying={this.state.isPlaying}
             onChange={this._onTimelineChange}
             onUpdate={this._onTimelineChange} />
-          <InlineEdit className="end-time" defaultValue={durationString} onChange={this._onTotalDurationChange} />
+          <InlineEdit className="end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />
           {miniMode && this._renderSettings()}
         </div>
       </div>

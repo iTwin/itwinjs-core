@@ -73,6 +73,9 @@ export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement>, 
     onAlphaChange?: ((alpha: number) => void) | undefined;
 }
 
+// @alpha
+export type AnimationFractionChangeHandler = (animationFraction: number) => void;
+
 // @public
 export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
@@ -124,11 +127,14 @@ export abstract class BasePointTypeConverter extends TypeConverter {
 // @alpha
 export class BaseTimelineDataProvider implements TimelineDataProvider {
     // (undocumented)
+    animationFraction: number;
+    // (undocumented)
     deleteMilestones(milestonesToDelete: Milestone[]): Promise<boolean>;
     // (undocumented)
     end: Date | undefined;
     // (undocumented)
     findMilestoneById(milestoneId: string, milestones?: Milestone[]): Milestone | undefined;
+    getInitialDuration(): number;
     // (undocumented)
     getMilestones(parent?: Milestone): Milestone[];
     // (undocumented)
@@ -142,11 +148,9 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     // (undocumented)
     protected _milestones: Milestone[];
     // (undocumented)
-    onPlaybackPointerChanged: (_pointerValue: number) => void;
+    onAnimationFractionChanged: (_animationFraction: number) => void;
     // (undocumented)
     onPlaybackSettingChanged: (_settings: PlaybackSettings) => void;
-    // (undocumented)
-    pointerValue: number;
     saveMilestones(milestones: Milestone[], parent?: Milestone): Promise<boolean>;
     // (undocumented)
     start: Date | undefined;
@@ -1385,9 +1389,6 @@ export interface PageOptions {
 }
 
 // @alpha
-export type PlaybackPointerChangeHandler = (pointerValue: number) => void;
-
-// @alpha
 export interface PlaybackSettings {
     allowMilestoneEdits?: boolean;
     dateDisplay?: TimelineDateDisplay;
@@ -2242,16 +2243,17 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
 
 // @alpha
 export interface TimelineDataProvider {
+    animationFraction?: number;
     deleteMilestones(milestones: Milestone[]): Promise<boolean>;
     end?: Date;
+    getInitialDuration(): number;
     getMilestones(parent?: Milestone): Milestone[];
     getMilestonesCount(parent?: Milestone): number;
     getSettings(): PlaybackSettings;
     id: string;
     loadTimelineData(): Promise<boolean>;
-    onPlaybackPointerChanged?: PlaybackPointerChangeHandler;
+    onAnimationFractionChanged?: AnimationFractionChangeHandler;
     onPlaybackSettingChanged?: PlaybackSettingsChangeHandler;
-    pointerValue?: number;
     saveMilestones(milestones: Milestone[], parent?: Milestone): Promise<boolean>;
     start?: Date;
     supportsTimelineAnimation: boolean;

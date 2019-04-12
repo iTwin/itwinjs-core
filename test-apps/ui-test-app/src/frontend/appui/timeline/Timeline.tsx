@@ -247,7 +247,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
     const handles: number[] = [];
 
     if (milestones) {
-      milestones.forEach((milestone: Milestone) => handles.push(milestone.date.getTime()) );
+      milestones.forEach((milestone: Milestone) => handles.push(milestone.date.getTime()));
     }
 
     return handles;

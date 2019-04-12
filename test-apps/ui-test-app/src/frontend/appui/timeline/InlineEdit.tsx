@@ -33,7 +33,7 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
   }
 
   private _onBlur = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this._sendChange (event.target.value);
+    this._sendChange(event.target.value);
   }
 
   private _onFocus = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,9 +42,9 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
 
   private _onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Escape") {
-      this.setState( {value: this.state.originalValue}, (() => this._inputRef.current!.select()) );
+      this.setState({ value: this.state.originalValue }, (() => this._inputRef.current!.select()));
     } else if (event.key === "Enter") {
-      this._sendChange (this.state.value);
+      this._sendChange(this.state.value);
     }
   }
 
@@ -52,7 +52,7 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
     this.setState({ value: event.target.value });
   }
 
-  private _sendChange (value: string) {
+  private _sendChange(value: string) {
     if (this.props.onChange)
       this.props.onChange(value);
   }

@@ -97,7 +97,7 @@ export interface PlaybackSettings {
  * An interface used to notify Handlers of the current pointer position in the timeline playback. Valid range is 0 to 1 and it determines percentage complete.
  * @alpha
  */
-export type PlaybackPointerChangeHandler = (pointerValue: number) => void;
+export type AnimationFractionChangeHandler = (animationFraction: number) => void;
 
 /**
  * An interface used to notify Handlers of Playback Settings changes.
@@ -118,8 +118,8 @@ export interface TimelineDataProvider {
   start?: Date;
   /** End date for entire timeline */
   end?: Date;
-  /** Current pointer date */
-  pointerValue?: number;
+  /** Current animation fraction from 0.0 to 1.0 */
+  animationFraction?: number;
   /** Get count of milestones. If parent milestone is not defined then the number of root milestones will be returned. */
   getMilestonesCount(parent?: Milestone): number;
   /** Get array of milestones. If parent milestone is not defined then the root milestones will be returned. */
@@ -128,8 +128,10 @@ export interface TimelineDataProvider {
   saveMilestones(milestones: Milestone[], parent?: Milestone): Promise<boolean>;
   /** Called to delete one or more milestone */
   deleteMilestones(milestones: Milestone[]): Promise<boolean>;
-  /** Called to get the playback settings */
+  /** Called to get the playback settings. */
   getSettings(): PlaybackSettings;
+  /** Called to get the initial scrubber location. This must be a value between 0 and the duration in PlaybackSettings. */
+  getInitialDuration(): number;
   /** Called to save the playback settings */
   updateSettings(settings: PlaybackSettings): void;
   /** Async call to load milestone and settings data */
@@ -137,5 +139,5 @@ export interface TimelineDataProvider {
   /** Called when an internal process has defined the playback settings and the UI needs to be updated */
   onPlaybackSettingChanged?: PlaybackSettingsChangeHandler;
   /** Called when the an internal process has defined the playback settings and the UI needs to be updated */
-  onPlaybackPointerChanged?: PlaybackPointerChangeHandler;
+  onAnimationFractionChanged?: AnimationFractionChangeHandler;
 }

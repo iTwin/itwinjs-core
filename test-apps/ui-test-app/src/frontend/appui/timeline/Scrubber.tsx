@@ -25,6 +25,7 @@ interface TooltipRailProps {
   activeHandleID?: string;
   getRailProps: (props: object) => object;
   getEventData: (e: Event) => object;
+  isPlaying: boolean;  // used to not show tooltip at mouse location if timeline is playing
 }
 
 interface TooltipRailState {
@@ -69,11 +70,11 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
 
   public render() {
     const { value, percent } = this.state;
-    const { activeHandleID, getRailProps } = this.props;
+    const { activeHandleID, getRailProps, isPlaying } = this.props;
 
     return (
       <>
-        {!activeHandleID && value ? (
+        {!activeHandleID && value && !isPlaying ? (
           <div className="tooltip-rail" style={{ left: `${percent}%` }}>
             <div className="tooltip">
               <span className="tooltip-text">{formatDate(value)}</span>
@@ -100,6 +101,7 @@ interface HandleProps {
   key: string;
   handle: SliderItem;
   disabled?: boolean;
+  isPlaying?: boolean;
   domain: number[];
   getHandleProps: (id: string, config: object) => object;
 }
@@ -116,7 +118,7 @@ class Handle extends React.Component<HandleProps, HandleState> {
   constructor(props: HandleProps) {
     super(props);
 
-    this.state = {mouseOver: false};
+    this.state = { mouseOver: false };
   }
 
   private _onMouseEnter = () => {
@@ -131,28 +133,32 @@ class Handle extends React.Component<HandleProps, HandleState> {
     const {
       domain: [min, max],
       handle: { id, value, percent },
-      disabled,
+      isPlaying,
       getHandleProps,
     } = this.props;
     const { mouseOver } = this.state;
 
     return (
       <>
-        {(mouseOver) && !disabled ? (
-          <div className="tooltip-rail" style={{left: `${percent}%`}} />
-        ) : null}
+        {(isPlaying || mouseOver) &&
+          <div className="tooltip-rail" style={{ left: `${percent}%` }}>
+            <div className="tooltip">
+              <span className="tooltip-text">{formatDate(value)}</span>
+            </div>
+          </div>
+        }
         <div
           role="slider"
           aria-valuemin={min}
           aria-valuemax={max}
           aria-valuenow={value}
           className="scrubber-handle"
-          style={{left: `${percent}%`}}
+          style={{ left: `${percent}%` }}
           {...getHandleProps(id, {
             onMouseEnter: this._onMouseEnter,
             onMouseLeave: this._onMouseLeave,
           })}>
-          <div/><div/><div/>
+          <div /><div /><div />
         </div>
       </>
     );
@@ -173,7 +179,7 @@ function Track({ source, target, getTrackProps }: ITrackProps) {
     <div className="scrubber-track" style={{ left: `${source.percent}%`, width: `${target.percent - source.percent}%` }}
       {...getTrackProps()}
     />
-    );
+  );
 }
 
 export interface ScrubberProps extends CommonProps {
@@ -188,7 +194,7 @@ export interface ScrubberProps extends CommonProps {
 export class Scrubber extends React.Component<ScrubberProps> {
 
   public render() {
-    const { currentDuration, totalDuration, onChange, onUpdate, onSlideStart } = this.props;
+    const { currentDuration, totalDuration, onChange, onUpdate, onSlideStart, isPlaying } = this.props;
     const domain = [0, totalDuration];
 
     return (
@@ -203,7 +209,7 @@ export class Scrubber extends React.Component<ScrubberProps> {
         values={[currentDuration]}
       >
         <Rail>
-            {(railProps) => <TooltipRail {...railProps} />}
+          {(railProps) => <TooltipRail {...railProps} isPlaying={isPlaying} />}
         </Rail>
         <Handles>
           {({ handles, getHandleProps }) => (
@@ -211,6 +217,7 @@ export class Scrubber extends React.Component<ScrubberProps> {
               {handles.map((handle) => (
                 <Handle
                   key={handle.id}
+                  isPlaying={isPlaying}
                   handle={handle}
                   domain={domain}
                   getHandleProps={getHandleProps}
