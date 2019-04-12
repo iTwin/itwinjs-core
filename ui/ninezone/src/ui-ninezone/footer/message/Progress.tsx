@@ -12,7 +12,7 @@ import { Css } from "../../utilities/Css";
 import { Status, StatusHelpers } from "./Status";
 import "./Progress.scss";
 
-/** Properties of [[Progress]] component.
+/** Properties of [[MessageProgress]] component.
  * @beta
  */
 export interface ProgressProps extends CommonProps, NoChildrenProps {

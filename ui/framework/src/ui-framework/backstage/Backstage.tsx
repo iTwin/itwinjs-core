@@ -9,7 +9,7 @@ import * as React from "react";
 import { SignOutModalFrontstage } from "../oidc/SignOut";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 
-import { UiEvent, getUserColor } from "@bentley/ui-core";
+import { UiEvent, CommonProps, getUserColor } from "@bentley/ui-core";
 import { Backstage as NZ_Backstage, UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { CommandItemDef } from "../shared/Item";
@@ -41,12 +41,10 @@ export class BackstageCloseEvent extends UiEvent<BackstageCloseEventArgs> { }
 /** Properties for the [[Backstage]] React component.
  * @public
  */
-export interface BackstageProps {
+export interface BackstageProps extends CommonProps {
   accessToken?: AccessToken;
   isVisible?: boolean;
-  className?: string;
   showOverlay?: boolean;
-  style?: React.CSSProperties;
   onClose?: () => void;
 }
 

@@ -13,6 +13,7 @@ import {
   Stacked as NZ_StackedWidget, HorizontalAnchor, VerticalAnchor,
   ResizeHandle, Tab, TabGroup, PointProps, TabSeparator, WidgetZoneIndex, TabMode, HandleMode, Rectangle,
 } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for a [[StackedWidget]] Tab.
  * @internal
@@ -36,7 +37,7 @@ export interface EachWidgetProps {
 /** Properties for the [[StackedWidget]] React component.
  * @internal
  */
-export interface StackedWidgetProps {
+export interface StackedWidgetProps extends CommonProps {
   children?: React.ReactNode;
   fillZone: boolean;
   isFloating: boolean;
@@ -86,6 +87,8 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
 
     return (
       <NZ_StackedWidget
+        className={this.props.className}
+        style={this.props.style}
         content={this.props.children}
         fillZone={this.props.fillZone}
         horizontalAnchor={this.props.horizontalAnchor}

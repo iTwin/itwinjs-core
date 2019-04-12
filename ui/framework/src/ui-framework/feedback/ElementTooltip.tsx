@@ -7,19 +7,11 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import { UiEvent } from "@bentley/ui-core";
+import { UiEvent, CommonProps } from "@bentley/ui-core";
 import { XAndY } from "@bentley/geometry-core";
 import { ToolTipOptions } from "@bentley/imodeljs-frontend";
 
 import { ToolSettingsTooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
-
-/** [[ElementTooltip]] Props.
- * @public
- */
-export interface ElementTooltipProps {
-  className?: string;
-  style?: React.CSSProperties;
-}
 
 /** [[ElementTooltip]] State.
  * @internal
@@ -52,7 +44,7 @@ export class ElementTooltipChangedEvent extends UiEvent<ElementTooltipChangedEve
 /** ElementTooltip React component.
  * @public
  */
-export class ElementTooltip extends React.Component<ElementTooltipProps, ElementTooltipState> {
+export class ElementTooltip extends React.Component<CommonProps, ElementTooltipState> {
   private static _elementTooltipChangedEvent: ElementTooltipChangedEvent = new ElementTooltipChangedEvent();
   private static _isTooltipVisible: boolean;
 

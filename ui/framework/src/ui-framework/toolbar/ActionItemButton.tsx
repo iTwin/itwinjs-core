@@ -15,11 +15,12 @@ import { PropsHelper } from "../utils/PropsHelper";
 
 import { Item } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Properties that must be specified for a ActionItemButton component
  * @public
  */
-export interface ActionItemButtonProps {
+export interface ActionItemButtonProps extends CommonProps {
   actionItem: ActionButtonItemDef;
   isEnabled?: boolean;
 }

@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ContentView */
 
+import * as React from "react";
+
 import { ContentControl } from "./ContentControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";

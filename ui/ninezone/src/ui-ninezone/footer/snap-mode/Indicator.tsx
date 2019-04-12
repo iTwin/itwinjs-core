@@ -15,7 +15,7 @@ import "./Indicator.scss";
 export interface SnapModeProps extends FooterIndicatorProps {
   /** Indicator label. */
   children?: string;
-  /** Indicator icon. I.e. [[SnapModeIcon]] */
+  /** Indicator icon. */
   icon?: React.ReactNode;
   /** Clickable part of the indicator. */
   indicatorRef?: React.Ref<HTMLDivElement>;

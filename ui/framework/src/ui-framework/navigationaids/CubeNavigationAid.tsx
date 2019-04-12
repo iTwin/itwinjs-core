@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { Cube, Face } from "@bentley/ui-core";
+import { Cube, Face, CommonProps } from "@bentley/ui-core";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { NavigationAidControl } from "./NavigationAidControl";
 import * as classnames from "classnames";
@@ -96,7 +96,7 @@ interface CubeNavigationState {
 /** Cube Navigation Aid Component
  * @public
  */
-export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> {
+export class CubeNavigationAid extends React.Component<CommonProps, CubeNavigationState> {
   private _start: Point2d = Point2d.createZero();
   private _then: number = 0;
   public readonly state: Readonly<CubeNavigationState> = {
@@ -224,7 +224,8 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     }
 
     return (
-      <div className={"uifw-cube-container"}
+      <div className={classnames("uifw-cube-container", this.props.className)}
+        style={this.props.style}
         onMouseDown={this._handleBoxClick} >
         <div className={"cube-element-container"}>
           <Cube

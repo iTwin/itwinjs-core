@@ -123,7 +123,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "_label": [Function],
                 "_tooltip": [Function],
                 "execute": [Function],
-                "iconSpec": "icon-rotate-left",
+                "iconSpec": "icon-gyroscope",
                 "isActive": false,
                 "isEnabled": true,
                 "isPressed": false,

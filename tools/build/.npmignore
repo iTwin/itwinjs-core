@@ -9,4 +9,5 @@
 !tsconfig.json
 !tsconfig-base.json
 !tslint.json
+!tslint-docs.json
 !.nycrc

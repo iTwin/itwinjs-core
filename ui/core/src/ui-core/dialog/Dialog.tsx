@@ -49,18 +49,22 @@ export enum DialogAlignment {
   BottomLeft = "bottom-left", Bottom = "bottom", BottomRight = "bottom-right",
 }
 
-/** Interface for a given button in a button cluster
+/** Interface for a dialog button in a button cluster
  * @beta
  */
-export interface DialogButton {
+export interface DialogButtonDef {
   /** type of button */
   type: DialogButtonType;
   /** Triggered on button click */
   onClick: () => void;
-  /** Which bwc button style to decorate button width */
+  /** Which button style to decorate button width */
   buttonStyle?: DialogButtonStyle;
   /** Disable the button */
   disabled?: boolean;
+  /** Custom label */
+  label?: string;
+  /** Custom CSS class */
+  className?: string;
 }
 
 /** Properties for the [[Dialog]] component
@@ -75,11 +79,11 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   title?: string | JSX.Element;
   /** Footer to show at bottom of dialog. Note: will override buttonCluster */
   footer?: string | JSX.Element;
-  /** List of DialogButton objects specifying buttons and associated onClick events */
-  buttonCluster?: DialogButton[];
+  /** List of DialogButtonDef objects specifying buttons and associated onClick events */
+  buttonCluster?: DialogButtonDef[];
   /** onClick event for X button for dialog */
   onClose?: () => void;
-  /** 'keyup' event for <Esc> key */
+  /** 'keyup' event for Esc key */
   onEscape?: () => void;
   /** triggered when a click is triggered outside of this dialog. */
   onOutsideClick?: (event: MouseEvent) => any;
@@ -238,7 +242,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
                 </div>
                 <div className={classnames(
                   "core-dialog-content",
-                  { "core-dialog-content-nopadding": !inset },
+                  { "core-dialog-content-no-inset": !inset },
                   contentClassName)}
                   style={contentStyle}>
                   {this.props.children}
@@ -274,9 +278,10 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   private getFooterButtons(props: DialogProps) {
     const buttons: React.ReactNode[] = [];
     if (props.buttonCluster) {
-      props.buttonCluster.forEach((button: DialogButton, index: number) => {
+      props.buttonCluster.forEach((button: DialogButtonDef, index: number) => {
         let buttonText = "";
-        let buttonClass = classnames("core-dialog-button", `dialog-button-${button.type}`);
+        let buttonClass = classnames("core-dialog-button", `dialog-button-${button.type}`, button.className);
+
         switch (button.type) {
           case DialogButtonType.OK:
             buttonText = UiCore.i18n.translate("UiCore:dialog.ok");
@@ -303,6 +308,10 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
             break;
         }
+
+        if (button.label)
+          buttonText = button.label;
+
         buttons.push(<button className={buttonClass} disabled={button.disabled} key={index.toString()} onClick={button.onClick}>{buttonText}</button>);
       });
     }

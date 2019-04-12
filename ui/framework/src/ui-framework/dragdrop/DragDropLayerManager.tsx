@@ -6,8 +6,9 @@
 
 import * as React from "react";
 import { DragLayer, DndComponentClass } from "react-dnd";
+import classnames from "classnames";
 
-import { UiEvent } from "@bentley/ui-core";
+import { UiEvent, CommonProps } from "@bentley/ui-core";
 import { DragSourceArguments, DragLayerProps } from "@bentley/ui-components";
 
 /** Drag/Drop Layer Changed Event Args class.
@@ -66,7 +67,7 @@ export class DragDropLayerManager {
 /** Properties for the DragDropLayerRenderer component
  * @beta
  */
-export interface DragDropLayerRendererProps {
+export interface DragDropLayerRendererProps extends CommonProps {
   dragging?: boolean;
   item?: any;
   itemType?: string;
@@ -129,7 +130,7 @@ export class DragDropLayerRendererComponent extends React.Component<DragDropLaye
     dragSourceArgs.initialSourceClientOffset = initialSourceClientOffset;
 
     return (
-      <div className="uifw-dragdrop-layer">
+      <div className={classnames("uifw-dragdrop-layer", this.props.className)} style={this.props.style}>
         <LayerElement args={dragSourceArgs} />
       </div>
     );

@@ -7,6 +7,8 @@
 import * as React from "react";
 import { connect } from "react-redux";
 
+import { CommonProps } from "@bentley/ui-core";
+
 import { ModalDialogRenderer } from "../ModalDialogManager";
 import { FrontstageComposer } from "../frontstage/FrontstageComposer";
 import { PointerMessage } from "../messages/Pointer";
@@ -19,7 +21,7 @@ import "./configurableui.scss";
 /** Properties for [[ConfigurableUiContent]]
  * @public
  */
-export interface ConfigurableUiContentProps {
+export interface ConfigurableUiContentProps extends CommonProps {
   placeholder: string;
   appBackstage?: React.ReactNode;
 }
@@ -55,7 +57,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
 
   public render(): JSX.Element | undefined {
     return (
-      <div id="uifw-configurableui-wrapper" onMouseMove={this._handleMouseMove} >
+      <div id="uifw-configurableui-wrapper" className={this.props.className} style={this.props.style} onMouseMove={this._handleMouseMove} >
         {this.props.appBackstage}
         <FrontstageComposer style={{ position: "relative", height: "100%" }} />
         <ModalDialogRenderer />

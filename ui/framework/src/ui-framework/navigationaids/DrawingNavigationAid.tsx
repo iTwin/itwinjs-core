@@ -15,6 +15,7 @@ import { IModelConnection, Viewport, ScreenViewport, ViewState, IModelApp } from
 import { ContentViewManager } from "../content/ContentViewManager";
 import { UiFramework } from "../UiFramework";
 import "./DrawingNavigationAid.scss";
+import { CommonProps } from "@bentley/ui-core";
 
 /**
  * A Drawing Navigation Aid control.
@@ -39,7 +40,7 @@ export enum MapMode {
 
 // used only in testing
 /** @internal */
-export interface DrawingNavigationAidProps {
+export interface DrawingNavigationAidProps extends CommonProps {
   iModelConnection: IModelConnection;
   animationTime?: number;
   openSize?: Vector3d | (() => Vector3d);
@@ -144,7 +145,10 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     const sz = startMapExtents.interpolate(a, mapExtents);
     const dz = Geometry.interpolate(startDrawingZoom, a, drawingZoom);
 
-    const rootStyle: { [key: string]: any } = { width: sz.x, height: sz.y };
+    const rootStyle: React.CSSProperties = {
+      width: sz.x, height: sz.y,
+      ...this.props.style,
+    };
     const tOr = rotateMinimapWithView ? rotation.multiplyVector(Vector3d.createFrom(or)) : Vector3d.createFrom(or);
     const tMap = rotateMinimapWithView ? rotation.multiplyVector(Vector3d.createFrom(map)) : Vector3d.createFrom(map);
 
@@ -172,7 +176,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     const halfMapExtents = e.scale(.5);
     const mapOffset = rotateMinimapWithView ? rotation.multiplyTransposeVector(halfMapExtents) : halfMapExtents;
     const nodes = (
-      <div className="drawing-navigation-aid"
+      <div className={classnames("drawing-navigation-aid", this.props.className)}
         data-testid="drawing-navigation-aid"
         ref={this._rootElementRef}
         onWheel={this._handleWheel}

@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { UiEvent } from "@bentley/ui-core";
+import { UiEvent, CommonProps } from "@bentley/ui-core";
 
 /** Modal Dialog Stack Changed Event Args class.
  * @public
@@ -70,14 +70,6 @@ export class ModalDialogManager {
 
 }
 
-/** Properties for the [[ModalDialogRenderer]] component.
- * @public
- */
-export interface ModalDialogRendererProps {
-  className?: string;
-  style?: React.CSSProperties;
-}
-
 /** State for the ModalDialogRenderer component.
  * @internal
  */
@@ -88,7 +80,7 @@ interface ModalDialogRendererState {
 /** ModalDialogRenderer React component.
  * @public
  */
-export class ModalDialogRenderer extends React.Component<ModalDialogRendererProps, ModalDialogRendererState> {
+export class ModalDialogRenderer extends React.Component<CommonProps, ModalDialogRendererState> {
 
   public render(): React.ReactNode {
     const activeModalDialog: React.ReactNode | undefined = ModalDialogManager.activeModalDialog;
@@ -100,7 +92,11 @@ export class ModalDialogRenderer extends React.Component<ModalDialogRendererProp
         {
           ModalDialogManager.modalDialogs.map((node: React.ReactNode, index: number) => {
             return (
-              <div key={index.toString()}>
+              <div
+                className={this.props.className}
+                style={this.props.style}
+                key={index.toString()}
+              >
                 {node}
               </div>
             );

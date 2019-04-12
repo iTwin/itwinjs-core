@@ -119,7 +119,7 @@ export enum CheckBoxState {
 }
 
 // @beta
-export class CheckListBox extends React.Component<CheckListBoxProps> {
+export class CheckListBox extends React.Component<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -140,11 +140,6 @@ export interface CheckListBoxItemProps extends CommonProps {
 }
 
 // @beta
-export interface CheckListBoxProps {
-    className?: string;
-}
-
-// @beta
 export const CheckListBoxSeparator: React.StatelessComponent;
 
 // @internal
@@ -158,13 +153,11 @@ export class Circle {
 
 // @public
 export interface ClassNameProps {
-    // (undocumented)
     className?: string;
 }
 
 // @public
 export interface CommonProps extends ClassNameProps {
-    // (undocumented)
     style?: React.CSSProperties;
 }
 
@@ -302,7 +295,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     }
 
 // @beta
-export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label"> {
+export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label">, CommonProps {
     label: string | JSX.Element;
     // @internal (undocumented)
     onHotKeyParsed?: (hotKey: string) => void;
@@ -390,9 +383,11 @@ export enum DialogAlignment {
 }
 
 // @beta
-export interface DialogButton {
+export interface DialogButtonDef {
     buttonStyle?: DialogButtonStyle;
+    className?: string;
     disabled?: boolean;
+    label?: string;
     onClick: () => void;
     type: DialogButtonType;
 }
@@ -431,7 +426,7 @@ export enum DialogButtonType {
 export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title">, CommonProps {
     alignment?: DialogAlignment;
     backgroundStyle?: React.CSSProperties;
-    buttonCluster?: DialogButton[];
+    buttonCluster?: DialogButtonDef[];
     contentClassName?: string;
     contentStyle?: React.CSSProperties;
     footer?: string | JSX.Element;
@@ -801,7 +796,7 @@ export class MessageBox extends React.Component<MessageBoxProps> {
 
 // @beta
 export interface MessageBoxProps extends CommonProps {
-    buttonCluster: DialogButton[];
+    buttonCluster: DialogButtonDef[];
     contentClassName?: string;
     contentStyle?: React.CSSProperties;
     height?: string | number;
@@ -1157,7 +1152,6 @@ export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
 
 // @beta
 export interface SvgSpriteProps extends CommonProps {
-    // (undocumented)
     src: string;
 }
 

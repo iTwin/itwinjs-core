@@ -8,7 +8,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 import { ModalFrontstageInfo, FrontstageManager } from "../frontstage/FrontstageManager";
-import { SearchBox, UiEvent } from "@bentley/ui-core";
+import { SearchBox, UiEvent, CommonProps } from "@bentley/ui-core";
 import "./SheetsModalFrontstage.scss";
 import { UiFramework } from "../UiFramework";
 import { SheetData } from "./SheetNavigationAid";
@@ -91,7 +91,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
 /** Properties for [[CardContainer]]
  * @alpha
  */
-export interface CardContainerProps {
+export interface CardContainerProps extends CommonProps {
   cards: CardInfo[];
   searchValue: string;
   connection: IModelConnection;
@@ -109,7 +109,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
   /** @internal */
   public render() {
     return (
-      <div className="uifw-sheets-scrollview">
+      <div className={classnames("uifw-sheets-scrollview", this.props.className)} style={this.props.style}>
         <div className="uifw-sheets-flex-container">
           {
             this.props.cards.map((card: CardInfo, _index: number) => {

@@ -75,6 +75,14 @@ describe("Dialog", () => {
       expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.no"))).to.exist;
       expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.retry"))).to.exist;
     });
+
+    it("should render with custom button", () => {
+      const component = render(<Dialog opened={true}
+        buttonCluster={[
+          { type: DialogButtonType.Close, onClick: () => { }, label: "XYZ" },
+        ]} />);
+      expect(component.getByText("XYZ")).to.exist;
+    });
   });
 
   describe("movable and resizable", () => {

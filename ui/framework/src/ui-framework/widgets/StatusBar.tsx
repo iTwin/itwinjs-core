@@ -16,7 +16,7 @@ import {
 } from "@bentley/ui-ninezone";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
 
-import { MessageContainer, MessageSeverity, SmallText } from "@bentley/ui-core";
+import { MessageContainer, MessageSeverity, SmallText, CommonProps } from "@bentley/ui-core";
 
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
@@ -57,7 +57,7 @@ interface StatusBarState {
 /** Properties for the [[StatusBar]] React component
  * @public
  */
-export interface StatusBarProps {
+export interface StatusBarProps extends CommonProps {
   widgetControl?: StatusBarWidgetControl;
   isInFooterMode: boolean;
 }

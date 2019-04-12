@@ -13,6 +13,7 @@ import { Icon } from "../shared/IconComponent";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 
 import { AppButton, Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 
 /** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  * @public
@@ -55,7 +56,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
 /** Properties for the [[ToolWidget]] React component.
  * @public
  */
-export interface ToolWidgetPropsEx extends ToolWidgetProps {
+export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
   button?: React.ReactNode;
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;
@@ -94,6 +95,8 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
   public render(): React.ReactNode {
     return (
       <ToolWidgetWithDef
+        className={this.props.className}
+        style={this.props.style}
         toolWidgetDef={this.state.toolWidgetDef}
         button={this.props.button}
         horizontalToolbar={this.props.horizontalToolbar}
@@ -105,7 +108,7 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
 
 /** Properties for the Tool Widget React component.
  */
-interface Props {
+interface Props extends CommonProps {
   toolWidgetDef: ToolWidgetDef;
   button?: React.ReactNode;
   horizontalToolbar?: React.ReactNode;
@@ -143,6 +146,8 @@ class ToolWidgetWithDef extends React.Component<Props> {
 
     return (
       <NZ_ToolsWidget
+        className={this.props.className}
+        style={this.props.style}
         button={button}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}

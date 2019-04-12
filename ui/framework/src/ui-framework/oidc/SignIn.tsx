@@ -8,13 +8,17 @@ import * as React from "react";
 import { SignIn as SignInBase } from "@bentley/ui-components";
 import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for the [[SignIn]] component
  * @public
  */
-export interface SignInProps {
+export interface SignInProps extends CommonProps {
+  /** Handler called after sign-in has completed */
   onSignedIn: () => void;
+  /** Handler for the Register link */
   onRegister?: () => void;
+  /** Handler for the Offline link */
   onOffline?: () => void;
 }
 
@@ -49,6 +53,9 @@ export class SignIn extends React.Component<SignInProps> {
   }
 
   public render() {
-    return <SignInBase onSignIn={this._onStartSignin} onRegister={this.props.onRegister} onOffline={this.props.onOffline} />;
+    return <SignInBase className={this.props.className} style={this.props.style}
+      onSignIn={this._onStartSignin}
+      onRegister={this.props.onRegister}
+      onOffline={this.props.onOffline} />;
   }
 }

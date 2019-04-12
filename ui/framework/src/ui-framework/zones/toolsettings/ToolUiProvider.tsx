@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ToolSettings */
 
+import * as React from "react";
 import { ConfigurableUiControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 
 /**

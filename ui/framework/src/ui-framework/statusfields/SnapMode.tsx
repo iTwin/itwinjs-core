@@ -9,17 +9,15 @@ import { connect } from "react-redux";
 
 import { SnapMode } from "@bentley/imodeljs-frontend";
 import { ConfigurableUiActions } from "../configurableui/state";
-import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
+import { StatusBarFieldId } from "../widgets/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
 import { SnapMode as NZ_SnapMode, SnapModePanel, Snap, FooterPopup, FooterPopupContentType } from "@bentley/ui-ninezone";
+import { StatusFieldProps } from "./StatusFieldProps";
 
 // cSpell:ignore multione
 /** Defines properties supported by the SnapMode Field Component.
  */
-interface SnapModeFieldProps {
-  statusBar: IStatusBar;
-  isInFooterMode: boolean;
-  openWidget: StatusBarFieldId;
+interface SnapModeFieldProps extends StatusFieldProps {
   snapMode: number;
   setSnapMode: (mode: number) => any;
 }
@@ -75,7 +73,10 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
   public render(): React.ReactNode {
     return (
       <>
-        <div ref={this._target}>
+        <div ref={this._target}
+          className={this.props.className}
+          style={this.props.style}
+        >
           <NZ_SnapMode
             icon={
               <i className={`icon icon-${this.getSnapModeIconNameFromMode(this.props.snapMode)}`} />
@@ -153,7 +154,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
 
   /** Opens the pop-up window. */
   private setOpenWidget(openWidget: StatusBarFieldId) {
-    this.props.statusBar!.setOpenWidget(openWidget);
+    this.props.statusBar.setOpenWidget(openWidget);
   }
 }
 

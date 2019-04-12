@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ContentView */
 
+import * as React from "react";
+
 import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "../configurableui/ConfigurableUiControl";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added tools/build/tslint-docs.json. Added SvgPath & SvgSprite to ui-core.",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "dan.east@bentley.com"
+}

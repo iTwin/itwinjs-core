@@ -16,7 +16,6 @@ exports[`InputFieldMessage should render correctly 1`] = `
             style="left: 0px; top: 0px;"
           >
             <div
-              class="core-context-menu"
               data-testid="core-context-menu-root"
             >
               <div>
@@ -39,7 +38,6 @@ exports[`InputFieldMessage should render correctly 1`] = `
             style="left: 0px; top: 0px;"
           >
             <div
-              class="core-context-menu"
               data-testid="core-context-menu-root"
             >
               <div>

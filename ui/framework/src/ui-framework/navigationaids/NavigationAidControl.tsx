@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module NavigationAids */
 
-import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
+import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 
 /** NavigationAid Activated Event Args interface.
  * @public

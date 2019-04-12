@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Base */
+/** @module Icon */
 
 import * as classnames from "classnames";
 import * as React from "react";
@@ -21,14 +21,15 @@ export interface SvgPathProps extends CommonProps {
   viewBoxHeight: number;
 }
 
-/** SvgElement wrapper with specified Svg paths.
+/** Svg element wrapper with specified Svg paths.
  * @beta
  */
 export class SvgPath extends React.PureComponent<SvgPathProps> {
   public render() {
     const className = classnames(
-      "uicore-icons-svgSprite",
-      this.props.className);
+      "core-icons-svgSprite",
+      this.props.className,
+    );
     const viewBox = "0 0 " + this.props.viewBoxWidth + " " + this.props.viewBoxHeight;
 
     return (

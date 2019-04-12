@@ -36,7 +36,7 @@ export class LabeledSelect extends React.Component<LabeledSelectProps> {
         {label &&
           <div className={classnames("label", labelClassName)}> {label} </div>
         }
-        <Select disabled={this.props.disabled} style={inputStyle} className={inputClassName} {...props} />
+        <Select disabled={this.props.disabled} className={inputClassName} style={inputStyle} {...props} />
         {message &&
           <div className={classnames("message", messageClassName)} style={messageStyle}>{message}</div>
         }

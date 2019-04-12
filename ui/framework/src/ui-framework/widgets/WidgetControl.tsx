@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Widget */
 
+import * as React from "react";
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 

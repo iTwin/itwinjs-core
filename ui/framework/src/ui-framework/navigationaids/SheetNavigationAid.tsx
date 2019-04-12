@@ -5,15 +5,18 @@
 /** @module NavigationAids */
 
 import * as React from "react";
+import * as classnames from "classnames";
+
+import { IModelConnection, IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
+import { ViewportComponentEvents, ViewIdChangedEventArgs } from "@bentley/ui-components";
+
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { NavigationAidControl } from "./NavigationAidControl";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { SheetsModalFrontstage, CardContainer, CardSelectedEventArgs } from "./SheetsModalFrontstage";
-import { IModelConnection, IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
-import { Spinner, SpinnerSize } from "@bentley/ui-core";
-import { ViewportComponentEvents, ViewIdChangedEventArgs } from "@bentley/ui-components";
 
 import "./SheetNavigationAid.scss";
 
@@ -39,7 +42,7 @@ export interface SheetData {
 /** Properties for the [[SheetNavigationAid]] component
  * @alpha
  */
-export interface SheetNavigationProps {
+export interface SheetNavigationProps extends CommonProps {
   iModelConnection: IModelConnection;
 }
 
@@ -147,7 +150,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     }
 
     return (
-      <div className="uifw-sheet-navigation">
+      <div className={classnames("uifw-sheet-navigation", this.props.className)} style={this.props.style}>
         <div className="gradient"></div>
         {content}
       </div>

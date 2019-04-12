@@ -6,15 +6,16 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
+import classnames from "classnames";
 import { FooterIndicator } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
 import { Icon } from "../shared/IconComponent";
+import { StatusFieldProps } from "./StatusFieldProps";
 import "./SelectionInfo.scss";
 
 /** Defines properties supported by the SelectionInfo Field Component.
  */
-interface SelectionInfoFieldProps {
-  isInFooterMode: boolean;
+interface SelectionInfoFieldProps extends StatusFieldProps {
   selectionCount: number;
 }
 
@@ -31,7 +32,8 @@ class SelectionInfoFieldComponent extends React.Component<SelectionInfoFieldProp
   public render(): React.ReactNode {
     return (
       <FooterIndicator
-        className="uifw-statusFields-selectionInfo"
+        className={classnames("uifw-statusFields-selectionInfo", this.props.className)}
+        style={this.props.style}
         isInFooterMode={this.props.isInFooterMode}
       >
         {<Icon iconSpec={"icon-cursor"} />}

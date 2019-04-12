@@ -10,6 +10,7 @@ import * as React from "react";
  * @public
  */
 export interface CommonProps extends ClassNameProps {
+  /** Custom CSS style properties */
   style?: React.CSSProperties;
 }
 
@@ -17,5 +18,6 @@ export interface CommonProps extends ClassNameProps {
  * @public
  */
 export interface ClassNameProps {
+  /** Custom CSS class name */
   className?: string;
 }

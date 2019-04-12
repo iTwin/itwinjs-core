@@ -104,7 +104,7 @@ export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef;
 /** Definition for a Group item that opens a group of items.
  * @public
  */
-export interface GroupButtonProps extends ItemProps {
+export interface GroupItemProps extends ItemProps {
   groupId?: string;
   items: AnyItemDef[];
   direction?: Direction;
@@ -114,7 +114,7 @@ export interface GroupButtonProps extends ItemProps {
 /** Union of all Item properties.
  * @public
  */
-export type AnyItemProps = ItemProps | GroupButtonProps | ToolItemProps | CommandItemProps;
+export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps;
 
 /** Definition for a list of AnyItemProps.
  * @public

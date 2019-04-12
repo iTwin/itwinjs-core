@@ -8,7 +8,7 @@ import * as React from "react";
 
 import { ActionButtonItemDef } from "../shared/Item";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
-import { GroupButtonProps, AnyItemDef } from "../shared/ItemProps";
+import { GroupItemProps, AnyItemDef } from "../shared/ItemProps";
 import { Icon } from "../shared/IconComponent";
 import { ItemList, ItemMap } from "../shared/ItemMap";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
@@ -18,7 +18,7 @@ import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn,
   GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction,
 } from "@bentley/ui-ninezone";
-import { withOnOutsideClick } from "@bentley/ui-core";
+import { withOnOutsideClick, CommonProps } from "@bentley/ui-core";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 // tslint:disable-next-line: variable-name
@@ -41,7 +41,7 @@ export class GroupItemDef extends ActionButtonItemDef {
   private _itemList!: ItemList;
   private _itemMap!: ItemMap;
 
-  constructor(groupItemProps: GroupButtonProps) {
+  constructor(groupItemProps: GroupItemProps) {
     super(groupItemProps);
 
     this.groupId = (groupItemProps.groupId !== undefined) ? groupItemProps.groupId : "";
@@ -125,11 +125,11 @@ interface ToolGroupTray {
 
 type ColumnItemMap = Map<string, ToolGroupItem>;
 
-interface Props {
+interface Props extends CommonProps {
   groupItemDef: GroupItemDef;
 }
 
-interface State extends BaseItemState {
+interface GroupItemState extends BaseItemState {
   groupItemDef: GroupItemDef;
   trayId: string;
   backTrays: ReadonlyArray<string>;
@@ -140,10 +140,10 @@ interface State extends BaseItemState {
 
 /** Group Item React component.
  */
-class GroupItem extends React.Component<Props, State> {
+class GroupItem extends React.Component<Props, GroupItemState> {
 
   /** @internal */
-  public readonly state: Readonly<State>;
+  public readonly state: Readonly<GroupItemState>;
   private _componentUnmounting = false;
   private _childSyncIds?: Set<string>;
   private _childRefreshRequired = false;
@@ -177,13 +177,13 @@ class GroupItem extends React.Component<Props, State> {
       if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value)))
         this._childRefreshRequired = true;  // this is cleared when render occurs
 
-    let newState: State = { ...this.state };
+    let newState: GroupItemState = { ...this.state };
 
     if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0)
       refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
     if (refreshState || this._childRefreshRequired) {
       if (this.props.groupItemDef.stateFunc)
-        newState = this.props.groupItemDef.stateFunc(newState) as State;
+        newState = this.props.groupItemDef.stateFunc(newState) as GroupItemState;
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)
         || this._childRefreshRequired) {
         this.setState((_prevState) => ({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible, isPressed: newState.isPressed }));
@@ -200,7 +200,7 @@ class GroupItem extends React.Component<Props, State> {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
-  public shouldComponentUpdate(nextProps: Props, nextState: State) {
+  public shouldComponentUpdate(nextProps: Props, nextState: GroupItemState) {
     if (!PropsHelper.isShallowEqual(nextState, this.state))
       return true;
     if (!PropsHelper.isShallowEqual(nextProps, this.props))
@@ -214,7 +214,7 @@ class GroupItem extends React.Component<Props, State> {
     return false;
   }
 
-  private static processGroupItemDef(groupItemDef: GroupItemDef): State {
+  private static processGroupItemDef(groupItemDef: GroupItemDef): GroupItemState {
     // Separate into column items
     const columns = new Map<number, ToolGroupColumn>();
     const numberOfColumns = Math.ceil(groupItemDef.itemCount / groupItemDef.itemsInColumn);
@@ -258,7 +258,7 @@ class GroupItem extends React.Component<Props, State> {
     return state;
   }
 
-  public static getDerivedStateFromProps(newProps: Props, state: State) {
+  public static getDerivedStateFromProps(newProps: Props, state: GroupItemState) {
     if (newProps.groupItemDef !== state.groupItemDef) {
       return GroupItem.processGroupItemDef(newProps.groupItemDef);
     }
@@ -509,6 +509,11 @@ class GroupItem extends React.Component<Props, State> {
     );
   }
 }
+
+/** Properties for the [[GroupButton]] React component
+ * @public
+ */
+export interface GroupButtonProps extends GroupItemProps, CommonProps { }
 
 /** Group Button React component
  * @public

@@ -15,7 +15,7 @@ import "./Snap.scss";
 export interface SnapProps extends CommonProps {
   /** Label of snap row. */
   children?: string;
-  /** Snap row icon. I.e. [[SnapModeIcon]] */
+  /** Snap row icon. */
   icon?: React.ReactNode;
   /** Describes if the snap row is active. */
   isActive?: boolean;

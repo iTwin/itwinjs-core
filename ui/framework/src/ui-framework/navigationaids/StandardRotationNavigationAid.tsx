@@ -6,13 +6,14 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { Popup, Position } from "@bentley/ui-core";
+import { Popup, Position, CommonProps } from "@bentley/ui-core";
 import { ViewportComponentEvents } from "@bentley/ui-components";
 import { ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupColumn as NZ_Column, GroupTool as NZ_Item, Group as NZ_Tray, withContainIn, containHorizontally } from "@bentley/ui-ninezone";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { NavigationAidControl } from "./NavigationAidControl";
 import { UiFramework } from "../UiFramework";
+
 import "./StandardRotationNavigationAid.scss";
 
 // tslint:disable-next-line:variable-name
@@ -45,7 +46,7 @@ interface StandardRotationNavigationAidState {
 /** A 3D Standard Rotation Navigation Aid.
  * @alpha
  */
-export class StandardRotationNavigationAid extends React.Component<{}, StandardRotationNavigationAidState> {
+export class StandardRotationNavigationAid extends React.Component<CommonProps, StandardRotationNavigationAidState> {
   /** @internal */
   public readonly state: Readonly<StandardRotationNavigationAidState>;
 
@@ -121,10 +122,11 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
   public render(): React.ReactNode {
     const className = classnames(
       "uifw-standard-rotation-navigation",
+      this.props.className,
     );
+
     return (
-      <div
-        className={className}
+      <div className={className} style={this.props.style}
         ref={this._handleRef}
       >
         <NZ_Expandable
@@ -133,7 +135,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
           <NZ_Icon
             className={"icon-button"}
             icon={
-              <span className={"three-d-icon icon " + this.state.list[this.state.selected].iconClassName} />
+              <span className={classnames("three-d-icon", "icon", this.state.list[this.state.selected].iconClassName)} />
             }
             onClick={this._toggleIsExpanded}
           >

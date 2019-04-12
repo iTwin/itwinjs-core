@@ -17,6 +17,7 @@ import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
 import { StatusBarZone } from "./StatusBarZone";
 
 import { isStatusZone, ZonePropsBase as NZ_ZoneProps, DropTarget, HorizontalAnchor, VerticalAnchor, RectangleProps, PointProps } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Enum for [[Zone]] Location.
  * @public
@@ -35,7 +36,7 @@ export enum ZoneLocation {
 /** Properties of a [[Zone]] component
  * @public
  */
-export interface ZoneProps {
+export interface ZoneProps extends CommonProps {
   /** Default Zone state. Controls how the Zone is initially displayed. Defaults to ZoneState.Open. */
   defaultState?: ZoneState;
   /** Indicates if other Zones may be merged with this Zone. Defaults to false.  */
@@ -125,6 +126,8 @@ export class Zone extends React.Component<ZoneProps> {
       if (zoneDef.isToolSettings) {
         return (
           <ToolSettingsZone
+            className={this.props.className}
+            style={this.props.style}
             bounds={runtimeProps.zoneProps.bounds} />
         );
       } else if (zoneDef.isStatusBar) {
@@ -140,6 +143,8 @@ export class Zone extends React.Component<ZoneProps> {
 
         return (
           <StatusBarZone
+            className={this.props.className}
+            style={this.props.style}
             widgetControl={widgetControl}
             zoneProps={runtimeProps.zoneProps}
             widgetChangeHandler={runtimeProps.widgetChangeHandler}
@@ -153,6 +158,8 @@ export class Zone extends React.Component<ZoneProps> {
 
     return (
       <FrameworkZone
+        className={this.props.className}
+        style={this.props.style}
         zoneProps={runtimeProps.zoneProps}
         widgetChangeHandler={runtimeProps.widgetChangeHandler}
         targetedBounds={runtimeProps.ghostOutline}

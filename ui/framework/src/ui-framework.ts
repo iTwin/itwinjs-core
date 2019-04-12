@@ -109,6 +109,7 @@ export * from "./ui-framework/statusfields/MessageCenter";
 export * from "./ui-framework/statusfields/SnapMode";
 export * from "./ui-framework/statusfields/PromptField";
 export * from "./ui-framework/statusfields/SelectionInfo";
+export * from "./ui-framework/statusfields/StatusFieldProps";
 
 export * from "./ui-framework/theme/ThemeManager";
 
@@ -214,10 +215,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description WorkflowTask
  * Classes for working a Workflow or Task
- */
-/**
- * @docs-group-description TileLoadingIndicator
- * Classes for displaying tile loading status
  */
 /**
  * @docs-group-description Tools

@@ -544,10 +544,10 @@ export class ContextMenuDivider extends React.Component<CommonProps> {
   }
 }
 
-/** Properties interface for [[ContextSubMenu]]
+/** Properties for the [[ContextSubMenu]] component
  * @beta
  */
-export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label"> {
+export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label">, CommonProps {
   /** Text/jsx to display in the list item */
   label: string | JSX.Element;
   /** @internal */
@@ -619,7 +619,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
         <div
           onClick={this._handleClick}
           ref={(el) => { this._menuButtonElement = el; }}
-          className={classnames("core-context-menu-item core-context-submenucontainer", { disabled, "is-selected": isSelected })}
+          className={classnames("core-context-menu-item", "core-context-submenucontainer", { disabled, "is-selected": isSelected })}
         >
           <div className={classnames("core-context-menu-icon", "icon", icon)} />
           <div className={"core-context-menu-content"}>{this._parsedLabel}</div>

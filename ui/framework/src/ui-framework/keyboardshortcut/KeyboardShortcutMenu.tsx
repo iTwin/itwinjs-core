@@ -5,7 +5,7 @@
 /** @module KeyboardShortcut */
 
 import * as React from "react";
-import { GlobalContextMenu, ContextMenuItem, UiEvent, ContextSubMenu } from "@bentley/ui-core";
+import { GlobalContextMenu, ContextMenuItem, UiEvent, ContextSubMenu, CommonProps } from "@bentley/ui-core";
 import { KeyboardShortcut } from "./KeyboardShortcut";
 
 /** State for a [[KeyboardShortcutMenuEvent]] and [[KeyboardShortcutMenu]] component
@@ -26,7 +26,7 @@ export class KeyboardShortcutMenuEvent extends UiEvent<KeyboardShortcutMenuState
 /** Widget State Changed Event class.
  * @public
  */
-export class KeyboardShortcutMenu extends React.Component<{}, KeyboardShortcutMenuState> {
+export class KeyboardShortcutMenu extends React.Component<CommonProps, KeyboardShortcutMenuState> {
 
   /** @internal */
   public readonly state: KeyboardShortcutMenuState = {
@@ -59,6 +59,8 @@ export class KeyboardShortcutMenu extends React.Component<{}, KeyboardShortcutMe
 
       return (
         <GlobalContextMenu
+          className={this.props.className}
+          style={this.props.style}
           identifier="keyboard-shortcut-menu"
           x={menuX}
           y={menuY}

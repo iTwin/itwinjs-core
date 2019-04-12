@@ -113,7 +113,7 @@ export class ActionItemButton extends React_2.Component<ActionItemButtonProps, B
 }
 
 // @public
-export interface ActionItemButtonProps {
+export interface ActionItemButtonProps extends CommonProps {
     // (undocumented)
     actionItem: ActionButtonItemDef;
     // (undocumented)
@@ -149,24 +149,14 @@ export interface ActiveContentChangedEventArgs {
 // Warning: (ae-forgotten-export) The symbol "ActivityCenterState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class ActivityCenterField extends React_2.Component<ActivityCenterProps, ActivityCenterState> {
-    constructor(p: ActivityCenterProps);
+export class ActivityCenterField extends React_2.Component<StatusFieldProps, ActivityCenterState> {
+    constructor(p: StatusFieldProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): React_2.ReactNode;
-}
-
-// @public
-export interface ActivityCenterProps {
-    // (undocumented)
-    isInFooterMode: boolean;
-    // (undocumented)
-    openWidget: StatusBarFieldId;
-    // (undocumented)
-    statusBar: IStatusBar;
 }
 
 // @public
@@ -193,7 +183,7 @@ export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArg
 export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef;
 
 // @public
-export type AnyItemProps = ItemProps | GroupButtonProps | ToolItemProps | CommandItemProps;
+export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps;
 
 // @public
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
@@ -315,19 +305,15 @@ export interface BackstageItemState {
 }
 
 // @public
-export interface BackstageProps {
+export interface BackstageProps extends CommonProps {
     // (undocumented)
     accessToken?: AccessToken;
-    // (undocumented)
-    className?: string;
     // (undocumented)
     isVisible?: boolean;
     // (undocumented)
     onClose?: () => void;
     // (undocumented)
     showOverlay?: boolean;
-    // (undocumented)
-    style?: React_2.CSSProperties;
 }
 
 // @public
@@ -372,7 +358,7 @@ export class CardContainer extends React_2.Component<CardContainerProps> {
 }
 
 // @alpha
-export interface CardContainerProps {
+export interface CardContainerProps extends CommonProps {
     // (undocumented)
     cards: CardInfo[];
     // (undocumented)
@@ -552,7 +538,7 @@ export type ConfigurableUiActionsUnion = ActionsUnion<typeof ConfigurableUiActio
 export const ConfigurableUiContent: any;
 
 // @public
-export interface ConfigurableUiContentProps {
+export interface ConfigurableUiContentProps extends CommonProps {
     // (undocumented)
     appBackstage?: React_2.ReactNode;
     // (undocumented)
@@ -643,7 +629,7 @@ export class ContentControl extends ConfigurableUiControl {
     readonly navigationAidControl: string;
     onActivated(): void;
     onDeactivated(): void;
-    reactElement: React.ReactNode;
+    reactElement: React_2.ReactNode;
     readonly viewport: ScreenViewport | undefined;
 }
 
@@ -670,9 +656,9 @@ export class ContentGroup {
     // (undocumented)
     getContentControls(): ContentControl[];
     // (undocumented)
-    getContentNodes(): React.ReactNode[];
+    getContentNodes(): React_2.ReactNode[];
     // (undocumented)
-    getControlFromElement(node: React.ReactNode): ContentControl | undefined;
+    getControlFromElement(node: React_2.ReactNode): ContentControl | undefined;
     // (undocumented)
     groupId: string;
     onFrontstageDeactivated(): void;
@@ -700,8 +686,8 @@ export interface ContentGroupProps {
 // Warning: (ae-forgotten-export) The symbol "ContentLayoutState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class ContentLayout extends React_2.Component<ContentLayoutReactProps, ContentLayoutState> {
-    constructor(props: ContentLayoutReactProps);
+export class ContentLayout extends React_2.Component<ContentLayoutComponentProps, ContentLayoutState> {
+    constructor(props: ContentLayoutComponentProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -722,6 +708,16 @@ export interface ContentLayoutActivatedEventArgs {
     contentGroup: ContentGroup;
     // (undocumented)
     contentLayout: ContentLayoutDef;
+}
+
+// @public
+export interface ContentLayoutComponentProps extends CommonProps {
+    // (undocumented)
+    contentGroup: ContentGroup;
+    // (undocumented)
+    contentLayout: ContentLayoutDef;
+    // (undocumented)
+    isInFooterMode: boolean;
 }
 
 // @public
@@ -767,16 +763,6 @@ export interface ContentLayoutProps extends LayoutFragmentProps {
     id?: string;
     // (undocumented)
     priority?: number;
-}
-
-// @public
-export interface ContentLayoutReactProps {
-    // (undocumented)
-    contentGroup: ContentGroup;
-    // (undocumented)
-    contentLayout: ContentLayoutDef;
-    // (undocumented)
-    isInFooterMode: boolean;
 }
 
 // @public
@@ -844,7 +830,7 @@ export enum CubeHover {
 // Warning: (ae-forgotten-export) The symbol "CubeNavigationState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class CubeNavigationAid extends React_2.Component<{}, CubeNavigationState> {
+export class CubeNavigationAid extends React_2.Component<CommonProps, CubeNavigationState> {
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -928,7 +914,7 @@ export class DragDropLayerRendererComponent extends React_2.Component<DragDropLa
 }
 
 // @beta
-export interface DragDropLayerRendererProps {
+export interface DragDropLayerRendererProps extends CommonProps {
     // (undocumented)
     args?: DragSourceArguments;
     // @internal (undocumented)
@@ -985,7 +971,7 @@ export class DrawingNavigationAidControl extends NavigationAidControl {
 }
 
 // @internal (undocumented)
-export interface DrawingNavigationAidProps {
+export interface DrawingNavigationAidProps extends CommonProps {
     // (undocumented)
     animationTime?: number;
     // (undocumented)
@@ -1081,7 +1067,7 @@ export interface EachWidgetProps {
 // Warning: (ae-forgotten-export) The symbol "ElementTooltipState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class ElementTooltip extends React_2.Component<ElementTooltipProps, ElementTooltipState> {
+export class ElementTooltip extends React_2.Component<CommonProps, ElementTooltipState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1116,14 +1102,6 @@ export interface ElementTooltipChangedEventArgs {
     options?: ToolTipOptions;
     // (undocumented)
     pt?: XAndY;
-}
-
-// @public
-export interface ElementTooltipProps {
-    // (undocumented)
-    className?: string;
-    // (undocumented)
-    style?: React_2.CSSProperties;
 }
 
 // Warning: (ae-forgotten-export) The symbol "ExpandableSectionState" needs to be exported by the entry point ui-framework.d.ts
@@ -1197,7 +1175,7 @@ export class FrameworkZone extends React_2.Component<FrameworkZoneProps, Framewo
 }
 
 // @internal
-export interface FrameworkZoneProps {
+export interface FrameworkZoneProps extends CommonProps {
     // (undocumented)
     dropTarget: DropTarget;
     // (undocumented)
@@ -1254,8 +1232,8 @@ export interface FrontstageActivatedEventArgs {
 // Warning: (ae-forgotten-export) The symbol "FrontstageComposerState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class FrontstageComposer extends React_2.Component<FrontstageComposerProps, FrontstageComposerState> implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider {
-    constructor(props: FrontstageComposerProps);
+export class FrontstageComposer extends React_2.Component<CommonProps, FrontstageComposerState> implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider {
+    constructor(props: CommonProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1286,14 +1264,6 @@ export class FrontstageComposer extends React_2.Component<FrontstageComposerProp
     setZoneAllowsMerging(zoneId: WidgetZoneIndex, allowsMerging: boolean): void;
     // @internal (undocumented)
     readonly state: Readonly<FrontstageComposerState>;
-}
-
-// @public
-export interface FrontstageComposerProps {
-    // (undocumented)
-    className?: string;
-    // (undocumented)
-    style?: React_2.CSSProperties;
 }
 
 // @public
@@ -1447,7 +1417,7 @@ export class FrontstageManager {
 }
 
 // @public
-export interface FrontstageProps {
+export interface FrontstageProps extends CommonProps {
     applicationData?: any;
     bottomCenter?: React_2.ReactElement<ZoneProps>;
     bottomLeft?: React_2.ReactElement<ZoneProps>;
@@ -1548,20 +1518,12 @@ export const getBackstageItemStateFromProps: (props: BackstageItemProps) => Back
 export const GroupButton: React_2.FunctionComponent<GroupButtonProps>;
 
 // @public
-export interface GroupButtonProps extends ItemProps {
-    // (undocumented)
-    direction?: Direction;
-    // (undocumented)
-    groupId?: string;
-    // (undocumented)
-    items: AnyItemDef[];
-    // (undocumented)
-    itemsInColumn?: number;
+export interface GroupButtonProps extends GroupItemProps, CommonProps {
 }
 
 // @public
 export class GroupItemDef extends ActionButtonItemDef {
-    constructor(groupItemProps: GroupButtonProps);
+    constructor(groupItemProps: GroupItemProps);
     // (undocumented)
     direction: Direction;
     // (undocumented)
@@ -1584,6 +1546,18 @@ export class GroupItemDef extends ActionButtonItemDef {
     resolveItems(): void;
     // (undocumented)
     toolbarReactNode(index?: number): React_2.ReactNode;
+}
+
+// @public
+export interface GroupItemProps extends ItemProps {
+    // (undocumented)
+    direction?: Direction;
+    // (undocumented)
+    groupId?: string;
+    // (undocumented)
+    items: AnyItemDef[];
+    // (undocumented)
+    itemsInColumn?: number;
 }
 
 // @internal (undocumented)
@@ -1853,7 +1827,7 @@ export class KeyboardShortcutManager {
     }
 
 // @public
-export class KeyboardShortcutMenu extends React_2.Component<{}, KeyboardShortcutMenuState> {
+export class KeyboardShortcutMenu extends React_2.Component<CommonProps, KeyboardShortcutMenuState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -2053,23 +2027,13 @@ export interface MessageAddedEventArgs {
 // Warning: (ae-forgotten-export) The symbol "MessageCenterState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class MessageCenterField extends React_2.Component<MessageCenterProps, MessageCenterState> {
-    constructor(p: MessageCenterProps);
+export class MessageCenterField extends React_2.Component<StatusFieldProps, MessageCenterState> {
+    constructor(p: StatusFieldProps);
     // (undocumented)
     render(): React_2.ReactNode;
     // (undocumented)
     readonly state: Readonly<MessageCenterState>;
     }
-
-// @public
-export interface MessageCenterProps {
-    // (undocumented)
-    isInFooterMode: boolean;
-    // (undocumented)
-    openWidget: StatusBarFieldId;
-    // (undocumented)
-    statusBar: IStatusBar;
-}
 
 // @public
 export class MessageManager {
@@ -2128,21 +2092,13 @@ export class ModalDialogManager {
 // Warning: (ae-forgotten-export) The symbol "ModalDialogRendererState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class ModalDialogRenderer extends React_2.Component<ModalDialogRendererProps, ModalDialogRendererState> {
+export class ModalDialogRenderer extends React_2.Component<CommonProps, ModalDialogRendererState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): React_2.ReactNode;
-}
-
-// @public
-export interface ModalDialogRendererProps {
-    // (undocumented)
-    className?: string;
-    // (undocumented)
-    style?: React_2.CSSProperties;
 }
 
 // @public
@@ -2172,7 +2128,7 @@ export interface ModalFrontstageInfo {
 }
 
 // @public
-export interface ModalFrontstageProps {
+export interface ModalFrontstageProps extends CommonProps {
     appBarRight?: React_2.ReactNode;
     closeModal: () => any;
     isOpen?: boolean;
@@ -2250,7 +2206,7 @@ export class NavigationAidControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getSize(): string | undefined;
     getType(): ConfigurableUiControlType;
-    reactElement: React.ReactNode;
+    reactElement: React_2.ReactNode;
     }
 
 // Warning: (ae-forgotten-export) The symbol "NavigationWidgetState" needs to be exported by the entry point ui-framework.d.ts
@@ -2286,7 +2242,7 @@ export interface NavigationWidgetProps extends ToolbarWidgetProps {
 }
 
 // @public
-export interface NavigationWidgetPropsEx extends NavigationWidgetProps {
+export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
     // (undocumented)
     horizontalToolbar?: React_2.ReactNode;
     // (undocumented)
@@ -2363,7 +2319,7 @@ export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemSta
     }
 
 // @public
-export interface PopupButtonProps extends ItemProps {
+export interface PopupButtonProps extends ItemProps, CommonProps {
     // (undocumented)
     onExpanded?: (expand: boolean) => void;
 }
@@ -2500,7 +2456,7 @@ export class SheetNavigationAidControl extends NavigationAidControl {
 }
 
 // @alpha
-export interface SheetNavigationProps {
+export interface SheetNavigationProps extends CommonProps {
     // (undocumented)
     iModelConnection: IModelConnection;
 }
@@ -2526,12 +2482,9 @@ export class SignIn extends React_2.Component<SignInProps> {
 }
 
 // @public
-export interface SignInProps {
-    // (undocumented)
+export interface SignInProps extends CommonProps {
     onOffline?: () => void;
-    // (undocumented)
     onRegister?: () => void;
-    // (undocumented)
     onSignedIn: () => void;
 }
 
@@ -2588,7 +2541,7 @@ export class StackedWidget extends React_2.Component<StackedWidgetProps> {
     }
 
 // @internal
-export interface StackedWidgetProps {
+export interface StackedWidgetProps extends CommonProps {
     // (undocumented)
     children?: React_2.ReactNode;
     // (undocumented)
@@ -2689,7 +2642,7 @@ export class StandardMessageBox extends React_2.Component<StandardMessageBoxProp
 }
 
 // @public
-export interface StandardMessageBoxProps {
+export interface StandardMessageBoxProps extends CommonProps {
     iconType: MessageBoxIconType;
     messageBoxType: MessageBoxType;
     onResult?: (result: MessageBoxValue) => void;
@@ -2700,7 +2653,7 @@ export interface StandardMessageBoxProps {
 // Warning: (ae-forgotten-export) The symbol "StandardRotationNavigationAidState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @alpha
-export class StandardRotationNavigationAid extends React_2.Component<{}, StandardRotationNavigationAidState> {
+export class StandardRotationNavigationAid extends React_2.Component<CommonProps, StandardRotationNavigationAidState> {
     constructor(props: any);
     // (undocumented)
     render(): React_2.ReactNode;
@@ -2740,7 +2693,7 @@ export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState>
 export type StatusBarFieldId = string | null;
 
 // @public
-export interface StatusBarProps {
+export interface StatusBarProps extends CommonProps {
     // (undocumented)
     isInFooterMode: boolean;
     // (undocumented)
@@ -2761,7 +2714,7 @@ export class StatusBarZone extends React_2.Component<StatusBarZoneProps> {
 }
 
 // @internal
-export interface StatusBarZoneProps {
+export interface StatusBarZoneProps extends CommonProps {
     // (undocumented)
     dropTarget: DropTarget;
     // (undocumented)
@@ -2774,6 +2727,13 @@ export interface StatusBarZoneProps {
     widgetControl?: StatusBarWidgetControl;
     // (undocumented)
     zoneProps: StatusZoneManagerProps;
+}
+
+// @public
+export interface StatusFieldProps extends CommonProps {
+    isInFooterMode: boolean;
+    openWidget: StatusBarFieldId;
+    statusBar: IStatusBar;
 }
 
 // @public
@@ -2990,7 +2950,7 @@ export interface ToolbarWidgetProps extends WidgetProps {
 }
 
 // @public
-export class ToolButton extends React_2.Component<ToolItemProps, BaseItemState> {
+export class ToolButton extends React_2.Component<ToolButtonProps, BaseItemState> {
     constructor(props: ToolItemProps);
     // (undocumented)
     componentDidMount(): void;
@@ -3002,6 +2962,10 @@ export class ToolButton extends React_2.Component<ToolItemProps, BaseItemState> 
     render(): React_2.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<BaseItemState>;
+}
+
+// @public
+export interface ToolButtonProps extends ToolItemProps, CommonProps {
 }
 
 // @public
@@ -3072,8 +3036,8 @@ export class ToolUiManager {
 export class ToolUiProvider extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getType(): ConfigurableUiControlType;
-    toolAssistanceNode: React.ReactNode;
-    toolSettingsNode: React.ReactNode;
+    toolAssistanceNode: React_2.ReactNode;
+    toolSettingsNode: React_2.ReactNode;
     }
 
 // Warning: (ae-forgotten-export) The symbol "ToolWidgetState" needs to be exported by the entry point ui-framework.d.ts
@@ -3105,7 +3069,7 @@ export interface ToolWidgetProps extends ToolbarWidgetProps {
 }
 
 // @public
-export interface ToolWidgetPropsEx extends ToolWidgetProps {
+export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
     // (undocumented)
     button?: React_2.ReactNode;
     // (undocumented)
@@ -3199,7 +3163,7 @@ export class ValidationTextbox extends React_2.Component<ValidationTextboxProps>
     }
 
 // @beta
-export interface ValidationTextboxProps {
+export interface ValidationTextboxProps extends CommonProps {
     errorText?: string;
     initialValue?: string;
     onEnterPressed?: () => void;
@@ -3353,7 +3317,7 @@ export interface WidgetChangeHandler {
 export class WidgetControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getType(): ConfigurableUiControlType;
-    reactElement: React.ReactNode;
+    reactElement: React_2.ReactNode;
     setWidgetState(state: WidgetState): void;
     widgetDef: WidgetDef;
     }
@@ -3623,7 +3587,7 @@ export enum ZoneLocation {
 }
 
 // @public
-export interface ZoneProps {
+export interface ZoneProps extends CommonProps {
     allowsMerging?: boolean;
     applicationData?: any;
     defaultState?: ZoneState;
@@ -3682,7 +3646,7 @@ export class ZoneTargets extends React_2.Component<ZoneTargetsProps> {
 }
 
 // @internal
-export interface ZoneTargetsProps {
+export interface ZoneTargetsProps extends CommonProps {
     // (undocumented)
     dropTarget: DropTarget;
     // (undocumented)

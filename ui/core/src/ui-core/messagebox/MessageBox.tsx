@@ -8,7 +8,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 import "./MessageBox.scss";
-import { Dialog, DialogButton } from "../dialog/Dialog";
+import { Dialog, DialogButtonDef } from "../dialog/Dialog";
 import { CommonProps } from "../utils/Props";
 
 /** Message Severity enum.
@@ -31,11 +31,10 @@ export interface MessageBoxProps extends CommonProps {
   severity: MessageSeverity;
   /** whether to show dialog or not */
   opened: boolean;
-  /** List of [[DialogButton]] objects specifying buttons and associated onClick events */
-  buttonCluster: DialogButton[];
-  /** Title to show in titlebar of dialog  */
+  /** List of [[DialogButtonDef]] objects specifying buttons and associated onClick events */
+  buttonCluster: DialogButtonDef[];
+  /** Title to show in title bar of dialog  */
   title?: string | JSX.Element;
-  /** List of ButtonCluster objects specifying buttons, and onClick events to display in footer. */
   /** onClick event for X button for dialog */
   onClose?: () => void;
   /** 'keyup' event for <Esc> key */

@@ -6,12 +6,15 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import "./ContentLayout.scss";
+
+import { Orientation, UiEvent, CommonProps } from "@bentley/ui-core";
+
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentGroup } from "./ContentGroup";
 import { ContentViewManager, ActiveContentChangedEventArgs } from "./ContentViewManager";
-import { Orientation, UiEvent } from "@bentley/ui-core";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
+
+import "./ContentLayout.scss";
 
 // There is a problem with this import and a different tsconfig being used. Using the require statement instead.
 // Locking into react-split-pane release 0.1.77 and using the require statement works for browser, electron and mocha test environment.
@@ -62,7 +65,7 @@ export interface ContentLayoutProps extends LayoutFragmentProps {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-interface ContentWrapperProps {
+interface ContentWrapperProps extends CommonProps {
   content: React.ReactNode;
 }
 
@@ -87,10 +90,11 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
   public render(): React.ReactNode {
     const overlayClassName = classnames(
       "uifw-contentlayout-overlay-div",
-      this.state.isActive ? "uifw-contentlayout-overlay-active" : "uifw-contentlayout-overlay-inactive");
+      this.state.isActive ? "uifw-contentlayout-overlay-active" : "uifw-contentlayout-overlay-inactive",
+    );
 
     return (
-      <div className="uifw-contentlayout-wrapper"
+      <div className={classnames("uifw-contentlayout-wrapper", this.props.className)} style={this.props.style}
         onMouseDown={this._handleMouseDown}
       >
         {this.state.content}
@@ -133,7 +137,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 /** Properties for the [[SplitContainer]] component */
-interface SplitContainerProps {
+interface SplitContainerProps extends CommonProps {
   contentA: React.ReactNode;
   contentB: React.ReactNode;
   orientation: Orientation;
@@ -246,7 +250,7 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
     const defaultSize = (this.props.percentage * 100).toString() + "%";
 
     return (
-      <div ref={(e) => { this._containerDiv = e; }} className="uifw-contentlayout-full-size">
+      <div ref={(e) => { this._containerDiv = e; }} className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style}>
         <SplitPane split={orientation} minSize={50} defaultSize={defaultSize} onChange={this._onSplitterChange} allowResize={this.props.resizable}>
           {this.props.contentA}
           <div style={{ width: this.state.pane2Width, height: this.state.pane2Height }}>
@@ -258,7 +262,7 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
   }
 }
 
-interface SingleContentProps {
+interface SingleContentProps extends CommonProps {
   content: React.ReactNode;
 }
 
@@ -268,7 +272,7 @@ class SingleContentContainer extends React.Component<SingleContentProps> {
 
   public render(): React.ReactNode {
     return (
-      <div className="uifw-contentlayout-full-size">
+      <div className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style}>
         {this.props.content}
       </div>
     );
@@ -526,7 +530,7 @@ interface ContentLayoutState {
 /** Properties for the [[ContentLayout]] React component.
  * @public
  */
-export interface ContentLayoutReactProps {
+export interface ContentLayoutComponentProps extends CommonProps {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
   isInFooterMode: boolean;
@@ -535,12 +539,12 @@ export interface ContentLayoutReactProps {
 /** Content Layout React component.
  * @public
  */
-export class ContentLayout extends React.Component<ContentLayoutReactProps, ContentLayoutState> {
+export class ContentLayout extends React.Component<ContentLayoutComponentProps, ContentLayoutState> {
 
   /** @internal */
   public readonly state: Readonly<ContentLayoutState>;
 
-  constructor(props: ContentLayoutReactProps) {
+  constructor(props: ContentLayoutComponentProps) {
     super(props);
 
     let contentGroup: ContentGroup;
@@ -608,10 +612,13 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
 
   public render(): React.ReactNode {
     if (this.state.contentContainer) {
-      const className = (this.props.isInFooterMode && this.state.isUiVisible) ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode";
+      const className = classnames(
+        (this.props.isInFooterMode && this.state.isUiVisible) ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode",
+        this.props.className,
+      );
 
       return (
-        <div id="uifw-contentlayout-div" className={className} key={this.state.contentLayout.id}
+        <div id="uifw-contentlayout-div" className={className} style={this.props.style} key={this.state.contentLayout.id}
           onMouseDown={this._onMouseDown}
           onMouseUp={this._onMouseUp}
         >

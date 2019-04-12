@@ -5,21 +5,12 @@
 /** @module Notification */
 
 import * as React from "react";
-
-import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
+import classnames from "classnames";
 
 import { Status, MessageLayout, MessageProgress } from "@bentley/ui-ninezone";
 import { MessageManager, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
-
-/** Properties for the [[ActivityCenterField]] component
- * @public
- */
-export interface ActivityCenterProps {
-  statusBar: IStatusBar;
-  isInFooterMode: boolean;
-  openWidget: StatusBarFieldId;
-}
+import { StatusFieldProps } from "./StatusFieldProps";
 
 /** State for the [[ActivityCenterField]] component
  * @internal
@@ -33,10 +24,10 @@ interface ActivityCenterState {
 /** Activity Center Field React component.
  * @public
  */
-export class ActivityCenterField extends React.Component<ActivityCenterProps, ActivityCenterState> {
+export class ActivityCenterField extends React.Component<StatusFieldProps, ActivityCenterState> {
   private _element: any;
 
-  constructor(p: ActivityCenterProps) {
+  constructor(p: StatusFieldProps) {
     super(p);
     this.state = {
       title: "",
@@ -81,7 +72,10 @@ export class ActivityCenterField extends React.Component<ActivityCenterProps, Ac
       const tooltip = this.state.title + " - " + moreDetails;
 
       footerMessages = (
-        <div className="uifw-centered open-activity-message" onClick={this._openActivityMessage} title={tooltip}>
+        <div className={classnames("uifw-centered", "open-activity-message", this.props.className)}
+          style={this.props.style}
+          onClick={this._openActivityMessage} title={tooltip}
+        >
           <MessageLayout
             progress={
               <MessageProgress

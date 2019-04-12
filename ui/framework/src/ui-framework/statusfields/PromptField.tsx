@@ -6,20 +6,22 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
+import classnames from "classnames";
 import { FooterIndicator } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
+import { StatusFieldProps } from "./StatusFieldProps";
 import "./PromptField.scss";
 
 /** Defines properties supported by the Prompt Field Component.
  */
-interface PromptFieldProps {
-  isInFooterMode: boolean;
+interface PromptFieldProps extends StatusFieldProps {
+  /** Prompt text for the active tool */
   toolPrompt: string;
 }
 
 /**
  * Prompt Field React component. This component is designed to be specified in a status bar definition.
- * It is used to display prompt from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
+ * It is used to display prompts from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
  * IModelApp.notifications.outputPrompt.
  */
 class PromptFieldComponent extends React.Component<PromptFieldProps> {
@@ -31,7 +33,8 @@ class PromptFieldComponent extends React.Component<PromptFieldProps> {
   public render(): React.ReactNode {
     return (
       <FooterIndicator
-        className="uifw-statusFields-promptField"
+        className={classnames("uifw-statusFields-promptField", this.props.className)}
+        style={this.props.style}
         isInFooterMode={this.props.isInFooterMode}
       >
         {this.props.toolPrompt}
@@ -53,7 +56,7 @@ function mapStateToProps(state: any) {
 // we declare the variable and export that rather than using export default.
 /**
  * Prompt Field React component. This component is designed to be specified in a status bar definition.
- * It is used to display prompt from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
+ * It is used to display prompts from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
  * IModelApp.notifications.outputPrompt.
  * This React component is Redux connected.
  * @public

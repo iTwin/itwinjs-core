@@ -6,7 +6,7 @@ Topics:
 
 * [Base](./Base.md)
 * [Button](./Button.md)
-* [CheckBoxList](./CheckBoxList.md)
+* [CheckListBox](./CheckListBox.md)
 * [Common](./Common.md)
 * [ContextMenu](./ContextMenu.md)
 * [Cube](./Cube.md)

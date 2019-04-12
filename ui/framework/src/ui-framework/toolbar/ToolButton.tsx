@@ -16,11 +16,17 @@ import { ToolItemProps, StringGetter } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
 import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { CommonProps } from "@bentley/ui-core";
+
+/** Properties for the [[ToolButton]] React Component.
+ * @public
+ */
+export interface ToolButtonProps extends ToolItemProps, CommonProps { }
 
 /** Tool Button React Component.
  * @public
  */
-export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
+export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> {
   private _componentUnmounting = false;
   private _label: string | StringGetter = "";
 
@@ -111,6 +117,8 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
     return (
       <Item
         {...toolbarItemProps}
+        className={this.props.className}
+        style={this.props.style}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
         title={this.label}

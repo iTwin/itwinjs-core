@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { ExpandableItem, Item } from "@bentley/ui-ninezone";
-import { withOnOutsideClick } from "@bentley/ui-core";
+import { withOnOutsideClick, CommonProps } from "@bentley/ui-core";
 import { ItemProps, StringGetter } from "../shared/ItemProps";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
@@ -22,7 +22,7 @@ const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDiv
 /** Properties for the [[PopupButton]] React component
  * @public
  */
-export interface PopupButtonProps extends ItemProps {
+export interface PopupButtonProps extends ItemProps, CommonProps {
   onExpanded?: (expand: boolean) => void;
 }
 

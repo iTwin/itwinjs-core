@@ -9,6 +9,7 @@ import * as classnames from "classnames";
 import { MessageManager } from "../messages/MessageManager";
 
 import "./ValidationTextbox.scss";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Enum for Input Status used in [[ValidationTextbox]]
  * @beta
@@ -21,7 +22,7 @@ export enum InputStatus {
 /** Property interface for ValidationTextbox
  * @beta
  */
-export interface ValidationTextboxProps {
+export interface ValidationTextboxProps extends CommonProps {
   /** value to set ValidationTextbox to initially */
   initialValue?: string;
   /** placeholder value to show in gray before anything is entered in */
@@ -48,8 +49,12 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
 
   /** @internal */
   public render(): React.ReactNode {
-    const sizeStyle = {
+    const sizeStyle: React.CSSProperties = {
       width: this.props.size ? this.props.size.toString() + "em" : "12em",
+    };
+    const divStyle: React.CSSProperties = {
+      ...sizeStyle,
+      ...this.props.style,
     };
 
     const validClassNames = classnames(
@@ -63,8 +68,8 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
 
     return (
       <div
-        className="uifw-ValidationTextbox"
-        style={sizeStyle}>
+        className={classnames("uifw-ValidationTextbox", this.props.className)}
+        style={divStyle}>
         <input
           className={this._isValid ? validClassNames : invalidClassNames}
           onChange={this._validateText}

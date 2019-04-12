@@ -121,8 +121,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for working with various Buttons.
  */
 /**
- * @docs-group-description CheckBoxList
- * Classes for working with a CheckBox list.
+ * @docs-group-description CheckListBox
+ * Classes for working with a Check listbox.
  */
 /**
  * @docs-group-description Common

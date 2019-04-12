@@ -84,6 +84,8 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
       return (
         <Zone
+          className={this.props.className}
+          style={this.props.style}
           bounds={this.props.bounds}
         >
           <div style={divStyle} >

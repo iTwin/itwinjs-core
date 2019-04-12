@@ -146,7 +146,7 @@
         @include uicore-touch-scrolling;
         @include uicore-scrollbar();
 
-        &.core-dialog-content-nopadding {
+        &.core-dialog-content-no-inset {
           margin: 0;
           padding: 0;
         }

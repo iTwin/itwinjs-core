@@ -36,7 +36,7 @@ export class LabeledTextarea extends React.Component<LabeledTextareaProps> {
         {label &&
           <div className={classnames("label", labelClassName)}> {label} </div>
         }
-        <Textarea disabled={this.props.disabled} style={inputStyle} className={inputClassName} {...props} />
+        <Textarea disabled={this.props.disabled} className={inputClassName} style={inputStyle} {...props} />
         {message &&
           <div className={classnames("message", messageClassName)} style={messageStyle}>{message}</div>
         }

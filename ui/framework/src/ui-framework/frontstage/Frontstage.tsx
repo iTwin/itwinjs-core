@@ -5,6 +5,7 @@
 /** @module Frontstage */
 
 import * as React from "react";
+
 import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
 import { FrontstageRuntimeProps } from "./FrontstageComposer";
@@ -17,11 +18,12 @@ import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { StagePanelProps, StagePanel, StagePanelLocation, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { ElementTooltip } from "../feedback/ElementTooltip";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for a [[Frontstage]] component.
  * @public
  */
-export interface FrontstageProps {
+export interface FrontstageProps extends CommonProps {
   /** Id for the Frontstage */
   id: string;
   /** Tool that is started once the Frontstage is activated */
@@ -356,6 +358,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       display: "flex",
       flexDirection: "column",
       height: "100%",
+      ...this.props.style,
     };
 
     /** For div around Left, center and Right */
@@ -406,7 +409,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     const frontstageDef = runtimeProps.frontstageDef;
 
     return (
-      <div style={outerStyle}>
+      <div style={outerStyle} className={this.props.className}>
         {this.cloneStagePanelElement(frontstageDef.topMostPanel)}
 
         <div style={innerStyle}>

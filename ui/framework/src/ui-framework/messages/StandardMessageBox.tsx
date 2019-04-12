@@ -7,14 +7,14 @@
 import * as React from "react";
 
 import { MessageBoxType, MessageBoxIconType, MessageBoxValue } from "@bentley/imodeljs-frontend";
-import { DialogButtonType, DialogButton, MessageBox, MessageSeverity } from "@bentley/ui-core";
+import { DialogButtonType, DialogButtonDef, MessageBox, MessageSeverity, CommonProps } from "@bentley/ui-core";
 
 import { ModalDialogManager } from "../ModalDialogManager";
 
 /** Properties for [[StandardMessageBox]] React component
  * @public
  */
-export interface StandardMessageBoxProps {
+export interface StandardMessageBoxProps extends CommonProps {
   /** Indicates whether the message box is open */
   opened: boolean;
   /** The standard icon to display in the message box */
@@ -50,7 +50,7 @@ export class StandardMessageBox extends React.Component<StandardMessageBoxProps,
   }
 
   public render(): JSX.Element {
-    const buttonCluster: DialogButton[] = new Array<DialogButton>();
+    const buttonCluster: DialogButtonDef[] = new Array<DialogButtonDef>();
 
     switch (this.props.messageBoxType) {
       case MessageBoxType.Ok:
@@ -92,6 +92,8 @@ export class StandardMessageBox extends React.Component<StandardMessageBoxProps,
 
     return (
       <MessageBox
+        className={this.props.className}
+        style={this.props.style}
         opened={this.state.opened}
         title={this.props.title}
         severity={severity}

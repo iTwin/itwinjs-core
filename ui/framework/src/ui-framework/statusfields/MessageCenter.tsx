@@ -10,21 +10,13 @@ import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-f
 
 import { UiFramework } from "../UiFramework";
 
-import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
+import { StatusBarFieldId } from "../widgets/StatusBarWidgetControl";
 import { MessageManager } from "../messages/MessageManager";
 import {
   MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog,
   TitleBarButton, FooterPopup,
 } from "@bentley/ui-ninezone";
-
-/** Properties for the [[MessageCenterField]] React component
- * @public
- */
-export interface MessageCenterProps {
-  statusBar: IStatusBar;
-  isInFooterMode: boolean;
-  openWidget: StatusBarFieldId;
-}
+import { StatusFieldProps } from "./StatusFieldProps";
 
 /** Enum for the [[MessageCenterField]] active tab
  * @internal
@@ -44,7 +36,7 @@ interface MessageCenterState {
 /** Message Center Field React component.
  * @public
  */
-export class MessageCenterField extends React.Component<MessageCenterProps, MessageCenterState> {
+export class MessageCenterField extends React.Component<StatusFieldProps, MessageCenterState> {
   private _className: string;
   private _element: any;
   private _target = React.createRef<HTMLDivElement>();
@@ -54,7 +46,7 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
     activeTab: MessageCenterActiveTab.AllMessages,
   };
 
-  constructor(p: MessageCenterProps) {
+  constructor(p: StatusFieldProps) {
     super(p);
 
     const instance = this.constructor;
@@ -66,6 +58,8 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
     const footerMessages = (
       <>
         <MessageCenter
+          className={this.props.className}
+          style={this.props.style}
           indicatorRef={this._indicator}
           isInFooterMode={this.props.isInFooterMode}
           label={this.props.isInFooterMode ? UiFramework.i18n.translate("UiFramework:messageCenter.messages") : undefined}

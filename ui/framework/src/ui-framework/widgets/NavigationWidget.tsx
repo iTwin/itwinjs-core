@@ -20,6 +20,7 @@ import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiContr
 import { Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { ContentControlActivatedEventArgs } from "../content/ContentControl";
+import { CommonProps } from "@bentley/ui-core";
 
 /** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  * @public
@@ -85,7 +86,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 /** Properties for the [[NavigationWidget]] React component.
  * @public
  */
-export interface NavigationWidgetPropsEx extends NavigationWidgetProps {
+export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
   iModelConnection?: IModelConnection;
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;
@@ -154,6 +155,8 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
   public render(): React.ReactNode {
     return (
       <NavigationWidgetWithDef
+        className={this.props.className}
+        style={this.props.style}
         navigationWidgetDef={this.state.navigationWidgetDef}
         horizontalToolbar={this.props.horizontalToolbar}
         verticalToolbar={this.props.verticalToolbar}
@@ -164,7 +167,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 
 /** Properties for the [[NavigationWidgetWithDef]] component.
  */
-interface Props {
+interface Props extends CommonProps {
   navigationWidgetDef: NavigationWidgetDef;
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;
@@ -204,6 +207,8 @@ class NavigationWidgetWithDef extends React.Component<Props> {
 
     return (
       <NZ_ToolsWidget isNavigation
+        className={this.props.className}
+        style={this.props.style}
         button={navigationAid}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}

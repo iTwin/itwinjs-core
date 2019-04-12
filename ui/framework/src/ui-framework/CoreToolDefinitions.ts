@@ -55,7 +55,7 @@ export class CoreTools {
   public static get rotateViewCommand() {
     return new ToolItemDef({
       toolId: RotateViewTool.toolId,
-      iconSpec: "icon-rotate-left",
+      iconSpec: "icon-gyroscope",
       label: () => RotateViewTool.flyover,
       tooltip: () => RotateViewTool.description,
       execute: () => { IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView); },

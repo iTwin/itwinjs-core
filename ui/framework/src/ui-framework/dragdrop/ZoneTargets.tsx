@@ -9,11 +9,12 @@ import * as React from "react";
 import { TargetChangeHandler } from "../frontstage/FrontstageComposer";
 
 import { Container as ZoneTargetsContainer, Merge as MergeTarget, Back as BackTarget, WidgetZoneIndex, DropTarget, TargetType } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for the [[ZoneTargets]] component.
  * @internal
  */
-export interface ZoneTargetsProps {
+export interface ZoneTargetsProps extends CommonProps {
   zoneId: WidgetZoneIndex;
   dropTarget: DropTarget;
   targetChangeHandler: TargetChangeHandler;
@@ -25,7 +26,7 @@ export interface ZoneTargetsProps {
 export class ZoneTargets extends React.Component<ZoneTargetsProps> {
   public render(): React.ReactNode {
     return (
-      <ZoneTargetsContainer>
+      <ZoneTargetsContainer className={this.props.className} style={this.props.style}>
         {this.getTarget()}
       </ZoneTargetsContainer>
     );

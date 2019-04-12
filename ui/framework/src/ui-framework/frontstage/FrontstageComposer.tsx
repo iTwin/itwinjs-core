@@ -17,6 +17,7 @@ import {
 } from "@bentley/ui-ninezone";
 
 import { WidgetDef } from "../widgets/WidgetDef";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Interface defining callbacks for widget changes
  * @public
@@ -55,14 +56,6 @@ export interface FrontstageRuntimeProps {
   frontstageDef: FrontstageDef;
 }
 
-/** Properties for the [[FrontstageComposer]] component.
- * @public
- */
-export interface FrontstageComposerProps {
-  className?: string;
-  style?: React.CSSProperties;
-}
-
 /** State for the FrontstageComposer component.
  * @internal
  */
@@ -75,7 +68,7 @@ interface FrontstageComposerState {
 /** FrontstageComposer React component.
  * @public
  */
-export class FrontstageComposer extends React.Component<FrontstageComposerProps, FrontstageComposerState>
+export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState>
   implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider {
 
   private _frontstageDef: FrontstageDef | undefined;
@@ -83,7 +76,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
   /** @internal */
   public readonly state: Readonly<FrontstageComposerState>;
 
-  constructor(props: FrontstageComposerProps) {
+  constructor(props: CommonProps) {
     super(props);
 
     const activeFrontstageId = FrontstageManager.activeFrontstageId;
@@ -220,7 +213,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     }
 
     return (
-      <div id="uifw-frontstage-composer">
+      <div id="uifw-frontstage-composer" className={this.props.className} style={this.props.style}>
         {this.renderModalFrontstage()}
 
         {content}

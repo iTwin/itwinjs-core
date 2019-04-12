@@ -2,7 +2,7 @@
 
 exports[`<SvgSprite /> renders correctly 1`] = `
 <svg
-  className="uicore-icons-svgSprite"
+  className="core-icons-svgSprite"
   height="100%"
   width="100%"
 >

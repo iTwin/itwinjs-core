@@ -16,11 +16,12 @@ import {
   ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, Zone as NZ_Zone, RectangleProps,
   GhostOutline, HorizontalAnchor, VerticalAnchor, PointProps,
 } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for the [[FrameworkZone]] component.
  * @internal
  */
-export interface FrameworkZoneProps {
+export interface FrameworkZoneProps extends CommonProps {
   horizontalAnchor: HorizontalAnchor;
   verticalAnchor: VerticalAnchor;
   zoneProps: ZonePropsBase;
@@ -83,7 +84,10 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   public render(): React.ReactNode {
     return (
       <>
-        <NZ_Zone bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}>
+        <NZ_Zone
+          className={this.props.className}
+          style={this.props.style}
+          bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}>
           {this._getWidget()}
         </NZ_Zone>
         <NZ_Zone bounds={this.props.zoneProps.bounds}>
