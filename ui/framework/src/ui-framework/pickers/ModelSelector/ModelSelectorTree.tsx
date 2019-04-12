@@ -11,8 +11,7 @@ import { SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend"
 import { isInstanceNodeKey } from "@bentley/presentation-common";
 import { treeWithFilteringSupport } from "@bentley/presentation-components";
 import { Tree, TreeNodeItem, FilteringInput, SelectionMode } from "@bentley/ui-components";
-import { CheckBoxInfo, CheckBoxState, isPromiseLike, NodeCheckboxRenderProps, ImageCheckBox, LoadingSpinner, SpinnerSize } from "@bentley/ui-core";
-import { ContextMenuPortal, ContextMenuItem, Position } from "../../contextmenu/PortalContextMenu";
+import { CheckBoxInfo, CheckBoxState, isPromiseLike, NodeCheckboxRenderProps, ImageCheckBox, LoadingSpinner, SpinnerSize, GlobalContextMenu, ContextMenuItem } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ListItem, ListItemType } from "../ListPicker";
 import { CategoryModelTreeProps, CategoryModelTreeState, Groups } from "./ModelSelectorDefinitions";
@@ -289,14 +288,28 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
           <span className="icon icon-search" onClick={this._onToggleSearchBox} />
           <span className="options icon icon-more-2" title={UiFramework.i18n.translate("UiFramework:categoriesModels.options")}
             onClick={this._onShowOptions.bind(this)} ref={(element) => { this._optionsElement = element; }}></span>
-          <ContextMenuPortal parent={this._optionsElement} isOpened={this.state.isOptionsOpened} onClickOutside={this._onCloseContextMenu.bind(this)} position={Position.BottomRight}>
-            <ContextMenuItem key={0} name={UiFramework.i18n.translate("UiFramework:pickerButtons.showAll")} icon="icon-visibility" onClick={this._onSetEnableAll.bind(this, true)} />
-            <ContextMenuItem key={1} name={UiFramework.i18n.translate("UiFramework:pickerButtons.hideAll")} icon="icon-visibility-hide-2" onClick={this._onSetEnableAll.bind(this, false)} />
-            <ContextMenuItem key={2} name={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} icon="icon-visibility-invert" onClick={this._onInvertAll.bind(this)} />
-          </ContextMenuPortal>
+          <GlobalContextMenu opened={this.state.isOptionsOpened} x={this._getOptionsX()} y={this._getOptionsY()}>
+            <ContextMenuItem key={0} icon="icon-visibility" onClick={this._onSetEnableAll.bind(this, true)}>{UiFramework.i18n.translate("UiFramework:pickerButtons.showAll")}</ContextMenuItem>
+            <ContextMenuItem key={1} icon="icon-visibility-hide-2" onClick={this._onSetEnableAll.bind(this, false)}>{UiFramework.i18n.translate("UiFramework:pickerButtons.hideAll")}</ContextMenuItem>
+            <ContextMenuItem key={2} icon="icon-visibility-invert" onClick={this._onInvertAll.bind(this)} >{UiFramework.i18n.translate("UiFramework:pickerButtons.invert")}</ContextMenuItem>
+          </GlobalContextMenu>
         </div>
       </div>
     );
+  }
+
+  private _getOptionsX = () => {
+    if (!this._optionsElement)
+      return 0;
+    const rect = this._optionsElement.getBoundingClientRect();
+    return rect.right;
+  }
+
+  private _getOptionsY = () => {
+    if (!this._optionsElement)
+      return 0;
+    const rect = this._optionsElement.getBoundingClientRect();
+    return rect.bottom;
   }
 
   private _onToggleSearchBox = () => {
