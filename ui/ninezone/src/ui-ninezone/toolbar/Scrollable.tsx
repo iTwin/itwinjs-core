@@ -8,12 +8,14 @@ import * as classnames from "classnames";
 import * as React from "react";
 import { Direction, OrthogonalDirection, DirectionHelpers, OrthogonalDirectionHelpers } from "../utilities/Direction";
 import { FlattenChildren } from "../utilities/Props";
-import { Indicator } from "./scroll/Indicator";
+import { ScrollIndicator } from "./scroll/Indicator";
 import { ToolbarProps, getToolbarDirection, ToolbarPanelAlignmentHelpers, PanelsProvider, Toolbar } from "./Toolbar";
 import { Items } from "./Items";
 import "./Scrollable.scss";
 
-/** Properties of [[Scrollable]] component. */
+/** Properties of [[Scrollable]] component.
+ * @alpha
+ */
 export interface ScrollableProps extends ToolbarProps {
   /** Describes number of visible elements. Should not be lower than 3. */
   visibleItemThreshold: number;
@@ -22,7 +24,7 @@ export interface ScrollableProps extends ToolbarProps {
 }
 
 /** State of [[Scrollable]] component. */
-export interface ScrollableState {
+interface ScrollableState {
   /** Describes component scroll offset. */
   scrollOffset: number;
 }
@@ -32,9 +34,14 @@ const getItemCount = (props: ToolbarProps) => {
   return React.Children.count(items);
 };
 
+/** Default properties of [[Scrollable]] component.
+ * @alpha
+ */
 export type ScrollableDefaultProps = Pick<ScrollableProps, "visibleItemThreshold">;
 
-/** A [[Toolbar]] with scroll overflow strategy. */
+/** A [[Toolbar]] with scroll overflow strategy.
+ * @alpha
+ */
 export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableState> {
   private static readonly _DESKTOP_ITEM_WIDTH = 40;
   private static readonly _DESKTOP_ITEM_HEIGHT = Scrollable._DESKTOP_ITEM_WIDTH;
@@ -307,12 +314,12 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
           >
             {items}
           </Items>
-          <Indicator
+          <ScrollIndicator
             className={leftIndicatorClassName}
             direction={direction === OrthogonalDirection.Vertical ? Direction.Top : Direction.Left}
             onClick={this._handleLeftScroll}
           />
-          <Indicator
+          <ScrollIndicator
             className={rightIndicatorClassName}
             direction={direction === OrthogonalDirection.Vertical ? Direction.Bottom : Direction.Right}
             onClick={this._handleRightScroll}

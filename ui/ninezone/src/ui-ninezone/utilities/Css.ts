@@ -7,7 +7,9 @@
 import { Rectangle, RectangleProps } from "./Rectangle";
 import { Point, PointProps } from "./Point";
 
-/** CSS helpers. */
+/** CSS helpers.
+ * @internal
+ */
 export class Css {
   /** @returns Value in pixels. */
   public static toPx(px: number): string {
@@ -20,7 +22,9 @@ export class Css {
   }
 }
 
-/** React.CSSProperties helpers. */
+/** React.CSSProperties helpers.
+ * @internal
+ */
 export class CssProperties {
   /** @returns CSS properties that describe bounds (top, left, height, width). */
   public static fromBounds(props: RectangleProps): React.CSSProperties {

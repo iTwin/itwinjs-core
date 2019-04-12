@@ -5,8 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-
-import { PointerCaptor, PointerCaptorState } from "../../ui-ninezone";
+import { PointerCaptor } from "../../ui-ninezone/base/PointerCaptor";
 
 describe("<PointerCaptor />", () => {
   it("should render", () => {
@@ -36,7 +35,7 @@ describe("<PointerCaptor />", () => {
 
   it("should set isMouseDown state", () => {
     const spy = sinon.spy();
-    const sut = mount<PointerCaptor, PointerCaptorState>(<PointerCaptor onMouseDown={spy} />);
+    const sut = mount<PointerCaptor>(<PointerCaptor onMouseDown={spy} />);
     sut.simulate("mouseDown");
 
     sut.state().isMouseDown.should.eq(true);

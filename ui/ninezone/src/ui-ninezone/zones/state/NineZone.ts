@@ -11,21 +11,21 @@ import { Target, TargetZoneProps } from "./Target";
 import { Widget, DraggingWidgetProps, DraggingWidget } from "./Widget";
 import { ZoneManager, getDefaultZoneProps, ZonePropsBase, ContentZone, WidgetZone, StatusZoneManager, StatusZoneManagerProps, getDefaultStatusZoneProps } from "./Zone";
 
-/** @hidden */
+/** @alpha */
 export type ContentZoneIndex = 5;
-/** @hidden */
+/** @alpha */
 export type StatusZoneIndex = 8;
-/** @hidden */
+/** @alpha */
 export type WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9;
-/** @hidden */
+/** @alpha */
 export type ZoneIndex = WidgetZoneIndex | ContentZoneIndex;
 
-/** @hidden */
+/** @alpha */
 export type ZonesType =
   { [id in Exclude<WidgetZoneIndex, StatusZoneIndex>]: ZonePropsBase } &
   { [id in StatusZoneIndex]: StatusZoneManagerProps };
 
-/** @hidden */
+/** @alpha */
 export interface NineZoneProps {
   readonly zones: Readonly<ZonesType>;
   readonly size: SizeProps;
@@ -33,7 +33,7 @@ export interface NineZoneProps {
   readonly target?: TargetZoneProps;
 }
 
-/** @hidden */
+/** @alpha */
 export const getDefaultZonesProps = (): Readonly<ZonesType> => {
   return {
     1: getDefaultZoneProps(1),
@@ -47,7 +47,7 @@ export const getDefaultZonesProps = (): Readonly<ZonesType> => {
   };
 };
 
-/** @hidden */
+/** @alpha */
 export const getDefaultNineZoneProps = (): NineZoneProps => (
   {
     zones: getDefaultZonesProps(),
@@ -58,7 +58,7 @@ export const getDefaultNineZoneProps = (): NineZoneProps => (
   }
 );
 
-/** @hidden */
+/** @alpha */
 export class NineZone implements Iterable<ZoneManager> {
   private _zones: { [id: number]: ZoneManager } = {};
   private _root: Root | undefined;

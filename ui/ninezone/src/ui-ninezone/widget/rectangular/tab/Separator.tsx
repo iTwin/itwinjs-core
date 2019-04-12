@@ -6,14 +6,19 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
+import { NoChildrenProps } from "../../../utilities/Props";
 import "./Separator.scss";
 
-/** Properties of [[TabSeparator]] component. */
+/** Properties of [[TabSeparator]] component.
+ * @alpha
+ */
 export interface TabSeparatorProps extends CommonProps, NoChildrenProps {
 }
 
-/** Rectangular widget tab separator. Used in [[Stacked]] component. */
+/** Rectangular widget tab separator. Used in [[Stacked]] component.
+ * @alpha
+ */
 export class TabSeparator extends React.PureComponent<TabSeparatorProps> {
   public render() {
     const className = classnames(

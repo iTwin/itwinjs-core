@@ -1,54 +1,62 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<MessageCenterIndicator /> renders correctly 1`] = `
-<div
+exports[`<MessageCenter /> renders correctly 1`] = `
+<FooterIndicator
   className="nz-footer-messageCenter-indicator"
 >
   <div
-    className="nz-balloon-container"
+    className="nz-indicator"
   >
     <div
-      className="nz-dialog"
-    />
-    <div
-      className="nz-balloon"
+      className="nz-container"
     >
       <div
-        className="nz-arrow"
-      />
+        className="nz-balloon"
+      >
+        <div
+          className="nz-arrow"
+        />
+        <div
+          className="nz-content"
+        />
+      </div>
       <div
-        className="nz-content"
+        className="nz-target"
       />
     </div>
   </div>
-</div>
+</FooterIndicator>
 `;
 
-exports[`<MessageCenterIndicator /> renders correctly with label 1`] = `
-<div
+exports[`<MessageCenter /> renders correctly with label 1`] = `
+<FooterIndicator
   className="nz-footer-messageCenter-indicator"
 >
-  <span
-    className="nz-label"
-  >
-    Messages:
-  </span>
   <div
-    className="nz-balloon-container"
+    className="nz-indicator"
   >
+    <span
+      className="nz-label"
+    >
+      Messages:
+    </span>
     <div
-      className="nz-dialog"
-    />
-    <div
-      className="nz-balloon"
+      className="nz-container"
     >
       <div
-        className="nz-arrow"
-      />
+        className="nz-balloon"
+      >
+        <div
+          className="nz-arrow"
+        />
+        <div
+          className="nz-content"
+        />
+      </div>
       <div
-        className="nz-content"
+        className="nz-target"
       />
     </div>
   </div>
-</div>
+</FooterIndicator>
 `;

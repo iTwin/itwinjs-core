@@ -7,11 +7,13 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { CommonProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import { ToolbarItem, ToolbarItemProps } from "../Toolbar";
 import "./Item.scss";
 
-/** Properties of [[Item]] component */
+/** Properties of [[Item]] component.
+ * @alpha
+ */
 export interface ItemProps extends CommonProps {
   /** button icon. */
   icon?: React.ReactNode;
@@ -59,7 +61,9 @@ class ActualItem extends React.PureComponent<ItemProps> implements ToolbarItem {
   }
 }
 
-/** Toolbar item component. Used in [[Toolbar]] */
+/** Toolbar item component. Used in [[Toolbar]] component.
+ * @alpha
+ */
 export class Item extends React.PureComponent<ItemProps> {
   public render() {
     const toolbarItemProps = this.props as ToolbarItemProps<ActualItem>;

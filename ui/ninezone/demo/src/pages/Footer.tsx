@@ -3,17 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
+import { Status } from "@src/footer/message/Status";
+import { Message } from "@src/footer/message/Message";
+import { MessageLayout } from "@src/footer/message/Layout";
+import { MessageHyperlink } from "@src/footer/message/Hyperlink";
+import { MessageProgress } from "@src/footer/message/Progress";
+import { MessageButton } from "@src/footer/message/Button";
 import { cols2 } from "./Tools";
-
-import { Activity } from "@src/footer/message/Activity";
-import { StatusMessage } from "@src/footer/message/content/status/Message";
-import { MessageLayout } from "@src/footer/message/content/status/Layout";
-import { Label } from "@src/footer/message/content/Label";
-import { Hyperlink } from "@src/footer/message/content/Hyperlink";
-import { Progress } from "@src/footer/message/content/Progress";
-import { MessageButton } from "@src/footer/message/content/Button";
-import { Status } from "@src/footer/message/content/status/Status";
 
 export const cols3: React.CSSProperties = {
   ...cols2,
@@ -33,78 +29,69 @@ export default class Footer extends React.PureComponent {
       >
         <h1>Messages</h1>
         <div style={cols3}>
-          <Activity>
-            <StatusMessage
-              status={Status.Information}
-              icon={
-                <i className="icon icon-info-hollow" />
+          <Message
+            status={Status.Information}
+            icon={
+              <i className="icon icon-info-hollow" />
+            }
+          >
+            <MessageLayout
+              buttons={
+                <>
+                  <MessageHyperlink>Cancel</MessageHyperlink>
+                  <MessageButton>
+                    <i className="icon icon-close" />
+                  </MessageButton>
+                </>
+              }
+              progress={
+                <MessageProgress
+                  status={Status.Information}
+                  progress={25}
+                />
               }
             >
-              <MessageLayout
-                label={
-                  <Label>Processing - 25% completed.</Label>
-                }
-                buttons={
-                  <>
-                    <Hyperlink text="Cancel" />
-                    <MessageButton>
-                      <i className="icon icon-close" />
-                    </MessageButton>
-                  </>
-                }
-                progress={
-                  <Progress
-                    status={Status.Information}
-                    progress={25}
-                  />
-                }
-              />
-            </StatusMessage>
-          </Activity>
-          <Activity>
-            <StatusMessage
-              status={Status.Success}
-              icon={
-                <i className="icon icon-status-success-hollow" />
+              Processing - 25% completed.
+            </MessageLayout>
+          </Message>
+          <Message
+            status={Status.Success}
+            icon={
+              <i className="icon icon-status-success-hollow" />
+            }
+          >
+            <MessageLayout
+              buttons={
+                <>
+                  <MessageHyperlink>View the report</MessageHyperlink>
+                  <MessageButton>
+                    <i className="icon icon-close" />
+                  </MessageButton>
+                </>
               }
             >
-              <MessageLayout
-                label={
-                  <Label>Processing completed.</Label>
-                }
-                buttons={
-                  <>
-                    <Hyperlink text="View the report" />
-                    <MessageButton>
-                      <i className="icon icon-close" />
-                    </MessageButton>
-                  </>
-                }
-              />
-            </StatusMessage>
-          </Activity>
-          <Activity>
-            <StatusMessage
-              status={Status.Error}
-              icon={
-                <i className="icon icon-status-error-hollow" />
+              Processing completed.
+            </MessageLayout>
+          </Message>
+          <Message
+            status={Status.Error}
+            icon={
+              <i className="icon icon-status-error-hollow" />
+            }
+          >
+            <MessageLayout
+              buttons={
+                <>
+                  <MessageHyperlink>View error log</MessageHyperlink>
+                  <MessageButton>
+                    <i className="icon icon-close" />
+                  </MessageButton>
+                </>
               }
             >
-              <MessageLayout
-                label={
-                  <Label>Processing failed.</Label>
-                }
-                buttons={
-                  <>
-                    <Hyperlink text="View error log" />
-                    <MessageButton>
-                      <i className="icon icon-close" />
-                    </MessageButton>
-                  </>
-                }
-              />
-            </StatusMessage>
-          </Activity>
+              Processing failed.
+            </MessageLayout>
+          </Message>
         </div>
       </div>
     );

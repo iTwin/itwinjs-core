@@ -6,10 +6,12 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Zones.scss";
 
-/** Properties of [[Zones]] component. */
+/** Properties of [[Zones]] component.
+ * @alpha
+ */
 export interface ZonesProps extends CommonProps {
   /** Actual zones here (i.e. [[StatusZone]], [[Zone]]) */
   children?: React.ReactNode;
@@ -17,7 +19,9 @@ export interface ZonesProps extends CommonProps {
   isHidden?: boolean;
 }
 
-/** Zones component of 9-zone UI app. */
+/** Zones component of 9-zone UI app.
+ * @alpha
+ */
 export class Zones extends React.PureComponent<ZonesProps> {
   public render() {
     const { isHidden } = this.props;

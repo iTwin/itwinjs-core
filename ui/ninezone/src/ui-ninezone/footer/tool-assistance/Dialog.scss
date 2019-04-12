@@ -7,14 +7,18 @@
 @import "../_variables";
 
 .nz-footer-toolAssistance-dialog {
-  min-width: $nz-footer-popover-min-width;
+  min-width: $nz-footer-popup-min-width;
   min-height: 75px;
-  transform: translateX(-50%);
   color: $buic-background-dialog-stroke;
 
-  @include uicore-z-index(status-popover);
+  .nz-content {
+    $horizontal-padding: 15px;
+    $vertical-padding: 10px;
 
-  &#{&} {
-    left: 50%;
+    padding-left: $horizontal-padding;
+    padding-right: $horizontal-padding;
+    padding-top: $vertical-padding;
+    padding-bottom: $vertical-padding;
+    color: $buic-text-color;
   }
 }

@@ -9,9 +9,9 @@ import * as React from "react";
 import { Zone, ZoneProps } from "./Zone";
 import "./ToolSettings.scss";
 
-/**
- * A zone that should contain [[ToolSettings]] or [[ToolSettingsTab]].
+/** A zone that should contain [[ToolSettings]] or [[ToolSettingsTab]].
  * @note It is a second zone in 9-Zone UI pattern. For other zones use [[Zone]] or [[StatusZone]] components.
+ * @alpha
  */
 export class ToolSettingsZone extends React.PureComponent<ZoneProps> {
   public render() {

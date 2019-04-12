@@ -6,10 +6,12 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Content.scss";
 
-/** Used to display tool settings content in [[ToolSettings]], [[Toggle]] and [[ScrollableArea]] components. */
+/** Used to display tool settings content in [[ToolSettings]], [[Toggle]] and [[ScrollableArea]] components.
+ * @alpha
+ */
 export class ToolSettingsContent extends React.PureComponent<CommonProps> {
   public render() {
     const className = classnames(

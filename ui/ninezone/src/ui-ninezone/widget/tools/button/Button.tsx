@@ -6,10 +6,12 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Button.scss";
 
-/** Properties of [[ToolbarButton]] component. */
+/** Properties of [[ToolbarButton]] component.
+ * @alpha
+ */
 export interface ToolbarButtonProps extends CommonProps {
   /** Button content. */
   children?: React.ReactNode;
@@ -17,7 +19,9 @@ export interface ToolbarButtonProps extends CommonProps {
   onClick?: () => void;
 }
 
-/** Basic toolbar button. Used in [[Toolbar]] component. */
+/** Basic toolbar button. Used in [[Toolbar]] component.
+ * @alpha
+ */
 export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
   public render() {
     const className = classnames(

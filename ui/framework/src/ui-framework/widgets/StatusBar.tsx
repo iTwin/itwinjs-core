@@ -9,12 +9,10 @@ import { StatusBarFieldId, IStatusBar, StatusBarWidgetControl } from "./StatusBa
 
 import {
   Footer,
-  Activity as ActivityMessage,
   Toast as ToastMessage,
-  Sticky as StickyMessage,
-  StatusMessage,
-  MessageLayout as StatusMessageLayout,
-  MessageButton, Status, Hyperlink, Progress,
+  Message,
+  MessageLayout,
+  MessageButton, Status, MessageHyperlink, MessageProgress,
 } from "@bentley/ui-ninezone";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
 
@@ -99,10 +97,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
 
     return (
       <Footer
-        message={this.getFooterMessage()}
-        indicators={footerSections}
+        messages={this.getFooterMessage()}
         isInFooterMode={this.props.isInFooterMode}
-      />
+      >
+        {footerSections}
+      </Footer>
     );
   }
 
@@ -176,59 +175,50 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
             onAnimatedOut={() => this._hideMessages()}
             timeout={2500}
             content={
-              <StatusMessage
+              <Message
                 status={StatusBar.severityToStatus(severity)}
                 icon={
                   <i className={`icon ${MessageContainer.getIconClassName(severity, true)}`} />
                 }
               >
-                <StatusMessageLayout
-                  label={
+                <MessageLayout>
+                  <MessageLabel text={this.state.messageDetails.briefMessage} />
+                  {this.state.messageDetails.detailedMessage &&
                     <>
-                      <MessageLabel text={this.state.messageDetails.briefMessage} />
-                      {this.state.messageDetails.detailedMessage &&
-                        <>
-                          <br />
-                          <MessageLabel text={this.state.messageDetails.detailedMessage} />
-                        </>
-                      }
+                      <br />
+                      <MessageLabel text={this.state.messageDetails.detailedMessage} />
                     </>
                   }
-                />
-              </StatusMessage>
+                </MessageLayout>
+              </Message>
             }
           />
         );
       }
       case (StatusBarMessageType.Sticky): {
         return (
-          <StickyMessage>
-            <StatusMessage
-              status={StatusBar.severityToStatus(severity)}
-              icon={
-                <i className={`icon ${MessageContainer.getIconClassName(severity, true)}`} />
+          <Message
+            status={StatusBar.severityToStatus(severity)}
+            icon={
+              <i className={`icon ${MessageContainer.getIconClassName(severity, true)}`} />
+            }
+          >
+            <MessageLayout
+              buttons={
+                <MessageButton onClick={this._hideMessages}>
+                  <i className="icon icon-close" />
+                </MessageButton>
               }
             >
-              <StatusMessageLayout
-                label={
-                  <>
-                    <MessageLabel text={this.state.messageDetails.briefMessage} />
-                    {this.state.messageDetails.detailedMessage &&
-                      <>
-                        <br />
-                        <MessageLabel text={this.state.messageDetails.detailedMessage} />
-                      </>
-                    }
-                  </>
-                }
-                buttons={
-                  <MessageButton onClick={this._hideMessages}>
-                    <i className="icon icon-close" />
-                  </MessageButton>
-                }
-              />
-            </StatusMessage>
-          </StickyMessage>
+              <MessageLabel text={this.state.messageDetails.briefMessage} />
+              {this.state.messageDetails.detailedMessage &&
+                <>
+                  <br />
+                  <MessageLabel text={this.state.messageDetails.detailedMessage} />
+                </>
+              }
+            </MessageLayout>
+          </Message>
         );
       }
     }
@@ -244,52 +234,43 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     const messageDetails = this.state.activityMessageInfo!.details;
     const percentComplete = UiFramework.i18n.translate("UiFramework:activityCenter.percentComplete");
     return (
-      <ActivityMessage>
-        <StatusMessage
-          status={Status.Information}
-          icon={
-            <i className="icon icon-info-hollow" />
+      <Message
+        status={Status.Information}
+        icon={
+          <i className="icon icon-info-hollow" />
+        }
+      >
+        <MessageLayout
+          buttons={
+            (messageDetails && messageDetails.supportsCancellation) ?
+              <div>
+                <MessageHyperlink onClick={this._cancelActivityMessage}>Cancel</MessageHyperlink>
+                <span>&nbsp;</span>
+                <MessageButton onClick={this._dismissActivityMessage}>
+                  <i className="icon icon-close" />
+                </MessageButton>
+              </div> :
+              <MessageButton onClick={this._dismissActivityMessage}>
+                <i className="icon icon-close" />
+              </MessageButton>
+          }
+          progress={
+            (messageDetails && messageDetails.showProgressBar) &&
+            <MessageProgress
+              status={Status.Information}
+              progress={this.state.activityMessageInfo!.percentage}
+            />
           }
         >
-          <StatusMessageLayout
-            label={
-              <div>
-                {this.state.activityMessageInfo && <MessageLabel text={this.state.activityMessageInfo.message} />}
-                {
-                  (messageDetails && messageDetails.showPercentInMessage) &&
-                  <SmallText>{this.state.activityMessageInfo!.percentage + percentComplete}</SmallText>
-                }
-              </div>
+          <div>
+            {this.state.activityMessageInfo && <MessageLabel text={this.state.activityMessageInfo.message} />}
+            {
+              (messageDetails && messageDetails.showPercentInMessage) &&
+              <SmallText>{this.state.activityMessageInfo!.percentage + percentComplete}</SmallText>
             }
-            buttons={
-              (messageDetails && messageDetails.supportsCancellation) ?
-                <>
-                  <div>
-                    <Hyperlink text="Cancel"
-                      onClick={this._cancelActivityMessage}
-                    />
-                    <span>&nbsp;</span>
-                    <MessageButton onClick={this._dismissActivityMessage}>
-                      <i className="icon icon-close" />
-                    </MessageButton>
-                  </div>
-                </> :
-                <>
-                  <MessageButton onClick={this._dismissActivityMessage}>
-                    <i className="icon icon-close" />
-                  </MessageButton>
-                </>
-            }
-            progress={
-              (messageDetails && messageDetails.showProgressBar) &&
-              <Progress
-                status={Status.Information}
-                progress={this.state.activityMessageInfo!.percentage}
-              />
-            }
-          />
-        </StatusMessage>
-      </ActivityMessage >
+          </div>
+        </MessageLayout>
+      </Message>
     );
   }
 

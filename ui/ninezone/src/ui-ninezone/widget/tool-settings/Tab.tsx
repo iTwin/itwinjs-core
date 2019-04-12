@@ -6,10 +6,12 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Tab.scss";
 
-/** Properties of [[ToolSettingsTab]] component. */
+/** Properties of [[ToolSettingsTab]] component.
+ * @alpha
+ */
 export interface ToolSettingsTabProps extends CommonProps {
   /** Tab icon. */
   children?: React.ReactNode;
@@ -21,9 +23,9 @@ export interface ToolSettingsTabProps extends CommonProps {
   title?: string;
 }
 
-/**
- * Tool settings widget tab.
+/** Tool settings widget tab.
  * @note Used in [[ToolSettingsZone]] component.
+ * @alpha
  */
 export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
   public render() {

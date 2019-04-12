@@ -7,8 +7,7 @@
 import * as React from "react";
 import classnames from "classnames";
 import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
-import { LoadingBar } from "@bentley/ui-core";
-import { CommonProps } from "@bentley/ui-ninezone";
+import { CommonProps, LoadingBar } from "@bentley/ui-core";
 import "./TileLoadingIndicator.scss";
 
 let onViewOpen: (vp: ScreenViewport) => void;

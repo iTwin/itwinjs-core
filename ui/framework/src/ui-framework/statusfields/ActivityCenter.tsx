@@ -8,7 +8,7 @@ import * as React from "react";
 
 import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
 
-import { Status, MessageLayout, Progress } from "@bentley/ui-ninezone";
+import { Status, MessageLayout, MessageProgress } from "@bentley/ui-ninezone";
 import { MessageManager, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
 
@@ -84,7 +84,7 @@ export class ActivityCenterField extends React.Component<ActivityCenterProps, Ac
         <div className="uifw-centered open-activity-message" onClick={this._openActivityMessage} title={tooltip}>
           <MessageLayout
             progress={
-              <Progress
+              <MessageProgress
                 status={Status.Information}
                 progress={this.state.percentage}
               />

@@ -4,12 +4,6 @@ exports[`<ToolSettings /> renders correctly 1`] = `
 <div
   className="nz-widget-toolSettings"
 >
-  <TitleBar
-    title={
-      <DialogTitle
-        text={undefined}
-      />
-    }
-  />
+  <TitleBar />
 </div>
 `;

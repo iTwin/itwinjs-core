@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import classnames from "classnames";
-import { CommonProps } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 import { Slider, Rail, Handles, Ticks, SliderItem } from "react-compound-slider";
 import { Milestone } from "@bentley/ui-components";
 import "./Timeline.scss";

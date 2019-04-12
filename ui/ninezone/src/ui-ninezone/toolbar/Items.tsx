@@ -6,11 +6,13 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import { OrthogonalDirectionHelpers, OrthogonalDirection } from "../utilities/Direction";
 import "./Items.scss";
 
-/** Properties of [[Items]] component. */
+/** Properties of [[Items]] component.
+ * @alpha
+ */
 export interface ItemsProps extends CommonProps {
   /** Toolbar items. */
   children?: React.ReactNode;
@@ -18,7 +20,9 @@ export interface ItemsProps extends CommonProps {
   direction: OrthogonalDirection;
 }
 
-/** Toolbar items container. Used in [[Toolbar]] and [[Scrollable]] components. */
+/** Toolbar items container. Used in [[Toolbar]] and [[Scrollable]] components.
+ * @alpha
+ */
 export class Items extends React.PureComponent<ItemsProps> {
   public render() {
     const className = classnames(

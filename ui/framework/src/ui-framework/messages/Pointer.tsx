@@ -6,9 +6,9 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { UiEvent } from "@bentley/ui-core";
+import { UiEvent, CommonProps } from "@bentley/ui-core";
 import { XAndY } from "@bentley/geometry-core";
-import { CommonProps, ToolSettingsTooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
+import { ToolSettingsTooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
 import { RelativePosition, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import "./Pointer.scss";
 

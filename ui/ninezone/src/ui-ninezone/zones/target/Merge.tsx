@@ -10,7 +10,9 @@ import { MergeTarget, MergeTargetProps } from "./Target";
 import { Arrow } from "./Arrow";
 import "./Merge.scss";
 
-/** Merge target. */
+/** Merge target.
+ * @alpha
+ */
 export class Merge extends React.PureComponent<MergeTargetProps> {
   public render() {
     const mergeClassName = classnames(

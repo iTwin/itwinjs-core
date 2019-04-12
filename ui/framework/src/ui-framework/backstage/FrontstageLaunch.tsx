@@ -100,13 +100,16 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
   // TODO: add tooltip, subtitle, aria-label? to NZ_BackstageItem
   public render(): React.ReactNode {
     return (
-      <NZ_BackstageItem key={this.props.frontstageId}
+      <NZ_BackstageItem
+        icon={PropsHelper.getIcon(this.state.iconSpec)}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
-        label={this.state.label}
+        key={this.props.frontstageId}
+        onClick={this.execute}
         subtitle={this.state.subtitle}
-        icon={PropsHelper.getIcon(this.state.iconSpec)}
-        onClick={this.execute} />
+      >
+        {this.state.label}
+      </NZ_BackstageItem>
     );
   }
 }

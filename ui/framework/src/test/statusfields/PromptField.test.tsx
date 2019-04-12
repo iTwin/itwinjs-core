@@ -62,14 +62,14 @@ describe("PromptField", () => {
     MessageManager.outputPrompt(helloWorld);
     wrapper.update();
 
-    expect(wrapper.find("div.nz-footer-text").length).to.eq(1);
-    expect(wrapper.find("div.nz-footer-text").text()).to.eq(helloWorld);
+    expect(wrapper.find("div.uifw-statusFields-promptField").length).to.eq(1);
+    expect(wrapper.find("div.uifw-statusFields-promptField").text()).to.eq(helloWorld);
 
     const goodBye = "Goodbye!";
     MessageManager.outputPrompt(goodBye);
     wrapper.update();
-    expect(wrapper.find("div.nz-footer-text").length).to.eq(1);
-    expect(wrapper.find("div.nz-footer-text").text()).to.eq(goodBye);
+    expect(wrapper.find("div.uifw-statusFields-promptField").length).to.eq(1);
+    expect(wrapper.find("div.uifw-statusFields-promptField").text()).to.eq(goodBye);
 
     wrapper.unmount();
   });

@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<FooterIndicator /> renders correctly 1`] = `
+<div
+  className="nz-footer-indicator"
+/>
+`;
+
+exports[`<FooterIndicator /> renders correctly in footer mode 1`] = `
+<div
+  className="nz-footer-indicator nz-footer-mode"
+/>
+`;

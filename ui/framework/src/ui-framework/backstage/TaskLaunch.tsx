@@ -104,12 +104,15 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
   // TODO: add tooltip, subtitle, aria-label? to NZ_BackstageItem
   public render(): React.ReactNode {
     return (
-      <NZ_BackstageItem key={this.id}
+      <NZ_BackstageItem
+        icon={PropsHelper.getIcon(this.state.iconSpec)}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
-        label={this.state.label}
-        icon={PropsHelper.getIcon(this.state.iconSpec)}
-        onClick={this.execute} />
+        key={this.id}
+        onClick={this.execute}
+      >
+        {this.state.label}
+      </NZ_BackstageItem>
     );
   }
 }

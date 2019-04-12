@@ -7,56 +7,38 @@ export * from "./ui-ninezone/backstage/Item";
 export * from "./ui-ninezone/backstage/Separator";
 export * from "./ui-ninezone/backstage/UserProfile";
 
-export * from "./ui-ninezone/base/Expandable";
-export * from "./ui-ninezone/base/PointerCaptor";
-export * from "./ui-ninezone/base/SvgPath";
-export * from "./ui-ninezone/base/SvgSprite";
 export * from "./ui-ninezone/base/WithContainIn";
 
-export * from "./ui-ninezone/context/MouseTracker";
+export * from "./ui-ninezone/footer/dialog/Button";
+export * from "./ui-ninezone/footer/dialog/Dialog";
+export * from "./ui-ninezone/footer/dialog/TitleBar";
 
-export * from "./ui-ninezone/footer/message/Activity";
-export * from "./ui-ninezone/footer/message/Modal";
-export * from "./ui-ninezone/footer/message/Sticky";
-export * from "./ui-ninezone/footer/message/Temporary";
+export * from "./ui-ninezone/footer/message/Button";
+export * from "./ui-ninezone/footer/message/Hyperlink";
+export * from "./ui-ninezone/footer/message/Layout";
+export * from "./ui-ninezone/footer/message/Message";
+export * from "./ui-ninezone/footer/message/Progress";
+export * from "./ui-ninezone/footer/message/Status";
 export * from "./ui-ninezone/footer/message/Toast";
-export * from "./ui-ninezone/footer/message/content/Button";
-export * from "./ui-ninezone/footer/message/content/Hyperlink";
-export * from "./ui-ninezone/footer/message/content/Label";
-export * from "./ui-ninezone/footer/message/content/Progress";
-export * from "./ui-ninezone/footer/message/content/dialog/Button";
-export * from "./ui-ninezone/footer/message/content/dialog/Dialog";
-export * from "./ui-ninezone/footer/message/content/dialog/ResizeHandle";
-export * from "./ui-ninezone/footer/message/content/dialog/Title";
-export * from "./ui-ninezone/footer/message/content/dialog/TitleBar";
-export * from "./ui-ninezone/footer/message/content/dialog/content/Buttons";
-export * from "./ui-ninezone/footer/message/content/dialog/content/Content";
-export * from "./ui-ninezone/footer/message/content/dialog/content/Scrollable";
 
-export * from "./ui-ninezone/footer/message/content/status/Message";
-export * from "./ui-ninezone/footer/message/content/status/Layout";
-export * from "./ui-ninezone/footer/message/content/status/Status";
-
-export * from "./ui-ninezone/footer/message-center/Content";
+export * from "./ui-ninezone/footer/message-center/Dialog";
 export * from "./ui-ninezone/footer/message-center/Indicator";
 export * from "./ui-ninezone/footer/message-center/Message";
-export * from "./ui-ninezone/footer/message-center/Dialog";
 export * from "./ui-ninezone/footer/message-center/Tab";
 
-export * from "./ui-ninezone/footer/snap-mode/Dialog";
-export * from "./ui-ninezone/footer/snap-mode/Icon";
 export * from "./ui-ninezone/footer/snap-mode/Indicator";
+export * from "./ui-ninezone/footer/snap-mode/Panel";
 export * from "./ui-ninezone/footer/snap-mode/Snap";
 
-export * from "./ui-ninezone/footer/tool-assistance/Content";
 export * from "./ui-ninezone/footer/tool-assistance/Dialog";
 export * from "./ui-ninezone/footer/tool-assistance/Indicator";
 export * from "./ui-ninezone/footer/tool-assistance/Item";
 export * from "./ui-ninezone/footer/tool-assistance/Separator";
 
 export * from "./ui-ninezone/footer/Footer";
-export * from "./ui-ninezone/footer/StatusBarText";
-export * from "./ui-ninezone/footer/selection-info/SelectionInfo";
+export * from "./ui-ninezone/footer/Indicator";
+export * from "./ui-ninezone/footer/Popup";
+export * from "./ui-ninezone/footer/Separator";
 
 export * from "./ui-ninezone/popup/popover/Popover";
 export * from "./ui-ninezone/popup/popover/Triangle";

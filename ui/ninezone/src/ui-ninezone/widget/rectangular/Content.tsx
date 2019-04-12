@@ -6,11 +6,14 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
+import { NoChildrenProps } from "../../utilities/Props";
 import { HorizontalAnchor, HorizontalAnchorHelpers } from "../Stacked";
 import "./Content.scss";
 
-/** Properties of [[WidgetContent]] component. */
+/** Properties of [[WidgetContent]] component.
+ * @alpha
+ */
 export interface WidgetContentProps extends CommonProps, NoChildrenProps {
   /** Describes to which side the widget of this content is anchored. */
   anchor: HorizontalAnchor;
@@ -18,7 +21,9 @@ export interface WidgetContentProps extends CommonProps, NoChildrenProps {
   content?: React.ReactNode;
 }
 
-/** Scrollable widget content. Used by [[Stacked]] component. */
+/** Scrollable widget content. Used by [[Stacked]] component.
+ * @alpha
+ */
 export class WidgetContent extends React.PureComponent<WidgetContentProps> {
   public render() {
     const className = classnames(

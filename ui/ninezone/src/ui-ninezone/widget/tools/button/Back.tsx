@@ -10,13 +10,15 @@ import { OmitChildrenProp, NoChildrenProps } from "../../../utilities/Props";
 import { ToolbarIcon, ToolbarIconProps } from "./Icon";
 import "./Back.scss";
 
-/** Properties of [[BackButton]] component. */
+/** Properties of [[BackButton]] component.
+ * @alpha
+ */
 export interface BackButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
 }
 
-/**
- * Back button which displays icon. Used in [[Toolbar]] component.
+/** Back button which displays icon. Used in [[Toolbar]] component.
  * @note See basic button: [[ToolbarButton]]
+ * @alpha
  */
 export class BackButton extends React.PureComponent<BackButtonProps> {
   public render() {

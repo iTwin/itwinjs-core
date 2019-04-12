@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 import { Slider, Rail, Handles, SliderItem, Tracks, GetTrackProps } from "react-compound-slider";
 import "./Scrubber.scss";
 

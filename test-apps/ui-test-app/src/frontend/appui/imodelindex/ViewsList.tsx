@@ -7,10 +7,9 @@ import * as classnames from "classnames";
 import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
 import ViewItem, { ViewItemProps } from "./ViewItem";
-import { CommonProps } from "@bentley/ui-ninezone";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { LoadingSpinner } from "@bentley/ui-core";
 import "./ViewsList.scss";
 
 /** Properties for [[ViewsList]] component

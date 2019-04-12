@@ -2,36 +2,15 @@
 
 exports[`<UserProfile /> renders correctly 1`] = `
 <div
-  className="nz-backstage-userprofile"
+  className="nz-backstage-userProfile"
 >
   <span
     style={
       Object {
-        "backgroundColor": "#6ab9ec",
-      }
-    }
-  >
-    FL
-  </span>
-  <span>
-    First Last
-  </span>
-</div>
-`;
-
-exports[`<UserProfile /> renders w/o initials 1`] = `
-<div
-  className="nz-backstage-userprofile"
->
-  <span
-    style={
-      Object {
-        "backgroundColor": "#6ab9ec",
+        "backgroundColor": undefined,
       }
     }
   />
-  <span>
-     
-  </span>
+  <span />
 </div>
 `;

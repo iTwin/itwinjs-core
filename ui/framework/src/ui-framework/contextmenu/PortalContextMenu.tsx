@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
-import { CommonProps } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 import "./PortalContextMenu.scss";
 
 interface Point {

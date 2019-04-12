@@ -10,7 +10,7 @@ import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CheckBoxInfo } from '@bentley/ui-core';
-import { CommonProps } from '@bentley/ui-ninezone';
+import { CommonProps } from '@bentley/ui-core';
 import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { Direction } from '@bentley/ui-ninezone';
@@ -2059,7 +2059,7 @@ export class MessageCenterField extends React_2.Component<MessageCenterProps, Me
     render(): React_2.ReactNode;
     // (undocumented)
     readonly state: Readonly<MessageCenterState>;
-}
+    }
 
 // @public
 export interface MessageCenterProps {

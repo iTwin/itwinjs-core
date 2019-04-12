@@ -923,6 +923,7 @@ export interface PopupProps extends CommonProps {
     offset: number;
     onClose?: () => void;
     onOpen?: () => void;
+    onOutsideClick?: (e: MouseEvent) => void;
     position: Position;
     showArrow: boolean;
     showShadow: boolean;
@@ -1133,6 +1134,31 @@ export class Subheading extends React.Component<TextProps> {
 export class Subheading2 extends React.Component<TextProps> {
     // (undocumented)
     render(): JSX.Element;
+}
+
+// @beta
+export class SvgPath extends React.PureComponent<SvgPathProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface SvgPathProps extends CommonProps {
+    paths: string[];
+    viewBoxHeight: number;
+    viewBoxWidth: number;
+}
+
+// @beta
+export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface SvgSpriteProps extends CommonProps {
+    // (undocumented)
+    src: string;
 }
 
 // @beta

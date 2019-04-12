@@ -6,9 +6,10 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
-import { SelectionInfo } from "@bentley/ui-ninezone";
+import { FooterIndicator } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
 import { Icon } from "../shared/IconComponent";
+import "./SelectionInfo.scss";
 
 /** Defines properties supported by the SelectionInfo Field Component.
  */
@@ -28,15 +29,14 @@ class SelectionInfoFieldComponent extends React.Component<SelectionInfoFieldProp
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconSpec={"icon-cursor"} />;
-
-    const label = this.props.selectionCount.toString();
     return (
-      <SelectionInfo
-        label={label}
+      <FooterIndicator
+        className="uifw-statusFields-selectionInfo"
         isInFooterMode={this.props.isInFooterMode}
-        icon={icon}
-      />
+      >
+        {<Icon iconSpec={"icon-cursor"} />}
+        {this.props.selectionCount.toString()}
+      </FooterIndicator>
     );
   }
 }

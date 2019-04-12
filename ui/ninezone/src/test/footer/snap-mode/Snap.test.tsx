@@ -19,4 +19,8 @@ describe("<Snap />", () => {
   it("renders active correctly", () => {
     shallow(<Snap isActive />).should.matchSnapshot();
   });
+
+  it("renders correctly with icon", () => {
+    shallow(<Snap icon={<i />} />).should.matchSnapshot();
+  });
 });

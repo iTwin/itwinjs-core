@@ -6,34 +6,34 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { Expandable as ExpandableComponent, ExpandableProps as ExpandableComponentProps } from "../../../base/Expandable";
+import { CommonProps } from "@bentley/ui-core";
 import "./Expandable.scss";
 
-/** Properties of [[ExpandableButton]] component. */
-export interface ExpandableButtonProps extends ExpandableComponentProps {
+/** Properties of [[ExpandableButton]] component.
+ * @alpha
+ */
+export interface ExpandableButtonProps extends CommonProps {
   /** One of toolbar buttons. I.e.: [[Item]] */
-  button?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
-/** Expandable toolbar button. Used in [[Toolbar]] component. */
+/** Expandable toolbar button. Used in [[Toolbar]] component.
+ * @alpha
+ */
 export class ExpandableButton extends React.PureComponent<ExpandableButtonProps> {
   public render() {
-    const { className, ...props } = this.props;
-    const buttonClassName = classnames(
-      "nz-toolbar-button-expandable",
-      className);
+    const className = classnames(
+      "nz-widget-tools-button-expandable",
+      this.props.className);
 
     return (
-      <ExpandableComponent
-        className={buttonClassName}
-        {...props}
+      <div
+        className={className}
+        style={this.props.style}
       >
-        <div className="nz-button">
-          {this.props.button}
-          <div className="nz-triangle" />
-        </div>
         {this.props.children}
-      </ExpandableComponent>
+        <div className="nz-triangle" />
+      </div>
     );
   }
 }

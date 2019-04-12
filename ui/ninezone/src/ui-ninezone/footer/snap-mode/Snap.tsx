@@ -6,22 +6,26 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Snap.scss";
 
-/** Properties of Snap component.  */
-export interface SnapProps extends CommonProps, NoChildrenProps {
-  /** Icon of snap row. I.e. [[SnapModeIcon]] */
+/** Properties of [[Snap]] component.
+ * @beta
+ */
+export interface SnapProps extends CommonProps {
+  /** Label of snap row. */
+  children?: string;
+  /** Snap row icon. I.e. [[SnapModeIcon]] */
   icon?: React.ReactNode;
   /** Describes if the snap row is active. */
   isActive?: boolean;
-  /** Label of snap row. */
-  label?: string;
   /** Function called when the Snap component is clicked. */
   onClick?: () => void;
 }
 
-/** Snap row used in [[SnapModeDialog]] component. */
+/** Snap row used in [[SnapModePanel]] component.
+ * @beta
+ */
 export class Snap extends React.PureComponent<SnapProps> {
   public render() {
     const dialogClassName = classnames(
@@ -35,11 +39,13 @@ export class Snap extends React.PureComponent<SnapProps> {
         className={dialogClassName}
         style={this.props.style}
       >
+        {this.props.icon === undefined ? undefined :
+          <div>
+            {this.props.icon}
+          </div>
+        }
         <div>
-          {this.props.icon}
-        </div>
-        <div>
-          {this.props.label}
+          {this.props.children}
         </div>
       </div>
     );

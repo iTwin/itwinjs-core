@@ -9,15 +9,17 @@ import * as React from "react";
 import { Zone, ZoneProps } from "./Zone";
 import "./Status.scss";
 
-/** Properties of [[StatusZone]] component. */
+/** Properties of [[StatusZone]] component.
+ * @alpha
+ */
 export interface StatusZoneProps extends ZoneProps {
   /** Describes if the zone is in footer mode (stretched through the bottom of the app). */
   isInFooterMode?: boolean;
 }
 
-/**
- * A footer zone that should contain [[Footer]].
+/** A footer zone that should contain [[Footer]].
  * @note It is an eight zone in 9-Zone UI pattern. For other zones use [[Zone]] or [[ToolSettingsZone]] components.
+ * @alpha
  */
 export class StatusZone extends React.PureComponent<StatusZoneProps> {
   public render() {

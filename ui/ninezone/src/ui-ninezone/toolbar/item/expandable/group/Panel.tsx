@@ -6,16 +6,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Panel.scss";
 
-/** Properties of [[Panel]] component. */
+/** Properties of [[Panel]] component.
+ * @alpha
+ */
 export interface PanelProps extends CommonProps {
   /** Panel content. */
   children?: React.ReactNode;
 }
 
-/** Basic panel used in [[ExpandableItem]]. Used as base in [[Group]] and [[NestedGroup]] components. */
+/** Basic panel used in [[ExpandableItem]]. Used as base in [[Group]] and [[NestedGroup]] components.
+ * @alpha
+ */
 export class Panel extends React.PureComponent<PanelProps> {
   public render() {
     const className = classnames(

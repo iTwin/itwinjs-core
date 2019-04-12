@@ -6,25 +6,32 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 import { Edge, RectangleProps, Rectangle } from "../utilities/Rectangle";
 import { ResizeGrip, ResizeDirection } from "./rectangular/ResizeGrip";
 import { ResizeHandle } from "./rectangular/ResizeHandle";
-import { CommonProps, NoChildrenProps } from "../utilities/Props";
+import { NoChildrenProps } from "../utilities/Props";
 import "./Stacked.scss";
 
-/** Available [[Stacked]] widget horizontal anchors. */
+/** Available [[Stacked]] widget horizontal anchors.
+ * @alpha
+ */
 export enum HorizontalAnchor {
   Left,
   Right,
 }
 
-/** Available [[Stacked]] widget vertical anchors. */
+/** Available [[Stacked]] widget vertical anchors.
+ * @alpha
+ */
 export enum VerticalAnchor {
   Middle,
   Bottom,
 }
 
-/** Helpers for [[HorizontalAnchor]]. */
+/** Helpers for [[HorizontalAnchor]].
+ * @alpha
+ */
 export class HorizontalAnchorHelpers {
   /** Class name of [[HorizontalAnchor.Left]] */
   public static readonly LEFT_CLASS_NAME = "nz-left-anchor";
@@ -42,7 +49,9 @@ export class HorizontalAnchorHelpers {
   }
 }
 
-/** Helpers for [[VerticalAnchor]]. */
+/** Helpers for [[VerticalAnchor]].
+ * @alpha
+ */
 export class VerticalAnchorHelpers {
   /** Class name of [[VerticalAnchor.Middle]] */
   public static readonly MIDDLE_CLASS_NAME = "nz-middle-anchor";
@@ -60,7 +69,9 @@ export class VerticalAnchorHelpers {
   }
 }
 
-/** Properties of [[Stacked]] component. */
+/** Properties of [[Stacked]] component.
+ * @alpha
+ */
 export interface StackedProps extends CommonProps, NoChildrenProps {
   /** Content of this widget. I.e. [[WidgetContent]] */
   content?: React.ReactNode;
@@ -82,9 +93,9 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
   verticalAnchor: VerticalAnchor;
 }
 
-/**
- * Stacked widget is used to display multiple tabs and some content.
+/** Stacked widget is used to display multiple tabs and some content.
  * @note Should be placed in [[Zone]] component.
+ * @alpha
  */
 export class Stacked extends React.PureComponent<StackedProps> {
   private _widget = React.createRef<HTMLDivElement>();

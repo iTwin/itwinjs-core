@@ -17,6 +17,7 @@
     "docs": "npm run docs:typedoc && npm run docs:demo",
     "docs:typedoc": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./ui-ninezone.ts --onlyJson %TYPEDOC_THEME%",
     "docs:demo": "webpack --config ./demo/webpack.prod.js",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ui-ninezone",
     "lint": "tslint --project . 1>&2 && tslint --project ./demo/tsconfig.json 1>&2",
     "pack": "npm run build && node ../../scripts/pack.js",
     "start": "webpack-dev-server --config ./demo/webpack.dev.js",

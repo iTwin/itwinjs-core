@@ -6,33 +6,10 @@
 @import "../_variables";
 
 .nz-footer-snapMode-indicator {
-  position: relative;
-  color: $buic-foreground-body;
-  padding: {
-    top: $nz-footer-vertical-padding;
-    bottom: $nz-footer-vertical-padding;
-  }
-
-  /* small devices (phones, 600px and down) */
-  @media only screen and (max-width: 600px) {
-    padding-left: $nz-footer-indicator-horizontal-padding-small;
-    padding-right: $nz-footer-indicator-horizontal-padding-small;
-  }
-
-  /* Medium devices (landscape tablets, 768px and up) */
-  @media only screen and (max-width: 768px) {
-    padding-left: $nz-footer-indicator-horizontal-padding-medium;
-    padding-right: $nz-footer-indicator-horizontal-padding-medium;
-  }
-
   > .nz-indicator {
     height: 100%;
     display: flex;
     align-items: center;
-    padding: {
-      left: $nz-footer-indicator-horizontal-padding;
-      right: $nz-footer-indicator-horizontal-padding;
-    }
 
     > .nz-label {
       margin-right: $space-between-text-and-icon;
@@ -43,13 +20,5 @@
       color: $buic-foreground-primary;
       cursor: pointer;
     }
-  }
-
-  > .nz-dialog {
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 100%;
-    cursor: auto;
   }
 }

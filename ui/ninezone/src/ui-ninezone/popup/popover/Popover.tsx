@@ -6,11 +6,13 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 import { Direction, DirectionHelpers } from "../../utilities/Direction";
-import { CommonProps } from "../../utilities/Props";
 import "./Popover.scss";
 
-/** Properties of [[Popover]] component. */
+/** Properties of [[Popover]] component.
+ * @alpha
+ */
 export interface PopoverProps extends CommonProps {
   /** Popover content. */
   children?: React.ReactNode;
@@ -18,7 +20,9 @@ export interface PopoverProps extends CommonProps {
   direction: Direction;
 }
 
-/** Popover component. */
+/** Popover component.
+ * @alpha Replace by ui-core/popup
+ */
 export class Popover extends React.PureComponent<PopoverProps> {
   public render() {
     const className = classnames(

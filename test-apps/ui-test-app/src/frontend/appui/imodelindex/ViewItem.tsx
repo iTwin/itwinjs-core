@@ -6,8 +6,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ThumbnailProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { LoadingSpinner } from "@bentley/ui-core";
-import { CommonProps } from "@bentley/ui-ninezone";
+import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
 import "./ViewItem.scss";
 
 class ThumbnailCache {

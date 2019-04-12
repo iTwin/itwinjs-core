@@ -6,54 +6,26 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { TrianglePopover } from "../../popup/popover/Triangle";
-import { Direction } from "../../utilities/Direction";
-import { CommonProps, NoChildrenProps } from "../../utilities/Props";
-import { Dialog } from "../message/content/dialog/Dialog";
-import { TitleBar } from "../message/content/dialog/TitleBar";
-import { DialogTitle } from "../message/content/dialog/Title";
-import { ToolAssistanceContent } from "./Content";
+import { CommonProps } from "@bentley/ui-core";
+import { Dialog } from "../dialog/Dialog";
+import { TitleBar } from "../dialog/TitleBar";
 import "./Dialog.scss";
 
-/** Properties of [[ToolAssistanceDialog]] component. */
-export interface ToolAssistanceDialogContentProps extends CommonProps, NoChildrenProps {
+/** Properties of [[ToolAssistanceDialog]] component.
+ * @beta
+ */
+export interface ToolAssistanceDialogProps extends CommonProps {
   /** Items and separators of tool assistance. I.e. [[ToolAssistanceItem]], [[ToolAssistanceSeparator]] */
-  items?: React.ReactNode;
+  children?: React.ReactNode;
   /** Dialog title. */
   title?: string;
 }
 
-/** Dialog content used in [[ToolAssistanceDialog]] component. */
-export class ToolAssistanceDialogContent extends React.PureComponent<ToolAssistanceDialogContentProps> {
-  public render() {
-    return (
-      <Dialog
-        className={this.props.className}
-        content={
-          <ToolAssistanceContent>
-            {this.props.items}
-          </ToolAssistanceContent>
-        }
-        style={this.props.style}
-        titleBar={
-          <TitleBar
-            title={
-              <DialogTitle text={this.props.title} />
-            }
-          />
-        }
-      />
-    );
-  }
-}
-
-/** Properties of [[ToolAssistanceDialog]] component. */
-export interface ToolAssistanceDialogProps extends CommonProps, NoChildrenProps {
-  /** Dialog content. See [[SnapModeDialogContent]] */
-  content?: React.ReactNode;
-}
-
-/** Tool assistance dialog used in [[ToolAssistanceIndicator]] component. */
+/** Tool assistance dialog used with [[ToolAssistance]] component.
+ * @note This is a presentational component and should be aligned with [[ToolAssistance]] component.
+ * I.e. use [[FooterPopup]] to handle alignment.
+ * @beta
+ */
 export class ToolAssistanceDialog extends React.PureComponent<ToolAssistanceDialogProps> {
   public render() {
     const className = classnames(
@@ -61,12 +33,19 @@ export class ToolAssistanceDialog extends React.PureComponent<ToolAssistanceDial
       this.props.className);
 
     return (
-      <TrianglePopover
+      <Dialog
         className={className}
-        content={this.props.content}
-        direction={Direction.Top}
         style={this.props.style}
-      />
+        titleBar={
+          <TitleBar
+            title={this.props.title}
+          />
+        }
+      >
+        <div className="nz-content">
+          {this.props.children}
+        </div>
+      </Dialog>
     );
   }
 }

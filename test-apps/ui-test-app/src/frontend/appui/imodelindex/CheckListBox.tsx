@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as classnames from "classnames";
-import { CommonProps } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 import { CheckListBoxItemProps } from "./CheckListBox";
 import "./CheckListBox.scss";
 

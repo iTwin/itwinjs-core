@@ -6,26 +6,30 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Item.scss";
 
-/** Properties of [[BackstageItem]] component. */
+/** Properties of [[BackstageItem]] component.
+ * @beta
+ */
 export interface BackstageItemProps extends CommonProps {
-  /** Optional icon. */
-  icon?: React.ReactChild;
-  /** Optional label. */
-  label?: string;
-  /** Optional subtitle */
-  subtitle?: string;
+  /** Backstage item label. */
+  children?: string;
+  /** Backstage item icon. */
+  icon?: React.ReactNode;
   /** Describes if the item is active. */
   isActive?: boolean;
   /** Describes if the item is disabled. */
   isDisabled?: boolean;
   /** Function called when item is clicked. */
   onClick?: () => void;
+  /** Backstage item subtitle. */
+  subtitle?: string;
 }
 
-/** Item in the [[Backstage]]. */
+/** Item in the [[Backstage]].
+ * @beta
+ */
 export class BackstageItem extends React.PureComponent<BackstageItemProps> {
   public render() {
     const className = classnames(
@@ -40,10 +44,10 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
         onClick={this.props.onClick}
         style={this.props.style}
       >
-        {this.props.icon}
+        <div className="nz-icon">{this.props.icon}</div>
         <div>
-          <span>{this.props.label}</span>
-          {this.props.subtitle && <span>{this.props.subtitle}</span>}
+          <span>{this.props.children}</span>
+          {this.props.subtitle !== undefined && <span>{this.props.subtitle}</span>}
         </div>
       </li>
     );

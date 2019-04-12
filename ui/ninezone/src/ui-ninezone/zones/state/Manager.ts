@@ -13,10 +13,10 @@ import { Widget } from "./Widget";
 import { WidgetZone, StatusZoneManager, StatusZoneManagerProps, ZonePropsBase } from "./Zone";
 import { TargetType, TargetZoneProps } from "./Target";
 
-/** @hidden */
+/** @alpha */
 export type NineZoneFactory = (props: NineZoneProps) => NineZone;
 
-/** @hidden */
+/** @alpha */
 export class StateManager {
   private _lastStackId = 1;
   private _nineZoneFactory: NineZoneFactory;
@@ -491,5 +491,6 @@ const defaultFactory = (props: NineZoneProps): NineZone => {
   return new NineZone(props);
 };
 
+/** @alpha */
 // tslint:disable-next-line:variable-name
 export const DefaultStateManager = new StateManager(defaultFactory);

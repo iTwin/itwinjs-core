@@ -6,23 +6,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../../utilities/Props";
-import { Direction } from "../../utilities/Direction";
-import { TrianglePopover } from "../../popup/popover/Triangle";
-import { TitleBar } from "../message/content/dialog/TitleBar";
-import { Dialog } from "../message/content/dialog/Dialog";
-import { DialogTitle } from "../message/content/dialog/Title";
-export { DialogButton as MessageCenterButton } from "../message/content/dialog/Button";
-import { MessageCenterContent } from "./Content";
+import { CommonProps } from "@bentley/ui-core";
+import { TitleBar } from "../dialog/TitleBar";
+import { Dialog } from "../dialog/Dialog";
 import "./Dialog.scss";
 
-/** Properties of [[MessageCenterDialogContent]] component. */
-export interface MessageCenterDialogContentProps extends CommonProps, NoChildrenProps {
-  /** Title bar buttons. I.e.: [[DialogButton]] */
+/** Properties of [[MessageCenterDialog]] component.
+ * @beta
+ */
+export interface MessageCenterDialogProps extends CommonProps {
+  /** Title bar buttons. I.e.: [[TitleBarButton]] */
   buttons?: React.ReactNode;
   /** Messages of message center. I.e. [[MessageCenterMessage]] */
-  messages?: React.ReactNode;
-  /* Optional prompt when no messages are present */
+  children?: React.ReactNode;
+  /* Prompt showed when no messages are present. */
   prompt?: string;
   /** Tabs of message center. See [[MessageCenterTab]] */
   tabs?: React.ReactNode;
@@ -30,51 +27,37 @@ export interface MessageCenterDialogContentProps extends CommonProps, NoChildren
   title?: string;
 }
 
-/** Message center dialog used in [[MessageCenterIndicator]] component. */
-export class MessageCenterDialogContent extends React.PureComponent<MessageCenterDialogContentProps> {
-  public render() {
-    return (
-      <Dialog
-        titleBar={
-          <TitleBar
-            title={
-              <DialogTitle text={this.props.title} />
-            }
-            buttons={this.props.buttons}
-          />
-        }
-        content={
-          <MessageCenterContent
-            tabs={this.props.tabs}
-            messages={this.props.messages}
-            prompt={this.props.prompt}
-          />
-        }
-      />
-    );
-  }
-}
-
-/** Properties of [[MessageCenterDialog]] component. */
-export interface MessageCenterDialogProps extends CommonProps, NoChildrenProps {
-  /** Dialog content. See [[MessageCenterDialogContent]] */
-  content?: React.ReactNode;
-}
-
-/** Message center dialog used in [[MessageCenterIndicator]] component. */
+/** Message center dialog used with [[MessageCenter]] component.
+ * @note This is a presentational component and should be aligned with [[MessageCenter]] component.
+ * I.e. use [[FooterPopup]] to handle alignment.
+ * @beta
+ */
 export class MessageCenterDialog extends React.PureComponent<MessageCenterDialogProps> {
   public render() {
-    const dialogClassName = classnames(
+    const className = classnames(
       "nz-footer-messageCenter-dialog",
       this.props.className);
-
     return (
-      <TrianglePopover
-        className={dialogClassName}
-        content={this.props.content}
-        direction={Direction.Top}
+      <Dialog
+        className={className}
         style={this.props.style}
-      />
+        titleBar={
+          <TitleBar
+            title={this.props.title}
+          >
+            {this.props.buttons}
+          </TitleBar>
+        }
+      >
+        <div className="nz-tabs">
+          {this.props.tabs}
+        </div>
+        <div className="nz-messages">
+          {this.props.children}
+        </div>
+        <span className="nz-message-prompt">{this.props.prompt}</span>
+        <div className="nz-gradient" />
+      </Dialog>
     );
   }
 }

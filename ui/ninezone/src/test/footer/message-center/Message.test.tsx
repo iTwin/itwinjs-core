@@ -17,9 +17,10 @@ describe("<MessageCenterMessage />", () => {
   });
 
   it("renders correctly with icon and content", () => {
-    shallow(<MessageCenterMessage
-      icon={<img></img>}
-      content={"Custom message"}
-    />).should.matchSnapshot();
+    shallow(
+      <MessageCenterMessage icon={<img></img>}>
+        Custom message
+      </MessageCenterMessage>,
+    ).should.matchSnapshot();
   });
 });

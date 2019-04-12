@@ -6,27 +6,34 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./PointerCaptor.scss";
 
-/** Properties of [[PointerCaptor]] component. */
+/** Properties of [[PointerCaptor]] component.
+ * @internal
+ */
 export interface PointerCaptorProps extends CommonProps {
+  /** Describes if the mouse is down. */
   isMouseDown?: boolean;
+  /** Function called when the mouse is pressed. */
   onMouseDown?: (e: MouseEvent) => void;
+  /** Function called when the mouse is moved. */
   onMouseMove?: (e: MouseEvent) => void;
+  /** Function called when the mouse is released. */
   onMouseUp?: (e: MouseEvent) => void;
 }
 
-export interface PointerCaptorState {
+/** State of [[PointerCaptor]] component. */
+interface PointerCaptorState {
   isMouseDown: boolean;
 }
 
-/**
- * A component which will capture the pointer down event.
- * While captured will overlay the screen to capture iframe events too.
+/** A component which will capture the pointer down event.
+ * @note While captured will overlay the screen to capture iframe events too.
+ * @internal
  */
 export class PointerCaptor extends React.PureComponent<PointerCaptorProps, PointerCaptorState> {
-  public readonly state: Readonly<PointerCaptorState> = {
+  public readonly state: PointerCaptorState = {
     isMouseDown: false,
   };
 

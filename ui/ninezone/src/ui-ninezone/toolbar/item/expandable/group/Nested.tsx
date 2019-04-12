@@ -13,13 +13,17 @@ import { Title } from "./Title";
 import { BackArrow } from "./BackArrow";
 import "./Nested.scss";
 
-/** Properties of [[NestedGroup]] component. */
+/** Properties of [[NestedGroup]] component.
+ * @alpha
+ */
 export interface NestedGroupProps extends GroupProps {
   /** Function called when the back arrow is clicked. */
   onBack?: () => void;
 }
 
-/** Nested tool group component. Used in [[ExpandableItem]] component. */
+/** Nested tool group component. Used in [[ExpandableItem]] component.
+ * @alpha
+ */
 export class NestedGroup extends React.PureComponent<NestedGroupProps> {
   public render() {
     const className = classnames(

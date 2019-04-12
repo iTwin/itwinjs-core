@@ -9,9 +9,9 @@ import * as React from "react";
 import { HistoryItem, HistoryItemProps } from "./Item";
 import "./Icon.scss";
 
-/**
- * History item with icon. Used in [[HistoryTray]] component.
+/** History item with icon. Used in [[HistoryTray]] component.
  * @note See [[HistoryItem]] for basic history item.
+ * @alpha
  */
 export class HistoryIcon extends React.PureComponent<HistoryItemProps> {
   public render() {

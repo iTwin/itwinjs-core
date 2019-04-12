@@ -6,17 +6,14 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-
-import { Direction, ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupColumn as NZ_Column, GroupTool as NZ_Item, Group as NZ_Tray, withContainIn, containHorizontally } from "@bentley/ui-ninezone";
-
+import { Popup, Position } from "@bentley/ui-core";
+import { ViewportComponentEvents } from "@bentley/ui-components";
+import { ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupColumn as NZ_Column, GroupTool as NZ_Item, Group as NZ_Tray, withContainIn, containHorizontally } from "@bentley/ui-ninezone";
+import { StandardViewId } from "@bentley/imodeljs-frontend";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { NavigationAidControl } from "./NavigationAidControl";
-import "./StandardRotationNavigationAid.scss";
 import { UiFramework } from "../UiFramework";
-
-import { StandardViewId } from "@bentley/imodeljs-frontend";
-
-import { ViewportComponentEvents } from "@bentley/ui-components";
+import "./StandardRotationNavigationAid.scss";
 
 // tslint:disable-next-line:variable-name
 const NZ_ContainedTray = withContainIn(NZ_Tray);
@@ -39,9 +36,10 @@ export interface RotationData {
 
 /** @internal */
 interface StandardRotationNavigationAidState {
+  element: HTMLDivElement | null;
+  isExpanded: boolean;
   list: RotationData[];
   selected: StandardViewId;
-  isExpanded: boolean;
 }
 
 /** A 3D Standard Rotation Navigation Aid.
@@ -113,9 +111,10 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
       ];
     }
     this.state = {
+      element: null,
+      isExpanded: false,
       list,
       selected: StandardViewId.Top,
-      isExpanded: false,
     };
   }
 
@@ -124,24 +123,41 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
       "uifw-standard-rotation-navigation",
     );
     return (
-      <div className={className}>
+      <div
+        className={className}
+        ref={this._handleRef}
+      >
         <NZ_Expandable
           className={"expandable"}
-          expanded={this.getExpandedContent()}
-          direction={Direction.Bottom}
-          button={
-            <NZ_Icon
-              className={"icon-button"}
-              icon={
-                <span className={"three-d-icon icon " + this.state.list[this.state.selected].iconClassName} />
-              }
-              onClick={this._toggleIsExpanded}
-            >
-            </NZ_Icon>
-          }
-        />
+        >
+          <NZ_Icon
+            className={"icon-button"}
+            icon={
+              <span className={"three-d-icon icon " + this.state.list[this.state.selected].iconClassName} />
+            }
+            onClick={this._toggleIsExpanded}
+          >
+          </NZ_Icon>
+        </NZ_Expandable>
+        <Popup
+          isOpen={this.state.isExpanded}
+          offset={0}
+          onClose={this._handlePopupClose}
+          position={Position.Bottom}
+          target={this.state.element}
+        >
+          {this.getExpandedContent()}
+        </Popup>
       </div>
     );
+  }
+
+  private _handleRef = (element: HTMLDivElement | null) => {
+    this.setState(() => ({ element }));
+  }
+
+  private _handlePopupClose = () => {
+    this.setState(() => ({ isExpanded: false }));
   }
 
   private _toggleIsExpanded = () => {

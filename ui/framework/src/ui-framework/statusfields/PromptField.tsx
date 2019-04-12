@@ -6,8 +6,9 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
-import { StatusBarText } from "@bentley/ui-ninezone";
+import { FooterIndicator } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
+import "./PromptField.scss";
 
 /** Defines properties supported by the Prompt Field Component.
  */
@@ -29,10 +30,12 @@ class PromptFieldComponent extends React.Component<PromptFieldProps> {
 
   public render(): React.ReactNode {
     return (
-      <StatusBarText
-        label={this.props.toolPrompt}
+      <FooterIndicator
+        className="uifw-statusFields-promptField"
         isInFooterMode={this.props.isInFooterMode}
-      />
+      >
+        {this.props.toolPrompt}
+      </FooterIndicator>
     );
   }
 }

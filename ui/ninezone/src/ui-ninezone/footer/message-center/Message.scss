@@ -21,8 +21,12 @@
   grid-gap: 12px;
   grid-auto-flow: column;
   align-items: center;
-  grid-template-columns: minmax(20px, auto) 1fr;
+  grid-template-columns: auto 1fr;
   line-height: 16px;
   color: $buic-text-color;
   font-size: $text-font-size;
+
+  &:not(:first-child) {
+    border-top: 1px solid $buic-background-4;
+  }
 }

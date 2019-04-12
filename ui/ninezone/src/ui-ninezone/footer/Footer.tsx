@@ -6,23 +6,27 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Footer.scss";
 
-/** Properties of [[Footer]] component. */
-export interface FooterProps extends CommonProps, NoChildrenProps {
+/** Properties of [[Footer]] component.
+ * @beta
+ */
+export interface FooterProps extends CommonProps {
   /**
-   * Status indicators.
-   * I.e: [[ToolAssistanceIndicator]], [[SnapModeIndicator]], [[MessageCenterIndicator]]
+   * Footer indicators and separators. I.e: [[FooterSeparator]], [[FooterIndicator]],
+   * [[MessageCenter]], [[ToolAssistance]], [[SnapMode]]
    */
-  indicators?: React.ReactNode;
-  /** Specifies if the footer is in widget mode.  */
+  children?: React.ReactNode;
+  /** Describes whether the footer is in footer or widget mode.  */
   isInFooterMode?: boolean;
-  /** One of footer messages: [[Toast]], [[Temporary]], [[Sticky]], [[Modal]], [[Activity]] */
-  message?: React.ReactNode;
+  /** Footer messages. I.e. [[Message]], [[Toast]] */
+  messages?: React.ReactNode;
 }
 
-/** Footer component. Should be used in [[StatusZone]] */
+/** Footer component. Used in [[StatusZone]] component.
+ * @beta
+ */
 export class Footer extends React.PureComponent<FooterProps> {
   public render() {
     const className = classnames(
@@ -35,11 +39,11 @@ export class Footer extends React.PureComponent<FooterProps> {
         className={className}
         style={this.props.style}
       >
-        <div className="nz-message">
-          {this.props.message}
+        <div className="nz-messages">
+          {this.props.messages}
         </div>
         <div className="nz-indicators">
-          {this.props.indicators}
+          {this.props.children}
         </div>
       </div>
     );

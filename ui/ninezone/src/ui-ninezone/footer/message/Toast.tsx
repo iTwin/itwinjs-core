@@ -6,17 +6,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { Timer } from "@bentley/ui-core";
-import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { Timer, CommonProps } from "@bentley/ui-core";
+import { NoChildrenProps } from "../../utilities/Props";
 import { Rectangle } from "../../utilities/Rectangle";
 import { Css } from "../../utilities/Css";
-import { Activity } from "./Activity";
 import "./Toast.scss";
 
-/** Properties of [[Toast]] component. */
+/** Properties of [[Toast]] component.
+ * @alpha Review naming of: animateOutTo, content, onAnimatedOut
+ */
 export interface ToastProps extends CommonProps, NoChildrenProps {
   /** Element to which the toast will animate out to. */
-  animateOutTo: React.RefObject<HTMLElement>;
+  animateOutTo?: React.RefObject<HTMLElement>;
   /** Message content. */
   content?: React.ReactNode;
   /** Function called when toast finishes to animate out. */
@@ -25,19 +26,27 @@ export interface ToastProps extends CommonProps, NoChildrenProps {
   timeout: number;
 }
 
+/** Default properties of [[Toast]] component.
+ * @alpha
+ */
 export type ToastDefaultProps = Pick<ToastProps, "timeout">;
 
 /** State of [[Toast]] component. */
-export interface ToastState {
+interface ToastState {
   /** Describes current toast stage. */
   stage: Stage;
   /** Toast style that is applied based on current stage. */
   toastStyle: ToastStyle;
 }
 
+/** Toast style.
+ * @alpha
+ */
 export type ToastStyle = Pick<React.CSSProperties, "width" | "height">;
 
-/** Footer message that animates out to specified element after some timeout. Used in [[Footer]] component. */
+/** Footer message that animates out to specified element after some timeout. Used in [[Footer]] component.
+ * @alpha
+ */
 export class Toast extends React.PureComponent<ToastProps, ToastState> {
   public static readonly defaultProps: ToastDefaultProps = {
     timeout: 2000,
@@ -75,7 +84,7 @@ export class Toast extends React.PureComponent<ToastProps, ToastState> {
       this.props.className);
 
     return (
-      <Activity
+      <div
         className={className}
         style={this.props.style}
       >
@@ -87,7 +96,7 @@ export class Toast extends React.PureComponent<ToastProps, ToastState> {
         >
           {this.props.content}
         </div>
-      </Activity>
+      </div>
     );
   }
 
@@ -112,7 +121,7 @@ export class Toast extends React.PureComponent<ToastProps, ToastState> {
   private animateOut() {
     if (!this._toast.current)
       return;
-    if (!this.props.animateOutTo.current)
+    if (!this.props.animateOutTo || !this.props.animateOutTo.current)
       return;
 
     const animateTo = Rectangle.create(this.props.animateOutTo.current.getBoundingClientRect());

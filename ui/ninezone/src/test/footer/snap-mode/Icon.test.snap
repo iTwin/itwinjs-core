@@ -1,7 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`<SnapModeIcon /> renders correctly 1`] = `
-<div
-  className="nz-footer-snapMode-icon"
-/>
-`;

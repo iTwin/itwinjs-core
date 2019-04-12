@@ -6,16 +6,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Title.scss";
 
-/** Properties of [[Title]] component. */
+/** Properties of [[Title]] component.
+ * @alpha
+ */
 export interface TitleProps extends CommonProps {
   /** Actual title. */
   children?: React.ReactNode;
 }
 
-/** Tool group title. */
+/** Tool group title.
+ * @alpha
+ */
 export class Title extends React.PureComponent<TitleProps> {
   public render() {
     const className = classnames(

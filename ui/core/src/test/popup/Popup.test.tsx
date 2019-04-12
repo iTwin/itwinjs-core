@@ -126,4 +126,46 @@ describe("Popup />", () => {
       expect(popup.length).be.eq(1);
     });
   });
+
+  describe("outside click", () => {
+    it("should call onOutsideClick", () => {
+      const spy = sinon.spy();
+      const wrapper = mount(<Popup isOpen={true} onOutsideClick={spy} />);
+
+      const popup = wrapper.find(".core-popup").getDOMNode();
+      sinon.stub(popup, "contains").returns(false);
+
+      const mouseDown = document.createEvent("HTMLEvents");
+      mouseDown.initEvent("mousedown");
+      sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(mouseDown);
+
+      expect(spy.calledOnceWithExactly(mouseDown)).be.true;
+    });
+  });
+
+  describe("scrolling", () => {
+    it("should hide when scrolling", () => {
+      const wrapper = mount<Popup>(<Popup isOpen={true} />);
+
+      const scroll = document.createEvent("HTMLEvents");
+      scroll.initEvent("wheel");
+      sinon.stub(scroll, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(scroll);
+
+      expect(wrapper.state().isOpen).false;
+    });
+
+    it("should not hide when scrolling popup content", () => {
+      const wrapper = mount<Popup>(<Popup isOpen={true} />);
+      const popup = wrapper.find(".core-popup").getDOMNode();
+
+      const scroll = document.createEvent("HTMLEvents");
+      scroll.initEvent("wheel");
+      sinon.stub(scroll, "target").get(() => popup);
+      window.dispatchEvent(scroll);
+
+      expect(wrapper.state().isOpen).true;
+    });
+  });
 });

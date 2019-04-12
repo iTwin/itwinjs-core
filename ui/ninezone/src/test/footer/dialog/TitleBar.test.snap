@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<TitleBar /> renders correctly 1`] = `
+<div
+  className="nz-footer-dialog-titleBar"
+>
+  <span
+    className="nz-title"
+  />
+</div>
+`;

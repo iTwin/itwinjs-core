@@ -5,13 +5,12 @@
 /** @module Picker */
 
 import * as React from "react";
-import { Group, Panel, GroupColumn, CommonProps, ExpandableItem, withContainIn, Item, containHorizontally } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
+import { Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally } from "@bentley/ui-ninezone";
 import * as classnames from "classnames";
-
+import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import "./ListPicker.scss";
-
-import { UiFramework } from "../UiFramework";
 
 // tslint:disable-next-line:variable-name
 const ContainedGroup = withContainIn(Group);

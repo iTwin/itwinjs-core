@@ -6,18 +6,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Target.scss";
 
-/** Properties of [[MergeTarget]] component. */
+/** Properties of [[MergeTarget]] component.
+ * @alpha
+ */
 export interface MergeTargetProps extends CommonProps {
   /** Function called when is targeted state of the target changes. */
   onTargetChanged?: (isTargeted: boolean) => void;
 }
 
-/**
- * Basic target component used in merge zone interactions.
+/** Basic target component used in merge zone interactions.
  * @note Available targets: [[Back]], [[Merge]]
+ * @alpha
  */
 export class MergeTarget extends React.PureComponent<MergeTargetProps> {
   private _isTargeted = false;

@@ -6,21 +6,25 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import { HorizontalAnchor, HorizontalAnchorHelpers } from "../../Stacked";
 import { PointerCaptor } from "../../../base/PointerCaptor";
 import { PointProps, Point } from "../../../utilities/Point";
 import { Rectangle, RectangleProps } from "../../../utilities/Rectangle";
 import "./Tab.scss";
 
-/** Describes available tab modes. */
+/** Describes available tab modes.
+ * @alpha
+ */
 export enum TabMode {
   Closed,
   Open,
   Active,
 }
 
-/** Helpers for [[TabMode]]. */
+/** Helpers for [[TabMode]].
+ * @alpha
+ */
 export class TabModeHelpers {
   /** Class name of [[TabMode.Closed]] */
   public static readonly CLOSED_CLASS_NAME = "nz-mode-closed";
@@ -42,7 +46,9 @@ export class TabModeHelpers {
   }
 }
 
-/** Properties of [[Tab]] component. */
+/** Properties of [[Tab]] component.
+ * @alpha
+ */
 export interface TabProps extends CommonProps {
   /** Describes to which side the widget of this tab is anchored. */
   anchor: HorizontalAnchor;
@@ -64,8 +70,8 @@ export interface TabProps extends CommonProps {
   title?: string;
 }
 
-/**
- * Rectangular widget tab. Used in [[Stacked]] component.
+/** Rectangular widget tab. Used in [[Stacked]] component.
+ * @alpha
  */
 export class Tab extends React.PureComponent<TabProps> {
   private _initial: Point | undefined = undefined;

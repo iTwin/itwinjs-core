@@ -6,14 +6,19 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
+import { NoChildrenProps } from "../../../../utilities/Props";
 import "./BackArrow.scss";
 
-/** Properties of [[BackArrow]] component. */
+/** Properties of [[BackArrow]] component.
+ * @alpha
+ */
 export interface BackArrowProps extends CommonProps, NoChildrenProps {
 }
 
-/** Back arrow used in [[NestedGroup]] component. */
+/** Back arrow used in [[NestedGroup]] component.
+ * @alpha
+ */
 export class BackArrow extends React.PureComponent<BackArrowProps> {
   public render() {
     const className = classnames(

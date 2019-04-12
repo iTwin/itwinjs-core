@@ -5,18 +5,17 @@
 /** @module ToolSettings */
 
 import * as React from "react";
-import { FrontstageManager, ToolActivatedEventArgs } from "../../frontstage/FrontstageManager";
-import { ToolUiManager } from "../toolsettings/ToolUiManager";
-
+import { CommonProps } from "@bentley/ui-core";
 import {
   ToolSettings,
   ToolSettingsTab,
   ToolSettingsContent,
-  CommonProps,
   RectangleProps,
   Zone,
-  DialogButton,
+  TitleBarButton,
 } from "@bentley/ui-ninezone";
+import { FrontstageManager, ToolActivatedEventArgs } from "../../frontstage/FrontstageManager";
+import { ToolUiManager } from "../toolsettings/ToolUiManager";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../../UiFramework";
 
@@ -132,9 +131,9 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     return (
       <ToolSettings
         buttons={[
-          <DialogButton key="0" onClick={this._processClick} title={UiFramework.i18n.translate("UiFramework:general.minimize")}>
+          <TitleBarButton key="0" onClick={this._processClick} title={UiFramework.i18n.translate("UiFramework:general.minimize")}>
             <i className={"icon icon-chevron-up"} />
-          </DialogButton>,
+          </TitleBarButton>,
         ]}
         title={ToolUiManager.activeToolLabel}
       >

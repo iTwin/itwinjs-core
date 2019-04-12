@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import { MessageCenterDialog, MessageCenterDialogContent } from "../../../ui-ninezone";
+import { MessageCenterDialog } from "../../../ui-ninezone";
 
 describe("<MessageCenterDialog />", () => {
   it("should render", () => {
@@ -14,15 +14,5 @@ describe("<MessageCenterDialog />", () => {
 
   it("renders correctly", () => {
     shallow(<MessageCenterDialog />).should.matchSnapshot();
-  });
-});
-
-describe("<MessageCenterDialogContent />", () => {
-  it("should render", () => {
-    mount(<MessageCenterDialogContent />);
-  });
-
-  it("renders correctly", () => {
-    shallow(<MessageCenterDialogContent />).should.matchSnapshot();
   });
 });

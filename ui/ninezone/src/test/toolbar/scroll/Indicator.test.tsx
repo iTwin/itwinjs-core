@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import { Direction, Indicator } from "../../../ui-ninezone";
+import { Direction, ScrollIndicator } from "../../../ui-ninezone";
 
-describe("<Indicator />", () => {
+describe("<ScrollIndicator />", () => {
   it("should render", () => {
-    mount(<Indicator direction={Direction.Left} />);
+    mount(<ScrollIndicator direction={Direction.Left} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Indicator direction={Direction.Left} />).should.matchSnapshot();
+    shallow(<ScrollIndicator direction={Direction.Left} />).should.matchSnapshot();
   });
 });

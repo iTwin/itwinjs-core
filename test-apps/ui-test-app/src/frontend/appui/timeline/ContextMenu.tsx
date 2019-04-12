@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as classnames from "classnames";
-import { CommonProps } from "@bentley/ui-ninezone";
-import { Popup, Position } from "@bentley/ui-core";
+import { CommonProps, Popup, Position } from "@bentley/ui-core";
 import "./ContextMenu.scss";
 
 /** Properties for [[ContextMenuItem]] component */

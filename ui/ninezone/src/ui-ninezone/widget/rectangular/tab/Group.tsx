@@ -6,18 +6,22 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import { HorizontalAnchor, HorizontalAnchorHelpers } from "../../Stacked";
 import "./Group.scss";
 
-/** Available handle modes. */
+/** Available handle modes.
+ * @alpha
+ */
 export enum HandleMode {
   Hovered,
   Visible,
   Timedout,
 }
 
-/** Helpers for [[HandleMode]]. */
+/** Helpers for [[HandleMode]].
+ * @alpha
+ */
 export class HandleModeHelpers {
   /** Class name of [[HandleMode.Hovered]] */
   public static readonly HOVERED_CLASS_NAME = "nz-handle-hovered";
@@ -39,7 +43,9 @@ export class HandleModeHelpers {
   }
 }
 
-/** Properties of [[TabGroup]] component. */
+/** Properties of [[TabGroup]] component.
+ * @alpha
+ */
 export interface TabGroupProps extends CommonProps {
   /** Describes to which side the widget of this tab is anchored. */
   anchor: HorizontalAnchor;
@@ -49,7 +55,9 @@ export interface TabGroupProps extends CommonProps {
   handle: HandleMode;
 }
 
-/** Tab group component for stacked widget. */
+/** Tab group component for stacked widget.
+ * @alpha
+ */
 export class TabGroup extends React.PureComponent<TabGroupProps> {
   public render() {
     const className = classnames(

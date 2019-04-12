@@ -6,11 +6,14 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
+import { NoChildrenProps } from "../../utilities/Props";
 import { Direction, DirectionHelpers } from "../../utilities/Direction";
 import "./Chevron.scss";
 
-/** Properties of [[Chevron]] component. */
+/** Properties of [[Chevron]] component.
+ * @alpha
+ */
 export interface ChevronProps extends CommonProps, NoChildrenProps {
   /** Direction of chevron. */
   direction: Direction;
@@ -18,7 +21,9 @@ export interface ChevronProps extends CommonProps, NoChildrenProps {
   onClick?: () => void;
 }
 
-/** Chevron component used in [[Indicator]]. */
+/** Chevron used in [[Indicator]] component.
+ * @alpha
+ */
 export class Chevron extends React.PureComponent<ChevronProps> {
   public render() {
     const className = classnames(

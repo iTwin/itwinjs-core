@@ -6,32 +6,34 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./ScrollableArea.scss";
 
-/** Properties of [[ScrollableArea]] component. */
+/** Properties of [[ScrollableArea]] component.
+ * @alpha
+ */
 export interface ScrollableAreaProps extends CommonProps {
   /** Scrollable content. */
   content?: React.ReactNode;
 }
 
 /** State of [[ScrollableArea]] component. */
-export interface ScrollableAreaState {
+interface ScrollableAreaState {
   /** Describes if bottom scroll indicator is visible. */
   isBottomIndicatorVisible: boolean;
   /** Describes if top scroll indicator is visible. */
   isTopIndicatorVisible: boolean;
 }
 
-/**
- * Displays two arrow buttons instead of scroll bar.
+/** Displays two arrow buttons instead of scroll bar.
  * @note Used as content in [[ToolSettings]] and [[Nested]] components
+ * @alpha
  */
 export class ScrollableArea extends React.PureComponent<ScrollableAreaProps, ScrollableAreaState> {
   public static readonly INDICATOR_HEIGHT = 20;
   private _content = React.createRef<HTMLDivElement>();
 
-  public readonly state = {
+  public readonly state: ScrollableAreaState = {
     isBottomIndicatorVisible: false,
     isTopIndicatorVisible: false,
   };
@@ -99,7 +101,7 @@ export class ScrollableArea extends React.PureComponent<ScrollableAreaProps, Scr
     this.scroll(1);
   }
 
-  private calculateOffset(content: HTMLDivElement) {
+  private calculateOffset(content: HTMLElement) {
     return Math.max(10, content.clientHeight - ScrollableArea.INDICATOR_HEIGHT * 1.5);
   }
 

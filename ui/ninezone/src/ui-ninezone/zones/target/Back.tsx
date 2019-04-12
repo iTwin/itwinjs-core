@@ -8,16 +8,20 @@ import * as classnames from "classnames";
 import * as React from "react";
 import { MergeTarget, MergeTargetProps } from "./Target";
 import { Arrow } from "./Arrow";
-import "./Back.scss";
 import { WidgetZoneIndex } from "../state/NineZone";
+import "./Back.scss";
 
-/** Properties of [[Back]] component. */
+/** Properties of [[Back]] component.
+ * @alpha
+ */
 export interface BackProps extends MergeTargetProps {
   /** Rotation of back arrow depends on specified zone index. */
   zoneIndex: WidgetZoneIndex;
 }
 
-/** Back home target. */
+/** Back home target.
+ * @alpha
+ */
 export class Back extends React.PureComponent<BackProps> {
   public render() {
     const mergeClassName = classnames(

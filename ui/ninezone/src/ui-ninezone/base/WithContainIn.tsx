@@ -8,7 +8,9 @@ import * as React from "react";
 import { Css } from "../utilities/Css";
 import { Rectangle, RectangleProps } from "../utilities/Rectangle";
 
-/** Properties of [[withContainIn]] HOC. */
+/** Properties of [[withContainIn]] HOC.
+ * @alpha
+ */
 export interface WithContainInProps {
   /** Function called to determine the actual bounds of wrapped component. See: [[contain]], [[containHorizontally]], [containVertically]. */
   containFn?: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
@@ -16,25 +18,33 @@ export interface WithContainInProps {
   container?: React.RefObject<HTMLElement>;
 }
 
-/** Contains the component bounds both vertically and horizontally. This is default containment method for [[withContainIn]]. */
+/** Contains the component bounds both vertically and horizontally. This is default containment method for [[withContainIn]].
+ * @alpha
+ */
 export const contain = (componentBounds: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
   const bounds = Rectangle.create(componentBounds);
   return bounds.containIn(containerBounds);
 };
 
-/** Contains the component bounds horizontally. */
+/** Contains the component bounds horizontally.
+ * @alpha
+ */
 export const containHorizontally = (componentBounds: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
   const bounds = Rectangle.create(componentBounds);
   return bounds.containHorizontallyIn(containerBounds);
 };
 
-/** Contains the component bounds vertically. */
+/** Contains the component bounds vertically.
+ * @alpha
+ */
 export const containVertically = (componentBounds: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
   const bounds = Rectangle.create(componentBounds);
   return bounds.containVerticallyIn(containerBounds);
 };
 
-/** HOC which will ensure, that wrapped component bounds are contained in specified container bounds. */
+/** HOC which will ensure, that wrapped component bounds are contained in specified container bounds.
+ * @alpha Transfer to ui-core or remove if used with popups only.
+ */
 export const withContainIn = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,

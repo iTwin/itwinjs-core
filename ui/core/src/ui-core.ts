@@ -5,6 +5,8 @@
 export * from "./ui-core/UiCore";
 export * from "./ui-core/utils/Props";
 
+export * from "./ui-core/icons/SvgPath";
+export * from "./ui-core/icons/SvgSprite";
 export * from "./ui-core/icons/WebFontIcon";
 export * from "./ui-core/base/UiEvent";
 

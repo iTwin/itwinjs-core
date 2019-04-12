@@ -6,10 +6,12 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Item.scss";
 
-/** Properties of [[HistoryItem]] component. */
+/** Properties of [[HistoryItem]] component.
+ * @alpha
+ */
 export interface HistoryItemProps extends CommonProps {
   /** Item content. */
   children?: React.ReactNode;
@@ -23,9 +25,9 @@ export interface HistoryItemProps extends CommonProps {
   title?: string;
 }
 
-/**
- * Basic history item used in [[HistoryTray]] component.
+/** Basic history item used in [[HistoryTray]] component.
  * @note See [[Icon]] for item with icon.
+ * @alpha
  */
 export class HistoryItem extends React.PureComponent<HistoryItemProps> {
   public render() {
