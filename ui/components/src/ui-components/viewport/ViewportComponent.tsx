@@ -38,22 +38,30 @@ export interface ViewportProps extends CommonProps {
   viewportRef?: (v: ScreenViewport) => void;
   /** @internal */
   onContextMenu?: (e: React.MouseEvent) => boolean;
+  /** @internal */
+  getViewOverlay?: (viewState: ViewState) => React.ReactNode;
+}
+
+interface ViewportState {
+  viewId: string;
 }
 
 /**
  * A viewport React component that creates a ScreenViewport.
  * @public
  */
-export class ViewportComponent extends React.Component<ViewportProps> {
+export class ViewportComponent extends React.Component<ViewportProps, ViewportState> {
 
   private _viewportDiv: React.RefObject<HTMLDivElement>;
   private _vp?: ScreenViewport;
   private _viewClassFullName: string = "";
-  private _viewId: string = "";
 
   public constructor(props: ViewportProps) {
     super(props);
     this._viewportDiv = React.createRef<HTMLDivElement>();
+    this.state = {
+      viewId: "",
+    };
   }
 
   public async componentDidMount() {
@@ -84,7 +92,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
 
     this._vp.onViewChanged.addListener(this._handleViewChanged, this);
     this._viewClassFullName = this._vp.view.classFullName;
-    this._viewId = this._vp.view.id;
+    this.setState({ viewId: this._vp.view.id });
   }
 
   public componentWillUnmount() {
@@ -149,10 +157,10 @@ export class ViewportComponent extends React.Component<ViewportProps> {
       });
     }
 
-    if (this._viewId !== vp.view.id) {
+    if (this.state.viewId !== vp.view.id) {
       setTimeout(() => {
-        ViewportComponentEvents.onViewIdChangedEvent.emit({ viewport: vp, oldId: this._viewId, newId: vp.view.id });
-        this._viewId = vp.view.id;
+        ViewportComponentEvents.onViewIdChangedEvent.emit({ viewport: vp, oldId: this.state.viewId, newId: vp.view.id });
+        this.setState({ viewId: vp.view.id });
       });
     }
   }
@@ -165,18 +173,27 @@ export class ViewportComponent extends React.Component<ViewportProps> {
   }
 
   public render() {
-    const divStyle: React.CSSProperties = {
+    const viewOverlay = this._vp && this.props.getViewOverlay ? this.props.getViewOverlay(this._vp.view) : null;
+
+    const parentDivStyle: React.CSSProperties = {
+      height: "100%", width: "100%", position: "relative",
+    };
+
+    const viewportDivStyle: React.CSSProperties = {
       height: "100%", width: "100%",
       ...this.props.style,
     };
 
     return (
-      <div
-        ref={this._viewportDiv}
-        className={this.props.className}
-        style={divStyle}
-        onContextMenu={this._handleContextMenu}
-      />
+      <div style={parentDivStyle}>
+        <div
+          ref={this._viewportDiv}
+          className={this.props.className}
+          style={viewportDivStyle}
+          onContextMenu={this._handleContextMenu}
+        />
+        {viewOverlay}
+      </div>
     );
   }
 }

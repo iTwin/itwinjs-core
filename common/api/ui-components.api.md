@@ -2519,8 +2519,10 @@ export interface ViewIdChangedEventArgs {
     viewport: Viewport;
 }
 
+// Warning: (ae-forgotten-export) The symbol "ViewportState" needs to be exported by the entry point ui-components.d.ts
+// 
 // @public
-export class ViewportComponent extends React.Component<ViewportProps> {
+export class ViewportComponent extends React.Component<ViewportProps, ViewportState> {
     constructor(props: ViewportProps);
     // (undocumented)
     componentDidMount(): Promise<void>;
@@ -2564,6 +2566,8 @@ export class ViewportComponentEvents {
 
 // @public
 export interface ViewportProps extends CommonProps {
+    // @internal (undocumented)
+    getViewOverlay?: (viewState: ViewState) => React.ReactNode;
     imodel: IModelConnection;
     // @internal (undocumented)
     onContextMenu?: (e: React.MouseEvent) => boolean;
