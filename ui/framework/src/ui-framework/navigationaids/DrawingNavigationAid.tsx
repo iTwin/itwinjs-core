@@ -17,8 +17,8 @@ import { UiFramework } from "../UiFramework";
 import "./DrawingNavigationAid.scss";
 
 /**
- * @alpha
  * A Drawing Navigation Aid control.
+ * @alpha
  */
 export class DrawingNavigationAidControl extends NavigationAidControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -29,8 +29,8 @@ export class DrawingNavigationAidControl extends NavigationAidControl {
 }
 
 /**
- * @alpha
  * Enum for mode that minimap is currently in
+ * @alpha
  */
 export enum MapMode {
   Opened = "map-opened",
@@ -77,8 +77,8 @@ export interface DrawingNavigationAidState {
 }
 
 /**
- * @alpha
  * A Drawing Navigation Aid.
+ * @alpha
  */
 export class DrawingNavigationAid extends React.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
   private _rootElement: HTMLDivElement | null = null;

@@ -5,6 +5,7 @@
 import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
+import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
 import {
@@ -21,6 +22,7 @@ import {
   WidgetDef,
 } from "../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { FooterPopup } from "@bentley/ui-ninezone";
 
 describe("MessageCenter", () => {
 
@@ -98,7 +100,7 @@ describe("MessageCenter", () => {
     wrapper.find("div.nz-balloon").simulate("click");
     wrapper.update();
 
-    const buttons = wrapper.find("div.nz-footer-message-content-dialog-button");
+    const buttons = wrapper.find("div.nz-footer-dialog-button");
     expect(buttons.length).to.eq(2);
 
     buttons.at(1).simulate("click");
@@ -132,6 +134,33 @@ describe("MessageCenter", () => {
     wrapper.update();
 
     wrapper.unmount();
+  });
+
+  it("Message Center should close on outside click", () => {
+    const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
+    const footerPopup = wrapper.find(FooterPopup);
+
+    const statusBarInstance = wrapper.instance();
+    const spy = sinon.spy(statusBarInstance, "setOpenWidget");
+
+    const outsideClick = new MouseEvent("");
+    sinon.stub(outsideClick, "target").get(() => document.createElement("div"));
+    footerPopup.prop("onOutsideClick")!(outsideClick);
+
+    expect(spy.calledWithExactly(null)).true;
+  });
+
+  it("Message Center should not close on outside click", () => {
+    const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
+    const footerPopup = wrapper.find(FooterPopup);
+
+    const statusBarInstance = wrapper.instance();
+    const spy = sinon.spy(statusBarInstance, "setOpenWidget");
+
+    const outsideClick = new MouseEvent("");
+    footerPopup.prop("onOutsideClick")!(outsideClick);
+
+    expect(spy.calledWithExactly(null)).false;
   });
 
   // nz-footer-messageCenter-tab

@@ -5,18 +5,18 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import { SnapModeIndicator } from "../../../ui-ninezone";
+import { SnapMode } from "../../../ui-ninezone";
 
-describe("<SnapModeIndicator />", () => {
+describe("<SnapMode />", () => {
   it("should render", () => {
-    mount(<SnapModeIndicator />);
+    mount(<SnapMode />);
   });
 
   it("renders correctly", () => {
-    shallow(<SnapModeIndicator />).should.matchSnapshot();
+    shallow(<SnapMode />).should.matchSnapshot();
   });
 
   it("renders correctly with label", () => {
-    shallow(<SnapModeIndicator label="Snap Mode" />).should.matchSnapshot();
+    shallow(<SnapMode>Snap Mode</SnapMode>).should.matchSnapshot();
   });
 });

@@ -17,26 +17,26 @@
     color:                  $buic-text-color;
     background-color:       $buic-background-control;
     background-image:       none;
-    border:                 1px solid $buic-inputs-border; // $uicore-inputs-border-color;
+    border:                 1px solid $buic-inputs-border;
     border-radius:          $uicore-border-radius;
     box-shadow:             $buic-inputs-boxshadow 0px 1px 1px inset;
     transition:             border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
-    &:-ms-input-placeholder {       color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
-    &::-webkit-input-placeholder {  color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
-    &::placeholder {                color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
+    &:-ms-input-placeholder {       color: $buic-foreground-disabled; }
+    &::-webkit-input-placeholder {  color: $buic-foreground-disabled; }
+    &::placeholder {                color: $buic-foreground-disabled; }
 
     &[disabled],
     &[readonly] {
 
-        background-color:   $buic-background-control-disabled; // $uicore-gray-b;
-        color:              $buic-foreground-muted; // $uicore-gray-9;
+        background-color:   $buic-background-control-disabled;
+        color:              $buic-foreground-muted;
         cursor:             not-allowed;
     }
 
     &:focus {
 
-        border-color:       $buic-inputs-border; // $uicore-inputs-border-color;
+        border-color:       $buic-inputs-border;
         outline:            0px;
         box-shadow:         $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, $buic-inputs-focus-boxshadow-gradient2 0px 0px 0px 2px;
     }

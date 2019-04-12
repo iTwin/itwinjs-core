@@ -6,16 +6,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Container.scss";
 
-/** Properties of [[Container]] component. */
+/** Properties of [[Container]] component.
+ * @alpha
+ */
 export interface ContainerProps extends CommonProps {
   /** Zone target. I.e. [[Back]], [[Merge]] */
   children?: React.ReactNode;
 }
 
-/** Container for zone targets. */
+/** Container for zone targets.
+ * @alpha
+ */
 export class Container extends React.PureComponent<ContainerProps> {
   public render() {
     const className = classnames(

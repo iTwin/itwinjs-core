@@ -6,6 +6,7 @@
 
 import { LinePixels, ColorDef, RgbColor, Feature, GeometryClass, SubCategoryOverride, BatchType } from "@bentley/imodeljs-common";
 import { Id64, Id64String, Id64Set } from "@bentley/bentleyjs-core";
+import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 
 function copyIdSetToUint32Set(dst: Id64.Uint32Set, src?: Set<string>): void {
@@ -168,7 +169,7 @@ export namespace FeatureSymbology {
    * an Appearance which defines no overrides.
    *
    * It is possible to override multiple aspects of a Feature. For example, you might specify that all elements belonging to subcategory "A" should be drawn in red, and
-   * that the element with ID "0x123" should be drawn with 0.25 transparency. In this case, when drawing a Feature with subcategory "A" and element ID "0x123", the two overrides will
+   * that the element with Id "0x123" should be drawn with 0.25 transparency. In this case, when drawing a Feature with subcategory "A" and element Id "0x123", the two overrides will
    * be merged, causing the Feature's geometry to draw 25% transparent red. On the other hand, if subcategory "A" is specified to draw in red and element "0x123" to draw in green,
    * the color specified by the element override will take precedence over that specified for the subcategory, resulting in a green Feature.
    *
@@ -205,11 +206,17 @@ export namespace FeatureSymbology {
     /** The set of displayed subcategories. Geometry belonging to subcategories not included in this set will not be drawn. @internal */
     protected readonly _visibleSubCategories = new Id64.Uint32Set();
 
-    /**  IDs of animation nodes which should never be drawn.
+    /** Per-model, a set of subcategories whose visibility should be inverted for elements within that model.
+     * Populated by Viewport.
+     * @internal
+     */
+    protected readonly _modelSubCategoryOverrides = new Id64.Uint32Map<Id64.Uint32Set>();
+
+    /** Ids of animation nodes which should never be drawn.
      * @internal
      */
     public readonly neverDrawnAnimationNodes = new Set<number>();
-    /** Mapping of animation node IDS to overrides applied to the corresponding animation nodes.
+    /** Mapping of animation node Ids to overrides applied to the corresponding animation nodes.
      * @internal
      */
     public readonly animationNodeOverrides = new Map<number, Appearance>();
@@ -228,8 +235,17 @@ export namespace FeatureSymbology {
     }
     /** @internal */
     protected isAlwaysDrawn(idLo: number, idHi: number): boolean { return this._alwaysDrawn.has(idLo, idHi); }
-    /** Returns true if the [[SubCategory]] specified by ID is in the set of visible subcategories. @internal */
-    protected isSubCategoryVisible(idLo: number, idHi: number): boolean { return this._visibleSubCategories.has(idLo, idHi); }
+    /** Returns true if the [[SubCategory]] specified by Id is in the set of visible subcategories. @internal */
+    public isSubCategoryVisible(idLo: number, idHi: number): boolean { return this._visibleSubCategories.has(idLo, idHi); }
+    /** @internal */
+    public isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean {
+      let vis = this.isSubCategoryVisible(subcatLo, subcatHi);
+      const modelOvr = this._modelSubCategoryOverrides.get(modelLo, modelHi);
+      if (undefined !== modelOvr && modelOvr.has(subcatLo, subcatHi))
+        vis = !vis;
+
+      return vis;
+    }
 
     /** @internal */
     protected getModelOverrides(idLo: number, idHi: number): Appearance | undefined { return this._modelOverrides.get(idLo, idHi); }
@@ -246,15 +262,15 @@ export namespace FeatureSymbology {
 
     /** Add a [[SubCategory]] to the set of visible subcategories. */
     public setVisibleSubCategory(id: Id64String): void { this._visibleSubCategories.addId(id); }
-    /** Specify the ID of an element which should never be drawn in this view. */
+    /** Specify the Id of an element which should never be drawn in this view. */
     public setNeverDrawn(id: Id64String): void { this._neverDrawn.addId(id); }
-    /** Specify the ID of an element which should always be drawn in this view. */
+    /** Specify the Id of an element which should always be drawn in this view. */
     public setAlwaysDrawn(id: Id64String): void { this._alwaysDrawn.addId(id); }
-    /** Specify the ID of a animation node which should never be drawn in this view. */
+    /** Specify the Id of a animation node which should never be drawn in this view. */
     public setAnimationNodeNeverDrawn(id: number): void { this.neverDrawnAnimationNodes.add(id); }
-    /** Specify the IDs of elements which should never be drawn in this view. */
+    /** Specify the Ids of elements which should never be drawn in this view. */
     public setNeverDrawnSet(ids: Id64Set) { copyIdSetToUint32Set(this._neverDrawn, ids); }
-    /** Specify the IDs of elements which should always be drawn in this view. */
+    /** Specify the Ids of elements which should always be drawn in this view. */
     public setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean) { copyIdSetToUint32Set(this._alwaysDrawn, ids); this.isAlwaysDrawnExclusive = exclusive; }
 
     /** Returns the feature's Appearance overrides, or undefined if the feature is not visible. */
@@ -301,7 +317,7 @@ export namespace FeatureSymbology {
       }
 
       if (Id64.isValidUint32Pair(subcatLo, subcatHi)) {
-        if (!alwaysDrawn && !this.isSubCategoryVisible(subcatLo, subcatHi))
+        if (!alwaysDrawn && !this.isSubCategoryVisibleInModel(subcatLo, subcatHi, modelLo, modelHi))
           return undefined;
 
         const subCat = this.getSubCategoryOverrides(subcatLo, subcatHi);
@@ -358,7 +374,7 @@ export namespace FeatureSymbology {
     }
 
     /** Specify overrides for all elements within the specified model.
-     * @param id The ID of the model.
+     * @param id The Id of the model.
      * @param app The symbology overrides.
      * @param replaceExisting Specifies whether to replace a pre-existing override for the same model.
      * @note These overrides take priority over all other overrides.
@@ -372,17 +388,16 @@ export namespace FeatureSymbology {
     }
 
     /** Specify overrides for all geometry belonging to the specified [[SubCategory]].
-     * @param id The ID of the subcategory.
+     * @param id The Id of the subcategory.
      * @param app The symbology overrides.
      * @param replaceExisting Specifies whether to replace a pre-existing override for the same subcategory.
      * @note These overrides have lower priority than element and model overrides.
      * @note If [[defaultOverrides]] are defined, they will not apply to any geometry within this subcategory, even if the supplied Appearance overrides nothing.
      */
     public overrideSubCategory(id: Id64String, app: Appearance, replaceExisting: boolean = true): void {
+      // NB: We used to do nothing if this.isSubCategoryVisible() => false but now models can turn invisible subcategories visible in their own context.
       const idLo = Id64.getLowerUint32(id);
       const idHi = Id64.getUpperUint32(id);
-      if (!this.isSubCategoryVisible(idLo, idHi))
-        return;
 
       // NB: Appearance may specify no overridden symbology - this means "don't apply the default overrides to this subcategory"
       if (replaceExisting || undefined === this.getSubCategoryOverrides(idLo, idHi))
@@ -390,7 +405,7 @@ export namespace FeatureSymbology {
     }
 
     /** Specify overrides for all geometry originating from the specified element.
-     * @param id The ID of the element.
+     * @param id The Id of the element.
      * @param app The symbology overrides.
      * @param replaceExisting Specifies whether to replace a pre-existing override for the same element.
      * @note These overrides take precedence over subcategory overrides, but not over model overrides.
@@ -407,7 +422,7 @@ export namespace FeatureSymbology {
         this._elementOverrides.set(idLo, idHi, app);
     }
     /** Specify overrides for all geometry originating from the specified animation node.
-     * @param id The ID of the animation node.
+     * @param id The Id of the animation node.
      * @param app The symbology overrides.
      * @note These overides do not take precedence over element overrides.
      */
@@ -425,7 +440,37 @@ export namespace FeatureSymbology {
     /** Initialize these Overrides based on a specific view.
      * @internal
      */
-    public initFromView(view: ViewState) {
+    public initFromView(view: ViewState): void {
+      this._initFromView(view);
+      this._initSubCategoryOverrides(view);
+    }
+
+    /** Initialize these Overrides based on a specific viewport.
+     * @internal
+     */
+    public initFromViewport(viewport: Viewport): void {
+      const view = viewport.view;
+      this._initFromView(view);
+
+      if (undefined !== viewport.neverDrawn)
+        this.setNeverDrawnSet(viewport.neverDrawn);
+
+      if (undefined !== viewport.alwaysDrawn)
+        this.setAlwaysDrawnSet(viewport.alwaysDrawn, viewport.isAlwaysDrawnExclusive);
+
+      if (undefined !== view.scheduleScript)
+        view.scheduleScript.getSymbologyOverrides(this, viewport.scheduleTime);
+
+      if (undefined !== viewport.featureOverrideProvider)
+        viewport.featureOverrideProvider.addFeatureOverrides(this, viewport);
+
+      viewport.addModelSubCategoryVisibilityOverrides(this, this._modelSubCategoryOverrides);
+
+      // This will include any per-model subcategory visibility overrides added above.
+      this._initSubCategoryOverrides(view);
+    }
+
+    private _initFromView(view: ViewState): void {
       const { viewFlags } = view;
       const { constructions, dimensions, patterns } = viewFlags;
 
@@ -452,23 +497,48 @@ export namespace FeatureSymbology {
             const idLo = Id64.getLowerUint32(subCategoryId);
             const idHi = Id64.getUpperUint32(subCategoryId);
             this._visibleSubCategories.add(idLo, idHi);
-            const ovr = view.getSubCategoryOverride(subCategoryId);
-            if (undefined !== ovr) {
-              const app = Appearance.fromSubCategoryOverride(ovr);
-              if (app.overridesSymbology)
-                this._subCategoryOverrides.set(idLo, idHi, app);
-            }
           }
         }
       }
     }
 
-    /** Construct a new Overrides. The result is an empty set of overrides if no view is supplied.
-     * @param view If supplied, the overrides will be initialized based on the view's current state.
+    private _initSubCategoryOverrides(view: ViewState): void {
+      const addOverride = (idLo: number, idHi: number) => {
+        const subCategoryId = Id64.fromUint32Pair(idLo, idHi);
+        const ovr = view.getSubCategoryOverride(subCategoryId);
+        if (undefined !== ovr) {
+          const app = Appearance.fromSubCategoryOverride(ovr);
+          if (app.overridesSymbology)
+            this._subCategoryOverrides.set(idLo, idHi, app);
+        }
+      };
+
+      // Add overrides for all subcategories visible in the view
+      this._visibleSubCategories.forEach((idLo: number, idHi: number) => {
+        addOverride(idLo, idHi);
+      });
+
+      // Add overrides for all subcategories overridden to be visible in specific models
+      this._modelSubCategoryOverrides.forEach((_modelIdLo: number, _modelIdHi: number, subcats: Id64.Uint32Set) => {
+        subcats.forEach((idLo: number, idHi: number) => {
+          if (!this.isSubCategoryVisible(idLo, idHi)) {
+            // Overridden to be visible in one or more models - will need the appearance overrides
+            addOverride(idLo, idHi);
+          }
+        });
+      });
+    }
+
+    /** Construct a new Overrides. The result is an empty set of overrides if no view or viewport is supplied.
+     * @param view If supplied, the overrides will be initialized based on the current state of the view or viewport.
      */
-    public constructor(view?: ViewState) {
-      if (undefined !== view)
-        this.initFromView(view);
+    public constructor(view?: ViewState | Viewport) {
+      if (undefined !== view) {
+        if (view instanceof Viewport)
+          this.initFromViewport(view);
+        else
+          this.initFromView(view);
+      }
     }
 
     /** Returns true if geometry belonging to the specified subcategory will be drawn. */
@@ -493,6 +563,7 @@ export namespace FeatureSymbology {
       if (alwaysDrawn || this.isAlwaysDrawnExclusive)
         return alwaysDrawn;
 
+      // NB: This ignores per-model subcategory visibility overrides, because caller did not specify a model.
       if (!this.isSubCategoryIdVisible(subCategoryId))
         return false;
 

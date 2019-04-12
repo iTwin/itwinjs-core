@@ -10,6 +10,7 @@ $text-font-color: $buic-text-color;
 .components-property-record--horizontal {
   min-height: 24px;
   display: grid;
+  padding: 0 9px;
 
   .components-property-record-label {
     font-size: $text-font-size;
@@ -17,6 +18,7 @@ $text-font-color: $buic-text-color;
   }
 
   .components-property-record-value {
+    min-height: 20px;
     font-size: $text-font-size;
     color: $text-font-color;
   }
@@ -24,32 +26,26 @@ $text-font-color: $buic-text-color;
 
 .components-property-record--vertical {
   .components-property-record-label {
-    font-weight: bold;
-    font-size: $text-font-size;
-    color: $text-font-color;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    padding-top: 4px;
-    padding-bottom: 4px;
+    font-size: $uicore-font-size-small;
+    color: $buic-foreground-muted;
+    margin: 0 9px;
+    padding-top: 5px;
+    padding-bottom: 0px;
   }
 
   .components-property-record-value {
     min-height: 20px;
     font-size: $text-font-size;
     color: $text-font-color;
-    margin-top: 0px;
-    margin-bottom: 0px;
-
+    margin: 0 9px;
     padding-top: 0px;
     padding-bottom: 3px;
   }
 }
 
 @mixin record-cell {
-  display: block;
+  display: flex;
   align-items: center;
-  margin-top: auto;
-  margin-bottom: auto;
 }
 
 .components-property-record-label {
@@ -58,9 +54,6 @@ $text-font-color: $buic-text-color;
 
 .components-property-record-value {
   @include record-cell;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
 
   .core-underlined-button {
     // Offset by 2px, because value is centered vertically

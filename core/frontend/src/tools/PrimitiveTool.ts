@@ -12,6 +12,7 @@ import { IModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 
+/** @public */
 export const enum ModifyElementSource {
   /** The source for the element is unknown - not caused by a modification command. */
   Unknown = 0,
@@ -27,9 +28,9 @@ export const enum ModifyElementSource {
   DragSelect = 5,
 }
 
-/**
- * The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
+/** The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
  * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)
+ * @public
  */
 export abstract class PrimitiveTool extends InteractiveTool {
   public targetView?: Viewport;
@@ -63,41 +64,23 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
     const view = vp.view;
     const iModel = view.iModel;
-    if (this.requireWriteableTarget()) {
-      if (iModel.isReadonly) {
-        // IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.i18n.translate("DgnViewL10N::MSG_UnableToStartTool_FileIsReadOnly"))); ###TODO find correct i18n message code
-        return false; // Tool can't be used when iModel is read only.
-      }
-
-      // ###TODO lock specific code
-      // IBriefcaseManager:: Request req;
-      // req.locks.Insert(db, LockLevel:: Shared);
-      // if (!db.BriefcaseManager().AreResourcesAvailable(req, nullptr, IBriefcaseManager:: FastQuery:: Yes))
-      //   return false;   // another briefcase has locked the db for editing
-    }
+    if (this.requireWriteableTarget() && iModel.isReadonly)
+      return false; // Tool can't be used when iModel is read only.
 
     if (undefined === this.targetView)
       this.targetView = vp; // Update target to newly selected view.
-    else if (iModel !== this.iModel)
-      return false; // Once a ViewState has been established, only accept viewport showing the same iModel.
 
     if (!this.targetIsLocked) {
       if (isSelectedViewChange)
         this.targetView = vp; // Update target to newly selected view.
-
       return true; // Any type of model/view is still ok and target is still free to change.
     }
 
+    if (iModel !== this.iModel)
+      return false; // Once a ViewState has been established, only accept viewport showing the same iModel.
+
     if (this.targetModelId && !view.viewsModel(this.targetModelId))
       return false; // Only allow view where target is being viewed.
-
-    if (this.requireWriteableTarget()) {
-      // ###TODO lock specific code
-      //   IBriefcaseManager:: Request req;
-      //   req.locks.Insert(* targetModel, LockLevel:: Shared);
-      //   if (!db.BriefcaseManager().AreResourcesAvailable(req, nullptr, IBriefcaseManager:: FastQuery:: Yes))
-      //     return false; // another briefcase has locked the model for editing
-    }
 
     return true;
   }
@@ -139,7 +122,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
   }
 
   /** Called on data button down event to lock the tool to its current target model. */
-  public autoLockTarget(): void { if (undefined !== this.targetView) return; this.targetIsLocked = true; }
+  public autoLockTarget(): void { if (undefined === this.targetView) return; this.targetIsLocked = true; }
 
   /**  Returns the prompt based on the tool's current state. */
   public getPrompt(): string { return ""; }

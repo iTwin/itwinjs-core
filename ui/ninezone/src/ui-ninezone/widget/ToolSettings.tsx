@@ -6,12 +6,13 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utilities/Props";
-import { TitleBar } from "../footer/message/content/dialog/TitleBar";
-import { DialogTitle } from "../footer/message/content/dialog/Title";
+import { CommonProps } from "@bentley/ui-core";
+import { TitleBar } from "../footer/dialog/TitleBar";
 import "./ToolSettings.scss";
 
-/** Properties of [[ToolSettings]] component. */
+/** Properties of [[ToolSettings]] component.
+ * @alpha
+ */
 export interface ToolSettingsProps extends CommonProps {
   /** Title bar buttons. I.e.: [[DialogButton]] */
   buttons?: React.ReactNode;
@@ -21,9 +22,9 @@ export interface ToolSettingsProps extends CommonProps {
   title?: string;
 }
 
-/**
- * Tool settings widget is used to display Tool Settings and Tool Assistance (Zone 2 in 9-Zone UI).
+/** Tool settings widget is used to display Tool Settings and Tool Assistance (Zone 2 in 9-Zone UI).
  * @note Should be placed in [[Zone]] component.
+ * @alpha
  */
 export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
   public render() {
@@ -37,11 +38,10 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
         style={this.props.style}
       >
         <TitleBar
-          buttons={this.props.buttons}
-          title={
-            <DialogTitle text={this.props.title} />
-          }
-        />
+          title={this.props.title}
+        >
+          {this.props.buttons}
+        </TitleBar>
         {this.props.children}
       </div>
     );

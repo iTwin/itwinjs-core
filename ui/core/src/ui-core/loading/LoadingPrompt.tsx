@@ -11,7 +11,7 @@ import { LoadingStatus } from "./LoadingStatus";
 import "./LoadingPrompt.scss";
 
 /** Properties for [[LoadingPrompt]] component
- * @public
+ * @beta
  */
 export interface LoadingPromptProps {
   /** Title */
@@ -36,7 +36,7 @@ export interface LoadingPromptProps {
 
 /**
  * A component to display during loading.
- * @public
+ * @beta
  */
 export class LoadingPrompt extends React.Component<LoadingPromptProps> {
   public static defaultProps: Partial<LoadingPromptProps> = {

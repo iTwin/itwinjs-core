@@ -6,12 +6,15 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 import { TrianglePopover } from "../../popup/popover/Triangle";
 import { Direction } from "../../utilities/Direction";
-import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { NoChildrenProps } from "../../utilities/Props";
 import "./Toggle.scss";
 
-/** Properties of [[Toggle]] component. */
+/** Properties of [[Toggle]] component.
+ * @alpha
+ */
 export interface ToggleProps extends CommonProps, NoChildrenProps {
   /** Content of the toggle. */
   content?: React.ReactNode;
@@ -21,9 +24,9 @@ export interface ToggleProps extends CommonProps, NoChildrenProps {
   popupContent?: React.ReactChild;
 }
 
-/**
- * Tool settings toggle component.
+/** Tool settings toggle component.
  * @note Used in [[ToolSettings]] component
+ * @alpha
  */
 export class Toggle extends React.PureComponent<ToggleProps> {
   public render() {

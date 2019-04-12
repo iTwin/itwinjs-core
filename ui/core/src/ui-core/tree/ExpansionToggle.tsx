@@ -8,15 +8,14 @@ import * as classnames from "classnames";
 import * as React from "react";
 
 import "./ExpansionToggle.scss";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[ExpansionToggle]] component
  * @public
  */
-export interface ExpansionToggleProps {
+export interface ExpansionToggleProps extends CommonProps {
   isExpanded?: boolean;
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
-  className?: string;
-  style?: React.CSSProperties;
   ["data-testid"]?: string;
 }
 

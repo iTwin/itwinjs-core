@@ -46,6 +46,10 @@ describe("iModelHubClient UserInfoHandler", () => {
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async function (this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableIModelBank) {
+      this.skip();
+    }
+
     const superAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     const managerAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.manager);
     requestContexts.push(new AuthorizedClientRequestContext(superAccessToken));

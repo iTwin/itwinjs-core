@@ -8,6 +8,7 @@ import * as React from "react";
 import classnames from "classnames";
 
 import { ContextMenu } from "../contextmenu/ContextMenu";
+import { CommonProps } from "../utils/Props";
 
 import "./SplitButton.scss";
 
@@ -19,14 +20,13 @@ export enum SplitButtonActionType {
 }
 
 /** Properties for [[SplitButton]] component
- * @public
+ * @beta
  */
-export interface SplitButtonProps {
+export interface SplitButtonProps extends CommonProps {
   /** Label to display in click area. */
   label: string | React.ReactNode;
   /** Listens for click events on button area */
   onClick?: (event: any) => any;
-  className?: string;
   /** specifies icon for Splitbutton component */
   icon?: string;
 }
@@ -38,7 +38,7 @@ interface SplitButtonState {
 
 /**
  * SplitButton with a button on the left and a context menu on the right.
- * @public
+ * @beta
  */
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
   private _arrowElement: HTMLElement | null = null;
@@ -56,7 +56,10 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
       );
     }
     return (
-      <div data-testid="core-split-button-root" className={classnames("core-split-button", this.props.className, { expanded: this.state.expanded })}>
+      <div data-testid="core-split-button-root"
+        className={classnames("core-split-button", this.props.className, { expanded: this.state.expanded })}
+        style={this.props.style}
+      >
         <div data-testid="core-split-button-label" onClick={this.props.onClick} className={"core-split-button-label"}>{icon} {this.props.label}</div>
         <div className={"core-split-button-arrow"} ref={(el) => { this._arrowElement = el; }} onClick={this._handleClick} tabIndex={0} onKeyUp={this._handleKeyUp}>
           <div className={classnames("core-split-button-arrow-icon", "icon", "icon-chevron-down")} >

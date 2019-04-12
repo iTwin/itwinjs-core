@@ -39,13 +39,11 @@ class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvider {
       this.start = new Date(timeRange.low * 1000);
       this.end = new Date(timeRange.high * 1000);
 
-      if (this.getSettings().duration === 9) {
-        const quarter = (this.end.getTime() - this.start.getTime()) / 4;
-        const milestones: Milestone[] = [];
-        milestones.push({ id: "1", label: "1st Floor Concrete", date: new Date(this.start.getTime() + quarter), readonly: true });
-        milestones.push({ id: "2", label: "2nd Floor Concrete", date: new Date(this.end.getTime() - quarter), readonly: true });
-        this._milestones = milestones;
-      }
+      const quarter = (this.end.getTime() - this.start.getTime()) / 4;
+      const milestones: Milestone[] = [];
+      milestones.push({ id: "1", label: "1st Floor Concrete", date: new Date(this.start.getTime() + quarter), readonly: true });
+      milestones.push({ id: "2", label: "2nd Floor Concrete", date: new Date(this.end.getTime() - quarter), readonly: true });
+      this._milestones = milestones;
 
       return Promise.resolve(true);
     }
@@ -156,25 +154,35 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
   }
 
   private async _getView() {
-    const viewQueryParams: ViewQueryParams = { wantPrivate: false };
-    let viewProps: ViewDefinitionProps[] = [];
-    try {
-      let firstViewId;
-      // find first view with animation data
-      viewProps = await this.props.iModelConnection.views.queryProps(viewQueryParams);
-      for (const view of viewProps) {
-        const viewState = await this.props.iModelConnection.views.load(view.id!);
-        if (viewState) {
-          if (this._setTimelineDataProvider(viewState))
-            return;
-          if (undefined === firstViewId)
-            firstViewId = view.id!;
-        }
+    const savedAnimationViewId = SampleAppIModelApp.getAnimationViewId();
+    if (savedAnimationViewId && savedAnimationViewId.length > 0) {
+      const viewState = await this.props.iModelConnection.views.load(savedAnimationViewId);
+      SampleAppIModelApp.saveAnimationViewId(""); // clear out the saved viewId
+      if (viewState) {
+        if (this._setTimelineDataProvider(viewState))
+          return;
       }
-      this.setState({ viewId: firstViewId });
-    } catch (e) {
-      // tslint:disable-next-line:no-console
-      console.log("error getting views", e);
+    } else {
+      const viewQueryParams: ViewQueryParams = { wantPrivate: false };
+      let viewProps: ViewDefinitionProps[] = [];
+      try {
+        let firstViewId;
+        // find first view with animation data
+        viewProps = await this.props.iModelConnection.views.queryProps(viewQueryParams);
+        for (const view of viewProps) {
+          const viewState = await this.props.iModelConnection.views.load(view.id!);
+          if (viewState) {
+            if (this._setTimelineDataProvider(viewState))
+              return;
+            if (undefined === firstViewId)
+              firstViewId = view.id!;
+          }
+        }
+        this.setState({ viewId: firstViewId });
+      } catch (e) {
+        // tslint:disable-next-line:no-console
+        console.log("error getting views", e);
+      }
     }
   }
 
@@ -214,6 +222,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
 
     const content: React.CSSProperties = {
       flex: "1",
+      position: "relative",
     };
 
     const center: React.CSSProperties = {
@@ -237,13 +246,13 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
           }
         </div>
         {this.state.dataProvider &&
-          <div style={{ zIndex: 2000 }}>
+          <div>
             <TimelineComponent
               startDate={this.state.dataProvider.start}
               endDate={this.state.dataProvider.end}
               totalDuration={this.state.dataProvider.getSettings().duration}
               milestones={this.state.dataProvider.getMilestones()}
-              hideTimeline={false}
+              hideTimeline={this.state.dataProvider.getMilestones().length === 0}
               onChange={this.state.dataProvider.onPlaybackPointerChanged} />
           </div>
         }

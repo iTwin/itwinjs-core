@@ -1,10 +1,16 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import classnames from "classnames";
 import { PlayerButton, PlayButton } from "./PlayerButton";
-import { Popup, Position, Toggle } from "@bentley/ui-core";
+import { Position } from "@bentley/ui-core";
 import { Milestone } from "@bentley/ui-components";
 import { Timeline } from "./Timeline";
 import { Scrubber } from "./Scrubber";
 import { InlineEdit } from "./InlineEdit";
+import { ContextMenu, ContextMenuItem } from "./ContextMenu";
 import "./TimelineComponent.scss";
 
 interface TimelineComponentProps {
@@ -22,6 +28,7 @@ interface TimelineComponentState {
   hideTimeline?: boolean;
   currentDuration: number; // current duration in milliseconds
   totalDuration: number;  // total duration in milliseconds
+  repeat: boolean; // automatically restart when the timeline is finished playing
 }
 
 export class TimelineComponent extends React.PureComponent<TimelineComponentProps, TimelineComponentState> {
@@ -39,6 +46,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       hideTimeline: this.props.hideTimeline,
       currentDuration: 0,
       totalDuration: this.props.totalDuration,
+      repeat: false,
     };
   }
 
@@ -62,7 +70,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
     // timeline was complete, restart from the beginning
     if (this.state.currentDuration >= this.state.totalDuration) {
-      this.setState({ currentDuration: 0 }, (() => this._play()));
+      this._replay();
     } else
       this._play();
   }
@@ -111,6 +119,8 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     if (duration >= this.state.totalDuration) {
       window.cancelAnimationFrame(this._requestFrame);
       this.setState({ isPlaying: false });
+      if (this.state.repeat)
+        this._replay();
       return;
     }
 
@@ -125,6 +135,11 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     // request the next frame
     this._timeLastCycle = new Date().getTime();
     this._requestFrame = window.requestAnimationFrame(this._updateAnimation);
+  }
+
+  private _replay = () => {
+    // timeline was complete, restart from the beginning
+    this.setState ( {currentDuration: 0}, (() => this._play() ));
   }
 
   private _displayTime(millisec: number) {
@@ -155,11 +170,19 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   }
 
   private _onSettingsClick = () => {
-    this.setState({ isSettingsOpen: !this.state.isSettingsOpen });
+    this.setState ({ isSettingsOpen: !this.state.isSettingsOpen });
+  }
+
+  private _onCloseSettings = () => {
+    this.setState ({ isSettingsOpen: false });
   }
 
   private _onHideTimelineChanged = () => {
-    this.setState({ hideTimeline: !this.state.hideTimeline });
+    this.setState ({ hideTimeline: !this.state.hideTimeline, isSettingsOpen: false });
+  }
+
+  private _onLoopChanged = () => {
+    this.setState ({ repeat: !this.state.repeat, isSettingsOpen: false });
   }
 
   private _currentDate = (): Date => {
@@ -171,60 +194,59 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     return new Date();
   }
 
+  private _renderSettings = () => {
+    const className = classnames ("timeline-settings icon icon-more-vertical-2", this.state.hideTimeline && "mini-mode");
+    const expandName = (this.state.hideTimeline) ? "Expand" : "Minimize";
+    return (
+      <>
+        <span className={className} ref={(element) => this._settings = element} onClick={this._onSettingsClick} ></span>
+        <ContextMenu parent={this._settings} isOpened={this.state.isSettingsOpen} onClickOutside={this._onCloseSettings.bind(this)} position={Position.BottomRight}>
+          <ContextMenuItem name={expandName} onClick={this._onHideTimelineChanged} />
+          <ContextMenuItem name="Repeat" checked={this.state.repeat} onClick={this._onLoopChanged} />
+        </ContextMenu>
+      </>
+    );
+  }
+
   public render() {
     const { startDate, endDate, milestones } = this.props;
     const { totalDuration } = this.state;
     const currentDate = this._currentDate();
     const durationString = this._displayTime(totalDuration);
-    const hideTimeline = this.state.hideTimeline || undefined === startDate || undefined === endDate;
-    const hasMilestones = this.props.milestones && this.props.milestones.length > 0 ? true : false;
+    // const miniMode = this.state.hideTimeline || undefined === startDate || undefined === endDate;
+    // const hasMilestones = this.props.milestones && this.props.milestones.length > 0 ? true : false;
     const hasDates = this.props.startDate && this.props.endDate ? true : false;
+    const miniMode = this.state.hideTimeline || !hasDates;
+
     return (
       <div className="timeline-component">
-        {!hideTimeline &&
-          <div className="header">
-            <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
-            {hasMilestones &&
-              <><PlayerButton className="play-backward" onClick={this._onBackward}>
+        {!miniMode &&
+          <>
+            <div className="header">
+              <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
+              <PlayerButton className="play-backward" onClick={this._onBackward}>
                 <span className="icon icon-caret-left"></span>
               </PlayerButton>
-                <PlayerButton className="play-button-step" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause}>
-                  <span className="icon icon-media-controls-circular-play"></span>
-                </PlayerButton>
-                <PlayerButton className="play-forward" onClick={this._onForward}>
-                  <span className="icon icon-caret-right"></span>
-                </PlayerButton></>}
-            <PlayerButton className="play-repeat" onClick={this._onForward}>
-              <span className="icon icon-placeholder"></span>
-            </PlayerButton>
-            {
-              hasDates &&
-              <><span className="current-date">{currentDate.toLocaleDateString()}</span>
-                <span className="timeline-settings icon icon-settings" ref={(element) => { this._settings = element; }} onClick={this._onSettingsClick} ></span>
-                <Popup position={Position.TopRight} target={this._settings} isOpen={this.state.isSettingsOpen} onClose={this._onSettingsClick} >
-                  <div className="settings-content">
-                    <div>
-                      <span>Show Timeline:</span>
-                      <Toggle showCheckmark={true} isOn={!this.state.hideTimeline} onChange={this._onHideTimelineChanged} />
-                    </div>
-                  </div>
-                </Popup>
-              </>
-            }
-          </div>
-        }
-        {!hideTimeline &&
-          <Timeline
-            className="timeline-timeline"
-            startDate={startDate!}
-            endDate={endDate!}
-            selectedDate={currentDate}
-            milestones={milestones}
-            isPlaying={this.state.isPlaying}
-          />
+              <PlayerButton className="play-button-step" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause}>
+                <span className="icon icon-media-controls-circular-play"></span>
+              </PlayerButton>
+              <PlayerButton className="play-forward" onClick={this._onForward}>
+                <span className="icon icon-caret-right"></span>
+              </PlayerButton>
+              <span className="current-date">{currentDate.toLocaleDateString()}</span>
+              {this._renderSettings()}
+            </div>
+            <Timeline
+              className="timeline-timeline"
+              startDate={startDate!}
+              endDate={endDate!}
+              selectedDate={currentDate}
+              milestones={milestones}
+              isPlaying={this.state.isPlaying} />
+          </>
         }
         <div className="scrubber">
-          {(this.state.hideTimeline || !hasDates) && <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />}
+          {miniMode && <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />}
           <span className="start-time">00:00</span>
           <Scrubber
             className="scrubber-scrubber"
@@ -232,9 +254,9 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
             totalDuration={totalDuration}
             isPlaying={this.state.isPlaying}
             onChange={this._onTimelineChange}
-            onUpdate={this._onTimelineChange}
-          />
+            onUpdate={this._onTimelineChange} />
           <InlineEdit className="end-time" defaultValue={durationString} onChange={this._onTotalDurationChange} />
+          {miniMode && this._renderSettings()}
         </div>
       </div>
     );

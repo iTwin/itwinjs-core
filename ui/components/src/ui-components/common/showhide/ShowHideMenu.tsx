@@ -7,7 +7,7 @@
 import * as React from "react";
 import { GlobalContextMenu, GlobalContextMenuProps, ContextMenuDivider, ContextMenuItem } from "@bentley/ui-core";
 import { ShowHideItem, ShowHideID } from "./ShowHideItem";
-import UiComponents from "../../UiComponents";
+import { UiComponents } from "../../UiComponents";
 import { ShowHideDialog } from "./ShowHideDialog";
 
 /** Properties for the [[ShowHideMenu]] component

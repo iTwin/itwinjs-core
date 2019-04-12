@@ -28,6 +28,7 @@ export * from "./QPoint";
 export * from "./SubCategoryAppearance";
 export * from "./Snapping";
 export * from "./TileProps";
+export * from "./SpatialClassificationProps";
 export * from "./Thumbnail";
 export * from "./ViewProps";
 export * from "./Render";

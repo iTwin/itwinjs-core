@@ -6,10 +6,12 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Nested.scss";
 
-/** Properties of [[Nested]] component. */
+/** Properties of [[Nested]] component.
+ * @alpha
+ */
 export interface NestedProps extends CommonProps {
   /** Nested settings label. */
   label?: string;
@@ -17,7 +19,9 @@ export interface NestedProps extends CommonProps {
   backButton?: React.ReactNode;
 }
 
-/** Nested tool settings component. Used as content in [[ToolSettings]] and [[Toggle]] components. */
+/** Nested tool settings component. Used as content in [[ToolSettings]] and [[Toggle]] components.
+ * @alpha
+ */
 export class Nested extends React.PureComponent<NestedProps> {
   public render() {
     const className = classnames(

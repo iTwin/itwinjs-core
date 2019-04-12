@@ -11,16 +11,7 @@ import { SnapMode } from "@bentley/imodeljs-frontend";
 import { ConfigurableUiActions } from "../configurableui/state";
 import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
-import {
-  SnapModeIndicator, SnapModeIcon, SnapModeDialog as SnapModeDialogComponent, Snap as SnapRow,
-  SnapModeDialogContent as SnapModeDialogContentComponent, withContainIn, containHorizontally,
-} from "@bentley/ui-ninezone";
-import { withOnOutsideClick } from "@bentley/ui-core";
-
-// tslint:disable-next-line: variable-name
-const SnapModeDialog = withOnOutsideClick(SnapModeDialogComponent, undefined, false);
-// tslint:disable-next-line: variable-name
-const SnapModeDialogContent = withContainIn(SnapModeDialogContentComponent);
+import { SnapMode as NZ_SnapMode, SnapModePanel, Snap, FooterPopup, FooterPopupContentType } from "@bentley/ui-ninezone";
 
 // cSpell:ignore multione
 /** Defines properties supported by the SnapMode Field Component.
@@ -55,9 +46,11 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
     { label: UiFramework.i18n.translate("UiFramework:snapModeField.midpoint"), value: SnapMode.MidPoint as number, iconName: "snaps-midpoint" },
     { label: UiFramework.i18n.translate("UiFramework:snapModeField.bisector"), value: SnapMode.Bisector as number, iconName: "snaps-bisector" },
   ];
+  private _target = React.createRef<HTMLDivElement>();
+  private _indicator = React.createRef<HTMLDivElement>();
 
-  constructor(props?: any, context?: any) {
-    super(props, context);
+  constructor(props: SnapModeFieldProps) {
+    super(props);
 
     const instance = this.constructor;
     this._className = instance.name;
@@ -81,29 +74,47 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
   /** Standard React render method. */
   public render(): React.ReactNode {
     return (
-      <SnapModeIndicator
-        label={this.props.isInFooterMode ? UiFramework.i18n.translate("UiFramework:snapModeField.snapMode") : undefined}
-        onClick={this._handleSnapModeIndicatorClick}
-        icon={
-          <SnapModeIcon className="nz-footer-icon">
-            <i className={`icon icon-${this.getSnapModeIconNameFromMode(this.props.snapMode)}`} />
-          </SnapModeIcon>
-        }
-        dialog={
-          this.props.openWidget !== this._className ? undefined :
-            <SnapModeDialog
-              content={
-                <SnapModeDialogContent
-                  containFn={containHorizontally}
-                  snaps={this.getSnapEntries()}
-                  title={UiFramework.i18n.translate("UiFramework:snapModeField.snapMode")}
-                />
-              }
-              onOutsideClick={this._handleDialogOutsideClick}
-            />
-        }
-      />
+      <>
+        <div ref={this._target}>
+          <NZ_SnapMode
+            icon={
+              <i className={`icon icon-${this.getSnapModeIconNameFromMode(this.props.snapMode)}`} />
+            }
+            indicatorRef={this._indicator}
+            isInFooterMode={this.props.isInFooterMode}
+            onClick={this._handleSnapModeIndicatorClick}
+          >
+            {this.props.isInFooterMode ? UiFramework.i18n.translate("UiFramework:snapModeField.snapMode") : undefined}
+          </NZ_SnapMode>
+        </div>
+        <FooterPopup
+          contentType={FooterPopupContentType.Panel}
+          isOpen={this.props.openWidget === this._className}
+          onClose={this._handleClose}
+          onOutsideClick={this._handleOutsideClick}
+          target={this._target}
+        >
+          <SnapModePanel
+            title={UiFramework.i18n.translate("UiFramework:snapModeField.snapMode")}
+          >
+            {this.getSnapEntries()}
+          </SnapModePanel>
+        </FooterPopup>
+      </>
     );
+  }
+
+  private _handleClose = () => {
+    this.setOpenWidget(null);
+  }
+
+  private _handleOutsideClick = (e: MouseEvent) => {
+    if (!this._indicator.current ||
+      !(e.target instanceof Node) ||
+      this._indicator.current.contains(e.target))
+      return;
+
+    this._handleClose();
   }
 
   /** Return array of SnapRow elements, one for each support snap mode. This array will populate the pop-up used
@@ -112,17 +123,16 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
   private getSnapEntries(): JSX.Element[] {
     return this._snapModeFieldArray.map((item: SnapModeFieldEntry, index: number) => {
       return (
-        <SnapRow
+        <Snap
           key={`SM_${index}`}
           onClick={() => this._handleSnapModeFieldClick(item.value)}
           isActive={(this.props.snapMode & item.value) === item.value}
-          label={item.label}
           icon={
-            <SnapModeIcon isActive={(this.props.snapMode & item.value) === item.value}>
-              <i className={`icon icon-${item.iconName}`} /> :
-            </SnapModeIcon>
+            <i className={`icon icon-${item.iconName}`} />
           }
-        />
+        >
+          {item.label}
+        </Snap >
       );
     });
   }
@@ -139,10 +149,6 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
       this.setOpenWidget(null);
     else
       this.setOpenWidget(this._className);
-  }
-
-  private _handleDialogOutsideClick = () => {
-    this.setOpenWidget(null);
   }
 
   /** Opens the pop-up window. */

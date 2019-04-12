@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
-import HighlightingEngine from "../../ui-components/tree/HighlightingEngine";
+import { HighlightingEngine } from "../../ui-components/tree/HighlightingEngine";
 import { BeInspireTreeNode } from "../../ui-components/tree/component/BeInspireTree";
 
 const simulateNode = (id: string): BeInspireTreeNode<any> => {

@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<SnapModeIndicator /> renders correctly 1`] = `
-<div
+exports[`<SnapMode /> renders correctly 1`] = `
+<FooterIndicator
   className="nz-footer-snapMode-indicator"
 >
   <div
@@ -11,14 +11,11 @@ exports[`<SnapModeIndicator /> renders correctly 1`] = `
       className="nz-icon"
     />
   </div>
-  <div
-    className="nz-dialog"
-  />
-</div>
+</FooterIndicator>
 `;
 
-exports[`<SnapModeIndicator /> renders correctly with label 1`] = `
-<div
+exports[`<SnapMode /> renders correctly with label 1`] = `
+<FooterIndicator
   className="nz-footer-snapMode-indicator"
 >
   <div
@@ -33,8 +30,5 @@ exports[`<SnapModeIndicator /> renders correctly with label 1`] = `
       className="nz-icon"
     />
   </div>
-  <div
-    className="nz-dialog"
-  />
-</div>
+</FooterIndicator>
 `;

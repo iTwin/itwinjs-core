@@ -25,14 +25,27 @@ export interface SignInProps {
  * @public
  */
 export class SignIn extends React.Component<SignInProps> {
-
   constructor(props: SignInProps) {
     super(props);
   }
 
+  public componentDidMount() {
+    if (OidcClientWrapper.oidcClient)
+      OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
+  }
+
+  private _onUserStateChanged() {
+    if (OidcClientWrapper.oidcClient.isAuthorized && this.props.onSignedIn)
+      this.props.onSignedIn();
+  }
+
+  public componentWillUnmount() {
+    if (OidcClientWrapper.oidcClient)
+      OidcClientWrapper.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+  }
+
   private _onStartSignin = async () => {
-    await OidcClientWrapper.oidcClient.signIn(new ClientRequestContext());
-    this.props.onSignedIn();
+    OidcClientWrapper.oidcClient.signIn(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
   }
 
   public render() {

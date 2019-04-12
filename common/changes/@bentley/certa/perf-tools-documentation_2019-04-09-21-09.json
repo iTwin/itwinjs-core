@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "\"Adds copyright header to readme\"",
+      "packageName": "@bentley/certa",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/certa",
+  "email": "akshay.madhukar@bentley.com"
+}

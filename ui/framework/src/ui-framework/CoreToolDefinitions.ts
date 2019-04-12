@@ -7,10 +7,6 @@
 // cSpell:ignore configurableui
 import { FitViewTool, FlyViewTool, IModelApp, PanViewTool, RotateViewTool, SelectionTool, ViewToggleCameraTool, WalkViewTool, WindowAreaTool, ZoomViewTool } from "@bentley/imodeljs-frontend";
 import { ToolItemDef } from "./shared/Item";
-import { ContentViewManager } from "./content/ContentViewManager";
-import { BaseItemState } from "./shared/ItemDefBase";
-import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
-import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 
 /** Utility Class that provides definitions of tools provided by iModel.js core. These definitions can be used to populate the UI.
  * @public
@@ -103,28 +99,6 @@ export class CoreTools {
       label: () => FlyViewTool.flyover,
       tooltip: () => FlyViewTool.description,
       execute: () => { IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView); },
-    });
-  }
-
-  public static get analysisAnimationCommand() {
-    return new ToolItemDef({
-      toolId: AnalysisAnimationTool.toolId,
-      iconSpec: "icon-camera-animation",
-      label: () => AnalysisAnimationTool.flyover,
-      tooltip: () => AnalysisAnimationTool.description,
-      execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
-      isVisible: false, // default to not show and then allow stateFunc to redefine.
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-
-        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle))
-          returnState.isVisible = true;
-        else
-          returnState.isVisible = false;
-        return returnState;
-      },
     });
   }
 }

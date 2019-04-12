@@ -10,7 +10,7 @@ import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";
 import {
   TreeNode as TreeNodeBase, NodeCheckboxProps as CheckboxProps, Omit,
-  CheckBoxState, NodeCheckboxRenderer, shallowDiffers,
+  CheckBoxState, NodeCheckboxRenderer, shallowDiffers, CommonProps,
 } from "@bentley/ui-core";
 import { TreeNodeContent } from "./NodeContent";
 import { CellEditingEngine } from "../CellEditingEngine";
@@ -32,7 +32,7 @@ export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
  * Properties for [[TreeNode]] React component
  * @internal
  */
-export interface TreeNodeProps {
+export interface TreeNodeProps extends CommonProps {
   node: BeInspireTreeNode<TreeNodeItem>;
   checkboxProps?: NodeCheckboxProps;
   onClick?: (e: React.MouseEvent) => void;
@@ -107,6 +107,8 @@ export class TreeNode extends React.Component<TreeNodeProps> {
     return (
       <TreeNodeBase
         data-testid={TreeTest.TestId.Node}
+        className={this.props.className}
+        style={this.props.style}
         isExpanded={this.props.node.expanded()}
         isSelected={this.props.node.selected()}
         isLoading={this.props.node.loading()}

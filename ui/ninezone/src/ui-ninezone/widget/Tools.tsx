@@ -6,10 +6,13 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
+import { NoChildrenProps } from "../utilities/Props";
 import "./Tools.scss";
 
-/** Properties of [[Tools]] component. */
+/** Properties of [[Tools]] component.
+ * @alpha
+ */
 export interface ToolsProps extends CommonProps, NoChildrenProps {
   /**
    * Button displayed between horizontal and vertical toolbars.
@@ -29,9 +32,9 @@ export interface ToolsProps extends CommonProps, NoChildrenProps {
   preserveSpace?: boolean;
 }
 
-/**
- * Tools widget is used in Tools (Zone 1) and Navigation (Zone 3) zones of 9-Zone UI.
+/** Tools widget is used in Tools (Zone 1) and Navigation (Zone 3) zones of 9-Zone UI.
  * @note Should be placed in [[Zone]] component.
+ * @alpha
  */
 export class Tools extends React.PureComponent<ToolsProps> {
   public render() {

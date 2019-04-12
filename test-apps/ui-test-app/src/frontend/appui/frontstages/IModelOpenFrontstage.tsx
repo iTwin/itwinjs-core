@@ -8,7 +8,7 @@ import {
   Frontstage, IModelInfo,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
-import { IModelOpen } from "../openimodel/IModelOpen";
+import { IModelOpen } from "../imodelopen/IModelOpen";
 
 class IModelOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

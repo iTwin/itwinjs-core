@@ -8,6 +8,7 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { CheckBoxInfo } from '@bentley/ui-core';
 import { CheckBoxState } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
+import { CommonProps } from '@bentley/ui-core';
 import { ConnectDragPreview } from 'react-dnd';
 import { ConnectDragSource } from 'react-dnd';
 import { ConnectDropTarget } from 'react-dnd';
@@ -66,7 +67,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     }
 
 // @beta
-export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
     alpha: number;
     isHorizontal?: boolean;
     onAlphaChange?: ((alpha: number) => void) | undefined;
@@ -120,7 +121,7 @@ export abstract class BasePointTypeConverter extends TypeConverter {
     sortCompare(a: Primitives.Point, b: Primitives.Point, _ignoreCase?: boolean): number;
 }
 
-// @beta
+// @alpha
 export class BaseTimelineDataProvider implements TimelineDataProvider {
     // (undocumented)
     deleteMilestones(milestonesToDelete: Milestone[]): Promise<boolean>;
@@ -447,7 +448,7 @@ export interface BreadcrumbDetailsDragDropProps<DragDropObject = any> {
 export type BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider;
 
 // @beta
-export interface BreadcrumbDetailsProps {
+export interface BreadcrumbDetailsProps extends CommonProps {
     // (undocumented)
     columns?: ColumnDescription[];
     onChildrenLoaded?: (parent: TreeNodeItem, children: TreeNodeItem[]) => void;
@@ -554,7 +555,7 @@ export class BreadcrumbPath {
 }
 
 // @beta
-export interface BreadcrumbProps {
+export interface BreadcrumbProps extends CommonProps {
     background?: boolean;
     dataProvider: TreeDataProvider;
     delimiter?: string;
@@ -643,7 +644,7 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     }
 
 // @beta
-export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     activeColor: ColorDef;
     colorDefs?: ColorDef[];
     disabled?: boolean;
@@ -664,7 +665,7 @@ export class ColorPropertyEditor extends PropertyEditorBase {
 export const ColorSwatch: React.FunctionComponent<ColorSwatchProps>;
 
 // @beta
-export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDef: ColorDef;
     onColorPick?: ((color: ColorDef, e: React.MouseEvent) => void) | undefined;
     round?: boolean;
@@ -809,7 +810,7 @@ export interface DragDropArguments<DragDropObject = any> {
 }
 
 // @beta
-export interface DragLayerProps<DragDropObject = any> {
+export interface DragLayerProps<DragDropObject = any> extends CommonProps {
     // (undocumented)
     args?: DragSourceArguments<DragDropObject>;
 }
@@ -901,18 +902,13 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 }
 
 // @beta
-export interface EditorContainerProps {
+export interface EditorContainerProps extends CommonProps {
     // @internal (undocumented)
     ignoreEditorBlur?: boolean;
-    // (undocumented)
     onCancel: () => void;
-    // (undocumented)
     onCommit: (args: PropertyUpdatedArgs) => void;
-    // (undocumented)
     propertyRecord: PropertyRecord;
-    // (undocumented)
     setFocus?: boolean;
-    // (undocumented)
     title?: string;
 }
 
@@ -1001,7 +997,7 @@ export class FilteringInput extends React.Component<FilteringInputProps, Filteri
 }
 
 // @public
-export interface FilteringInputProps {
+export interface FilteringInputProps extends CommonProps {
     filteringInProgress: boolean;
     onFilterCancel: () => void;
     onFilterClear: () => void;
@@ -1046,6 +1042,21 @@ export interface HighlightableTreeProps {
     searchText: string;
 }
 
+// @internal (undocumented)
+export class HighlightingEngine {
+    constructor(props: HighlightableTreeProps);
+    // (undocumented)
+    static readonly ACTIVE_CLASS_NAME = "components-activehighlight";
+    // (undocumented)
+    createRenderProps(node: BeInspireTreeNode<any>): HighlightableTreeNodeProps;
+    // (undocumented)
+    getActiveMatchIndex(node: BeInspireTreeNode<any>): number | undefined;
+    // (undocumented)
+    isNodeActive(node: BeInspireTreeNode<any>): boolean | undefined;
+    // (undocumented)
+    static renderNodeLabel(text: string, props: HighlightableTreeNodeProps): React.ReactNode;
+    }
+
 // @public
 export type HorizontalAlignment = "left" | "center" | "right" | "justify";
 
@@ -1060,7 +1071,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     }
 
 // @beta
-export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
     hsv: HSVColor;
     isHorizontal?: boolean;
     onHueChange?: ((hue: HSVColor) => void) | undefined;
@@ -1225,7 +1236,7 @@ export interface LoadedImage {
 // @public
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
 
-// @beta
+// @alpha
 export interface Milestone {
     // (undocumented)
     children?: Milestone[];
@@ -1239,7 +1250,7 @@ export interface Milestone {
     readonly?: boolean;
 }
 
-// @beta
+// @alpha
 export interface MilestoneRange {
     // (undocumented)
     end: Date;
@@ -1373,10 +1384,10 @@ export interface PageOptions {
     start?: number;
 }
 
-// @beta
+// @alpha
 export type PlaybackPointerChangeHandler = (pointerValue: number) => void;
 
-// @beta
+// @alpha
 export interface PlaybackSettings {
     allowMilestoneEdits?: boolean;
     dateDisplay?: TimelineDateDisplay;
@@ -1387,7 +1398,7 @@ export interface PlaybackSettings {
     playbackStart?: Date;
 }
 
-// @beta
+// @alpha
 export type PlaybackSettingsChangeHandler = (settings: PlaybackSettings) => void;
 
 // @public
@@ -1453,7 +1464,7 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
     }
 
 // @public
-export interface PropertyCategoryBlockProps {
+export interface PropertyCategoryBlockProps extends CommonProps {
     category: PropertyCategory;
     onExpansionToggled?: (categoryName: string) => void;
 }
@@ -1530,16 +1541,11 @@ export class PropertyEditorManager {
 }
 
 // @beta
-export interface PropertyEditorProps {
-    // (undocumented)
+export interface PropertyEditorProps extends CommonProps {
     onBlur?: (event: React.FocusEvent) => void;
-    // (undocumented)
     onCancel?: () => void;
-    // (undocumented)
     onCommit?: (args: PropertyUpdatedArgs) => void;
-    // (undocumented)
     propertyRecord?: PropertyRecord;
-    // (undocumented)
     setFocus?: boolean;
 }
 
@@ -1578,7 +1584,7 @@ export interface PropertyGridContextMenuArgs {
 }
 
 // @public
-export interface PropertyGridProps {
+export interface PropertyGridProps extends CommonProps {
     dataProvider: IPropertyDataProvider;
     // @beta
     isPropertyEditingEnabled?: boolean;
@@ -1712,7 +1718,7 @@ export class ResultSelector extends React.Component<ResultSelectorProps, ResultS
 }
 
 // @public
-export interface ResultSelectorProps {
+export interface ResultSelectorProps extends CommonProps {
     onSelectedChanged: (index: number) => void;
     resultCount: number;
 }
@@ -1741,7 +1747,7 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     }
 
 // @beta
-export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
     hsv: HSVColor;
     onSaturationChange?: ((saturation: HSVColor) => void) | undefined;
 }
@@ -1866,12 +1872,9 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
     }
 
 // @public
-export interface SignInProps {
-    // (undocumented)
+export interface SignInProps extends CommonProps {
     onOffline?: () => void;
-    // (undocumented)
     onRegister?: () => void;
-    // (undocumented)
     onSignIn: () => void;
 }
 
@@ -2043,7 +2046,7 @@ export class StructPropertyValueRenderer implements IPropertyValueRenderer {
 // @public
 export class Table extends React.Component<TableProps, TableState> {
     // @internal
-    constructor(props: TableProps, context?: any);
+    constructor(props: TableProps);
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -2149,7 +2152,7 @@ export interface TableNonPrimitiveValueRendererProps extends SharedTableNonPrimi
 }
 
 // @public
-export interface TableProps {
+export interface TableProps extends CommonProps {
     dataProvider: TableDataProvider;
     isCellSelected?: (rowIndex: number, cell: CellItem) => boolean;
     isRowSelected?: (row: RowItem) => boolean;
@@ -2183,7 +2186,7 @@ export class TableRow extends React.Component<TableRowProps> {
 }
 
 // @internal
-export interface TableRowProps {
+export interface TableRowProps extends CommonProps {
     // (undocumented)
     cells: {
         [key: string]: React.ReactNode;
@@ -2237,7 +2240,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     readonly state: Readonly<TextEditorState>;
     }
 
-// @beta
+// @alpha
 export interface TimelineDataProvider {
     deleteMilestones(milestones: Milestone[]): Promise<boolean>;
     end?: Date;
@@ -2255,20 +2258,20 @@ export interface TimelineDataProvider {
     updateSettings(settings: PlaybackSettings): void;
 }
 
-// @beta
+// @alpha
 export const enum TimelineDateDisplay {
     ActualTime = 0,
     ProjectTime = 1
 }
 
-// @beta
+// @alpha
 export const enum TimelineDetail {
     Full = 2,
     Medium = 1,
     Minimal = 0
 }
 
-// @beta
+// @alpha
 export const enum TimelineScale {
     Days = 3,
     Hours = 4,
@@ -2314,7 +2317,7 @@ export const toNodes: <TPayload>(inspireNodes: Inspire.TreeNodes) => BeInspireTr
 // @public
 export class Tree extends React.Component<TreeProps, TreeState> {
     // @internal
-    constructor(props: TreeProps, context?: any);
+    constructor(props: TreeProps);
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -2400,7 +2403,7 @@ export interface TreeNodeItem {
 }
 
 // @public
-export interface TreeProps {
+export interface TreeProps extends CommonProps {
     // @beta
     cellEditing?: EditableTreeProps;
     checkboxInfo?: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
@@ -2516,9 +2519,11 @@ export interface ViewIdChangedEventArgs {
     viewport: Viewport;
 }
 
+// Warning: (ae-forgotten-export) The symbol "ViewportState" needs to be exported by the entry point ui-components.d.ts
+// 
 // @public
-export class ViewportComponent extends React.Component<ViewportProps> {
-    constructor(props: ViewportProps, context?: any);
+export class ViewportComponent extends React.Component<ViewportProps, ViewportState> {
+    constructor(props: ViewportProps);
     // (undocumented)
     componentDidMount(): Promise<void>;
     // (undocumented)
@@ -2560,7 +2565,9 @@ export class ViewportComponentEvents {
 }
 
 // @public
-export interface ViewportProps {
+export interface ViewportProps extends CommonProps {
+    // @internal (undocumented)
+    getViewOverlay?: (viewState: ViewState) => React.ReactNode;
     imodel: IModelConnection;
     // @internal (undocumented)
     onContextMenu?: (e: React.MouseEvent) => boolean;
@@ -2640,7 +2647,7 @@ export function withTreeDragDrop<P extends TreeProps, DragDropObject extends Tre
 
 // Warnings were encountered during analysis:
 // 
-// src/ui-components/filtering/FilteringInput.tsx:64:7 - (ae-incompatible-release-tags) The symbol "context" is marked as @public, but its signature references "InputContext" which is marked as @internal
+// src/ui-components/filtering/FilteringInput.tsx:65:7 - (ae-incompatible-release-tags) The symbol "context" is marked as @public, but its signature references "InputContext" which is marked as @internal
 
 // (No @packageDocumentation comment for this package)
 

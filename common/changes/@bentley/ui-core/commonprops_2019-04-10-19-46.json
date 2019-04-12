@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added CommonProps to many component Props in ui-core & ui-components",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

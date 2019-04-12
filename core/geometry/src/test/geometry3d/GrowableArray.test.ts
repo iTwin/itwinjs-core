@@ -20,7 +20,10 @@ import { Angle } from "../../geometry3d/Angle";
 import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray";
 
 /* tslint:disable: no-console */
-
+/** point whose coordinates are a function of i only. */
+function testPointI(i: number): Point3d {
+  return Point3d.create(i, 2 * i + 1, i * i * 3 + i * 2 - 4);
+}
 describe("GrowableFloat64Array.HelloWorld", () => {
   it("SizeChanges", () => {
     const ck = new Checker();
@@ -590,4 +593,65 @@ describe("GrowablePoint3dArray", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("Coverage", () => {
+    const ck = new Checker();
+    const dataA = new GrowableXYZArray();
+    const dataB = new GrowableXYZArray();
+    for (let i = 0; i < 5; i++) {
+      dataA.push(testPointI(i));
+    }
+    for (let j = 0; j < 3; j++) {
+      dataB.push(testPointI(2 * j));
+    }
+
+    for (let i = 0; i < dataA.length; i++) {
+      for (let j = 0; j < dataB.length; j++) {
+        ck.testCoordinate(GrowableXYZArray.distanceBetweenPointsIn2Arrays(dataA, i, dataB, j)!,
+          testPointI(i).distance(testPointI(2 * j)));
+        const pointA2 = dataA.getPoint2dAtCheckedPointIndex(i)!;
+        const pointB2 = dataB.getPoint2dAtUncheckedPointIndex(j);
+        const pointA3 = dataA.getPoint3dAtCheckedPointIndex(i)!;
+        const pointB3 = dataB.getPoint3dAtUncheckedPointIndex(j);
+        ck.testCoordinate(pointA2.distance(pointB2), pointB3.distanceXY(pointA3));
+      }
+    }
+    for (const i of [-2, 12]) {
+      ck.testUndefined(dataA.getPoint2dAtCheckedPointIndex(i));
+      for (const j of [24, -3]) {
+        ck.testUndefined(GrowableXYZArray.distanceBetweenPointsIn2Arrays(dataA, i, dataB, j));
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("TransformingNormals", () => {
+    const ck = new Checker();
+    const dataA = new GrowableXYZArray();
+    ck.testFalse(dataA.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(Matrix3d.createScale(0, 1, 0)), "Singular Matrix should fail");
+
+    const matrix = Matrix3d.createRowValues(
+      6, -3, 1,
+      4, 9, 2,
+      -1, 4, 8);
+    const matrixTranspose = matrix.transpose();
+    dataA.pushXYZ(1, 0, 0);
+    ck.testTrue(dataA.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix), "Normal transform with good data");
+    dataA.pushXYZ(0, 0, 0);
+    ck.testFalse(dataA.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix), "Normal transform with bad data");
+
+    dataA.clear();
+    for (let i = 0; i < 5; i++) {
+      dataA.push(testPointI(i));
+    }
+    const matrixInverseTranspose = matrixTranspose.inverse()!;
+    const dataB = dataA.clone();
+    ck.testTrue(dataA.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix));
+    dataB.multiplyMatrix3dInPlace(matrixInverseTranspose);
+    for (let i = 0; i < dataA.length; i++) {
+      const vectorA = dataA.getVector3dAtCheckedVectorIndex(i)!;
+      const vectorB = dataB.getVector3dAtCheckedVectorIndex(i)!;
+      ck.testCoordinate(vectorA.magnitude(), 1.0);
+      ck.testParallel(vectorA, vectorB);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

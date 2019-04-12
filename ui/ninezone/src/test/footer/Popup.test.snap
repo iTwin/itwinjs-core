@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<FooterPopup /> renders correctly 1`] = `
+<Popup
+  className="nz-footer-popup nz-content-dialog"
+  isOpen={false}
+  left={-1}
+  offset={4}
+  position={4}
+  showArrow={true}
+  showShadow={false}
+  target={null}
+  top={-1}
+/>
+`;

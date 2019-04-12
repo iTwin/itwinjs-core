@@ -117,6 +117,7 @@ export abstract class ViewState extends ElementState {
       this.categorySelector = categorySelector.categorySelector.clone();
       this.displayStyle = categorySelector.displayStyle.clone();
       this._extentLimits = categorySelector._extentLimits;
+      this._auxCoordSystem = categorySelector._auxCoordSystem;
     }
   }
 
@@ -277,7 +278,6 @@ export abstract class ViewState extends ElementState {
   /** @internal */
   public createScene(context: SceneContext): void {
     this.forEachTileTreeModel((model: TileTreeModelState) => this.addModelToScene(model, context));
-
   }
 
   /** @internal */
@@ -287,7 +287,9 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public createClassification(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => SpatialClassification.addModelClassifierToScene(model, context)); }
+  public createClassification(context: SceneContext): void {
+    this.forEachTileTreeModel((model: TileTreeModelState) => SpatialClassification.addModelClassifierToScene(model, context));
+  }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
    * @internal
@@ -367,7 +369,11 @@ export abstract class ViewState extends ElementState {
       let zFront = zBack + zDelta;            // Distance from eye to frontplane.
 
       if (zFront / zBack < Viewport.nearScale24) {
-        const maximumBackClip = 10000 * Constant.oneKilometer;
+        // In this case we are running up against the zBuffer resolution limitation (currently 24 bits).
+        // Set back clipping plane at 10 kilometer which gives us a front clipping plane about 3 meters.
+        // Decreasing the maximumBackClip (MicroStation uses 1 kilometer) will reduce the minimum front
+        // clip, but also reduce the back clip (so far geometry may not be visible).
+        const maximumBackClip = 10 * Constant.oneKilometer;
         if (-zBack > maximumBackClip) {
           zBack = -maximumBackClip;
           eyeToOrigin.z = zBack;
@@ -1473,7 +1479,11 @@ export class SpatialViewState extends ViewState3d {
     val.modelSelectorId = this.modelSelector.id;
     return val;
   }
-  public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
+  public async load(): Promise<void> {
+    await super.load();
+    await this.displayStyle.loadContextRealityModels();
+    return this.modelSelector.load();
+  }
   public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
   public clearViewedModels() { this.modelSelector.models.clear(); }
   public addViewedModel(id: Id64String) { this.modelSelector.addModels(id); }

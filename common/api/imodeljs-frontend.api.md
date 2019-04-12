@@ -35,6 +35,7 @@ import { ColorDef } from '@bentley/imodeljs-common';
 import { ColorDefProps } from '@bentley/imodeljs-common';
 import { ColorIndex } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
+import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { CurvePrimitive } from '@bentley/geometry-core';
 import { DevToolsStatsOptions } from '@bentley/imodeljs-common';
 import { Dictionary } from '@bentley/bentleyjs-core';
@@ -147,6 +148,7 @@ import { SkyCubeProps } from '@bentley/imodeljs-common';
 import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
 import { SortedArray } from '@bentley/bentleyjs-core';
+import { SpatialClassificationProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StopWatch } from '@bentley/bentleyjs-core';
 import { StrokeOptions } from '@bentley/geometry-core';
@@ -514,7 +516,7 @@ export class AccuDrawHintBuilder {
     setXAxis2(xAxis: Vector3d): void;
 }
 
-// @public
+// @beta
 export class AccuDrawShortcuts {
     // (undocumented)
     static alignView(): void;
@@ -526,26 +528,16 @@ export class AccuDrawShortcuts {
     static defineACSByPoints(): void;
     // (undocumented)
     static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldAcceptInput" is marked as @public, but its signature references "ItemField" which is marked as @beta
-    // 
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldLockToggle" is marked as @public, but its signature references "ItemField" which is marked as @beta
-    // 
     // (undocumented)
     static itemFieldLockToggle(index: ItemField): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNavigate" is marked as @public, but its signature references "ItemField" which is marked as @beta
-    // 
     // (undocumented)
     static itemFieldNavigate(index: ItemField, str: string, forward: boolean): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNewInput" is marked as @public, but its signature references "ItemField" which is marked as @beta
-    // 
     // (undocumented)
     static itemFieldNewInput(index: ItemField): void;
     // (undocumented)
     static itemFieldUnlockAll(): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemRotationModeChange" is marked as @public, but its signature references "RotationMode" which is marked as @beta
-    // 
     // (undocumented)
     static itemRotationModeChange(rotation: RotationMode): void;
     // (undocumented)
@@ -582,8 +574,6 @@ export class AccuDrawShortcuts {
     static rotateToElement(updateCurrentACS: boolean): void;
     // (undocumented)
     static setOrigin(explicitOrigin?: Point3d): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "setStandardRotation" is marked as @public, but its signature references "RotationMode" which is marked as @beta
-    // 
     // (undocumented)
     static setStandardRotation(rotation: RotationMode): void;
     // (undocumented)
@@ -592,7 +582,7 @@ export class AccuDrawShortcuts {
     static writeACS(_acsName: string): BentleyStatus;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export abstract class AccuDrawTool {
     // (undocumented)
     activateAccuDrawOnStart(): boolean;
@@ -606,8 +596,6 @@ export abstract class AccuDrawTool {
     static installTool(shortcut: AccuDrawTool): boolean;
     // (undocumented)
     onDecorate(_context: DecorateContext): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "onManipulationComplete" is marked as @public, but its signature references "AccuDrawFlags" which is marked as @beta
-    // 
     // (undocumented)
     onManipulationComplete(): AccuDrawFlags;
     // (undocumented)
@@ -1269,7 +1257,7 @@ export class CategorySelectorState extends ElementState {
 // @beta
 export const enum ChangeFlag {
     // (undocumented)
-    All = 63,
+    All = 268435455,
     // (undocumented)
     AlwaysDrawn = 1,
     // (undocumented)
@@ -1283,9 +1271,11 @@ export const enum ChangeFlag {
     // (undocumented)
     None = 0,
     // (undocumented)
-    Overrides = 55,
+    Overrides = 268435447,
     // (undocumented)
     ViewedCategories = 4,
+    // (undocumented)
+    ViewedCategoriesPerModel = 64,
     // (undocumented)
     ViewedModels = 8
 }
@@ -1314,14 +1304,18 @@ export class ChangeFlags {
     // (undocumented)
     setViewedCategories(): void;
     // (undocumented)
+    setViewedCategoriesPerModel(): void;
+    // (undocumented)
     setViewedModels(): void;
     // (undocumented)
     readonly value: ChangeFlag;
     readonly viewedCategories: boolean;
+    // @alpha
+    readonly viewedCategoriesPerModel: boolean;
     readonly viewedModels: boolean;
 }
 
-// @public
+// @alpha
 export interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     offIconDefinition?: IconDefinition;
@@ -1339,6 +1333,26 @@ export const enum ClassifierType {
     Volume = 0
 }
 
+// @internal
+export const enum ClipOrientation {
+    // (undocumented)
+    Back = 4,
+    // (undocumented)
+    Bottom = 3,
+    // (undocumented)
+    Face = 7,
+    // (undocumented)
+    Front = 1,
+    // (undocumented)
+    Left = 2,
+    // (undocumented)
+    Right = 5,
+    // (undocumented)
+    Top = 0,
+    // (undocumented)
+    View = 6
+}
+
 // @public
 export const enum ClippingType {
     Mask = 1,
@@ -1346,7 +1360,7 @@ export const enum ClippingType {
     Planes = 2
 }
 
-// @public
+// @beta
 export const enum ClipResult {
     NewElements = 1,
     NotSupported = 0,
@@ -1417,8 +1431,18 @@ export class ContextRealityModelState implements TileTreeModelState {
     constructor(props: ContextRealityModelProps, iModel: IModelConnection);
     static findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
     // (undocumented)
+    readonly iModel: IModelConnection;
+    // (undocumented)
     protected _iModel: IModelConnection;
     intersectsProjectExtents(): Promise<boolean>;
+    // (undocumented)
+    readonly jsonProperties: {
+        [key: string]: any;
+    };
+    // (undocumented)
+    protected _jsonProperties: {
+        [key: string]: any;
+    };
     // (undocumented)
     readonly loadStatus: TileTree.LoadStatus;
     // (undocumented)
@@ -1442,7 +1466,7 @@ export class ContextRealityModelState implements TileTreeModelState {
     readonly url: string;
 }
 
-// @public
+// @alpha
 export class ConversionData implements UnitConversion {
     // (undocumented)
     factor: number;
@@ -1707,6 +1731,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     readonly hasSubCategoryOverride: boolean;
     is3d(): this is DisplayStyle3dState;
+    // @internal (undocumented)
+    loadContextRealityModels(): Promise<void>;
     monochromeColor: ColorDef;
     readonly name: string;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
@@ -1836,7 +1862,7 @@ export interface EditorPosition {
     rowPriority: number;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -1942,13 +1968,13 @@ export class ElementState extends EntityState implements ElementProps {
     readonly userLabel?: string;
 }
 
-// @public
+// @beta
 export const enum ElemMethod {
     Add = 0,
     Invert = 1
 }
 
-// @public
+// @beta
 export const enum ElemSource {
     Fence = 1,
     Pick = 0,
@@ -2074,7 +2100,7 @@ export class Environment implements EnvironmentProps {
     toJSON(): EnvironmentProps;
 }
 
-// @public
+// @beta
 export const enum ErrorNums {
     NoFence = 0,
     NoFenceElems = 1,
@@ -2168,7 +2194,7 @@ export namespace FeatureSymbology {
         weight?: number;
     }
     export class Overrides {
-        constructor(view?: ViewState);
+        constructor(view?: ViewState | Viewport);
         // @internal
         protected readonly _alwaysDrawn: Id64.Uint32Set;
         // @internal
@@ -2198,6 +2224,8 @@ export namespace FeatureSymbology {
         getSubCategoryOverridesById(id: Id64String): Appearance | undefined;
         // @internal
         initFromView(view: ViewState): void;
+        // @internal
+        initFromViewport(viewport: Viewport): void;
         // @internal (undocumented)
         protected isAlwaysDrawn(idLo: number, idHi: number): boolean;
         isAlwaysDrawnExclusive: boolean;
@@ -2208,12 +2236,16 @@ export namespace FeatureSymbology {
         protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean;
         isSubCategoryIdVisible(id: Id64String): boolean;
         // @internal
-        protected isSubCategoryVisible(idLo: number, idHi: number): boolean;
+        isSubCategoryVisible(idLo: number, idHi: number): boolean;
+        // @internal (undocumented)
+        isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean;
         readonly lineWeights: boolean;
         // @internal
         protected _lineWeights: boolean;
         // @internal
         protected readonly _modelOverrides: Id64.Uint32Map<Appearance>;
+        // @internal
+        protected readonly _modelSubCategoryOverrides: Id64.Uint32Map<Id64.Uint32Set>;
         // @internal
         protected readonly _neverDrawn: Id64.Uint32Set;
         // @internal
@@ -2405,20 +2437,14 @@ export class GeometricModel3dState extends GeometricModelState {
 // 
 // @public
 export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
-    // @beta
-    addSpatialClassifier(classifier: SpatialClassification.PropertiesProps): void;
     // @internal (undocumented)
     readonly asGeometricModel: GeometricModelState;
     // @internal (undocumented)
     readonly classifierTileTree: TileTree | undefined;
     // @internal (undocumented)
     protected _classifierTileTreeState: TileTreeState;
-    // @beta
-    getActiveSpatialClassifier(): number;
     // @internal
     getOrLoadTileTree(batchType: BatchType, edgesRequired: boolean): TileTree | undefined;
-    // @beta
-    getSpatialClassifier(index: number): SpatialClassification.Properties | undefined;
     readonly is2d: boolean;
     abstract readonly is3d: boolean;
     // @internal (undocumented)
@@ -2430,10 +2456,6 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     // @internal (undocumented)
     onIModelConnectionClose(): void;
     queryModelRange(): Promise<Range3d>;
-    // @beta
-    setActiveSpatialClassifier(classifierIndex: number, active: boolean): Promise<void>;
-    // @beta
-    setSpatialClassifier(index: number, classifier: SpatialClassification.Properties): void;
     // @internal
     readonly tileTree: TileTree | undefined;
     // @internal (undocumented)
@@ -2542,7 +2564,7 @@ export const enum GridOrientationType {
     WorldYZ = 2
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export interface GroupMark {
     // (undocumented)
     source: ModifyElementSource;
@@ -2563,7 +2585,7 @@ export class HilitedSet {
     readonly size: number;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export const enum HilitedState {
     No = 2,
     Unknown = 0,
@@ -2729,7 +2751,7 @@ export interface IconDefinition {
     isEnabledFunction?: () => boolean;
 }
 
-// @public
+// @alpha
 export interface IconEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     definition: IconDefinition;
@@ -2779,7 +2801,7 @@ export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 
 // @public
 export class IModelApp {
-    // Warning: (ae-incompatible-release-tags) The symbol "accuDraw" is marked as @public, but its signature references "AccuDraw" which is marked as @beta
+    // @beta
     static accuDraw: AccuDraw;
     static accuSnap: AccuSnap;
     static applicationId: string;
@@ -2802,6 +2824,7 @@ export class IModelApp {
     static locateManager: ElementLocateManager;
     static notifications: NotificationManager;
     protected static onStartup(): void;
+    // @alpha
     static quantityFormatter: QuantityFormatter;
     static readonly renderSystem: RenderSystem;
     static sessionId: GuidString;
@@ -2841,6 +2864,8 @@ export class IModelConnection extends IModel {
     fontMap?: FontMap;
     // Warning: (ae-incompatible-release-tags) The symbol "geoServices" is marked as @public, but its signature references "GeoServices" which is marked as @internal
     readonly geoServices: GeoServices;
+    // Warning: (ae-incompatible-release-tags) The symbol "getContextRealityModelTileTree" is marked as @public, but its signature references "TileTreeState" which is marked as @internal
+    getContextRealityModelTileTree(url: string): TileTreeState;
     getToolTipMessage(id: string): Promise<string[]>;
     readonly hilited: HilitedSet;
     // @alpha
@@ -3044,7 +3069,7 @@ export const enum ItemField {
     Z_Item = 4
 }
 
-// @public
+// @alpha
 export interface JsonEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     json: any;
@@ -3601,7 +3626,7 @@ export const enum ModifyElementSource {
     Unknown = 0
 }
 
-// @public
+// @alpha
 export interface MultilineTextEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     heightInRows: number;
@@ -3760,18 +3785,17 @@ export class OffScreenViewport extends Viewport {
     readonly viewRect: ViewRect;
 }
 
-// @public
+// @beta
 export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient {
     constructor(_configuration: OidcFrontendClientConfiguration);
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    handleRedirectCallback(): Promise<boolean>;
     readonly hasExpired: boolean;
     readonly hasSignedIn: boolean;
     initialize(requestContext: FrontendRequestContext): Promise<void>;
     readonly isAuthorized: boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined, message: string) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<AccessToken>;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    signIn(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
 
@@ -3952,6 +3976,20 @@ export class PerformanceMetrics {
     startNewFrame(sceneTime?: number): void;
 }
 
+// @alpha
+export namespace PerModelCategoryVisibility {
+    export const enum Override {
+        Hide = 2,
+        None = 0,
+        Show = 1
+    }
+    export interface Overrides {
+        clearOverrides(modelIds?: Id64Arg): void;
+        getOverride(modelId: Id64String, categoryId: Id64String): Override;
+        setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
+    }
+}
+
 // @internal
 export interface PingTestResult {
     avg: number | undefined;
@@ -4042,7 +4080,7 @@ export class PluginAdmin {
     static register(plugin: Plugin): string[] | undefined;
     }
 
-// @public (undocumented)
+// @public
 export namespace Primitives {
     // (undocumented)
     export type Boolean = boolean | string | {} | [];
@@ -4122,6 +4160,7 @@ export interface PropertyDescription {
     enum?: EnumerationChoicesInfo;
     // (undocumented)
     name: string;
+    // Warning: (ae-incompatible-release-tags) The symbol "quantityType" is marked as @public, but its signature references "QuantityType" which is marked as @alpha
     quantityType?: QuantityType | string;
     // (undocumented)
     typename: string;
@@ -4136,7 +4175,7 @@ export interface PropertyEditorInfo {
 }
 
 // @public
-export type PropertyEditorParams = JsonEditorParams | RangeEditorParams | SliderEditorParams | ButtonGroupEditorParams | MultilineTextEditorParams | IconEditorParams | CheckBoxIconsEditorParams | SuppressUnitLabelEditorParams | SuppressLabelEditorParams | InputEditorSizeParams | ColorEditorParams;
+export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams;
 
 // @public
 export enum PropertyEditorParamTypes {
@@ -4196,7 +4235,7 @@ export enum PropertyValueFormat {
     Struct = 2
 }
 
-// @public
+// @alpha
 export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     protected _activeSystemIsImperial: boolean;
@@ -4233,7 +4272,7 @@ export class QuantityFormatter implements UnitsProvider {
     useImperialFormats: boolean;
 }
 
-// @public
+// @alpha
 export enum QuantityType {
     // (undocumented)
     Angle = 2,
@@ -4249,7 +4288,7 @@ export enum QuantityType {
     Volume = 4
 }
 
-// @public
+// @alpha
 export interface RangeEditorParams extends BasePropertyEditorParams {
     maximum?: number;
     minimum?: number;
@@ -4548,7 +4587,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
     // @internal (undocumented)
-    createPlanarClassifier(_properties: SpatialClassification.Properties, _tileTree: TileTree, _classifiedModel: GeometricModelState, _sceneContext: SceneContext): RenderPlanarClassifier | undefined;
+    createPlanarClassifier(_properties: SpatialClassificationProps.Properties, _tileTree: TileTree, _classifiedModel: TileTreeModelState, _sceneContext: SceneContext): RenderPlanarClassifier | undefined;
     // @internal (undocumented)
     createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -5102,7 +5141,7 @@ export class SkySphere extends SkyBox {
     toJSON(): SkyBoxProps;
 }
 
-// @public
+// @alpha
 export interface SliderEditorParams extends BasePropertyEditorParams {
     intervals?: boolean;
     maximum: number;
@@ -5192,72 +5231,20 @@ export const enum SnapStatus {
 // @beta
 export namespace SpatialClassification {
     // @internal (undocumented)
-    export function addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void;
+    export function addModelClassifierToScene(classifiedModel: TileTreeModelState, context: SceneContext): void;
+    export function addSpatialClassifier(model: TileTreeModelState, classifier: SpatialClassificationProps.PropertiesProps): void;
     // @internal (undocumented)
     export function createClassifier(id: Id64String, iModel: IModelConnection): Promise<RenderClassifierModel | undefined>;
-    export const enum Display {
-        Dimmed = 2,
-        ElementColor = 4,
-        Hilite = 3,
-        Off = 0,
-        On = 1
-    }
-    export class Flags implements FlagsProps {
-        constructor(inside?: Display, outside?: Display);
-        // (undocumented)
-        inside: Display;
-        // (undocumented)
-        outside: Display;
-        // (undocumented)
-        selected: Display;
-        // (undocumented)
-        type: number;
-    }
-    export interface FlagsProps {
-        // (undocumented)
-        inside: SpatialClassification.Display;
-        // (undocumented)
-        outside: SpatialClassification.Display;
-        // (undocumented)
-        selected: SpatialClassification.Display;
-        // (undocumented)
-        type: number;
-    }
+    export function getActiveSpatialClassifier(model: TileTreeModelState): number;
     // @internal (undocumented)
-    export function getClassifierProps(model: GeometricModelState): Properties | undefined;
+    export function getClassifierProps(model: TileTreeModelState): SpatialClassificationProps.Properties | undefined;
+    export function getSpatialClassifier(model: TileTreeModelState, index: number): SpatialClassificationProps.Properties | undefined;
     // @internal (undocumented)
     export function loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
     // @internal (undocumented)
     export function loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
-    export class Properties implements PropertiesProps {
-        constructor(props: PropertiesProps);
-        // (undocumented)
-        expand: number;
-        // (undocumented)
-        flags: Flags;
-        // (undocumented)
-        isActive: boolean;
-        // (undocumented)
-        modelId: Id64String;
-        // (undocumented)
-        name: string;
-    }
-    export interface PropertiesProps {
-        expand: number;
-        // (undocumented)
-        flags: Flags;
-        // (undocumented)
-        isActive: boolean;
-        modelId: Id64String;
-        // (undocumented)
-        name: string;
-    }
-    export const enum Type {
-        // (undocumented)
-        Planar = 0,
-        // (undocumented)
-        Volume = 1
-    }
+    export function setActiveSpatialClassifier(model: TileTreeModelState, classifierIndex: number, active: boolean): Promise<void>;
+    export function setSpatialClassifier(model: TileTreeModelState, index: number, classifier: SpatialClassificationProps.Properties): void;
 }
 
 // @public
@@ -5402,15 +5389,41 @@ export interface StructValue extends BasePropertyValue {
 // @internal
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
+    // (undocumented)
+    clear(): void;
     getSubCategories(categoryId: string): Id64Set | undefined;
     getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined;
-    load(categoryIds: Id64Set): SubCategoriesRequest | undefined;
+    load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     // (undocumented)
     onIModelConnectionClose(): void;
     }
 
 // @internal
 export namespace SubCategoriesCache {
+    export class Queue {
+        // (undocumented)
+        protected _current?: QueueEntry;
+        dispose(): void;
+        // (undocumented)
+        protected _disposed: boolean;
+        // (undocumented)
+        readonly isEmpty: boolean;
+        // (undocumented)
+        protected _next?: QueueEntry;
+        push(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void;
+        // (undocumented)
+        protected _request?: SubCategoriesRequest;
+    }
+    // (undocumented)
+    export class QueueEntry {
+        constructor(categoryIds: Id64Set, func: QueueFunc);
+        // (undocumented)
+        readonly categoryIds: Id64Set;
+        // (undocumented)
+        readonly funcs: QueueFunc[];
+    }
+    // (undocumented)
+    export type QueueFunc = () => void;
     // (undocumented)
     export class Request {
         constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery?: number, maxSubCategoriesPerPage?: number);
@@ -5450,7 +5463,7 @@ export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.SuppressEditorLabel;
 }
 
-// @public
+// @alpha
 export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     type: PropertyEditorParamTypes.SuppressUnitLabel;
@@ -6258,6 +6271,12 @@ export namespace TileTree {
 // @beta
 export interface TileTreeModelState {
     // @internal (undocumented)
+    readonly iModel: IModelConnection;
+    // @internal (undocumented)
+    readonly jsonProperties: {
+        [key: string]: any;
+    };
+    // @internal (undocumented)
     readonly loadStatus: TileTree.LoadStatus;
     // @internal (undocumented)
     loadTileTree(batchType: BatchType, edgesRequired: boolean, animationId?: Id64String, classifierExpansion?: number): TileTree.LoadStatus;
@@ -6280,6 +6299,8 @@ export class TileTreeState {
     readonly iModel: IModelConnection;
     // (undocumented)
     loadStatus: TileTree.LoadStatus;
+    // (undocumented)
+    readonly modelId: string;
     // (undocumented)
     setTileTree(props: TileTreeProps, loader: TileLoader): void;
     // (undocumented)
@@ -6571,7 +6592,7 @@ export class TwoWayViewportSync {
     disconnect(): void;
     }
 
-// @public
+// @alpha
 export class Unit implements UnitProps {
     constructor(name: string, label: string, unitFamily: string);
     // (undocumented)
@@ -6584,21 +6605,21 @@ export class Unit implements UnitProps {
     unitFamily: string;
 }
 
-// @public
+// @beta
 export const enum UsesDragSelect {
     Box = 0,
     Line = 1,
     None = 2
 }
 
-// @public
+// @beta
 export const enum UsesFence {
     Check = 0,
     None = 2,
     Required = 1
 }
 
-// @public
+// @beta
 export const enum UsesSelection {
     Check = 0,
     None = 2,
@@ -6611,6 +6632,288 @@ export interface ViewChangeOptions {
     animationTime?: BeDuration;
     marginPercent?: MarginPercent;
     saveInUndo?: boolean;
+}
+
+// @internal
+export class ViewClipByElementTool extends ViewClipTool {
+    constructor(clipEventHandler?: ViewClipEventHandler, _alwaysUseRange?: boolean);
+    // (undocumented)
+    protected _alwaysUseRange: boolean;
+    // (undocumented)
+    protected doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange?: boolean): Promise<boolean>;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class ViewClipByPlaneTool extends ViewClipTool {
+    constructor(clipEventHandler?: ViewClipEventHandler, _orientation?: ClipOrientation, _clearExistingPlanes?: boolean);
+    // (undocumented)
+    protected _clearExistingPlanes: boolean;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    protected _orientation: ClipOrientation;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class ViewClipByRangeTool extends ViewClipTool {
+    // (undocumented)
+    protected _corner?: Point3d;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
+    // (undocumented)
+    protected getClipRange(range: Range3d, transform: Transform, ev: BeButtonEvent): boolean;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onUndoPreviousStep(): Promise<boolean>;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class ViewClipByShapeTool extends ViewClipTool {
+    constructor(clipEventHandler?: ViewClipEventHandler, _orientation?: ClipOrientation);
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
+    // (undocumented)
+    protected getClipPoints(ev: BeButtonEvent): Point3d[];
+    // (undocumented)
+    isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _matrix?: Matrix3d;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onUndoPreviousStep(): Promise<boolean>;
+    // (undocumented)
+    protected _orientation: ClipOrientation;
+    // (undocumented)
+    protected readonly _points: Point3d[];
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected _zHigh?: number;
+    // (undocumented)
+    protected _zLow?: number;
+}
+
+// @internal
+export class ViewClipClearTool extends ViewClipTool {
+    // (undocumented)
+    protected doClipClear(viewport: Viewport): boolean;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class ViewClipDecoration extends EditManipulator.HandleProvider {
+    constructor(_clipView: Viewport, _clipEventHandler?: ViewClipEventHandler | undefined);
+    // (undocumented)
+    static clear(): void;
+    // (undocumented)
+    protected clearControls(): void;
+    // (undocumented)
+    protected _clip?: ClipVector;
+    // (undocumented)
+    protected _clipEventHandler?: ViewClipEventHandler | undefined;
+    // (undocumented)
+    readonly clipId: string | undefined;
+    // (undocumented)
+    protected _clipId?: string;
+    // (undocumented)
+    protected _clipRange?: Range3d;
+    // (undocumented)
+    protected _clipView: Viewport;
+    // (undocumented)
+    protected _controlAxis: Vector3d[];
+    // (undocumented)
+    protected _controlIds: string[];
+    // (undocumented)
+    protected _controlPoint: Point3d[];
+    // (undocumented)
+    static create(vp: Viewport, clipEventHandler?: ViewClipEventHandler): string | undefined;
+    // (undocumented)
+    protected createControls(): Promise<boolean>;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string>;
+    // (undocumented)
+    protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean;
+    // (undocumented)
+    onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onManipulatorEvent(eventType: EditManipulator.EventType): void;
+    // (undocumented)
+    onViewClose(vp: ScreenViewport): void;
+    // (undocumented)
+    onViewUndoRedo(vp: Viewport, _event: ViewUndoEvent): void;
+    // (undocumented)
+    protected _removeViewCloseListener?: () => void;
+    // (undocumented)
+    protected _removeViewUndoRedoListener?: () => void;
+    // (undocumented)
+    protected stop(): void;
+    // (undocumented)
+    testDecorationHit(id: string): boolean;
+    // (undocumented)
+    static toggle(vp: Viewport, clipEventHandler?: ViewClipEventHandler): string | undefined;
+    // (undocumented)
+    protected updateDecorationListener(_add: boolean): void;
+}
+
+// @internal
+export class ViewClipDecorationProvider implements ViewClipEventHandler {
+    // (undocumented)
+    static clear(): void;
+    // (undocumented)
+    clearOnUnSelect(): boolean;
+    // (undocumented)
+    static create(): ViewClipDecorationProvider;
+    // (undocumented)
+    hideDecoration(): void;
+    // (undocumented)
+    onClearClip(_viewport: Viewport): void;
+    // (undocumented)
+    onModifyClip(_viewport: Viewport): void;
+    // (undocumented)
+    onNewClip(viewport: Viewport): void;
+    // (undocumented)
+    onNewClipPlane(viewport: Viewport): void;
+    // (undocumented)
+    selectOnCreate(): boolean;
+    // (undocumented)
+    showDecoration(vp: Viewport): void;
+    // (undocumented)
+    toggleDecoration(vp: Viewport): void;
+}
+
+// @internal
+export interface ViewClipEventHandler {
+    // (undocumented)
+    clearOnUnSelect(): boolean;
+    // (undocumented)
+    onClearClip(viewport: Viewport): void;
+    // (undocumented)
+    onModifyClip(viewport: Viewport): void;
+    // (undocumented)
+    onNewClip(viewport: Viewport): void;
+    // (undocumented)
+    onNewClipPlane(viewport: Viewport): void;
+    // (undocumented)
+    selectOnCreate(): boolean;
+}
+
+// @internal
+export class ViewClipModifyTool extends EditManipulator.HandleTool {
+    constructor(manipulator: EditManipulator.HandleProvider, hitId: string, ids: string[], base: Point3d[], axis: Vector3d[], vp: Viewport, clip: ClipVector);
+    // (undocumented)
+    protected accept(ev: BeButtonEvent): boolean;
+    // (undocumented)
+    protected _anchorIndex: number;
+    // (undocumented)
+    protected _axis: Vector3d[];
+    // (undocumented)
+    protected _base: Point3d[];
+    // (undocumented)
+    protected _clip: ClipVector;
+    // (undocumented)
+    protected _clipView: Viewport;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    protected _ids: string[];
+    // (undocumented)
+    protected init(): void;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected _restoreClip: boolean;
+}
+
+// @internal
+export class ViewClipTool extends PrimitiveTool {
+    constructor(_clipEventHandler?: ViewClipEventHandler | undefined);
+    // (undocumented)
+    protected _clipEventHandler?: ViewClipEventHandler | undefined;
+    // (undocumented)
+    static doClipClear(viewport: Viewport, saveInUndo: boolean): boolean;
+    // (undocumented)
+    static doClipToConvexClipPlaneSet(viewport: Viewport, saveInUndo: boolean, planes: ConvexClipPlaneSet): boolean;
+    // (undocumented)
+    static doClipToPlane(viewport: Viewport, saveInUndo: boolean, origin: Point3d, normal: Vector3d, clearExistingPlanes: boolean): boolean;
+    // (undocumented)
+    static doClipToRange(viewport: Viewport, saveInUndo: boolean, range: Range3d, transform?: Transform): boolean;
+    // (undocumented)
+    static doClipToShape(viewport: Viewport, saveInUndo: boolean, xyPoints: Point3d[], transform: Transform, zLow?: number, zHigh?: number): boolean;
+    // (undocumented)
+    static getClipOrientation(orientation: ClipOrientation, viewport: Viewport): Matrix3d | undefined;
+    // (undocumented)
+    static getPlaneInwardNormal(orientation: ClipOrientation, viewport: Viewport): Vector3d | undefined;
+    // (undocumented)
+    static hasClip(viewport: Viewport): boolean;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    static isSingleConvexClipPlaneSet(clip: ClipVector): ConvexClipPlaneSet | undefined;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    protected outputPrompt(prompt: string): void;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    static setViewClip(viewport: Viewport, saveInUndo: boolean, clip?: ClipVector): boolean;
+    // (undocumented)
+    protected showPrompt(): void;
 }
 
 // @internal
@@ -6957,6 +7260,8 @@ export abstract class Viewport implements IDisposable {
     protected constructor(target: RenderTarget);
     // @internal (undocumented)
     addDecorations(_decorations: Decorations): void;
+    // @internal
+    addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
     readonly alwaysDrawn: Id64Set | undefined;
     // @internal (undocumented)
     readonly analysisStyle: AnalysisStyle | undefined;
@@ -6980,6 +7285,8 @@ export abstract class Viewport implements IDisposable {
     // (undocumented)
     protected _changeFlags: ChangeFlags;
     changeModelDisplay(models: Id64Arg, display: boolean): boolean;
+    // @alpha
+    changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void;
     changeView(view: ViewState): void;
     changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
@@ -7073,10 +7380,16 @@ export abstract class Viewport implements IDisposable {
     // @beta
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     // @beta
+    readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;
+    // @beta
     readonly onViewedModelsChanged: BeEvent<(vp: Viewport) => void>;
     // @beta
     readonly onViewportChanged: BeEvent<(vp: Viewport, changed: ChangeFlags) => void>;
+    // @beta
+    readonly onViewUndoRedo: BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "perModelCategoryVisibility" is marked as @public, but its signature references "PerModelCategoryVisibility" which is marked as @alpha
+    readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
     pixelsFromInches(inches: number): number;
     // @internal (undocumented)
     readonly pixelsPerInch: number;
@@ -7089,6 +7402,8 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     renderFrame(): boolean;
     readonly rotation: Matrix3d;
+    // @internal (undocumented)
+    readonly scheduleTime: number;
     scroll(screenDist: Point2d, options?: ViewChangeOptions): void;
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     setFeatureOverrideProviderChanged(): void;
@@ -7098,6 +7413,10 @@ export abstract class Viewport implements IDisposable {
     setStandardRotation(id: StandardViewId): void;
     setupFromView(): ViewStatus;
     setupViewFromFrustum(inFrustum: Frustum): boolean;
+    // @internal (undocumented)
+    setViewedCategoriesPerModelChanged(): void;
+    // @internal (undocumented)
+    readonly subcategories: SubCategoriesCache.Queue;
     // @internal (undocumented)
     readonly sync: SyncFlags;
     synchWithView(_saveInUndo: boolean): void;
@@ -7498,6 +7817,14 @@ export abstract class ViewTool extends InteractiveTool {
     static showPrompt(prompt: string): void;
     // (undocumented)
     viewport?: ScreenViewport | undefined;
+}
+
+// @beta
+export const enum ViewUndoEvent {
+    // (undocumented)
+    Redo = 1,
+    // (undocumented)
+    Undo = 0
 }
 
 // @public

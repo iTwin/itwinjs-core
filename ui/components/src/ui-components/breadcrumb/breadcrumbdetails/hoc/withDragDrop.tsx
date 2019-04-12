@@ -8,7 +8,7 @@ import * as React from "react";
 
 import { getDisplayName } from "@bentley/ui-core";
 import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../../dragdrop/DragDropDef";
-import withTableDragDrop, { TableDropTargetProps } from "../../../table/hocs/withDragDrop";
+import { withTableDragDrop, TableDropTargetProps } from "../../../table/hocs/withDragDrop";
 import { Table, TableProps } from "../../../table/component/Table";
 import { BreadcrumbDetailsProps } from "../BreadcrumbDetails";
 import { TableDataProvider } from "../../../table/TableDataProvider";
@@ -148,5 +148,3 @@ export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, 
     }
   };
 }
-
-export default withBreadcrumbDetailsDragDrop;

@@ -9,14 +9,10 @@ import { UserProfile } from "../../ui-ninezone";
 
 describe("<UserProfile />", () => {
   it("should render", () => {
-    mount(<UserProfile firstName="First" lastName="Last" email="spam@bentley.com" />);
+    mount(<UserProfile />);
   });
 
   it("renders correctly", () => {
-    shallow(<UserProfile firstName="First" lastName="Last" email="spam@bentley.com" />).should.matchSnapshot();
-  });
-
-  it("renders w/o initials", () => {
-    shallow(<UserProfile firstName="" lastName="" email="spam@bentley.com" />).should.matchSnapshot();
+    shallow(<UserProfile />).should.matchSnapshot();
   });
 });

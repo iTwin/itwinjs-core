@@ -10,12 +10,16 @@ import { OmitChildrenProp, NoChildrenProps } from "../../utilities/Props";
 import { Popover, PopoverProps } from "./Popover";
 import "./Triangle.scss";
 
-/** Properties of [[TrianglePopover]] component. */
+/** Properties of [[TrianglePopover]] component.
+ * @alpha
+ */
 export interface TrianglePopoverProps extends OmitChildrenProp<PopoverProps>, NoChildrenProps {
   content?: React.ReactNode;
 }
 
-/** Popover with triangle connection. */
+/** Popover with triangle connection.
+ * @alpha Replace by ui-core/popup
+ */
 export class TrianglePopover extends React.PureComponent<TrianglePopoverProps> {
   public render() {
     const className = classnames(

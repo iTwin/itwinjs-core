@@ -6,12 +6,12 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Arrow.scss";
 
-/**
- * Arrow icon.
+/** Arrow icon.
  * @note Used in [[Merge]], [[Back]] components.
+ * @alpha
  */
 export class Arrow extends React.PureComponent<CommonProps> {
   public render() {

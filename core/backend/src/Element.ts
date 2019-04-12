@@ -175,7 +175,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
 }
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.
- * See [how to create a GeometricElement3d]$(docs/learning/backend/CreateElements.md#GeometricElement3d).
+ * See [how to create a GeometricElement3d]($docs/learning/backend/CreateElements.md#GeometricElement3d).
  * @public
  */
 export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {

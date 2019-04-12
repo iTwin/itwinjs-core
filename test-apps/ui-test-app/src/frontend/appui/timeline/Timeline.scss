@@ -42,7 +42,7 @@
     z-index: 1;
 }
 
-.handle {
+.needle {
     position: absolute;
     top: 0;
     transform: translateX(-50%);
@@ -53,7 +53,7 @@
     cursor: pointer;
 }
 
-.handle3 {
+.handle {
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);

@@ -5,48 +5,34 @@
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import rafSchedule, { ScheduleFn } from "raf-schd";
-import { Timer, withTimeout, Button, ButtonType, ButtonProps, Omit, withOnOutsideClick } from "@bentley/ui-core";
+import { withTimeout, Button, ButtonType, ButtonProps, Omit, withOnOutsideClick } from "@bentley/ui-core";
 import { Backstage } from "@src/backstage/Backstage";
 import { BackstageItem } from "@src/backstage/Item";
 import { BackstageSeparator } from "@src/backstage/Separator";
+import { UserProfile } from "@src/backstage/UserProfile";
 import { AppButton } from "@src/widget/tools/button/App";
-import { MouseTracker } from "@src/context/MouseTracker";
 import { Footer } from "@src/footer/Footer";
-import {
-  MessageCenterDialog as MessageCenterDialogComponent,
-  MessageCenterDialogContent as MessageCenterDialogContentComponent,
-  MessageCenterButton,
-} from "@src/footer/message-center/Dialog";
-import { MessageCenterIndicator } from "@src/footer/message-center/Indicator";
+import { MessageCenterDialog } from "@src/footer/message-center/Dialog";
+import { MessageCenter } from "@src/footer/message-center/Indicator";
 import { MessageCenterMessage } from "@src/footer/message-center/Message";
 import { MessageCenterTab } from "@src/footer/message-center/Tab";
-import { SnapModeDialog as SnapModeDialogComponent, SnapModeDialogContent as SnapModeDialogContentComponent } from "@src/footer/snap-mode/Dialog";
-import { SnapModeIcon } from "@src/footer/snap-mode/Icon";
-import { SnapModeIndicator } from "@src/footer/snap-mode/Indicator";
+import { SnapModePanel } from "@src/footer/snap-mode/Panel";
+import { SnapMode } from "@src/footer/snap-mode/Indicator";
 import { Snap } from "@src/footer/snap-mode/Snap";
-import { ToolAssistanceIndicator } from "@src/footer/tool-assistance/Indicator";
-import { ToolAssistanceDialog as ToolAssistanceDialogComponent, ToolAssistanceDialogContent as ToolAssistanceDialogContentComponent } from "@src/footer/tool-assistance/Dialog";
+import { ToolAssistance } from "@src/footer/tool-assistance/Indicator";
+import { ToolAssistanceDialog } from "@src/footer/tool-assistance/Dialog";
 import { ToolAssistanceItem } from "@src/footer/tool-assistance/Item";
 import { ToolAssistanceSeparator } from "@src/footer/tool-assistance/Separator";
-import { Activity } from "@src/footer/message/Activity";
-import { StatusMessage } from "@src/footer/message/content/status/Message";
-import { MessageLayout } from "@src/footer/message/content/status/Layout";
-import { Status } from "@src/footer/message/content/status/Status";
-import { Label } from "@src/footer/message/content/Label";
-import { MessageButton } from "@src/footer/message/content/Button";
-import { Progress } from "@src/footer/message/content/Progress";
-import { Hyperlink } from "@src/footer/message/content/Hyperlink";
-import { Dialog } from "@src/footer/message/content/dialog/Dialog";
-import { TitleBar } from "@src/footer/message/content/dialog/TitleBar";
-import { DialogTitle } from "@src/footer/message/content/dialog/Title";
-import { DialogButton } from "@src/footer/message/content/dialog/Button";
-import { Buttons } from "@src/footer/message/content/dialog/content/Buttons";
-import { ScrollableContent } from "@src/footer/message/content/dialog/content/Scrollable";
-import { MessageResizeHandle } from "@src/footer/message/content/dialog/ResizeHandle";
-import { Modal } from "@src/footer/message/Modal";
-import { Sticky } from "@src/footer/message/Sticky";
-import { Temporary } from "@src/footer/message/Temporary";
+import { Message } from "@src/footer/message/Message";
+import { MessageLayout } from "@src/footer/message/Layout";
+import { Status } from "@src/footer/message/Status";
+import { MessageButton } from "@src/footer/message/Button";
+import { MessageProgress } from "@src/footer/message/Progress";
+import { MessageHyperlink } from "@src/footer/message/Hyperlink";
+import { TitleBarButton } from "@src/footer/dialog/Button";
 import { Toast } from "@src/footer/message/Toast";
+import { FooterPopup, FooterPopupContentType } from "@src/footer/Popup";
+import { FooterSeparator } from "@src/footer/Separator";
 import { Nested } from "@src/widget/tool-settings/Nested";
 import { ScrollableArea } from "@src/widget/tool-settings/ScrollableArea";
 import { Toggle } from "@src/widget/tool-settings/Toggle";
@@ -91,7 +77,7 @@ import { Zones } from "@src/zones/Zones";
 import { GhostOutline } from "@src/zones/GhostOutline";
 import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
 import { RectangleProps, Rectangle } from "@src/utilities/Rectangle";
-import { withContainIn, containHorizontally } from "@src/base/WithContainIn";
+import { withContainIn } from "@src/base/WithContainIn";
 import { OmitChildrenProp } from "@src/utilities/Props";
 import "./Zones.scss";
 
@@ -102,18 +88,6 @@ const TooltipWithTimeout = withTimeout(ToolSettingsTooltip);
 const ToolGroupContained = withContainIn(withOnOutsideClick(Group, undefined, false));
 // tslint:disable-next-line:variable-name
 const NestedToolGroupContained = withContainIn(withOnOutsideClick(NestedGroup, undefined, false));
-// tslint:disable-next-line:variable-name
-const ToolAssistanceDialog = withOnOutsideClick(ToolAssistanceDialogComponent, undefined, false);
-// tslint:disable-next-line:variable-name
-const ToolAssistanceDialogContent = withContainIn(ToolAssistanceDialogContentComponent);
-// tslint:disable-next-line:variable-name
-const SnapModeDialog = withOnOutsideClick(SnapModeDialogComponent, undefined, false);
-// tslint:disable-next-line:variable-name
-const SnapModeDialogContent = withContainIn(SnapModeDialogContentComponent);
-// tslint:disable-next-line:variable-name
-const MessageCenterDialog = withOnOutsideClick(MessageCenterDialogComponent, undefined, false);
-// tslint:disable-next-line:variable-name
-const MessageCenterDialogContent = withContainIn(MessageCenterDialogContentComponent);
 
 // tslint:disable-next-line:variable-name
 const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
@@ -194,12 +168,10 @@ enum ToolSettingsMode {
   Open,
 }
 
-enum Message {
+enum VisibleMessage {
   None,
   Activity,
-  Modal,
   Toast,
-  Sticky,
 }
 
 enum FooterWidget {
@@ -267,120 +239,28 @@ interface MessageProps {
 class ActivityMessage extends React.PureComponent<MessageProps> {
   public render() {
     return (
-      <Activity>
-        <StatusMessage
-          status={Status.Information}
-          icon={
-            <i className="icon icon-activity" />
-          }
-        >
-          <MessageLayout
-            label={
-              <Label>Rendering 'big-image.png'</Label>
-            }
-            buttons={
-              <Hyperlink
-                onClick={this.props.onHideMessage}
-                text="Ok"
-              />
-            }
-            progress={
-              <Progress status={Status.Information} progress={33.33} />
-            }
-          />
-        </StatusMessage>
-      </Activity>
-    );
-  }
-}
-
-class ModalMessage extends React.PureComponent<MessageProps> {
-  public render() {
-    return (
-      <Modal
-        dialog={
-          <Dialog
-            titleBar={
-              <TitleBar
-                title={
-                  <DialogTitle text="Dialog" />
-                }
-                buttons={
-                  <DialogButton onClick={this.props.onHideMessage}>
-                    <i className="icon icon-close" />
-                  </DialogButton>
-                }
-              />
-            }
-            content={
-              <Buttons
-                buttons={
-                  <>
-                    <BlueButton
-                      onClick={this.props.onHideMessage}
-                    >
-                      Yes
-                        </BlueButton>
-                    <HollowButton
-                      onClick={this.props.onHideMessage}
-                    >
-                      No
-                    </HollowButton>
-                  </>
-                }
-                content={
-                  <ScrollableContent
-                    content={
-                      <>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.Integer vehicula viverra ante a finibus.Suspendisse tristique neque volutpat ex auctor, a consectetur nunc convallis.Nullam condimentum imperdiet elit vitae vulputate.Praesent ornare tellus luctus sem cursus, sed porta ligula pulvinar.In fringilla tellus sem, id sollicitudin leo condimentum sed.Quisque tempor sed risus gravida tincidunt.Nulla id hendrerit sapien.
-                          <br />
-                        <br />
-                        In vestibulum ipsum lorem.Aliquam accumsan tortor sit amet facilisis lacinia.Nam quis lacus a urna eleifend finibus.Donec id purus id turpis viverra faucibus.Lorem ipsum dolor sit amet, consectetur adipiscing elit.Sed finibus dui ut efficitur interdum.Donec a congue mauris.Praesent ornare egestas accumsan.Pellentesque malesuada diam nisl, a elementum turpis commodo quis.Suspendisse vitae diam accumsan, ullamcorper ante in, porttitor turpis.Phasellus scelerisque tristique imperdiet.
-                          <br />
-                        <br />
-                        Aenean interdum nulla ex, sed molestie lectus pulvinar ac.Mauris sagittis tempor justo ac imperdiet.Fusce iaculis cursus lectus sit amet semper.Quisque at volutpat magna, vitae lacinia nunc.Suspendisse a ipsum orci.Duis in mi sit amet purus blandit mattis porttitor mollis enim.Curabitur dictum nisi massa, eu luctus sapien viverra quis.
-                          <br />
-                        <br />
-                        Ut sed pellentesque diam.Integer non pretium nibh.Nulla scelerisque ipsum ac porttitor lobortis.Suspendisse eu egestas felis, sit amet facilisis neque.In sit amet fermentum nisl.Proin volutpat ex et ligula auctor, id cursus elit fringilla.Nulla facilisi.Proin dictum a lectus a elementum.Mauris ultricies dapibus libero ut interdum.
-                          <br />
-                        <br />
-                        Suspendisse blandit mauris metus, in accumsan magna venenatis pretium.Ut ante odio, tempor non quam at, scelerisque pulvinar dui.Duis in magna ut leo fermentum pellentesque venenatis vitae sapien.Suspendisse potenti.Nunc quis ex ac mi porttitor euismod.Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.Nunc tincidunt nunc id sem varius imperdiet.Phasellus congue orci vitae lorem malesuada, vel tempor tortor molestie.Nullam gravida tempus ornare.
-                        </>
-                    }
-                  />
-                }
-              />
-            }
-            resizeHandle={< MessageResizeHandle />}
-          />
+      <Message
+        status={Status.Information}
+        icon={
+          <i className="icon icon-activity" />
         }
-      />
-    );
-  }
-}
-
-class StickyMessage extends React.PureComponent<MessageProps> {
-  public render() {
-    return (
-      <Sticky>
-        <StatusMessage
-          status={Status.Error}
-          icon={
-            <i className="icon icon-status-error-hollow" />
-          }
-        >
-          <MessageLayout
-            label={
-              <Label>Unable to load 3 fonts, replaced with Arial.</Label>
-            }
-            buttons={
+      >
+        <MessageLayout
+          buttons={
+            <>
+              <MessageHyperlink onClick={this.props.onHideMessage}>Ok</MessageHyperlink>
               <MessageButton onClick={this.props.onHideMessage}>
                 <i className="icon icon-close" />
               </MessageButton>
-            }
-          />
-        </StatusMessage>
-      </Sticky>
+            </>
+          }
+          progress={
+            <MessageProgress status={Status.Information} progress={33.33} />
+          }
+        >
+          Rendering 'big-image.png'
+        </MessageLayout>
+      </Message>
     );
   }
 }
@@ -395,18 +275,14 @@ class ToastMessageExample extends React.PureComponent<ToastMessageProps> {
       <Toast
         animateOutTo={this.props.animateOutTo}
         content={
-          <StatusMessage
+          <Message
             status={Status.Success}
             icon={
               <i className="icon icon-status-success-hollow" />
             }
           >
-            <MessageLayout
-              label={
-                <Label>Image 'big.png' saved.</Label>
-              }
-            />
-          </StatusMessage>
+            <MessageLayout>Image 'big.png' saved.</MessageLayout>
+          </Message>
         }
         onAnimatedOut={this.props.onHideMessage}
       />
@@ -416,7 +292,7 @@ class ToastMessageExample extends React.PureComponent<ToastMessageProps> {
 
 interface FooterMessageExampleProps {
   toastMessageKey: React.Key;
-  message: Message;
+  message: VisibleMessage;
   animateToastMessageTo: React.RefObject<HTMLElement>;
   onHideMessage: () => void;
 }
@@ -424,26 +300,19 @@ interface FooterMessageExampleProps {
 class FooterMessageExample extends React.PureComponent<FooterMessageExampleProps> {
   public render() {
     switch (this.props.message) {
-      case (Message.Activity): {
+      case (VisibleMessage.Activity): {
         return (
           <ActivityMessage
             onHideMessage={this.props.onHideMessage}
           />
         );
       }
-      case (Message.Toast): {
+      case (VisibleMessage.Toast): {
         return this.props.animateToastMessageTo === undefined ? null : (
           <ToastMessageExample
             key={this.props.toastMessageKey}
             onHideMessage={this.props.onHideMessage}
             animateOutTo={this.props.animateToastMessageTo}
-          />
-        );
-      }
-      case (Message.Sticky): {
-        return (
-          <StickyMessage
-            onHideMessage={this.props.onHideMessage}
           />
         );
       }
@@ -456,7 +325,7 @@ interface StatusZoneExampleProps extends MessageProps {
   bounds: RectangleProps;
   dropTarget: DropTarget;
   isInFooterMode: boolean;
-  message: Message;
+  message: VisibleMessage;
   onHideMessage: () => void;
   onTargetChanged: TargetChangedHandler;
   onOpenWidgetChange: (widget: FooterWidget) => void;
@@ -471,243 +340,148 @@ interface StatusZoneExampleState {
 }
 
 class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, StatusZoneExampleState> {
-  private _messageCenterIndicatorContainer = React.createRef<HTMLDivElement>();
-
-  public readonly state = {
+  public readonly state: StatusZoneExampleState = {
     messageCenterTab: MessageCenterActiveTab.AllMessages,
   };
 
+  private _messageCenterIndicator = React.createRef<HTMLDivElement>();
+  private _messageCenterTarget = React.createRef<HTMLDivElement>();
+  private _snapModeIndicator = React.createRef<HTMLDivElement>();
+  private _snapModeTarget = React.createRef<HTMLDivElement>();
+  private _toolAssistanceIndicator = React.createRef<HTMLDivElement>();
+  private _toolAssistanceTarget = React.createRef<HTMLDivElement>();
+
   public render() {
     return (
-      <React.Fragment>
+      <>
         <StatusZone
           isInFooterMode={this.props.isInFooterMode}
           bounds={this.props.bounds}
         >
           <Footer
             isInFooterMode={this.props.isInFooterMode}
-            message={
+            messages={
               <FooterMessageExample
                 toastMessageKey={this.props.toastMessageKey}
-                animateToastMessageTo={this._messageCenterIndicatorContainer}
+                animateToastMessageTo={this._messageCenterTarget}
                 onHideMessage={this.props.onHideMessage}
                 message={this.props.message}
               />
             }
-            indicators={
-              <>
-                <ToolAssistanceIndicator
-                  dialog={
-                    this.props.openWidget !== FooterWidget.ToolAssistance ? undefined :
-                      <ToolAssistanceDialog
-                        content={
-                          <ToolAssistanceDialogContent
-                            containFn={containHorizontally}
-                            items={
-                              <>
-                                <ToolAssistanceItem>
-                                  <i className="icon icon-cursor" />
-                                  Identify piece to trim
-                                </ToolAssistanceItem>
-                                <ToolAssistanceSeparator label="Inputs" />
-                                <ToolAssistanceItem>
-                                  <i className="icon icon-cursor-click" />
-                                  Clink on element
-                                  </ToolAssistanceItem>
-                                <ToolAssistanceItem>
-                                  <i className="icon  icon-placeholder" />
-                                  Drag across elements
-                                </ToolAssistanceItem>
-                                <ToolAssistanceSeparator />
-                                <ToolAssistanceItem>
-                                  <input type="checkbox" />
-                                  Show prompt @ cursor
-                                </ToolAssistanceItem>
-                              </>
-                            }
-                            title="Trim Multiple - Tool Assistance"
-                          />
-                        }
-                        onOutsideClick={this._handleOnOutsideDialogClick}
-                      />
-                  }
-                  icons={
-                    <>
-                      <i className="icon icon-cursor" />
-                      <i className="icon icon-add" />
-                    </>
-                  }
-                  onClick={this._handleToggleToolAssistanceDialog}
-                  stepString={this.props.isInFooterMode ? "Start Point" : undefined}
-                />
-                <div ref={this._messageCenterIndicatorContainer}>
-                  <MessageCenterIndicator
-                    balloonLabel="9+"
-                    dialog={
-                      this.props.openWidget !== FooterWidget.Messages ? undefined :
-                        <MessageCenterDialog
-                          content={
-                            <MessageCenterDialogContent
-                              buttons={
-                                <>
-                                  <MessageCenterButton>
-                                    <i className={"icon icon-placeholder"} />
-                                  </MessageCenterButton>
-                                  <MessageCenterButton onClick={this._handleCloseMessageCenter}>
-                                    <i className={"icon icon-close"} />
-                                  </MessageCenterButton>
-                                </>
-                              }
-                              containFn={containHorizontally}
-                              messages={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages ?
-                                <>
-                                  <MessageCenterMessage
-                                    icon={<i className={"icon icon-status-success nzdemo-success"} />}
-                                    content={"Document saved successfully."}
-                                  />
-                                  <MessageCenterMessage
-                                    icon={<i className={"icon icon-clock nzdemo-progress"} />}
-                                    content={
-                                      <>
-                                        <span>Downloading required assets.</span>
-                                        <br />
-                                        <i><small>75% complete</small></i>
-                                      </>
-                                    }
-                                  />
-                                  <MessageCenterMessage
-                                    icon={<i className={"icon icon-status-rejected nzdemo-error"} />}
-                                    content={
-                                      <>
-                                        <span>Cannot attach reference.</span>
-                                        <br />
-                                        <i><u><small>Details...</small></u></i>
-                                      </>
-                                    }
-                                  />
-                                  <MessageCenterMessage
-                                    icon={<i className={"icon icon-status-warning nzdemo-warning"} />}
-                                    content={"Missing 10 fonts. Replaces with Arial."}
-                                  />
-                                  <MessageCenterMessage
-                                    icon={<i className={"icon icon-star nzdemo-favorite"} />}
-                                    content={"Your document has been favorited by 5 people in the..."}
-                                  />
-                                  <MessageCenterMessage
-                                    icon={<i className={"icon icon-status-success nzdemo-success"} />}
-                                    content={"Navigator has successfully updated"}
-                                  />
-                                </> :
-                                <>
-                                  <MessageCenterMessage
-                                    icon={<i className={"icon icon-status-rejected"} style={{ color: "red" }} />}
-                                    content={"Missing 10 fonts. Replaced with Arial."}
-                                  />
-                                  <MessageCenterMessage
-                                    content={"Cannot attach reference"}
-                                  />
-                                  <MessageCenterMessage
-                                    content={"Problem1"}
-                                  />
-                                  <MessageCenterMessage
-                                    content={"Problem2"}
-                                  />
-                                  <MessageCenterMessage
-                                    content={"Problem3"}
-                                  />
-                                  <MessageCenterMessage
-                                    content={"Problem4"}
-                                  />
-                                  <MessageCenterMessage
-                                    content={"Problem5"}
-                                  />
-                                  <MessageCenterMessage
-                                    content={"Problem6"}
-                                  />
-                                </>
-                              }
-                              prompt="No messages."
-                              tabs={
-                                <>
-                                  <MessageCenterTab
-                                    isOpen={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages}
-                                    onClick={this._handleAllMessagesTabClick}
-                                  >
-                                    All
-                                  </MessageCenterTab>
-                                  <MessageCenterTab
-                                    isOpen={this.state.messageCenterTab === MessageCenterActiveTab.Problems}
-                                    onClick={this._handleProblemsTabClick}
-                                  >
-                                    Problems
-                                  </MessageCenterTab>
-                                </>
-                              }
-                              title="Messages"
-                            />
-                          }
-                          onOutsideClick={this._handleOnOutsideDialogClick}
-                        />
-                    }
-                    label={this.props.isInFooterMode ? "Message(s):" : undefined}
-                    onClick={this._handleToggleMessageCenterDialog}
-                  />
-                </div>
-                <SnapModeIndicator
-                  label={this.props.isInFooterMode ? "Snap Mode" : undefined}
-                  onClick={this._handleToggleSnapModeDialog}
-                  icon={
-                    <SnapModeIcon>k</SnapModeIcon>
-                  }
-                  dialog={
-                    this.props.openWidget !== FooterWidget.SnapMode ? undefined :
-                      <SnapModeDialog
-                        content={
-                          <SnapModeDialogContent
-                            containFn={containHorizontally}
-                            snaps={
-                              <>
-                                <Snap
-                                  key="1"
-                                  isActive
-                                  label="Keypoint"
-                                  icon={
-                                    <SnapModeIcon isActive>k</SnapModeIcon>
-                                  }
-                                />
-                                <Snap
-                                  key="2"
-                                  label="Intersection"
-                                  icon={
-                                    <SnapModeIcon>i</SnapModeIcon>
-                                  }
-                                />
-                                <Snap
-                                  key="3"
-                                  label="Center"
-                                  icon={
-                                    <SnapModeIcon>c</SnapModeIcon>
-                                  }
-                                />
-                                <Snap
-                                  key="4"
-                                  label="Nearest"
-                                  icon={
-                                    <SnapModeIcon>n</SnapModeIcon>
-                                  }
-                                />
-                              </>
-                            }
-                            title="Snap Mode"
-                          />
-                        }
-                        onOutsideClick={this._handleOnOutsideDialogClick}
-                      />
-                  }
-                />
-              </>
-            }
-          />
+          >
+            <div ref={this._toolAssistanceTarget}>
+              <ToolAssistance
+                icons={
+                  <>
+                    <i className="icon icon-cursor" />
+                    <i className="icon icon-add" />
+                  </>
+                }
+                indicatorRef={this._toolAssistanceIndicator}
+                isInFooterMode={this.props.isInFooterMode}
+                onClick={this._handleToggleToolAssistanceDialog}
+              >
+                {this.props.isInFooterMode ? "Start Point" : undefined}
+              </ToolAssistance>
+            </div>
+            {this.props.isInFooterMode && <FooterSeparator />}
+            <FooterPopup
+              target={this._messageCenterTarget}
+              isOpen={this.props.openWidget === FooterWidget.Messages}
+              onClose={this._handlePopupClose}
+              onOutsideClick={this._handleMessageCenterOutsideClick}
+            >
+              <MessageCenterDialog
+                buttons={
+                  <>
+                    <TitleBarButton>
+                      <i className={"icon icon-placeholder"} />
+                    </TitleBarButton>
+                    <TitleBarButton onClick={this._handlePopupClose}>
+                      <i className={"icon icon-close"} />
+                    </TitleBarButton>
+                  </>
+                }
+                prompt="No messages."
+                tabs={
+                  <>
+                    <MessageCenterTab
+                      isActive={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages}
+                      onClick={this._handleAllMessagesTabClick}
+                    >
+                      All
+                    </MessageCenterTab>
+                    <MessageCenterTab
+                      isActive={this.state.messageCenterTab === MessageCenterActiveTab.Problems}
+                      onClick={this._handleProblemsTabClick}
+                    >
+                      Problems
+                    </MessageCenterTab>
+                  </>
+                }
+                title="Messages"
+              >
+                {this.state.messageCenterTab === MessageCenterActiveTab.AllMessages ?
+                  <>
+                    <MessageCenterMessage icon={<i className={"icon icon-status-success nzdemo-success"} />}>
+                      Document saved successfully.
+                    </MessageCenterMessage>
+                    <MessageCenterMessage icon={<i className={"icon icon-clock nzdemo-progress"} />}>
+                      <span>Downloading required assets.</span>
+                      <br />
+                      <i><small>75% complete</small></i>
+                    </MessageCenterMessage>
+                    <MessageCenterMessage icon={<i className={"icon icon-status-rejected nzdemo-error"} />}>
+                      <span>Cannot attach reference.</span>
+                      <br />
+                      <i><u><small>Details...</small></u></i>
+                    </MessageCenterMessage>
+                    <MessageCenterMessage icon={<i className={"icon icon-status-warning nzdemo-warning"} />}>
+                      Missing 10 fonts. Replaces with Arial.
+                      </MessageCenterMessage>
+                    <MessageCenterMessage icon={<i className={"icon icon-star nzdemo-favorite"} />}>
+                      Your document has been favorited by 5 people in the...
+                    </MessageCenterMessage>
+                    <MessageCenterMessage icon={<i className={"icon icon-status-success nzdemo-success"} />}>
+                      Navigator has successfully updated
+                    </MessageCenterMessage>
+                  </> :
+                  <>
+                    <MessageCenterMessage icon={<i className={"icon icon-status-rejected nzdemo-error"} />}>
+                      Missing 10 fonts. Replaced with Arial.
+                    </MessageCenterMessage>
+                    <MessageCenterMessage>Cannot attach reference</MessageCenterMessage>
+                    <MessageCenterMessage>Problem1</MessageCenterMessage>
+                    <MessageCenterMessage>Problem2</MessageCenterMessage>
+                    <MessageCenterMessage>Problem3</MessageCenterMessage>
+                    <MessageCenterMessage>Problem4</MessageCenterMessage>
+                    <MessageCenterMessage>Problem5</MessageCenterMessage>
+                    <MessageCenterMessage>Problem6</MessageCenterMessage>
+                  </>
+                }
+              </MessageCenterDialog>
+            </FooterPopup>
+            <MessageCenter
+              onClick={this._handleToggleMessageCenterDialog}
+              indicatorRef={this._messageCenterIndicator}
+              isInFooterMode={this.props.isInFooterMode}
+              label={this.props.isInFooterMode ? "Message(s):" : undefined}
+              targetRef={this._messageCenterTarget}
+            >
+              9+
+            </MessageCenter>
+            {this.props.isInFooterMode && <FooterSeparator />}
+            <div ref={this._snapModeTarget}>
+              <SnapMode
+                icon="k"
+                indicatorRef={this._snapModeIndicator}
+                isInFooterMode={this.props.isInFooterMode}
+                onClick={this._handleToggleSnapModeDialog}
+              >
+                {this.props.isInFooterMode ? "Snap Mode" : undefined}
+              </SnapMode>
+            </div>
+          </Footer>
         </StatusZone>
         <ZoneTargetExample
           bounds={this.props.targetBounds}
@@ -715,11 +489,87 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
           dropTarget={this.props.dropTarget}
           onTargetChanged={this.props.onTargetChanged}
         />
-        {!this.props.outlineBounds ? undefined :
-          <GhostOutline bounds={this.props.outlineBounds} />
+        {
+          !this.props.outlineBounds ? undefined :
+            <GhostOutline bounds={this.props.outlineBounds} />
         }
-      </React.Fragment>
+        <FooterPopup
+          isOpen={this.props.openWidget === FooterWidget.ToolAssistance}
+          onClose={this._handlePopupClose}
+          onOutsideClick={this._handleToolAssistanceOutsideClick}
+          target={this._toolAssistanceTarget}
+        >
+          <ToolAssistanceDialog
+            title="Trim Multiple - Tool Assistance"
+          >
+            <ToolAssistanceItem>
+              <i className="icon icon-cursor" />
+              Identify piece to trim
+            </ToolAssistanceItem>
+            <ToolAssistanceSeparator>Inputs</ToolAssistanceSeparator>
+            <ToolAssistanceItem>
+              <i className="icon icon-cursor-click" />
+              Clink on element
+            </ToolAssistanceItem>
+            <ToolAssistanceItem>
+              <i className="icon  icon-placeholder" />
+              Drag across elements
+            </ToolAssistanceItem>
+            <ToolAssistanceSeparator />
+            <ToolAssistanceItem>
+              <input type="checkbox" />
+              Show prompt @ cursor
+            </ToolAssistanceItem>
+          </ToolAssistanceDialog>
+        </FooterPopup>
+        <FooterPopup
+          contentType={FooterPopupContentType.Panel}
+          isOpen={this.props.openWidget === FooterWidget.SnapMode}
+          onClose={this._handlePopupClose}
+          onOutsideClick={this._handleSnapModeOutsideClick}
+          target={this._snapModeTarget}
+        >
+          <SnapModePanel
+            title="Snap Mode"
+          >
+            <Snap icon="k" isActive>Keypoint</Snap>
+            <Snap icon="i">Intersection</Snap>
+            <Snap icon="c">Center</Snap>
+            <Snap icon="n">Nearest</Snap>
+          </SnapModePanel>
+        </FooterPopup>
+      </>
     );
+  }
+
+  private _handleMessageCenterOutsideClick = (e: MouseEvent) => {
+    if (!this._messageCenterIndicator.current)
+      return;
+    if (!(e.target instanceof Node))
+      return;
+    if (this._messageCenterIndicator.current.contains(e.target))
+      return;
+    this._handlePopupClose();
+  }
+
+  private _handleToolAssistanceOutsideClick = (e: MouseEvent) => {
+    if (!this._toolAssistanceIndicator.current)
+      return;
+    if (!(e.target instanceof Node))
+      return;
+    if (this._toolAssistanceIndicator.current.contains(e.target))
+      return;
+    this._handlePopupClose();
+  }
+
+  private _handleSnapModeOutsideClick = (e: MouseEvent) => {
+    if (!this._snapModeIndicator.current)
+      return;
+    if (!(e.target instanceof Node))
+      return;
+    if (this._snapModeIndicator.current.contains(e.target))
+      return;
+    this._handlePopupClose();
   }
 
   private _handleAllMessagesTabClick = () => {
@@ -734,11 +584,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
     }));
   }
 
-  private _handleCloseMessageCenter = () => {
-    this.props.onOpenWidgetChange(FooterWidget.None);
-  }
-
-  private _handleOnOutsideDialogClick = () => {
+  private _handlePopupClose = () => {
     this.props.onOpenWidgetChange(FooterWidget.None);
   }
 
@@ -786,9 +632,7 @@ class FloatingZone extends React.PureComponent<FloatingZoneProps> {
               onChangeTheme={this.props.onChangeTheme}
               onResize={this.props.onResize}
               onOpenActivityMessage={this.props.onOpenActivityMessage}
-              onOpenModalMessage={this.props.onOpenModalMessage}
               onOpenToastMessage={this.props.onOpenToastMessage}
-              onOpenStickyMessage={this.props.onOpenStickyMessage}
               onShowTooltip={this.props.onShowTooltip}
               onToggleFooterMode={this.props.onToggleFooterMode}
               onTabClick={this.props.onTabClick}
@@ -842,9 +686,7 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
             anchor={this.props.horizontalAnchor}
             onChangeTheme={this.props.onChangeTheme}
             onOpenActivityMessage={this.props.onOpenActivityMessage}
-            onOpenModalMessage={this.props.onOpenModalMessage}
             onOpenToastMessage={this.props.onOpenToastMessage}
-            onOpenStickyMessage={this.props.onOpenStickyMessage}
             onShowTooltip={this.props.onShowTooltip}
             onToggleFooterMode={this.props.onToggleFooterMode}
             tabIndex={activeWidget.tabIndex}
@@ -1122,18 +964,14 @@ class ZoneTargetExample extends React.PureComponent<TargetExampleProps> {
 interface TooltipExampleProps {
   containerSize: SizeProps;
   isTooltipVisible: boolean;
-  isTemporaryMessageVisible: number;
-  onMessageHidden: () => void;
   onTooltipTimeout: () => void;
 }
 
 interface TooltipExampleState {
-  temporaryMessageStyle: React.CSSProperties | undefined;
   tooltipPosition: PointProps;
 }
 
 class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExampleState> {
-  private _temporaryMessageTimer = new Timer(2000);
   private _tooltipSize: SizeProps = new Size();
   private _mousePosition: PointProps = new Point();
 
@@ -1142,36 +980,19 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
       x: 0,
       y: 0,
     },
-    temporaryMessageStyle: undefined,
   };
 
   public componentDidMount(): void {
-    this._temporaryMessageTimer.setOnExecute(this.props.onMessageHidden);
-
-    if (this.props.isTemporaryMessageVisible !== 0)
-      this._temporaryMessageTimer.start();
+    document.addEventListener("mousemove", this._handleMouseMove);
   }
 
   public componentWillUnmount(): void {
-    this._temporaryMessageTimer.stop();
-  }
-
-  public componentDidUpdate(prevProps: TooltipExampleProps): void {
-    if (this.props.isTemporaryMessageVisible !== 0 && this.props.isTemporaryMessageVisible !== prevProps.isTemporaryMessageVisible) {
-      this._temporaryMessageTimer.start();
-      this.setState(() => ({
-        temporaryMessageStyle: {
-          left: this._mousePosition.x,
-          top: this._mousePosition.y,
-        },
-      }));
-    }
+    document.removeEventListener("mousemove", this._handleMouseMove);
   }
 
   public render() {
     return (
       <>
-        <MouseTracker onPositionChange={this._handlePositionChange} />
         {
           this.props.isTooltipVisible && (
             <TooltipWithTimeout
@@ -1185,18 +1006,11 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
             </TooltipWithTimeout>
           )
         }
-        {this.props.isTemporaryMessageVisible !== 0 &&
-          <Temporary
-            style={this.state.temporaryMessageStyle}
-          >
-            Text element required.
-          </Temporary>
-        }
       </>
     );
   }
 
-  private _handlePositionChange = (position: PointProps) => {
+  private _handleMouseMove = (position: PointProps) => {
     this._mousePosition = position;
     this.updateTooltipPosition();
   }
@@ -1219,11 +1033,7 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
   }
 }
 
-interface ContentProps {
-  onClick: () => void;
-}
-
-class Content extends React.PureComponent<ContentProps> {
+class Content extends React.PureComponent {
   private _canvas = React.createRef<HTMLCanvasElement>();
   private _ctx?: CanvasRenderingContext2D;
 
@@ -1250,9 +1060,8 @@ class Content extends React.PureComponent<ContentProps> {
   public render() {
     return (
       <canvas
-        onClick={this.props.onClick}
-        style={{ cursor: "crosshair" }}
         ref={this._canvas}
+        style={{ cursor: "crosshair" }}
       />
     );
   }
@@ -1304,9 +1113,7 @@ class Widget6Tab1Content extends React.PureComponent<Widget6Tab1ContentProps> {
 
 interface Widget7Tab1ContentProps {
   onOpenActivityMessage: () => void;
-  onOpenModalMessage: () => void;
   onOpenToastMessage: () => void;
-  onOpenStickyMessage: () => void;
   onShowTooltip: () => void;
   onToggleFooterMode: () => void;
 }
@@ -1319,17 +1126,8 @@ class Widget7Tab1Content extends React.PureComponent<Widget7Tab1ContentProps> {
           Show Activity Message
         </BlueButton>
         <span style={{ background: "#cebbbb", width: "800px", height: "50px", display: "block" }}></span>
-        <br />
-        <BlueButton onClick={this.props.onOpenModalMessage}>
-          Show Modal Message
-            </BlueButton>
-        <br />
         <BlueButton onClick={this.props.onOpenToastMessage}>
           Show Toast Message
-        </BlueButton>
-        <br />
-        <BlueButton onClick={this.props.onOpenStickyMessage}>
-          Show Sticky Message
         </BlueButton>
         <br />
         <br />
@@ -1437,8 +1235,6 @@ class WidgetContentExample extends React.PureComponent<WidgetContentProps> {
         content = (
           <Widget7Tab1Content
             onOpenActivityMessage={this.props.onOpenActivityMessage}
-            onOpenModalMessage={this.props.onOpenModalMessage}
-            onOpenStickyMessage={this.props.onOpenStickyMessage}
             onOpenToastMessage={this.props.onOpenToastMessage}
             onShowTooltip={this.props.onShowTooltip}
             onToggleFooterMode={this.props.onToggleFooterMode} />
@@ -1965,9 +1761,10 @@ class BackstageItemExample extends React.PureComponent<BackstageItemExampleProps
         icon={<i className="icon icon-placeholder" />}
         isActive={this.props.isActive}
         isDisabled={this.props.isDisabled}
-        label={`Item ${this.props.id}`}
         onClick={this._handleClick}
-      />
+      >
+        {`Item ${this.props.id}`}
+      </BackstageItem>
     );
   }
 
@@ -1993,40 +1790,45 @@ class BackstageExample extends React.PureComponent<BackstageExampleProps, Backst
   public render() {
     return (
       <Backstage
-        isOpen={this.props.isOpen}
-        items={
-          <>
-            <BackstageItemExample
-              id={0}
-              isActive={this.state.activeItem === 0}
-              onClick={this._handleItemClick}
-            />
-            <BackstageItemExample
-              id={1}
-              isActive={this.state.activeItem === 1}
-              onClick={this._handleItemClick}
-              isDisabled
-            />
-            <BackstageItemExample
-              id={2}
-              isActive={this.state.activeItem === 2}
-              onClick={this._handleItemClick}
-            />
-            <BackstageSeparator />
-            <BackstageItemExample
-              id={3}
-              isActive={this.state.activeItem === 3}
-              onClick={this._handleItemClick}
-            />
-            <BackstageItemExample
-              id={4}
-              isActive={this.state.activeItem === 4}
-              onClick={this._handleItemClick}
-            />
-          </>
+        header={
+          <UserProfile
+            color="#85a9cf"
+            initials="NZ"
+          >
+            9-Zone
+          </UserProfile>
         }
+        isOpen={this.props.isOpen}
         onClose={this.props.onClose}
-      />
+      >
+        <BackstageItemExample
+          id={0}
+          isActive={this.state.activeItem === 0}
+          onClick={this._handleItemClick}
+        />
+        <BackstageItemExample
+          id={1}
+          isActive={this.state.activeItem === 1}
+          onClick={this._handleItemClick}
+          isDisabled
+        />
+        <BackstageItemExample
+          id={2}
+          isActive={this.state.activeItem === 2}
+          onClick={this._handleItemClick}
+        />
+        <BackstageSeparator />
+        <BackstageItemExample
+          id={3}
+          isActive={this.state.activeItem === 3}
+          onClick={this._handleItemClick}
+        />
+        <BackstageItemExample
+          id={4}
+          isActive={this.state.activeItem === 4}
+          onClick={this._handleItemClick}
+        />
+      </Backstage>
     );
   }
 
@@ -2308,9 +2110,8 @@ interface State {
   isBackstageOpen: boolean;
   isNestedPopoverOpen: boolean;
   isPopoverOpen: boolean;
-  isTemporaryMessageVisible: number;
   isTooltipVisible: boolean;
-  message: Message;
+  message: VisibleMessage;
   nineZone: NineZoneProps;
   openWidget: FooterWidget;
   theme: Theme;
@@ -2327,9 +2128,8 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     isBackstageOpen: false,
     isNestedPopoverOpen: false,
     isPopoverOpen: false,
-    isTemporaryMessageVisible: 0,
     isTooltipVisible: false,
-    message: Message.None,
+    message: VisibleMessage.None,
     nineZone: DefaultStateManager.mergeZone(9, 6,
       DefaultStateManager.setAllowsMerging(4, false,
         getDefaultNineZoneProps(),
@@ -2384,15 +2184,11 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       <div
         className={"nzdemo-pages-zones"}
       >
-        <Content
-          onClick={this._handleContentClick}
-        />
+        <Content />
         <Zones>
           <TooltipExample
             containerSize={this.state.nineZone.size}
-            isTemporaryMessageVisible={this.state.isTemporaryMessageVisible}
             isTooltipVisible={this.state.isTooltipVisible || false}
-            onMessageHidden={this._handleTooltipMessageHidden}
             onTooltipTimeout={this._handleTooltipTimeout}
           />
           {zones.map((z) => this.getZone(z))}
@@ -2401,11 +2197,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           isOpen={this.state.isBackstageOpen}
           onClose={this._handleBackstageClose}
         />
-        {this.state.message === Message.Modal &&
-          <ModalMessage
-            onHideMessage={this._handleHideMessage}
-          />
-        }
       </div>
     );
   }
@@ -2423,12 +2214,12 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     return (
       <ToolSettings
         buttons={
-          <DialogButton
+          <TitleBarButton
             onClick={this._handleToolSettingsTabClick}
             title="Minimize"
           >
             <i className={"icon icon-chevron-up"} />
-          </DialogButton>
+          </TitleBarButton>
         }
         title="Tool Settings"
       >
@@ -2577,9 +2368,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         targetBounds={zone.props.bounds}
         onChangeTheme={this._handleChangeTheme}
         onOpenActivityMessage={this._handleOpenActivityMessage}
-        onOpenModalMessage={this._handleOpenModalMessage}
         onOpenToastMessage={this._handleOpenToastMessage}
-        onOpenStickyMessage={this._handleOpenStickyMessage}
         onResize={this._scheduleZoneResize}
         onShowTooltip={this._handleShowTooltip}
         onTabClick={this._handleWidgetTabClick}
@@ -2904,18 +2693,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     };
   }
 
-  private _handleContentClick = () => {
-    this.setState((prevState) => ({
-      isTemporaryMessageVisible: prevState.isTemporaryMessageVisible + 1,
-    }));
-  }
-
-  private _handleTooltipMessageHidden = () => {
-    this.setState(() => ({
-      isTemporaryMessageVisible: 0,
-    }));
-  }
-
   private _handleTooltipTimeout = () => {
     this.setState(() => ({
       isTooltipVisible: false,
@@ -3233,32 +3010,20 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private _handleHideMessage = () => {
     this.setState(() => ({
-      message: Message.None,
+      message: VisibleMessage.None,
     }));
   }
 
   private _handleOpenActivityMessage = () => {
     this.setState(() => ({
-      message: Message.Activity,
-    }));
-  }
-
-  private _handleOpenModalMessage = () => {
-    this.setState(() => ({
-      message: Message.Modal,
+      message: VisibleMessage.Activity,
     }));
   }
 
   private _handleOpenToastMessage = () => {
     this.setState((prevState) => ({
-      message: Message.Toast,
+      message: VisibleMessage.Toast,
       toastMessageKey: prevState.toastMessageKey + 1,
-    }));
-  }
-
-  private _handleOpenStickyMessage = () => {
-    this.setState(() => ({
-      message: Message.Sticky,
     }));
   }
 

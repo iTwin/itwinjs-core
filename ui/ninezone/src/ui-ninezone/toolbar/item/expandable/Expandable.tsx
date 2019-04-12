@@ -7,11 +7,13 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { CommonProps } from "../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import { ToolbarItem, ToolbarItemProps } from "../../Toolbar";
 import "./Expandable.scss";
 
-/** Properties of [[ExpandableItem]] component. */
+/** Properties of [[ExpandableItem]] component.
+ * @alpha
+ */
 export interface ExpandableItemProps extends CommonProps {
   /** History of the toolbar. See [[]] */
   history?: React.ReactNode;
@@ -70,7 +72,9 @@ class ActualItem extends React.PureComponent<ExpandableItemProps> implements Too
   }
 }
 
-/** Expandable toolbar item. */
+/** Expandable toolbar item.
+ * @alpha
+ */
 export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
   public render() {
     const toolbarItemProps = this.props as ToolbarItemProps<ActualItem>;

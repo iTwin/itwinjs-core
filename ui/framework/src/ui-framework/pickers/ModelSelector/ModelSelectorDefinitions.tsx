@@ -31,8 +31,6 @@ export interface ModelGroup {
   label: string;
   /** Models or categories related to group as [[Listitem]] */
   items: ListItem[];
-  /** Method that will update ModelState or CategoryState */
-  updateState: () => void;
   /** Method to enable passed in models or categories  */
   setEnabled: (item: ListItem[], enabled: boolean) => void;
 }
@@ -101,6 +99,7 @@ export interface CategoryModelTreeProps {
 export interface CategoryModelTreeState {
   activeGroup: ModelGroup;
   checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
+  isLoading: boolean;
   isOptionsOpened: boolean;
   filterInfo?: FilterInfo;
   showSearchBox: boolean;

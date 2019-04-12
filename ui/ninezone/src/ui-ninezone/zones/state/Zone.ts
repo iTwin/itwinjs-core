@@ -12,14 +12,14 @@ import { NineZone, WidgetZoneIndex, ZoneIndex, StatusZoneIndex, ContentZoneIndex
 import { Widget, WidgetProps, getDefaultWidgetProps } from "./Widget";
 import { TargetType } from "./Target";
 
-/** @hidden */
+/** @alpha */
 export enum DropTarget {
   None,
   Merge,
   Back,
 }
 
-/** @hidden */
+/** @alpha */
 export interface ZonePropsBase {
   readonly id: WidgetZoneIndex;
   readonly bounds: RectangleProps;
@@ -30,31 +30,31 @@ export interface ZonePropsBase {
   readonly allowsMerging: boolean;
 }
 
-/** @hidden */
+/** @alpha */
 export interface FloatingZoneProps extends ZonePropsBase {
   readonly floating: FloatingProps;
 }
 
-/** @hidden */
+/** @alpha */
 export interface FloatingProps {
   readonly bounds: RectangleProps;
   readonly stackId: number;
 }
 
-/** @hidden */
+/** @alpha */
 export interface StatusZoneManagerProps extends ZonePropsBase {
   readonly id: StatusZoneIndex;
   readonly isInFooterMode: boolean;
 }
 
-/** @hidden */
+/** @alpha */
 export const isStatusZone = (zone: ZonePropsBase): zone is StatusZoneManagerProps => {
   if (zone.id === 8)
     return true;
   return false;
 };
 
-/** @hidden */
+/** @alpha */
 export const getDefaultZoneProps = (id: WidgetZoneIndex): ZonePropsBase => {
   return {
     id,
@@ -72,7 +72,7 @@ export const getDefaultZoneProps = (id: WidgetZoneIndex): ZonePropsBase => {
   };
 };
 
-/** @hidden */
+/** @alpha */
 export const getDefaultStatusZoneProps = (): StatusZoneManagerProps => {
   return {
     id: 8,
@@ -91,20 +91,20 @@ export const getDefaultStatusZoneProps = (): StatusZoneManagerProps => {
   };
 };
 
-/** @hidden */
+/** @alpha */
 export interface ZoneIdToWidget {
   zoneId: ZoneIndex;
   widget: Widget | undefined;
 }
 
-/** @hidden */
+/** @alpha */
 export namespace ZoneIdToWidget {
   export const sortAscending = (a: ZoneIdToWidget, b: ZoneIdToWidget): number => {
     return a.zoneId - b.zoneId;
   };
 }
 
-/** @hidden */
+/** @alpha */
 export class LayoutFactory {
   public create(zone: WidgetZone, root: NineZoneRoot): WidgetZoneLayout {
     switch (zone.props.id) {
@@ -129,7 +129,7 @@ export class LayoutFactory {
   }
 }
 
-/** A standard area on the screen for users to read and interact with data applicable to the current task. */
+/** @alpha */
 export class ZoneManager {
   private readonly _id: ZoneIndex;
   protected _widgets: Widget[] | undefined = undefined;
@@ -177,7 +177,7 @@ export class ZoneManager {
   }
 }
 
-/** @hidden */
+/** @alpha */
 export class WidgetZone extends ZoneManager {
   protected _layout: WidgetZoneLayout | undefined = undefined;
   protected _widgets: Widget[] | undefined = undefined;
@@ -504,7 +504,7 @@ export class WidgetZone extends ZoneManager {
   }
 }
 
-/** @hidden */
+/** @alpha */
 export class StatusZoneManager extends WidgetZone {
   public static readonly id: StatusZoneIndex = 8;
   public constructor(nineZone: NineZone, public readonly props: StatusZoneManagerProps) {
@@ -522,7 +522,7 @@ export class StatusZoneManager extends WidgetZone {
   }
 }
 
-/** @hidden */
+/** @alpha */
 export class ContentZone extends ZoneManager {
   public static readonly id: ContentZoneIndex = 5;
 

@@ -5,6 +5,8 @@
 export * from "./ui-core/UiCore";
 export * from "./ui-core/utils/Props";
 
+export * from "./ui-core/icons/SvgPath";
+export * from "./ui-core/icons/SvgSprite";
 export * from "./ui-core/icons/WebFontIcon";
 export * from "./ui-core/base/UiEvent";
 
@@ -75,6 +77,7 @@ export * from "./ui-core/button/UnderlinedButton";
 export * from "./ui-core/inputs/checkbox/Checkbox";
 export * from "./ui-core/inputs/Input";
 export * from "./ui-core/inputs/InputStatus";
+export * from "./ui-core/inputs/LabeledComponentProps";
 export * from "./ui-core/inputs/LabeledInput";
 export * from "./ui-core/inputs/LabeledSelect";
 export * from "./ui-core/inputs/LabeledTextarea";

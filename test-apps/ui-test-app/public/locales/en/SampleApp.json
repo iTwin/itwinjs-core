@@ -20,7 +20,8 @@
     "SingleContent": "Single Content"
   },
   "Test": {
-    "my-label": "My Label"
+    "my-label": "My Label",
+    "loading": "Loading..."
   },
   "settingsStage": {
     "settings": "Settings",
@@ -113,13 +114,20 @@
     "toggleItemDisplay": "Toggle Hide/Show Test",
     "openRadial": "Open Radial Menu",
     "outputMessage": "Call outputMessage",
+    "openCloseProperties": "Open/Close Property Grid",
     "openPropertyGrid": "Open Property Grid",
     "closePropertyGrid": "Close Property Grid",
     "showShortcutsMenu": "Show Shortcuts Menu",
     "shortcutsSubMenu": "Shortcuts Submenu Sample",
     "openNestedFrontstage1": "Open Nested Frontstage",
     "switchLayout": "Switch layouts",
-    "showhideZones": "Toggle Zone Visibility"
+    "showhideZones": "Toggle Zone Visibility",
+    "activityMessage": "Activity Message",
+    "pointerMessage": "Pointer Message",
+    "messageDemos": "Message Demos",
+    "dialogDemos": "Dialog Demos",
+    "viewportDialog": "Viewport Dialog",
+    "openNestedAnimationStage": "Open Stage to Play Animations"
   },
   "tools": {
     "ToolWithSettings": {
@@ -183,7 +191,23 @@
     "pan": "Pan",
     "walk": "Walk",
     "fly": "Fly",
-    "toggleCamera": "Toggle Camera"
+    "toggleCamera": "Toggle Camera",
+    "AnalysisAnimation": {
+      "keyin": "Analysis Animation",
+      "description": "Animate analysis solutions",
+      "flyover": "Analysis Animation",
+      "Prompts": {
+        "SelectView": "Select View and press Play button"
+      },
+      "ToolSettings": {
+        "duration": "Duration:",
+        "seconds": "sec",
+        "loop": "Loop",
+        "play": "Play",
+        "pause": "Pause",
+        "stop": "Stop"
+      }
+    }
   },
   "widgets": {
     "NavigationTree": "Navigation Tree",

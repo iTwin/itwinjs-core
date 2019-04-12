@@ -6,10 +6,12 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Separator.scss";
 
-/** Item separator in the [[Backstage]]. */
+/** Item separator in the [[Backstage]] component.
+ * @beta
+ */
 export class BackstageSeparator extends React.PureComponent<CommonProps> {
   public render() {
     const className = classnames(

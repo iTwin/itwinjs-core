@@ -14,10 +14,10 @@
 .components-property-grid {
   @include uicore-expandable-blocks-list;
 
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding-top: 6px;
+  padding-bottom: 6px;
   display: grid;
-  grid-row-gap: 10px;
+  grid-row-gap: 6px;
   user-select: none;
   color: $buic-foreground-body;
   background-color: $buic-background-control;
@@ -41,6 +41,10 @@
 
   .components--clickable {
     cursor: pointer;
+
+    &:hover {
+      background: $buic-row-hover;
+    }
   }
 
   .components--hoverable:hover {
@@ -63,5 +67,5 @@
 
 .components-property-list--vertical {
   @include components-property-list;
-  margin-top: -13px;
+  // margin-top: -13px;
 }

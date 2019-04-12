@@ -21,6 +21,7 @@ import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SubCategoriesCache } from "./SubCategoriesCache";
+import { TileTreeState } from "./tile/TileTree";
 
 const loggerCategory: string = LoggerCategory.IModelConnection;
 
@@ -85,6 +86,21 @@ export class IModelConnection extends IModel {
    */
   public async loadFontMap(): Promise<FontMap> {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken))));
+  }
+  /** The set of Context Reality Model tile trees for this IModelConnection.
+   * @hidden
+   */
+  private _contextRealityModelTileTrees = new Map<string, TileTreeState>();
+  /** Get the context reality model tile tree for a URL.
+   * @hidden
+   */
+  public getContextRealityModelTileTree(url: string): TileTreeState {
+    const found = this._contextRealityModelTileTrees.get(url);
+    if (found !== undefined)
+      return found;
+    const tileTree = new TileTreeState(this, true, this.transientIds.next);
+    this._contextRealityModelTileTrees.set(url, tileTree);
+    return tileTree;
   }
 
   /** Registry of className to EntityState class */
@@ -209,6 +225,7 @@ export class IModelConnection extends IModel {
     });
 
     let openPromise: Promise<IModel>;
+    requestContext.useContextForRpc = true;
     if (openMode === OpenMode.ReadWrite)
       openPromise = IModelWriteRpcInterface.getClient().openForWrite(iModelToken);
     else
@@ -268,6 +285,7 @@ export class IModelConnection extends IModel {
     IModelConnection.onClose.raiseEvent(this);
     this.models.onIModelConnectionClose();  // free WebGL resources if rendering
 
+    requestContext.useContextForRpc = true;
     const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken); // Ensure the method isn't await-ed right away.
     try {
       await closePromise;

@@ -8,12 +8,11 @@
 
 .nz-widget-stacked {
   $min-height: 200px;
+  $grip-offset: $nz-resize-grip-size / 2;
 
   display: flex;
   max-height: 100%;
   position: relative;
-
-  $border-width: $nz-widget-border-width;
 
   > .nz-height-expander {
     display: flex;
@@ -28,26 +27,35 @@
   > .nz-top-grip {
     width: 100%;
     position: absolute;
-    top: -($resize-grip-size - $border-width) / 2;
+    top: -$grip-offset;
   }
 
-  > .nz-content-area {
+  > .nz-content-container {
     flex-grow: 1;
     min-width: 0;
-    border-style: solid;
-    border-width: $border-width;
-    border-color: $nz-widget-border-color;
-    background-color: $nz-widget-background-color;
     position: relative;
-    border-bottom-left-radius: $nz-widget-border-radius;
-    border-bottom-right-radius: $nz-widget-border-radius;
+
     pointer-events: auto;
-    overflow: hidden;
+
+    > .nz-content {
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+      background-color: $nz-widget-background-color;
+      border: {
+        style: solid;
+        width: $nz-widget-border-width;
+        color: $nz-widget-border-color;
+        bottom-left-radius: $nz-widget-border-radius;
+        bottom-right-radius: $nz-widget-border-radius;
+      }
+      box-sizing: border-box;
+    }
 
     > .nz-bottom-grip {
       width: 100%;
       position: absolute;
-      bottom: -($resize-grip-size - $border-width);
+      bottom: -$grip-offset;
     }
 
     > .nz-content-grip {
@@ -55,12 +63,6 @@
       height: 100%;
       position: absolute;
       top: 0;
-    }
-
-    > .nz-settings {
-      position: absolute;
-      right: -$border-width;
-      top: -$border-width;
     }
   }
 
@@ -84,21 +86,18 @@
     > .nz-tabs-column {
       > .nz-tabs-grip-container {
         > .nz-tabs-grip {
-          left: -($resize-grip-size + $border-width) / 2;
+          left: -$grip-offset;
         }
       }
     }
 
-    > .nz-content-area {
-      border-top-left-radius: $nz-widget-border-radius;
-
-      > .nz-settings {
-        left: -$border-width;
+    > .nz-content-container {
+      > .nz-content {
         border-top-left-radius: $nz-widget-border-radius;
       }
 
       > .nz-content-grip {
-        left: -($resize-grip-size - $border-width);
+        left: -$grip-offset;
       }
     }
   }
@@ -109,20 +108,18 @@
     > .nz-tabs-column {
       > .nz-tabs-grip-container {
         > .nz-tabs-grip {
-          right: -($resize-grip-size + $border-width) / 2;
+          right: -$grip-offset;
         }
       }
     }
 
-    > .nz-content-area {
-      border-top-right-radius: $nz-widget-border-radius;
-
-      > .nz-settings {
+    > .nz-content-container {
+      > .nz-content {
         border-top-right-radius: $nz-widget-border-radius;
       }
 
       > .nz-content-grip {
-        right: -($resize-grip-size - $border-width);
+        right: -$grip-offset;
       }
     }
   }
@@ -161,7 +158,7 @@
       }
     }
 
-    > .nz-content-area {
+    > .nz-content-container {
       display: none;
     }
   }
@@ -171,7 +168,7 @@
   }
 
   &.nz-floating {
-    > .nz-content-area {
+    > .nz-content-container {
       > .nz-content-grip {
         display: block;
       }

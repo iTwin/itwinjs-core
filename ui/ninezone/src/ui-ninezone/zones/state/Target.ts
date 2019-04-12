@@ -6,19 +6,19 @@
 
 import { NineZone, WidgetZoneIndex } from "./NineZone";
 
-/** @hidden */
+/** @alpha */
 export enum TargetType {
   Merge,
   Back,
 }
 
-/** @hidden */
+/** @alpha */
 export interface TargetZoneProps {
   readonly zoneId: WidgetZoneIndex;
   readonly type: TargetType;
 }
 
-/** @hidden */
+/** @alpha */
 export class Target {
   public constructor(
     public readonly nineZone: NineZone,

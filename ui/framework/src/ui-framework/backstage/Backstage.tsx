@@ -9,7 +9,7 @@ import * as React from "react";
 import { SignOutModalFrontstage } from "../oidc/SignOut";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 
-import { UiEvent } from "@bentley/ui-core";
+import { UiEvent, getUserColor } from "@bentley/ui-core";
 import { Backstage as NZ_Backstage, UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { CommandItemDef } from "../shared/Item";
@@ -139,13 +139,26 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
       const userInfo = this.props.accessToken.getUserInfo();
       if (userInfo) {
         return (
-          <NZ_UserProfile firstName={userInfo.profile!.firstName} lastName={userInfo.profile!.lastName} email={userInfo.email!.id}
-            onClick={this._onSignOut} />
+          <NZ_UserProfile
+            color={getUserColor(userInfo.email!.id)}
+            initials={this._getInitials(userInfo.profile!.firstName, userInfo.profile!.lastName)}
+            onClick={this._onSignOut}
+          >
+            {this._getFullName(userInfo.profile!.firstName, userInfo.profile!.lastName)}
+          </NZ_UserProfile>
         );
       }
     }
 
     return undefined;
+  }
+
+  private _getInitials(firstName: string, lastName: string): string {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+  }
+
+  private _getFullName(firstName: string, lastName: string): string {
+    return `${firstName} ${lastName}`;
   }
 
   public render(): React.ReactNode {
@@ -154,13 +167,14 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     return (
       <NZ_Backstage
         className={this.props.className}
-        style={this.props.style}
-        isOpen={this.state.isVisible}
-        showOverlay={this.props.showOverlay}
-        onClose={this._onClose}
         header={this._getUserInfo()}
-        items={this.props.children}
-      />
+        isOpen={this.state.isVisible}
+        onClose={this._onClose}
+        showOverlay={this.props.showOverlay}
+        style={this.props.style}
+      >
+        {this.props.children}
+      </NZ_Backstage>
     );
   }
 }

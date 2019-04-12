@@ -6,20 +6,23 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { Omit } from "@bentley/ui-core";
+
+import { Omit, CommonProps } from "@bentley/ui-core";
+
+import { ItemStyleProvider } from "../../properties/ItemStyle";
+import { EditorContainerProps, EditorContainer } from "../../editors/EditorContainer";
+import { CellItem } from "../TableDataProvider";
 import {
-  EditorContainerProps, EditorContainer, CellItem, PropertyValueRendererManager,
-  PropertyDialogState, PropertyValueRendererContext, PropertyContainerType,
-} from "../../../ui-components";
+  PropertyDialogState, PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType,
+} from "../../properties/ValueRendererManager";
 
 import "./TableCell.scss";
-import { ItemStyleProvider } from "../../properties/ItemStyle";
 
 /**
  * Properties of the [[TableCell]] React component
  * @public
  */
-export interface TableCellProps {
+export interface TableCellProps extends CommonProps {
   /** Additional class name for the cell container */
   className?: string;
   /** Title of the cell container */
@@ -54,6 +57,7 @@ export class TableCell extends React.PureComponent<TableCellProps> {
     return (
       <div
         className={classnames("components-table-cell", this.props.className)}
+        style={this.props.style}
         title={this.props.title}
         onClick={this.props.onClick}
         onMouseMove={this.props.onMouseMove}
@@ -68,7 +72,7 @@ export class TableCell extends React.PureComponent<TableCellProps> {
 /** Properties of the [[TableCellContent]] React component
  * @public
  */
-export interface TableCellContentProps {
+export interface TableCellContentProps extends CommonProps {
   /** Indicates, whether container cell is selected or not */
   isSelected: boolean;
   /** Props for the item that will be rendered */
@@ -95,7 +99,7 @@ interface TableCellContentState {
 export class TableCellContent extends React.PureComponent<TableCellContentProps, TableCellContentState> {
   /** @internal */
   public readonly state: TableCellContentState = {
-    content: <div style={this.getStyle(this.props.cellItem, this.props.isSelected, this.props.height)} />,
+    content: <div className={this.props.className} style={this.getStyle(this.props.cellItem, this.props.isSelected, this.props.height)} />,
   };
 
   private _isMounted = false;
@@ -105,6 +109,7 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
       ...ItemStyleProvider.createStyle(cellItem.style ? cellItem.style : {}, isSelected),
       textAlign: cellItem.alignment,
       height,
+      ...this.props.style,
     };
   }
 
@@ -112,7 +117,7 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
     const style = this.getStyle(props.cellItem, props.isSelected, props.height);
 
     if (!props.cellItem.record)
-      return <div style={style} />;
+      return <div className={this.props.className} style={style} />;
 
     const rendererContext: PropertyValueRendererContext = {
       containerType: PropertyContainerType.Table,

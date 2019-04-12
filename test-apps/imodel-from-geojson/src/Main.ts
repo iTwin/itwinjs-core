@@ -36,7 +36,18 @@ const argv: yargs.Arguments<Args> = yargs
   .alias("point_radius", "r")
   .describe("color", "Add random colors")
   .boolean("color")
-  .alias("color", "c")
+  .describe("map", "Background Map (none, aerial, streets, hybrid)")
+  .choices("map", ["none", "aerial", "streets", "hybrid"])
+  .describe("mapBias", "Background Map ground bias")
+  .number("mapBias")
+  .describe("classifiedName", "Add classified reality model name")
+  .string("classifiedName")
+  .describe("classifiedURL", "Add classified reality model URL")
+  .string("classifiedURL")
+  .describe("classifiedOutside", "Classifier Outside (on, off, dimmed, hilite, color)")
+  .choices("classifiedOutside", ["on", "off", "dimmed", "hilite", "color"])
+  .describe("classifiedInside", "Classifier Outside (on, off, dimmed, hilite, color)")
+  .choices("classifiedInside", ["on", "off", "dimmed", "hilite", "color"])
   .demandOption(["input", "output"])
   .argv;
 
@@ -44,7 +55,12 @@ IModelHost.startup();
 Logger.initializeToConsole();
 
 const geoJson = new GeoJson(argv.input as string);
-const importer = new GeoJsonImporter(argv.output as string, geoJson, argv.append as boolean, argv.model_name as string, argv.label as string, argv.point_radius as number, argv.color as boolean);
-importer.import();
-
-IModelHost.shutdown();
+const importer = new GeoJsonImporter(argv.output as string, geoJson, argv.append as boolean, argv.model_name as string, argv.label as string, argv.point_radius as number, argv.color as boolean,
+  argv.map as string, argv.mapBias as number,
+  argv.classifiedURL as string, argv.classifiedName as string, argv.classifiedOutside as string, argv.classifiedInside as string);
+importer.import().then(() => {
+  process.stdout.write("IModel: " + argv.output + " Created for GeoJson: " + argv.input + "\n");
+  IModelHost.shutdown();
+}).catch(() => {
+  process.stdout.write("Error occurred\n");
+});

@@ -44,6 +44,8 @@ import {
   ContentViewManager,
   BooleanSyncUiListener,
   StagePanel,
+  FrontstageManager,
+  CommandItemDef,
 } from "@bentley/ui-framework";
 
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
@@ -66,6 +68,8 @@ import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
 import { ExternalIModelWidgetControl } from "../widgets/ExternalIModel";
+import { ViewportDialog } from "../dialogs/ViewportDialog";
+import { NestedAnimationStage } from "./NestedAnimationStage";
 
 export class ViewsFrontstage extends FrontstageProvider {
 
@@ -153,7 +157,8 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
-              <Widget iconSpec="icon-placeholder" label="External iModel View" control={ExternalIModelWidgetControl} fillZone={true} />,
+              <Widget iconSpec="icon-placeholder" label="External iModel View" control={ExternalIModelWidgetControl} fillZone={true}
+                applicationData={{ projectName: "iModelHubTest", imodelName: "86_Hospital" }} />,
             ]}
           />
         }
@@ -210,6 +215,37 @@ class FrontstageToolWidget extends React.Component {
       AppTools.item6, AppTools.item7, AppTools.item8],
       direction: Direction.Bottom,
       itemsInColumn: 7,
+    });
+  }
+
+  /** Command that opens a nested Frontstage */
+  private get _openNestedAnimationStage() {
+    return new CommandItemDef({
+      iconSpec: "icon-camera-animation",
+      labelKey: "SampleApp:buttons.openNestedAnimationStage",
+      execute: async () => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl && activeContentControl.viewport &&
+          (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript)) {
+          const frontstageProvider = new NestedAnimationStage();
+          const frontstageDef = frontstageProvider.initializeDef();
+          SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
+          await FrontstageManager.openNestedFrontstage(frontstageDef);
+        }
+      },
+      isVisible: false, // default to not show and then allow stateFunc to redefine.
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl && activeContentControl.viewport &&
+          (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
+          returnState.isVisible = true;
+        else
+          returnState.isVisible = false;
+        return returnState;
+      },
+
     });
   }
 
@@ -284,10 +320,46 @@ class FrontstageToolWidget extends React.Component {
     document.removeEventListener("mousemove", this._handleTool4Dismiss);
   }
 
+  private get _tool3Item() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.activityMessage", execute: async () => { await this._tool3(); },
+    });
+  }
+
+  private get _tool4Item() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.pointerMessage", execute: () => { this._tool4(); },
+    });
+  }
+
+  private get _outputMessageItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.outputMessage",
+      execute: () => { IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test")); },
+    });
+  }
+
+  private get _radialMenuItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openRadial", execute: () => { ModalDialogManager.openModalDialog(this.radialMenu()); },
+    });
+  }
+
   private radialMenu(): React.ReactNode {
     return (
-      <TestRadialMenu
-        opened={true} />
+      <TestRadialMenu opened={true} />
+    );
+  }
+
+  private get _viewportDialogItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.viewportDialog", execute: () => { ModalDialogManager.openModalDialog(this.viewportDialog()); },
+    });
+  }
+
+  private viewportDialog(): React.ReactNode {
+    return (
+      <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="86_Hospital" />
     );
   }
 
@@ -310,12 +382,15 @@ class FrontstageToolWidget extends React.Component {
     IModelApp.tools.run("Plugin", ["MeasurePoints.js"]);
   }
 
+  /* No longer used  <ActionItemButton actionItem={AppTools.analysisAnimationCommand} /> */
+
   private _horizontalToolbar =
     <Toolbar
       expandsTo={Direction.Bottom}
       items={
         <>
           <ActionItemButton actionItem={AppTools.appSelectElementCommand} />
+          <ActionItemButton actionItem={this._openNestedAnimationStage} />
           <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" labelKey="SampleApp:tools.Measure.Points.flyover"
             execute={this.executeMeasureByPoints} stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
           <PopupButton iconSpec="icon-arrow-down" label="Popup Test">
@@ -327,7 +402,6 @@ class FrontstageToolWidget extends React.Component {
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
             {(enabled: boolean, otherProps: any) => <ActionItemButton actionItem={AppTools.tool2} isEnabled={enabled} {...otherProps} />}
           </BooleanSyncUiListener>
-          <ActionItemButton actionItem={CoreTools.analysisAnimationCommand} />
           <ActionItemButton actionItem={AppTools.toolWithSettings} />
           <ActionItemButton actionItem={AppTools.toggleHideShowItemsCommand} />
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
@@ -352,12 +426,25 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Right}
       items={
         <>
-          <ActionItemButton actionItem={AppTools.verticalPropertyGridOpenCommand} />
-          <ActionItemButton actionItem={AppTools.verticalPropertyGridOffCommand} />
-          <ToolButton toolId="tool3" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool3" execute={this._tool3} />
-          <ToolButton toolId="tool4" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool4" execute={this._tool4} />
-          <ToolButton toolId="item5" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.outputMessage" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
-          <ToolButton toolId="openRadial" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.openRadial" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
+          <GroupButton
+            labelKey="SampleApp:buttons.openCloseProperties"
+            iconSpec="icon-placeholder"
+            items={[AppTools.verticalPropertyGridOpenCommand, AppTools.verticalPropertyGridOffCommand]}
+            direction={Direction.Right}
+          />
+          <GroupButton
+            labelKey="SampleApp:buttons.messageDemos"
+            iconSpec="icon-placeholder"
+            items={[this._tool3Item, this._tool4Item, this._outputMessageItem]}
+            direction={Direction.Right}
+          />
+          <GroupButton
+            labelKey="SampleApp:buttons.dialogDemos"
+            iconSpec="icon-placeholder"
+            items={[this._radialMenuItem, this._viewportDialogItem]}
+            direction={Direction.Right}
+          />
+
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
             iconSpec="icon-placeholder"

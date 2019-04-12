@@ -30,6 +30,7 @@ import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { Viewport } from "./Viewport";
+import { SpatialClassification } from "./SpatialClassification";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
  * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
@@ -86,9 +87,19 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     for (const contextRealityModel of this._contextRealityModels) { func(contextRealityModel); }
   }
 
+  /** @internal */
+  public async loadContextRealityModels(): Promise<void> {
+    const classifierIds = new Set<Id64String>();
+    for (const contextRealityModel of this._contextRealityModels) {
+      const classifier = SpatialClassification.getClassifierProps(contextRealityModel);
+      if (undefined !== classifier)
+        classifierIds.add(classifier.modelId);
+    }
+    return SpatialClassification.loadClassifiers(classifierIds, this.iModel);
+  }
   /** Performs logical comparison against another display style. Two display styles are logically equivalent if they have the same name, Id, and settings.
    * @param other The display style to which to compare.
-   * @returns true if the specified display style is logically equivalent to this display style.
+   * @returns true if the specified display style is logically equivalent to this display style - i.e., both styles have the same values for all of their settings.
    */
   public equalState(other: DisplayStyleState): boolean {
     if (this.name !== other.name || this.id !== other.id)

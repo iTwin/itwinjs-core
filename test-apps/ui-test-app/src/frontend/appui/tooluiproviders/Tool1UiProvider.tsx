@@ -185,7 +185,7 @@ class Tool1Assistance extends React.Component {
           <i className="icon icon-cursor" />
           Identify piece to trim
         </ToolAssistanceItem>
-        <ToolAssistanceSeparator label="Inputs" />
+        <ToolAssistanceSeparator>Inputs</ToolAssistanceSeparator>
         <ToolAssistanceItem>
           <i className="icon icon-cursor-click" />
           Clink on element

@@ -84,7 +84,9 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string {
   return "";
 }
 
-/** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify a supported ImageSourceFormat. */
+/** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify a supported ImageSourceFormat.
+ * @public
+ */
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined {
   switch (mimeType) {
     case "image/jpeg": return ImageSourceFormat.Jpeg;
@@ -94,8 +96,7 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
   }
 }
 
-/**
- * Extract an html Image element from a binary jpeg or png.
+/** Extract an html Image element from a binary jpeg or png.
  * @param source The ImageSource containing the binary jpeg or png data.
  * @returns a Promise which resolves to an HTMLImageElement containing the uncompressed bitmap image in RGBA format.
  * @public

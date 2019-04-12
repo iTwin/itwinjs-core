@@ -9,15 +9,19 @@ import { ColorDef, ColorDefProps, RgbColor } from "@bentley/imodeljs-common";
 import { Id64Set, Id64Arg, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./rendering";
 
-/** Whether override includes both color and alpha, only color, or only alpha. */
+/** Whether override includes both color and alpha, only color, or only alpha.
+ * @public
+ */
 export const enum FeatureOverrideType { ColorOnly, AlphaOnly, ColorAndAlpha }
 
+/** @public */
 export interface AppearanceOverrideProps {
   overrideType?: FeatureOverrideType;
   color?: ColorDefProps;
   ids?: Id64Set;
 }
 
+/** @public */
 export interface EmphasizeElementsProps {
   neverDrawn?: Id64Set;
   alwaysDrawn?: Id64Set;
@@ -26,8 +30,8 @@ export interface EmphasizeElementsProps {
   appearanceOverride?: AppearanceOverrideProps[];
 }
 
-/**
- * An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
+/** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
+ * @public
  */
 export class EmphasizeElements implements FeatureOverrideProvider {
   private _defaultAppearance?: FeatureSymbology.Appearance;

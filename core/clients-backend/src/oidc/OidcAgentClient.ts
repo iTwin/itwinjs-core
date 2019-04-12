@@ -8,9 +8,16 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import { BentleyStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
 
+/**
+ * Configuration of clients for agent or service applications.
+ * @beta
+ */
 export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
 
-/** Utility to generate OIDC/OAuth tokens for agent or service applications */
+/**
+ * Utility to generate OIDC/OAuth tokens for agent or service applications
+ * @beta
+ */
 export class OidcAgentClient extends OidcBackendClient {
   constructor(agentConfiguration: OidcAgentClientConfiguration) {
     super(agentConfiguration);

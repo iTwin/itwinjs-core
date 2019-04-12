@@ -53,7 +53,7 @@ import { PntsTileIO } from "./PntsTileIO";
 import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
 
-const scratchRange2d = [ new Point2d(), new Point2d(), new Point2d(), new Point2d() ];
+const scratchRange2d = [new Point2d(), new Point2d(), new Point2d(), new Point2d()];
 function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void {
   if (!is2d) {
     builder.addRangeBox(range);
@@ -953,6 +953,7 @@ export class TileTreeState {
   public edgesOmitted: boolean = false;
   public classifierExpansion: number = 0;
   public get iModel() { return this._iModel; }
+  public get modelId() { return this._modelId; }
 
   constructor(private _iModel: IModelConnection, private _is3d: boolean, private _modelId: Id64String) { }
   public setTileTree(props: TileTreeProps, loader: TileLoader) {

@@ -9,7 +9,7 @@ import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { ClipShape, ClipMask } from "../../clipping/ClipPrimitive";
+import { ClipMaskXYZRangePlanes, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipVector } from "../../clipping/ClipVector";
 import { SmallSystem } from "../../numerics/Polynomials";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -116,7 +116,7 @@ describe("ClipVector", () => {
    *                                                     \/(7,-8)
    */
   before(() => {
-    clipShape0 = ClipShape.createBlock(Range3d.createXYZXYZ(-5, -4, -50, -3, -2, 50), ClipMask.All);
+    clipShape0 = ClipShape.createBlock(Range3d.createXYZXYZ(-5, -4, -50, -3, -2, 50), ClipMaskXYZRangePlanes.All);
     clipShape1 = ClipShape.createShape([Point3d.create(4.5, 1), Point3d.create(6, 3), Point3d.create(3, 3)])!;
     clipShape2 = ClipShape.createShape([
       Point3d.create(6, 1),
@@ -339,7 +339,7 @@ describe("ClipVector", () => {
   it("Extract boundary loops", () => {
     const vectorLen = clipVector012.clips.length;
     const lastShape = clipVector012.clips[vectorLen - 1] as ClipShape;
-    const expClipMask = ClipMask.XAndY | (lastShape.zLowValid ? ClipMask.ZLow : 0) | (lastShape.zHighValid ? ClipMask.ZHigh : 0);
+    const expClipMask = ClipMaskXYZRangePlanes.XAndY | (lastShape.zLowValid ? ClipMaskXYZRangePlanes.ZLow : 0) | (lastShape.zHighValid ? ClipMaskXYZRangePlanes.ZHigh : 0);
     let expZLow = -Number.MAX_VALUE;
     let expZHigh = Number.MAX_VALUE;
     let zLowFound = false;

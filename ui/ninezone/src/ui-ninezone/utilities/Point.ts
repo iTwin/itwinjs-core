@@ -4,13 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-/** Describes [[Point]]. */
+/** Describes [[Point]].
+ * @beta
+ */
 export interface PointProps {
   readonly x: number;
   readonly y: number;
 }
 
-/** Describes and provides methods to work with 2d points. */
+/** Describes and provides methods to work with 2d points.
+ * @internal
+ */
 export class Point implements PointProps {
   /** Creates point from [[PointProps]]. */
   public static create(pointProps: PointProps) {

@@ -17,7 +17,7 @@ interface Point {
 }
 
 /** Position of the popup relative to its target
- * @public
+ * @beta
  */
 export enum Position {
   TopLeft,
@@ -31,7 +31,7 @@ export enum Position {
 }
 
 /** Properties for the [[Popup]] component
- * @public
+ * @beta
  */
 export interface PopupProps extends CommonProps {
   /**  show or hide the box shadow */
@@ -48,6 +48,8 @@ export interface PopupProps extends CommonProps {
   left: number;
   /** Function called when the popup is opened */
   onOpen?: () => void;
+  /** Function called when user clicks outside the popup  */
+  onOutsideClick?: (e: MouseEvent) => void;
   /** Function called when the popup is closed */
   onClose?: () => void;
   /* offset from the parent */
@@ -65,13 +67,13 @@ interface PopupState {
 }
 
 /** Popup React component
- * @public
+ * @beta
  */
 export class Popup extends React.Component<PopupProps, PopupState> {
   private _popup: HTMLElement | null = null;
 
-  constructor(props: PopupProps, context?: any) {
-    super(props, context);
+  constructor(props: PopupProps) {
+    super(props);
 
     this.state = { isOpen: this.props.isOpen, top: 0, left: 0, position: this.props.position };
   }
@@ -114,7 +116,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     window.addEventListener("resize", this._hide);
     window.addEventListener("contextmenu", this._hide);
     window.addEventListener("scroll", this._hide);
-    window.addEventListener("wheel", this._hide);
+    window.addEventListener("wheel", this._handleWheel);
     window.addEventListener("keydown", this._handleKeyboard);
   }
 
@@ -125,14 +127,23 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     window.removeEventListener("resize", this._hide);
     window.removeEventListener("contextmenu", this._hide);
     window.removeEventListener("scroll", this._hide);
-    window.removeEventListener("wheel", this._hide);
+    window.removeEventListener("wheel", this._handleWheel);
     window.removeEventListener("keydown", this._handleKeyboard);
   }
 
-  private _handleOutsideClick = (event: MouseEvent): void => {
-    if (this._popup && this._popup.contains(event.target as Node)) {
+  private _handleWheel = (event: WheelEvent) => {
+    if (this._popup && this._popup.contains(event.target as Node))
       return;
-    }
+    this._hide();
+  }
+
+  private _handleOutsideClick = (event: MouseEvent): void => {
+    if (this._popup && this._popup.contains(event.target as Node))
+      return;
+
+    if (this.props.onOutsideClick)
+      return this.props.onOutsideClick(event);
+
     if (this.props.target && this.props.target.contains(event.target as Node))
       return;
 

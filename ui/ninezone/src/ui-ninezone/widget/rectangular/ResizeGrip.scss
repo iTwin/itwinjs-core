@@ -9,23 +9,23 @@
 
   &.nz-direction-ew {
     cursor: ew-resize;
-    width: $resize-grip-size;
+    width: $nz-resize-grip-size;
   }
 
   &.nz-direction-ns {
     cursor: ns-resize;
-    height: $resize-grip-size;
+    height: $nz-resize-grip-size;
   }
 
   &.nz-direction-ne-sw {
     cursor: nesw-resize;
-    width: $resize-grip-size;
-    height: $resize-grip-size;
+    width: $nz-resize-grip-size;
+    height: $nz-resize-grip-size;
   }
 
   &.nz-direction-nw-se {
     cursor: nwse-resize;
-    width: $resize-grip-size;
-    height: $resize-grip-size;
+    width: $nz-resize-grip-size;
+    height: $nz-resize-grip-size;
   }
 }

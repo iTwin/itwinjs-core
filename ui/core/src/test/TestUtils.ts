@@ -5,7 +5,9 @@
 import { I18N } from "@bentley/imodeljs-i18n";
 import { UiCore } from "../ui-core/UiCore";
 
-export default class TestUtils {
+// tslint:disable: completed-docs
+
+export class TestUtils {
   private static _i18n?: I18N;
   private static _uiCoreInitialized = false;
 
@@ -33,3 +35,5 @@ export default class TestUtils {
     TestUtils._uiCoreInitialized = false;
   }
 }
+
+export default TestUtils;   // tslint:disable-line: no-default-export

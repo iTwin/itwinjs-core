@@ -54,5 +54,3 @@ export class SimpleTreeDataProvider implements ITreeDataProvider {
     return this.getNodesByParentId(parent ? parent.id : undefined).length;
   }
 }
-
-export default SimpleTreeDataProvider;

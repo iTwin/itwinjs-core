@@ -62,8 +62,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   private _initialize = async () => {
-    this._initModelState();
-    this._initCategoryState();
+    await this._initModelState();
+    await this._initCategoryState();
     this._initGroups();
 
     if (this._isMounted)
@@ -85,7 +85,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** Initialize models */
-  private _initModelState = () => {
+  private _initModelState = async () => {
     Presentation.presentation.rulesets().add(require("../../../../rulesets/Models.json")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         this._modelRuleset = ruleset;
@@ -97,7 +97,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** Initialize categories */
-  private _initCategoryState = () => {
+  private _initCategoryState = async () => {
     Presentation.presentation.rulesets().add(require("../../../../rulesets/Categories.json")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         this._categoryRuleset = ruleset;
@@ -132,19 +132,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       dataProvider: new ModelSelectorDataProvider(this.props.iModelConnection, this._modelRuleset!.id),
       label: UiFramework.i18n.translate("UiFramework:categoriesModels.models"),
       items: [],
-      updateState: this.updateModelsState.bind(this),
       setEnabled: this._onModelsChecked,
     };
-  }
-
-  /** Add models to current viewport */
-  public async updateModelsState() {
-    if (!IModelApp.viewManager)
-      return;
-
-    const vp = IModelApp.viewManager.getFirstOpenView();
-    if (vp)
-      this._updateModelsWithViewport(vp); // tslint:disable-line:no-floating-promises
   }
 
   private async _updateModelsWithViewport(vp: Viewport) {
@@ -208,7 +197,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       dataProvider: new ModelSelectorDataProvider(this.props.iModelConnection, this._categoryRuleset!.id),
       label: UiFramework.i18n.translate("UiFramework:categoriesModels.categories"),
       items: [],
-      updateState: this.updateCategoriesState.bind(this),
       setEnabled: this._onCategoriesChecked,
     };
   }
@@ -239,17 +227,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       updateViewport(IModelApp.viewManager.selectedView);
     }
 
-    this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView); // tslint:disable-line:no-floating-promises
-  }
-
-  /** Add categories to current viewport */
-  public async updateCategoriesState() {
-    if (!IModelApp.viewManager)
-      return;
-
-    const vp = IModelApp.viewManager.selectedView;
-    if (vp)
-      this._updateCategoriesWithViewport(vp); // tslint:disable-line:no-floating-promises
+    // this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView); // tslint:disable-line:no-floating-promises
   }
 
   private async _updateCategoriesWithViewport(vp: Viewport) {
@@ -336,7 +314,5 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     );
   }
 }
-
-export default ModelSelectorWidget;
 
 ConfigurableUiManager.registerControl("ModelSelectorWidget", ModelSelectorWidgetControl);

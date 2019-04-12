@@ -5,13 +5,17 @@
 /** @module Color */
 
 import * as React from "react";
-import "./SaturationPicker.scss";
+import classnames from "classnames";
+
 import { HSVColor } from "@bentley/imodeljs-common";
+import { CommonProps } from "@bentley/ui-core";
+
+import "./SaturationPicker.scss";
 
 /** Properties for the [[SaturationPicker]] React component
  * @beta
  */
-export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
   /** function to run when user selects location in saturation region */
   onSaturationChange?: ((saturation: HSVColor) => void) | undefined;
   /** HSV Color Value */
@@ -169,7 +173,7 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     };
 
     return (
-      <div className="components-saturation-container" data-testid="saturation-container">
+      <div className={classnames("components-saturation-container", this.props.className)} style={this.props.style} data-testid="saturation-container">
         <div
           data-testid="saturation-region"
           role="slider" aria-label="Saturation"

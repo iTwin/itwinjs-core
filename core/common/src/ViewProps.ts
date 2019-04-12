@@ -12,6 +12,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 import { ViewFlags, AnalysisStyleProps, HiddenLine, AmbientOcclusion } from "./Render";
 import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
 import { RenderSchedule } from "./RenderSchedule";
+import { SpatialClassificationProps } from "./SpatialClassificationProps";
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend)
  * @public
@@ -245,6 +246,7 @@ export interface ContextRealityModelProps {
   tilesetUrl: string;
   name?: string;
   description?: string;
+  classifiers?: SpatialClassificationProps.PropertiesProps[];
 }
 
 /** JSON representation of the settings associated with a [[DisplayStyleProps]].

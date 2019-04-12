@@ -1,6 +1,6 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "0.191.0-dev.33",
+  "version": "0.191.0-dev.42",
   "description": "iModel.js electron utilities",
   "main": "lib/ElectronManager.js",
   "typings": "lib/ElectronManager",
@@ -12,7 +12,7 @@
     "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronManager.ts --onlyJson %TYPEDOC_THEME%",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ElectronManager --ignoreMissingTags",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ElectronManager",
     "lint": "tslint --project . 1>&2",
     "test": "",
     "cover": ""
@@ -38,7 +38,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "0.191.0-dev.33",
+    "@bentley/build-tools": "0.191.0-dev.42",
     "@types/node": "10.14.1",
     "electron": "^4.1.0",
     "rimraf": "^2.6.2",

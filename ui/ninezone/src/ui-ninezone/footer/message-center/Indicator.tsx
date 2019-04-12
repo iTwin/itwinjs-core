@@ -6,51 +6,59 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { FooterIndicator, FooterIndicatorProps } from "../Indicator";
 import "./Indicator.scss";
 
-/** Properties of [[MessageCenterIndicator]] component. */
-export interface MessageCenterIndicatorProps extends CommonProps, NoChildrenProps {
-  /** Label of balloon icon. */
-  balloonLabel?: string;
-  /** Dialog that is opened when indicator is clicked. See [[MessageCenterDialog]] */
-  dialog?: React.ReactChild;
-  /** Indicator label. */
+/** Properties of [[MessageCenter]] component.
+ * @beta
+ */
+export interface MessageCenterProps extends FooterIndicatorProps {
+  /** Message center balloon content. */
+  children?: string;
+  /** Clickable part of the indicator. */
+  indicatorRef?: React.Ref<HTMLDivElement>;
+  /** Message center label. */
   label?: string;
   /** Function called when indicator is clicked. */
   onClick?: () => void;
+  /** Message center dialog target. */
+  targetRef?: React.Ref<HTMLDivElement>;
 }
 
-/** One of [[Footer]] indicators. */
-export class MessageCenterIndicator extends React.PureComponent<MessageCenterIndicatorProps> {
+/** Message center indicator used in [[Footer]] component.
+ * @note Used with [[MessageCenterDialog]] component.
+ * @beta
+ */
+export class MessageCenter extends React.PureComponent<MessageCenterProps> {
   public render() {
-    const className = classnames(
-      "nz-footer-messageCenter-indicator",
-      this.props.className);
-
+    const { children, className, indicatorRef, label, onClick, targetRef, ...props } = this.props;
     return (
-      <div
-        className={className}
-        style={this.props.style}
+      <FooterIndicator
+        className={classnames("nz-footer-messageCenter-indicator", this.props.className)}
+        {...props}
       >
-        {this.props.label !== undefined &&
-          <span className="nz-label">{this.props.label}</span>
-        }
-        <div className="nz-balloon-container">
-          <div className="nz-dialog">
-            {this.props.dialog}
-          </div>
-          <div
-            className="nz-balloon"
-            onClick={this.props.onClick}
-          >
-            <div className="nz-arrow" />
-            <div className="nz-content">
-              {this.props.balloonLabel}
+        <div
+          className="nz-indicator"
+          onClick={onClick}
+          ref={indicatorRef}
+        >
+          {label !== undefined &&
+            <span className="nz-label">{label}</span>
+          }
+          <div className="nz-container">
+            <div className="nz-balloon">
+              <div className="nz-arrow" />
+              <div className="nz-content">
+                {children}
+              </div>
             </div>
+            <div
+              className="nz-target"
+              ref={targetRef}
+            />
           </div>
         </div>
-      </div>
+      </FooterIndicator>
     );
   }
 }

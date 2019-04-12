@@ -111,5 +111,3 @@ export function withBreadcrumbDragDrop<P extends BreadcrumbProps, DragDropObject
     }
   };
 }
-
-export default withBreadcrumbDragDrop;

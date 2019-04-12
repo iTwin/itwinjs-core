@@ -6,5 +6,7 @@
 
 import { Corner, Edge } from "../../utilities/Rectangle";
 
-/** Available resize handles of rectangular widget. */
+/** Available resize handles of rectangular widget.
+ * @alpha
+ */
 export type ResizeHandle = Corner | Edge;

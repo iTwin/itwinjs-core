@@ -59,58 +59,30 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     Logger.logTrace(loggerCategory, "Initialized service configuration", () => ({ configuration: this._configuration }));
   }
 
-  /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
-  private startSignIn(requestContext: ClientRequestContext): void {
+  /**
+   * Start the sign-in process
+   * - calls the onUserStateChanged() call back after the authorization completes
+   * or if there is an error.
+   * - redirects application to the redirectUri specified in the configuration and then
+   * redirects back to root when sign-in is complete.
+   */
+  public async signIn(requestContext: ClientRequestContext): Promise<void> {
     if (this.hasSignedIn)
       return;
     this.makeAuthorizationRequest(requestContext);
   }
 
-  /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
-  private startSignOut(requestContext: ClientRequestContext): void {
-    if (!this.hasSignedIn)
-      return;
-    this.makeRevokeTokenRequest(requestContext); // tslint:disable-line:no-floating-promises
-  }
-
-  /** Start the sign-in and return a promise that fulfils or rejects when it's complete
-   * Subscribe to onUserStateChanged to be notified when sign-in completes
-   */
-  public async signIn(requestContext: ClientRequestContext): Promise<AccessToken> {
-    return new Promise((resolve, reject) => {
-      try {
-        this.startSignIn(requestContext);
-      } catch (error) {
-        reject(error);
-      }
-
-      this.onUserStateChanged.addListener((token: AccessToken | undefined, message: string) => {
-        if (token)
-          resolve(token);
-        else
-          reject(message);
-      });
-    });
-  }
-
-  /** Start the sign-out and return a promise that fulfils or rejects when it's complete
-   * Subscribe to onUserStateChanged to be notified when sign-out completes
+  /**
+   * Start the sign-out process
+   * - calls the onUserStateChanged() call back after the authorization completes
+   *   or if there is an error.
+   * - redirects application to the postSignoutRedirectUri specified in the configuration when the sign out is
+   *   complete
    */
   public async signOut(requestContext: ClientRequestContext): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        this.startSignOut(requestContext);
-      } catch (error) {
-        reject(error);
-      }
-
-      this.onUserStateChanged.addListener((token: AccessToken | undefined, _message: string) => {
-        if (!token)
-          resolve();
-        else
-          reject("Unable to signout");
-      });
-    });
+    if (!this.hasSignedIn)
+      return;
+    this.makeRevokeTokenRequest(requestContext); // tslint:disable-line:no-floating-promises   });
   }
 
   private async getUserInfo(requestContext: ClientRequestContext): Promise<UserInfo | undefined> {

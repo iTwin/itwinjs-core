@@ -972,24 +972,15 @@ export enum BSplineWrapMode {
 }
 
 // @public
-export const enum ClipMask {
-    // (undocumented)
+export const enum ClipMaskXYZRangePlanes {
     All = 63,
-    // (undocumented)
     None = 0,
-    // (undocumented)
     XAndY = 15,
-    // (undocumented)
     XHigh = 2,
-    // (undocumented)
     XLow = 1,
-    // (undocumented)
     YHigh = 8,
-    // (undocumented)
     YLow = 4,
-    // (undocumented)
     ZHigh = 32,
-    // (undocumented)
     ZLow = 16
 }
 
@@ -1020,9 +1011,7 @@ export class ClipPlane implements Clipper {
     static createNormalAndPointXYZXYZ(normalX: number, normalY: number, normalZ: number, originX: number, originY: number, originZ: number, invisible?: boolean, interior?: boolean): ClipPlane | undefined;
     static createPlane(plane: Plane3dByOriginAndUnitNormal, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane;
     readonly distance: number;
-    // (undocumented)
     dotProductPlaneNormalPoint(point: Point3d): number;
-    // (undocumented)
     dotProductVector(vector: Vector3d): number;
     evaluatePoint(point: Point3d): number;
     // (undocumented)
@@ -1039,7 +1028,6 @@ export class ClipPlane implements Clipper {
     static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: Point3d[]): Point3d[] | undefined;
     readonly invisible: boolean;
     readonly inwardNormalRef: Vector3d;
-    // (undocumented)
     isAlmostEqual(other: ClipPlane): boolean;
     isPointInside(point: Point3d, tolerance?: number): boolean;
     isPointOn(point: Point3d, tolerance?: number): boolean;
@@ -1105,7 +1093,7 @@ export class ClipPrimitive {
 export class ClipShape extends ClipPrimitive {
     protected constructor(polygon?: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean);
     clone(result?: ClipShape): ClipShape;
-    static createBlock(extremities: Range3d, clipMask: ClipMask, isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
+    static createBlock(extremities: Range3d, clipMask: ClipMaskXYZRangePlanes, isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
     static createEmpty(isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
     static createFrom(other: ClipShape, result?: ClipShape): ClipShape;
     static createShape(polygon?: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean, result?: ClipShape): ClipShape | undefined;
@@ -2107,7 +2095,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     isIndexValid(index: number): boolean;
     // (undocumented)
     readonly length: number;
-    multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix: Matrix3d): void;
+    multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix: Matrix3d): boolean;
     multiplyMatrix3dInPlace(matrix: Matrix3d): void;
     multiplyTransformInPlace(transform: Transform): void;
     pop(): void;
@@ -3796,23 +3784,16 @@ export class PlaneSetParamsCache {
 // @public (undocumented)
 export class Point2d extends XY implements BeJSONFunctions {
     constructor(x?: number, y?: number);
-    // (undocumented)
     addForwardLeft(tangentFraction: number, leftFraction: number, vector: Vector2d): Point2d;
-    // (undocumented)
     clone(): Point2d;
     static create(x?: number, y?: number, result?: Point2d): Point2d;
-    // (undocumented)
     static createFrom(xy: XAndY | undefined, result?: Point2d): Point2d;
-    // (undocumented)
     static createZero(result?: Point2d): Point2d;
     crossProductToPoints(target1: XAndY, target2: XAndY): number;
     // (undocumented)
     dotVectorsToTargets(targetA: XAndY, targetB: XAndY): number;
-    // (undocumented)
     forwardLeftInterpolate(tangentFraction: number, leftFraction: number, point: XAndY): Point2d;
-    // (undocumented)
     fractionOfProjectionToLine(startPoint: Point2d, endPoint: Point2d, defaultFraction?: number): number;
-    // (undocumented)
     static fromJSON(json?: XYProps): Point2d;
     interpolate(fraction: number, other: XAndY, result?: Point2d): Point2d;
     interpolateXY(fractionX: number, fractionY: number, other: XAndY, result?: Point2d): Point2d;
@@ -4075,6 +4056,17 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
 }
 
 // @public
+export class PolyEdge {
+    constructor(origin: Point3d, next: Point3d, normal: Vector2d, z: number);
+    // (undocumented)
+    next: Point3d;
+    // (undocumented)
+    normal: Vector2d;
+    // (undocumented)
+    origin: Point3d;
+}
+
+// @public
 export abstract class Polyface extends GeometryQuery {
     protected constructor(data: PolyfaceData);
     static areIndicesValid(indices: number[] | undefined, indexPositionA: number, indexPositionB: number, data: any | undefined, dataLength: number): boolean;
@@ -4113,7 +4105,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     // (undocumented)
     addCone(cone: Cone): void;
     addCoordinateFacets(pointArray: Point3d[][], paramArray?: Point2d[][], normalArray?: Vector3d[][], endFace?: boolean): void;
-    // (undocumented)
     addGeometryQuery(g: GeometryQuery): void;
     addGraph(graph: HalfEdgeGraph, needParams: boolean, acceptFaceFunction?: HalfEdgeToBooleanFunction): void;
     addGraphFaces(_graph: HalfEdgeGraph, faces: HalfEdge[]): void;
@@ -4153,19 +4144,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     static graphFacesToPolyface(graph: HalfEdgeGraph, faces: HalfEdge[]): IndexedPolyface;
     // (undocumented)
     static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction?: HalfEdgeToBooleanFunction): IndexedPolyface;
-    // (undocumented)
     handleBox(g: Box): any;
-    // (undocumented)
     handleCone(g: Cone): any;
-    // (undocumented)
     handleLinearSweep(g: LinearSweep): any;
-    // (undocumented)
     handleRotationalSweep(g: RotationalSweep): any;
-    // (undocumented)
     handleRuledSweep(g: RuledSweep): any;
-    // (undocumented)
     handleSphere(g: Sphere): any;
-    // (undocumented)
     handleTorusPipe(g: TorusPipe): any;
     // (undocumented)
     readonly options: StrokeOptions;
@@ -4227,18 +4211,14 @@ export class PolyfaceData {
     readonly pointCount: number;
     // (undocumented)
     pointIndex: number[];
-    // (undocumented)
     range(result?: Range3d, transform?: Transform): Range3d;
     // (undocumented)
     readonly requireNormals: boolean;
-    // (undocumented)
     resizeAllDataArrays(length: number): void;
     // (undocumented)
     static reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean;
     reverseIndices(facetStartIndex?: number[]): void;
-    // (undocumented)
     reverseNormals(): void;
-    // (undocumented)
     trimAllIndexArrays(length: number): void;
     // (undocumented)
     tryTransformInPlace(transform: Transform): boolean;
@@ -4258,23 +4238,14 @@ export class PolyfaceQuery {
 
 // @public
 export interface PolyfaceVisitor extends PolyfaceData {
-    // (undocumented)
     clientAuxIndex(i: number): number;
-    // (undocumented)
     clientColorIndex(i: number): number;
-    // (undocumented)
     clientNormalIndex(i: number): number;
-    // (undocumented)
     clientParamIndex(i: number): number;
-    // (undocumented)
     clientPointIndex(i: number): number;
-    // (undocumented)
     currentReadIndex(): number;
-    // (undocumented)
     moveToNextFacet(): boolean;
-    // (undocumented)
     moveToReadIndex(index: number): boolean;
-    // (undocumented)
     reset(): void;
 }
 
@@ -4422,8 +4393,6 @@ export type Range1dProps = {
 export class Range2d extends RangeBase implements LowAndHighXY {
     constructor(lowx?: number, lowy?: number, highx?: number, highy?: number);
     // (undocumented)
-    readonly bottom: number;
-    // (undocumented)
     readonly center: Point2d;
     clone(result?: this): this;
     containsPoint(point: XAndY): boolean;
@@ -4453,8 +4422,6 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     // (undocumented)
     static fromJSON<T extends Range2d>(json?: Range2dProps): T;
     // (undocumented)
-    readonly height: number;
-    // (undocumented)
     high: Point2d;
     intersect(other: LowAndHighXY, result?: Range2d): Range2d;
     intersectsRange(other: LowAndHighXY): boolean;
@@ -4462,16 +4429,12 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     isAlmostEqual(other: Range2d): boolean;
     readonly isAlmostZeroX: boolean;
     readonly isAlmostZeroY: boolean;
-    readonly isNull: boolean;
     static isNull(range: LowAndHighXY): boolean;
+    readonly isNull: boolean;
     readonly isSinglePoint: boolean;
-    // (undocumented)
-    readonly left: number;
     // (undocumented)
     low: Point2d;
     maxAbs(): number;
-    // (undocumented)
-    readonly right: number;
     scaleAboutCenterInPlace(scaleFactor: number): void;
     // (undocumented)
     setFrom(other: LowAndHighXY): void;
@@ -4485,13 +4448,13 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     toFloat64Array(): Float64Array;
     // (undocumented)
     toJSON(): Range2dProps;
-    // (undocumented)
-    readonly top: number;
     union(other: LowAndHighXY, result?: Range2d): Range2d;
-    // (undocumented)
-    readonly width: number;
+    readonly xHigh: number;
     xLength(): number;
+    readonly xLow: number;
+    readonly yHigh: number;
     yLength(): number;
+    readonly yLow: number;
 }
 
 // @public (undocumented)
@@ -4500,15 +4463,10 @@ export type Range2dProps = {
     high: XYProps;
 } | XYProps[];
 
-// @public (undocumented)
+// @public
 export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions {
     constructor(lowx?: number, lowy?: number, lowz?: number, highx?: number, highy?: number, highz?: number);
-    // (undocumented)
-    readonly back: number;
-    // (undocumented)
-    readonly bottom: number;
     readonly center: Point3d;
-    // (undocumented)
     clone(result?: this): this;
     containsPoint(point: Point3d): boolean;
     containsPointXY(point: Point3d): boolean;
@@ -4517,7 +4475,6 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     corners(): Point3d[];
     static create(...point: Point3d[]): Range3d;
     static createArray<T extends Range3d>(points: Point3d[], result?: T): T;
-    // (undocumented)
     static createFrom<T extends Range3d>(other: Range3d, result?: T): T;
     static createInverseTransformedArray<T extends Range3d>(transform: Transform, points: Point3d[]): T;
     static createNull<T extends Range3d>(result?: T): T;
@@ -4527,8 +4484,6 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     static createXYZ<T extends Range3d>(x: number, y: number, z: number, result?: T): T;
     static createXYZXYZ<T extends Range3d>(xA: number, yA: number, zA: number, xB: number, yB: number, zB: number, result?: T): T;
     static createXYZXYZOrCorrectToNull<T extends Range3d>(xA: number, yA: number, zA: number, xB: number, yB: number, zB: number, result?: T): T;
-    // (undocumented)
-    readonly depth: number;
     diagonal(result?: Vector3d): Vector3d;
     diagonalFractionToPoint(fraction: number, result?: Point3d): Point3d;
     distanceToPoint(point: XYAndZ): number;
@@ -4555,13 +4510,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     static fromFloat64Array<T extends Range3d>(f64: Float64Array): T;
     // (undocumented)
     static fromJSON<T extends Range3d>(json?: Range3dProps): T;
-    // (undocumented)
-    readonly front: number;
     getLocalToWorldTransform(result?: Transform): Transform;
     getNpcToWorldRangeTransform(result?: Transform): Transform;
-    // (undocumented)
-    readonly height: number;
-    // (undocumented)
     high: Point3d;
     intersect(other: Range3d, result?: Range3d): Range3d;
     intersectsRange(other: Range3d): boolean;
@@ -4570,23 +4520,17 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     readonly isAlmostZeroX: boolean;
     readonly isAlmostZeroY: boolean;
     readonly isAlmostZeroZ: boolean;
-    readonly isNull: boolean;
     static isNull(data: LowAndHighXYZ): boolean;
+    readonly isNull: boolean;
     readonly isSinglePoint: boolean;
-    // (undocumented)
-    readonly left: number;
     localToWorld(xyz: XYAndZ, result?: Point3d): Point3d | undefined;
     localToWorldArrayInPlace(points: Point3d[]): boolean;
     localXYZToWorld(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d | undefined;
-    // (undocumented)
     low: Point3d;
     maxAbs(): number;
     maxLength(): number;
-    // (undocumented)
-    readonly right: number;
     scaleAboutCenterInPlace(scaleFactor: number): void;
     setFrom(other: Range3d): void;
-    // (undocumented)
     setFromJSON(json?: Range3dProps): void;
     setNull(): void;
     setXYZ(x: number, y: number, z: number): void;
@@ -4595,16 +4539,18 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     // (undocumented)
     toFloat64Array(): Float64Array;
     toJSON(): Range3dProps;
-    // (undocumented)
-    readonly top: number;
     union(other: Range3d, result?: Range3d): Range3d;
-    // (undocumented)
-    readonly width: number;
     worldToLocal(point: Point3d, result?: Point3d): Point3d | undefined;
     worldToLocalArrayInPlace(point: Point3d[]): boolean;
+    readonly xHigh: number;
     xLength(): number;
+    readonly xLow: number;
+    readonly yHigh: number;
     yLength(): number;
+    readonly yLow: number;
+    readonly zHigh: number;
     zLength(): number;
+    readonly zLow: number;
 }
 
 // @public (undocumented)
@@ -4613,19 +4559,13 @@ export type Range3dProps = {
     high: XYZProps;
 } | XYZProps[];
 
-// @public (undocumented)
+// @public
 export abstract class RangeBase {
-    // (undocumented)
     static coordinateToRangeAbsoluteDistance(x: number, low: number, high: number): number;
-    // (undocumented)
     protected static readonly _EXTREME_NEGATIVE: number;
-    // (undocumented)
     protected static readonly _EXTREME_POSITIVE: number;
-    // (undocumented)
     static isExtremePoint2d(xy: Point2d): boolean;
-    // (undocumented)
     static isExtremePoint3d(xyz: Point3d): boolean;
-    // (undocumented)
     static isExtremeValue(x: number): boolean;
     protected static npcScaleFactor(low: number, high: number): number;
     static rangeToRangeAbsoluteDistance(lowA: number, highA: number, lowB: number, highB: number): number;
@@ -5537,32 +5477,24 @@ export class UVSurfaceOps {
 export class Vector2d extends XY implements BeJSONFunctions {
     constructor(x?: number, y?: number);
     angleTo(vectorB: XAndY): Angle;
-    // (undocumented)
     clone(): Vector2d;
-    // (undocumented)
     static create(x?: number, y?: number, result?: Vector2d): Vector2d;
     static createFrom(data: XAndY | Float64Array, result?: Vector2d): Vector2d;
     static createOffsetBisector(unitPerpA: Vector2d, unitPerpB: Vector2d, offset: number): Vector2d | undefined;
-    // (undocumented)
     static createPolar(r: number, theta: Angle): Vector2d;
-    // (undocumented)
     static createStartEnd(point0: XAndY, point1: XAndY, result?: Vector2d): Vector2d;
-    // (undocumented)
     static createZero(result?: Vector2d): Vector2d;
     crossProduct(vectorB: XAndY): number;
     dotProduct(vectorB: XAndY): number;
     dotProductStartEnd(pointA: XAndY, pointB: XAndY): number;
     fractionOfProjectionToVector(target: Vector2d, defaultFraction?: number): number;
-    // (undocumented)
     static fromJSON(json?: XYProps): Vector2d;
     interpolate(fraction: number, right: Vector2d, result?: Vector2d): Vector2d;
     // (undocumented)
     isParallelTo(other: Vector2d, oppositeIsParallel?: boolean): boolean;
-    // (undocumented)
     isPerpendicularTo(other: Vector2d): boolean;
     minus(vector: XAndY, result?: Vector2d): Vector2d;
     negate(result?: Vector2d): Vector2d;
-    // (undocumented)
     normalize(result?: Vector2d): Vector2d | undefined;
     plus(vector: XAndY, result?: Vector2d): Vector2d;
     plus2Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number, result?: Vector2d): Vector2d;
@@ -5572,17 +5504,13 @@ export class Vector2d extends XY implements BeJSONFunctions {
     rotate90CCWXY(result?: Vector2d): Vector2d;
     // (undocumented)
     rotate90CWXY(result?: Vector2d): Vector2d;
-    // (undocumented)
     rotateXY(angle: Angle, result?: Vector2d): Vector2d;
     // (undocumented)
     safeDivideOrNull(denominator: number, result?: Vector2d): Vector2d | undefined;
     scale(scale: number, result?: Vector2d): Vector2d;
     scaleToLength(length: number, result?: Vector2d): Vector2d;
-    // (undocumented)
     unitPerpendicularXY(result?: Vector2d): Vector2d;
-    // (undocumented)
     static unitX(scale?: number): Vector2d;
-    // (undocumented)
     static unitY(scale?: number): Vector2d;
 }
 
@@ -5722,12 +5650,9 @@ export class XY implements XAndY {
     // (undocumented)
     freeze(): void;
     isAlmostEqual(other: XAndY, tol?: number): boolean;
-    // (undocumented)
     isAlmostEqualMetric(other: XAndY): boolean;
     isAlmostEqualXY(x: number, y: number, tol?: number): boolean;
-    // (undocumented)
     readonly isAlmostZero: boolean;
-    // (undocumented)
     isExactEqual(other: XAndY): boolean;
     magnitude(): number;
     magnitudeSquared(): number;
@@ -5738,7 +5663,6 @@ export class XY implements XAndY {
     setFromJSON(json?: XYProps): void;
     setZero(): void;
     toJSON(): XYProps;
-    // (undocumented)
     toJSONXY(): XYProps;
     unitVectorTo(target: XAndY, result?: Vector2d): Vector2d | undefined;
     vectorTo(other: XAndY, result?: Vector2d): Vector2d;

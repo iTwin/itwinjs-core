@@ -34,5 +34,3 @@ export class UiComponents {
   }
 
 }
-
-export default UiComponents;

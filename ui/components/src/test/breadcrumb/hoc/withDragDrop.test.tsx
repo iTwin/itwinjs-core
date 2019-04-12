@@ -8,14 +8,14 @@ import * as sinon from "sinon";
 import { render, cleanup } from "react-testing-library";
 import ReactTestUtils from "react-dom/test-utils";
 import { Breadcrumb } from "../../../ui-components";
-import withDragDrop from "../../../ui-components/breadcrumb/hoc/withDragDrop";
+import { withBreadcrumbDragDrop } from "../../../ui-components/breadcrumb/hoc/withDragDrop";
 import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../ui-components/dragdrop/DragDropDef";
 
 describe("Breadcrumb withDragDrop HOC", () => {
 
   afterEach(cleanup);
 
-  const DragDropBreadcrumb = withDragDrop(Breadcrumb); // tslint:disable-line:variable-name
+  const DragDropBreadcrumb = withBreadcrumbDragDrop(Breadcrumb); // tslint:disable-line:variable-name
 
   it("should render", () => {
     const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];

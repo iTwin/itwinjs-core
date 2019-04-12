@@ -9,9 +9,9 @@ import * as React from "react";
 import { Tooltip, TooltipProps } from "../../popup/tooltip/Tooltip";
 import "./Tooltip.scss";
 
-/**
- * Properties of [[ToolSettingsTooltip]] component.
+/** Properties of [[ToolSettingsTooltip]] component.
  * @note Component defaults [[ToolSettingsTooltipProps]]
+ * @alpha
  */
 export interface ToolSettingsTooltipProps extends TooltipProps {
   /** Tool settings icon. */
@@ -20,7 +20,9 @@ export interface ToolSettingsTooltipProps extends TooltipProps {
   stepString?: string;
 }
 
-/** Tool settings tooltip. Displays the step string and is hidden after certain timeout. */
+/** Tool settings tooltip. Displays the step string and is hidden after certain timeout.
+ * @alpha
+ */
 export class ToolSettingsTooltip extends React.PureComponent<ToolSettingsTooltipProps> {
   public render() {
     const { className, children, stepString, ...props } = this.props;

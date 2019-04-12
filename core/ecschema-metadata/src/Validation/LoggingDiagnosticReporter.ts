@@ -5,7 +5,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { AnyDiagnostic, DiagnosticCategory } from "./Diagnostic";
-import { DiagnosticReporterBase } from "./DiagnosticReporter";
+import { FormatDiagnosticReporter } from "./DiagnosticReporter";
 
 const loggingCategory = "ecschema-metadata";
 
@@ -13,7 +13,7 @@ const loggingCategory = "ecschema-metadata";
  * An [[IDiagnosticReporter]] for logging [[IDiagnostic]] objects.
  * @beta
  */
-export class LoggingDiagnosticReporter extends DiagnosticReporterBase {
+export class LoggingDiagnosticReporter extends FormatDiagnosticReporter {
   public reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string) {
     switch (diagnostic.category) {
       case DiagnosticCategory.Error:

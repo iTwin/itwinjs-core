@@ -9,6 +9,7 @@ import { QuantityType } from "../QuantityFormatter";
 
 /**
  * Information about an enumeration choice
+ * @public
  */
 export interface EnumerationChoice {
   label: string;
@@ -17,6 +18,7 @@ export interface EnumerationChoice {
 
 /**
  * Information about a set of enumeration choices
+ * @public
  */
 export interface EnumerationChoicesInfo {
   choices: EnumerationChoice[];
@@ -26,6 +28,7 @@ export interface EnumerationChoicesInfo {
 
 /**
  * Information about a Property Editor
+ * @public
  */
 export interface PropertyEditorInfo {
   name?: string;
@@ -34,6 +37,7 @@ export interface PropertyEditorInfo {
 
 /**
  * PropertyDescription contains metadata about a Property
+ * @public
  */
 export interface PropertyDescription {
   name: string;

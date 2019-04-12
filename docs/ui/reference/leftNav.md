@@ -80,7 +80,6 @@
 - [DragDrop]($framework:DragDrop)
 - [Frontstage]($framework:Frontstage)
 - [IModelComponents]($framework:IModelComponents)
-- [IModelIndex]($framework:IModelIndex)
 - [Item]($framework:Item)
 - [KeyboardShortcut]($framework:KeyboardShortcut)
 - [NavigationAids]($framework:NavigationAids)

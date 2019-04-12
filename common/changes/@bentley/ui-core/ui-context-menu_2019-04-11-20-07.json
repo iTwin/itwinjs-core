@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Modify GlobalContextMenu to better follow UX guidelines",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "Allison.Macdonald@bentley.com"
+}

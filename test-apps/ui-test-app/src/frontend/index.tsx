@@ -30,6 +30,7 @@ import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { AppSelectTool } from "./tools/AppSelectTool";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
+import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
@@ -56,16 +57,19 @@ export const enum SampleAppUiActionId {
   setIModelConnection = "sampleapp:setimodelconnection",
   setAccessToken = "sampleapp:setaccesstoken",
   setTestProperty = "sampleapp:settestproperty",
+  setAnimationViewId = "sampleapp:setAnimationViewId",
 }
 
 export interface SampleAppState {
   currentIModelConnection?: IModelConnection;
   accessToken?: AccessToken;
   testProperty: string;
+  animationViewId: string;
 }
 
 const initialState: SampleAppState = {
   testProperty: "",
+  animationViewId: "",
 };
 
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
@@ -74,6 +78,7 @@ export const SampleAppActions = {
   setIModelConnection: (iModelConnection: IModelConnection) => createAction(SampleAppUiActionId.setIModelConnection, iModelConnection),
   setAccessToken: (accessToken: AccessToken) => createAction(SampleAppUiActionId.setAccessToken, accessToken),
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
+  setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -107,6 +112,9 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     }
     case SampleAppUiActionId.setTestProperty: {
       return { ...state, testProperty: action.payload };
+    }
+    case SampleAppUiActionId.setAnimationViewId: {
+      return { ...state, animationViewId: action.payload };
     }
   }
 
@@ -180,6 +188,8 @@ export class SampleAppIModelApp extends IModelApp {
     Tool2.register(this.sampleAppNamespace);
     ToolWithSettings.register(this.sampleAppNamespace);
     AppSelectTool.register();
+    AnalysisAnimationTool.register(this.sampleAppNamespace);
+
     IModelApp.toolAdmin.defaultToolId = AppSelectTool.toolId;
   }
 
@@ -285,6 +295,16 @@ export class SampleAppIModelApp extends IModelApp {
 
   public static getTestProperty(): string {
     return SampleAppIModelApp.store.getState().sampleAppState.testProperty;
+  }
+
+  public static saveAnimationViewId(value: string, immediateSync = false) {
+    if (value !== SampleAppIModelApp.getTestProperty()) {
+      UiFramework.dispatchActionToStore(SampleAppUiActionId.setAnimationViewId, value, immediateSync);
+    }
+  }
+
+  public static getAnimationViewId(): string {
+    return SampleAppIModelApp.store.getState().sampleAppState.animationViewId;
   }
 
   public static setIModelConnection(iModelConnection: IModelConnection, immediateSync = false) {

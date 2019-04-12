@@ -6,16 +6,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Separator.scss";
 
-/** Properties of [[ToolAssistanceSeparator]] component. */
+/** Properties of [[ToolAssistanceSeparator]] component.
+ * @beta
+ */
 export interface ToolAssistanceSeparatorProps extends CommonProps {
-  /** Label of separator. */
-  label?: string;
+  /** Separator label. */
+  children?: string;
 }
 
-/** Assistance item separator. Used in [[ToolAssistanceContent]] component. */
+/** Tool assistance item separator used in [[ToolAssistanceDialog]] component.
+ * @beta
+ */
 export class ToolAssistanceSeparator extends React.PureComponent<ToolAssistanceSeparatorProps> {
   public render() {
     const className = classnames(
@@ -28,7 +32,7 @@ export class ToolAssistanceSeparator extends React.PureComponent<ToolAssistanceS
         style={this.props.style}
       >
         <div className="nz-label">
-          {this.props.label}
+          {this.props.children}
         </div>
         <div className="nz-separator" />
       </div>

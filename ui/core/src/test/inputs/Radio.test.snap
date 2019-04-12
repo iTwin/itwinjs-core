@@ -5,7 +5,6 @@ exports[`<Radio /> renders correctly 1`] = `
   className="uicore-inputs-radio"
 >
   <input
-    label="radio test"
     type="radio"
   />
   <span
@@ -23,8 +22,6 @@ exports[`<Radio /> renders status correctly 1`] = `
   className="uicore-inputs-radio success"
 >
   <input
-    label="radio test"
-    status="success"
     type="radio"
   />
   <span

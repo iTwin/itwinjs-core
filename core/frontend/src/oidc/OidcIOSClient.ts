@@ -38,53 +38,16 @@ export class OidcIOSClient extends OidcClient implements IOidcFrontendClient {
     this._accessToken = AccessToken.fromJsonWebTokenString(info.access_token, startsAt, expiresAt, userInfo);
   }
 
-  /** Should be call to begin signIn process from native side */
-  private startSignIn(_requestContext: ClientRequestContext): void {
+  /** Start the sign-in process */
+  public async signIn(_requestContext: ClientRequestContext): Promise<void> {
     (window as any).webkit.messageHandlers.signIn.postMessage("");
   }
 
-  /** Start the sign-in and return a promise that fulfils or rejects when it's complete
-   */
-  public async signIn(requestContext: ClientRequestContext): Promise<AccessToken> {
-    return new Promise((resolve, reject) => {
-      try {
-        this.startSignIn(requestContext);
-      } catch (error) {
-        reject(error);
-      }
-
-      this.onUserStateChanged.addListener((token: AccessToken | undefined, message: string) => {
-        if (token)
-          resolve(token);
-        else
-          reject(message);
-      });
-    });
-  }
-
-  /** Should be call to begin signOut process from native side */
-  private startSignOut(_requestContext: ClientRequestContext): void {
+  /** Start the sign-out process */
+  public async signOut(_requestContext: ClientRequestContext): Promise<void> {
     (window as any).webkit.messageHandlers.signOut.postMessage("");
   }
 
-  /** Start the sign-out and return a promise that fulfils or rejects when it's complete
-   */
-  public async signOut(requestContext: ClientRequestContext): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        this.startSignOut(requestContext);
-      } catch (error) {
-        reject(error);
-      }
-
-      this.onUserStateChanged.addListener((token: AccessToken | undefined, _message: string) => {
-        if (!token)
-          resolve();
-        else
-          reject("Unable to signout");
-      });
-    });
-  }
   /** return accessToken */
   public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
     if (this._accessToken)

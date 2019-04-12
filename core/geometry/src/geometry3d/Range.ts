@@ -12,19 +12,26 @@ import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 import { LowAndHighXY, LowAndHighXYZ, Range1dProps, Range2dProps, Range3dProps, XAndY, XYAndZ } from "./XYZProps";
-
+/**
+ * Base class for Range1d, Range2d, Range3d.
+ */
 export abstract class RangeBase {
+  /** Number considered impossibly large possibly for a coordinate in a range. */
   protected static readonly _EXTREME_POSITIVE: number = 1.0e200;
+  /** Number considered to be impossibly negative for a coordinate in a range. */
   protected static readonly _EXTREME_NEGATIVE: number = -1.0e200;
-  /** @return 0 if high<= low, otherwise `1/(high-low)` for use in fractionalizing */
+  /** Return 0 if high<= low, otherwise `1/(high-low)` for use in fractionalizing */
   protected static npcScaleFactor(low: number, high: number): number { return (high <= low) ? 0.0 : 1.0 / (high - low); }
+  /** Return true if x is outside the range `[_EXTREME_NEGATIVE, _EXTREME_POSITIVE]' */
   public static isExtremeValue(x: number): boolean { return Math.abs(x) >= RangeBase._EXTREME_POSITIVE; }
+  /** Return true if any x or y or z is outside the range `[_EXTREME_NEGATIVE, _EXTREME_POSITIVE]' */
   public static isExtremePoint3d(xyz: Point3d) { return RangeBase.isExtremeValue(xyz.x) || RangeBase.isExtremeValue(xyz.y) || RangeBase.isExtremeValue(xyz.z); }
+  /** Return true if either of x,y is outside the range `[_EXTREME_NEGATIVE, _EXTREME_POSITIVE]' */
   public static isExtremePoint2d(xy: Point2d) { return RangeBase.isExtremeValue(xy.x) || RangeBase.isExtremeValue(xy.y); }
   /**
-   * * Both low,high pairs have order expectations:  The condition `high > low` means null interval.
+   * Return the min absolute distance from any point of `[lowA,highA]' to any point of `[lowB,highB]'.
+   * * Both low,high pairs have order expectations:  The condition `high < low` means null interval.
    * * If there is interval overlap, the distance is zero.
-   * @returns The min absolute distance from any point of `[lowA,highA]' to any point of `[lowB,highB]'.
    * @param lowA low of interval A
    * @param highA high of interval A
    * @param lowB low of interval B
@@ -43,7 +50,11 @@ export abstract class RangeBase {
       return 0.0;
     return lowB - highA;
   }
-
+  /** Given a coordinate and pair of range limits, return the smallest distance to the range.
+   * * This is zero for any point inside the range
+   * * This is _EXTREME_POSITIVE if the range limits are inverted
+   * * Otherwise (i.e. x is outside a finite range) the distance to the near endpoint.
+   */
   public static coordinateToRangeAbsoluteDistance(x: number, low: number, high: number): number {
     if (high < low)
       return RangeBase._EXTREME_POSITIVE;
@@ -54,12 +65,19 @@ export abstract class RangeBase {
     return 0.0;
   }
 }
-
+/**
+ * Axis aligned range in 3D.
+ * * member `low` contains minimum coordinate of range box
+ * * member  `high` contains maximum coordinate of range box
+ * * The range i sconsidred null (empty) if any low member is larger than its high counterpart.
+ */
 export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions {
   // low and high are always non-null objects
   // any direction of low.q > high.q is considered a null range.
   // private ctor and setXYZXYZ_direct set the low and high explicitly (without further tests of low.q.<= high.q)
+  /** low point coordinates */
   public low: Point3d;
+  /** high point coordinates */
   public high: Point3d;
   /** Set this transform to values that indicate it has no contents. */
   public setNull() {
@@ -106,13 +124,17 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   }
   /** copy low and high values from other. */
   public setFrom(other: Range3d) { this.low.setFrom(other.low); this.high.setFrom(other.high); }
-
+  /** Return a new Range3d copied from a range or derived type */
   public static createFrom<T extends Range3d>(other: Range3d, result?: T): T {
     if (result) { result.setFrom(other); return result; }
     return this.createXYZXYZOrCorrectToNull<T>(other.low.x, other.low.y, other.low.z,
       other.high.x, other.high.y, other.high.z, result);
   }
-
+  /** set this range (in place) from json such as
+   * * key-value pairs: `{low:[1,2,3], high:[4,5,6]}`
+   * * array of points: `[[1,2,3],[9,3,4],[-2,1,3] ...]`
+   * * Lowest level points can be `[1,2,3]` or `{x:1,y:2,z:3}`
+   */
   public setFromJSON(json?: Range3dProps) {
     if (!json)
       return;
@@ -132,7 +154,9 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       this.extendPoint(high);
     }
   }
-  /** Return a JSON object */
+  /** Return a JSON object `{low: ... , high: ...}`
+   * with points formatted by `Point3d.toJSON()`
+   */
   public toJSON(): Range3dProps { return { low: this.low.toJSON(), high: this.high.toJSON() }; }
 
   public static fromJSON<T extends Range3d>(json?: Range3dProps): T {
@@ -156,7 +180,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
         this.setNull();
     }
   }
-
+  /** Return a copy */
   public clone(result?: this): this {
     result = result ? result : new (this.constructor as any)() as this;
     result.setDirect(this.low.x, this.low.y, this.low.z, this.high.x, this.high.y, this.high.z, false);
@@ -357,15 +381,18 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
 
   /** Get the center point of this Range3d */
   public get center(): Point3d { return this.low.interpolate(.5, this.high); }
-  public get left(): number { return this.low.x; }
-  public get bottom(): number { return this.low.y; }
-  public get front(): number { return this.low.z; }
-  public get right(): number { return this.high.x; }
-  public get top(): number { return this.high.y; }
-  public get back(): number { return this.high.z; }
-  public get width(): number { return this.xLength(); }
-  public get depth(): number { return this.yLength(); }
-  public get height(): number { return this.zLength(); }
+  /** return the low x coordinate */
+  public get xLow(): number { return this.low.x; }
+  /** return the low y coordinate */
+  public get yLow(): number { return this.low.y; }
+  /** return the low z coordinate */
+  public get zLow(): number { return this.low.z; }
+  /** return the high x coordinate */
+  public get xHigh(): number { return this.high.x; }
+  /** return the high y coordinate */
+  public get yHigh(): number { return this.high.y; }
+  /** return the high z coordinate */
+  public get zHigh(): number { return this.high.z; }
 
   /**  Return the length of the box in the x direction */
   public xLength(): number { const a = this.high.x - this.low.x; return a > 0.0 ? a : 0.0; }
@@ -1143,12 +1170,14 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   }
 
   public get center(): Point2d { return this.low.interpolate(.5, this.high); }
-  public get left(): number { return this.low.x; }
-  public get bottom(): number { return this.low.y; }
-  public get right(): number { return this.high.x; }
-  public get top(): number { return this.high.y; }
-  public get width(): number { return this.xLength(); }
-  public get height(): number { return this.yLength(); }
+  /** return the low x coordinate */
+  public get xLow(): number { return this.low.x; }
+  /** return the low y coordinate */
+  public get yLow(): number { return this.low.y; }
+  /** return the high x coordinate */
+  public get xHigh(): number { return this.high.x; }
+  /** return the high y coordinate */
+  public get yHigh(): number { return this.high.y; }
 
   /** Length of the box in the x direction */
   public xLength(): number { const a = this.high.x - this.low.x; return a > 0.0 ? a : 0.0; }

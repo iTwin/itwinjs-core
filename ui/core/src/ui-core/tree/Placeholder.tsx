@@ -8,16 +8,15 @@ import * as classnames from "classnames";
 import * as React from "react";
 import { LEVEL_OFFSET } from "./Node";
 import "./Placeholder.scss";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[TreeNodePlaceholder]] React component
  * @public
  */
-export interface TreeNodePlaceholderProps {
+export interface TreeNodePlaceholderProps extends CommonProps {
   level: number;
   minWidth?: number;
   maxWidth?: number;
-  className?: string;
-  style?: React.CSSProperties;
   ["data-testid"]?: string;
 }
 

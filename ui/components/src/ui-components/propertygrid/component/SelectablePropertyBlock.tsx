@@ -11,7 +11,12 @@ import { PropertyCategory } from "../PropertyDataProvider";
 
 /** @internal */
 export interface SelectablePropertyBlockProps extends PropertyCategoryBlockProps, Omit<PropertyListProps, "onColumnChanged" | "columnRatio"> {
+  /* The property category to display */
   category: PropertyCategory;
+  /** Custom CSS class name for the property list */
+  listClassName?: string;
+  /** Custom CSS Style for the property list */
+  listStyle?: React.CSSProperties;
 }
 
 /** @internal */
@@ -72,14 +77,18 @@ export class SelectablePropertyBlock extends React.Component<SelectablePropertyB
   }
 
   public render() {
-    const { children, onExpansionToggled, ...props } = this.props;
+    const { children, onExpansionToggled, className, style, listClassName, listStyle, ...props } = this.props;
     const listProps: PropertyListProps = {
       ...props,
       onColumnChanged: this._onRatioChanged,
       columnRatio: this.state.columnRatio,
+      className: listClassName,
+      style: listStyle,
     };
     return (
-      <PropertyCategoryBlock category={this.props.category} onExpansionToggled={this.props.onExpansionToggled}>
+      <PropertyCategoryBlock category={this.props.category} onExpansionToggled={this.props.onExpansionToggled}
+        className={className} style={style}
+      >
         <PropertyList {...listProps} />
       </PropertyCategoryBlock>
     );

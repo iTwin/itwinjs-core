@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection,
-  OidcClientWrapper, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, Viewport, ViewRect, ViewState, WebGLExtensionName,
+  OidcClientWrapper, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, WebGLExtensionName,
 } from "@bentley/imodeljs-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
@@ -20,6 +20,7 @@ import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
 
 let curDisabledExts = new Set<WebGLExtensionName>(); // Keep track of disabled webgl extensions
+let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
 
 // Retrieve default config data from json file
 async function getDefaultConfigs(): Promise<string> {
@@ -69,14 +70,6 @@ function combineFilePaths(additionalPath: string, initPath?: string) {
     combined += "\\";
   combined += additionalPath;
   return combined;
-}
-
-function setRenderOptions(jsonRenderOpt: any, curRenderOpt?: RenderSystem.Options): RenderSystem.Options {
-  if (!curRenderOpt)
-    curRenderOpt = {};
-  if (jsonRenderOpt.hasOwnProperty("disabledExtensions"))
-    curRenderOpt!.disabledExtensions = jsonRenderOpt.disabledExtensions;
-  return curRenderOpt;
 }
 
 function setViewFlagOverrides(vf: any, vfo?: ViewFlag.Overrides): ViewFlag.Overrides {
@@ -204,6 +197,16 @@ function getDisabledExts(): string {
   return extString;
 }
 
+function getTileProps(): string {
+  let tilePropsStr = "";
+  if (curTileProps.disableThrottling) tilePropsStr += "+throt";
+  if (curTileProps.elideEmptyChildContentRequests) tilePropsStr += "+elide";
+  if (curTileProps.enableInstancing) tilePropsStr += "+inst";
+  if (curTileProps.maxActiveRequests && curTileProps.maxActiveRequests !== 10) tilePropsStr += "+max" + curTileProps.maxActiveRequests;
+  if (curTileProps.retryInterval) tilePropsStr += "+retry" + curTileProps.retryInterval;
+  return tilePropsStr;
+}
+
 function getViewFlagsString(): string {
   const vf = activeViewState.viewState!.displayStyle.viewFlags;
   let vfString = "";
@@ -278,7 +281,8 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
   rowData.set("Render Mode", getRenderMode());
   rowData.set("View Flags", " " + getViewFlagsString());
-  rowData.set("Disabled Ext", getDisabledExts());
+  rowData.set("Disabled Ext", " " + getDisabledExts());
+  rowData.set("Tile Props", " " + getTileProps());
   if (pixSelectStr) rowData.set("ReadPixels Selector", " " + pixSelectStr);
   rowData.set("Tile Loading Time", curTileLoadingTime);
 
@@ -325,6 +329,7 @@ function getImageString(configs: DefaultConfigs, prefix = ""): string {
   output += getRenderMode() ? "_" + getRenderMode() : "";
   output += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
   output += getDisabledExts() ? "_" + getDisabledExts() : "";
+  output += getTileProps() !== "" ? "_" + getTileProps() : "";
   output += ".png";
   return output;
 }
@@ -356,6 +361,7 @@ class DefaultConfigs {
   public displayStyle?: string;
   public viewFlags?: ViewFlag.Overrides;
   public renderOptions?: RenderSystem.Options;
+  public tileProps?: TileAdmin.Props;
   public aoEnabled = false;
 
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
@@ -379,6 +385,7 @@ class DefaultConfigs {
       if (prevConfigs.testType) this.testType = prevConfigs.testType;
       if (prevConfigs.displayStyle) this.displayStyle = prevConfigs.displayStyle;
       if (prevConfigs.renderOptions) this.renderOptions = prevConfigs.renderOptions;
+      if (prevConfigs.tileProps) this.tileProps = prevConfigs.tileProps;
       if (prevConfigs.viewFlags) this.viewFlags = prevConfigs.viewFlags;
     } else if (jsonData.argOutputPath)
       this.outputPath = jsonData.argOutputPath;
@@ -391,7 +398,8 @@ class DefaultConfigs {
     if (jsonData.viewName) this.viewName = jsonData.viewName;
     if (jsonData.testType) this.testType = jsonData.testType;
     if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
-    if (jsonData.renderOptions) this.renderOptions = setRenderOptions(jsonData.renderOptions, this.renderOptions);
+    if (jsonData.renderOptions) this.renderOptions = jsonData.renderOptions as RenderSystem.Options;
+    if (jsonData.tileProps) this.tileProps = jsonData.tileProps as TileAdmin.Props;
     if (jsonData.viewFlags) this.viewFlags = setViewFlagOverrides(jsonData.viewFlags, this.viewFlags);
     this.aoEnabled = undefined !== jsonData.viewFlags && !!jsonData.viewFlags.ambientOcclusion;
 
@@ -406,6 +414,7 @@ class DefaultConfigs {
     debugPrint("viewName: " + this.viewName);
     debugPrint("testType: " + this.testType);
     debugPrint("displayStyle: " + this.displayStyle);
+    debugPrint("tileProps: " + this.tileProps);
     debugPrint("renderOptions: " + this.renderOptions);
     debugPrint("viewFlags: " + this.viewFlags);
   }
@@ -474,7 +483,7 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
-async function initializeOidc() {
+async function initializeOidc(requestContext: FrontendRequestContext) {
   if (OidcClientWrapper.oidcClient)
     return;
 
@@ -482,15 +491,25 @@ async function initializeOidc() {
   const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
   const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read" };
 
-  await OidcClientWrapper.initialize(new FrontendRequestContext(), oidcConfig);
+  await OidcClientWrapper.initialize(requestContext, oidcConfig);
   IModelApp.authorizationClient = OidcClientWrapper.oidcClient;
 }
 
-async function signIn() {
-  await initializeOidc();
-  if (OidcClientWrapper.oidcClient.hasSignedIn)
-    return;
-  await OidcClientWrapper.oidcClient.signIn(new FrontendRequestContext());
+// Wraps the signIn process
+// - called the first time to start the signIn process - resolves to false
+// - called the second time as the Authorization provider redirects to cause the application to refresh/reload - resolves to false
+// - called the third time as the application redirects back to complete the authorization - finally resolves to true
+// @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
+async function signIn(): Promise<boolean> {
+  const requestContext = new FrontendRequestContext();
+  await initializeOidc(requestContext);
+
+  if (!OidcClientWrapper.oidcClient.hasSignedIn) {
+    await OidcClientWrapper.oidcClient.signIn(new FrontendRequestContext());
+    return false;
+  }
+
+  return true;
 }
 
 // Retrieves the configuration for which project and imodel to open from connect-configuration.json file located in the built public folder
@@ -528,7 +547,9 @@ async function loadIModel(testConfig: DefaultConfigs) {
 
   // Open an iModel from the iModelHub
   if (!openLocalIModel && testConfig.iModelHubProject !== undefined) {
-    await signIn();
+    const signedIn: boolean = await signIn();
+    if (!signedIn)
+      return;
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
@@ -582,27 +603,36 @@ async function closeIModel(isSnapshot: boolean) {
   debugPrint("end closeIModel");
 }
 
-async function runTest(testConfig: DefaultConfigs) {
-  // Restart the IModelApp if the disabled extensions for the RenderSystem have changed
+// Restart the IModelApp if either the TileAdmin.Props or the Render.Options has changed
+function restartIModelApp(testConfig: DefaultConfigs) {
   const newDisabledExts = new Set<WebGLExtensionName>(testConfig.renderOptions ? testConfig.renderOptions.disabledExtensions : undefined);
+  const newTileProps: TileAdmin.Props = testConfig.tileProps ? testConfig.tileProps : {};
   if (IModelApp.initialized) {
-    if (newDisabledExts.size !== curDisabledExts.size) {
+    if (curTileProps !== newTileProps || curTileProps.disableThrottling !== newTileProps.disableThrottling || curTileProps.elideEmptyChildContentRequests !== newTileProps.elideEmptyChildContentRequests
+      || curTileProps.enableInstancing !== newTileProps.enableInstancing || curTileProps.maxActiveRequests !== newTileProps.maxActiveRequests || curTileProps.retryInterval !== newTileProps.retryInterval)
       IModelApp.shutdown();
-      curDisabledExts = newDisabledExts;
-    } else {
+    else if (newDisabledExts.size !== curDisabledExts.size)
+      IModelApp.shutdown();
+    else {
       for (const ext in newDisabledExts) {
         if (!curDisabledExts.has(ext as WebGLExtensionName)) {
           IModelApp.shutdown();
-          curDisabledExts = newDisabledExts;
           break;
         }
       }
     }
-  } else {
-    curDisabledExts = newDisabledExts;
   }
-  if (!IModelApp.initialized)
+  curDisabledExts = newDisabledExts;
+  curTileProps = newTileProps;
+  if (!IModelApp.initialized) {
+    IModelApp.tileAdmin = TileAdmin.create(curTileProps);
     IModelApp.startup(undefined, testConfig.renderOptions);
+  }
+}
+
+async function runTest(testConfig: DefaultConfigs) {
+  // Restart the IModelApp if needed
+  restartIModelApp(testConfig);
 
   // Open and finish loading model
   await loadIModel(testConfig);

@@ -7,7 +7,7 @@
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
 
-// @public
+// @beta
 export class IModelJsElectronManager extends StandardElectronManager {
     constructor(webResourcesPath?: string);
     // (undocumented)
@@ -23,7 +23,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
     initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
     }
 
-// @public
+// @beta
 export abstract class StandardElectronManager {
     // (undocumented)
     protected readonly _defaultWindowOptions: BrowserWindowConstructorOptions;
@@ -32,7 +32,7 @@ export abstract class StandardElectronManager {
     readonly mainWindow: BrowserWindow | undefined;
     }
 
-// @public
+// @beta
 export class WebpackDevServerElectronManager extends StandardElectronManager {
     constructor(frontendPort?: number);
     // (undocumented)

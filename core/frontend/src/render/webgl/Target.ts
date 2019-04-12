@@ -427,6 +427,10 @@ export abstract class Target extends RenderTarget {
     this._terrain = terrain;
   }
   public changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap) {
+    if (this._planarClassifiers)
+      for (const planarClassifier of this._planarClassifiers)
+        planarClassifier[1].dispose();
+
     this._planarClassifiers = planarClassifiers;
   }
 

@@ -5,7 +5,7 @@
 
 import { Checker } from "../Checker";
 import { expect } from "chai";
-import { ClipPrimitive, ClipShape, PlaneSetParamsCache, ClipMask } from "../../clipping/ClipPrimitive";
+import { ClipPrimitive, PlaneSetParamsCache, ClipMaskXYZRangePlanes, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
@@ -388,7 +388,7 @@ describe("ClipPrimitive", () => {
       // Test with positive box
       ConvexClipPlaneSet.createXYBox(p, p, p + 1, p + 1, convexSet);
       convexSet.addZClipPlanes(false, p, p + 1);
-      ClipShape.createBlock(Range3d.createXYZXYZ(p, p, p, p + 1, p + 1, p + 1), ClipMask.All, false, false, undefined, clipPrimitive);
+      ClipShape.createBlock(Range3d.createXYZXYZ(p, p, p, p + 1, p + 1, p + 1), ClipMaskXYZRangePlanes.All, false, false, undefined, clipPrimitive);
       ck.testFalse(clipPrimitive.arePlanesDefined());
       clipPrimitive.fetchClipPlanesRef();
       ck.testTrue(clipPrimitive.arePlanesDefined());

@@ -310,10 +310,16 @@ export namespace Id64 {
    * ```ts
    *   public addCategories(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.categories.add(id)); }
    * ```
+   *
+   * Alternatively, to avoid allocating a new Id64Set, use [[Id64.forEach]] or [[Id64.iterate]].
+   *
+   * @param arg The Ids to convert to an Id64Set.
+   * @param makeCopy If true, and the input is already an Id64Set, returns a deep copy of the input.
+   * @returns An Id64Set containing the set of [[Id64String]]s represented by the Id64Arg.
    */
-  export function toIdSet(arg: Id64Arg): Id64Set {
+  export function toIdSet(arg: Id64Arg, makeCopy: boolean = false): Id64Set {
     if (arg instanceof Set)
-      return arg;
+      return makeCopy ? new Set<string>(arg) : arg;
 
     const ids = new Set<Id64String>();
     if (typeof arg === "string")
@@ -326,6 +332,44 @@ export namespace Id64 {
     }
 
     return ids;
+  }
+
+  /** Execute a function on each [[Id64String]] of an [[Id64Arg]].
+   * @param arg The Id(s) to iterate.
+   * @param callback The function to invoke on each Id.
+   * @see [[Id64.iterate]] for a similar function which allows iteration to be halted before it completes.
+   */
+  export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void {
+    Id64.iterate(arg, (id: Id64String) => {
+      callback(id);
+      return true;
+    });
+  }
+
+  /** Execute a function on each [[Id64String]] of an [[Id64Arg]], optionally terminating before iteration completes.
+   * @param arg The Id(s) to iterate.
+   * @param callback The function to invoke on each Id. The function returns false to terminate iteration, or true to continue iteration.
+   * @returns True if all Ids were iterated, or false if iteration was terminated due to the callback returning false.
+   */
+  export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean {
+    if (typeof arg === "string")
+      return callback(arg);
+
+    for (const id of arg)
+      if (!callback(id))
+        return false;
+
+    return true;
+  }
+
+  /** Return the number of [[Id64String]]s represented by an [[Id64Arg]]. */
+  export function sizeOf(arg: Id64Arg): number {
+    if (typeof arg === "string")
+      return 1;
+    else if (Array.isArray(arg))
+      return arg.length;
+    else
+      return arg.size;
   }
 
   /** The string representation of an invalid Id. */
@@ -428,6 +472,14 @@ export namespace Id64 {
   export class Uint32Set {
     protected readonly _map = new Map<number, Set<number>>();
 
+    /** Construct a new Uint32Set.
+     * @param ids If supplied, all of the specified Ids will be added to the new set.
+     */
+    public constructor(ids?: Id64Arg) {
+      if (undefined !== ids)
+        Id64.forEach(ids, (id) => this.addId(id));
+    }
+
     /** Remove all contents of this set. */
     public clear(): void { this._map.clear(); }
     /** Add an Id to the set. */
@@ -482,6 +534,13 @@ export namespace Id64 {
 
       return ids;
     }
+
+    /** Execute a function against each Id in this set. */
+    public forEach(func: (lo: number, hi: number) => void): void {
+      for (const entry of this._map)
+        for (const lo of entry[1])
+          func(lo, entry[0]);
+    }
   }
 
   /** A specialized replacement for Map<Id64String, T> optimized for performance-critical code.
@@ -524,6 +583,13 @@ export namespace Id64 {
         size += entry[1].size;
 
       return size;
+    }
+
+    /** Execute a function against each entry in this map. */
+    public forEach(func: (lo: number, hi: number, value: T) => void): void {
+      for (const outerEntry of this._map)
+        for (const innerEntry of outerEntry[1])
+          func(innerEntry[0], outerEntry[0], innerEntry[1]);
     }
   }
 }

@@ -5,11 +5,12 @@
 /** @module Filtering  */
 
 import * as React from "react";
+import classnames from "classnames";
 import { Key } from "ts-key-enum";
 import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
 import "./FilteringInput.scss";
-import UiComponents from "../UiComponents";
-import { Spinner, SpinnerSize } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
+import { Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
 
 /** [[FilteringInput]] React Component state
  * @internal
@@ -24,7 +25,7 @@ interface FilteringInputState {
 /** [[FilteringInput]] React Component properties
  * @public
  */
-export interface FilteringInputProps {
+export interface FilteringInputProps extends CommonProps {
   /** Filtering should start */
   onFilterStart: (searchText: string) => void;
   /** Filtering is canceled while still in progress */
@@ -111,7 +112,10 @@ export class FilteringInput extends React.Component<FilteringInputProps, Filteri
   public render() {
     return (
       // TODO: What is filtering-input-preload-images?
-      <div className="components-filtering-input filtering-input-preload-images" onKeyDown={this._onFilterKeyDown}>
+      <div className={classnames("components-filtering-input", "filtering-input-preload-images", this.props.className)}
+        style={this.props.style}
+        onKeyDown={this._onFilterKeyDown}
+      >
         <span className="components-filtering-input-input">
           <input type="text"
             onKeyDown={this._onFilterKeyDown}

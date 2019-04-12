@@ -134,9 +134,9 @@
       justify-content: space-between;
       margin: 10px 0;
 
-      .filtering-input.filtering-input-preload-images {
-        margin: 0;
-        width: 83%;
+      .components-filtering-input.filtering-input-preload-images {
+        margin: 0 10px 0 0;
+        flex: 1;
       }
 
       .option-group {
@@ -181,6 +181,14 @@
       border: 1px solid #ccc;
       overflow: hidden;
       background: white;
+
+      .core-ls {
+        position: relative;
+
+        .core-spinner {
+          position: absolute;
+        }
+      }
 
       .components-tree-errormessage {
         text-align: center;

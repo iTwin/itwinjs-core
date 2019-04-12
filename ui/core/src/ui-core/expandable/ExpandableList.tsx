@@ -5,14 +5,17 @@
 /** @module Expandable */
 
 import * as React from "react";
+import * as classnames from "classnames";
+import { CommonProps } from "../utils/Props";
 import "./ExpandableList.scss";
 
 /** Properties for [[ExpandableList]] component
  * @public
  */
-export interface ExpandableListProps {
-  className?: string;
+export interface ExpandableListProps extends CommonProps {
+  /** Indicates whether to allow only one expanded block */
   singleExpandOnly?: boolean;
+  /** Index of the default active block */
   defaultActiveBlock?: number;
 }
 
@@ -27,8 +30,8 @@ interface ExpandableListState {
  */
 export class ExpandableList extends React.Component<ExpandableListProps, ExpandableListState> {
 
-  constructor(props: ExpandableListProps, context?: any) {
-    super(props, context);
+  constructor(props: ExpandableListProps) {
+    super(props);
 
     this.state = { activeBlock: this.props.defaultActiveBlock! };
   }
@@ -60,7 +63,7 @@ export class ExpandableList extends React.Component<ExpandableListProps, Expanda
 
   public render(): JSX.Element {
     return (
-      <div className="BwcExpandableBlocksList">
+      <div className={classnames("BwcExpandableBlocksList", this.props.className)} style={this.props.style}>
         {this.renderBlocks()}
       </div>
     );

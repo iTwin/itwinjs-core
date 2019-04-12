@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module TypeConverters */
 
-import UiComponents from "../UiComponents";
+import { UiComponents } from "../UiComponents";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { Primitives } from "@bentley/imodeljs-frontend";

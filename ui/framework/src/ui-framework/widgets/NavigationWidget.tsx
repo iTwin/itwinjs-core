@@ -107,8 +107,8 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
   /** @internal */
   public readonly state: Readonly<NavigationWidgetState>;
 
-  constructor(props: NavigationWidgetPropsEx, context?: any) {
-    super(props, context);
+  constructor(props: NavigationWidgetPropsEx) {
+    super(props);
 
     this.state = { navigationWidgetProps: props, navigationWidgetDef: new NavigationWidgetDef(props) };
   }

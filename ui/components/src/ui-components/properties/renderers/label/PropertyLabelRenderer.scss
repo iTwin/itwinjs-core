@@ -17,6 +17,7 @@
 }
 
 .components-property-label-renderer {
+  flex: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
@@ -25,7 +26,8 @@
 }
 
 .components-property-label-renderer-colon{
-  margin: auto 3px auto auto;
+  margin: auto auto auto 3px;
+  margin-left: 3px;
 }
 
 @mixin specific-property-label-renderer {
@@ -43,26 +45,41 @@
   @include specific-property-label-renderer;
 }
 
+.components-property-record--vertical {
+  .components-nonprimitive-property-label-renderer {
+    margin-bottom: 4px;
+  }
+}
+
 .components-nonprimitive-property-label-renderer {
   @include specific-property-label-renderer;
+  align-items: center;
   border: none;
   background: transparent;
   cursor: pointer;
   color: $uicore-gray-3;
   height: 100%;
   width: 100%;
+  transition: transform 0.15s ease-in-out, -webkit-transform 0.15s ease-in-out;
 
-  > i {
-    transition: transform 0.15s ease-in-out, -webkit-transform 0.15s ease-in-out;
-    margin: auto 5px auto 0px;
-    width: 14px;
-    height: 14px;
-    font-size: 12px;
+  >.components-property-label-renderer {
+    flex: 1;
   }
 
-  > .components-expanded {
+  > div {
+    width: 22px;
+    height: 22px;
+    margin-left: -7px;
+    margin-right: 2px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     @include transition(0.15s, ease-in-out);
-    @include rotate(90deg);
+
+    &.components-expanded {
+      @include rotate(90deg);
+    }
   }
 
   &:hover {

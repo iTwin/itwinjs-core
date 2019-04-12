@@ -55,11 +55,15 @@ export class IModelApp {
   public static notifications: NotificationManager;
   /** The [[TileAdmin]] for this session. */
   public static tileAdmin: TileAdmin;
-  /** The [[QuantityFormatter]] for this session. */
+  /** The [[QuantityFormatter]] for this session.
+   * @alpha
+   */
   public static quantityFormatter: QuantityFormatter;
   /** The [[ToolAdmin]] for this session. */
   public static toolAdmin: ToolAdmin;
-  /** The [[AccuDraw]] for this session. */
+  /** The [[AccuDraw]] for this session.
+   * @beta
+   */
   public static accuDraw: AccuDraw;
   /** The [[AccuSnap]] for this session. */
   public static accuSnap: AccuSnap;

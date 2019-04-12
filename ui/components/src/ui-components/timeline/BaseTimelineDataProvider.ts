@@ -11,7 +11,7 @@ import {
 } from "./interfaces";
 
 /** Base Timeline Data Provider
- * @beta
+ * @alpha
  */
 export class BaseTimelineDataProvider implements TimelineDataProvider {
   public readonly id = "TestTimelineDataProvider";

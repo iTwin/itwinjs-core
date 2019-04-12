@@ -40,12 +40,12 @@
     background: $nz-backstage-highlight-bar-background;
   }
 
-  > .icon {
+  > .nz-icon {
     padding-left: $nz-backstage-icon-spacing-left;
     padding-right: $nz-backstage-icon-spacing-right;
   }
 
-  > div {
+  > div:last-child {
     display: flex;
     flex-direction: column;
     padding-right: $uicore-sm;

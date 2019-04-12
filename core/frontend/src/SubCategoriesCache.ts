@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
+  assert,
+  Id64,
+  Id64Arg,
   Id64Set,
   Id64String,
 } from "@bentley/bentleyjs-core";
@@ -48,16 +51,16 @@ export class SubCategoriesCache {
    * Otherwise, dispatches an asynchronous request to load those categories which are not already loaded and returns a cancellable request object
    * containing the corresponding promise and the set of categories still to be loaded.
    */
-  public load(categoryIds: Id64Set): SubCategoriesRequest | undefined {
+  public load(categoryIds: Id64Arg): SubCategoriesRequest | undefined {
     let missing: Id64Set | undefined;
-    for (const catId of categoryIds) {
+    Id64.forEach(categoryIds, (catId) => {
       if (undefined === this._byCategoryId.get(catId)) {
         if (undefined === missing)
           missing = new Set<string>();
 
         missing.add(catId);
       }
-    }
+    });
 
     if (undefined === missing)
       return undefined;
@@ -77,9 +80,13 @@ export class SubCategoriesCache {
     };
   }
 
-  public onIModelConnectionClose(): void {
+  public clear(): void {
     this._byCategoryId.clear();
     this._appearances.clear();
+  }
+
+  public onIModelConnectionClose(): void {
+    this.clear();
   }
 
   private static createSubCategoryAppearance(json?: any) {
@@ -189,6 +196,130 @@ export namespace SubCategoriesCache {
 
       // Even if we were canceled, we've retrieved all the rows. Might as well process them to prevent another request for some of the same rows from being enqueued.
       return this._pages;
+    }
+  }
+
+  export type QueueFunc = () => void;
+
+  export class QueueEntry {
+    public readonly categoryIds: Id64Set;
+    public readonly funcs: QueueFunc[];
+
+    public constructor(categoryIds: Id64Set, func: QueueFunc) {
+      this.categoryIds = categoryIds;
+      this.funcs = [func];
+    }
+  }
+
+  /** A "queue" of SubCategoriesRequests, which consists of between 0 and 2 entries. Each entry specifies the set of category IDs to be loaded and a list of functions to be executed
+   * when loading is completed. This is used to enforce ordering of operations upon subcategories despite the need to asynchronously load them. It incidentally also provides an
+   * opportunity to reduce the number of backend requests by batching consecutive requests.
+   * Chiefly used by [[Viewport]].
+   * @internal
+   */
+  export class Queue {
+    /* NB: Members marked protected for use in tests only. */
+    protected _current?: QueueEntry;
+    protected _next?: QueueEntry;
+    protected _request?: SubCategoriesRequest;
+    protected _disposed = false;
+
+    /** Push a request onto the queue. The requested categories will be loaded if necessary, and then
+     * the supplied function will be invoked. Any previously-pushed requests are guaranteed to be processed before this one.
+     */
+    public push(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
+      if (this._disposed)
+        return;
+      else if (undefined === this._current)
+        this.pushCurrent(cache, categoryIds, func);
+      else
+        this.pushNext(categoryIds, func);
+    }
+
+    /** Cancel all requests and empty the queue. */
+    public dispose(): void {
+      if (undefined !== this._request) {
+        assert(undefined !== this._current);
+        this._request.cancel();
+        this._request = undefined;
+      }
+
+      this._current = this._next = undefined;
+      this._disposed = true;
+    }
+
+    public get isEmpty(): boolean {
+      return undefined === this._current && undefined === this._next;
+    }
+
+    private pushCurrent(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void {
+      assert(undefined === this._next);
+      assert(undefined === this._current);
+      assert(undefined === this._request);
+
+      this._request = cache.load(categoryIds);
+      if (undefined === this._request) {
+        // All requested categories are already loaded.
+        func();
+        return;
+      } else {
+        // We need to load the requested categories before invoking the function.
+        this.processCurrent(cache, new QueueEntry(Id64.toIdSet(categoryIds, true), func));
+      }
+    }
+
+    private processCurrent(cache: SubCategoriesCache, entry: QueueEntry): void {
+      assert(undefined !== this._request);
+      assert(undefined === this._current);
+      assert(undefined === this._next);
+
+      this._current = entry;
+      this._request!.promise.then((completed: boolean) => { // tslint:disable-line:no-floating-promises
+        if (this._disposed)
+          return;
+
+        // Invoke all the functions which were awaiting this set of categories.
+        assert(undefined !== this._current);
+        if (completed)
+          for (const func of this._current!.funcs)
+            func();
+
+        this._request = undefined;
+        this._current = undefined;
+
+        // If we have more requests, process them.
+        const next = this._next;
+        this._next = undefined;
+        if (undefined !== next) {
+          this._request = cache.load(next.categoryIds);
+          if (undefined === this._request) {
+            // All categories loaded.
+            for (const func of next.funcs)
+              func();
+          } else {
+            // We need to load the requested categories before invoking the pending functions.
+            this.processCurrent(cache, next);
+          }
+        }
+      });
+    }
+
+    private pushNext(categoryIds: Id64Arg, func: QueueFunc): void {
+      assert(undefined !== this._current);
+      assert(undefined !== this._request);
+
+      if (undefined === this._next) {
+        // We have a request currently in process and none pending.
+        // We could potentially determine that this request doesn't require any categories that are not already loaded or being loaded by the current request.
+        // But we will find that out (synchronously) when current request completes, unless more requests come in. Probably not worth it.
+        this._next = new QueueEntry(Id64.toIdSet(categoryIds, true), func);
+      } else {
+        // We have a request currently in process, and one or more pending. Append this one to the pending.
+        this._next.funcs.push(func);
+        Id64.forEach(categoryIds, (categoryId) => {
+          this._next!.categoryIds.add(categoryId);
+        });
+      }
     }
   }
 }

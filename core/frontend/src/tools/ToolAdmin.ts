@@ -22,6 +22,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
 import { ViewTool } from "./ViewTool";
 
+/** @public */
 export const enum CoordinateLockOverrides {
   None = 0,
   ACS = 1 << 1,
@@ -29,12 +30,17 @@ export const enum CoordinateLockOverrides {
   All = 0xffff,
 }
 
+/** @public */
 export const enum StartOrResume { Start = 1, Resume = 2 }
+
+/** @public */
 export const enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
 
-/** Settings that control the behavior of built-in tools. Applications may modify these values. */
+/** Settings that control the behavior of built-in tools. Applications may modify these values.
+ * @public
+ */
 export class ToolSettings {
   /** Duration of animations of viewing operations. */
   public static animationTime = BeDuration.fromMilliseconds(260);
@@ -297,7 +303,9 @@ interface ToolEvent {
   vp?: ScreenViewport; // Viewport is optional - keyboard events aren't associated with a Viewport.
 }
 
-/** Controls operation of Tools. Administers the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
+/** Controls operation of Tools. Administers the current view, primitive, and idle tools. Forwards events to the appropriate tool.
+ * @public
+ */
 export class ToolAdmin {
   public markupView?: ScreenViewport;
   /** @internal */
@@ -470,6 +478,9 @@ export class ToolAdmin {
 
   private async onWheel(event: ToolEvent): Promise<EventHandled> {
     const ev = event.ev as WheelEvent;
+    const vp = event.vp!;
+    if (this.filterViewport(vp))
+      return EventHandled.Yes;
     const current = this.currentInputState;
     current.setKeyQualifiers(ev);
 
@@ -489,7 +500,6 @@ export class ToolAdmin {
         break;
     }
 
-    const vp = event.vp!;
     const pt2d = this.getMousePosition(event);
 
     vp.removeAnimator();
@@ -1076,11 +1086,11 @@ export class ToolAdmin {
   }
 
   private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {
-    if (this.filterViewport(vp))
-      return;
-
+    const filtered = this.filterViewport(vp);
     if (undefined === this._viewTool && button === BeButton.Data)
       IModelApp.viewManager.setSelectedView(vp);
+    if (filtered)
+      return;
 
     vp.removeAnimator();
     const ev = new BeButtonEvent();

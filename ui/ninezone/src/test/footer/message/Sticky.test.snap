@@ -1,7 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`<Sticky /> renders correctly 1`] = `
-<Activity
-  className="nz-footer-message-sticky"
-/>
-`;

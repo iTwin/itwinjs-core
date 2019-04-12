@@ -5,7 +5,7 @@ exports[`<Footer /> renders correctly 1`] = `
   className="nz-footer-footer"
 >
   <div
-    className="nz-message"
+    className="nz-messages"
   />
   <div
     className="nz-indicators"
@@ -18,7 +18,7 @@ exports[`<Footer /> renders correctly in footer mode 1`] = `
   className="nz-footer-footer nz-footer-mode"
 >
   <div
-    className="nz-message"
+    className="nz-messages"
   />
   <div
     className="nz-indicators"

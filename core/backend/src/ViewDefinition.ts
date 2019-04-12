@@ -6,7 +6,7 @@
 
 import { Id64, Id64Array, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags } from "@bentley/imodeljs-common";
+import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags, BackgroundMapProps } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -88,7 +88,7 @@ export interface DisplayStyleCreationOptions {
   analysisStyle?: AnalysisStyleProps;
   contextRealityModels?: ContextRealityModelProps[];
   scheduleScript?: object;
-
+  backgroundMap?: BackgroundMapProps;
 }
 /** A DisplayStyle for 3d views.
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
@@ -127,6 +127,9 @@ export class DisplayStyle3d extends DisplayStyle {
 
       if (options.contextRealityModels)
         stylesIn.contextRealityModels = options.contextRealityModels;
+
+      if (options.backgroundMap)
+        stylesIn.backgroundMap = options.backgroundMap;
     }
 
     const displayStyleProps: DisplayStyleProps = {
@@ -395,7 +398,6 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     json.modelSelectorId = this.modelSelectorId;
     return json;
   }
-
   /** Load this view's ModelSelector from the IModelDb. */
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
 }

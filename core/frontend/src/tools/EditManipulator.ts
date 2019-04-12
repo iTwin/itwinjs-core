@@ -14,9 +14,9 @@ import { HitDetail } from "../HitDetail";
 import { Viewport } from "../Viewport";
 import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry, Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 
-/**
- * A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
+/** A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
  * Interactive modification is handled by installing an InputCollector tool.
+ * @public
  */
 export namespace EditManipulator {
   export const enum EventType { Synch, Cancel, Accept }

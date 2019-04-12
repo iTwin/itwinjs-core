@@ -54,7 +54,7 @@ export class ClipPlane implements Clipper {
     this._distanceFromOrigin = d;
   }
   /**
-   * @returns Return true if all members are almostEqual to corresponding members of other.
+   * Return true if all members are almostEqual to corresponding members of other.
    * @param other clip plane to compare
    */
   public isAlmostEqual(other: ClipPlane): boolean {
@@ -63,12 +63,12 @@ export class ClipPlane implements Clipper {
       && this._interior === other._interior
       && this._invisible === other._invisible;
   }
-  /** @return a cloned plane */
+  /** return a cloned plane */
   public clone(): ClipPlane {
     const result = new ClipPlane(this._inwardNormal.clone(), this._distanceFromOrigin, this._invisible, this._interior);
     return result;
   }
-  /** @return Return a cloned plane with coordinate data negated. */
+  /** return Return a cloned plane with coordinate data negated. */
   public cloneNegated(): ClipPlane {
     const plane = new ClipPlane(this._inwardNormal.clone(), this._distanceFromOrigin, this._invisible, this._interior);
     plane.negateInPlace();
@@ -260,12 +260,12 @@ export class ClipPlane implements Clipper {
     return point.x * this._inwardNormal.x + point.y * this._inwardNormal.y + point.z * this._inwardNormal.z - this._distanceFromOrigin;
   }
 
-  /** @returns return the dot product of the plane normal with the vector (NOT using the plane's distanceFromOrigin).
+  /** Return the dot product of the plane normal with the vector (NOT using the plane's distanceFromOrigin).
    */
   public dotProductVector(vector: Vector3d): number {
     return vector.x * this._inwardNormal.x + vector.y * this._inwardNormal.y + vector.z * this._inwardNormal.z;
   }
-  /** @returns return the dot product of the plane normal with the point (treating the point xyz as a vector, and NOT using the plane's distanceFromOrigin).
+  /** Return the dot product of the plane normal with the point (treating the point xyz as a vector, and NOT using the plane's distanceFromOrigin).
    */
   public dotProductPlaneNormalPoint(point: Point3d): number {
     return point.x * this._inwardNormal.x + point.y * this._inwardNormal.y + point.z * this._inwardNormal.z;

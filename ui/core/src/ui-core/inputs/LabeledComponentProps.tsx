@@ -1,0 +1,39 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+/** @module Inputs */
+
+import * as React from "react";
+
+import { InputStatus } from "./InputStatus";
+
+/** Properties for labeled components
+ * @beta
+ */
+export interface LabeledComponentProps {
+  /** Text that will be shown next to or above the input. */
+  label?: string;
+  /** Input status like: "Success", "Warning" or "Error" */
+  status?: InputStatus;
+  /** Custom CSS class name for the checkbox input element */
+  inputClassName?: string;
+  /** Custom CSS Style for the checkbox input element */
+  inputStyle?: React.CSSProperties;
+  /** Custom CSS class name for the label */
+  labelClassName?: string;
+  /** Custom CSS Style for the label */
+  labelStyle?: React.CSSProperties;
+}
+
+/** Properties for components with messages
+ * @beta
+ */
+export interface MessagedComponentProps {
+  /** Optional text shown below the input. */
+  message?: string;
+  /** Custom CSS class name for the message */
+  messageClassName?: string;
+  /** Custom CSS Style for the message */
+  messageStyle?: React.CSSProperties;
+}

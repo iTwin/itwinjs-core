@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "fix missing ULAS client request data",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "evan.preslar@bentley.com"
+}

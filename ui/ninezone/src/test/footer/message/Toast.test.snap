@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Toast /> renders correctly 1`] = `
-<Activity
+<div
   className="nz-footer-message-toast nz-stage-visible"
 >
   <div
@@ -14,5 +14,5 @@ exports[`<Toast /> renders correctly 1`] = `
       }
     }
   />
-</Activity>
+</div>
 `;

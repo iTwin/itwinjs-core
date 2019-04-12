@@ -12,6 +12,7 @@ import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
+import { BackgroundMapProps } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { CalloutProps } from '@bentley/imodeljs-common';
@@ -816,6 +817,8 @@ export interface DisplayStyleCreationOptions {
     analysisStyle?: AnalysisStyleProps;
     // (undocumented)
     backgroundColor?: ColorDef;
+    // (undocumented)
+    backgroundMap?: BackgroundMapProps;
     // (undocumented)
     contextRealityModels?: ContextRealityModelProps[];
     // (undocumented)

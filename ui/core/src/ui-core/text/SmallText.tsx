@@ -9,13 +9,15 @@ import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
 /** Styled small text
- * @public
+ * @beta
  */
 
 export class SmallText extends React.Component<TextProps> {
   public render(): JSX.Element {
+    const { className, style, ...props } = this.props;
+
     return (
-      <span {...this.props} className={classnames("uicore-text-small", this.props.className)}>
+      <span {...props} className={classnames("uicore-text-small", className)} style={style}>
         {this.props.children}
       </span>
     );

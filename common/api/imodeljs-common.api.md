@@ -1069,6 +1069,10 @@ export class ColorIndex {
 
 // @public
 export interface ContextRealityModelProps {
+    // Warning: (ae-incompatible-release-tags) The symbol "classifiers" is marked as @public, but its signature references "SpatialClassificationProps" which is marked as @beta
+    // 
+    // (undocumented)
+    classifiers?: SpatialClassificationProps.PropertiesProps[];
     // (undocumented)
     description?: string;
     // (undocumented)
@@ -4296,6 +4300,67 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     openSnapshot(_fileName: string): Promise<IModel>;
     static types: () => (typeof IModelToken)[];
     static version: string;
+}
+
+// @beta
+export namespace SpatialClassificationProps {
+    export const enum Display {
+        Dimmed = 2,
+        ElementColor = 4,
+        Hilite = 3,
+        Off = 0,
+        On = 1
+    }
+    export class Flags implements FlagsProps {
+        constructor(inside?: Display, outside?: Display);
+        // (undocumented)
+        inside: Display;
+        // (undocumented)
+        outside: Display;
+        // (undocumented)
+        selected: Display;
+        // (undocumented)
+        type: number;
+    }
+    export interface FlagsProps {
+        // (undocumented)
+        inside: SpatialClassificationProps.Display;
+        // (undocumented)
+        outside: SpatialClassificationProps.Display;
+        // (undocumented)
+        selected: SpatialClassificationProps.Display;
+        // (undocumented)
+        type: number;
+    }
+    export class Properties implements PropertiesProps {
+        constructor(props: PropertiesProps);
+        // (undocumented)
+        expand: number;
+        // (undocumented)
+        flags: Flags;
+        // (undocumented)
+        isActive: boolean;
+        // (undocumented)
+        modelId: Id64String;
+        // (undocumented)
+        name: string;
+    }
+    export interface PropertiesProps {
+        expand: number;
+        // (undocumented)
+        flags: Flags;
+        // (undocumented)
+        isActive: boolean;
+        modelId: Id64String;
+        // (undocumented)
+        name: string;
+    }
+    export const enum Type {
+        // (undocumented)
+        Planar = 0,
+        // (undocumented)
+        Volume = 1
+    }
 }
 
 // @public

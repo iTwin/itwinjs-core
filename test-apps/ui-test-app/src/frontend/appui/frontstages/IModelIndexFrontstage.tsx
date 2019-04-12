@@ -4,8 +4,8 @@
 import * as React from "react";
 import {
   CoreTools, ContentGroup, ContentControl, ConfigurableCreateInfo,
-  FrontstageProvider, FrontstageProps, Frontstage, IModelIndex,
-} from "@bentley/ui-framework";
+  FrontstageProvider, FrontstageProps, Frontstage } from "@bentley/ui-framework";
+import { IModelIndex } from "../imodelindex/IModelIndex";
 import { SampleAppIModelApp } from "../../index";
 import { Id64String } from "@bentley/bentleyjs-core";
 

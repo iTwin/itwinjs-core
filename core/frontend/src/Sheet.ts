@@ -860,7 +860,7 @@ export namespace Attachments {
 
     /** Given a view and placement, compute a scale for an attachment. */
     private static computeScale(view: ViewState, placement: Placement2d): number {
-      return view.getExtents().x / placement.bbox.width;
+      return view.getExtents().x / placement.bbox.xLength();
     }
 
     /** Given a view and an origin point, compute a placement for an attachment. */

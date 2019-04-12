@@ -6,9 +6,11 @@ import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
 import { Provider } from "react-redux";
+import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
 import { SnapMode } from "@bentley/imodeljs-frontend";
+import { FooterPopup } from "@bentley/ui-ninezone";
 
 import {
   SnapModeField,
@@ -102,6 +104,39 @@ describe("SnapModeField", () => {
     expect(wrapper.find(itemId).length).to.eq(1);
 
     wrapper.unmount();
+  });
+
+  it("should close on outside click", () => {
+    const wrapper = mount(<Provider store={TestUtils.store}>
+      <StatusBar widgetControl={widgetControl} isInFooterMode />
+    </Provider>);
+    const statusBar = wrapper.find(StatusBar);
+    const footerPopup = wrapper.find(FooterPopup);
+
+    const statusBarInstance = statusBar.instance() as StatusBar;
+    const spy = sinon.spy(statusBarInstance, "setOpenWidget");
+
+    const outsideClick = new MouseEvent("");
+    sinon.stub(outsideClick, "target").get(() => document.createElement("div"));
+    footerPopup.prop("onOutsideClick")!(outsideClick);
+
+    expect(spy.calledWithExactly(null)).true;
+  });
+
+  it("should not close on outside click", () => {
+    const wrapper = mount<Provider>(<Provider store={TestUtils.store}>
+      <StatusBar widgetControl={widgetControl} isInFooterMode />
+    </Provider>);
+    const statusBar = wrapper.find(StatusBar);
+    const footerPopup = wrapper.find(FooterPopup);
+
+    const statusBarInstance = statusBar.instance() as StatusBar;
+    const spy = sinon.spy(statusBarInstance, "setOpenWidget");
+
+    const outsideClick = new MouseEvent("");
+    footerPopup.prop("onOutsideClick")!(outsideClick);
+
+    expect(spy.calledWithExactly(null)).false;
   });
 
 });

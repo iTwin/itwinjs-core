@@ -6,16 +6,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Column.scss";
 
-/** Properties of [[GroupColumn]] component. */
+/** Properties of [[GroupColumn]] component.
+ * @alpha
+ */
 export interface GroupColumnProps extends CommonProps {
   /** Actual content. I.e. tool items: [[GroupToolExpander]], [[GroupTool]] */
   children?: React.ReactNode;
 }
 
-/** Tool group column. Used in [[Group]], [[NestedGroup]] components. */
+/** Tool group column. Used in [[Group]], [[NestedGroup]] components.
+ * @alpha
+ */
 export class GroupColumn extends React.PureComponent<GroupColumnProps> {
   public render() {
     const className = classnames(

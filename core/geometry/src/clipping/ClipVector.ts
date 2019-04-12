@@ -5,7 +5,7 @@
 
 /** @module CartesianGeometry */
 
-import { ClipPrimitive, ClipShape, ClipMask } from "./ClipPrimitive";
+import { ClipPrimitive, ClipMaskXYZRangePlanes, ClipShape } from "./ClipPrimitive";
 import { ClipPlaneContainment } from "./ClipUtils";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Segment1d } from "../geometry3d/Segment1d";
@@ -195,7 +195,7 @@ export class ClipVector {
      *  - The last valid zHigh found is stored in the returned array at index 2
      */
     public extractBoundaryLoops(loopPoints: Point3d[][], transform?: Transform): number[] {
-        let clipM = ClipMask.None;
+        let clipM = ClipMaskXYZRangePlanes.None;
         let zBack = -Number.MAX_VALUE;
         let zFront = Number.MAX_VALUE;
         const retVal: number[] = [];
@@ -223,14 +223,14 @@ export class ClipVector {
                 loopPoints[nLoops] = [];
 
                 if (clip.polygon !== undefined) {
-                    clipM = ClipMask.XAndY;
+                    clipM = ClipMaskXYZRangePlanes.XAndY;
 
                     if (clip.zHighValid) {
-                        clipM = clipM | ClipMask.ZHigh;
+                        clipM = clipM | ClipMaskXYZRangePlanes.ZHigh;
                         zFront = clip.zHigh!;
                     }
                     if (clip.zLowValid) {
-                        clipM = clipM | ClipMask.ZLow;
+                        clipM = clipM | ClipMaskXYZRangePlanes.ZLow;
                         zBack = clip.zLow!;
                     }
 

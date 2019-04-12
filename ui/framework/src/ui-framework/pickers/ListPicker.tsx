@@ -5,13 +5,12 @@
 /** @module Picker */
 
 import * as React from "react";
-import { Group, Panel, GroupColumn, CommonProps, ExpandableItem, withContainIn, Item, containHorizontally } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
+import { Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally } from "@bentley/ui-ninezone";
 import * as classnames from "classnames";
-
+import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import "./ListPicker.scss";
-
-import { UiFramework } from "../UiFramework";
 
 // tslint:disable-next-line:variable-name
 const ContainedGroup = withContainIn(Group);
@@ -109,8 +108,8 @@ interface ExpandableSectionState {
  */
 export class ExpandableSection extends React.Component<ExpandableSectionProps, ExpandableSectionState> {
   /** Creates an ExpandableSection */
-  constructor(props: ExpandableSectionProps, context: any) {
-    super(props, context);
+  constructor(props: ExpandableSectionProps) {
+    super(props);
     this.state = { expanded: false };
   }
 

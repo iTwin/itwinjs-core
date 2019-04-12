@@ -5,7 +5,7 @@
 @import "_helpers";
 
 // Order matters, last is top-most on screen.
-$uicore-internal-z-index-layers: content, zones, dragged-widget, zone-target, zone-outline, backstage-overlay, backstage, expandable, toolbar-histories, toolbar-panels, status-popover, status-message, dialog, tooltip;
+$uicore-internal-z-index-layers: content, zones, dragged-widget, zone-target, zone-outline, backstage-overlay, backstage, expandable, toolbar-histories, toolbar-panels, status-popup, status-message, dialog, tooltip;
 
 $uicore-z-index-step: 1000;
 

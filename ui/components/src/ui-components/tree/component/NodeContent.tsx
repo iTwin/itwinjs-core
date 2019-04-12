@@ -6,13 +6,14 @@
 
 import * as React from "react";
 import classnames from "classnames";
+
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
-import HighlightingEngine, { HighlightableTreeNodeProps } from "../HighlightingEngine";
+import { HighlightingEngine, HighlightableTreeNodeProps } from "../HighlightingEngine";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
 import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";
 import { CellEditingEngine } from "../CellEditingEngine";
-import { TreeNodePlaceholder, shallowDiffers, isPromiseLike } from "@bentley/ui-core";
+import { TreeNodePlaceholder, shallowDiffers, isPromiseLike, CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../../UiComponents";
 import { ItemStyleProvider, ItemStyle } from "../../properties/ItemStyle";
 
@@ -21,7 +22,7 @@ import "./NodeContent.scss";
 /** Properties for [[TreeNodeContent]] component
  * @internal
  */
-export interface TreeNodeContentProps {
+export interface TreeNodeContentProps extends CommonProps {
   node: BeInspireTreeNode<TreeNodeItem>;
   showDescription?: boolean;
   highlightProps?: HighlightableTreeNodeProps;
@@ -169,6 +170,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     const containerClassName = classnames(
       "components-tree-node-content",
       isDescriptionEnabled ? "with-description" : undefined,
+      this.props.className,
     );
 
     const descriptionClassName = classnames(
@@ -177,7 +179,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     );
 
     return (
-      <div className={containerClassName}>
+      <div className={containerClassName} style={this.props.style}>
         {editor ? editor : this.state.label}
         {isDescriptionEnabled ?
           <div className={descriptionClassName}>

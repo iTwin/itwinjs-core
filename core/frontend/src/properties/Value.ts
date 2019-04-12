@@ -9,6 +9,7 @@ import { Primitives } from "./PrimitiveTypes";
 
 /**
  * Enumeration for Format of the property value.
+ * @public
  */
 export enum PropertyValueFormat {
   Primitive,
@@ -16,30 +17,40 @@ export enum PropertyValueFormat {
   Struct,
 }
 
-/** Base interface for a property value */
+/** Base interface for a property value
+ * @public
+ */
 export interface BasePropertyValue {
   valueFormat: PropertyValueFormat;
 }
 
-/** Primitive property value */
+/** Primitive property value
+ * @public
+ */
 export interface PrimitiveValue extends BasePropertyValue {
   valueFormat: PropertyValueFormat.Primitive;
   value?: Primitives.Value;
   displayValue?: string;
 }
 
-/** Struct property value */
+/** Struct property value
+ * @public
+ */
 export interface StructValue extends BasePropertyValue {
   valueFormat: PropertyValueFormat.Struct;
   members: { [name: string]: PropertyRecord };
 }
 
-/** Array property value */
+/** Array property value
+ * @public
+ */
 export interface ArrayValue extends BasePropertyValue {
   valueFormat: PropertyValueFormat.Array;
   items: PropertyRecord[];
   itemsTypeName: string;
 }
 
-/** Type for all property values */
+/** Type for all property values
+ * @public
+ */
 export type PropertyValue = PrimitiveValue | StructValue | ArrayValue;

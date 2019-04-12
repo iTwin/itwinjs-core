@@ -7,8 +7,7 @@
 import * as React from "react";
 import classnames from "classnames";
 import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
-import { LoadingBar } from "@bentley/ui-core";
-import { CommonProps } from "@bentley/ui-ninezone";
+import { CommonProps, LoadingBar } from "@bentley/ui-core";
 import "./TileLoadingIndicator.scss";
 
 let onViewOpen: (vp: ScreenViewport) => void;
@@ -29,8 +28,8 @@ interface TileLoadingIndicatorState {
  * @internal
  */
 export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileLoadingIndicatorState> {
-  constructor(props?: any, context?: any) {
-    super(props, context);
+  constructor(props: CommonProps) {
+    super(props);
     this.state = { label: "", progress: 0, enabled: false, finished: true };
   }
 
@@ -90,7 +89,7 @@ export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileL
 
   /** Renders TileLoadingIndicator */
   public render() {
-    const classes = classnames("uifw-tile-loading-bar", this.props.className, this.state.enabled && "uifw-tile-loading-bar-visible");
+    const classes = classnames("uifw-tile-loading-bar", this.state.enabled && "uifw-tile-loading-bar-visible", this.props.className);
     return (
       <div className={classes} style={this.props.style}>
         <span>{this.state.label}</span>

@@ -7,14 +7,17 @@
 // third-party imports
 import _ from "lodash";
 import * as React from "react";
+import classnames from "classnames";
 import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedListRowProps } from "react-virtualized";
+
 // bentley imports
 import { using, Guid } from "@bentley/bentleyjs-core";
 import {
   Tree as TreeBase, TreeNodePlaceholder, shallowDiffers,
   CheckBoxState, CheckBoxInfo, NodeCheckboxRenderer,
-  Spinner, SpinnerSize,
+  Spinner, SpinnerSize, CommonProps,
 } from "@bentley/ui-core";
+
 // tree-related imports
 import {
   BeInspireTree, BeInspireTreeNode, BeInspireTreeNodes, BeInspireTreeNodeConfig,
@@ -34,9 +37,9 @@ import {
   OnItemsSelectedCallback, OnItemsDeselectedCallback,
 } from "../../common/selection/SelectionHandler";
 // node highlighting
-import HighlightingEngine, { HighlightableTreeProps } from "../HighlightingEngine";
+import { HighlightingEngine, HighlightableTreeProps } from "../HighlightingEngine";
 // misc
-import UiComponents from "../../UiComponents";
+import { UiComponents } from "../../UiComponents";
 import { CellEditingEngine, EditableTreeProps } from "../CellEditingEngine";
 import { ITreeImageLoader, TreeImageLoader } from "../ImageLoader";
 
@@ -59,7 +62,7 @@ export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNo
 /** Properties for the [[Tree]] component
  * @public
  */
-export interface TreeProps {
+export interface TreeProps extends CommonProps {
   /** Nodes provider */
   dataProvider: TreeDataProvider;
 
@@ -254,8 +257,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   };
 
   /** @internal */
-  constructor(props: TreeProps, context?: any) {
-    super(props, context);
+  constructor(props: TreeProps) {
+    super(props);
 
     this._selectionHandler = new SelectionHandler(props.selectionMode!, this._onNodesSelected, this._onNodesDeselected);
     this._selectionHandler.onItemsSelectedCallback = this._onNodesSelected;
@@ -909,7 +912,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     };
 
     return (
-      <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown} className="components-tree">
+      <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown}
+        className={classnames("components-tree", this.props.className)} style={this.props.style}
+      >
         <AutoSizer>
           {({ width, height }: Size) => (
             <VirtualizedList
@@ -928,11 +933,14 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 }
 
-/** @internal
+/**
+ * @internal
  * @note Renamed 'Tree' namespace to 'TreeTest' because extract-api does not allow two different release tags for 'Tree.
  */
 // istanbul ignore next
 export namespace TreeTest {
+
+  /** @internal */
   export const enum TestId {
     Node = "tree-node",
     NodeContents = "tree-node-contents",

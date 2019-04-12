@@ -27,7 +27,7 @@ import {
   ActivityMessageEndReason,
 } from "@bentley/imodeljs-frontend";
 
-import { Hyperlink, MessageButton } from "@bentley/ui-ninezone";
+import { MessageHyperlink, MessageButton } from "@bentley/ui-ninezone";
 
 describe("StatusBar", () => {
 
@@ -125,7 +125,7 @@ describe("StatusBar", () => {
     notifications.outputActivityMessage("Message text", 50);
 
     wrapper.update();
-    wrapper.find(Hyperlink).simulate("click");
+    wrapper.find(MessageHyperlink).simulate("click");
 
     wrapper.unmount();
   });

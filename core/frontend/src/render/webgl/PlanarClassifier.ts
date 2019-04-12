@@ -11,11 +11,10 @@ import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Matrix4 } from "./Matrix";
-import { SpatialClassification } from "../../SpatialClassification";
 import { SceneContext } from "../../ViewContext";
-import { GeometricModelState } from "../../ModelState";
+import { TileTreeModelState } from "../../ModelState";
 import { TileTree, Tile } from "../../tile/TileTree";
-import { Frustum, Npc, FrustumPlanes, RenderTexture, RenderMode, ColorDef } from "@bentley/imodeljs-common";
+import { Frustum, Npc, FrustumPlanes, RenderTexture, RenderMode, ColorDef, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry } from "./CachedGeometry";
 import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Range3d, Transform, Matrix3d, ClipVector, Matrix4d, Ray3d, Point4d } from "@bentley/geometry-core";
 import { System } from "./System";
@@ -67,19 +66,19 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private static _scratchFrustum = new Frustum();
   private static _scratchPoint4d = Point4d.createZero();
 
-  private constructor(private _classifierProperties: SpatialClassification.Properties) { super(); }
+  private constructor(private _classifierProperties: SpatialClassificationProps.Properties) { super(); }
   public get colorTexture(): Texture | undefined { return this._colorTexture; }
   public get featureTexture(): Texture | undefined { return this._featureTexture; }
   public get hiliteTexture(): Texture | undefined { return this._hiliteTexture; }
   public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
-  public get properties(): SpatialClassification.Properties { return this._classifierProperties; }
+  public get properties(): SpatialClassificationProps.Properties { return this._classifierProperties; }
   public get baseBatchId(): number { return this._baseBatchId; }
   public get anyHilited(): boolean { return this._anyHilited; }
-  public get insideDisplay(): SpatialClassification.Display { return this._classifierProperties.flags.inside; }
-  public get outsideDisplay(): SpatialClassification.Display { return this._classifierProperties.flags.outside; }
+  public get insideDisplay(): SpatialClassificationProps.Display { return this._classifierProperties.flags.inside; }
+  public get outsideDisplay(): SpatialClassificationProps.Display { return this._classifierProperties.flags.outside; }
   public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
 
-  public static create(properties: SpatialClassification.Properties, tileTree: TileTree, classifiedModel: GeometricModelState, sceneContext: SceneContext): PlanarClassifier {
+  public static create(properties: SpatialClassificationProps.Properties, tileTree: TileTree, classifiedModel: TileTreeModelState, sceneContext: SceneContext): PlanarClassifier {
     const classifier = new PlanarClassifier(properties);
     classifier.drawScene(sceneContext, classifiedModel, tileTree);
     return classifier;
@@ -144,7 +143,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     }
   }
 
-  public drawScene(context: SceneContext, classifiedModel: GeometricModelState, tileTree: TileTree) {
+  public drawScene(context: SceneContext, classifiedModel: TileTreeModelState, tileTree: TileTree) {
     const classifierZ = this._plane.getNormalRef();
     if (undefined === context.viewFrustum)
       return;

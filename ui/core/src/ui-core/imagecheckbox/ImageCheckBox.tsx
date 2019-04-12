@@ -10,7 +10,7 @@ import { CommonProps } from "../utils/Props";
 import "./ImageCheckBox.scss";
 
 /** Properties for the [[ImageCheckBox]] component
- * @public
+ * @beta
  */
 export interface ImageCheckBoxProps extends CommonProps {
   /** Image for the "checked" state */
@@ -23,12 +23,16 @@ export interface ImageCheckBoxProps extends CommonProps {
   disabled?: boolean;
   /** Function called when item is clicked. */
   onClick?: (checked: boolean) => any;
+  /** Custom CSS class name for the checkbox input element */
+  inputClassName?: string;
+  /** Custom CSS Style for the checkbox input element */
+  inputStyle?: React.CSSProperties;
 }
 
 /**
  * ImageCheckBox React component
  * Component to show a checked or unchecked image'
- * @public
+ * @beta
  */
 export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
 
@@ -54,8 +58,9 @@ export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
     const checkBoxClass = classnames("core-image-checkbox", this.props.className);
     const imageClass = classnames("image icon", this.props.checked ? this.props.imageOn : this.props.imageOff);
     return (
-      <label className={checkBoxClass} onClick={this._onLabelClick}>
-        <input type="checkbox" checked={this.props.checked} disabled={this.props.disabled} onChange={this._onChange} onClick={this._onInputClick} />
+      <label className={checkBoxClass} style={this.props.style} onClick={this._onLabelClick}>
+        <input type="checkbox" className={this.props.inputClassName} style={this.props.inputStyle}
+          checked={this.props.checked} disabled={this.props.disabled} onChange={this._onChange} onClick={this._onInputClick} />
         <span className={imageClass} />
       </label>
     );

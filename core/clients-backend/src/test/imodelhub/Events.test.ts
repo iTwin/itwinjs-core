@@ -97,6 +97,10 @@ describe("iModelHub EventHandler", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function (this: Mocha.IHookCallbackContext) {
+    if (TestConfig.enableIModelBank) {
+      this.skip();
+    }
+
     this.enableTimeouts(false);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);

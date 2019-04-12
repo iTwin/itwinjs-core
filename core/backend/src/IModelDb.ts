@@ -269,8 +269,15 @@ export class IModelDb extends IModel implements PageableECSql {
     Logger.logTrace(loggerCategory, "Started IModelDb.open", () => ({ iModelId, contextId, ...openParams }));
 
     IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
-    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(requestContext, contextId, iModelId, openParams, version);
-    requestContext.enter();
+
+    let briefcaseEntry: BriefcaseEntry;
+    try {
+      briefcaseEntry = await BriefcaseManager.open(requestContext, contextId, iModelId, openParams, version);
+      requestContext.enter();
+    } catch (err) {
+      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ token: requestContext.accessToken.toTokenString(), ...imodelDb._token, ...openParams }));
+      throw err;
+    }
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
     await imodelDb.logUsage(requestContext, contextId);
     requestContext.enter();
@@ -331,7 +338,7 @@ export class IModelDb extends IModel implements PageableECSql {
       return defaultId;
     }
 
-    return parseInt(requestContext.applicationId, defaultId);
+    return parseInt(requestContext.applicationId, 10) || defaultId;
   }
 
   private async logUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString): Promise<void> {
@@ -343,6 +350,17 @@ export class IModelDb extends IModel implements PageableECSql {
       ulasEntry.projectId = contextId;
       ulasEntry.productId = this.getApplicationId(requestContext);
       ulasEntry.productVersion = this.getApplicationVersion(requestContext);
+
+      if (!requestContext.accessToken.isJwt) {
+        const userInfo = requestContext.accessToken.getUserInfo();
+        const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
+        ulasEntry.userInfo = {
+          imsId: !userInfo ? "" : userInfo.id,
+          ultimateSite: !featureTrackingInfo ? 0 : parseInt(featureTrackingInfo.ultimateSite, 10),
+          usageCountryIso: !featureTrackingInfo ? "" : featureTrackingInfo.usageCountryIso,
+        };
+      }
+
       const resp: LogPostingResponse = await client.logUsage(requestContext, ulasEntry);
       requestContext.enter();
       status = resp ? resp.status : BentleyStatus.ERROR;

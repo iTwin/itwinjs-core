@@ -6,14 +6,16 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 import { CssProperties } from "../../utilities/Css";
-import { CommonProps } from "../../utilities/Props";
 import { Point, PointProps } from "../../utilities/Point";
 import { Rectangle, RectangleProps } from "../../utilities/Rectangle";
 import { SizeProps, Size } from "../../utilities/Size";
 import "./Tooltip.scss";
 
-/** Properties of [[Tooltip]] component. */
+/** Properties of [[Tooltip]] component.
+ * @alpha Remove: position.
+ */
 export interface TooltipProps extends CommonProps {
   /** Tooltip content. */
   children?: React.ReactNode;
@@ -23,11 +25,16 @@ export interface TooltipProps extends CommonProps {
   onSizeChanged?: (size: SizeProps) => void;
 }
 
+/** Default properties of [[Tooltip]] component.
+ * @alpha
+ */
 export type TooltipDefaultProps = Pick<TooltipProps, "position">;
 
-export const offsetAndContainInContainer = (offset: PointProps = new Point(20, 20)) => (relativeTooltipBounds: RectangleProps, containerSize: SizeProps) => {
-  const tooltipBounds = Rectangle.create(relativeTooltipBounds);
-  let newBounds = tooltipBounds.offset(offset);
+/** Function to apply offset and contain tooltip bounds in container.
+ * @alpha Join currying functions, return PointProps.
+ */
+export const offsetAndContainInContainer = (offset: PointProps = new Point(20, 20)) => (tooltipBounds: RectangleProps, containerSize: SizeProps) => {
+  let newBounds = Rectangle.create(tooltipBounds).offset(offset);
   const containerBounds = Rectangle.createFromSize(containerSize);
   if (containerBounds.contains(newBounds))
     return newBounds.topLeft();
@@ -36,7 +43,9 @@ export const offsetAndContainInContainer = (offset: PointProps = new Point(20, 2
   return newBounds.topLeft();
 };
 
-/** Positionable tooltip component. */
+/** Positionable tooltip component.
+ * @alpha Remove by merging with ToolSettingsTooltip.
+ */
 export class Tooltip extends React.PureComponent<TooltipProps> {
   public static readonly defaultProps: TooltipDefaultProps = {
     position: {

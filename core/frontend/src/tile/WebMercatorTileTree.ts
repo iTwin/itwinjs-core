@@ -36,9 +36,9 @@ class LinearTransformChildCreator implements ChildCreator {
   constructor(_iModel: IModelConnection, groundBias: number) {
     // calculate mercatorToDb.
     const ecefLocation: EcefLocation = _iModel.ecefLocation!;
-    const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
+    const dbToEcef = ecefLocation.getTransform();
 
-    const projectCenter = _iModel.projectExtents.center;
+    const projectCenter = Point3d.create(_iModel.projectExtents.center.x, _iModel.projectExtents.center.y, groundBias);
     const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
     const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
 
@@ -230,12 +230,12 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   public yAxisUp = true;
   public isTerrain = true;
   public maxTilesToSkip = 4;
-  public constructor() {
+  public constructor(groundBias: number) {
     const corners: Point3d[] = [];
-    corners[0] = new Point3d(-10000000, -10000000, 0);
-    corners[1] = new Point3d(-10000000, 10000000, 0);
-    corners[2] = new Point3d(10000000, -10000000, 0);
-    corners[3] = new Point3d(10000000, 10000000, 0);
+    corners[0] = new Point3d(-10000000, -10000000, groundBias);
+    corners[1] = new Point3d(-10000000, 10000000, groundBias);
+    corners[2] = new Point3d(10000000, -10000000, groundBias);
+    corners[3] = new Point3d(10000000, 10000000, groundBias);
 
     this.rootTile = new WebMercatorTileProps("0_0_0", 0, corners);
     this.location = Transform.createIdentity();
@@ -767,7 +767,7 @@ export class BackgroundMapState {
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
     const loader = new WebMercatorTileLoader(this._provider, this._iModel, this._groundBias, this._gcsConverterStatus === GcsConverterStatus.Available);
-    const tileTreeProps = new WebMercatorTileTreeProps();
+    const tileTreeProps = new WebMercatorTileTreeProps(this._groundBias);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;
   }

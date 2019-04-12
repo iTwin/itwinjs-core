@@ -52,7 +52,9 @@ export interface Decorator {
   getDecorationGeometry?(hit: HitDetail): GeometryStreamProps | undefined;
 }
 
-/** Argument for [[ViewManager.onSelectedViewportChanged]] */
+/** Argument for [[ViewManager.onSelectedViewportChanged]]
+ * @public
+ */
 export interface SelectedViewportChangedArgs {
   current?: ScreenViewport;
   previous?: ScreenViewport;

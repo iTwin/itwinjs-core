@@ -13,7 +13,6 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelTile } from "./tile/IModelTile";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 import { TileTree, TileTreeState } from "./tile/TileTree";
-import { SpatialClassification } from "./SpatialClassification";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -77,6 +76,10 @@ export interface TileTreeModelState {
   readonly loadStatus: TileTree.LoadStatus;
   /** @internal */
   readonly treeModelId: Id64String;    // Model Id, or transient Id if not a model (context reality model)
+  /** @internal */
+  readonly jsonProperties: { [key: string]: any };
+  /** @internal */
+  readonly iModel: IModelConnection;
   /** @internal */
   loadTileTree(batchType: BatchType, edgesRequired: boolean, animationId?: Id64String, classifierExpansion?: number): TileTree.LoadStatus;
 }
@@ -196,57 +199,6 @@ export abstract class GeometricModelState extends ModelState implements TileTree
       this._modelRange = Range3d.fromJSON(ranges[0]);
     }
     return this._modelRange!;
-  }
-
-  /**   Get active spatial classifier
-   * @beta
-   */
-  public getActiveSpatialClassifier(): number {
-    if (this.jsonProperties !== undefined && this.jsonProperties.classifiers !== undefined) {
-      for (let index = 0; index < this.jsonProperties.classifiers.length; index++) {
-        if (this.jsonProperties.classifiers[index].isActive)
-          return index;
-      }
-    }
-    return -1;
-  }
-  /** Get spatial classifier at  index
-   * @beta
-   */
-  public getSpatialClassifier(index: number): SpatialClassification.Properties | undefined {
-    if (index < 0 || undefined === this.jsonProperties.classifiers || index >= this.jsonProperties.classifiers.length)
-      return undefined;
-
-    return new SpatialClassification.Properties(this.jsonProperties.classifiers[index]);
-  }
-  /** Set the spatial classifier at index
-   * @beta
-   */
-  public setSpatialClassifier(index: number, classifier: SpatialClassification.Properties) {
-    if (index < 0 || undefined === this.jsonProperties.classifiers || index >= this.jsonProperties.classifiers.length)
-      return;
-
-    this.jsonProperties.classifiers[index] = classifier;
-  }
-  /** Set the active spatial classifier by index
-   * @beta
-   */
-  public async setActiveSpatialClassifier(classifierIndex: number, active: boolean) {
-    const classifiers = this.jsonProperties.classifiers;
-    if (classifiers !== undefined)
-      for (let index = 0; index < classifiers.length; index++)
-        if (false !== (classifiers[index].isActive = (classifierIndex === index && active)))
-          await SpatialClassification.loadModelClassifiers(this.id, this.iModel);
-  }
-
-  /** Add a spatial classifier
-   * @beta
-   */
-  public addSpatialClassifier(classifier: SpatialClassification.PropertiesProps) {
-    if (undefined === this.jsonProperties.classifiers)
-      this.jsonProperties.classifiers = [];
-
-    this.jsonProperties.classifiers.push(classifier);
   }
 }
 

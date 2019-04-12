@@ -51,6 +51,7 @@ export class Sprite {
 
 /** Icon sprites are loaded from .png files in the assets directory of imodeljs-native.
  * They are cached by name, and the cache is cleared when the ToolAdmin is shut down.
+ * @public
  */
 export class IconSprites {
   private static readonly _sprites = new Map<string, Sprite>();

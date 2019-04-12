@@ -11,11 +11,12 @@ import * as classnames from "classnames";
 import "./ContextMenu.scss";
 import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
 import { Omit } from "../utils/typeUtils";
+import { CommonProps } from "../utils/Props";
 
 const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
 /** Enum to specify where a [[ContextMenu]] should anchor to its parent element
- * @public
+ * @beta
  */
 export enum ContextMenuDirection {
   None = "",
@@ -25,9 +26,9 @@ export enum ContextMenuDirection {
 }
 
 /** Properties for the [[ContextMenu]] component
- * @public
+ * @beta
  */
-export interface ContextMenuProps extends React.AllHTMLAttributes<HTMLDivElement> {
+export interface ContextMenuProps extends CommonProps {
   /** Whether ContextMenu is currently opened. */
   opened: boolean;
   /** Which direction the menu opens. Default: ContextMenuDirection.BottomRight */
@@ -63,7 +64,7 @@ interface ContextMenuState {
 /**
  * A context menu populated with [[ContextMenuItem]] components.
  * Can be nested using [[ContextSubMenu]] component.
- * @public
+ * @beta
  */
 export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
   private _rootElement: HTMLElement | null = null;
@@ -357,7 +358,7 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
 }
 
 /** Properties for the [[GlobalContextMenu]] component
- * @public
+ * @beta
  */
 export interface GlobalContextMenuProps extends ContextMenuProps {
   /** Unique identifier, to distinguish from other GlobalContextMenu components. Needed only if multiple GlobalContextMenus are used simultaneously. */
@@ -371,7 +372,7 @@ export interface GlobalContextMenuProps extends ContextMenuProps {
 }
 
 /** GlobalContextMenu React component used to display a [[ContextMenu]] at the cursor
- * @public
+ * @beta
  */
 export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
   private _container: HTMLDivElement;
@@ -412,9 +413,9 @@ export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
 }
 
 /** Properties for the [[ContextMenuItem]] component
- * @public
+ * @beta
  */
-export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement> {
+export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
   onSelect?: (event: any) => any;
   /** @internal */
   onHotKeyParsed?: (hotKey: string) => void;
@@ -437,7 +438,7 @@ interface ContextMenuItemState {
 
 /**
  * Menu Item class for use within a [[ContextMenu]] component.
- * @public
+ * @beta
  */
 export class ContextMenuItem extends React.Component<ContextMenuItemProps, ContextMenuItemState> {
   private _root: HTMLElement | null = null;
@@ -469,7 +470,7 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps, Conte
         onKeyUp={this._handleKeyUp}
         onMouseOver={this._handleMouseOver}
         data-testid={"core-context-menu-item"}
-        className={classnames(className, "core-context-menu-item", { disabled, "is-selected": isSelected })}>
+        className={classnames("core-context-menu-item", className, { disabled, "is-selected": isSelected })}>
         <div className={classnames("core-context-menu-icon", "icon", typeof icon === "string" ? icon : undefined)}>
           {typeof icon !== "string" ? icon : undefined}
         </div>
@@ -531,19 +532,20 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps, Conte
 
 /**
  * Menu Divider for [[ContextMenu]]. Inserts a line between items, used for list item grouping.
- * @public
+ * @beta
  */
-export class ContextMenuDivider extends React.Component {
+export class ContextMenuDivider extends React.Component<CommonProps> {
   public render(): JSX.Element {
+    const { className, ...props } = this.props;
     return (
-      <div {...this.props} data-testid="core-context-menu-divider" className="core-context-menu-divider">
+      <div {...props} data-testid="core-context-menu-divider" className={classnames("core-context-menu-divider", className)}>
       </div>
     );
   }
 }
 
 /** Properties interface for [[ContextSubMenu]]
- * @public
+ * @beta
  */
 export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label"> {
   /** Text/jsx to display in the list item */
@@ -561,7 +563,7 @@ interface ContextSubMenuState {
 
 /**
  * Submenu wrapper class for use within a [[ContextMenu]] component.
- * @public
+ * @beta
  */
 export class ContextSubMenu extends React.Component<ContextSubMenuProps, ContextSubMenuState> {
   private _menuElement: ContextMenu | null = null;
@@ -610,18 +612,18 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       this._lastLabel = label;
     }
     return (
-      <div className={classnames("context-submenu", dir, className)}
+      <div className={classnames("core-context-submenu", dir, className)}
         onMouseOver={this._handleMouseOver}
         ref={(el) => { this._subMenuElement = el; }}
         {...props} >
         <div
           onClick={this._handleClick}
           ref={(el) => { this._menuButtonElement = el; }}
-          className={classnames("core-context-menu-item context-submenucontainer", { disabled, "is-selected": isSelected })}
+          className={classnames("core-context-menu-item core-context-submenucontainer", { disabled, "is-selected": isSelected })}
         >
           <div className={classnames("core-context-menu-icon", "icon", icon)} />
           <div className={"core-context-menu-content"}>{this._parsedLabel}</div>
-          <div className={classnames("context-submenuarrow", "icon", "icon-caret-right")} />
+          <div className={classnames("core-context-submenuarrow", "icon", "icon-caret-right")} />
         </div>
         <ContextMenu
           ref={(el) => { this._menuElement = el; }}

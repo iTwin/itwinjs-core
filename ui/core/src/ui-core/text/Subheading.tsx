@@ -9,13 +9,15 @@ import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
 
 /** Styled subheading text
- * @public
+ * @beta
  */
 
 export class Subheading extends React.Component<TextProps> {
   public render(): JSX.Element {
+    const { className, style, ...props } = this.props;
+
     return (
-      <span {...this.props} className={classnames("uicore-text-subheading", this.props.className)}>
+      <span {...props} className={classnames("uicore-text-subheading", this.props.className)} style={style}>
         {this.props.children}
       </span>
     );

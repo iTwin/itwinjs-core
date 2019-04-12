@@ -26,6 +26,7 @@ The default configuration file allows you to specify the following:
 * what display style to use
 * what view flags to use
 * what render options to use
+* what tile admin properties to use
 
 The types of view flags that can be specified are as follows:
 * renderMode
@@ -85,6 +86,13 @@ Below is an example json config file:
           "renderOptions": {
 		      "disabledExtensions": ["WEBGL_draw_buffers", "OES_texture_half_float"]
 		      },
+          "tileProps": {
+            "disableThrottling": false,
+            "elideEmptyChildContentRequests": false,
+            "enableInstancing": true,
+            "maxActiveRequests": 15,
+            "retryInterval": 5
+          },
           "viewFlags": {
             "renderMode": "SmoothShade",
             "dimensions": true,

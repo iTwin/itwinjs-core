@@ -16,6 +16,7 @@
   }
 
   &:focus {
+    background: $buic-background-1;
     border: 1px solid $buic-background-5;
     outline: none;
     color: $buic-foreground-activehover;

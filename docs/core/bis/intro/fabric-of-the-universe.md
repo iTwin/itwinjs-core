@@ -16,7 +16,7 @@ See [Element Fundamentals](./element-fundamentals.md) for a more detailed discus
 
 ## ElementAspects
 
-An `ElementAspect` is a set of ECProperties that “belong” to a particular Element, but which have an independent lifecycle (they may come and go over the lifetime of the Element). ElementAspect instances are *owned* a single Element; ElementAspects are never shared by more than one Element. An ElementAspect is considered part of the Element and therefore can not be the target of any “incoming” relationships (other than from the single Element that owns it.) There are ElementUniqueAspects that have a maximum of one instance per Element and ElementMultiAspects that may potentially have many instances per Element.
+An `ElementAspect` is a set of ECProperties that “belong” to a particular Element, but which have an independent lifecycle (they may come and go over the lifetime of the Element). ElementAspect instances are *owned* by a single Element; ElementAspects are never shared by more than one Element. An ElementAspect is considered part of the Element and therefore can not be the target of any “incoming” relationships (other than from the single Element that owns it.) There are ElementUniqueAspects that have a maximum of one instance per Element and ElementMultiAspects that may potentially have many instances per Element.
 
 See [ElementAspect Fundamentals](./elementaspect-fundamentals.md) for a more detailed discussion of ElementAspects.
 

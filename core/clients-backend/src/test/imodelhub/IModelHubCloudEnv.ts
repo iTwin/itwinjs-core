@@ -35,4 +35,6 @@ export class TestIModelHubCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return true; }
   public readonly contextMgr = new TestConnectClient();
   public readonly authorization = new TestIModelHubUserMgr();
+  public async startup(): Promise<void> { return Promise.resolve(); }
+  public async shutdown(): Promise<number> { return Promise.resolve(0); }
 }

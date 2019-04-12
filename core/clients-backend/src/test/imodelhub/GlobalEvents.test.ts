@@ -123,10 +123,8 @@ describe("iModelHub GlobalEventHandler", () => {
   let serviceAccountRequestContext: AuthorizedClientRequestContext;
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
     if (!TestConfig.enableMocks) {
+      this.skip();
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
       imodelHubClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }

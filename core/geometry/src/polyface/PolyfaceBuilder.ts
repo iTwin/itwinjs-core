@@ -1263,14 +1263,21 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return this._polyface.setNewFaceData();
   }
 
-  // -------------------- double dispatch methods ---------------------------
+  /** Double dispatch handler for Cone */
   public handleCone(g: Cone): any { return this.addCone(g); }
+  /** Double dispatch handler for TorusPipe */
   public handleTorusPipe(g: TorusPipe): any { return this.addTorusPipe(g); }
+  /** Double dispatch handler for Sphere */
   public handleSphere(g: Sphere): any { return this.addSphere(g); }
+  /** Double dispatch handler for Box */
   public handleBox(g: Box): any { return this.addBox(g); }
+  /** Double dispatch handler for LinearSweep */
   public handleLinearSweep(g: LinearSweep): any { return this.addLinearSweep(g); }
+  /** Double dispatch handler for RotationalSweep */
   public handleRotationalSweep(g: RotationalSweep): any { return this.addRotationalSweep(g); }
+  /** Double dispatch handler for RuledSweep */
   public handleRuledSweep(g: RuledSweep): any { return this.addRuledSweep(g); }
+  /** add facets for a GeometryQuery object.   This is double dispatch through `dispatchToGeometryHandleer(this)` */
   public addGeometryQuery(g: GeometryQuery) { g.dispatchToGeometryHandler(this); }
 
   /**

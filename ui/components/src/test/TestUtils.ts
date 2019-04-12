@@ -8,7 +8,9 @@ import { UiComponents } from "../ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { ColorByName } from "@bentley/imodeljs-common";
 
-export default class TestUtils {
+// tslint:disable: completed-docs
+
+export class TestUtils {
   private static _i18n?: I18N;
   private static _uiComponentsInitialized = false;
 
@@ -206,3 +208,5 @@ export default class TestUtils {
     return propertyRecord;
   }
 }
+
+export default TestUtils;   // tslint:disable-line: no-default-export

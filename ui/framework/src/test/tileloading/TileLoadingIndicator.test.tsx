@@ -18,4 +18,8 @@ describe("TileLoadingIndicator", () => {
     ).should.matchSnapshot();
   });
 
+  it("should unmount correctly", () => {
+    const sut = enzyme.mount(<TileLoadingIndicator />);
+    sut.unmount();
+  });
 });

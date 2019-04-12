@@ -6,7 +6,8 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { createRect } from "../../../Utils";
-import { HorizontalAnchor, Tab, TabMode, TabModeHelpers, PointerCaptor, PointProps } from "../../../../ui-ninezone";
+import { HorizontalAnchor, Tab, TabMode, TabModeHelpers, PointProps } from "../../../../ui-ninezone";
+import { PointerCaptor } from "../../../../ui-ninezone/base/PointerCaptor";
 
 describe("<Tab />", () => {
   let createRefStub: sinon.SinonStub | undefined;

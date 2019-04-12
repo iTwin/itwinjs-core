@@ -9,9 +9,10 @@ import * as classnames from "classnames";
 
 import "./MessageBox.scss";
 import { Dialog, DialogButton } from "../dialog/Dialog";
+import { CommonProps } from "../utils/Props";
 
 /** Message Severity enum.
- * @public
+ * @beta
  */
 export enum MessageSeverity {
   None = 0,
@@ -23,9 +24,9 @@ export enum MessageSeverity {
 }
 
 /** Properties for the [[MessageBox]] component
- * @public
+ * @beta
  */
-export interface MessageBoxProps {
+export interface MessageBoxProps extends CommonProps {
   /** Severity of MessageBox */
   severity: MessageSeverity;
   /** whether to show dialog or not */
@@ -55,10 +56,14 @@ export interface MessageBoxProps {
   height?: string | number;
   /** Whether to show background overlay. Default: true */
   modal?: boolean;
+  /** Custom CSS class name for the content */
+  contentClassName?: string;
+  /** Custom CSS Style for the content */
+  contentStyle?: React.CSSProperties;
 }
 
 /** Message Box React component.
- * @public
+ * @beta
  */
 export class MessageBox extends React.Component<MessageBoxProps> {
   public static defaultProps: Partial<MessageBoxProps> = {
@@ -77,8 +82,10 @@ export class MessageBox extends React.Component<MessageBoxProps> {
         width={this.props.width}
         onClose={this.props.onClose}
         onEscape={this.props.onEscape}
-        modal={this.props.modal} >
-        <MessageContainer severity={this.props.severity}>
+        modal={this.props.modal}
+        className={this.props.className}
+        style={this.props.style} >
+        <MessageContainer severity={this.props.severity} className={this.props.contentClassName} style={this.props.contentStyle}>
           {this.props.children}
         </MessageContainer>
       </Dialog>
@@ -87,14 +94,14 @@ export class MessageBox extends React.Component<MessageBoxProps> {
 }
 
 /** Properties for the [[MessageContainer]] component
- * @public
+ * @beta
  */
-export interface MessageContainerProps {
+export interface MessageContainerProps extends CommonProps {
   severity: MessageSeverity;
 }
 
 /** Message Container React component.
- * @public
+ * @beta
  */
 export class MessageContainer extends React.Component<MessageContainerProps> {
   public static getIconClassName(severity: MessageSeverity, hollow?: boolean): string {
@@ -129,9 +136,9 @@ export class MessageContainer extends React.Component<MessageContainerProps> {
     );
 
     return (
-      <div className={"core-message-box-container"}>
+      <div className="core-message-box-container">
         <div className={iconClassName} />
-        <div className={"core-message-box-content"}>
+        <div className={classnames("core-message-box-content", this.props.className)} style={this.props.style}>
           {this.props.children}
         </div>
       </div>

@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { RgbColor, LinePixels, GeometryClass } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { Id64 } from "@bentley/bentleyjs-core";
@@ -52,6 +52,7 @@ describe("FeatureSymbology.Overrides", () => {
     public get elementOverrides() { return this._elementOverrides; }
     public get subCategoryOverrides() { return this._subCategoryOverrides; }
     public get visibleSubCategories() { return this._visibleSubCategories; }
+    public get modelSubCategoryOverrides() { return this._modelSubCategoryOverrides; }
   }
 
   it("default constructor works as expected", () => {
@@ -106,8 +107,11 @@ describe("FeatureSymbology.Overrides", () => {
     const subCatApp1 = FeatureSymbology.Appearance.fromJSON(props1);
     const subCatApp2 = FeatureSymbology.Appearance.fromJSON(props2);
 
+    // Even though the subcategory is invisible, it's possible a model will override it to be visible.
+    // So overrideSubCategory() will record the appearance override anyway.
+    expect(overrides.getSubCategoryOverridesById(id)).to.be.undefined;
     overrides.overrideSubCategory(id, subCatApp1);
-    assert.isUndefined(overrides.getSubCategoryOverridesById(id), "if subCategoryId not in subCategoryVisible set, then nothing is set");
+    expect(overrides.getSubCategoryOverridesById(id)).not.to.be.undefined;
 
     overrides.setVisibleSubCategory(id);
     overrides.overrideSubCategory(id, subCatApp2);
@@ -151,5 +155,39 @@ describe("FeatureSymbology.Overrides", () => {
     const app = FeatureSymbology.Appearance.fromJSON(props);
     overrides.setDefaultOverrides(app);
     assert.isTrue(overrides.defaultOverrides.equals(app), "default overrides can be overriden");
+  });
+
+  it("overrides subcategory visibility per model", () => {
+    // Subcategories 1 and 2 are visible
+    const ovrs = new Overrides();
+    ovrs.setVisibleSubCategory("0x1");
+    ovrs.setVisibleSubCategory("0x2");
+
+    expect(ovrs.isSubCategoryVisible(1, 0)).to.be.true;
+    expect(ovrs.isSubCategoryVisible(2, 0)).to.be.true;
+    expect(ovrs.isSubCategoryVisible(3, 0)).to.be.false;
+    expect(ovrs.isSubCategoryVisible(4, 0)).to.be.false;
+
+    // In model a, subcat 3 is visible and subcat 1 is invisible
+    ovrs.modelSubCategoryOverrides.set(0xa, 0, new Id64.Uint32Set(["0x3", "0x1"]));
+    expect(ovrs.isSubCategoryVisibleInModel(1, 0, 0xa, 0)).to.be.false;
+    expect(ovrs.isSubCategoryVisibleInModel(2, 0, 0xa, 0)).to.be.true;
+    expect(ovrs.isSubCategoryVisibleInModel(3, 0, 0xa, 0)).to.be.true;
+    expect(ovrs.isSubCategoryVisibleInModel(4, 0, 0xa, 0)).to.be.false;
+
+    // In model b, subcats 1 and 2 are invisible
+    ovrs.modelSubCategoryOverrides.set(0xb, 0, new Id64.Uint32Set(["0x1", "0x2"]));
+    for (let i = 1; i < 5; i++)
+      expect(ovrs.isSubCategoryVisibleInModel(i, 0, 0xb, 0)).to.be.false;
+
+    // In model c, subcats 3 and 4 are visible
+    ovrs.modelSubCategoryOverrides.set(0xc, 0, new Id64.Uint32Set(["0x3", "0x4"]));
+    for (let i = 1; i < 5; i++)
+      expect(ovrs.isSubCategoryVisibleInModel(i, 0, 0xc, 0)).to.be.true;
+
+    expect(ovrs.isSubCategoryVisible(1, 0)).to.be.true;
+    expect(ovrs.isSubCategoryVisible(2, 0)).to.be.true;
+    expect(ovrs.isSubCategoryVisible(3, 0)).to.be.false;
+    expect(ovrs.isSubCategoryVisible(4, 0)).to.be.false;
   });
 });

@@ -20,6 +20,8 @@ import {
   CoreTools,
 } from "../../ui-framework";
 
+// tslint:disable: completed-docs
+
 export class TestContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);

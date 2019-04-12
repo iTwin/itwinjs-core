@@ -148,6 +148,44 @@
       ]
     },
     {
+      "testName": "ReadPixels",
+      "testType": "readPixels",
+      "iModelName": "TimingTest_01.bim",
+      "tests": [
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "Wireframe"
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "HiddenLine"
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "SolidFill"
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "SmoothShade"
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "visibleEdges": true
+          }
+        }
+      ]
+    },
+    {
       "testName": "Light Images",
       "testType": "both",
       "iModelName": "TimingTest_01.bim",
@@ -944,53 +982,107 @@
             "edgeMask": 0,
             "ambientOcclusion": true
           }
+        }
+      ]
+    },
+    {
+      "testName": "Instanced vs Uninstanced Geometry",
+      "testType": "both",
+      "tests": [
+        {
+          "iModelName": "TimingTest_02_TranslucencyNone.bim",
+          "viewName": "W0",
+          "tileProps": {
+            "enableInstancing": false
+          }
         },
         {
-          "testName": "Force Multi-Pass Rendering",
-          "testType": "both",
-          "renderOptions": {
-            "disabledExtensions": [
-              "WEBGL_draw_buffers"
-            ]
+          "iModelName": "TimingTest_02_TranslucencyNone.bim",
+          "viewName": "W0",
+          "tileProps": {
+            "enableInstancing": true
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyNone.bim",
+          "viewName": "W0",
+          "viewFlags": {
+            "visibleEdges": true
           },
-          "tests": [
-            {
-              "iModelName": "TimingTest_01.bim",
-              "viewName": "V0",
-              "viewFlags": {
-                "renderMode": "Wireframe",
-                "visibleEdges": true,
-                "hiddenEdges": true
-              }
-            },
-            {
-              "iModelName": "TimingTest_01.bim",
-              "viewName": "V2",
-              "viewFlags": {
-                "renderMode": "SmoothShade",
-                "visibleEdges": true,
-                "hiddenEdges": false
-              }
-            },
-            {
-              "iModelName": "TimingTest_01.bim",
-              "viewName": "V3",
-              "viewFlags": {
-                "renderMode": "SmoothShade",
-                "visibleEdges": true,
-                "hiddenEdges": false
-              }
-            },
-            {
-              "iModelName": "TimingTest_02_TranslucencyAllButOne.bim",
-              "viewName": "W0",
-              "viewFlags": {
-                "renderMode": "SmoothShade",
-                "visibleEdges": false,
-                "hiddenEdges": false
-              }
-            }
-          ]
+          "tileProps": {
+            "enableInstancing": false
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyNone.bim",
+          "viewName": "W0",
+          "viewFlags": {
+            "visibleEdges": true
+          },
+          "tileProps": {
+            "enableInstancing": true
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyAllButOne.bim",
+          "viewName": "W0",
+          "tileProps": {
+            "enableInstancing": false
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyAllButOne.bim",
+          "viewName": "W0",
+          "tileProps": {
+            "enableInstancing": true
+          }
+        }
+      ]
+    },
+    {
+      "testName": "Force Multi-Pass Rendering",
+      "testType": "both",
+      "renderOptions": {
+        "disabledExtensions": [
+          "WEBGL_draw_buffers"
+        ]
+      },
+      "tests": [
+        {
+          "iModelName": "TimingTest_01.bim",
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "Wireframe",
+            "visibleEdges": true,
+            "hiddenEdges": true
+          }
+        },
+        {
+          "iModelName": "TimingTest_01.bim",
+          "viewName": "V2",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "visibleEdges": true,
+            "hiddenEdges": false
+          }
+        },
+        {
+          "iModelName": "TimingTest_01.bim",
+          "viewName": "V3",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "visibleEdges": true,
+            "hiddenEdges": false
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyAllButOne.bim",
+          "viewName": "W0",
+          "viewFlags": {
+            "renderMode": "SmoothShade",
+            "visibleEdges": false,
+            "hiddenEdges": false
+          }
         }
       ]
     }

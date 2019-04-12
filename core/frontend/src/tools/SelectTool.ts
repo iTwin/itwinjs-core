@@ -21,7 +21,9 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, EventHandled, InputSource } from "./Tool";
 import { CoordinateLockOverrides, ManipulatorToolEvent } from "./ToolAdmin";
 
-/** The method for choosing elements with the [[SelectionTool]] */
+/** The method for choosing elements with the [[SelectionTool]]
+ * @public
+ */
 export const enum SelectionMethod {
   /** Identify element(s) by picking for drag selection (inside/overlap for drag box selection determined by point direction and shift key) */
   Pick,
@@ -31,7 +33,9 @@ export const enum SelectionMethod {
   Box,
 }
 
-/** The mode for choosing elements with the [[SelectionTool]] */
+/** The mode for choosing elements with the [[SelectionTool]]
+ * @public
+ */
 export const enum SelectionMode {
   /** Identified elements replace the current selection set (use control key to add or remove) */
   Replace,
@@ -41,7 +45,9 @@ export const enum SelectionMode {
   Remove,
 }
 
-/** The processing method to use to update the current selection. */
+/** The processing method to use to update the current selection.
+ * @public
+ */
 export const enum SelectionProcessing {
   /** Add element to selection. */
   AddElementToSelection,
@@ -53,7 +59,9 @@ export const enum SelectionProcessing {
   ReplaceSelectionWithElement,
 }
 
-/** The selection options to display in the tool settings. */
+/** The selection options to display in the tool settings.
+ * @public
+ */
 export const enum SelectOptions {
   PickAndReplace,
   LineAndReplace,
@@ -62,7 +70,9 @@ export const enum SelectOptions {
   PickAndRemove,
 }
 
-/** Tool for picking a set of elements of interest, selected by the user. */
+/** Tool for picking a set of elements of interest, selected by the user.
+ * @public
+ */
 export class SelectionTool extends PrimitiveTool {
   public static hidden = false;
   public static toolId = "Select";

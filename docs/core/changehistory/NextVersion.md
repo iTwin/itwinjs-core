@@ -118,6 +118,11 @@ The electron version used internally has  been updated to v4.10.0.
 
 * Any frontend methods that contact multiple services (and not just the backend through RPC) need to explicitly create the context at the top level, and manage the context through multiple service calls. Right before the RPC request is made, call  [ClientRequestContext.useContextForRpc]($bentley) or [AuthorizedClientRequestContext.useContextForRpc]($clients) to setup the use of that context (and the contained `activityId`) for the subsequent RPC request.
 
+### Changes to authorization for Single Page Applications
+
+[OidcBrowserClient]($frontend) attempts to silently sign-in during initialization, when signIn() is called, or when the accesss token expires. The signIn() calls also takes a successRedirectUri parameter that can be used to control the redirection after the entire authorization process is completed.
+
+
 ## Changes required for Usage Logging
 
 * Frontend applications must set the [IModelApp.applicationId]($frontend) and [IModelApp.applicationVersion]($frontend) fields to ensure the usage is logged. Bentley applications must set `applicationId` to the Bentley Global Product Registry Id (GPRID).
@@ -138,3 +143,20 @@ The electron version used internally has  been updated to v4.10.0.
 ## Breaking changes to ImodelServices.openIModel
 
 * The first argument to openIModel is now a context (project) id. It replaces passing in a ProjectInfo object.
+
+## Breaking changes to [ViewState]($frontend)
+
+To reduce errors in synchronizing a [Viewport]($frontend)'s state with that of the ViewState it controls, several mutator methods were removed from `ViewState` and transferred to `Viewport`. These include:
+
+* The setter for the `viewFlags` property.
+* The `overrideSubCategory`, `dropSubCategoryOverride`, getSubCategoryOverride`, and `getSubCategoryAppearance` functions.
+* The `changeCategoryDisplay` function.
+
+To adjust your code for these changes, change the call site to invoke the `Viewport` functions/properties instead of those formerly defined on the `ViewState`.
+
+Additionally, the `areFeatureOverridesDirty` property and `setFeatureOverridesDirty` function were removed from `ViewState`. The `Viewport` now keeps track of discrete changes to its state which require feature symbology overrides to be regenerated. This also allows it to expose a variety of more granular events like `onViewedCategoriesChanged` and `onDisplayStyleChanged`. These are far more efficient than listening for `onViewChanged`, which is dispatched immediately upon each change, sometimes multiple times per frame. The new events are dispatched once per frame during which the state they monitor changed.
+
+To adjust your code for these changes:
+
+* If you were previously using `setFeatureOverridesDirty` to notify the `Viewport` that it must refresh its feature symbology overrides, you should no longer need to do so when modifying the display style, displayed categories etc, provided the `Viewport` APIs are used. The `Viewport` APIs automatically record the state changes and internally mark the overrides as 'dirty' if necessary.
+* If you were using `setFeatureOverridesDirty` to notify the `Viewport` that a [FeatureOverrideProvider]($frontend) you registered with the `Viewport` had changed internally and therefore the overrides should be recalculated, use [Viewport.setFeatureOverrideProviderChanged]($frontend) instead.

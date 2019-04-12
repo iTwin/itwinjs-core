@@ -5,19 +5,28 @@ exports[`StandardRotationNavigationAid <StandardRotationNavigationAid /> renders
   className="uifw-standard-rotation-navigation"
 >
   <ExpandableButton
-    button={
-      <ToolbarIcon
-        className="icon-button"
-        icon={
-          <span
-            className="three-d-icon icon icon-cube-faces-top"
-          />
-        }
-        onClick={[Function]}
-      />
-    }
     className="expandable"
-    direction={3}
+  >
+    <ToolbarIcon
+      className="icon-button"
+      icon={
+        <span
+          className="three-d-icon icon icon-cube-faces-top"
+        />
+      }
+      onClick={[Function]}
+    />
+  </ExpandableButton>
+  <Popup
+    isOpen={false}
+    left={-1}
+    offset={0}
+    onClose={[Function]}
+    position={5}
+    showArrow={false}
+    showShadow={true}
+    target={null}
+    top={-1}
   />
 </div>
 `;

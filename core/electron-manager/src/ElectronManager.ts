@@ -9,6 +9,7 @@ import { app, BrowserWindow, BrowserWindowConstructorOptions, protocol } from "e
 /**
  * A helper class that simplifies the creation of basic single-window desktop applications
  * that follow platform-standard window behavior on all platforms.
+ * @beta
  */
 export abstract class StandardElectronManager {
   private _mainWindow?: BrowserWindow;
@@ -56,6 +57,7 @@ export abstract class StandardElectronManager {
 
 /**
  * A StandardElectronManager that adds some reasonable defaults for iModel.js applications.
+ * @beta
  */
 export class IModelJsElectronManager extends StandardElectronManager {
   private readonly _webResourcesPath: string;
@@ -120,6 +122,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
 
 /**
  * A StandardElectronManager that adds some reasonable defaults for applications built with @bentley/webpack-tools running in "development" mode.
+ * @beta
  */
 export class WebpackDevServerElectronManager extends StandardElectronManager {
   public frontendURL: string;

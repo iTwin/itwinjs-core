@@ -5,9 +5,10 @@
 /** @module Text */
 
 import * as React from "react";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for various text components
- * @public
+ * @beta
  */
 
-export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement> { }
+export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement>, CommonProps { }

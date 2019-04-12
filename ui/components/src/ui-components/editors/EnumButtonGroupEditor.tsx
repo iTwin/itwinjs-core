@@ -214,7 +214,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
       choices = propertyRecord.property.enum.choices;
 
     return (
-      <div className="components-enumbuttongroup-editor">
+      <div className={classnames("components-enumbuttongroup-editor", this.props.className)} style={this.props.style}>
         {choices && choices.map((choice: EnumerationChoice, index: number) => this.getButton(choice, index))}
       </div>);
   }

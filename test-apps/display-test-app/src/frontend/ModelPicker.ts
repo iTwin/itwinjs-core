@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Viewport, SpatialViewState, SpatialModelState, GeometricModelState, SpatialClassification } from "@bentley/imodeljs-frontend";
+import { SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { createCheckBox, CheckBox } from "./CheckBox";
 import { createComboBox, ComboBox } from "./ComboBox";
 import { createNumericInput } from "./NumericInput";
@@ -83,24 +84,22 @@ export class ModelPicker extends ToolBarDropDown {
       const geometricModel = model as GeometricModelState;
       // If reality model with no classifiers -- add classifiers (for testing)
       if (model.jsonProperties && undefined !== model.jsonProperties.tilesetUrl && undefined === model.jsonProperties.classifiers)   // We need a better test for reality models.
-
         for (const otherProp of props)
           if (otherProp !== prop && undefined !== otherProp.id && undefined !== otherProp.name)
-            geometricModel.addSpatialClassifier(new SpatialClassification.Properties({ name: otherProp.name, modelId: otherProp.id, expand: 1.0, flags: new SpatialClassification.Flags(), isActive: false }));
+            SpatialClassification.addSpatialClassifier(geometricModel, new SpatialClassificationProps.Properties({ name: otherProp.name, modelId: otherProp.id, expand: 1.0, flags: new SpatialClassificationProps.Flags(), isActive: false }));
 
-      const classifiers = undefined !== model ? model.jsonProperties.classifiers : undefined;
       let insideCombo: ComboBox | undefined;
       let outsideCombo: ComboBox | undefined;
       let expandInput: HTMLInputElement | undefined;
-      if (undefined !== geometricModel && undefined !== classifiers) {
+      if (undefined !== geometricModel && undefined !== SpatialClassification.getSpatialClassifier(geometricModel, 0)) {
         const div = document.createElement("div");
         cb.div.appendChild(div);
 
         const entries = [{ name: "None", value: -1 }];
         let classifier;
-        let activeClassifierIndex = geometricModel.getActiveSpatialClassifier();
-        let activeClassifier = (activeClassifierIndex >= 0) ? geometricModel.getSpatialClassifier(activeClassifierIndex) : undefined;
-        for (let i = 0; undefined !== (classifier = geometricModel.getSpatialClassifier(i)); i++)
+        let activeClassifierIndex = SpatialClassification.getActiveSpatialClassifier(geometricModel);
+        let activeClassifier = (activeClassifierIndex >= 0) ? SpatialClassification.getSpatialClassifier(geometricModel, activeClassifierIndex) : undefined;
+        for (let i = 0; undefined !== (classifier = SpatialClassification.getSpatialClassifier(geometricModel, i)); i++)
           entries.push({ name: classifier.name, value: i });
 
         createComboBox({
@@ -110,8 +109,8 @@ export class ModelPicker extends ToolBarDropDown {
           value: activeClassifierIndex,
           handler: (select) => {
             activeClassifierIndex = Number.parseInt(select.value, 10);
-            geometricModel.setActiveSpatialClassifier(activeClassifierIndex, true).then((_) => {
-              activeClassifier = geometricModel.getSpatialClassifier(activeClassifierIndex);
+            SpatialClassification.setActiveSpatialClassifier(geometricModel, activeClassifierIndex, true).then((_) => {
+              activeClassifier = SpatialClassification.getSpatialClassifier(geometricModel, activeClassifierIndex);
               this.showOrHide(insideCombo!.div, activeClassifier !== undefined);
               this.showOrHide(outsideCombo!.div, activeClassifier !== undefined);
               this.showOrHide(expandInput!, activeClassifier !== undefined);
@@ -134,7 +133,7 @@ export class ModelPicker extends ToolBarDropDown {
           handler: (select) => {
             if (activeClassifier) {
               activeClassifier.flags.inside = Number.parseInt(select.value, 10);
-              geometricModel.setSpatialClassifier(activeClassifierIndex, activeClassifier);
+              SpatialClassification.setSpatialClassifier(geometricModel, activeClassifierIndex, activeClassifier);
               this._vp.invalidateScene();
             }
           },
@@ -148,7 +147,7 @@ export class ModelPicker extends ToolBarDropDown {
           handler: (select) => {
             if (activeClassifier) {
               activeClassifier.flags.outside = Number.parseInt(select.value, 10);
-              geometricModel.setSpatialClassifier(activeClassifierIndex, activeClassifier);
+              SpatialClassification.setSpatialClassifier(geometricModel, activeClassifierIndex, activeClassifier);
               this._vp.invalidateScene();
             }
           },
@@ -161,7 +160,7 @@ export class ModelPicker extends ToolBarDropDown {
           handler: (select) => {
             if (activeClassifier) {
               activeClassifier.expand = select;
-              geometricModel.setSpatialClassifier(activeClassifierIndex, activeClassifier);
+              SpatialClassification.setSpatialClassifier(geometricModel, activeClassifierIndex, activeClassifier);
               this._vp.invalidateScene();
             }
           },

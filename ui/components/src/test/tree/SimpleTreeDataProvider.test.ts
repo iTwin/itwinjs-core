@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import SimpleTreeDataProvider, { SimpleTreeDataProviderHierarchy } from "../../ui-components/tree/SimpleTreeDataProvider";
+import { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "../../ui-components/tree/SimpleTreeDataProvider";
 import { DelayLoadedTreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
 
 describe("SimpleTreeDataProvider", () => {

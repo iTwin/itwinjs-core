@@ -6,12 +6,15 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 import { Panel } from "./Panel";
 import { Columns } from "./Columns";
 import { Title } from "./Title";
-import { CommonProps, NoChildrenProps } from "../../../../utilities/Props";
+import { NoChildrenProps } from "../../../../utilities/Props";
 
-/** Properties of [[Group]] component. */
+/** Properties of [[Group]] component.
+ * @alpha
+ */
 export interface GroupProps extends CommonProps, NoChildrenProps {
   /** Tool group title. */
   title?: string;
@@ -19,7 +22,9 @@ export interface GroupProps extends CommonProps, NoChildrenProps {
   columns?: React.ReactNode;
 }
 
-/** Tool group component. Used in [[ExpandableItem]] component.  */
+/** Tool group component. Used in [[ExpandableItem]] component.
+ * @alpha
+ */
 export class Group extends React.PureComponent<GroupProps> {
   public render() {
     const className = classnames(

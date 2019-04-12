@@ -5,7 +5,7 @@
 /** @module UiSettings */
 
 /** Interface for getting, saving and deleting settings.
- * @public
+ * @beta
  */
 export interface UiSettings {
   getSetting(settingNamespace: string, settingName: string): UiSettingsResult;
@@ -14,7 +14,7 @@ export interface UiSettings {
 }
 
 /** Enum for [[UiSettings]] status.
- * @public
+ * @beta
  */
 export enum UiSettingsStatus {
   Success = 0,
@@ -23,7 +23,7 @@ export enum UiSettingsStatus {
 }
 
 /** Interface for [[UiSettings]] result.
- * @public
+ * @beta
  */
 export interface UiSettingsResult {
   status: UiSettingsStatus;

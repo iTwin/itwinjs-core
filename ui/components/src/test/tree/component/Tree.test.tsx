@@ -19,7 +19,7 @@ import {
 } from "../../../ui-components/tree/component/Tree";
 import { SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeCellUpdatedArgs } from "../../../ui-components";
 import { BeInspireTreeNode, BeInspireTreeNodeConfig } from "../../../ui-components/tree/component/BeInspireTree";
-import HighlightingEngine, { HighlightableTreeProps } from "../../../ui-components/tree/HighlightingEngine";
+import { HighlightingEngine, HighlightableTreeProps } from "../../../ui-components/tree/HighlightingEngine";
 import { TreeNodeProps } from "../../../ui-components/tree/component/Node";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../ui-components/properties/ValueRendererManager";
 import { ImmediatelyLoadedTreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
@@ -1299,7 +1299,7 @@ describe("Tree", () => {
       expect(+nodes[1].style.height!.replace("px", "")).to.equal(40);
     });
 
-    it("renders row heights with default funtion if rowHeight prop is not provided", async () => {
+    it("renders row heights with default function if rowHeight prop is not provided", async () => {
       const provider: ITreeDataProvider = {
         getNodesCount: async () => 2,
         getNodes: async () => [{ id: "0", label: "without-description" }, { id: "1", label: "with-description", description: "desc" }],

@@ -8,7 +8,7 @@ import { UiSettings, UiSettingsResult, UiSettingsStatus } from "./UiSettings";
 
 /**
  * Implementation of [[UiSettings]] using Window.localStorage.
- * @public
+ * @beta
  */
 export class LocalUiSettings implements UiSettings {
 

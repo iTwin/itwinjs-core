@@ -31,4 +31,3 @@ export function getUserColor(email: string): string {
   }
   return COLORS[hash];
 }
-export default getUserColor;

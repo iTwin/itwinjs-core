@@ -13,6 +13,7 @@ import { HitListHolder } from "./ElementLocateManager";
 import { IModelApp } from "./IModelApp";
 import { AccuSnap } from "./AccuSnap";
 
+/** @public */
 export class TentativePoint {
   public isActive = false;
   public currSnap?: SnapDetail;

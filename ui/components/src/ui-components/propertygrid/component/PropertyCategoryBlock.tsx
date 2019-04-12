@@ -5,14 +5,14 @@
 /** @module PropertyGrid */
 
 import * as React from "react";
-import { ExpandableBlock } from "@bentley/ui-core";
+import { ExpandableBlock, CommonProps } from "@bentley/ui-core";
 import { PropertyCategory } from "../PropertyDataProvider";
 
 /**
  * Properties for the [[PropertyCategoryBlock]] React component
  * @public
  */
-export interface PropertyCategoryBlockProps {
+export interface PropertyCategoryBlockProps extends CommonProps {
   /** Category of the properties */
   category: PropertyCategory;
   /** Callback to when PropertyCategoryBlock gets expended or collapsed */
@@ -52,6 +52,8 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
         onClick={this._onClick}
         onKeyPress={this._onKeyPress}
         title={this.props.category.label}
+        className={this.props.className}
+        style={this.props.style}
       >
         {this.props.children}
       </ExpandableBlock>

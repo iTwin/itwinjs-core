@@ -470,8 +470,8 @@ describe("iModel", () => {
       });
 
     /** Create a simple flat mesh with 4 points (2x2) */
-    const width = imodel5.projectExtents.width * 0.2;
-    const height = imodel5.projectExtents.depth * 0.2;
+    const width = imodel5.projectExtents.xLength () * 0.2;
+    const height = imodel5.projectExtents.yLength () * 0.2;
     let shape: GeometryQuery;
     const doPolyface = true;
     if (doPolyface) {

@@ -181,5 +181,3 @@ export function withTreeDragDrop<P extends TreeProps, DragDropObject extends Tre
 
   };
 }
-
-export default withTreeDragDrop;

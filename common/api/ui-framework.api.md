@@ -8,10 +8,9 @@ import * as _ from 'lodash';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
-import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CheckBoxInfo } from '@bentley/ui-core';
-import { CommonProps } from '@bentley/ui-ninezone';
+import { CommonProps } from '@bentley/ui-core';
 import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { Direction } from '@bentley/ui-ninezone';
@@ -19,11 +18,9 @@ import { DndComponentClass } from 'react-dnd';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { DropTarget } from '@bentley/ui-ninezone';
-import { EventHandled } from '@bentley/imodeljs-frontend';
 import { Face } from '@bentley/ui-core';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
-import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InstanceKey } from '@bentley/presentation-common';
@@ -47,7 +44,6 @@ import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-ninezone';
 import { PresentationTreeDataProvider } from '@bentley/presentation-components';
-import { PrimitiveTool } from '@bentley/imodeljs-frontend';
 import * as PropTypes from 'prop-types';
 import * as React_2 from 'react';
 import { RectangleProps } from '@bentley/ui-ninezone';
@@ -191,40 +187,6 @@ export interface ActivityMessageEventArgs {
 
 // @public
 export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArgs> {
-}
-
-// @public
-export class AnalysisAnimationTool extends PrimitiveTool {
-    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    onPostInstall(): void;
-    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
-    onRestartTool(): void;
-    onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void;
-    // (undocumented)
-    readonly points: Point3d[];
-    requireWriteableTarget(): boolean;
-    setupAndPromptForNextAction(): void;
-    // (undocumented)
-    static toolId: string;
-}
-
-// Warning: (ae-forgotten-export) The symbol "AnimationState" needs to be exported by the entry point ui-framework.d.ts
-// 
-// @public
-export class AnalysisAnimationToolSettings extends React_2.Component<{}, AnimationState> {
-    constructor(props: {});
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): React_2.ReactNode;
-    }
-
-// @public
-export class AnalysisAnimationToolSettingsProvider extends ToolUiProvider {
-    constructor(info: ConfigurableCreateInfo, options: any);
-    // (undocumented)
-    execute(): void;
 }
 
 // @public
@@ -391,7 +353,7 @@ export interface BooleanListenerProps {
 // 
 // @public
 export class BooleanSyncUiListener extends React_2.Component<BooleanListenerProps, BooleanListenerState> {
-    constructor(props?: any, context?: any);
+    constructor(props: BooleanListenerProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -844,8 +806,6 @@ export class ContentViewManager {
 // @public
 export class CoreTools {
     // (undocumented)
-    static readonly analysisAnimationCommand: ToolItemDef;
-    // (undocumented)
     static readonly fitViewCommand: ToolItemDef;
     // (undocumented)
     static readonly flyViewCommand: ToolItemDef;
@@ -1170,7 +1130,7 @@ export interface ElementTooltipProps {
 // 
 // @beta
 export class ExpandableSection extends React_2.Component<ExpandableSectionProps, ExpandableSectionState> {
-    constructor(props: ExpandableSectionProps, context: any);
+    constructor(props: ExpandableSectionProps);
     render(): JSX.Element;
 }
 
@@ -1295,7 +1255,7 @@ export interface FrontstageActivatedEventArgs {
 // 
 // @public
 export class FrontstageComposer extends React_2.Component<FrontstageComposerProps, FrontstageComposerState> implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider {
-    constructor(props: FrontstageComposerProps, context?: any);
+    constructor(props: FrontstageComposerProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1666,31 +1626,6 @@ export interface IconProps {
 
 // @public
 export type IconSpec = string | React_2.ReactNode;
-
-// Warning: (ae-forgotten-export) The symbol "IModelIndexState" needs to be exported by the entry point ui-framework.d.ts
-// 
-// @beta
-export class IModelIndex extends React_2.Component<IModelIndexProps, IModelIndexState> {
-    constructor(props?: any, context?: any);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    static RegisterCategory(_label: string, _render: () => JSX.Element | undefined): void;
-    // (undocumented)
-    render(): JSX.Element;
-    // (undocumented)
-    static UnregisterCategory(_label: string): void;
-}
-
-// @beta
-export interface IModelIndexProps {
-    accessToken: AccessToken;
-    iModelConnection: IModelConnection;
-    // (undocumented)
-    onOpen?: (viewIds: Id64String[]) => void;
-}
 
 // @internal
 export interface IModelInfo {
@@ -2124,7 +2059,7 @@ export class MessageCenterField extends React_2.Component<MessageCenterProps, Me
     render(): React_2.ReactNode;
     // (undocumented)
     readonly state: Readonly<MessageCenterState>;
-}
+    }
 
 // @public
 export interface MessageCenterProps {
@@ -2257,8 +2192,6 @@ export class ModelSelectorWidget extends React_2.Component<ModelSelectorWidgetPr
     componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
-    updateCategoriesState(): Promise<void>;
-    updateModelsState(): Promise<void>;
     }
 
 // @alpha
@@ -2324,7 +2257,7 @@ export class NavigationAidControl extends ConfigurableUiControl {
 // 
 // @public
 export class NavigationWidget extends React_2.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
-    constructor(props: NavigationWidgetPropsEx, context?: any);
+    constructor(props: NavigationWidgetPropsEx);
     componentDidMount(): void;
     componentWillUnmount(): void;
     // (undocumented)
@@ -2584,6 +2517,10 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
 // @public
 export class SignIn extends React_2.Component<SignInProps> {
     constructor(props: SignInProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;
 }
@@ -3005,7 +2942,7 @@ export const ThemeManager: any;
 // 
 // @internal
 export class TileLoadingIndicator extends React_2.PureComponent<CommonProps, TileLoadingIndicatorState> {
-    constructor(props?: any, context?: any);
+    constructor(props: CommonProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -3143,7 +3080,7 @@ export class ToolUiProvider extends ConfigurableUiControl {
 // 
 // @public
 export class ToolWidget extends React_2.Component<ToolWidgetPropsEx, ToolWidgetState> {
-    constructor(props: ToolWidgetPropsEx, context?: any);
+    constructor(props: ToolWidgetPropsEx);
     // (undocumented)
     static getDerivedStateFromProps(newProps: ToolWidgetPropsEx, state: ToolWidgetState): ToolWidgetState | null;
     // (undocumented)
@@ -3369,7 +3306,7 @@ export class VisibilityTree extends React_2.PureComponent<VisibilityTreeProps, V
     componentWillUnmount(): void;
     // (undocumented)
     static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): {
-        dataProvider: PresentationTreeDataProvider | IPresentationTreeDataProvider;
+        dataProvider: IPresentationTreeDataProvider | PresentationTreeDataProvider;
         prevProps: VisibilityTreeProps;
         ruleset: Ruleset;
         checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;

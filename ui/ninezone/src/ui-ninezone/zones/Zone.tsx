@@ -6,12 +6,14 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utilities/Props";
-import "./Zone.scss";
+import { CommonProps } from "@bentley/ui-core";
 import { RectangleProps } from "../utilities/Rectangle";
 import { CssProperties } from "../utilities/Css";
+import "./Zone.scss";
 
-/** Properties of [[Zone]] component. */
+/** Properties of [[Zone]] component.
+ * @alpha
+ */
 export interface ZoneProps extends CommonProps {
   /** Actual bounds of this [[Zone]]. */
   bounds: RectangleProps;
@@ -19,10 +21,10 @@ export interface ZoneProps extends CommonProps {
   children?: React.ReactNode;
 }
 
-/**
- * A zone that may contain widgets.
+/** A zone that may contain widgets.
  * @note For zone 2 use [[ToolSettingsZone]] component.
  * @note For zone 8 use [[StatusZone]] component.
+ * @alpha
  */
 export class Zone extends React.PureComponent<ZoneProps> {
   public render() {

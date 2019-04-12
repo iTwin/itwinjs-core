@@ -148,8 +148,8 @@ class GroupItem extends React.Component<Props, State> {
   private _childSyncIds?: Set<string>;
   private _childRefreshRequired = false;
 
-  constructor(props: Props, context?: any) {
-    super(props, context);
+  constructor(props: Props) {
+    super(props);
 
     this._loadChildSyncIds(props);
     this.state = GroupItem.processGroupItemDef(this.props.groupItemDef);

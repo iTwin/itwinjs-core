@@ -7,7 +7,10 @@ import { OidcClient, AccessToken, UserInfo } from "@bentley/imodeljs-clients";
 import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet } from "openid-client";
 import { decode } from "jsonwebtoken";
 
-/** Client configuration to create OIDC/OAuth tokens for backend applications */
+/**
+ * Client configuration to create OIDC/OAuth tokens for backend applications
+ * @beta
+ */
 export interface OidcBackendClientConfiguration {
   /** Client application's identifier as registered with the Bentley IMS OIDC/OAuth2 provider. */
   clientId: string;
@@ -17,7 +20,10 @@ export interface OidcBackendClientConfiguration {
   scope: string;
 }
 
-/** Utility to generate OIDC/OAuth tokens for backend applications */
+/**
+ * Utility to generate OIDC/OAuth tokens for backend applications
+ * @beta
+ */
 export abstract class OidcBackendClient extends OidcClient {
   protected _configuration: OidcBackendClientConfiguration;
 

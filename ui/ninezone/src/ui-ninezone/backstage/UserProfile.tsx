@@ -5,47 +5,36 @@
 /** @module Backstage */
 
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../utilities/Props";
-import { getUserColor } from "@bentley/ui-core";
+import { CommonProps } from "@bentley/ui-core";
 import "./UserProfile.scss";
 
-/** Properties of [[UserProfile]] component. */
-export interface UserProfileProps extends CommonProps, NoChildrenProps {
-  /** User first name */
-  firstName: string;
-  /** User last name */
-  lastName: string;
-  /** User email */
-  email: string;
-  /** Function called when the item is clicked. */
+/** Properties of [[UserProfile]] component.
+ * @beta
+ */
+export interface UserProfileProps extends CommonProps {
+  /** User name. */
+  children?: string;
+  /** Color of initials circle (CSS value). */
+  color?: string;
+  /** User initials. */
+  initials?: string;
+  /** Function called when the profile is clicked. */
   onClick?: () => void;
 }
 
-/** UserProfile component of 9-zone UI app. */
+/** User profile component used in [[Backstage]] header.
+ * @beta
+ */
 export class UserProfile extends React.PureComponent<UserProfileProps> {
-  private _getInitials(): string {
-    let initials: string = "";
-    if (this.props.firstName.length > 0)
-      initials += this.props.firstName[0];
-    if (this.props.lastName.length > 0)
-      initials += this.props.lastName[0];
-    return initials;
-  }
-
-  private _getFullName(): string {
-    return this.props.firstName + " " + this.props.lastName;
-  }
-
   public render() {
-    const color = getUserColor(this.props.email);
     return (
       <div
-        className="nz-backstage-userprofile"
+        className="nz-backstage-userProfile"
         onClick={this.props.onClick}
         style={this.props.style}
       >
-        <span style={{ backgroundColor: color }}>{this._getInitials()}</span>
-        <span>{this._getFullName()}</span>
+        <span style={{ backgroundColor: this.props.color }}>{this.props.initials}</span>
+        <span>{this.props.children}</span>
       </div>
     );
   }
