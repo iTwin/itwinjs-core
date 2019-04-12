@@ -9,12 +9,14 @@ import {
   BeDuration,
   BeEvent,
   BeTimePoint,
+  compareStrings,
   dispose,
   Id64,
   Id64Arg,
   Id64Set,
   Id64String,
   IDisposable,
+  SortedArray,
   StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
@@ -76,8 +78,8 @@ import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus } from "./ViewState";
-import { SubCategoriesRequest } from "./SubCategoriesCache";
 import { DisplayStyleState } from "./DisplayStyleState";
+import { SubCategoriesCache } from "./SubCategoriesCache";
 
 /** An object which customizes the appearance of Features within a [[Viewport]].
  * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
@@ -137,7 +139,8 @@ export const enum ChangeFlag {
   ViewedModels = 1 << 3,
   DisplayStyle = 1 << 4,
   FeatureOverrideProvider = 1 << 5,
-  All = (ChangeFlag.FeatureOverrideProvider << 1) - 1,
+  ViewedCategoriesPerModel = 1 << 6,
+  All = 0x0fffffff,
   Overrides = ChangeFlag.All & ~ChangeFlag.ViewedModels,
   Initial = ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
 }
@@ -168,6 +171,11 @@ export class ChangeFlags {
   /** The [[FeatureOverrideProvider]] has changed, or its internal state has changed such that its overrides must be recomputed. */
   public get featureOverrideProvider() { return this.isSet(ChangeFlag.FeatureOverrideProvider); }
   public setFeatureOverrideProvider() { this.set(ChangeFlag.FeatureOverrideProvider); }
+  /** The [[PerModelCategoryVisibility.Overrides]] associated with the viewport have changed.
+   * @alpha
+   */
+  public get viewedCategoriesPerModel() { return this.isSet(ChangeFlag.ViewedCategoriesPerModel); }
+  public setViewedCategoriesPerModel() { this.set(ChangeFlag.ViewedCategoriesPerModel); }
 
   public constructor(flags = ChangeFlag.Initial) { this._flags = flags; }
 
@@ -976,6 +984,185 @@ export class ViewFrustum {
 /** @beta Event type for Viewport.onViewUndoRedo */
 export const enum ViewUndoEvent { Undo = 0, Redo = 1 }
 
+/** Allows the visibility of categories within a [[Viewport]] to be controlled on a per-[[ModelState]] basis.
+ * If a category's visibility is overridden for a given model, then elements belonging to that category within that model will be displayed or hidden regardless of the category's inclusion in the Viewport's [[CategorySelectorState]].
+ * The override affects geometry on all subcategories belonging to the overridden category. That is, if the category is overridden to be visible, then geometry on all subcategories of the category
+ * will be visible, regardless of any [SubCategoryOverride]($common)s applied by the view's [[DisplayStyleState]].
+ * @see [[Viewport.perModelCategoryVisibility]]
+ * @alpha
+ */
+export namespace PerModelCategoryVisibility {
+  /** Describes whether and how a category's visibility is overridden.
+   * @alpha
+   */
+  export const enum Override {
+    /** The category's visibility is not overridden; its visibility is wholly controlled by the [[Viewport]]'s [[CategorySelectorState]]. */
+    None,
+    /** The category is overridden to be visible. */
+    Show,
+    /** The category is overridden to be invisible. */
+    Hide,
+  }
+
+  /** Describes a set of per-model category visibility overrides. Changes to these overrides invoke the [[Viewport.onViewedCategoriesPerModelChanged]] event.
+   * @see [[Viewport.perModelCategoryVisibility]].
+   * @alpha
+   */
+  export interface Overrides {
+    /** Returns the override state of the specified category within the specified model. */
+    getOverride(modelId: Id64String, categoryId: Id64String): Override;
+    /** Changes the override state of one or more categories for one or more models. */
+    setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
+    /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
+    clearOverrides(modelIds?: Id64Arg): void;
+  }
+}
+
+class PerModelCategoryVisibilityOverride {
+  public modelId: Id64String;
+  public categoryId: Id64String;
+  public visible: boolean;
+
+  public constructor(modelId: Id64String, categoryId: Id64String, visible: boolean) {
+    this.modelId = modelId;
+    this.categoryId = categoryId;
+    this.visible = visible;
+  }
+
+  public reset(modelId: Id64String, categoryId: Id64String, visible: boolean): void {
+    this.modelId = modelId;
+    this.categoryId = categoryId;
+    this.visible = visible;
+  }
+}
+
+function compareCategoryOverrides(lhs: PerModelCategoryVisibilityOverride, rhs: PerModelCategoryVisibilityOverride): number {
+  const cmp = compareStrings(lhs.modelId, rhs.modelId);
+  return 0 === cmp ? compareStrings(lhs.categoryId, rhs.categoryId) : cmp;
+}
+
+/** The Viewport-specific implementation of PerModelCategoryVisibility.Overrides.
+ * ###TODO: Evaluate performance.
+ * @internal
+ */
+class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVisibilityOverride> implements PerModelCategoryVisibility.Overrides {
+  private readonly _scratch = new PerModelCategoryVisibilityOverride("0", "0" , false);
+  private readonly _vp: Viewport;
+
+  public constructor(vp: Viewport) {
+    super(compareCategoryOverrides);
+    this._vp = vp;
+  }
+
+  public getOverride(modelId: Id64String, categoryId: Id64String): PerModelCategoryVisibility.Override {
+    this._scratch.reset(modelId, categoryId, false);
+    const ovr = this.findEqual(this._scratch);
+    if (undefined !== ovr)
+      return ovr.visible ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide;
+    else
+      return PerModelCategoryVisibility.Override.None;
+  }
+
+  public setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: PerModelCategoryVisibility.Override): void {
+    const ovr = this._scratch;
+    let changed = false;
+    Id64.forEach(modelIds, (modelId) => {
+      Id64.forEach(categoryIds, (categoryId) => {
+        ovr.reset(modelId, categoryId, false);
+        const index = this.indexOf(ovr);
+        if (-1 === index) {
+          if (PerModelCategoryVisibility.Override.None !== override) {
+            this.insert(new PerModelCategoryVisibilityOverride(modelId, categoryId, PerModelCategoryVisibility.Override.Show === override));
+            changed = true;
+          }
+        } else {
+          if (PerModelCategoryVisibility.Override.None === override) {
+            this._array.splice(index, 1);
+            changed = true;
+          } else if (this._array[index].visible !== (PerModelCategoryVisibility.Override.Show === override)) {
+            this._array[index].visible = (PerModelCategoryVisibility.Override.Show === override);
+            changed = true;
+          }
+        }
+      });
+    });
+
+    if (changed) {
+      this._vp.setViewedCategoriesPerModelChanged();
+
+      if (PerModelCategoryVisibility.Override.None !== override) {
+        // Ensure subcategories loaded.
+        this._vp.subcategories.push(this._vp.iModel.subcategories, categoryIds, () => this._vp.setViewedCategoriesPerModelChanged());
+      }
+    }
+  }
+
+  public clearOverrides(modelIds?: Id64Arg): void {
+    if (undefined === modelIds) {
+      if (0 < this.length) {
+        this.clear();
+        this._vp.setViewedCategoriesPerModelChanged();
+      }
+
+      return;
+    }
+
+    for (let i = 0; i < this.length; /**/) {
+      const ovr = this._array[i];
+      const removed = !Id64.iterate(modelIds, (modelId) => {
+        if (modelId === ovr.modelId) {
+          this._array.splice(i, 1);
+          this._vp.setViewedCategoriesPerModelChanged();
+          return false; // halt iteration
+        }
+
+        return true; // continue iteration
+      });
+
+      if (!removed)
+        ++i;
+    }
+  }
+
+  public addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void {
+    const cache = this._vp.iModel.subcategories;
+
+    for (const ovr of this._array) {
+      const subcats = cache.getSubCategories(ovr.categoryId);
+      if (undefined === subcats)
+        continue;
+
+      // It's pointless to override for models which aren't displayed...except if we do this, and then someone enables that model,
+      // we would need to regenerate our symbology overrides in response. Preferably people wouldn't bother overriding models that
+      // they don't want us to draw...
+      /* if (!this._vp.view.viewsModel(ovr.modelId))
+        continue; */
+
+      // ###TODO: Avoid recomputing upper and lower portions of model ID if model ID repeated.
+      // (Array is sorted first by model ID).
+      // Also avoid computing if no effective overrides.
+      const modelLo = Id64.getLowerUint32(ovr.modelId);
+      const modelHi = Id64.getUpperUint32(ovr.modelId);
+
+      for (const subcat of subcats) {
+        const subcatLo = Id64.getLowerUint32(subcat);
+        const subcatHi = Id64.getUpperUint32(subcat);
+        const vis = fs.isSubCategoryVisible(subcatLo, subcatHi);
+        if (vis !== ovr.visible) {
+          // Only care if visibility differs from that defined for entire view
+          let entry = ovrs.get(modelLo, modelHi);
+          if (undefined === entry) {
+            entry = new Id64.Uint32Set();
+            ovrs.set(modelLo, modelHi, entry);
+          }
+
+          entry.add(subcatLo, subcatHi);
+        }
+      }
+    }
+  }
+}
+
 /** A Viewport renders the contents of one or more Models onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may
@@ -983,20 +1170,28 @@ export const enum ViewUndoEvent { Undo = 0, Redo = 1 }
  * [[synchWithView]] method is called.
  *
  * In general, because the Viewport essentially takes control of its attached ViewState, changes to the ViewState should be made
- * indirectly through the Viewport's own API. For example:
- *   * To change the set of categories displayed in the Viewport, use [[Viewport.changeCategoryDisplay]] rather than modifying the ViewState's [[CategorySelectorState]] directly.
+ * indirectly through the Viewport's own API. Doing so ensures that synchronization between the Viewport and its ViewState is reliable and automatic. For example:
+ *
+ *   * To change the set of categories or models displayed in the Viewport, use [[Viewport.changeCategoryDisplay]] and [[Viewport.changeModelDisplay]] rather than modifying the ViewState's [[CategorySelectorState]] or [[ModelSelectorState]] directly.
  *   * To change the [ViewFlags]($common), set [[Viewport.viewFlags]] rather than modifying the ViewState's [[DisplayStyleState]] directly.
- * Doing so ensures that synchronization between the Viewport and its ViewState is reliable and automatic.
+ *   * To modify the [[DisplayStyleState]]:
+ *    ```ts
+ *    const style = viewport.displayStyle.clone();
+ *    style.backgroundColor = ColorDef.red.clone(); // or any other desired modifications
+ *    viewport.displayStyle = style;
+ *    ```
  *
  * As changes to ViewState are made, Viewports also hold a stack of *previous copies* of it, to allow
  * for undo/redo (i.e. *View Previous* and *View Next*) of viewing tools.
  *
  * Changes to a Viewport's state can be monitored by attaching an event listener to a variety of specific events. Most such events are
  * triggered only once per frame, just before the Viewport's contents are rendered. For example, if the following sequence of events occurs:
+ *
  *   * First frame is rendered
  *   * ViewFlags are modified
  *   * ViewFlags are modified again
  *   * Second frame is rendered
+ *
  * The [[Viewport.onDisplayStyleChanged]] event will be invoked exactly once, when the second frame is rendered.
  *
  * @see [[ViewManager]]
@@ -1029,6 +1224,10 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public readonly onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called on the next frame after this viewport's set of [[PerModelCategoryVisibility.Overrides]] changes.
+   * @beta
+   */
+  public readonly onViewedCategoriesPerModelChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of displayed models changes.
    * @beta
    */
@@ -1051,9 +1250,15 @@ export abstract class Viewport implements IDisposable {
   private _doContinuousRendering = false;
   private _animator?: Animator;
   protected _changeFlags = new ChangeFlags();
-  private _subcategoriesRequest?: SubCategoriesRequest;
   private _scheduleTime = 0.0;
   private _selectionSetDirty = true;
+  private readonly _perModelCategoryVisibility = new PerModelCategoryVisibilityOverrides(this);
+
+  /** @internal */
+  public readonly subcategories = new SubCategoriesCache.Queue();
+
+  /** @internal */
+  public get scheduleTime() { return this._scheduleTime; }
 
   /** Time the current flash started.
    * @internal
@@ -1239,27 +1444,21 @@ export abstract class Viewport implements IDisposable {
     this.updateSubCategories(categoryIds, enableAllSubCategories);
   }
 
-  private updateSubCategories(categoryIds: Id64Set, enableAllSubCategories: boolean): void {
-    if (undefined !== this._subcategoriesRequest)
-      this._subcategoriesRequest.cancel();
-
-    this._subcategoriesRequest = this.iModel.subcategories.load(categoryIds);
-    if (undefined === this._subcategoriesRequest)
-      return;
-
-    this._subcategoriesRequest.promise.then((allLoaded: boolean) => { // tslint:disable-line:no-floating-promises
-      if (!allLoaded)
-        return;
-
-      this._changeFlags.setViewedCategories();
+  private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean): void {
+    this.subcategories.push(this.iModel.subcategories, categoryIds, () => {
       if (enableAllSubCategories) {
-        for (const categoryId of categoryIds) {
-          const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
-          if (undefined !== subCategoryIds) {
-            for (const subCategoryId of subCategoryIds)
-              this.changeSubCategoryDisplay(subCategoryId, true);
-          }
-        }
+        this.enableAllSubCategories(categoryIds);
+        this._changeFlags.setViewedCategories();
+      }
+    });
+  }
+
+  private enableAllSubCategories(categoryIds: Id64Arg): void {
+    Id64.forEach(categoryIds, (categoryId) => {
+      const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
+      if (undefined !== subCategoryIds) {
+        for (const subCategoryId of subCategoryIds)
+          this.changeSubCategoryDisplay(subCategoryId, true);
       }
     });
   }
@@ -1267,8 +1466,12 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public getSubCategories(categoryId: Id64String): Id64Set | undefined { return this.iModel.subcategories.getSubCategories(categoryId); }
 
-  // Returns true if visibility actually changed
-  private changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
+  /** Change the visibility of geometry belonging to the specified subcategory when displayed in this viewport.
+   * @param subCategoryId The Id of the subcategory
+   * @param display: True to make geometry belonging to the subcategory visible within this viewport, false to make it invisible.
+   * @alpha
+   */
+  public changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
     const app = this.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
     if (undefined === app)
       return; // category not enabled or subcategory not found
@@ -1387,6 +1590,7 @@ export abstract class Viewport implements IDisposable {
   public dispose(): void {
     assert(undefined !== this._target, "Double disposal of Viewport");
     this._target = dispose(this._target);
+    this.subcategories.dispose();
     IModelApp.tileAdmin.forgetViewport(this);
   }
 
@@ -1473,6 +1677,17 @@ export abstract class Viewport implements IDisposable {
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
+  /** Allows visibility of categories within this viewport to be overridden on a per-model basis. */
+  public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides { return this._perModelCategoryVisibility; }
+
+  /** Adds visibility overrides for any subcategories whose visibility differs from that defined by the view's
+   * category selector in the context of specific models.
+   * @internal
+   */
+  public addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void {
+    this._perModelCategoryVisibility.addOverrides(fs, ovrs);
+  }
+
   /** Sets an object which can customize the appearance of [[Feature]]s within a viewport.
    * If defined, the provider will be invoked whenever the overrides are determined to need updating.
    * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
@@ -1496,6 +1711,11 @@ export abstract class Viewport implements IDisposable {
    */
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
+  }
+
+  /** @internal */
+  public setViewedCategoriesPerModelChanged(): void {
+    this._changeFlags.setViewedCategoriesPerModel();
   }
 
   /** @internal */
@@ -2213,19 +2433,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     if (overridesNeeded) {
-      const ovr = new FeatureSymbology.Overrides(view);
-      if (undefined !== this._neverDrawn)
-        ovr.setNeverDrawnSet(this._neverDrawn);
-
-      if (undefined !== this._alwaysDrawn)
-        ovr.setAlwaysDrawnSet(this._alwaysDrawn, this._alwaysDrawnExclusive);
-
-      if (undefined !== view.scheduleScript)
-        view.scheduleScript.getSymbologyOverrides(ovr, this._scheduleTime);
-
-      if (undefined !== this._featureOverrideProvider)
-        this._featureOverrideProvider.addFeatureOverrides(ovr, this);
-
+      const ovr = new FeatureSymbology.Overrides(this);
       target.overrideFeatureSymbology(ovr);
       isRedrawNeeded = true;
     }
@@ -2296,6 +2504,9 @@ export abstract class Viewport implements IDisposable {
 
         if (changeFlags.viewedCategories)
           this.onViewedCategoriesChanged.raiseEvent(this);
+
+        if (changeFlags.viewedCategoriesPerModel)
+          this.onViewedCategoriesPerModelChanged.raiseEvent(this);
 
         if (changeFlags.featureOverrideProvider)
           this.onFeatureOverrideProviderChanged.raiseEvent(this);

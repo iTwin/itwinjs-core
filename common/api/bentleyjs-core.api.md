@@ -443,6 +443,7 @@ export const enum HttpStatus {
 
 // @public
 export namespace Id64 {
+    export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void;
     export function fromJSON(prop?: string): Id64String;
     export function fromLocalAndBriefcaseIds(localId: number, briefcaseId: number): Id64String;
     export function fromString(val: string): Id64String;
@@ -455,15 +456,18 @@ export namespace Id64 {
     export function isId64(id: string): boolean;
     export function isInvalid(id: Id64String): boolean;
     export function isTransient(id: Id64String): boolean;
-    const invalid = "0";
     export function isTransientId64(id: string): boolean;
     export function isValid(id: Id64String): boolean;
+    const invalid = "0";
     export function isValidId64(id: string): boolean;
     // @internal (undocumented)
     export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
-    export function toIdSet(arg: Id64Arg): Id64Set;
+    export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean;
+    export function sizeOf(arg: Id64Arg): number;
+    export function toIdSet(arg: Id64Arg, makeCopy?: boolean): Id64Set;
     export class Uint32Map<T> {
         clear(): void;
+        forEach(func: (lo: number, hi: number, value: T) => void): void;
         get(low: number, high: number): T | undefined;
         getById(id: Id64String): T | undefined;
         readonly isEmpty: boolean;
@@ -478,9 +482,11 @@ export namespace Id64 {
         upper: number;
     }
     export class Uint32Set {
+        constructor(ids?: Id64Arg);
         add(low: number, high: number): void;
         addId(id: Id64String): void;
         clear(): void;
+        forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;
         readonly isEmpty: boolean;

@@ -1257,7 +1257,7 @@ export class CategorySelectorState extends ElementState {
 // @beta
 export const enum ChangeFlag {
     // (undocumented)
-    All = 63,
+    All = 268435455,
     // (undocumented)
     AlwaysDrawn = 1,
     // (undocumented)
@@ -1271,9 +1271,11 @@ export const enum ChangeFlag {
     // (undocumented)
     None = 0,
     // (undocumented)
-    Overrides = 55,
+    Overrides = 268435447,
     // (undocumented)
     ViewedCategories = 4,
+    // (undocumented)
+    ViewedCategoriesPerModel = 64,
     // (undocumented)
     ViewedModels = 8
 }
@@ -1302,10 +1304,14 @@ export class ChangeFlags {
     // (undocumented)
     setViewedCategories(): void;
     // (undocumented)
+    setViewedCategoriesPerModel(): void;
+    // (undocumented)
     setViewedModels(): void;
     // (undocumented)
     readonly value: ChangeFlag;
     readonly viewedCategories: boolean;
+    // @alpha
+    readonly viewedCategoriesPerModel: boolean;
     readonly viewedModels: boolean;
 }
 
@@ -2188,7 +2194,7 @@ export namespace FeatureSymbology {
         weight?: number;
     }
     export class Overrides {
-        constructor(view?: ViewState);
+        constructor(view?: ViewState | Viewport);
         // @internal
         protected readonly _alwaysDrawn: Id64.Uint32Set;
         // @internal
@@ -2218,6 +2224,8 @@ export namespace FeatureSymbology {
         getSubCategoryOverridesById(id: Id64String): Appearance | undefined;
         // @internal
         initFromView(view: ViewState): void;
+        // @internal
+        initFromViewport(viewport: Viewport): void;
         // @internal (undocumented)
         protected isAlwaysDrawn(idLo: number, idHi: number): boolean;
         isAlwaysDrawnExclusive: boolean;
@@ -2228,12 +2236,16 @@ export namespace FeatureSymbology {
         protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean;
         isSubCategoryIdVisible(id: Id64String): boolean;
         // @internal
-        protected isSubCategoryVisible(idLo: number, idHi: number): boolean;
+        isSubCategoryVisible(idLo: number, idHi: number): boolean;
+        // @internal (undocumented)
+        isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean;
         readonly lineWeights: boolean;
         // @internal
         protected _lineWeights: boolean;
         // @internal
         protected readonly _modelOverrides: Id64.Uint32Map<Appearance>;
+        // @internal
+        protected readonly _modelSubCategoryOverrides: Id64.Uint32Map<Id64.Uint32Set>;
         // @internal
         protected readonly _neverDrawn: Id64.Uint32Set;
         // @internal
@@ -3964,6 +3976,20 @@ export class PerformanceMetrics {
     startNewFrame(sceneTime?: number): void;
 }
 
+// @alpha
+export namespace PerModelCategoryVisibility {
+    export const enum Override {
+        Hide = 2,
+        None = 0,
+        Show = 1
+    }
+    export interface Overrides {
+        clearOverrides(modelIds?: Id64Arg): void;
+        getOverride(modelId: Id64String, categoryId: Id64String): Override;
+        setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
+    }
+}
+
 // @internal
 export interface PingTestResult {
     avg: number | undefined;
@@ -5363,15 +5389,41 @@ export interface StructValue extends BasePropertyValue {
 // @internal
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
+    // (undocumented)
+    clear(): void;
     getSubCategories(categoryId: string): Id64Set | undefined;
     getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined;
-    load(categoryIds: Id64Set): SubCategoriesRequest | undefined;
+    load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     // (undocumented)
     onIModelConnectionClose(): void;
     }
 
 // @internal
 export namespace SubCategoriesCache {
+    export class Queue {
+        // (undocumented)
+        protected _current?: QueueEntry;
+        dispose(): void;
+        // (undocumented)
+        protected _disposed: boolean;
+        // (undocumented)
+        readonly isEmpty: boolean;
+        // (undocumented)
+        protected _next?: QueueEntry;
+        push(cache: SubCategoriesCache, categoryIds: Id64Arg, func: QueueFunc): void;
+        // (undocumented)
+        protected _request?: SubCategoriesRequest;
+    }
+    // (undocumented)
+    export class QueueEntry {
+        constructor(categoryIds: Id64Set, func: QueueFunc);
+        // (undocumented)
+        readonly categoryIds: Id64Set;
+        // (undocumented)
+        readonly funcs: QueueFunc[];
+    }
+    // (undocumented)
+    export type QueueFunc = () => void;
     // (undocumented)
     export class Request {
         constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery?: number, maxSubCategoriesPerPage?: number);
@@ -7208,6 +7260,8 @@ export abstract class Viewport implements IDisposable {
     protected constructor(target: RenderTarget);
     // @internal (undocumented)
     addDecorations(_decorations: Decorations): void;
+    // @internal
+    addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
     readonly alwaysDrawn: Id64Set | undefined;
     // @internal (undocumented)
     readonly analysisStyle: AnalysisStyle | undefined;
@@ -7231,6 +7285,8 @@ export abstract class Viewport implements IDisposable {
     // (undocumented)
     protected _changeFlags: ChangeFlags;
     changeModelDisplay(models: Id64Arg, display: boolean): boolean;
+    // @alpha
+    changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void;
     changeView(view: ViewState): void;
     changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
@@ -7324,12 +7380,16 @@ export abstract class Viewport implements IDisposable {
     // @beta
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     // @beta
+    readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;
+    // @beta
     readonly onViewedModelsChanged: BeEvent<(vp: Viewport) => void>;
     // @beta
     readonly onViewportChanged: BeEvent<(vp: Viewport, changed: ChangeFlags) => void>;
     // @beta
     readonly onViewUndoRedo: BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "perModelCategoryVisibility" is marked as @public, but its signature references "PerModelCategoryVisibility" which is marked as @alpha
+    readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
     pixelsFromInches(inches: number): number;
     // @internal (undocumented)
     readonly pixelsPerInch: number;
@@ -7342,6 +7402,8 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     renderFrame(): boolean;
     readonly rotation: Matrix3d;
+    // @internal (undocumented)
+    readonly scheduleTime: number;
     scroll(screenDist: Point2d, options?: ViewChangeOptions): void;
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     setFeatureOverrideProviderChanged(): void;
@@ -7351,6 +7413,10 @@ export abstract class Viewport implements IDisposable {
     setStandardRotation(id: StandardViewId): void;
     setupFromView(): ViewStatus;
     setupViewFromFrustum(inFrustum: Frustum): boolean;
+    // @internal (undocumented)
+    setViewedCategoriesPerModelChanged(): void;
+    // @internal (undocumented)
+    readonly subcategories: SubCategoriesCache.Queue;
     // @internal (undocumented)
     readonly sync: SyncFlags;
     synchWithView(_saveInUndo: boolean): void;

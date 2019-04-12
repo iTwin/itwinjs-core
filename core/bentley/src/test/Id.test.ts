@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Id64, GuidString, Guid } from "../bentleyjs-core";
+import { Id64, Id64Arg, GuidString, Guid } from "../bentleyjs-core";
 
 class Uint64Id {
   public constructor(public readonly high: number,
@@ -176,6 +176,25 @@ describe("Ids", () => {
     }
   });
 
+  it("should construct an Id64.Uint32Set from Id64Arg", () => {
+    const test = (arg: Id64Arg) => {
+      const uint32Set = new Id64.Uint32Set(arg);
+      expect(uint32Set.size).to.equal(Id64.sizeOf(arg));
+      Id64.forEach(arg, (id) => {
+        expect(uint32Set.hasId(id)).to.be.true;
+      });
+    };
+
+    test("0x123");
+    test("0x1234567890ab");
+    test([]);
+    test(["0x123"]);
+    test(["0x1", "0x2", "0x3", "0xfffffff"]);
+    test(new Set<string>());
+    test(new Set<string>(["0x123"]));
+    test(new Set<string>(["0x1", "0x2", "0x3", "0xfffffff"]));
+  });
+
   it("should store IDs in a Id64.Uint32Set", () => {
     const ids: Uint64Id[] = [
       // (highBytes, lowBytes, localId, briefCaseId, Id64String)
@@ -228,6 +247,16 @@ describe("Ids", () => {
       expect(set.has(id.low, id.high)).to.be.true;
       expect(set.hasId(id.str)).to.be.true;
     }
+
+    const iterated = new Set<string>();
+    set.forEach((lo: number, hi: number) => {
+      expect(set.has(lo, hi)).to.be.true;
+      const str = lo.toString() + hi.toString();
+      expect(iterated.has(str)).to.be.false;
+      iterated.add(str);
+    });
+
+    expect(iterated.size).to.equal(set.size);
   });
 
   it("should map IDs in a Id64.Uint32Map", () => {
@@ -269,6 +298,16 @@ describe("Ids", () => {
       expect(value).to.equal(id.str);
     }
 
+    const iterated = new Set<string>();
+    strings.forEach((lo: number, hi: number, value: string) => {
+      expect(strings.get(lo, hi)).to.equal(value);
+      const str = lo.toString() + hi.toString();
+      expect(iterated.has(str)).to.be.false;
+      iterated.add(str);
+    });
+
+    expect(iterated.size).to.equal(strings.size);
+
     const numbers = new MyMap<number>();
     for (const id of ids)
       numbers.setById(id.str, id.low);
@@ -308,5 +347,4 @@ describe("Ids", () => {
     assert.isTrue(Guid.isV4Guid(id2));
     assert.notEqual(id1, id2);
   });
-
 });
