@@ -14,13 +14,17 @@ import { LoggerCategory } from "./LoggerCategory";
 
 const loggerCategory: string = LoggerCategory.IModelDb;
 
-/** Monitors backend activity. */
+/** Monitors backend activity.
+ * @beta
+ */
 export interface AppActivityMonitor {
   /** Check if the app is idle, that is, not busy. */
   isIdle: boolean;
 }
 
-/** An implementation of AppActivityMonitor that should be suitable for most backends. */
+/** An implementation of AppActivityMonitor that should be suitable for most backends.
+ * @beta
+ */
 export class BackendActivityMonitor implements AppActivityMonitor {
   // intervalMillis - the length of time in seconds of inactivity that indicates that the backend is in a lull.
   constructor(public idleIntervalSeconds: number = 1) {
@@ -35,7 +39,9 @@ export class BackendActivityMonitor implements AppActivityMonitor {
   }
 }
 
-/** Configuration for AutoPush. */
+/** Configuration for AutoPush.
+ * @beta
+ */
 export interface AutoPushParams {
   /** Desired delay in seconds between pushes. */
   pushIntervalSecondsMin: number;
@@ -45,14 +51,18 @@ export interface AutoPushParams {
   autoSchedule: boolean;
 }
 
-/** Identifies the current state of an AutoPush object. */
+/** Identifies the current state of an AutoPush object.
+ * @beta
+ */
 export enum AutoPushState {
   NotRunning,
   Scheduled,
   Pushing,
 }
 
-/** Identifies an AutoPush event. */
+/** Identifies an AutoPush event.
+ * @beta
+ */
 export enum AutoPushEventType {
   PushStarted,
   PushFinished,
@@ -60,7 +70,9 @@ export enum AutoPushEventType {
   PushCancelled,
 }
 
-/** The signature of an AutoPush event handler. */
+/** The signature of an AutoPush event handler.
+ * @beta
+ */
 export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
 
 /** Use AutoPush to automatically push local changes to a specified IModel. To do this,
@@ -94,6 +106,7 @@ export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush
  * ``` ts
  * [[include:Service.readConfig]]
  * ```
+ * @beta
  */
 export class AutoPush {
   private _iModel: IModelDb;

@@ -29,12 +29,15 @@ import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 
 const loggerCategory: string = LoggerCategory.IModelHost;
 
+/** @alpha */
 export interface CrashReportingConfigNameValuePair {
   name: string;
   value: string;
 }
 
-/** Configuration of the crash-reporting system. */
+/** Configuration of the crash-reporting system.
+ * @alpha
+ */
 export interface CrashReportingConfig {
   crashDumpDir: string; /** The directory to which .dmp files are written. */
   uploadUrl?: string; /** The webserver to which .dmp files are uploaded. If not specified, dumps are left in crashDumpDir. */

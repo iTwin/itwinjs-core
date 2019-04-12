@@ -10,7 +10,9 @@
 import * as fs from "fs-extra";
 
 /* TODO: define File Mode Constants: S_IWUSR, et al. */
-/** Information about a file. See [[IModelJsFs.lstatSync]] */
+/** Information about a file. See [[IModelJsFs.lstatSync]]
+ * @public
+ */
 export class IModelJsFsStats {
   constructor(
     public size: number,

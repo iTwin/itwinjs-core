@@ -81,7 +81,9 @@ export class DisplayStyle2d extends DisplayStyle {
   }
 }
 
-/** Creation options for display styles */
+/** Creation options for display styles
+ * @public
+ */
 export interface DisplayStyleCreationOptions {
   viewFlags?: ViewFlags;
   backgroundColor?: ColorDef;

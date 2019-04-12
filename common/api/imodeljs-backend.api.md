@@ -155,7 +155,7 @@ export class AnnotationElement2d extends GraphicalElement2d {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
 }
 
-// @public
+// @beta
 export interface AppActivityMonitor {
     isIdle: boolean;
 }
@@ -166,7 +166,7 @@ export class AuthorizedBackendRequestContext extends AuthorizedClientRequestCont
     static create(activityId?: string): Promise<AuthorizedBackendRequestContext>;
 }
 
-// @public
+// @beta
 export class AutoPush {
     constructor(iModel: IModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor);
     autoSchedule: boolean;
@@ -185,10 +185,10 @@ export class AutoPush {
     static validateAutoPushParams(params: any): void;
 }
 
-// @public
+// @beta
 export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
 
-// @public
+// @beta
 export enum AutoPushEventType {
     // (undocumented)
     PushCancelled = 3,
@@ -200,14 +200,14 @@ export enum AutoPushEventType {
     PushStarted = 0
 }
 
-// @public
+// @beta
 export interface AutoPushParams {
     autoSchedule: boolean;
     pushIntervalSecondsMax: number;
     pushIntervalSecondsMin: number;
 }
 
-// @public
+// @beta
 export enum AutoPushState {
     // (undocumented)
     NotRunning = 0,
@@ -255,7 +255,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export class AzureBlobStorage extends CloudStorageService {
     constructor(credentials: CloudStorageServiceCredentials);
     // (undocumented)
@@ -268,7 +268,7 @@ export class AzureBlobStorage extends CloudStorageService {
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
 
-// @public
+// @beta
 export class BackendActivityMonitor implements AppActivityMonitor {
     constructor(idleIntervalSeconds?: number);
     // (undocumented)
@@ -332,32 +332,22 @@ export class BriefcaseId {
     readonly value: number;
     }
 
-// @public
+// @internal
 export class BriefcaseManager {
-    // Warning: (ae-incompatible-release-tags) The symbol "applyStandaloneChangeSets" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
-    // Warning: (ae-incompatible-release-tags) The symbol "applyStandaloneChangeSets" is marked as @public, but its signature references "ChangeSetToken" which is marked as @internal
     static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus;
     // (undocumented)
     static readonly cacheDir: string;
-    // Warning: (ae-incompatible-release-tags) The symbol "close" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
     static close(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "closeStandalone" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
     static closeStandalone(briefcase: BriefcaseEntry): void;
     static readonly connectClient: ConnectClient;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string>;
-    // Warning: (ae-incompatible-release-tags) The symbol "createStandalone" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
     static createStandalone(fileName: string, args: CreateIModelProps): BriefcaseEntry;
-    // Warning: (ae-incompatible-release-tags) The symbol "createStandaloneChangeSet" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
-    // Warning: (ae-incompatible-release-tags) The symbol "createStandaloneChangeSet" is marked as @public, but its signature references "ChangeSetToken" which is marked as @internal
     static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken;
     // (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
     static deleteClosed(requestContext: AuthorizedClientRequestContext): Promise<void>;
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
-    // Warning: (ae-incompatible-release-tags) The symbol "dumpChangeSet" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
-    // Warning: (ae-incompatible-release-tags) The symbol "dumpChangeSet" is marked as @public, but its signature references "ChangeSetToken" which is marked as @internal
     static dumpChangeSet(briefcase: BriefcaseEntry, changeSetToken: ChangeSetToken): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "findBriefcaseByToken" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
     static findBriefcaseByToken(iModelToken: IModelToken): BriefcaseEntry | undefined;
     // (undocumented)
     static getChangeCachePathName(iModelId: GuidString): string;
@@ -366,21 +356,13 @@ export class BriefcaseManager {
     // (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
     static imodelClient: IModelClient;
-    // Warning: (ae-incompatible-release-tags) The symbol "open" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
     static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry>;
-    // Warning: (ae-incompatible-release-tags) The symbol "openStandalone" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
     static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry;
-    // Warning: (ae-incompatible-release-tags) The symbol "pullAndMergeChanges" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
     static purgeCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "pushChanges" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
     static pushChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks?: boolean): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "reinstateChanges" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
-    // 
     // (undocumented)
     static reinstateChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, reinstateToVersion?: IModelVersion): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "reverseChanges" is marked as @public, but its signature references "BriefcaseEntry" which is marked as @internal
-    // 
     // (undocumented)
     static reverseChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void>;
     }
@@ -395,9 +377,8 @@ export class CachedECSqlStatement {
     useCount: number;
 }
 
-// @public
+// @internal
 export class CachedSqliteStatement {
-    // @internal
     constructor(stmt: SqliteStatement);
     // (undocumented)
     statement: SqliteStatement;
@@ -441,7 +422,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     toJSON(): CategorySelectorProps;
 }
 
-// @public
+// @beta
 export class ChangedElementsDb implements IDisposable {
     constructor();
     closeDb(): void;
@@ -451,9 +432,7 @@ export class ChangedElementsDb implements IDisposable {
     getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
     readonly isOpen: boolean;
     isProcessed(changesetId: string): boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "nativeDb" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     readonly nativeDb: IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: string, endChangesetId: string, filterSpatial?: boolean): Promise<DbResult>;
@@ -479,7 +458,7 @@ export class ChangeSetToken {
     pushDate?: string | undefined;
 }
 
-// @public
+// @beta
 export interface ChangeSummary {
     // (undocumented)
     changeSet: {
@@ -493,7 +472,7 @@ export interface ChangeSummary {
     id: Id64String;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export class ChangeSummaryExtractContext {
     constructor(iModel: IModelDb);
     // (undocumented)
@@ -502,13 +481,13 @@ export class ChangeSummaryExtractContext {
     readonly iModelId: GuidString;
 }
 
-// @public
+// @beta
 export interface ChangeSummaryExtractOptions {
     currentVersionOnly?: boolean;
     startVersion?: IModelVersion;
 }
 
-// @public
+// @beta
 export class ChangeSummaryManager {
     static attachChangeCache(iModel: IModelDb): void;
     static buildPropertyValueChangesECSql(iModel: IModelDb, instanceChangeInfo: {
@@ -548,7 +527,7 @@ export class ClassRegistry {
     static registerSchema(schema: Schema): void;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export abstract class CloudStorageService {
     // (undocumented)
     download(_name: string): Promise<Readable | undefined>;
@@ -569,7 +548,7 @@ export abstract class CloudStorageService {
     abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export interface CloudStorageServiceCredentials {
     // (undocumented)
     accessKey: string;
@@ -579,7 +558,7 @@ export interface CloudStorageServiceCredentials {
     service: "azure";
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export interface CloudStorageUploadOptions {
     // (undocumented)
     cacheControl?: string;
@@ -600,31 +579,35 @@ export class CodeSpecs {
     queryId(name: string): Id64String;
 }
 
-// @public
+// @beta
 export class ConcurrencyControl {
     constructor(_iModel: IModelDb);
     abandonRequest(): void;
     areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
     areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
+    // @internal
     buildRequestForElement(element: Element, opcode: DbOpcode): void;
+    // @internal
     buildRequestForModel(model: Model, opcode: DbOpcode): void;
+    // @internal
     buildRequestForRelationship(instance: Relationship, opcode: DbOpcode): void;
     readonly codes: ConcurrencyControl.Codes;
     static convertRequestToAny(req: ConcurrencyControl.Request): any;
     static createRequest(): ConcurrencyControl.Request;
+    // @internal
     extractPendingRequest(locksOnly?: boolean, codesOnly?: boolean): ConcurrencyControl.Request;
     readonly hasPendingRequests: boolean;
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
-    // (undocumented)
+    // @internal (undocumented)
     onMergeChanges(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onMergedChanges(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onSaveChanges(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onSavedChanges(): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly pendingRequest: ConcurrencyControl.Request;
     // (undocumented)
     queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, _value?: string): Promise<HubCode[]>;
@@ -633,7 +616,7 @@ export class ConcurrencyControl {
     setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void;
     }
 
-// @public (undocumented)
+// @beta (undocumented)
 export namespace ConcurrencyControl {
     export class Codes {
         constructor(_iModel: IModelDb);
@@ -667,7 +650,7 @@ export namespace ConcurrencyControl {
     }
 }
 
-// @public
+// @alpha
 export interface CrashReportingConfig {
     // (undocumented)
     crashDumpDir: string; /** The directory to which .dmp files are written. */
@@ -687,7 +670,7 @@ export interface CrashReportingConfig {
     wantFullMemory?: boolean; /** custom parameters to send to the crash server. Put your product name and GPRID in here. If you are using a commercial crash server, this is the place to put your API key. */
 }
 
-// @public (undocumented)
+// @alpha (undocumented)
 export interface CrashReportingConfigNameValuePair {
     // (undocumented)
     name: string;
@@ -833,9 +816,8 @@ export abstract class Document extends InformationContentElement {
     constructor(props: ElementProps, iModel: IModelDb);
 }
 
-// @public @deprecated
+// @internal @deprecated
 export abstract class DocumentCarrier extends InformationCarrierElement {
-    // @internal
     constructor(props: ElementProps, iModel: IModelDb);
 }
 
@@ -893,7 +875,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
 }
 
-// @public
+// @beta
 export abstract class DriverBundleElement extends InformationContentElement {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
@@ -917,12 +899,14 @@ export class ECDb implements IDisposable, PageableECSql {
     // (undocumented)
     readonly nativeDb: IModelJsNative.ECDb;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
+    // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(ecsql: string): ECSqlStatement;
     query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
     queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     saveChanges(changeSetName?: string): void;
+    // @internal
     withPreparedSqliteStatement<T>(sql: string, cb: (stmt: SqliteStatement) => T): T;
     withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T;
 }
@@ -1159,7 +1143,7 @@ export class ElementAspect extends Entity implements ElementAspectProps {
     toJSON(): ElementAspectProps;
 }
 
-// @public
+// @beta
 export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
     // @internal
     constructor(props: ElementDrivesElementProps, iModel: IModelDb);
@@ -1171,7 +1155,7 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
     status: number;
 }
 
-// @public
+// @beta
 export interface ElementDrivesElementProps extends RelationshipProps {
     // (undocumented)
     priority: number;
@@ -1251,7 +1235,7 @@ export class Entity implements EntityProps {
     toJSON(): EntityProps;
 }
 
-// @public
+// @internal
 export const enum ExclusiveAccessOption {
     CreateNewBriefcase = 1,
     TryReuseOpenBriefcase = 2
@@ -1483,12 +1467,14 @@ export class IModelDb extends IModel implements PageableECSql {
     readonly classMetaDataRegistry: MetaDataRegistry;
     clearSqliteStatementCache(): void;
     clearStatementCache(): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "close" is marked as @public, but its signature references "KeepBriefcase" which is marked as @internal
     close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
     // @beta
     closeSnapshot(): void;
     // @deprecated
     closeStandalone(): void;
     readonly codeSpecs: CodeSpecs;
+    // Warning: (ae-incompatible-release-tags) The symbol "concurrencyControl" is marked as @public, but its signature references "ConcurrencyControl" which is marked as @beta
     readonly concurrencyControl: ConcurrencyControl;
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
@@ -1545,6 +1531,7 @@ export class IModelDb extends IModel implements PageableECSql {
     static openSnapshot(filePath: string): IModelDb;
     // @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
+    // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
@@ -1577,6 +1564,7 @@ export class IModelDb extends IModel implements PageableECSql {
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
     // (undocumented)
     readonly views: IModelDb.Views;
+    // @internal
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T;
 }
@@ -1666,6 +1654,8 @@ export class IModelHost {
     static sessionId: GuidString;
     static shutdown(): void;
     static startup(configuration?: IModelHostConfiguration): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "tileCacheService" is marked as @public, but its signature references "CloudStorageService" which is marked as @beta
+    // 
     // (undocumented)
     static tileCacheService: CloudStorageService;
     static readonly tileContentRequestTimeout: number;
@@ -1683,6 +1673,7 @@ export class IModelHostConfiguration {
     static defaultTileRequestTimeout: number;
     imodelClient?: IModelClient;
     nativePlatform?: any;
+    // Warning: (ae-incompatible-release-tags) The symbol "tileCacheCredentials" is marked as @public, but its signature references "CloudStorageServiceCredentials" which is marked as @beta
     tileCacheCredentials?: CloudStorageServiceCredentials;
     tileContentRequestTimeout: number;
     tileTreeRequestTimeout: number;
@@ -2420,9 +2411,8 @@ export namespace IModelJsNative {
     export type TxnIdString = string;
 }
 
-// @public @deprecated
+// @internal @deprecated
 export abstract class InformationCarrierElement extends Element {
-    // @internal
     constructor(props: ElementProps, iModel: IModelDb);
 }
 
@@ -2466,7 +2456,7 @@ export abstract class InformationReferenceElement extends InformationContentElem
     constructor(props: ElementProps, iModel: IModelDb);
 }
 
-// @public
+// @beta
 export interface InstanceChange {
     // (undocumented)
     changedInstance: {
@@ -2483,7 +2473,7 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
-// @public
+// @internal
 export const enum KeepBriefcase {
     // (undocumented)
     No = 0,
@@ -2756,6 +2746,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 
 // @public
 export class OpenParams {
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "ExclusiveAccessOption" which is marked as @internal
     constructor(
     openMode: OpenMode, 
     accessMode?: AccessMode | undefined, 
@@ -2763,11 +2754,15 @@ export class OpenParams {
     exclusiveAccessOption?: ExclusiveAccessOption | undefined);
     readonly accessMode?: AccessMode | undefined;
     equals(other: OpenParams): boolean;
+    // Warning: (ae-incompatible-release-tags) The symbol "exclusiveAccessOption" is marked as @public, but its signature references "ExclusiveAccessOption" which is marked as @internal
     readonly exclusiveAccessOption?: ExclusiveAccessOption | undefined;
+    // Warning: (ae-incompatible-release-tags) The symbol "fixedVersion" is marked as @public, but its signature references "ExclusiveAccessOption" which is marked as @internal
     static fixedVersion(accessMode?: AccessMode, exclusiveAccessOption?: ExclusiveAccessOption): OpenParams;
     readonly isStandalone: boolean;
     readonly openMode: OpenMode;
+    // Warning: (ae-incompatible-release-tags) The symbol "pullAndPush" is marked as @public, but its signature references "ExclusiveAccessOption" which is marked as @internal
     static pullAndPush(exclusiveAccessOption?: ExclusiveAccessOption): OpenParams;
+    // Warning: (ae-incompatible-release-tags) The symbol "pullOnly" is marked as @public, but its signature references "ExclusiveAccessOption" which is marked as @internal
     static pullOnly(accessMode?: AccessMode, exclusiveAccessOption?: ExclusiveAccessOption): OpenParams;
     // @deprecated
     static standalone(openMode: OpenMode): OpenParams;
@@ -2954,14 +2949,10 @@ export class Schema {
     readonly name: string;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "SchemaKey" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
-// 
-// @public (undocumented)
+// @internal (undocumented)
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
 
-// Warning: (ae-incompatible-release-tags) The symbol "SchemaMatchType" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
-// 
-// @public (undocumented)
+// @internal (undocumented)
 export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
 
 // @public
@@ -3106,7 +3097,7 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     toJSON(): SpatialViewDefinitionProps;
 }
 
-// @public
+// @internal
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
     [Symbol.iterator](): IterableIterator<any>;
     bindValue(parameter: number | string, value: any): void;
@@ -3118,18 +3109,15 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     getValue(columnIx: number): SqliteValue;
     readonly isPrepared: boolean;
     readonly isReadonly: boolean;
-    // @internal
     readonly isShared: boolean;
     next(): IteratorResult<any>;
-    // @internal
     prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, sql: string): void;
     reset(): void;
-    // @internal
     setIsShared(b: boolean): void;
     step(): DbResult;
     }
 
-// @public
+// @internal
 export class SqliteStatementCache {
     constructor(maxCount?: number);
     // (undocumented)
@@ -3150,9 +3138,8 @@ export class SqliteStatementCache {
     replace(str: string, stmt: SqliteStatement): void;
     }
 
-// @public
+// @internal
 export class SqliteValue {
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
     constructor(stmt: IModelJsNative.SqliteStatement, colIndex: number);
     readonly columnName: string;
     getBlob(): Uint8Array;
@@ -3166,7 +3153,7 @@ export class SqliteValue {
     readonly value: any;
 }
 
-// @public
+// @internal
 export enum SqliteValueType {
     // (undocumented)
     Blob = 4,
@@ -3180,7 +3167,7 @@ export enum SqliteValueType {
     String = 3
 }
 
-// @public
+// @internal
 export interface StringParam {
     // (undocumented)
     guid?: GuidString;
@@ -3364,12 +3351,14 @@ export class TxnManager {
     // Warning: (ae-incompatible-release-tags) The symbol "queryPreviousTxnId" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
     queryPreviousTxnId(txnId: IModelJsNative.TxnIdString): IModelJsNative.TxnIdString;
     reinstateTxn(): IModelStatus_2;
+    // Warning: (ae-incompatible-release-tags) The symbol "reportError" is marked as @public, but its signature references "ValidationError" which is marked as @internal
     reportError(error: ValidationError): void;
     reverseAll(): IModelStatus_2;
     reverseSingleTxn(): IModelStatus_2;
     // Warning: (ae-incompatible-release-tags) The symbol "reverseTo" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
     reverseTo(txnId: IModelJsNative.TxnIdString): IModelStatus_2;
     reverseTxns(numOperations: number): IModelStatus_2;
+    // Warning: (ae-incompatible-release-tags) The symbol "validationErrors" is marked as @public, but its signature references "ValidationError" which is marked as @internal
     readonly validationErrors: ValidationError[];
 }
 
@@ -3385,7 +3374,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
 export class UrlLink extends LinkElement {
 }
 
-// @public
+// @internal
 export interface ValidationError {
     errorType: string;
     fatal: boolean;

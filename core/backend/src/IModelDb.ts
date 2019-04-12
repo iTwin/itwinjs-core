@@ -39,13 +39,19 @@ const loggerCategory: string = LoggerCategory.IModelDb;
  */
 export type ChangeSetDescriber = (endTxnId: IModelJsNative.TxnIdString) => string;
 
-/** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub */
+/** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub
+ * @public
+ */
 export const enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
 
-/** Mode to access the IModelDb */
+/** Mode to access the IModelDb
+ * @public
+ */
 export const enum AccessMode { Shared = 1, Exclusive = 2 }
 
-/** Additional options for exclusive access to IModelDb  */
+/** Additional options for exclusive access to IModelDb
+ * @internal
+ */
 export const enum ExclusiveAccessOption {
   /** Create or acquire a new briefcase every time the open call is made */
   CreateNewBriefcase = 1,
@@ -54,7 +60,9 @@ export const enum ExclusiveAccessOption {
   TryReuseOpenBriefcase = 2,
 }
 
-/** Parameters to open an IModelDb */
+/** Parameters to open an IModelDb
+ * @public
+ */
 export class OpenParams {
   // Constructor
   public constructor(
@@ -708,13 +716,12 @@ export class IModelDb extends IModel implements PageableECSql {
   }
 
   /** Use a prepared SQLite SQL statement. This function takes care of preparing the statement and then releasing it.
-   *
    * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
    * the already prepared statement from the cache will be reused.
-   *
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
    * @returns the value returned by cb
+   * @internal
    */
   public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
     const stmt = this.getPreparedSqlStatement(sql);
@@ -742,6 +749,7 @@ export class IModelDb extends IModel implements PageableECSql {
   /** Prepare an SQLite SQL statement.
    * @param sql The SQLite SQL statement to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
+   * @internal
    */
   public prepareSqliteStatement(sql: string): SqliteStatement {
     const stmt = new SqliteStatement();
@@ -1224,7 +1232,9 @@ export class IModelDb extends IModel implements PageableECSql {
 /** @public */
 export namespace IModelDb {
 
-  /** The collection of models in an [[IModelDb]]. */
+  /** The collection of models in an [[IModelDb]].
+   * @public
+   */
   export class Models {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -1335,7 +1345,9 @@ export namespace IModelDb {
     }
   }
 
-  /** The collection of elements in an [[IModelDb]]. */
+  /** The collection of elements in an [[IModelDb]].
+   * @public
+   */
   export class Elements {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -1519,8 +1531,7 @@ export namespace IModelDb {
       return this._iModel.constructEntity<ElementAspect>(aspectProps);
     }
 
-    /**
-     * Get the ElementAspect instances (by class name) that are related to the specified element.
+    /** Get the ElementAspect instances (by class name) that are related to the specified element.
      * @throws [[IModelError]]
      */
     public getAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
@@ -1528,8 +1539,7 @@ export namespace IModelDb {
       return aspects;
     }
 
-    /**
-     * Insert a new ElementAspect into the iModel.
+    /** Insert a new ElementAspect into the iModel.
      * @param aspectProps The properties of the new ElementAspect.
      * @throws [[IModelError]] if unable to insert the ElementAspect.
      */
@@ -1542,8 +1552,7 @@ export namespace IModelDb {
         throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory);
     }
 
-    /**
-     * Update an exist ElementAspect within the iModel.
+    /** Update an exist ElementAspect within the iModel.
      * @param aspectProps The properties to use to update the ElementAspect.
      * @throws [[IModelError]] if unable to update the ElementAspect.
      */
@@ -1556,8 +1565,7 @@ export namespace IModelDb {
         throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory);
     }
 
-    /**
-     * Delete one or more ElementAspects from this iModel.
+    /** Delete one or more ElementAspects from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[IModelError]]
      */
@@ -1570,7 +1578,9 @@ export namespace IModelDb {
     }
   }
 
-  /** The collection of views in an [[IModelDb]]. */
+  /** The collection of views in an [[IModelDb]].
+   * @public
+   */
   export class Views {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -1762,9 +1772,12 @@ export namespace IModelDb {
   }
 }
 
+/** @public */
 export const enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
 
-/** An error generated during dependency validation. */
+/** An error generated during dependency validation.
+ * @internal
+ */
 export interface ValidationError {
   /** If true, txn is aborted. */
   fatal: boolean;
@@ -1774,8 +1787,8 @@ export interface ValidationError {
   message?: string;
 }
 
-/**
- * Local Txns in an IModelDb. Local Txns persist only until [[IModelDb.pushChanges]] is called.
+/** Local Txns in an IModelDb. Local Txns persist only until [[IModelDb.pushChanges]] is called.
+ * @public
  */
 export class TxnManager {
   constructor(private _iModel: IModelDb) { }

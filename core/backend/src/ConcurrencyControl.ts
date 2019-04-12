@@ -18,8 +18,8 @@ import { Relationship } from "./Relationship";
 
 const loggerCategory: string = LoggerCategory.ConcurrencyControl;
 
-/**
- * ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
+/** ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
+ * @beta
  */
 export class ConcurrencyControl {
   private _pendingRequest: ConcurrencyControl.Request;
@@ -27,25 +27,25 @@ export class ConcurrencyControl {
   private _policy?: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
   constructor(private _iModel: IModelDb) { this._pendingRequest = ConcurrencyControl.createRequest(); }
 
-  /** @hidden */
+  /** @internal */
   public onSaveChanges() {
     if (this.hasPendingRequests)
       throw new IModelError(IModelStatus.TransactionActive, "Error - hasPendingRequests", Logger.logError, loggerCategory);
   }
 
-  /** @hidden */
+  /** @internal */
   public onSavedChanges() { this.applyTransactionOptions(); }
 
-  /** @hidden */
+  /** @internal */
   public onMergeChanges() {
     if (this.hasPendingRequests)
       throw new IModelError(IModelStatus.TransactionActive, "Error - hasPendingRequests", Logger.logError, loggerCategory);
   }
 
-  /** @hidden */
+  /** @internal */
   public onMergedChanges() { this.applyTransactionOptions(); }
 
-  /** @hidden */
+  /** @internal */
   private applyTransactionOptions() {
     if (!this._policy)
       return;
@@ -61,7 +61,7 @@ export class ConcurrencyControl {
   /** Convert the request to any */
   public static convertRequestToAny(req: ConcurrencyControl.Request): any { return JSON.parse((req as IModelJsNative.BriefcaseManagerResourcesRequest).toJSON()); }
 
-  /** @hidden [[Model.buildConcurrencyControlRequest]] */
+  /** @internal [[Model.buildConcurrencyControlRequest]] */
   public buildRequestForModel(model: Model, opcode: DbOpcode): void {
     if (!this._iModel.briefcase)
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
@@ -70,7 +70,7 @@ export class ConcurrencyControl {
       throw new IModelError(rc, "Error building request for Model", Logger.logError, loggerCategory);
   }
 
-  /** @hidden [[Element.buildConcurrencyControlRequest]] */
+  /** @internal [[Element.buildConcurrencyControlRequest]] */
   public buildRequestForElement(element: Element, opcode: DbOpcode): void {
     if (!this._iModel.briefcase)
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
@@ -83,7 +83,7 @@ export class ConcurrencyControl {
       throw new IModelError(rc, "Error building request for Element", Logger.logError, loggerCategory);
   }
 
-  /** @hidden [[LinkTableRelationship.buildConcurrencyControlRequest]] */
+  /** @internal [[LinkTableRelationship.buildConcurrencyControlRequest]] */
   public buildRequestForRelationship(instance: Relationship, opcode: DbOpcode): void {
     if (!this._iModel.briefcase)
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggerCategory);
@@ -97,7 +97,7 @@ export class ConcurrencyControl {
       this._iModel.briefcase.nativeDb.extractBulkResourcesRequest(this._pendingRequest as IModelJsNative.BriefcaseManagerResourcesRequest, true, true);
   }
 
-  /** @hidden */
+  /** @internal */
   public get pendingRequest(): ConcurrencyControl.Request {
     this.captureBulkOpRequest();
     return this._pendingRequest;
@@ -112,10 +112,10 @@ export class ConcurrencyControl {
   }
 
   /**
-   * @hidden
    * Take ownership of all or some of the pending request for locks and codes.
    * @param locksOnly If true, only the locks in the pending request are extracted. The default is to extract all requests.
    * @param codesOnly If true, only the codes in the pending request are extracted. The default is to extract all requests.
+   * @internal
    */
   public extractPendingRequest(locksOnly?: boolean, codesOnly?: boolean): ConcurrencyControl.Request {
     if (!this._iModel.briefcase)

@@ -11,8 +11,9 @@ import { IModelHost } from "./IModelHost";
 import { Config } from "@bentley/imodeljs-clients";
 
 /** Marks a string as either an [Id64String]($bentleyjs-core) or [GuidString]($bentleyjs-core), so
- *  that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
- *  methods of [SqliteStatement]($backend).
+ * that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
+ * methods of [SqliteStatement]($backend).
+ * @internal
  */
 export interface StringParam {
   id?: Id64String;
@@ -38,6 +39,7 @@ export interface StringParam {
  * > Preparing a statement can be time-consuming. The best way to reduce the effect of this overhead is to cache and reuse prepared
  * > statements. A cached prepared statement may be used in different places in an app, as long as the statement is general enough.
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
+ * @internal
  */
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
@@ -287,12 +289,11 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
 }
 
 /** Data type of a value in in an SQLite SQL query result.
- *
  * See also:
- *
  * - [SqliteValue]($backend)
  * - [SqliteStatement]($backend)
  * - [SqliteStatement.getValue]($backend)
+ * @internal
  */
 export enum SqliteValueType {
   // do not change the values of that enum. It must correspond to the respective
@@ -305,11 +306,10 @@ export enum SqliteValueType {
 }
 
 /** Value of a column in a row of an SQLite SQL query result.
- *
  * See also:
- *
  * - [SqliteStatement]($backend)
  * - [SqliteStatement.getValue]($backend)
+ * @internal
  */
 export class SqliteValue {
   private readonly _stmt: IModelJsNative.SqliteStatement;
@@ -370,8 +370,8 @@ export class SqliteValue {
   public getGuid(): GuidString { return this._stmt.getValueGuid(this._colIndex); }
 }
 
-/** A cached SqliteStatement.
- *  See [SqliteStatementCache]($backend) for details.
+/** A cached SqliteStatement. See [SqliteStatementCache]($backend) for details.
+ * @internal
  */
 export class CachedSqliteStatement {
   public statement: SqliteStatement;
@@ -384,10 +384,9 @@ export class CachedSqliteStatement {
   }
 }
 
-/** A cache for SqliteStatements.
- *
- * Preparing [SqliteStatement]($backend)s can be costly. This class provides a way to
- * save previously prepared SqliteStatements for reuse.
+/** A cache for SqliteStatements. Preparing [SqliteStatement]($backend)s can be costly.
+ * This class provides a way to save previously prepared SqliteStatements for reuse.
+ * @internal
  */
 export class SqliteStatementCache {
   private readonly _statements: Map<string, CachedSqliteStatement> = new Map<string, CachedSqliteStatement>();

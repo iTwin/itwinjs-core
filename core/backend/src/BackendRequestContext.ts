@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
-import { Guid, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, AccessToken } from "@bentley/imodeljs-clients";
+import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelHost } from "./IModelHost";
 
 /**
  * Provides some generic context for downstream server applications to get details of a request that
  * originated at the backend. The context is meant for use in applications that require authorization.
  * @see BackendRequestContext
+ * @public
  */
 export class AuthorizedBackendRequestContext extends AuthorizedClientRequestContext {
   /**
@@ -38,6 +39,7 @@ export class AuthorizedBackendRequestContext extends AuthorizedClientRequestCont
  * Provides generic context for downstream server applications to get details of a request that
  * originated at the backend. The context is meant for use in applications that do NOT require authorization.
  * @see AuthorizedBackendRequestContext
+ * @public
  */
 export class BackendRequestContext extends ClientRequestContext {
   /**

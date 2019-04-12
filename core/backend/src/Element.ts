@@ -317,6 +317,7 @@ export abstract class InformationContentElement extends Element {
 
 /** Element used in conjunction with bis:ElementDrivesElement relationships to bundle multiple inputs before
  * driving the output element.
+ * @beta
  */
 export abstract class DriverBundleElement extends InformationContentElement {
   /** @internal */
@@ -492,6 +493,7 @@ export class Sheet extends Document implements SheetProps {
 /** An Information Carrier carries information, but is not the information itself. For example, the arrangement
  * of ink on paper or the sequence of electronic bits are information carriers.
  * @deprecated BisCore will focus on the information itself and not how it is carried.
+ * @internal
  */
 export abstract class InformationCarrierElement extends Element {
   /** @internal */
@@ -500,6 +502,7 @@ export abstract class InformationCarrierElement extends Element {
 
 /** An Information Carrier that carries a Document. An electronic file is a good example.
  * @deprecated BisCore will focus on the information itself and not how it is carried.
+ * @internal
  */
 export abstract class DocumentCarrier extends InformationCarrierElement {
   /** @internal */

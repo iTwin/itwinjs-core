@@ -2,21 +2,24 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, IModelError } from "@bentley/imodeljs-common";
 import * as as from "azure-storage";
 import { PassThrough, Readable } from "stream";
-import { CloudStorageContainerDescriptor, CloudStorageProvider, CloudStorageContainerUrl, IModelError, BentleyStatus } from "@bentley/imodeljs-common";
 
+/** @beta */
 export interface CloudStorageServiceCredentials {
   service: "azure";
   account: string;
   accessKey: string;
 }
 
+/** @beta */
 export interface CloudStorageUploadOptions {
   type?: string;
   cacheControl?: string;
 }
 
+/** @beta */
 export abstract class CloudStorageService {
   public initialize(): void { }
   public terminate(): void { }
@@ -30,6 +33,7 @@ export abstract class CloudStorageService {
   }
 }
 
+/** @beta */
 export class AzureBlobStorage extends CloudStorageService {
   private _service: as.BlobService;
 

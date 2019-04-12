@@ -20,12 +20,13 @@ import { LoggerCategory } from "./LoggerCategory";
 const loggerCategory: string = LoggerCategory.ECDb;
 
 /** Represents an instance of the `ChangeSummary` ECClass from the `ECDbChange` ECSchema
- *  combined with the information from the related `ChangeSet` instance (from the `IModelChange` ECSchema) from
- *  which the Change Summary was extracted.
+ * combined with the information from the related `ChangeSet` instance (from the `IModelChange` ECSchema) from
+ * which the Change Summary was extracted.
  *
- *  See also
- *  - [ChangeSummaryManager.queryChangeSummary]($backend)
- *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
+ * See also
+ * - [ChangeSummaryManager.queryChangeSummary]($backend)
+ * - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
+ * @beta
  */
 export interface ChangeSummary {
   id: Id64String;
@@ -34,9 +35,10 @@ export interface ChangeSummary {
 
 /** Represents an instance of the `InstanceChange` ECClass from the `ECDbChange` ECSchema
  *
- *  See also
- *  - [ChangeSummaryManager.queryInstanceChange]($backend)
- *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
+ * See also
+ * - [ChangeSummaryManager.queryInstanceChange]($backend)
+ * - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
+ * @beta
  */
 export interface InstanceChange {
   id: Id64String;
@@ -46,7 +48,9 @@ export interface InstanceChange {
   isIndirect: boolean;
 }
 
-/** Options for [ChangeSummaryManager.extractChangeSummaries]($backend). */
+/** Options for [ChangeSummaryManager.extractChangeSummaries]($backend).
+ * @beta
+ */
 export interface ChangeSummaryExtractOptions {
   /** If specified, change summaries are extracted from the start version to the current version as of which the iModel
    *  was opened. If undefined, the extraction starts at the first version of the iModel.
@@ -58,6 +62,7 @@ export interface ChangeSummaryExtractOptions {
   currentVersionOnly?: boolean;
 }
 
+/** @beta */
 export class ChangeSummaryExtractContext {
   public constructor(public readonly iModel: IModelDb) { }
 
@@ -66,8 +71,9 @@ export class ChangeSummaryExtractContext {
 
 /** Class to extract Change Summaries for a briefcase.
  *
- *  See also:
- *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
+ * See also:
+ * - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
+ * @beta
  */
 export class ChangeSummaryManager {
   private static readonly _currentIModelChangeSchemaVersion = { read: 2, write: 0, minor: 0 };

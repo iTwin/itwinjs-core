@@ -12,7 +12,9 @@ import { ChangeSet, ChangesType, AuthorizedClientRequestContext } from "@bentley
 import * as path from "path";
 import { IModelHost } from "./IModelHost";
 
-/** An ChangedElementsDb file */
+/** An ChangedElementsDb file
+ * @beta
+ */
 export class ChangedElementsDb implements IDisposable {
   private _nativeDb: IModelJsNative.ChangedElementsECDb | undefined;
 
@@ -127,6 +129,7 @@ export class ChangedElementsDb implements IDisposable {
     this.nativeDb.closeDb();
   }
 
+  /** @internal */
   public get nativeDb(): IModelJsNative.ChangedElementsECDb {
     if (!this._nativeDb)
       throw new IModelError(IModelStatus.BadRequest, "ChangedElementsDb object has already been disposed.");

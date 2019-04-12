@@ -13,7 +13,9 @@ import { LoggerCategory } from "./LoggerCategory";
 
 const loggerCategory = LoggerCategory.Relationship;
 
-/** Specifies the source and target elements of a [[Relationship]] instance. */
+/** Specifies the source and target elements of a [[Relationship]] instance.
+ * @public
+ */
 export interface SourceAndTarget {
   sourceId: Id64String;
   targetId: Id64String;
@@ -122,14 +124,16 @@ export class ElementGroupsMembers extends ElementRefersToElements {
   }
 }
 
-/** Properties that are common to all types of ElementDrivesElements */
+/** Properties that are common to all types of ElementDrivesElements
+ * @beta
+ */
 export interface ElementDrivesElementProps extends RelationshipProps {
   status: number;
   priority: number;
 }
 
-/**
- * A Relationship where one Element *drives* another Element
+/** A Relationship where one Element *drives* another Element
+ * @beta
  */
 export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
   public status: number;

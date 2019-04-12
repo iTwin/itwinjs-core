@@ -36,22 +36,22 @@ export class BriefcaseId {
   public toString(): string { return this._value.toString(); }
 }
 
-/** Option to keep briefcase when the imodel is closed */
+/** Option to keep briefcase when the imodel is closed
+ * @internal
+ */
 export const enum KeepBriefcase {
   No = 0,
   Yes = 1,
 }
 
-/**
- * A token that represents a ChangeSet
+/** A token that represents a ChangeSet
  * @internal
  */
 export class ChangeSetToken {
   constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: boolean, public pushDate?: string) { }
 }
 
-/**
- * Entry in the briefcase cache
+/** Entry in the briefcase cache
  * @internal
  */
 export class BriefcaseEntry {
@@ -242,9 +242,8 @@ class BriefcaseCache {
   public clear() { this._briefcases.clear(); }
 }
 
-/**
- * Utility to manage briefcases
- * @hidden
+/** Utility to manage briefcases
+ * @internal
  */
 export class BriefcaseManager {
   private static _cache: BriefcaseCache = new BriefcaseCache();

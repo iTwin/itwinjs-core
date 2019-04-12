@@ -14,7 +14,9 @@ import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./
 
 const loggerCategory: string = LoggerCategory.ECDb;
 
-/** Modes for how to open [ECDb]($backend) files. */
+/** Modes for how to open [ECDb]($backend) files.
+ * @public
+ */
 export enum ECDbOpenMode {
   Readonly,
   Readwrite,
@@ -22,7 +24,9 @@ export enum ECDbOpenMode {
   FileUpgrade,
 }
 
-/** An ECDb file */
+/** An ECDb file
+ * @public
+ */
 export class ECDb implements IDisposable, PageableECSql {
   private _nativeDb?: IModelJsNative.ECDb;
   private readonly _statementCache: ECSqlStatementCache = new ECSqlStatementCache();
@@ -347,6 +351,7 @@ export class ECDb implements IDisposable, PageableECSql {
    * @param sql The SQLite SQL statement to execute
    * @param cb The callback to invoke on the prepared statement
    * @returns Returns the value returned by cb
+   * @internal
    */
   public withPreparedSqliteStatement<T>(sql: string, cb: (stmt: SqliteStatement) => T): T {
     const stmt = this.getPreparedSqliteStatement(sql);
@@ -396,6 +401,7 @@ export class ECDb implements IDisposable, PageableECSql {
   /** Prepare an SQLite SQL statement.
    * @param sql The SQLite SQL statement to prepare
    * @throws [IModelError]($common) if there is a problem preparing the statement.
+   * @internal
    */
   public prepareSqliteStatement(sql: string): SqliteStatement {
     const stmt = new SqliteStatement();

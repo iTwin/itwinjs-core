@@ -23,6 +23,7 @@ const loggerCategory: string = LoggerCategory.ECDb;
  * In case of failure it contains the [DbResult]($bentleyjs-core) error code.
  *
  * > Insert statements can be used with ECDb only, not with IModelDb.
+ * @public
  */
 export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64String) { }
@@ -50,6 +51,7 @@ export class ECSqlInsertResult {
  * See also
  * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) provides more background on ECSQL and an introduction on how to execute ECSQL with the iModel.js API.
  * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iModel.js API for executing and working with ECSQL
+ * @public
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
@@ -369,6 +371,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
  * - [ECSqlStatement]($backend)
  * - [ECSqlStatement.getBinder]($backend)
  * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL)
+ * @public
  */
 export class ECSqlBinder {
   private _binder: IModelJsNative.ECSqlBinder;
@@ -532,6 +535,7 @@ export class ECSqlBinder {
  * - [[ECSqlStatement]]
  * - [[ECSqlStatement.getValue]]
  * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
+ * @public
  */
 export interface ECEnumValue {
   schema: string;
@@ -543,10 +547,10 @@ export interface ECEnumValue {
 /** Value of a column in a row of an ECSQL query result.
  *
  * See also:
- *
  * - [ECSqlStatement]($backend)
  * - [ECSqlStatement.getValue]($backend)
  * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
+ * @public
  */
 export class ECSqlValue {
   private _val: IModelJsNative.ECSqlValue;
@@ -619,9 +623,8 @@ export class ECSqlValue {
 }
 
 /** Iterator over members of a struct [ECSqlValue]($backend) or the elements of an array [ECSqlValue]($backend).
- *
- *  See [ECSqlValue.getStructIterator]($backend) or
- *  [ECSqlValue.getArrayIterator]($backend).
+ * See [ECSqlValue.getStructIterator]($backend) or [ECSqlValue.getArrayIterator]($backend).
+ * @public
  */
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: IModelJsNative.ECSqlValueIterator;
@@ -641,10 +644,8 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 }
 
 /** Information about an ECSQL column in an ECSQL query result.
- *
- * See [ECSqlValue.columnInfo]($backend),
- * [ECSqlStatement.getValue]($backend),
- * [ECSqlStatement]($backend)
+ * See [ECSqlValue.columnInfo]($backend), [ECSqlStatement.getValue]($backend), [ECSqlStatement]($backend)
+ * @public
  */
 export interface ECSqlColumnInfo {
   /** Gets the data type of the column.
@@ -937,8 +938,8 @@ class ECSqlTypeHelper {
   public static isNavigationBindingValue(val: any): val is NavigationBindingValue { return val.id !== undefined && typeof (val.id) === "string"; }
 }
 
-/** A cached ECSqlStatement.
- *  See [ECSqlStatementCache]($backend) for details.
+/** A cached ECSqlStatement. See [ECSqlStatementCache]($backend) for details.
+ * @public
  */
 export class CachedECSqlStatement {
   public statement: ECSqlStatement;
@@ -957,6 +958,7 @@ export class CachedECSqlStatement {
  *
  * > Both [IModelDb]($backend)s and [ECDb]($backend)s have a built-in ECSqlStatementCache.
  * > So normally you do not have to maintain your own cache.
+ * @public
  */
 export class ECSqlStatementCache {
   private readonly _statements: Map<string, CachedECSqlStatement> = new Map<string, CachedECSqlStatement>();
