@@ -199,6 +199,7 @@ export class DevTools {
     const oldLevel = Logger.getLevel(inLoggerCategory);
     Logger.logInfo(loggerCategory, `Setting log level`, () => ({ loggerCategory: inLoggerCategory, oldLevel, newLevel }));
     Logger.setLevel(inLoggerCategory, newLevel);
+    IModelHost.platform.clearLogLevelCache();
     return oldLevel;
   }
 

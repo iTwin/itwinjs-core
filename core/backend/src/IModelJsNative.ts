@@ -42,6 +42,7 @@ export declare namespace IModelJsNative {
   export function dropObjectFromVault(id: string): void;
   export function addReferenceToObjectInVault(id: string): void;
   export function getObjectRefCountFromVault(id: string): number;
+  export function clearLogLevelCache(): void;
   export type TxnIdString = string;
 
   /** Logger categories used by the native addon */

@@ -1811,6 +1811,8 @@ export namespace IModelJsNative {
         // (undocumented)
         processChangesets(db: DgnDb, changesets: string, rulesetId: string, filterSpatial: boolean): DbResult;
     }
+    // (undocumented)
+    export function clearLogLevelCache(): void;
     export class DgnDb {
         constructor();
         // (undocumented)
