@@ -7,7 +7,7 @@ import { CommonProps } from "@bentley/ui-core";
 import { Slider, Rail, Handles, SliderItem, Tracks, GetTrackProps } from "react-compound-slider";
 import "./Scrubber.scss";
 
-const formatDate = (value: number) => {
+const formatTime = (value: number) => {
   const addZero = (i: number) => {
     return (i < 10) ? "0" + i : i;
   };
@@ -18,6 +18,12 @@ const formatDate = (value: number) => {
   return `${addZero(minutes)}:${addZero(seconds)}`;
 };
 
+const formatDate = (startDate: Date, endDate: Date, fraction: number) => {
+  const delta = (endDate.getTime() - startDate.getTime()) * fraction;
+  const date = new Date(startDate.getTime() + delta);
+  return date.toLocaleDateString();
+};
+
 // *******************************************************
 // TOOLTIP RAIL
 // *******************************************************
@@ -25,6 +31,8 @@ interface TooltipRailProps {
   activeHandleID?: string;
   getRailProps: (props: object) => object;
   getEventData: (e: Event) => object;
+  startDate?: Date;
+  endDate?: Date;
   isPlaying: boolean;  // used to not show tooltip at mouse location if timeline is playing
 }
 
@@ -70,14 +78,15 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
 
   public render() {
     const { value, percent } = this.state;
-    const { activeHandleID, getRailProps, isPlaying } = this.props;
+    const { activeHandleID, getRailProps, isPlaying, startDate, endDate } = this.props;
+    const toolTip = (startDate && endDate) ? formatDate(startDate, endDate, (percent! / 100)) : formatTime(value!);
 
     return (
       <>
         {!activeHandleID && value && !isPlaying ? (
           <div className="tooltip-rail" style={{ left: `${percent}%` }}>
             <div className="tooltip">
-              <span className="tooltip-text">{formatDate(value)}</span>
+              <span className="tooltip-text">{toolTip}</span>
             </div>
           </div>
         ) : null}
@@ -102,6 +111,8 @@ interface HandleProps {
   handle: SliderItem;
   disabled?: boolean;
   isPlaying?: boolean;
+  startDate?: Date;
+  endDate?: Date;
   domain: number[];
   getHandleProps: (id: string, config: object) => object;
 }
@@ -134,16 +145,19 @@ class Handle extends React.Component<HandleProps, HandleState> {
       domain: [min, max],
       handle: { id, value, percent },
       isPlaying,
+      startDate,
+      endDate,
       getHandleProps,
     } = this.props;
     const { mouseOver } = this.state;
+    const toolTip = (startDate && endDate) ? formatDate(startDate, endDate, percent / 100) : formatTime(value);
 
     return (
       <>
         {(isPlaying || mouseOver) &&
           <div className="tooltip-rail" style={{ left: `${percent}%` }}>
             <div className="tooltip">
-              <span className="tooltip-text">{formatDate(value)}</span>
+              <span className="tooltip-text">{toolTip}</span>
             </div>
           </div>
         }
@@ -186,6 +200,8 @@ export interface ScrubberProps extends CommonProps {
   currentDuration: number;
   totalDuration: number;
   isPlaying: boolean;
+  startDate?: Date;
+  endDate?: Date;
   onChange?: (values: ReadonlyArray<number>) => void;
   onUpdate?: (values: ReadonlyArray<number>) => void;
   onSlideStart?: () => void;
@@ -194,7 +210,7 @@ export interface ScrubberProps extends CommonProps {
 export class Scrubber extends React.Component<ScrubberProps> {
 
   public render() {
-    const { currentDuration, totalDuration, onChange, onUpdate, onSlideStart, isPlaying } = this.props;
+    const { currentDuration, totalDuration, onChange, onUpdate, onSlideStart, isPlaying, startDate, endDate  } = this.props;
     const domain = [0, totalDuration];
 
     return (
@@ -209,7 +225,7 @@ export class Scrubber extends React.Component<ScrubberProps> {
         values={[currentDuration]}
       >
         <Rail>
-          {(railProps) => <TooltipRail {...railProps} isPlaying={isPlaying} />}
+          {(railProps) => <TooltipRail {...railProps} isPlaying={isPlaying} startDate={startDate} endDate={endDate} />}
         </Rail>
         <Handles>
           {({ handles, getHandleProps }) => (
@@ -218,6 +234,8 @@ export class Scrubber extends React.Component<ScrubberProps> {
                 <Handle
                   key={handle.id}
                   isPlaying={isPlaying}
+                  startDate={startDate}
+                  endDate={endDate}
                   handle={handle}
                   domain={domain}
                   getHandleProps={getHandleProps}

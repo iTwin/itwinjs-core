@@ -269,6 +269,8 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
                 className="scrubber-scrubber"
                 currentDuration={this.state.currentDuration}
                 totalDuration={totalDuration}
+                startDate={startDate}
+                endDate={endDate}
                 isPlaying={this.state.isPlaying}
                 onChange={this._onTimelineChange}
                 onUpdate={this._onTimelineChange} />
