@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "0.191.0-dev.43",
+  "version": "0.191.0-dev.44",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
@@ -55,27 +55,27 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^0.191.0-dev.43",
-    "@bentley/geometry-core": "^0.191.0-dev.43",
-    "@bentley/imodeljs-clients": "^0.191.0-dev.43",
-    "@bentley/imodeljs-common": "^0.191.0-dev.43",
-    "@bentley/imodeljs-i18n": "^0.191.0-dev.43",
-    "@bentley/imodeljs-quantity": "^0.191.0-dev.43"
+    "@bentley/bentleyjs-core": "^0.191.0-dev.44",
+    "@bentley/geometry-core": "^0.191.0-dev.44",
+    "@bentley/imodeljs-clients": "^0.191.0-dev.44",
+    "@bentley/imodeljs-common": "^0.191.0-dev.44",
+    "@bentley/imodeljs-i18n": "^0.191.0-dev.44",
+    "@bentley/imodeljs-quantity": "^0.191.0-dev.44"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.43",
-    "@bentley/build-tools": "0.191.0-dev.43",
-    "@bentley/certa": "0.191.0-dev.43",
-    "@bentley/geometry-core": "0.191.0-dev.43",
-    "@bentley/imodeljs-clients": "0.191.0-dev.43",
-    "@bentley/imodeljs-common": "0.191.0-dev.43",
-    "@bentley/imodeljs-i18n": "0.191.0-dev.43",
-    "@bentley/imodeljs-quantity": "0.191.0-dev.43",
-    "@bentley/webpack-tools": "0.191.0-dev.43",
+    "@bentley/bentleyjs-core": "0.191.0-dev.44",
+    "@bentley/build-tools": "0.191.0-dev.44",
+    "@bentley/certa": "0.191.0-dev.44",
+    "@bentley/geometry-core": "0.191.0-dev.44",
+    "@bentley/imodeljs-clients": "0.191.0-dev.44",
+    "@bentley/imodeljs-common": "0.191.0-dev.44",
+    "@bentley/imodeljs-i18n": "0.191.0-dev.44",
+    "@bentley/imodeljs-quantity": "0.191.0-dev.44",
+    "@bentley/webpack-tools": "0.191.0-dev.44",
     "@types/chai": "^4.1.4",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
