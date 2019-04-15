@@ -4,6 +4,7 @@ dependencies:
   '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.117.0
   '@microsoft/api-extractor': 7.0.33
   '@openid/appauth': 1.2.3
+  '@rush-temp/backend-for-unity': 'file:projects/backend-for-unity.tgz'
   '@rush-temp/bentleyjs-core': 'file:projects/bentleyjs-core.tgz'
   '@rush-temp/build-tools': 'file:projects/build-tools.tgz'
   '@rush-temp/certa': 'file:projects/certa.tgz'
@@ -106,6 +107,7 @@ dependencies:
   '@types/uuid': 3.4.4
   '@types/webdriverio': 4.13.3
   '@types/webpack': 3.8.18
+  '@types/ws': 6.0.1
   '@types/xmldom': 0.1.29
   '@types/yargs': 12.0.12
   app-root-path: 2.2.1
@@ -285,6 +287,7 @@ dependencies:
   webpack-merge: 4.2.1
   webpack-node-externals: 1.7.2
   whatwg-fetch: 2.0.4
+  ws: 6.2.1
   xmldom: 0.1.27
   xmlhttprequest: 1.8.0
   xpath: 0.0.27
@@ -1052,6 +1055,13 @@ packages:
     dev: false
     resolution:
       integrity: sha512-qRk84mxsmMImpDAS7WHwdVSUabNSvdYD9M15U7OXaEo+ZkMW6zmdwmZRWr8SF6ZAA93ppkh5lNky5TiCuqcfAA==
+  /@types/ws/6.0.1:
+    dependencies:
+      '@types/events': 3.0.0
+      '@types/node': 10.14.1
+    dev: false
+    resolution:
+      integrity: sha512-EzH8k1gyZ4xih/MaZTXwT2xOkPiIMSrhQ9b8wrlX88L0T02eYsddatQlwVFlEPyEqV0ChpdpNnE51QPH6NVT4Q==
   /@types/xmldom/0.1.29:
     dev: false
     resolution:
@@ -1826,7 +1836,7 @@ packages:
     dependencies:
       cache-base: 1.0.1
       class-utils: 0.3.6
-      component-emitter: 1.2.1
+      component-emitter: 1.3.0
       define-property: 1.0.0
       isobject: 3.0.1
       mixin-deep: 1.3.1
@@ -2210,7 +2220,7 @@ packages:
   /cache-base/1.0.1:
     dependencies:
       collection-visit: 1.0.0
-      component-emitter: 1.2.1
+      component-emitter: 1.3.0
       get-value: 2.0.6
       has-value: 1.0.0
       isobject: 3.0.1
@@ -2822,10 +2832,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-3dgA2gxmEnOTzKWVDqloo6rxJTs=
-  /component-emitter/1.2.1:
+  /component-emitter/1.3.0:
     dev: false
     resolution:
-      integrity: sha1-E3kY1teCg/ffemt8WmPhQOaUJeY=
+      integrity: sha512-Rd3se6QB+sO1TwqZjscQrurpEPIfO0/yYnSin6Q/rD3mOutHvUrCAhJub3r90uNb+SESBuE0QYoB90YdfatsRg==
   /compress-commons/1.2.2:
     dependencies:
       buffer-crc32: 0.2.13
@@ -11509,7 +11519,7 @@ packages:
       integrity: sha1-D0LBDl0F2l1C7qPlbDOZo31sWz4=
   /superagent/3.8.3:
     dependencies:
-      component-emitter: 1.2.1
+      component-emitter: 1.3.0
       cookiejar: 2.1.2
       debug: 3.2.6
       extend: 3.0.2
@@ -13547,6 +13557,22 @@ packages:
       node: '>= 0.10.0'
     resolution:
       integrity: sha1-qLxF9MG0lpnGuQGYuqyqzbzUugQ=
+  'file:projects/backend-for-unity.tgz':
+    dependencies:
+      '@types/node': 10.14.1
+      '@types/ws': 6.0.1
+      '@types/yargs': 12.0.12
+      rimraf: 2.6.3
+      tslint: /tslint/5.15.0/typescript@3.2.4
+      typescript: 3.2.4
+      ws: 6.2.1
+      yargs: 12.0.5
+    dev: false
+    name: '@rush-temp/backend-for-unity'
+    resolution:
+      integrity: sha512-U2x9iFjSTm5BzPyL17O+SSwsSGcnN7mwN8MyW7EQhXerXKS4XIGZmps7p4eeB+56rx5RNXRnorFUYcAdsJDKGA==
+      tarball: 'file:projects/backend-for-unity.tgz'
+    version: 0.0.0
   'file:projects/bentleyjs-core.tgz':
     dependencies:
       '@types/chai': 4.1.7
@@ -14980,6 +15006,7 @@ specifiers:
   '@bentley/imodeljs-native': ~0.117.0
   '@microsoft/api-extractor': 7.0.33
   '@openid/appauth': ^1.1.1
+  '@rush-temp/backend-for-unity': 'file:./projects/backend-for-unity.tgz'
   '@rush-temp/bentleyjs-core': 'file:./projects/bentleyjs-core.tgz'
   '@rush-temp/build-tools': 'file:./projects/build-tools.tgz'
   '@rush-temp/certa': 'file:./projects/certa.tgz'
@@ -15082,6 +15109,7 @@ specifiers:
   '@types/uuid': ~3.4.4
   '@types/webdriverio': ^4.8.6
   '@types/webpack': ^3.8.5
+  '@types/ws': ^6.0.1
   '@types/xmldom': ^0.1.29
   '@types/yargs': ^12.0.5
   app-root-path: ^2.0.1
@@ -15261,6 +15289,7 @@ specifiers:
   webpack-merge: ^4.1.4
   webpack-node-externals: ^1.7.2
   whatwg-fetch: 2.0.4
+  ws: ^6.2.0
   xmldom: ^0.1.27
   xmlhttprequest: ^1.8.0
   xpath: 0.0.27

@@ -1,0 +1,35 @@
+{
+  "name": "backend-for-unity",
+  "private": true,
+  "license": "MIT",
+  "description": "Example of streaming information to an arbitrary frontend",
+  "scripts": {
+    "build": "npm run build-code && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "lint": "tslint -p . 1>&2",
+    "build-code": "tsc 1>&2",
+    "start": "node lib/Main.js",
+    "test": "",
+    "docs": "",
+    "cover": "",
+    "clean": "rimraf lib"
+  },
+  "repository": {},
+  "dependencies": {
+    "@bentley/bentleyjs-core": "0.191.0-dev.45",
+    "@bentley/geometry-core": "0.191.0-dev.45",
+    "@bentley/imodeljs-clients": "0.191.0-dev.45",
+    "@bentley/imodeljs-common": "0.191.0-dev.45",
+    "@bentley/imodeljs-backend": "0.191.0-dev.45",
+    "yargs": "^12.0.0",
+    "ws": "^6.2.0"
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "0.191.0-dev.45",
+    "@types/node": "10.14.1",
+    "@types/yargs": "^12.0.5",
+    "@types/ws": "^6.0.1",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.11.0",
+    "typescript": "~3.2.2"
+  }
+}

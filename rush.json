@@ -245,6 +245,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "backend-for-unity",
+      "projectFolder": "test-apps/backend-for-unity",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "export-obj",
       "projectFolder": "test-apps/export-obj",
       "reviewCategory": "internal",
