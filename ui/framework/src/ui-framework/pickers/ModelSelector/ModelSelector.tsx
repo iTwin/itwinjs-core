@@ -86,7 +86,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   /** Initialize models */
   private _initModelState = async () => {
-    Presentation.presentation.rulesets().add(require("../../../../rulesets/Models.json")) // tslint:disable-line:no-floating-promises
+    return Presentation.presentation.rulesets().add(require("../../../../rulesets/Models.json")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         this._modelRuleset = ruleset;
 
@@ -98,7 +98,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   /** Initialize categories */
   private _initCategoryState = async () => {
-    Presentation.presentation.rulesets().add(require("../../../../rulesets/Categories.json")) // tslint:disable-line:no-floating-promises
+    return Presentation.presentation.rulesets().add(require("../../../../rulesets/Categories.json")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         this._categoryRuleset = ruleset;
 
