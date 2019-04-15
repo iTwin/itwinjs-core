@@ -21,7 +21,7 @@ import { AnyCurve } from "../CurveChain";
  * Context for computing geometry range around an axis.
  * * The publicly called method is `computeZRRange (ray, geometry)
  */
-export class CylindricalQuery extends RecurseToCurvesGeometryHandler {
+export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
   // private geometry0: GeometryQuery;  <-- Never used
   private _perpVector: Vector3d;
   private _maxDistance: number;
@@ -77,7 +77,7 @@ export class CylindricalQuery extends RecurseToCurvesGeometryHandler {
    * @returns vector from ray to geometry.
    */
   public static computeMaxVectorFromRay(ray: Ray3d, geometry: GeometryQuery): Vector3d {
-    const accumulator = new CylindricalQuery(ray);
+    const accumulator = new CylindricalRangeQuery(ray);
     geometry.dispatchToGeometryHandler(accumulator);
     return accumulator._perpVector.clone();
   }

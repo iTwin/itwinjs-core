@@ -36,7 +36,7 @@ import { StrokeCountSection } from "../curve/Query/StrokeCountChain";
 import { ParityRegion } from "../curve/ParityRegion";
 import { Range1d } from "../geometry3d/Range";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { CylindricalQuery } from "../curve/Query/CylindricalRange";
+import { CylindricalRangeQuery } from "../curve/Query/CylindricalRange";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { BilinearPatch } from "../geometry3d/BilinearPatch";
@@ -966,10 +966,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const baseStrokes = section0.getStrokes();
 
     const axis = surface.cloneAxisRay();
-    const perpendicularVector = CylindricalQuery.computeMaxVectorFromRay(axis, baseStrokes);
+    const perpendicularVector = CylindricalRangeQuery.computeMaxVectorFromRay(axis, baseStrokes);
     const swingVector = axis.direction.crossProduct(perpendicularVector);
     if (this._options.needNormals)
-      CylindricalQuery.buildRotationalNormalsInLineStrings(baseStrokes, axis, swingVector);
+      CylindricalRangeQuery.buildRotationalNormalsInLineStrings(baseStrokes, axis, swingVector);
     const maxDistance = perpendicularVector.magnitude();
     const maxPath = Math.abs(maxDistance * surface.getSweep().radians);
     let numStep = StrokeOptions.applyAngleTol(this._options, 1, surface.getSweep().radians, undefined);

@@ -570,17 +570,31 @@ export class Sample {
       fixedPoint ? fixedPoint : Point3d.create(1, 2, 3),
       Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
   }
+  /** Return various rigid matrices:
+   * * identity
+   * * small rotations around x, y, z
+   * * small rotation around (1,2,3)
+   */
   public static createRigidAxes(): Matrix3d[] {
     return [
       Matrix3d.createIdentity(),
       Matrix3d.createRotationAroundVector(
+        Vector3d.unitX(), Angle.createDegrees(10)) as Matrix3d,
+      Matrix3d.createRotationAroundVector(
         Vector3d.unitY(), Angle.createDegrees(10)) as Matrix3d,
+      Matrix3d.createRotationAroundVector(
+        Vector3d.unitZ(), Angle.createDegrees(10)) as Matrix3d,
       Matrix3d.createRotationAroundVector(
         Vector3d.create(1, 2, 3), Angle.createDegrees(10)) as Matrix3d,
     ];
   }
 
-  // promote each transform[] to a Matrix4d.
+ /**
+  * Return various Matrix4d
+  * * Simple promotion of each Sample.createInvertibleTransforms ()
+  * * optional nasty [1,2,3,4...15] row order
+  * @param includeIrregular if true, include [1,2,..15] row major
+  */ // promote each transform[] to a Matrix4d.
   public static createMatrix4ds(includeIrregular: boolean = false): Matrix4d[] {
     const result = [];
     let transform;
@@ -595,6 +609,9 @@ export class Sample {
     }
     return result;
   }
+  /**
+   * Create full Map4d for each `Sample.createInvertibleTransforms ()`
+   */
   public static createMap4ds(): Map4d[] {
     const result = [];
     let transform;

@@ -187,9 +187,9 @@ export class StrokeCountChain {
     const ls = LineString3d.create();
     if (this.options) {
       if (this.options.needNormals || this.options.needParams) {
-        ls.initializeFractionArray();
-        ls.initializeDerivativeArray();
-        ls.initializeUVParamsArray();
+        ls.ensureEmptyFractions();
+        ls.ensureEmptyDerivatives();
+        ls.ensureEmptyUVParams();
       }
     }
     for (const m of this.maps) {

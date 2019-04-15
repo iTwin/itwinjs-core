@@ -39,6 +39,7 @@ import { RuledSweep } from "../../solid/RuledSweep";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
 import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
 /* tslint:disable:no-console */
 
 class StrokeCountSearch extends NullGeometryHandler {
@@ -913,5 +914,30 @@ describe("IsomorphicCurves", () => {
     ck.checkpoint("IsomorphicCurves.Hello");
     expect(ck.getNumErrors()).equals(0);
 
+  });
+});
+
+describe("CylindricalRange", () => {
+  it("Hello", () => {
+    const ck = new Checker();
+    const options = StrokeOptions.createForCurves();
+    options.chordTol = 0.01;
+    const curves = Sample.createSimplePaths(false);
+    for (const c of curves) {
+      const strokes = c.cloneStroked();
+      for (const ray of [Ray3d.createXYZUVW(0, 0, 0, 1, 0, 0),
+      Ray3d.createXYZUVW(1, 2, 4, 3, 1, 5)]) {
+        const vector1 = CylindricalRangeQuery.computeMaxVectorFromRay(ray, c);
+        ck.testPointer(vector1);
+        const vector2 = CylindricalRangeQuery.computeMaxVectorFromRay(ray, strokes);
+        ck.testPointer(vector2);
+        const d1 = vector1!.magnitude();
+        const d2 = vector2!.magnitude();
+        // stroked range should be smaller.  But cvylindricalRangeQuery uses strokes.  Be fluffy . ..
+        const e = Math.abs(d1 - d2);
+        ck.testLE(e, 2.0 * options.chordTol);
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
   });
 });

@@ -101,41 +101,6 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public get normalIndices(): GrowableFloat64Array | undefined { return this._normalIndices; }
   public get paramIndices(): GrowableFloat64Array | undefined { return this._uvIndices; }
   public get pointIndices(): GrowableFloat64Array | undefined { return this._pointIndices; }
-  /**
-   * create and attach an array to record fractional data.
-   * @param retainArrayContentsIfAlreadyPresent if true and there is a prexisting array, leave the prior array contents in place.
-   *   If false and there is a preexisting array, leave the array there but clear its contents.
-   */
-  public initializeFractionArray(retainArrayContentsIfAlreadyPresent: boolean = false) {
-    if (!this._fractions)
-      this._fractions = new GrowableFloat64Array();
-    if (!retainArrayContentsIfAlreadyPresent)
-      this._fractions.clear();
-  }
-
-  /**
-   * create and attach an array to record derivative data.
-   * @param retainArrayContentsIfAlreadyPresent if true and there is a prexisting array, leave the prior array contents in place.
-   *   If false and there is a preexisting array, leave the array there but clear its contents.
-   */
-  public initializeDerivativeArray(retainArrayContentsIfAlreadyPresent: boolean = false) {
-    if (!this._derivatives)
-      this._derivatives = new GrowableXYZArray();
-    if (retainArrayContentsIfAlreadyPresent)
-      this._derivatives.clear();
-  }
-
-  /**
-   * create and attach an array to record derivative data.
-   * @param retainArrayContentsIfAlreadyPresent if true and there is a prexisting array, leave the prior array contents in place.
-   *   If false and there is a preexisting array, leave the array there but clear its contents.
-   */
-  public initializeUVParamsArray(retainArrayContentsIfAlreadyPresent: boolean = false) {
-    if (!this._uvParams)
-      this._uvParams = new GrowableXYArray();
-    if (retainArrayContentsIfAlreadyPresent)
-      this._uvParams.clear();
-  }
 
   private constructor() {
     super();
@@ -213,6 +178,17 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._fractions.push(fraction);
   }
 
+  /** Ensure that the fraction array exists with no fractions but at least the capacity of the point array. */
+  public ensureEmptyFractions(): GrowableFloat64Array {
+    const n = this.numPoints();
+    if (!this._fractions) {
+      this._fractions = new GrowableFloat64Array(n);
+      return this._fractions;
+    }
+    this._fractions.clear();
+    this._fractions.ensureCapacity(n);
+    return this._fractions;
+  }
   /** Ensure that the parameter array exists with no points but at least the capacity of the point array. */
   public ensureEmptyUVParams(): GrowableXYArray {
     const n = this.numPoints();
@@ -234,6 +210,18 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._surfaceNormals.clear();
     this._surfaceNormals.ensureCapacity(n);
     return this._surfaceNormals;
+  }
+
+  /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
+  public ensureEmptyDerivatives(): GrowableXYZArray {
+    const n = this.numPoints();
+    if (!this._derivatives) {
+      this._derivatives = new GrowableXYZArray(n);
+      return this._derivatives;
+    }
+    this._derivatives.clear();
+    this._derivatives.ensureCapacity(n);
+    return this._derivatives;
   }
 
   /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
@@ -307,9 +295,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * @param vector
    */
   public addSurfaceNormal(vector: Vector3d) {
-    if (!this._derivatives)
-      this._derivatives = new GrowableXYZArray();
-    this._derivatives.push(vector);
+    if (!this._surfaceNormals)
+      this._surfaceNormals = new GrowableXYZArray();
+    this._surfaceNormals.push(vector);
   }
 
   /**
@@ -818,14 +806,26 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return true;
   }
   /** Append (clone of) one point.
-   * BUT ... skip if duplicates the tail of prior points.
+   * * BUT ... skip if duplicates the tail of prior points.
+   * * if fraction is given, "duplicate" considers both point and fraction.
    */
   public appendStrokePoint(point: Point3d, fraction?: number) {
     const n = this._points.length;
-    if (n === 0 || !point.isAlmostEqual(this._points.getPoint3dAtUncheckedPointIndex(n - 1)))
+    let add = true;
+    const addFraction = fraction !== undefined && this._fractions !== undefined;
+    if (n > 0) {
+      if (addFraction && Geometry.isSameCoordinate(fraction!, this._fractions!.back()))
+        add = false;
+      if (point.isAlmostEqual(this._points.getPoint3dAtUncheckedPointIndex(n - 1)))
+        add = false;
+    }
+
+    if (add) {
       this._points.push(point);
-    if (fraction !== undefined && this._fractions !== undefined)
-      this.addFraction(fraction);
+      if (addFraction)
+        this.addFraction(fraction!);
+    }
+
   }
 
   /** Append a suitable evaluation of a curve ..
@@ -914,14 +914,16 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
 
   public appendInterpolatedStrokePoints(numStrokes: number, point0: Point3d, point1: Point3d, include01: boolean): void {
     if (include01)
-      this.appendStrokePoint(point0);
+      this.appendStrokePoint(point0, 0.0);
     if (numStrokes > 1) {
       const df = 1.0 / numStrokes;
-      for (let i = 1; i < numStrokes; i++)
-        this.appendStrokePoint(point0.interpolate(i * df, point1));
+      for (let i = 1; i < numStrokes; i++) {
+        const f = i * df;
+        this.appendStrokePoint(point0.interpolate(f, point1), f);
+      }
     }
     if (include01)
-      this.appendStrokePoint(point1);
+      this.appendStrokePoint(point1, 1.0);
   }
 
   /** Emit strokes to caller-supplied linestring */

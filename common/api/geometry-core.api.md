@@ -2931,6 +2931,8 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
     // (undocumented)
     endPoint(): Point3d;
+    ensureEmptyDerivatives(): GrowableXYZArray;
+    ensureEmptyFractions(): GrowableFloat64Array;
     ensureEmptyNormalIndices(): GrowableFloat64Array;
     ensureEmptyPointIndices(): GrowableFloat64Array;
     ensureEmptySurfaceNormals(): GrowableXYZArray;
@@ -2948,9 +2950,6 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     // (undocumented)
     static fromJSON(json?: any): LineString3d;
     getIndexedSegment(index: number): LineSegment3d | undefined;
-    initializeDerivativeArray(retainArrayContentsIfAlreadyPresent?: boolean): void;
-    initializeFractionArray(retainArrayContentsIfAlreadyPresent?: boolean): void;
-    initializeUVParamsArray(retainArrayContentsIfAlreadyPresent?: boolean): void;
     // (undocumented)
     isAlmostEqual(other: GeometryQuery): boolean;
     readonly isExtensibleFractionSpace: boolean;
