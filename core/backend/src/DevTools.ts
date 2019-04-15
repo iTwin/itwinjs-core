@@ -3,12 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { LogLevel, Logger } from "@bentley/bentleyjs-core";
-import { IModelHost } from "./IModelHost";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as os from "os";
 import * as process from "process";
+import { IModelHost } from "./IModelHost";
+import { LoggerCategory } from "./LoggerCategory";
 
-const loggerCategory = "imodeljs_backend.DevTools";
+const loggerCategory: string = LoggerCategory.DevTools;
 
 interface StringIndexedObject<T> {
   [index: string]: T;

@@ -20,6 +20,11 @@ export const enum LoggerCategory {
    */
   ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
 
+  /** The logger category used by the [[DevTools]] class and related classes.
+   * @internal
+   */
+  DevTools = "imodeljs-backend.DevTools",
+
   /** The logger category used by the following classes:
    * - [[ChangeSummaryManager]]
    * - [[ECDb]]

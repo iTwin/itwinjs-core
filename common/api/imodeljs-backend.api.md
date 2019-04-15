@@ -2676,6 +2676,8 @@ export class LinkPartition extends InformationPartitionElement {
 export const enum LoggerCategory {
     CodeSpecs = "imodeljs-backend.CodeSpecs",
     ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
+    // @internal
+    DevTools = "imodeljs-backend.DevTools",
     ECDb = "imodeljs-backend.ECDb",
     Functional = "imodeljs-backend.Functional",
     IModelDb = "imodeljs-backend.IModelDb",
