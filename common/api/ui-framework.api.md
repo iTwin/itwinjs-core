@@ -67,6 +67,7 @@ import { TreeNodeItem } from '@bentley/ui-components';
 import { UiEvent } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
+import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { WidgetZoneIndex } from '@bentley/ui-ninezone';
@@ -954,9 +955,13 @@ export class DrawingNavigationAid extends React_2.Component<DrawingNavigationAid
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    componentDidUpdate(): void;
-    // (undocumented)
     componentWillUnmount(): void;
+    // @internal (undocumented)
+    static findRotatedWindowDimensions: (extents: Vector3d, rotation: Matrix3d) => Vector3d;
+    // @internal (undocumented)
+    static getDefaultClosedMapSize: () => Vector3d;
+    // @internal (undocumented)
+    static getDefaultOpenedMapSize: (paddingX?: number, paddingY?: number) => Vector3d;
     // (undocumented)
     render(): React_2.ReactNode;
     // (undocumented)
@@ -975,17 +980,19 @@ export interface DrawingNavigationAidProps extends CommonProps {
     // (undocumented)
     animationTime?: number;
     // (undocumented)
-    closeSize?: Vector3d | (() => Vector3d);
+    closeSize?: Vector3d;
+    // (undocumented)
+    contentControlOverride?: ContentControl | undefined;
     // (undocumented)
     iModelConnection: IModelConnection;
     // (undocumented)
     initialMapMode?: MapMode;
     // (undocumented)
+    initialRotateMinimapWithView?: boolean;
+    // (undocumented)
     onAnimationEnd?: () => void;
     // (undocumented)
-    onRender?: () => void;
-    // (undocumented)
-    openSize?: Vector3d | (() => Vector3d);
+    openSize?: Vector3d;
 }
 
 // @internal (undocumented)
@@ -1049,7 +1056,11 @@ export interface DrawingNavigationCanvasProps {
     // (undocumented)
     rotation: Matrix3d;
     // (undocumented)
+    screenViewportOverride?: typeof ScreenViewport;
+    // (undocumented)
     view: ViewState | undefined;
+    // (undocumented)
+    viewManagerOverride?: ViewManager;
     // (undocumented)
     zoom: number;
 }

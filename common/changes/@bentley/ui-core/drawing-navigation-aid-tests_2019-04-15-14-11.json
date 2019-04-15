@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added 100% coverage to getDisplayName and shallowDiffers",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "Simeon.McGraw@bentley.com"
+}

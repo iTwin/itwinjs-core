@@ -393,6 +393,10 @@ export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
     if (this._container.parentElement) { // cleanup
       this._container.parentElement.removeChild(this._container);
     }
+    const rt = document.getElementById("core-context-menu-root") as HTMLDivElement;
+    if (rt && rt.parentElement !== null && rt.children.length === 0) {
+      rt.parentElement.removeChild(rt);
+    }
   }
   public render(): React.ReactNode {
     const { x, y, identifier, contextMenuComponent, ...props } = this.props;

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added 100% coverage to DrawingNavigationAid, fixed snapshot leaks for InputField.test.snap",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Simeon.McGraw@bentley.com"
+}

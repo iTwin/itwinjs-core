@@ -65,9 +65,10 @@ describe("KeyboardShortcutMenu", () => {
     wrapper.update();
 
     expect(wrapper.find("div.core-context-menu-item").length).to.eq(0);
+    wrapper.unmount();
   });
 
-  it("Should render shortcuts and execute item on click", () => {
+  it("Should render shortcuts and execute item on click", async () => {
     KeyboardShortcutManager.loadKeyboardShortcuts(keyboardShortcutList);
 
     const wrapper = enzyme.mount(
@@ -84,8 +85,8 @@ describe("KeyboardShortcutMenu", () => {
 
     expect(wrapper.find("div.core-context-menu-item").length).to.eq(0);
 
-    setImmediate(() => {
-      expect(testSpyMethod.calledOnce).to.be.true;
-    });
+    await TestUtils.flushAsyncOperations();
+    expect(testSpyMethod.calledOnce).to.be.true;
+    wrapper.unmount();
   });
 });

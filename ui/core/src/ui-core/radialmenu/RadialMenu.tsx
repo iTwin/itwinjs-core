@@ -194,7 +194,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
     let t = "";
     let path = "";
     if (sector) {
-      size = sector.start.p1.distTo(sector.end.p2);
+      size = sector.start.p1.distTo(sector.end.p2) * 2;
       path = sector.path;
 
       const parent = sector.parent;

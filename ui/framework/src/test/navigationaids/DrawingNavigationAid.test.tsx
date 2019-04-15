@@ -6,20 +6,23 @@
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Vector3d } from "@bentley/geometry-core";
-import { render, cleanup } from "react-testing-library";
+import { Point3d, Vector3d, Matrix3d, AxisIndex } from "@bentley/geometry-core";
+import { render, cleanup, wait, fireEvent } from "react-testing-library";
 import * as moq from "typemoq";
 import {
   ConfigurableUiManager,
   DrawingNavigationAid,
+  MapMode,
   DrawingNavigationAidControl,
   AnyWidgetProps,
   WidgetDefFactory,
   NavigationWidgetDef,
+  ContentControl,
 } from "../../ui-framework";
 import { TestUtils } from "../TestUtils";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { MapMode } from "../../ui-framework/navigationaids/DrawingNavigationAid";
+import { IModelConnection, DrawingViewState, ScreenViewport, ViewManager, ViewState } from "@bentley/imodeljs-frontend";
+import { ViewportComponentEvents } from "@bentley/ui-components";
+import { DrawingNavigationCanvas } from "../../ui-framework/navigationaids/DrawingNavigationAid";
 
 describe("DrawingNavigationAid", () => {
 
@@ -30,7 +33,26 @@ describe("DrawingNavigationAid", () => {
       ConfigurableUiManager.registerControl("DrawingNavigationAid", DrawingNavigationAidControl);
   });
 
+  let extents = Vector3d.create(400, 400);
+  let origin = Point3d.createZero();
+  let rotation = Matrix3d.createIdentity();
   const connection = moq.Mock.ofType<IModelConnection>();
+  const viewState = moq.Mock.ofType<DrawingViewState>();
+  viewState.setup((x) => x.getExtents).returns(() => () => extents);
+  viewState.setup((x) => x.getOrigin).returns(() => () => origin);
+  viewState.setup((x) => x.getRotation).returns(() => () => rotation);
+  const vp = moq.Mock.ofType<ScreenViewport>();
+  vp.setup((x) => x.view).returns(() => viewState.object);
+  const contentControl = moq.Mock.ofType<ContentControl>();
+  contentControl.setup((x) => x.isViewport).returns(() => true);
+  contentControl.setup((x) => x.viewport).returns(() => vp.object);
+
+  const waitForSpy = async (spy: sinon.SinonSpy, options: { timeout: number } = { timeout: 250 }) => {
+    return wait(() => {
+      if (!spy.called)
+        throw new Error("Waiting for spy timed out!");
+    }, { timeout: options.timeout, interval: 10 });
+  };
 
   afterEach(cleanup);
 
@@ -51,6 +73,13 @@ describe("DrawingNavigationAid", () => {
       expect(navAid.style.width).to.equal("96px");
       expect(navAid.style.height).to.equal("96px");
     });
+    it("should have expected default closed dimensions", () => {
+      const size = DrawingNavigationAid.getDefaultClosedMapSize();
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} />);
+      const navAid = component.getByTestId("drawing-navigation-aid");
+      expect(navAid.style.width).to.equal(size.x + "px");
+      expect(navAid.style.height).to.equal(size.y + "px");
+    });
     it("should have expected opened dimensions", () => {
       const size = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={size} initialMapMode={MapMode.Opened} />);
@@ -58,40 +87,476 @@ describe("DrawingNavigationAid", () => {
       expect(navAid.style.width).to.equal("350px");
       expect(navAid.style.height).to.equal("300px");
     });
-    it("should animate from closed to opened", async () => {
-      const animationEndSpy = sinon.spy();
+    it("should have expected default opened dimensions", () => {
+      const size = DrawingNavigationAid.getDefaultOpenedMapSize();
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} initialMapMode={MapMode.Opened} />);
+      const navAid = component.getByTestId("drawing-navigation-aid");
+      expect(navAid.style.width).to.equal(size.x + "px");
+      expect(navAid.style.height).to.equal(size.y + "px");
+    });
+    it("should change from closed to opened when clicked", async () => {
+      const animationEnd = sinon.fake();
       const closedSize = Vector3d.create(96, 96);
       const openedSize = Vector3d.create(350, 300);
-      const component = render(
-        <div>
-          <DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} onAnimationEnd={animationEndSpy} animationTime={0} />
-          <div id="drawing-portal" data-testid="drawing-portal"> </div>
-        </div>);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} />);
 
       const navAid = component.getByTestId("drawing-navigation-aid");
       const drawingContainer = component.getByTestId("drawing-container");
 
       expect(navAid.style.width).to.equal("96px");
       expect(navAid.style.height).to.equal("96px");
-      drawingContainer.dispatchEvent(new MouseEvent("mousedown", {
-        bubbles: true,
-        cancelable: true,
-        view: window,
-        clientX: 4,
-        clientY: 4,
-      }));
-      drawingContainer.dispatchEvent(new MouseEvent("mouseup", {
-        bubbles: true,
-        cancelable: true,
-        view: window,
-        clientX: 4,
-        clientY: 4,
-      }));
+      drawingContainer.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+      drawingContainer.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+
+      await waitForSpy(animationEnd, { timeout: 500 });
 
       const navAid2 = component.queryByTestId("drawing-navigation-aid");
       expect(navAid2).to.exist;
       expect(navAid2!.style.width).to.equal("350px");
       expect(navAid2!.style.height).to.equal("300px");
+    });
+    it("should change from closed to opened when view-window clicked", async () => {
+      const animationEnd = sinon.fake();
+      const closedSize = Vector3d.create(96, 96);
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} />);
+
+      const navAid = component.getByTestId("drawing-navigation-aid");
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(navAid.style.width).to.equal("96px");
+      expect(navAid.style.height).to.equal("96px");
+      drawingWindow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+
+      await waitForSpy(animationEnd, { timeout: 500 });
+
+      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      expect(navAid2).to.exist;
+      expect(navAid2!.style.width).to.equal("350px");
+      expect(navAid2!.style.height).to.equal("300px");
+    });
+    it("should change from closed to opened when clicked with rotateMinimapWithView", async () => {
+      const animationEnd = sinon.fake();
+      const closedSize = Vector3d.create(96, 96);
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} initialRotateMinimapWithView={true} />);
+
+      const navAid = component.getByTestId("drawing-navigation-aid");
+      const drawingContainer = component.getByTestId("drawing-container");
+
+      expect(navAid.style.width).to.equal("96px");
+      expect(navAid.style.height).to.equal("96px");
+      drawingContainer.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+      drawingContainer.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+
+      await waitForSpy(animationEnd, { timeout: 500 });
+
+      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      expect(navAid2).to.exist;
+      expect(navAid2!.style.width).to.equal("350px");
+      expect(navAid2!.style.height).to.equal("300px");
+    });
+    it("should change from opened to closed on Escape keypress", async () => {
+      const animationEnd = sinon.fake();
+      const closedSize = Vector3d.create(96, 96);
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} initialMapMode={MapMode.Opened} />);
+
+      const navAid = component.getByTestId("drawing-navigation-aid");
+      const drawingContainer = component.getByTestId("drawing-container");
+
+      expect(navAid.style.width).to.equal("350px");
+      expect(navAid.style.height).to.equal("300px");
+      drawingContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
+
+      await waitForSpy(animationEnd, { timeout: 500 });
+
+      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      expect(navAid2).to.exist;
+      expect(navAid2!.style.width).to.equal("96px");
+      expect(navAid2!.style.height).to.equal("96px");
+    });
+    it("should change from opened to closed on Esc keypress(Edge)", async () => {
+      const animationEnd = sinon.fake();
+      const closedSize = Vector3d.create(96, 96);
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} initialMapMode={MapMode.Opened} />);
+
+      const navAid = component.getByTestId("drawing-navigation-aid");
+      const drawingContainer = component.getByTestId("drawing-container");
+
+      expect(navAid.style.width).to.equal("350px");
+      expect(navAid.style.height).to.equal("300px");
+      drawingContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "Esc" }));
+
+      await waitForSpy(animationEnd, { timeout: 500 });
+
+      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      expect(navAid2).to.exist;
+      expect(navAid2!.style.width).to.equal("96px");
+      expect(navAid2!.style.height).to.equal("96px");
+    });
+    it("should change from opened to closed onOutsideClick", async () => {
+      const animationEnd = sinon.fake();
+      const closedSize = Vector3d.create(96, 96);
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<div data-testid="outside"><DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} initialMapMode={MapMode.Opened} /></div>);
+
+      const navAid = component.getByTestId("drawing-navigation-aid");
+      const outside = component.getByTestId("outside");
+
+      expect(navAid.style.width).to.equal("350px");
+      expect(navAid.style.height).to.equal("300px");
+
+      outside.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+      outside.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+
+      await waitForSpy(animationEnd, { timeout: 500 });
+
+      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      expect(navAid2).to.exist;
+      expect(navAid2!.style.width).to.equal("96px");
+      expect(navAid2!.style.height).to.equal("96px");
+    });
+    describe("onViewRotationChangeEvent", () => {
+      beforeEach(() => {
+        extents = Vector3d.create(400, 400);
+        origin = Point3d.createZero();
+        rotation = Matrix3d.createIdentity();
+      });
+      it("should update onViewRotationChangeEvent", async () => {
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} />);
+        const viewWindow = component.getByTestId("drawing-view-window");
+        expect(viewWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 47.5, 47.5)");
+        ViewportComponentEvents.onViewRotationChangeEvent.emit({ viewport: vp.object });
+        expect(viewWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 32, 32)");
+      });
+      it("should update onViewRotationChangeEvent with rotateMinimapWithView", async () => {
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} initialRotateMinimapWithView={true} />);
+        const viewWindow = component.getByTestId("drawing-view-window");
+        expect(viewWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 47.5, 47.5)");
+        ViewportComponentEvents.onViewRotationChangeEvent.emit({ viewport: vp.object });
+        expect(viewWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 32, 32)");
+      });
+      it("should update with rotation", async () => {
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} />);
+        const viewWindow = component.getByTestId("drawing-view-window");
+        expect(viewWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 47.5, 47.5)");
+        rotation = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.Z);
+        ViewportComponentEvents.onViewRotationChangeEvent.emit({ viewport: vp.object });
+        expect(viewWindow.style.transform).to.equal("matrix(0, 1, -1, 0, 32, 32)");
+      });
+      it("should update with rotation in opened mode", async () => {
+        const size = Vector3d.create(240, 240);
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} openSize={size} initialMapMode={MapMode.Opened} />);
+        const navAid = component.getByTestId("drawing-navigation-aid");
+        const viewWindow = component.getByTestId("drawing-view-window");
+        expect(viewWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 119.5, 119.5)");
+        rotation = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.Z);
+        ViewportComponentEvents.onViewRotationChangeEvent.emit({ viewport: vp.object });
+        expect(viewWindow.style.transform).to.equal("matrix(0, 1, -1, 0, 80, 80)");
+        expect(navAid.style.width).to.equal("240px");
+        expect(navAid.style.height).to.equal("240px");
+      });
+      it("should update rotation and reset on un-rotate", async () => {
+        const animationEnd = sinon.fake();
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} onAnimationEnd={animationEnd} contentControlOverride={contentControl.object} animationTime={.1} />);
+        const viewWindow = component.getByTestId("drawing-view-window");
+        expect(viewWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 47.5, 47.5)");
+        rotation = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.Z);
+        ViewportComponentEvents.onViewRotationChangeEvent.emit({ viewport: vp.object });
+        expect(viewWindow.style.transform).to.equal("matrix(0, 1, -1, 0, 32, 32)");
+        const unRotate = component.getByTestId("drawing-unrotate-button");
+        unRotate.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+        await waitForSpy(animationEnd, { timeout: 500 });
+        expect(viewWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 32, 32)");
+      });
+      it("should update rotation and reset on un-rotate with rotateMinimapWithView", async () => {
+        const animationEnd = sinon.fake();
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} onAnimationEnd={animationEnd} initialRotateMinimapWithView={true} contentControlOverride={contentControl.object} animationTime={.1} />);
+        const viewWindow = component.getByTestId("drawing-view-window");
+        expect(viewWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 47.5, 47.5)");
+        rotation = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.Z);
+        ViewportComponentEvents.onViewRotationChangeEvent.emit({ viewport: vp.object });
+        expect(viewWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 32, 32)");
+        const unRotate = component.getByTestId("drawing-unrotate-button");
+        unRotate.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+        await waitForSpy(animationEnd, { timeout: 500 });
+        expect(viewWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 32, 32)");
+      });
+    });
+    it("should update panning", async () => {
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} />);
+
+      const drawingContainer = component.getByTestId("drawing-container");
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 174.5, 149.5)");
+
+      drawingContainer.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+      drawingContainer.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 6, clientY: 6 }));
+      drawingContainer.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 6, clientY: 6 }));
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 176.5, 151.5)");
+    });
+    it("should update panning with rotateMinimapWithView", async () => {
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} initialRotateMinimapWithView={true} />);
+
+      const drawingContainer = component.getByTestId("drawing-container");
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 174.5, 149.5)");
+
+      drawingContainer.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+      drawingContainer.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 6, clientY: 6 }));
+      drawingContainer.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 6, clientY: 6 }));
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 176.5, 151.5)");
+    });
+    it("should update moving", async () => {
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} />);
+
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 174.5, 149.5)");
+
+      drawingWindow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 6, clientY: 6 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 6, clientY: 6 }));
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 176.5, 151.5)");
+    });
+    it("should update moving with rotateMinimapWithView", async () => {
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} initialRotateMinimapWithView={true} />);
+
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 174.5, 149.5)");
+
+      drawingWindow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 6, clientY: 6 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 6, clientY: 6 }));
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 176.5, 151.5)");
+    });
+    it("should update moving in collapsed mode", async () => {
+      const closedSize = Vector3d.create(96, 96);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} />);
+
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 47.5, 47.5)");
+
+      drawingWindow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 6, clientY: 6 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 6, clientY: 6 }));
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 49.5, 49.5)");
+    });
+    it("should update pan-move", async () => {
+      const closedSize = Vector3d.create(96, 96);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} />);
+
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 47.5, 47.5)");
+
+      drawingWindow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 50, clientY: 50 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 0, clientY: 0 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: -50, clientY: -50 }));
+      await new Promise((r) => { setTimeout(r, 100); });
+      drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: -50, clientY: -50 }));
+
+      drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: -50, clientY: -50 }));
+      const mat = drawingWindow.style.transform!.match(/matrix\(1, 0, 0, 1, ([-\d\.]+), (-[\d\.]+)\)/);
+      const x = parseFloat(mat![1]);
+      const y = parseFloat(mat![2]);
+      expect(x).to.be.lessThan(47.5);
+      expect(y).to.be.lessThan(47.5);
+    });
+    it("should update pan-move successively", async () => {
+      const closedSize = Vector3d.create(96, 96);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} />);
+
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 47.5, 47.5)");
+
+      drawingWindow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 50, clientY: 50 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 0, clientY: 0 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: -50, clientY: -50 }));
+      await new Promise((r) => { setTimeout(r, 40); });
+      drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: -50, clientY: -50 }));
+
+      drawingWindow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 50, clientY: 50 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 0, clientY: 0 }));
+      drawingWindow.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: -50, clientY: -50 }));
+      await new Promise((r) => { setTimeout(r, 40); });
+      drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: -50, clientY: -50 }));
+      const mat = drawingWindow.style.transform!.match(/matrix\(1, 0, 0, 1, ([-\d\.]+), ([-\d\.]+)\)/);
+      const x = parseFloat(mat![1]);
+      const y = parseFloat(mat![2]);
+      expect(x).to.be.lessThan(47.5);
+      expect(y).to.be.lessThan(47.5);
+    });
+    it("should mouse wheel out", async () => {
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} />);
+
+      const drawingNavigationAid = component.getByTestId("drawing-navigation-aid");
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 174.5, 149.5)");
+      expect(drawingWindow.style.height).to.equal("1px");
+      expect(drawingWindow.style.width).to.equal("1px");
+
+      fireEvent.wheel(drawingNavigationAid, { deltaY: 2 });
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 190.45454545454544, 135.9090909090909)");
+      expect(drawingWindow.style.height).to.equal("0.9090909090909091px");
+      expect(drawingWindow.style.width).to.equal("0.9090909090909091px");
+    });
+    it("should mouse wheel out with rotateMinimapWithView", async () => {
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} initialRotateMinimapWithView={true} />);
+
+      const drawingNavigationAid = component.getByTestId("drawing-navigation-aid");
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 174.5, 149.5)");
+      expect(drawingWindow.style.height).to.equal("1px");
+      expect(drawingWindow.style.width).to.equal("1px");
+
+      fireEvent.wheel(drawingNavigationAid, { deltaY: 2 });
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 190.45454545454544, 135.9090909090909)");
+      expect(drawingWindow.style.height).to.equal("0.9090909090909091px");
+      expect(drawingWindow.style.width).to.equal("0.9090909090909091px");
+    });
+    it("should mouse wheel in", async () => {
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} />);
+
+      const drawingNavigationAid = component.getByTestId("drawing-navigation-aid");
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 174.5, 149.5)");
+      expect(drawingWindow.style.height).to.equal("1px");
+      expect(drawingWindow.style.width).to.equal("1px");
+
+      fireEvent.wheel(drawingNavigationAid, { deltaY: -2 });
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 156.95, 164.45)");
+      expect(drawingWindow.style.height).to.equal("1.1px");
+      expect(drawingWindow.style.width).to.equal("1.1px");
+    });
+    it("should mouse wheel in with rotateMinimapWithView", async () => {
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} initialRotateMinimapWithView={true} />);
+
+      const drawingNavigationAid = component.getByTestId("drawing-navigation-aid");
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 174.5, 149.5)");
+      expect(drawingWindow.style.height).to.equal("1px");
+      expect(drawingWindow.style.width).to.equal("1px");
+
+      fireEvent.wheel(drawingNavigationAid, { deltaY: -2 });
+
+      expect(drawingWindow.style.transform).to.equal("matrix(1, 0, 0, 1, 156.95, 164.45)");
+      expect(drawingWindow.style.height).to.equal("1.1px");
+      expect(drawingWindow.style.width).to.equal("1.1px");
+    });
+    it("should zoom out with button", async () => {
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} />);
+
+      const zoomOutButton = component.getByTestId("drawing-zoom-out-button");
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.height).to.equal("1px");
+      expect(drawingWindow.style.width).to.equal("1px");
+
+      fireEvent.click(zoomOutButton);
+
+      expect(drawingWindow.style.height).to.equal("0.7142857142857143px");
+      expect(drawingWindow.style.width).to.equal("0.7142857142857143px");
+    });
+    it("should zoom in with button", async () => {
+      const openedSize = Vector3d.create(350, 300);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} />);
+
+      const zoomInButton = component.getByTestId("drawing-zoom-in-button");
+      const drawingWindow = component.getByTestId("drawing-view-window");
+
+      expect(drawingWindow.style.height).to.equal("1px");
+      expect(drawingWindow.style.width).to.equal("1px");
+
+      fireEvent.click(zoomInButton);
+
+      expect(drawingWindow.style.height).to.equal("1.4px");
+      expect(drawingWindow.style.width).to.equal("1.4px");
+    });
+    it("should toggle rotation mode with button", async () => {
+      const closedSize = Vector3d.create(96, 96);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} />);
+
+      const toggleButton = component.getByTestId("toggle-rotate-style");
+
+      fireEvent.click(toggleButton);
+      expect(toggleButton.classList.contains("checked")).to.be.true;
+    });
+    it("should toggle rotation mode with button with viewport", async () => {
+      const closedSize = Vector3d.create(96, 96);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} closeSize={closedSize} />);
+
+      const toggleButton = component.getByTestId("toggle-rotate-style");
+
+      ViewportComponentEvents.onViewRotationChangeEvent.emit({ viewport: vp.object });
+      fireEvent.click(toggleButton);
+      expect(toggleButton.classList.contains("checked")).to.be.true;
+    });
+  });
+  describe("<DrawingNavigationCanvas />", () => {
+    const viewManager = moq.Mock.ofType<ViewManager>();
+    class ScreenViewportMock extends ScreenViewport {
+      public static create(_parentDiv: HTMLDivElement, _view: ViewState): ScreenViewport {
+        const vpMock = moq.Mock.ofType<ScreenViewport>();
+        vpMock.setup((x) => x.view).returns(() => viewState.object);
+        return vpMock.object;
+      }
+    }
+    it("should render", () => {
+      render(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={origin} extents={extents} rotation={rotation} zoom={1} />);
+    });
+    it("should update", () => {
+      const component = render(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={undefined} origin={origin} extents={extents} rotation={rotation} zoom={1} />);
+      component.rerender(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={origin} extents={extents} rotation={rotation} zoom={1} />);
+    });
+    it("should update from view to new view", () => {
+      const component = render(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={undefined} origin={origin} extents={extents} rotation={rotation} zoom={1} />);
+      component.rerender(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={origin} extents={extents} rotation={rotation} zoom={1} />);
+      const newState = viewState.object.clone();
+      component.rerender(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={newState} origin={origin} extents={extents} rotation={rotation} zoom={1} />);
+    });
+    it("should update origin", () => {
+      const component = render(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={origin} extents={extents} rotation={rotation} zoom={1} />);
+      const newOrigin = Point3d.createZero();
+      component.rerender(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={newOrigin} extents={extents} rotation={rotation} zoom={1} />);
+    });
+    it("should update extents", () => {
+      const component = render(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={origin} extents={extents} rotation={rotation} zoom={1} />);
+      const newExtents = Vector3d.createZero();
+      component.rerender(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={origin} extents={newExtents} rotation={rotation} zoom={1} />);
+    });
+    it("should update zoom", () => {
+      const component = render(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={origin} extents={extents} rotation={rotation} zoom={1} />);
+      component.rerender(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={origin} extents={extents} rotation={rotation} zoom={2} />);
+    });
+    it("should update rotation", () => {
+      const component = render(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={origin} extents={extents} rotation={rotation} zoom={1} />);
+      const newRotation = Matrix3d.createIdentity();
+      component.rerender(<DrawingNavigationCanvas viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={origin} extents={extents} rotation={newRotation} zoom={1} />);
     });
   });
 
