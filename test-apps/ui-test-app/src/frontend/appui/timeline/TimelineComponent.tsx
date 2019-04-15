@@ -256,16 +256,26 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
         }
         <div className="scrubber">
           {miniMode && <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />}
-          <span className="start-time">{durationString}</span>
-          <Scrubber
-            className="scrubber-scrubber"
-            currentDuration={this.state.currentDuration}
-            totalDuration={totalDuration}
-            isPlaying={this.state.isPlaying}
-            onChange={this._onTimelineChange}
-            onUpdate={this._onTimelineChange} />
-          <InlineEdit className="end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />
-          {miniMode && this._renderSettings()}
+          <div className="scrubber-container">
+            {hasDates &&
+              <div className="dates-container">
+                <span className="start-date">{startDate!.toLocaleDateString()}</span>
+                <span className="end-date">{endDate!.toLocaleDateString()}</span>
+              </div>
+            }
+            <div className="content">
+              <span className="start-time">{durationString}</span>
+              <Scrubber
+                className="scrubber-scrubber"
+                currentDuration={this.state.currentDuration}
+                totalDuration={totalDuration}
+                isPlaying={this.state.isPlaying}
+                onChange={this._onTimelineChange}
+                onUpdate={this._onTimelineChange} />
+              <InlineEdit className="end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />
+            </div>
+          </div>
+         {miniMode && this._renderSettings()}
         </div>
       </div>
     );
