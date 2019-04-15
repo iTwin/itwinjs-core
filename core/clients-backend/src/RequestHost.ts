@@ -9,7 +9,9 @@ import * as http from "http";
 import * as https from "https";
 import * as url from "url";
 
-/** Utility to configure all HTTP service requests make from the backend */
+/** Utility to configure all HTTP service requests make from the backend
+ * @internal
+ */
 export class RequestHost {
 
   /** Initialize the configuration for all HTTP service requests made from the backend.

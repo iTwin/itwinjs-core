@@ -8,12 +8,14 @@ import { GrantParams, TokenSet } from "openid-client";
 import { BentleyStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
 
+/** @beta */
 export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
 
-/** Utility to generate delegation OAuth or legacy SAML tokens for backend applications */
+/** Utility to generate delegation OAuth or legacy SAML tokens for backend applications
+ * @beta
+ */
 export class OidcDelegationClient extends OidcBackendClient {
-  /**
-   * Creates an instance of OidcBackendClient.
+  /** Creates an instance of OidcBackendClient.
    * @param deploymentEnv Deployment environment.
    */
   public constructor(configuration: OidcDelegationClientConfiguration) {

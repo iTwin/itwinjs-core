@@ -99,6 +99,7 @@ export class BufferedStream extends Transform {
 
 /**
  * Provides methods to work with the file system and azure storage. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.
+ * @internal
  */
 export class AzureFileHandler implements FileHandler {
   /** @hidden */

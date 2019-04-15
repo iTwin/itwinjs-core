@@ -12,6 +12,7 @@ import WriteStreamAtomic = require("fs-write-stream-atomic");
 
 /**
  * Provides methods to upload and download files from the Internet
+ * @internal
  */
 export class UrlFileHandler implements FileHandler {
   public agent: https.Agent;

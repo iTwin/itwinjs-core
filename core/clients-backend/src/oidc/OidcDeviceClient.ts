@@ -17,6 +17,7 @@ import { LoggerCategory } from "../LoggerCategory";
 
 const loggerCategory: string = LoggerCategory.OidcDeviceClient;
 
+/** @beta */
 export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient {
   private _clientConfiguration: OidcFrontendClientConfiguration;
   private _notifier: AuthorizationNotifier;

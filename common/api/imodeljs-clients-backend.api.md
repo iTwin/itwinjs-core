@@ -21,7 +21,7 @@ import { Transform } from 'stream';
 import { TransformCallback } from 'stream';
 import { UserInfo } from '@bentley/imodeljs-clients';
 
-// @public
+// @internal
 export class AzureFileHandler implements FileHandler {
     constructor(useDownloadBuffer?: boolean, threshold?: number);
     // (undocumented)
@@ -42,7 +42,7 @@ export class BufferedStream extends Transform {
     _transform(chunk: any, encoding: string, callback: TransformCallback): void;
 }
 
-// @public
+// @internal
 export class IOSAzureFileHandler implements FileHandler {
     constructor();
     // (undocumented)
@@ -93,9 +93,7 @@ export interface OidcBackendClientConfiguration {
     scope: string;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "OidcDelegationClient" is marked as @public, but its signature references "OidcBackendClient" which is marked as @beta
-// 
-// @public
+// @beta
 export class OidcDelegationClient extends OidcBackendClient {
     constructor(configuration: OidcDelegationClientConfiguration);
     getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
@@ -103,12 +101,10 @@ export class OidcDelegationClient extends OidcBackendClient {
     getSamlFromJwt(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "OidcDelegationClientConfiguration" is marked as @public, but its signature references "OidcBackendClientConfiguration" which is marked as @beta
-// 
-// @public (undocumented)
+// @beta (undocumented)
 export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
 
-// @public (undocumented)
+// @beta (undocumented)
 export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient {
     constructor(clientConfiguration: OidcFrontendClientConfiguration);
     dispose(): void;
@@ -122,12 +118,12 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
 
-// @public
+// @internal
 export class RequestHost {
     static initialize(): Promise<void>;
     }
 
-// @public
+// @internal
 export class UrlFileHandler implements FileHandler {
     constructor();
     // (undocumented)
