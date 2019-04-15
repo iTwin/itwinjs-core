@@ -539,13 +539,19 @@ export class BriefcaseManager {
     let perfLogger = new PerfLogger("BriefcaseManager.open -> version.evaluateChangeSet + BriefcaseManager.getChangeSetIndexFromId");
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, BriefcaseManager.imodelClient);
     requestContext.enter();
+
+    // Find an exact match for FixedVersion cases
+    let briefcase: BriefcaseEntry | undefined = BriefcaseManager.findExactMatch(iModelId, changeSetId, openParams);
+    if (briefcase)
+      return briefcase;
+
     const changeSetIndex: number = await BriefcaseManager.getChangeSetIndexFromId(requestContext, iModelId, changeSetId);
     requestContext.enter();
     perfLogger.dispose();
 
-    // Find a cached briefcase if possible
+    // Find the next best match
     perfLogger = new PerfLogger("BriefcaseManager.open -> BriefcaseManager.findCachedBriefcaseToOpen");
-    let briefcase: BriefcaseEntry | undefined = BriefcaseManager.findCachedBriefcaseToOpen(requestContext, iModelId, changeSetIndex, openParams);
+    briefcase = BriefcaseManager.findBestMatch(requestContext, iModelId, changeSetIndex, openParams);
     perfLogger.dispose();
 
     const createNewBriefcase: boolean = !briefcase;
@@ -634,8 +640,28 @@ export class BriefcaseManager {
     }
   }
 
-  /** Finds any existing briefcase for the specified parameters. Pass null for the requiredChangeSet if the first version is to be retrieved */
-  private static findCachedBriefcaseToOpen(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, requiredChangeSetIndex: number, requiredOpenParams: OpenParams): BriefcaseEntry | undefined {
+  /** Finds an existing briefcase that exactly matches the open requirements */
+  private static findExactMatch(iModelId: GuidString, requiredChangeSetId: GuidString, requiredOpenParams: OpenParams): BriefcaseEntry | undefined {
+    if (requiredOpenParams.syncMode !== SyncMode.FixedVersion || requiredOpenParams.accessMode !== AccessMode.Shared)
+      return undefined; // TODO: The best match currently works only for DesignReview (FixedVersion/Shared) cases.
+
+    const filterBriefcaseFn = (entry: BriefcaseEntry): boolean => {
+      if (entry.iModelId !== iModelId || entry.currentChangeSetId !== requiredChangeSetId || !entry.isOpen)
+        return false;
+      if (entry.openParams!.syncMode !== requiredOpenParams.syncMode)
+        return false;
+      return true;
+    };
+
+    const briefcases = this._cache.getFilteredBriefcases(filterBriefcaseFn);
+    if (!briefcases || briefcases.length === 0)
+      return undefined;
+
+    return briefcases[0];
+  }
+
+  /** Finds the best cached briefcase for the specified open parameters. Pass null for the requiredChangeSet if the first version is to be retrieved */
+  private static findBestMatch(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, requiredChangeSetIndex: number, requiredOpenParams: OpenParams): BriefcaseEntry | undefined {
     const requiredUserId = requestContext.accessToken.getUserInfo()!.id;
 
     // Narrow down briefcases by various criteria (except their versions)

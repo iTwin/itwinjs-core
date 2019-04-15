@@ -283,21 +283,21 @@ export class IModelDb extends IModel implements PageableECSql {
       briefcaseEntry = await BriefcaseManager.open(requestContext, contextId, iModelId, openParams, version);
       requestContext.enter();
     } catch (err) {
-      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ token: requestContext.accessToken.toTokenString(), ...imodelDb._token, ...openParams }));
+      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ token: requestContext.accessToken.toTokenString(), contextId, iModelId, ...openParams }));
       throw err;
     }
-    const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
-    await imodelDb.logUsage(requestContext, contextId);
+    const iModelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
+    await iModelDb.logUsage(requestContext, contextId);
     requestContext.enter();
-    IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
+    IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
 
     // TODO: Included for temporary debugging using SEQ. Should really turn into a trace/assertion
-    if (!IModelDb.find(imodelDb._token))
-      Logger.logError(loggerCategory, "Error with IModelDb.open. Cannot find briefcase!", () => ({ ...imodelDb._token, ...openParams }));
+    if (!IModelDb.find(iModelDb.iModelToken))
+      Logger.logError(loggerCategory, "Error with IModelDb.open. Cannot find briefcase!", () => ({ ...iModelDb.iModelToken, ...openParams }));
     else
-      Logger.logTrace(loggerCategory, "Finished IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
+      Logger.logTrace(loggerCategory, "Finished IModelDb.open", () => ({ ...iModelDb.iModelToken, ...openParams }));
 
-    return imodelDb;
+    return iModelDb;
   }
 
   private getApplicationVersion(requestContext: AuthorizedClientRequestContext): ProductVersion {
