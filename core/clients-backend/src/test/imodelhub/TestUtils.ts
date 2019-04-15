@@ -648,7 +648,7 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
   }
 
   const pathName = fromSeedFile ? getMockSeedFilePath() : undefined;
-  return client.iModels.create(requestContext, projectId, name, pathName, "");
+  return client.iModels.create(requestContext, projectId, name, pathName, "", undefined, 240000);
 }
 
 export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {

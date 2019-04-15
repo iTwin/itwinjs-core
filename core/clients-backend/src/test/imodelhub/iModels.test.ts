@@ -304,7 +304,7 @@ describe("iModelHub iModelsHandler", () => {
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateiModel(projectId, Guid.createValue(), createIModelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
-    const iModel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, filePath, description, progressTracker.track());
+    const iModel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, filePath, description, progressTracker.track(), 240000);
 
     chai.expect(iModel.name).to.be.equal(createIModelName);
     chai.expect(iModel.initialized).to.be.equal(true);
