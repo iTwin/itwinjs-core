@@ -85,6 +85,21 @@
           "description": "Fit all graphics in the chosen model"
         }
       },
+      "ToggleCamera": {
+        "keyin": "Camera Toggle",
+        "description": "Turns on camera if off, turns off camera if on.",
+        "flyover": "Camera On/Off"
+      },
+      "Undo": {
+        "keyin": "View Undo",
+        "description": "Reverses the most recent change to the Viewport.",
+        "flyover": "View Previous"
+      },
+      "Redo": {
+        "keyin": "View Redo",
+        "description": "Re-applies the most recently un-done change to the Viewport.",
+        "flyover": "View Next"
+      },
       "Standard": {
         "keyin": "Rotate to Standard View",
         "description": "align view with standard rotation",

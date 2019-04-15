@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#96348 Improve default rotate point for navigation cube",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

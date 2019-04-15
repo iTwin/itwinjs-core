@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#96348 Improve default rotate point for navigation cube",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Brien.Bastings@bentley.com"
+}

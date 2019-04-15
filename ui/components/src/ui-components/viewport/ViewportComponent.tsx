@@ -12,8 +12,9 @@ import {
   ViewState,
   ScreenViewport,
   Viewport,
+  ToolSettings,
 } from "@bentley/imodeljs-frontend";
-import { Transform } from "@bentley/geometry-core";
+import { Transform, Point3d } from "@bentley/geometry-core";
 import { CommonProps } from "@bentley/ui-core";
 
 import {
@@ -22,6 +23,7 @@ import {
   StandardRotationChangeEventArgs,
   DrawingViewportChangeEventArgs,
 } from "./ViewportComponentEvents";
+import { NpcCenter } from "@bentley/imodeljs-common";
 
 /**
  * Properties for [[ViewportComponent]] component.
@@ -55,6 +57,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   private _viewportDiv: React.RefObject<HTMLDivElement>;
   private _vp?: ScreenViewport;
   private _viewClassFullName: string = "";
+  private _lastTargetPoint?: Point3d;
 
   public constructor(props: ViewportProps) {
     super(props);
@@ -114,6 +117,32 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     }
   }
 
+  private _getRotatePoint(vp: ScreenViewport): Point3d {
+    if (IModelApp.tentativePoint.isActive)
+      return IModelApp.tentativePoint.getPoint();
+
+    if (undefined !== vp.viewCmdTargetCenter) {
+      const testPt = vp.worldToView(vp.viewCmdTargetCenter);
+      const viewRect = vp.viewRect;
+      if (viewRect.containsPoint(testPt))
+        return vp.viewCmdTargetCenter;
+      vp.viewCmdTargetCenter = undefined;
+    }
+
+    if (undefined !== this._lastTargetPoint) {
+      const testPt = vp.worldToView(this._lastTargetPoint);
+      const viewRect = vp.viewRect.clone();
+      viewRect.scaleAboutCenter(0.25, 0.25);
+      if (viewRect.containsPoint(testPt))
+        return this._lastTargetPoint;
+      this._lastTargetPoint = undefined;
+    }
+
+    const visiblePoint = vp.pickNearestVisibleGeometry(vp.npcToWorld(NpcCenter), vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
+    this._lastTargetPoint = (undefined !== visiblePoint ? visiblePoint : vp.view.getTargetPoint());
+    return this._lastTargetPoint;
+  }
+
   private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
     if (this._vp && IModelApp.viewManager.selectedView === this._vp) {
       if (args.animationTime && args.animationTime < 0) {
@@ -121,10 +150,10 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       }
       const rotMatrix = args.rotMatrix;
       if (this._vp.rotation !== rotMatrix) {
-        const center = this._vp.view.getTargetPoint(); // Don't try to locate geometry using depth buffer...
-        const inverse = rotMatrix.clone().inverse(); // rotation is from current nav cube state...
+        const inverse = rotMatrix.inverse(); // rotation is from current nav cube state...
         if (undefined === inverse)
           return;
+        const center = this._getRotatePoint(this._vp);
         const targetMatrix = inverse.multiplyMatrixMatrix(this._vp.view.getRotation());
         const worldTransform = Transform.createFixedPointAndMatrix(center, targetMatrix);
         const frustum = this._vp.getWorldFrustum();
