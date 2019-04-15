@@ -257,7 +257,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
         <div className="scrubber">
           {miniMode && <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />}
           <div className="scrubber-container">
-            {hasDates &&
+            {(miniMode && hasDates) &&
               <div className="dates-container">
                 <span className="start-date">{startDate!.toLocaleDateString()}</span>
                 <span className="end-date">{endDate!.toLocaleDateString()}</span>
