@@ -5303,10 +5303,10 @@ export class SpatialViewState extends ViewState3d {
 
 // @public
 export class Sprite {
-    fromImageSource(src: ImageSource): void;
-    fromUrl(url: string): void;
+    constructor(src: ImageSource | string);
     image?: HTMLImageElement;
     readonly isLoaded: boolean;
+    loadPromise: Promise<HTMLImageElement>;
     readonly offset: Point2d;
     readonly size: Point2d;
 }
