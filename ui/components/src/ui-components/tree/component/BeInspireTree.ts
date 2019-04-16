@@ -540,8 +540,13 @@ export class BeInspireTree<TNodePayload> {
    */
   public updateTreeSelection(nodesToSelect?: string[] | ((payload: TNodePayload) => boolean), muteEvents = true) {
     const selectFunc = (predicate: Inspire.NodeIteratee) => {
-      this._tree.deselectDeep();
-      this._tree.flatten(predicate).select();
+      this.flatten().forEach((n) => {
+        const shouldSelect = predicate(n);
+        if (shouldSelect && !n.selected())
+          n.select();
+        else if (!shouldSelect && n.selected())
+          n.deselect();
+      });
     };
     return this.updateSelection(selectFunc, nodesToSelect, muteEvents);
   }

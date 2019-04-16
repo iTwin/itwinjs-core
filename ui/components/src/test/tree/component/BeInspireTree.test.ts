@@ -494,6 +494,19 @@ describe("BeInspireTree", () => {
             expect(renderedTree).to.matchSnapshot();
           });
 
+          it("doesn't mark selected nodes as dirty if they were selected", () => {
+            tree.removeAllListeners();
+
+            tree.updateTreeSelection(["0"]);
+            expect(tree.node("0")!.selected()).to.be.true;
+            expect(tree.node("0")!.isDirty()).to.be.true;
+            tree.node("0")!.setDirty(false);
+
+            tree.updateTreeSelection(["0"]);
+            expect(tree.node("0")!.selected()).to.be.true;
+            expect(tree.node("0")!.isDirty()).to.be.false;
+          });
+
         });
 
         it("does nothing when `nodesToSelect` is undefined", () => {
