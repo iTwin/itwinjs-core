@@ -1054,7 +1054,7 @@ function compareCategoryOverrides(lhs: PerModelCategoryVisibilityOverride, rhs: 
  * @internal
  */
 class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVisibilityOverride> implements PerModelCategoryVisibility.Overrides {
-  private readonly _scratch = new PerModelCategoryVisibilityOverride("0", "0" , false);
+  private readonly _scratch = new PerModelCategoryVisibilityOverride("0", "0", false);
   private readonly _vp: Viewport;
 
   public constructor(vp: Viewport) {
