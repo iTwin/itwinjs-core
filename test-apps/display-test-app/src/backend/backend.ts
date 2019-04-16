@@ -25,7 +25,7 @@ function setupStandaloneConfiguration() {
 
   const filename = process.env.SVT_STANDALONE_FILENAME;
   if (filename !== undefined) {
-    const configuration: any = {};
+    const configuration: SVTConfiguration = {};
     configuration.standalone = true;
     configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
     configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
@@ -33,6 +33,9 @@ function setupStandaloneConfiguration() {
     configuration.enableDiagnostics = undefined === process.env.SVT_DISABLE_DIAGNOSTICS;
     if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
       configuration.signInForStandalone = true;
+
+    if (undefined !== process.env.SVT_DISABLE_INSTANCING)
+      configuration.disableInstancing = true;
 
     const extensions = process.env.SVT_DISABLED_EXTENSIONS;
     if (undefined !== extensions)

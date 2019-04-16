@@ -111,14 +111,16 @@ class Notifications extends NotificationManager {
 }
 
 export class DisplayTestApp extends IModelApp {
+  public static tileAdminProps: TileAdmin.Props = {
+    retryInterval: 50,
+    enableInstancing: true,
+    elideEmptyChildContentRequests: true,
+  };
+
   protected static onStartup(): void {
     IModelApp.accuSnap = new DisplayTestAppAccuSnap();
     IModelApp.notifications = new Notifications();
-    IModelApp.tileAdmin = TileAdmin.create({
-      retryInterval: 50,
-      enableInstancing: true,
-      elideEmptyChildContentRequests: true,
-    });
+    IModelApp.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     DrawingAidTestTool.register(svtToolNamespace);

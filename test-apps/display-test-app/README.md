@@ -80,3 +80,5 @@ Debugging display-test-app can be accomplished using the following procedures, d
   * By default, all debug-only code paths are enabled. These include assertions, console output, and potentially-expensive WebGL state checks like checkFramebufferStatus(). If this environment variable is defined (value does not matter), all of these debug-only code paths will be disabled. Note that this *only* affects assertions and console output produced within the rendering code.
 * SVT_DISABLED_EXTENSIONS
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
+* SVT_DISABLE_INSTANCING
+  * If defined, instanced geometry will not be generated for tiles.
