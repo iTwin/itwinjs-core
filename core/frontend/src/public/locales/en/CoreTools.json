@@ -107,6 +107,19 @@
       }
     },
     "ViewClip": {
+      "Settings": {
+        "Orientation": {
+          "Label": "Orientation",
+          "Top": "Top",
+          "Front": "Front",
+          "Left": "Left",
+          "Bottom": "Bottom",
+          "Back": "Back",
+          "Right": "Right",
+          "View": "View",
+          "Face": "Face"
+        }
+      },
       "ByPlane": {
         "keyin": "ViewClip ByPlane",
         "description": "Section a view with a plane",
