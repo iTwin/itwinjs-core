@@ -51,6 +51,7 @@ export type AppStateActionsUnion = ActionsUnion<typeof AppStateActions>;
 export function AppStateReducer(state: AppState = initialState, _action: AppStateActionsUnion): AppState {
   switch (_action.type) {
     case AppStateActionId.SetNumItemsSelected: {
+      // istanbul ignore else
       if (undefined !== _action.payload)
         return { ...state, numItemsSelected: _action.payload };
       break;

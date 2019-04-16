@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "./TestUtils";
-import { UiFramework } from "../ui-framework";
+import { UiFramework, ColorTheme } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
 
@@ -43,6 +43,20 @@ describe("UiFramework", () => {
     expect(UiFramework.projectServices).to.be.instanceOf(DefaultProjectServices);
     expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
     expect(UiFramework.frameworkStateKey).to.equal("frameworkState");
+    TestUtils.terminateUiFramework();
+  });
+
+  it("IsUiVisible", async () => {
+    await TestUtils.initializeUiFramework();
+    UiFramework.setIsUiVisible(false);
+    expect(UiFramework.getIsUiVisible()).to.be.false;
+    TestUtils.terminateUiFramework();
+  });
+
+  it("ColorTheme", async () => {
+    await TestUtils.initializeUiFramework();
+    UiFramework.setColorTheme(ColorTheme.Dark);
+    expect(UiFramework.getColorTheme()).to.eq(ColorTheme.Dark);
     TestUtils.terminateUiFramework();
   });
 

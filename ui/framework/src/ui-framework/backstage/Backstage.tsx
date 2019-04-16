@@ -12,7 +12,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiEvent, CommonProps, getUserColor } from "@bentley/ui-core";
 import { Backstage as NZ_Backstage, UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { CommandItemDef } from "../shared/Item";
+import { CommandItemDef } from "../shared/CommandItemDef";
 
 /** [[BackstageEvent]] arguments.
  * @public

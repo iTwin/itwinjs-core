@@ -45,10 +45,12 @@ export * from "./ui-framework/frontstage/FrontstageManager";
 export * from "./ui-framework/frontstage/FrontstageProvider";
 export * from "./ui-framework/frontstage/NestedFrontstage";
 export * from "./ui-framework/shared/IconComponent";
-export * from "./ui-framework/shared/Item";
 export * from "./ui-framework/shared/ItemDefBase";
 export * from "./ui-framework/shared/ItemMap";
 export * from "./ui-framework/shared/ItemProps";
+export * from "./ui-framework/shared/ActionButtonItemDef";
+export * from "./ui-framework/shared/CommandItemDef";
+export * from "./ui-framework/shared/ToolItemDef";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
 export * from "./ui-framework/messages/MessageManager";
@@ -124,6 +126,7 @@ export * from "./ui-framework/theme/ThemeManager";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
+// istanbul ignore if
 if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
   if (!(window as any).iModelJsVersions)
     (window as any).iModelJsVersions = new Map<string, string>();

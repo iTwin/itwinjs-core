@@ -7,8 +7,9 @@
 import { IconProps } from "./IconComponent";
 import { Direction } from "@bentley/ui-ninezone";
 import { GroupItemDef } from "../toolbar/GroupItem";
-import { CommandItemDef, ToolItemDef } from "./Item";
+import { ToolItemDef } from "./ToolItemDef";
 import { BaseItemState } from "./ItemDefBase";
+import { CommandItemDef } from "./CommandItemDef";
 
 // -----------------------------------------------------------------------------
 // ItemProps and sub-interfaces

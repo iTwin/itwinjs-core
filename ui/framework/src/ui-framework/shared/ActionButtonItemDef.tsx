@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { Icon } from "./IconComponent";
-import { CommandItemProps, ToolItemProps, CommandHandler, ItemProps } from "./ItemProps";
+import { CommandHandler, ItemProps } from "./ItemProps";
 import { ItemDefBase } from "./ItemDefBase";
 
 import { Item } from "@bentley/ui-ninezone";
@@ -50,54 +50,5 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
         icon={icon}
       />
     );
-  }
-}
-
-/** An Item that executes a Command.
- * @public
- */
-export class CommandItemDef extends ActionButtonItemDef {
-  private static _sId = 0;
-  public static commandIdPrefix = "Command-";
-  public commandId: string = "";
-
-  constructor(commandItemProps: CommandItemProps) {
-    super(commandItemProps);
-
-    if (commandItemProps.execute) {
-      this._commandHandler = { execute: commandItemProps.execute, parameters: commandItemProps.parameters, getCommandArgs: commandItemProps.getCommandArgs };
-    }
-
-    if (commandItemProps.commandId)
-      this.commandId = commandItemProps.commandId;
-    else {
-      CommandItemDef._sId++;
-      this.commandId = CommandItemDef.commandIdPrefix + CommandItemDef._sId;
-    }
-  }
-
-  public get id(): string {
-    return this.commandId;
-  }
-}
-
-/** An Item that starts the execution of a Tool.
- * @public
- */
-export class ToolItemDef extends ActionButtonItemDef {
-  public toolId: string = "";
-
-  constructor(commandItemProps: ToolItemProps) {
-    super(commandItemProps);
-
-    if (commandItemProps.execute) {
-      this._commandHandler = { execute: commandItemProps.execute, parameters: commandItemProps.parameters, getCommandArgs: commandItemProps.getCommandArgs };
-    }
-
-    this.toolId = commandItemProps.toolId;
-  }
-
-  public get id(): string {
-    return this.toolId;
   }
 }

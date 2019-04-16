@@ -172,12 +172,14 @@ describe("Backstage", () => {
 
     it("CommandLaunchBackstageItem renders correctly", () => {
       const commandHandler = () => { };
-      shallow(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />).should.matchSnapshot();
+      const wrapper = shallow(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />);
+      wrapper.should.matchSnapshot();
+      wrapper.unmount();
     });
   });
 
   describe("<FrontstageLaunchBackstageItem />", () => {
-    it("FrontstageLaunchBackstageItem should render & execute", () => {
+    it("FrontstageLaunchBackstageItem should render & execute", async () => {
       const spyMethod = sinon.stub();
       let stateFuncRun = false;
       const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => {
@@ -212,16 +214,18 @@ describe("Backstage", () => {
 
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
-      setImmediate(() => {
-        expect(spyMethod.calledOnce).to.be.true;
-        remove();
-        wrapper.unmount();
-      });
+
+      await TestUtils.flushAsyncOperations();
+      expect(spyMethod.calledOnce).to.be.true;
+      remove();
+      wrapper.unmount();
     });
 
     it("FrontstageLaunchBackstageItem renders correctly when inactive", async () => {
       await FrontstageManager.setActiveFrontstageDef(undefined);
-      shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
+      const wrapper = shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+      wrapper.should.matchSnapshot();
+      wrapper.unmount();
     });
 
     it("FrontstageLaunchBackstageItem renders correctly when active", async () => {
@@ -230,13 +234,15 @@ describe("Backstage", () => {
 
       if (frontstageDef) {
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-        shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
+        const wrapper = shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+        wrapper.should.matchSnapshot();
+        wrapper.unmount();
       }
     });
   });
 
   describe("<TaskLaunchBackstageItem />", () => {
-    it("TaskLaunchBackstageItem should render & execute", () => {
+    it("TaskLaunchBackstageItem should render & execute", async () => {
       class Frontstage1 extends FrontstageProvider {
         public get frontstage(): React.ReactElement<FrontstageProps> {
           return (
@@ -295,16 +301,17 @@ describe("Backstage", () => {
       expect(stateFunc.calledOnce).to.be.true;
 
       backstageItem.find(".nz-backstage-item").simulate("click");
-      setImmediate(() => {
-        expect(spyMethod.calledOnce).to.be.true;
-        remove();
-        wrapper.unmount();
-      });
+      await TestUtils.flushAsyncOperations();
+      expect(spyMethod.calledOnce).to.be.true;
+      remove();
+      wrapper.unmount();
     });
 
     it("TaskLaunchBackstageItem renders correctly when inactive", () => {
       WorkflowManager.setActiveWorkflow(undefined);
-      shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
+      const wrapper = shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+      wrapper.should.matchSnapshot();
+      wrapper.unmount();
     });
 
     it("TaskLaunchBackstageItem renders correctly when active", async () => {
@@ -317,7 +324,9 @@ describe("Backstage", () => {
 
         if (task1) {
           await WorkflowManager.setActiveWorkflowAndTask(workflow, task1);
-          shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
+          const wrapper = shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+          wrapper.should.matchSnapshot();
+          wrapper.unmount();
         }
       }
     });

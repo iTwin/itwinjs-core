@@ -5,7 +5,7 @@
 /** @module KeyboardShortcut */
 
 import { ItemProps } from "../shared/ItemProps";
-import { ActionButtonItemDef } from "../shared/Item";
+import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
 

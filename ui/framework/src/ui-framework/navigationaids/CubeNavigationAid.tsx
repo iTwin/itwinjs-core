@@ -17,6 +17,7 @@ import { UiFramework } from "../UiFramework";
 
 import { ViewRotationChangeEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { ContentViewManager } from "../content/ContentViewManager";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 /** NavigationAid that displays an interactive rotation cube that synchronizes with the rotation of the iModel Viewport
  * @public
@@ -131,8 +132,7 @@ export class CubeNavigationAid extends React.Component<CommonProps, CubeNavigati
 
   // Synchronize with rotation coming from the Viewport
   private _handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.isViewport && activeContentControl.viewport === args.viewport) {
+    if (IModelApp.viewManager && IModelApp.viewManager.selectedView === args.viewport) {
       const { animation, dragging, endRotMatrix } = this.state;
       const matrix = endRotMatrix;
       const newMatrix = args.viewport.rotation;

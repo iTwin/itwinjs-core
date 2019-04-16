@@ -43,9 +43,9 @@ describe("ColorMap", () => {
     assert.isFalse(a.hasTransparency);
   });
 
-  it("test simple return functions", () => {
+  it("test hasTransparency function 1", () => {
     /** Test hasTransparency function */
-    let a: ColorMap = new ColorMap();
+    const a: ColorMap = new ColorMap();
     assert.isFalse(a.hasTransparency);
     a.insert(0x01000000);
     assert.isTrue(a.hasTransparency);
@@ -53,16 +53,24 @@ describe("ColorMap", () => {
     assert.isTrue(a.hasTransparency);
     a.insert(0x7FFFFFFF);
     assert.isTrue(a.hasTransparency);
-    a = new ColorMap();
+  });
+  it("test hasTransparency function 2", () => {
+    const a = new ColorMap();
     a.insert(0xFF000000);
     assert.isTrue(a.hasTransparency);
-    a = new ColorMap();
+  });
+  it("test hasTransparency function 3", () => {
+    const a = new ColorMap();
     a.insert(0x7FFFFFFF);
     assert.isTrue(a.hasTransparency);
-    a = new ColorMap();
+  });
+  it("test hasTransparency function 4", () => {
+    const a = new ColorMap();
     a.insert(0x00000000);
     assert.isFalse(a.hasTransparency);
-    a = new ColorMap();
+  });
+  it("test hasTransparency function 5", () => {
+    const a = new ColorMap();
     a.insert(0x00FFFFFF);
     assert.isFalse(a.hasTransparency);
     let inserted = false;
@@ -73,9 +81,11 @@ describe("ColorMap", () => {
       expect(err).is.not.undefined;
     }
     expect(inserted).to.be.false;
+  });
 
-    /** Test isUniform function */
-    a = new ColorMap();
+  /** Test isUniform function */
+  it("test isUniform function", () => {
+    const a = new ColorMap();
     assert.isFalse(a.isUniform);
     a.insert(0xFF0000);
     assert.isTrue(a.isUniform);
@@ -83,9 +93,11 @@ describe("ColorMap", () => {
     assert.isFalse(a.isUniform);
     a.insert(0x0000FF);
     assert.isFalse(a.isUniform);
+  });
 
-    /** Test isFull function */
-    a = new ColorMap();
+  /** Test isFull function */
+  it("test isFull function", () => {
+    const a = new ColorMap();
     assert.isFalse(a.isFull);
     for (let i = 0; a.length !== 0xffff; i++) {
       assert.isFalse(a.isFull);
@@ -93,27 +105,33 @@ describe("ColorMap", () => {
     }
     assert.isTrue(a.length === 0xffff);
     assert.isTrue(a.isFull);
+  });
 
-    /** Test getNumIndices function */
-    a = new ColorMap();
+  /** Test getNumIndices function */
+  it("test getNumIndices function", () => {
+    const a = new ColorMap();
     assert.isTrue(a.length === 0);
     for (let i = 0; a.length !== 0xffff; i++) {
       assert.isTrue(a.length === i);
       a.insert(i);
     }
     assert.isTrue(a.length === 0xffff);
+  });
 
-    /** Test size function */
-    a = new ColorMap();
+  /** Test size function */
+  it("test size function", () => {
+    const a = new ColorMap();
     assert.isTrue(a.length === 0);
     for (let i = 0; a.length !== 0xffff; i++) {
       assert.isTrue(a.length === i);
       a.insert(i);
     }
     assert.isTrue(a.length === 0xffff);
+  });
 
-    /** Test empty function */
-    a = new ColorMap();
+  /** Test empty function */
+  it("test empty function", () => {
+    const a = new ColorMap();
     assert.isTrue(a.isEmpty);
     a.insert(0x00FFFF);
     assert.isFalse(a.isEmpty);

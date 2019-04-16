@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Frontstage */
 
-import { CommandItemDef } from "../shared/Item";
+import { CommandItemDef } from "../shared/CommandItemDef";
 import { FrontstageManager } from "./FrontstageManager";
 
 /**

@@ -2322,7 +2322,6 @@ export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemSta
     // (undocumented)
     componentWillUnmount(): void;
     getExpandedContent(): JSX.Element | undefined;
-    isExpanded: () => boolean | undefined;
     // (undocumented)
     readonly label: string;
     minimize: () => void;

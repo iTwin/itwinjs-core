@@ -7,7 +7,8 @@ import { mount } from "enzyme";
 import { expect } from "chai";
 import { Provider } from "react-redux";
 import TestUtils from "../TestUtils";
-import { ThemeManager } from "../../ui-framework/theme/ThemeManager";
+import { ThemeManager, ColorTheme } from "../../ui-framework/theme/ThemeManager";
+import { UiFramework } from "../../ui-framework";
 
 describe("ThemeManager", () => {
 
@@ -18,6 +19,16 @@ describe("ThemeManager", () => {
   it("should render", () => {
     const wrapper = mount(<Provider store={TestUtils.store}><ThemeManager><div>Hello World!</div></ThemeManager></Provider>);
     expect(wrapper).not.to.be.undefined;
+    wrapper.unmount();
+  });
+
+  it("should change the theme", () => {
+    const wrapper = mount(<Provider store={TestUtils.store}><ThemeManager><div>Hello World!</div></ThemeManager></Provider>);
+    expect(wrapper).not.to.be.undefined;
+
+    UiFramework.setColorTheme(ColorTheme.Dark);
+    expect(UiFramework.getColorTheme()).to.eq(ColorTheme.Dark);
+
     wrapper.unmount();
   });
 

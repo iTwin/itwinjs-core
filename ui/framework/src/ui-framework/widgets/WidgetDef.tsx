@@ -11,7 +11,7 @@ import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { CommandItemDef } from "../shared/Item";
+import { CommandItemDef } from "../shared/CommandItemDef";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { StringGetter } from "../shared/ItemProps";
 

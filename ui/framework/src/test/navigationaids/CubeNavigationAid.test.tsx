@@ -39,7 +39,9 @@ describe("CubeNavigationAid", () => {
       wrapper.unmount();
     });
     it("renders correctly", () => {
-      shallow(<CubeNavigationAid />).should.matchSnapshot();
+      const wrapper = shallow(<CubeNavigationAid />);
+      wrapper.should.matchSnapshot();
+      wrapper.unmount();
     });
   });
   describe("<NavCubeFace />", () => {

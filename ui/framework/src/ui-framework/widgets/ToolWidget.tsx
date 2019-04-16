@@ -8,7 +8,7 @@ import * as React from "react";
 
 import { ToolWidgetProps, WidgetType } from "./WidgetDef";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
-import { CommandItemDef } from "../shared/Item";
+import { CommandItemDef } from "../shared/CommandItemDef";
 import { Icon } from "../shared/IconComponent";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 
