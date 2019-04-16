@@ -2155,6 +2155,7 @@ export interface TableNonPrimitiveValueRendererProps extends SharedTableNonPrimi
 // @public
 export interface TableProps extends CommonProps {
     dataProvider: TableDataProvider;
+    hideHeader?: boolean;
     isCellSelected?: (rowIndex: number, cell: CellItem) => boolean;
     isRowSelected?: (row: RowItem) => boolean;
     onCellsDeselected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>;

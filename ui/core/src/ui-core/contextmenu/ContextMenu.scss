@@ -27,11 +27,17 @@
   .core-context-menu-container {
     position: absolute;
     border-radius: 3px;
+    padding: 4px 0;
     box-shadow: 0px 3px 5px 0 rgba(0, 0, 0, 0.2);
     background-color: $buic-background-1;
     text-overflow: ellipsis;
     min-width: 120px;
     max-width: 350px;
+    visibility: hidden;
+    transform: scaleY(0);
+    display: table;
+    border: 1px solid $buic-background-control-stroke;
+    box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
 
     &.floating {
       position: fixed;
@@ -79,13 +85,6 @@
       }
     }
 
-    visibility: hidden;
-    transform: scaleY(0);
-    display: table;
-    background-color: $buic-background-panel;
-    border: 1px solid $buic-background-control-stroke;
-    box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
-
     .core-context-menu-item {
       display: flex;
       cursor: default;
@@ -99,14 +98,6 @@
 
       &.is-selected {
         background-color: $buic-row-selection;
-      }
-
-      &:first-child {
-        margin-top: $uicore-bordered-padding;
-      }
-
-      &:last-child {
-        margin-bottom: $uicore-bordered-padding;
       }
 
       &.disabled {
