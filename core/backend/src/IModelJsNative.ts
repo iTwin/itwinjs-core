@@ -22,13 +22,15 @@ export declare namespace IModelJsNative {
   }
 
   export interface NativeCrashReportingConfig {
-    crashDumpDir: string; /** The directory to which .dmp files are written. */
-    uploadUrl?: string; /** The webserver to which .dmp are uploaded. If not specified, dumps are not uploaded. */
-    maxDumpsInDir?: number; /** max # .dmp files that may exist in crashDumpDir */
-    maxUploadRetries?: number; /** max # times to retry uploading .dmp file to server. Defaults to 0. */
-    uploadRetryWaitInterval?: number; /** Amount of time in milliseconds to wait before retrying uploading .dmp file to server. Defaults to 1000. */
-    wantFullMemory?: boolean; /** Want a full-memory dump? Defaults to false. */
-    maxReportsPerDay?: number; /** max # crashes that will be uploaded to the server per day */
+    /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. */
+    crashDir: string;
+    /** Write .dmp files to crashDir? The default is false. Even if writeDumpsToCrashDir is false, the iModelJsNativeCrash*.properties.txt file will be written to crashDir. */
+    writeDumpsToCrashDir?: boolean;
+    /** max # .dmp files that may exist in crashDir */
+    maxDumpsInDir?: number;
+    /** If writeDumpsToCrashDir is true, do you want a full-memory dump? Defaults to false. */
+    wantFullMemory?: boolean;
+    /** Additional name, value pairs to write to iModelJsNativeCrash*.properties.txt file in the event of a crash. */
     params?: NativeCrashReportingConfigNameValuePair[];
   }
 

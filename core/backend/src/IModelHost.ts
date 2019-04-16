@@ -39,14 +39,16 @@ export interface CrashReportingConfigNameValuePair {
  * @alpha
  */
 export interface CrashReportingConfig {
-  crashDumpDir: string; /** The directory to which .dmp files are written. */
-  uploadUrl?: string; /** The webserver to which .dmp files are uploaded. If not specified, dumps are left in crashDumpDir. */
-  maxDumpsInDir?: number; /** max # .dmp files that may exist in crashDumpDir. Defaults to 50. */
-  maxReportsPerDay?: number; /** max # crashes that will be uploaded to the server per day. Defaults to 1000. */
-  maxUploadRetries?: number; /** max # times to retry uploading .dmp file to server. Defaults to 5. */
-  uploadRetryWaitInterval?: number; /** Amount of time in milliseconds to wait before retrying uploading .dmp file to server. Defaults to 10000. */
-  wantFullMemory?: boolean; /** Want a full-memory dump? Defaults to false. */
-  params?: CrashReportingConfigNameValuePair[]; /** custom parameters to send to the crash server. Put your product name and GPRID in here. If you are using a commercial crash server, this is the place to put your API key. */
+  /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. */
+  crashDir: string;
+  /** max # .dmp files that may exist in crashDir. The default is 50. */
+  maxDumpsInDir?: number;
+  /** Write .dmp files to crashDir? The default is false. */
+  writeDumpsToCrashDir?: boolean;
+  /** If writeDumpsToCrashDir is true, do you want a full-memory dump? Defaults to false. */
+  wantFullMemory?: boolean;
+  /** Additional name, value pairs to write to iModelJsNativeCrash*.properties.txt file in the event of a crash. */
+  params?: CrashReportingConfigNameValuePair[];
 }
 
 /** Configuration of imodeljs-backend.
@@ -226,14 +228,10 @@ export class IModelHost {
       }
     }
 
-    // *** TEMPORARY
-    // if (!configuration.crashReportingConfig) {
+    // if (configuration.crashReportingConfig === undefined) {
     //   configuration.crashReportingConfig = {
-    //     crashDumpDir: path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/CrashDumps/")),
-    //     uploadUrl: "http://localhost:3000/crashreports",
-    //     params: [{ name: "foo", value: "bar" }],
-    //     maxDumpsInDir: 10,
-    //     maxReportsPerDay: 2,
+    //     crashDir: path.resolve(configuration.briefcaseCacheDir, "..", "Crashes"),
+    //     writeDumpsToCrashDir: false,
     //   };
     // }
 
