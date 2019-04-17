@@ -2865,7 +2865,7 @@ export class IModelConnection extends IModel {
     fontMap?: FontMap;
     // Warning: (ae-incompatible-release-tags) The symbol "geoServices" is marked as @public, but its signature references "GeoServices" which is marked as @internal
     readonly geoServices: GeoServices;
-    // Warning: (ae-incompatible-release-tags) The symbol "getContextRealityModelTileTree" is marked as @public, but its signature references "TileTreeState" which is marked as @internal
+    // @internal
     getContextRealityModelTileTree(url: string): TileTreeState;
     getToolTipMessage(id: string): Promise<string[]>;
     readonly hilited: HilitedSet;

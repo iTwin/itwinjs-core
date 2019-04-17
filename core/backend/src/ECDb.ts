@@ -398,6 +398,7 @@ export class ECDb implements IDisposable, PageableECSql {
       this._sqliteStatementCache.add(sql, stmt);
     return stmt;
   }
+
   /** Prepare an SQLite SQL statement.
    * @param sql The SQLite SQL statement to prepare
    * @throws [IModelError]($common) if there is a problem preparing the statement.
@@ -409,6 +410,7 @@ export class ECDb implements IDisposable, PageableECSql {
     return stmt;
   }
 
+  /** @internal */
   public get nativeDb(): IModelJsNative.ECDb {
     if (!this._nativeDb)
       throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");

@@ -376,6 +376,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 export class ECSqlBinder {
   private _binder: IModelJsNative.ECSqlBinder;
 
+  /** @internal */
   public constructor(binder: IModelJsNative.ECSqlBinder) { this._binder = binder; }
 
   /** Binds the specified value to the ECSQL parameter.
@@ -555,6 +556,7 @@ export interface ECEnumValue {
 export class ECSqlValue {
   private _val: IModelJsNative.ECSqlValue;
 
+  /** @internal */
   public constructor(val: IModelJsNative.ECSqlValue) { this._val = val; }
 
   /** Get information about the query result's column this value refers to. */
@@ -629,6 +631,7 @@ export class ECSqlValue {
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: IModelJsNative.ECSqlValueIterator;
 
+  /** @internal */
   public constructor(it: IModelJsNative.ECSqlValueIterator) { this._it = it; }
 
   public next(): IteratorResult<ECSqlValue> {

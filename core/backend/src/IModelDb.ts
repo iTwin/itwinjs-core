@@ -1003,7 +1003,9 @@ export class IModelDb extends IModel implements PageableECSql {
   /** Get the linkTableRelationships for this IModel */
   public get relationships(): Relationships { return this._relationships || (this._relationships = new Relationships(this)); }
 
-  /** Get the ConcurrencyControl for this IModel. */
+  /** Get the ConcurrencyControl for this IModel.
+   * @beta
+   */
   public get concurrencyControl(): ConcurrencyControl { return (this._concurrency !== undefined) ? this._concurrency : (this._concurrency = new ConcurrencyControl(this)); }
 
   /** Get the CodeSpecs in this IModel. */

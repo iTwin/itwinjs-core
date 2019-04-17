@@ -189,7 +189,7 @@ export class IModelHost {
   /** @internal */
   public static loadNative(region: number, dir?: string): void { this.registerPlatform(Platform.load(dir), region); }
 
-  /** @hidden */
+  /** @internal */
   public static tileCacheService: CloudStorageService;
 
   /** This method must be called before any iModel.js services are used.

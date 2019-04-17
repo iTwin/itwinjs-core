@@ -122,13 +122,19 @@ export class BriefcaseEntry {
    */
   public imodelClientContext?: string;
 
-  /** @hidden Event called after a changeset is applied to a briefcase. */
+  /** Event called after a changeset is applied to a briefcase.
+   * @internal
+   */
   public readonly onChangesetApplied = new BeEvent<() => void>();
 
-  /** @hidden Event called when the briefcase is about to be closed */
+  /** Event called when the briefcase is about to be closed
+   * @internal
+   */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
-  /** @hidden Event called when the version of the briefcase has been updated */
+  /** Event called when the version of the briefcase has been updated
+   * @internal
+   */
   public readonly onBeforeVersionUpdate = new BeEvent<() => void>();
 
   /** Gets the path key to be used in the cache and iModelToken */
@@ -146,41 +152,38 @@ export class BriefcaseEntry {
     return `${this.iModelId}:${this.briefcaseId}`;
   }
 
-  /**
-   * Gets the current changeSetId of the briefcase
-   * Note that this may not be the changeSetId if the briefcase has reversed changes
-   * @hidden
+  /** Gets the current changeSetId of the briefcase
+   * @note This may not be the changeSetId if the briefcase has reversed changes
+   * @internal
    */
   public get currentChangeSetId(): string {
     return (typeof this.reversedChangeSetId !== "undefined") ? this.reversedChangeSetId : this.changeSetId;
   }
 
-  /**
-   * Gets the current changeSetIndex of the briefcase
-   * Note that this may not be the changeSetIndex if the briefcase has reversed changes
-   * @hidden
+  /** Gets the current changeSetIndex of the briefcase
+   * @note This may not be the changeSetIndex if the briefcase has reversed changes
+   * @internal
    */
   public get currentChangeSetIndex(): number {
     return (typeof this.reversedChangeSetIndex !== "undefined") ? this.reversedChangeSetIndex! : this.changeSetIndex!;
   }
 
   /** Returns true if the briefcase has reversed changes
-   * @hidden
+   * @internal
    */
   public get hasReversedChanges(): boolean {
     return typeof this.reversedChangeSetId !== "undefined";
   }
 
-  /** @hidden */
+  /** @internal */
   public getDebugInfo(): any {
     const pathname = this.pathname.replace(/\\/g, "/");
     return { key: this.getKey(), iModelId: this.iModelId, pathname, isOpen: this.isOpen ? true : false, changeSetId: this.changeSetId, changeSetIndex: this.changeSetIndex, reversedChangeSetId: this.reversedChangeSetId, reversedChangeSetIndex: this.reversedChangeSetIndex, userId: this.userId };
   }
 }
 
-/**
- * In-memory cache of briefcases
- * @hidden
+/** In-memory cache of briefcases
+ * @internal
  */
 class BriefcaseCache {
   private readonly _briefcases = new Map<string, BriefcaseEntry>();
@@ -1358,12 +1361,11 @@ export class BriefcaseManager {
     return BriefcaseManager.processChangeSets(requestContext, briefcase, targetVersion);
   }
 
-  /**
-   * Pull and merge changes from the hub
+  /** Pull and merge changes from the hub
    * @param requestContext The client request context
    * @param briefcase Local briefcase
    * @param mergeToVersion Version of the iModel to merge until.
-   * @hidden
+   * @internal
    */
   public static async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
@@ -1521,7 +1523,7 @@ export class BriefcaseManager {
 
   /** Creates a change set file from the changes in a standalone iModel
    * @return Path to the standalone change set file
-   * @hidden
+   * @internal
    */
   public static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
     if (!briefcase.isStandalone)
@@ -1658,9 +1660,8 @@ export class BriefcaseManager {
     return (this.imodelClient === undefined) || (this._imodelClient instanceof IModelBankClient);
   }
 
-  /**
-   * Create an iModel on iModelHub
-   * @hidden
+  /** Create an iModel on iModelHub
+   * @internal
    */
   public static async create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string> {
     requestContext.enter();
@@ -1674,7 +1675,7 @@ export class BriefcaseManager {
     return hubIModel.wsgId;
   }
 
-  /** @hidden */
+  /** @internal */
   // TODO: This should take contextId as an argument, so that we know which server (iModelHub or iModelBank) to use.
   public static async deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString) {
     requestContext.enter();
