@@ -14,6 +14,7 @@ import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection,
   OidcClientWrapper, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, WebGLExtensionName,
 } from "@bentley/imodeljs-frontend";
+import { I18NOptions } from "@bentley/imodeljs-i18n";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
 import { initializeIModelHub } from "./ConnectEnv";
@@ -70,6 +71,10 @@ function combineFilePaths(additionalPath: string, initPath?: string) {
     combined += "\\";
   combined += additionalPath;
   return combined;
+}
+
+class DisplayPerfTestApp extends IModelApp {
+  protected static supplyI18NOptions(): I18NOptions | undefined { return { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions; }
 }
 
 function setViewFlagOverrides(vf: any, vfo?: ViewFlag.Overrides): ViewFlag.Overrides {
@@ -609,13 +614,25 @@ function restartIModelApp(testConfig: DefaultConfigs) {
   const newTileProps: TileAdmin.Props = testConfig.tileProps ? testConfig.tileProps : {};
   if (IModelApp.initialized) {
     if (curTileProps !== newTileProps || curTileProps.disableThrottling !== newTileProps.disableThrottling || curTileProps.elideEmptyChildContentRequests !== newTileProps.elideEmptyChildContentRequests
-      || curTileProps.enableInstancing !== newTileProps.enableInstancing || curTileProps.maxActiveRequests !== newTileProps.maxActiveRequests || curTileProps.retryInterval !== newTileProps.retryInterval)
+      || curTileProps.enableInstancing !== newTileProps.enableInstancing || curTileProps.maxActiveRequests !== newTileProps.maxActiveRequests || curTileProps.retryInterval !== newTileProps.retryInterval) {
+      if (theViewport) {
+        theViewport.dispose();
+        theViewport = undefined;
+      }
       IModelApp.shutdown();
-    else if (newDisabledExts.size !== curDisabledExts.size)
+    } else if (newDisabledExts.size !== curDisabledExts.size) {
+      if (theViewport) {
+        theViewport.dispose();
+        theViewport = undefined;
+      }
       IModelApp.shutdown();
-    else {
+    } else {
       for (const ext in newDisabledExts) {
         if (!curDisabledExts.has(ext as WebGLExtensionName)) {
+          if (theViewport) {
+            theViewport.dispose();
+            theViewport = undefined;
+          }
           IModelApp.shutdown();
           break;
         }
@@ -626,7 +643,7 @@ function restartIModelApp(testConfig: DefaultConfigs) {
   curTileProps = newTileProps;
   if (!IModelApp.initialized) {
     IModelApp.tileAdmin = TileAdmin.create(curTileProps);
-    IModelApp.startup(undefined, testConfig.renderOptions);
+    DisplayPerfTestApp.startup(undefined, testConfig.renderOptions);
   }
 }
 
@@ -849,7 +866,7 @@ window.onload = () => {
 
   // ###TODO: Raman added one-time initialization logic IModelApp.startup which replaces a couple of RpcRequest-related functions.
   // Cheap hacky workaround until that's fixed.
-  IModelApp.startup();
+  DisplayPerfTestApp.startup();
 
   main(); // tslint:disable-line:no-floating-promises
 };
