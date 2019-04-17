@@ -4,17 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
+import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
+import { CloudStorageTileCache } from "../CloudStorageTileCache";
+import { IModelToken } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { IModelToken } from "../IModel";
 import { TileTreeProps } from "../TileProps";
-import { CloudStorageTileCache } from "../CloudStorageTileCache";
-import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
+import { IModelNotFoundResponse } from "./IModelReadRpcInterface";
 
 /** @public */
 export abstract class IModelTileRpcInterface extends RpcInterface {
   public static types = () => [
     IModelToken,
+    IModelNotFoundResponse,
   ]
 
   public static getClient(): IModelTileRpcInterface { return RpcManager.getClientForInterface(IModelTileRpcInterface); }

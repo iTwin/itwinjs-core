@@ -2412,7 +2412,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     // (undocumented)
     requestTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps>;
     // (undocumented)
-    static types: () => (typeof IModelToken)[];
+    static types: () => (typeof IModelToken | typeof IModelNotFoundResponse)[];
     static version: string;
 }
 
