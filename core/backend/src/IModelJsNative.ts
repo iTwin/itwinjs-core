@@ -199,6 +199,7 @@ export declare namespace IModelJsNative {
     public saveChanges(changesetName?: string): DbResult;
     public abandonChanges(): DbResult;
     public importSchema(schemaPathName: string): DbResult;
+    public static vacuum(dbName: string, pageSize?: number): DbResult;
   }
 
   export class ChangedElementsECDb implements IDisposable {
