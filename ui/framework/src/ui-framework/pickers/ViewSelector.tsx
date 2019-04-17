@@ -106,7 +106,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     const sheets: ListItem[] = [];
     const unknown: ListItem[] = [];
 
-    if (this.props.imodel) {
+    if (this.props.imodel && this.props.imodel.views.getViewList) {
       const query = { wantPrivate: false };
       const specs = await this.props.imodel.views.getViewList(query);
 
@@ -207,9 +207,11 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       this.updateState(this.state.selectedViewId); // tslint:disable-line:no-floating-promises
     };
 
+    const { imodel, ...props } = this.props;
+
     return (
       <ListPicker
-        {...this.props}
+        {...props}
         title={this.state.title}
         setEnabled={setEnabled}
         items={this.state.items}

@@ -108,4 +108,13 @@ describe("ActionItemButton", () => {
     wrapper.update();
     wrapper.unmount();
   });
+
+  it("should handle changing state via props", () => {
+    const myCommand = testCommand;
+    myCommand.isEnabled = true;
+    const wrapper = mount(<ActionItemButton actionItem={myCommand} isEnabled={false} />);
+    expect(wrapper.state("isEnabled")).to.be.false;
+    wrapper.setProps({ isEnabled: true });
+    expect(wrapper.state("isEnabled")).to.be.true;
+  });
 });

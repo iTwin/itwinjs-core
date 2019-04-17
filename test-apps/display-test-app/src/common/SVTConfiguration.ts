@@ -14,6 +14,7 @@ export interface SVTConfiguration {
   signInForStandalone?: boolean; // If true, and standalone is true, then sign in. Required when opening local files containing reality models.
   enableDiagnostics?: boolean; // If true, all RenderDiagnostics will be enabled (assertions, debug output, GL state checks).
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
+  disableInstancing?: boolean;
 }
 
 export interface ConnectProjectConfiguration {

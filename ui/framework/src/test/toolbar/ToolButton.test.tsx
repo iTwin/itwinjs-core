@@ -28,6 +28,11 @@ describe("ToolButton", () => {
     wrapper.unmount();
   });
 
+  it("should render active & pressed", () => {
+    const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" isActive={true} isPressed={true} />);
+    wrapper.unmount();
+  });
+
   it("renders correctly", () => {
     FrontstageManager.setActiveToolId("tool1");
     shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot();

@@ -113,6 +113,9 @@ async function main() {
   console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line:no-console
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   const renderSystemOptions = { disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[] };
+  if (configuration.disableInstancing)
+    DisplayTestApp.tileAdminProps.enableInstancing = false;
+
   DisplayTestApp.startup(undefined, renderSystemOptions);
   if (configuration.enableDiagnostics)
     DisplayTestApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);

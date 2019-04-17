@@ -74,8 +74,6 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
     }
 
     pointOffset += info.mesh.points.length / 3;
-
-    return true;
   };
 
   fs.appendFileSync(objFile, `mtllib ${mtlName}\n`);

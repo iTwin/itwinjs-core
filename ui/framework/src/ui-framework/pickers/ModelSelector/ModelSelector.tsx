@@ -66,6 +66,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     await this._initCategoryState();
     this._initGroups();
 
+    // istanbul ignore else
     if (this._isMounted)
       this.setState({
         activeGroup: this._groups[0],
@@ -113,7 +114,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * @param activeRuleset Ruleset to provide to tree.
    */
   private _setViewType = async (ruleset: RegisteredRuleset) => {
-    if (!IModelApp.viewManager)
+    if (!IModelApp.viewManager || !this.state.activeView)
       return;
 
     const view = this.state.activeView.view as SpatialViewState;
@@ -136,9 +137,9 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     };
   }
 
-  private async _updateModelsWithViewport(vp: Viewport) {
+  private async _updateModelsWithViewport(vp?: Viewport) {
     // Query models and add them to state
-    if (!(vp.view instanceof SpatialViewState))
+    if (!vp || !(vp.view instanceof SpatialViewState))
       return;
 
     const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
@@ -230,7 +231,9 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     // this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView); // tslint:disable-line:no-floating-promises
   }
 
-  private async _updateCategoriesWithViewport(vp: Viewport) {
+  private async _updateCategoriesWithViewport(vp?: Viewport) {
+    if (!vp) return;
+
     // Query categories and add them to state
     const selectUsedSpatialCategoryIds = "SELECT DISTINCT Category.Id as id from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
     const selectUsedDrawingCategoryIds = "SELECT DISTINCT Category.Id as id from BisCore.GeometricElement2d WHERE Model.Id=? AND Category.Id IN (SELECT ECInstanceId from BisCore.DrawingCategory)";
@@ -263,7 +266,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   /** @internal */
   public render() {
     return (
-      <div className="uifw-widget-picker">
+      <div className="uifw-widget-picker" data-testid="model-selector-widget">
         {!this.state.activeRuleset &&
           <LoadingSpinner size={SpinnerSize.Medium} />
         }

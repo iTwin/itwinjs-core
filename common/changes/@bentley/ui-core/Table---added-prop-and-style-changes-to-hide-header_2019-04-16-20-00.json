@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added TableProp to hide header and supporting style changes",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "joe.zbuchalski@bentley.com"
+}

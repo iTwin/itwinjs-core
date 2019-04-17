@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Unit tests and fixed ColorEditor alignment",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

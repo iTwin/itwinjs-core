@@ -5,19 +5,26 @@
 import * as React from "react";
 import { expect } from "chai";
 import * as enzyme from "enzyme";
+import * as moq from "typemoq";
+
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 import TestUtils from "../TestUtils";
 import { ViewSelector, ViewUtilities } from "../../ui-framework";
 
 describe("ViewSelector", () => {
+  const imodelMock = moq.Mock.ofType<IModelConnection>();
+
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
 
   it("should render correctly", () => {
-    enzyme.shallow(
-      <ViewSelector />,
-    ).should.matchSnapshot();
+    const wrapper = enzyme.shallow(
+      <ViewSelector imodel={imodelMock.object} />,
+    );
+    wrapper.should.matchSnapshot();
+    wrapper.unmount();
   });
 
   it("should recognize spatial view", () => {

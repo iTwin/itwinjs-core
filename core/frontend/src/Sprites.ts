@@ -102,7 +102,7 @@ export class SpriteLocation implements CanvasDecoration {
     this._viewport = viewport;
     viewport.worldToView(locationWorld, this.position);
     sprite.loadPromise.then(() => { // tslint:disable-line:no-floating-promises
-      if (this._viewport === viewport) // was this deactivated while we were lorading?
+      if (this._viewport === viewport) // was this deactivated while we were loading?
         viewport.invalidateDecorations();
     });
   }
@@ -119,11 +119,14 @@ export class SpriteLocation implements CanvasDecoration {
    * @see [[CanvasDecoration.drawDecoration]]
    */
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
+    const sprite = this._sprite!;
+    if (undefined === sprite.image)
+      return;
+
     if (undefined !== this._alpha)
       ctx.globalAlpha = this._alpha;
 
-    const sprite = this._sprite!;
-    ctx.drawImage(sprite.image!, -sprite.offset.x, -sprite.offset.y);
+    ctx.drawImage(sprite.image, -sprite.offset.x, -sprite.offset.y);
   }
 
   /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to decorations. */

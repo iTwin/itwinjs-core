@@ -153,3 +153,22 @@
 .components-table-header-drag-drop .react-grid-HeaderCell {
   height: 100%;
 }
+
+.components-table.hide-header {
+  .react-grid-Canvas {
+    height: 100% !important;
+  }
+
+  .react-grid-Cell {
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .react-grid-Header {
+    display: none;
+  }
+
+  .react-grid-Viewport {
+    top: 0 !important;
+  }
+}

@@ -10,7 +10,7 @@ import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
 import { FrontstageRuntimeProps } from "./FrontstageComposer";
 import { FrontstageDef } from "./FrontstageDef";
-import { ToolItemDef } from "../shared/Item";
+import { ToolItemDef } from "../shared/ToolItemDef";
 import { ZoneDef } from "../zones/ZoneDef";
 import { Zone, ZoneProps, ZoneRuntimeProps, ZoneLocation } from "../zones/Zone";
 import { Zones as NZ_Zones, NineZone, WidgetZoneIndex, WidgetZone } from "@bentley/ui-ninezone";

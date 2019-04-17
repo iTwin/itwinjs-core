@@ -106,7 +106,7 @@ function startServer(iModelName: string) {
     // Send the iModel's geometry when the client connects.
     async function sendDataAsync() {
       const cachedGraphics: ExportGraphicsInfo[] = [];
-      const onGraphics = (info: ExportGraphicsInfo) => { cachedGraphics.push(info); return true; };
+      const onGraphics = (info: ExportGraphicsInfo) => { cachedGraphics.push(info); };
       // Set angleTol to arbitrary large value so chordTol is deciding factor.
       const exportGraphicsProps: ExportGraphicsProps = ({ onGraphics, elementIdArray: [], chordTol: 0.01, angleTol: 10 });
 

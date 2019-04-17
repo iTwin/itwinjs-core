@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
-import { CommandItemDef, ToolItemDef } from "../../ui-framework/shared/Item";
+import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
+import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
 
 describe("Item", () => {
 

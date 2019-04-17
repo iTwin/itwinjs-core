@@ -20,6 +20,7 @@ import {
   ConfigurableUiControlType,
   WidgetDef,
   UiFramework,
+  AppStateActionId,
 } from "../../ui-framework";
 
 describe("SelectionInfoField", () => {
@@ -71,6 +72,16 @@ describe("SelectionInfoField", () => {
     </Provider>);
     expect(component).not.to.be.undefined;
     const foundText = component.getAllByText("1");
+    expect(foundText).not.to.be.undefined;
+  });
+
+  it("SelectionInfoField should update after Redux action", () => {
+    const component = render(<Provider store={TestUtils.store}>
+      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
+    </Provider>);
+    expect(component).not.to.be.undefined;
+    UiFramework.dispatchActionToStore(AppStateActionId.SetNumItemsSelected, 99);
+    const foundText = component.getAllByText("99");
     expect(foundText).not.to.be.undefined;
   });
 });

@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { ActionButtonItemDef } from "../shared/Item";
+import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
 import { GroupItemProps, AnyItemDef } from "../shared/ItemProps";
 import { Icon } from "../shared/IconComponent";

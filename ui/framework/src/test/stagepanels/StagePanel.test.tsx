@@ -17,10 +17,19 @@ import {
   Widget,
   FrontstageComposer,
   FrontstageManager,
+  WidgetControl,
+  ConfigurableCreateInfo,
 } from "../../ui-framework";
 import { StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
 
 describe("StagePanel", () => {
+  class TestWidget extends WidgetControl {
+    constructor(info: ConfigurableCreateInfo, options: any) {
+      super(info, options);
+
+      this.reactElement = <div />;
+    }
+  }
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -47,7 +56,7 @@ describe("StagePanel", () => {
             topMostPanel={
               <StagePanel size="64px"
                 widgets={[
-                  <Widget element={<h3>TopMost panel</h3>} />,
+                  <Widget id="stagePanelWidget" control={TestWidget} />,
                 ]}
               />
             }
@@ -94,7 +103,13 @@ describe("StagePanel", () => {
 
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
+    expect(frontstageProvider.frontstageDef).to.not.be.undefined;
     await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef); // tslint:disable-line:no-floating-promises
+
+    if (frontstageProvider.frontstageDef) {
+      const widgetDef = frontstageProvider.frontstageDef.findWidgetDef("stagePanelWidget");
+      expect(widgetDef).to.not.be.undefined;
+    }
 
     const wrapper = mount(<FrontstageComposer />);
 

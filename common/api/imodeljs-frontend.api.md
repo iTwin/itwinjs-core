@@ -6659,17 +6659,21 @@ export class ViewClipByElementTool extends ViewClipTool {
 
 // @internal
 export class ViewClipByPlaneTool extends ViewClipTool {
-    constructor(clipEventHandler?: ViewClipEventHandler, _orientation?: ClipOrientation, _clearExistingPlanes?: boolean);
+    constructor(clipEventHandler?: ViewClipEventHandler, _clearExistingPlanes?: boolean);
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
     // (undocumented)
     protected _clearExistingPlanes: boolean;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    protected _orientation: ClipOrientation;
+    orientation: ClipOrientation;
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
     protected showPrompt(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
     // (undocumented)
     static toolId: string;
 }
@@ -6700,7 +6704,8 @@ export class ViewClipByRangeTool extends ViewClipTool {
 
 // @internal
 export class ViewClipByShapeTool extends ViewClipTool {
-    constructor(clipEventHandler?: ViewClipEventHandler, _orientation?: ClipOrientation);
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
@@ -6718,13 +6723,15 @@ export class ViewClipByShapeTool extends ViewClipTool {
     // (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
     // (undocumented)
-    protected _orientation: ClipOrientation;
+    orientation: ClipOrientation;
     // (undocumented)
     protected readonly _points: Point3d[];
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
     protected showPrompt(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
     // (undocumented)
     static toolId: string;
     // (undocumented)
@@ -6893,7 +6900,11 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     static doClipToShape(viewport: Viewport, saveInUndo: boolean, xyPoints: Point3d[], transform: Transform, zLow?: number, zHigh?: number): boolean;
     // (undocumented)
+    protected static enumAsOrientationMessage(str: string): any;
+    // (undocumented)
     static getClipOrientation(orientation: ClipOrientation, viewport: Viewport): Matrix3d | undefined;
+    // (undocumented)
+    protected static _getEnumAsOrientationDescription: () => PropertyDescription;
     // (undocumented)
     static getPlaneInwardNormal(orientation: ClipOrientation, viewport: Viewport): Vector3d | undefined;
     // (undocumented)
@@ -6910,6 +6921,8 @@ export class ViewClipTool extends PrimitiveTool {
     onRestartTool(): void;
     // (undocumented)
     onUnsuspend(): void;
+    // (undocumented)
+    protected static _orientationName: string;
     // (undocumented)
     protected outputPrompt(prompt: string): void;
     // (undocumented)

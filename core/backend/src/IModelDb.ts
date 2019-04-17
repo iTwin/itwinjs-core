@@ -1215,8 +1215,6 @@ export class IModelDb extends IModel implements PageableECSql {
    *     const p3 = mesh.indices[i + 2];
    *     process.stdout.write(`f ${p1}/${p1}/${p1} ${p2}/${p2}/${p2} ${p3}/${p3}/${p3}\n`);
    *   }
-   *
-   *   return true;
    * };
    *
    * iModel.exportGraphics(({ onGraphics, elementIdArray: ["0x1"] }));

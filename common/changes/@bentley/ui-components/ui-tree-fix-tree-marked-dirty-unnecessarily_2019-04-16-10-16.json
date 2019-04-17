@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix tree being marked as dirty when selected nodes predicate changes, but returns the same results (actual selection doesn't change)",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.p@gmail.com"
+}

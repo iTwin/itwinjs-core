@@ -29,7 +29,7 @@ export interface ModelGroup {
   dataProvider: ModelSelectorDataProvider;
   /** Label for group name */
   label: string;
-  /** Models or categories related to group as [[Listitem]] */
+  /** Models or categories related to group as [[ListItem]] */
   items: ListItem[];
   /** Method to enable passed in models or categories  */
   setEnabled: (item: ListItem[], enabled: boolean) => void;
@@ -65,7 +65,7 @@ export interface ModelSelectorWidgetState {
   expand: boolean;
   activeGroup?: ModelGroup;
   activeRuleset?: RegisteredRuleset;
-  activeView: Viewport;
+  activeView?: Viewport;
 }
 
 /**
@@ -89,7 +89,7 @@ export interface CategoryModelTreeProps {
   /** Active group to display in tree */
   activeGroup: ModelGroup;
   /** Active viewport */
-  activeView: Viewport;
+  activeView?: Viewport;
 }
 
 /**

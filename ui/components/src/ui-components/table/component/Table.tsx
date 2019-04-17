@@ -97,6 +97,9 @@ export interface TableProps extends CommonProps {
    * @internal
    */
   onRender?: () => void;
+
+  /** Hide the header */
+  hideHeader?: boolean;
 }
 
 /** Properties for a Table cell
@@ -1100,7 +1103,7 @@ export class Table extends React.Component<TableProps, TableState> {
     const visibleColumns = this._getVisibleColumns();
     return (
       <>
-        <div className={classnames("components-table", this.props.className)} style={this.props.style}
+        <div className={classnames("components-table", this.props.hideHeader && "hide-header", this.props.className)} style={this.props.style}
           onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._showContextMenu : undefined}>
           {this.props.showHideColumns &&
             <ShowHideMenu

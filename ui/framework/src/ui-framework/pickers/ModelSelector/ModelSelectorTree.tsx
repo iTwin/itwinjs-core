@@ -46,15 +46,17 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   /** @internal */
   public componentDidMount() {
     this._isMounted = true;
-    this.props.activeView.onViewedModelsChanged.addListener(this._onViewedModelsChanged);
-    this.props.activeView.onViewedCategoriesChanged.addListener(this._onViewedCategoriesChanged);
+    if (this.props.activeView) {
+      this.props.activeView.onViewedModelsChanged.addListener(this._onViewedModelsChanged);
+      this.props.activeView.onViewedCategoriesChanged.addListener(this._onViewedCategoriesChanged);
+    }
   }
 
   /** @internal */
   public componentDidUpdate(prevProps: CategoryModelTreeProps, _prevState: CategoryModelTreeState) {
     if (prevProps.activeView) {
-      this.props.activeView.onViewedModelsChanged.removeListener(this._onViewedModelsChanged);
-      this.props.activeView.onViewedCategoriesChanged.removeListener(this._onViewedCategoriesChanged);
+      prevProps.activeView.onViewedModelsChanged.removeListener(this._onViewedModelsChanged);
+      prevProps.activeView.onViewedCategoriesChanged.removeListener(this._onViewedCategoriesChanged);
     }
     if (this.props.activeView) {
       this.props.activeView.onViewedModelsChanged.addListener(this._onViewedModelsChanged);
@@ -85,6 +87,8 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
 
   /** Set model selection state based on ViewState */
   private _setModelsFromViewState = async () => {
+    if (!this.props.activeView)
+      return;
     const view = this.props.activeView.view as SpatialViewState;
     const nodes = await this.state.activeGroup.dataProvider.getNodes();
     const selectedNodes: string[] = [];
@@ -99,6 +103,8 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
 
   /** Set category selection state based on ViewState */
   private _setCategoriesFromViewState = async () => {
+    if (!this.props.activeView)
+      return;
     const view = this.props.activeView.view as SpatialViewState;
     const nodes = await this.state.activeGroup.dataProvider.getNodes();
     const selectedNodes: string[] = [];
@@ -143,7 +149,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
     const nodeId = isInstanceNodeKey(key) ? key.instanceKey.id : "";
     const item = this._getItem(nodeId);
-    if (item) {
+    if (item && this.props.activeView) {
       const view = this.props.activeView.view as SpatialViewState;
       let state = CheckBoxState.Off;
       const group = this.state.activeGroup.id;
@@ -216,6 +222,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   }
 
   private _fetchAllCategoryNodeIds = async (): Promise<string[]> => {
+    if (!this.props.activeView) return [];
     const view = this.props.activeView.view as SpatialViewState;
     const selectUsedSpatialCategoryIds = "SELECT DISTINCT Category.Id as id from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
     const selectUsedDrawingCategoryIds = "SELECT DISTINCT Category.Id as id from BisCore.GeometricElement2d WHERE Model.Id=? AND Category.Id IN (SELECT ECInstanceId from BisCore.DrawingCategory)";
@@ -424,7 +431,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     );
   }
 
-  private _getSelectedNodes = (node: TreeNodeItem) => {
+  private _getSelectedNodes = (node: TreeNodeItem): boolean => {
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
     const id = isInstanceNodeKey(key) ? key.instanceKey.id : "";
     if (this.state.activeGroup.id === Groups.Models) {
@@ -436,14 +443,16 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     return false;
   }
 
-  private _isModelDisplayed = (id: string) => {
+  private _isModelDisplayed = (id: string): boolean => {
+    if (!this.props.activeView) return false;
     const view = this.props.activeView.view as SpatialViewState;
     if (view.modelSelector.models.has(id))
       return true;
     return false;
   }
 
-  private _isCategoryDisplayed = (id: string) => {
+  private _isCategoryDisplayed = (id: string): boolean => {
+    if (!this.props.activeView) return false;
     const view = this.props.activeView.view as SpatialViewState;
     if (view.categorySelector.categories.has(id))
       return true;
@@ -481,7 +490,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
       if (!existingItem) {
         const category: ListItem = {
           key: row.id as string,
-          enabled: this.props.activeView.view.categorySelector.has(row.id as string),
+          enabled: this.props.activeView ? this.props.activeView.view.categorySelector.has(row.id as string) : false,
           type: ListItemType.Item,
         };
         categories.push(category);

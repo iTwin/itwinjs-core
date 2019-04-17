@@ -17,7 +17,7 @@ import { FrontstageProvider } from "./FrontstageProvider";
 
 import { NineZoneProps } from "@bentley/ui-ninezone";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ToolItemDef } from "../shared/Item";
+import { ToolItemDef } from "../shared/ToolItemDef";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { StagePanelLocation } from "../stagepanels/StagePanel";
 
@@ -111,6 +111,7 @@ export class FrontstageDef {
     if (ContentLayoutManager.activeLayout) {
       const usedContentIndexes = ContentLayoutManager.activeLayout.getUsedContentIndexes();
       this.contentControls.forEach((control: ContentControl, index: number) => {
+        // istanbul ignore else
         if (usedContentIndexes.includes(index))
           controlReadyPromises.push(control.isReady);
       });
@@ -246,7 +247,11 @@ export class FrontstageDef {
    * @alpha
    */
   public get panelDefs(): StagePanelDef[] {
-    const panels = [StagePanelLocation.Left];
+    const panels = [
+      StagePanelLocation.Left, StagePanelLocation.Right,
+      StagePanelLocation.Top, StagePanelLocation.TopMost,
+      StagePanelLocation.Bottom, StagePanelLocation.BottomMost,
+    ];
     const panelDefs: StagePanelDef[] = [];
 
     panels.forEach((location: StagePanelLocation) => {

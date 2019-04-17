@@ -20,6 +20,9 @@ import { StandardViewId } from "../StandardView";
 import { GraphicType } from "../rendering";
 import { HitDetail } from "../HitDetail";
 import { CoordinateLockOverrides } from "./ToolAdmin";
+import { PropertyDescription } from "../properties/Description";
+import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
+import { PrimitiveValue } from "../properties/Value";
 
 /** @internal The orientation to use to define the view clip volume */
 export const enum ClipOrientation {
@@ -46,6 +49,28 @@ export interface ViewClipEventHandler {
 /** @internal A tool to define a clip volume for a view */
 export class ViewClipTool extends PrimitiveTool {
   constructor(protected _clipEventHandler?: ViewClipEventHandler) { super(); }
+
+  protected static _orientationName = "enumAsOrientation";
+  protected static enumAsOrientationMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.ViewClip.Settings.Orientation." + str); }
+  protected static _getEnumAsOrientationDescription = (): PropertyDescription => {
+    return {
+      name: ViewClipTool._orientationName,
+      displayLabel: IModelApp.i18n.translate("CoreTools:tools.ViewClip.Settings.Orientation.Label"),
+      typename: "enum",
+      enum: {
+        choices: [
+          { label: ViewClipTool.enumAsOrientationMessage("Top"), value: ClipOrientation.Top },
+          { label: ViewClipTool.enumAsOrientationMessage("Front"), value: ClipOrientation.Front },
+          { label: ViewClipTool.enumAsOrientationMessage("Left"), value: ClipOrientation.Left },
+          { label: ViewClipTool.enumAsOrientationMessage("Bottom"), value: ClipOrientation.Bottom },
+          { label: ViewClipTool.enumAsOrientationMessage("Back"), value: ClipOrientation.Back },
+          { label: ViewClipTool.enumAsOrientationMessage("Right"), value: ClipOrientation.Right },
+          { label: ViewClipTool.enumAsOrientationMessage("View"), value: ClipOrientation.View },
+          { label: ViewClipTool.enumAsOrientationMessage("Face"), value: ClipOrientation.Face },
+        ],
+      },
+    };
+  }
 
   public requireWriteableTarget(): boolean { return false; }
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.allow3dManipulations()); }
@@ -201,7 +226,26 @@ export class ViewClipClearTool extends ViewClipTool {
 /** @internal A tool to define a clip volume for a view by specifying a plane */
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
-  constructor(clipEventHandler?: ViewClipEventHandler, protected _orientation = ClipOrientation.Face, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
+  private _orientationValue = new ToolSettingsValue(ClipOrientation.Face);
+  constructor(clipEventHandler?: ViewClipEventHandler, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
+
+  public get orientation(): ClipOrientation { return this._orientationValue.value as ClipOrientation; }
+  public set orientation(option: ClipOrientation) { this._orientationValue.value = option; }
+
+  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+    const toolSettings = new Array<ToolSettingsPropertyRecord>();
+    toolSettings.push(new ToolSettingsPropertyRecord(this._orientationValue.clone() as PrimitiveValue, ViewClipTool._getEnumAsOrientationDescription(), { rowPriority: 0, columnIndex: 2 }));
+    return toolSettings;
+  }
+
+  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+    if (updatedValue.propertyName === ViewClipTool._orientationName) {
+      if (this._orientationValue.value !== updatedValue.value.value)
+        this.orientation = updatedValue.value.value as ClipOrientation;
+      return true;
+    }
+    return false;
+  }
 
   protected showPrompt(): void { this.outputPrompt("ByPlane.Prompts.FirstPoint"); }
 
@@ -213,7 +257,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === this.targetView)
       return EventHandled.No;
-    const normal = ViewClipTool.getPlaneInwardNormal(this._orientation, this.targetView);
+    const normal = ViewClipTool.getPlaneInwardNormal(this.orientation, this.targetView);
     if (undefined === normal)
       return EventHandled.No;
     if (!ViewClipTool.doClipToPlane(this.targetView, true, ev.point, normal, this._clearExistingPlanes))
@@ -228,11 +272,32 @@ export class ViewClipByPlaneTool extends ViewClipTool {
 /** @internal A tool to define a clip volume for a view by specifying a shape */
 export class ViewClipByShapeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByShape";
+  private _orientationValue = new ToolSettingsValue(ClipOrientation.Top);
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
   protected _zLow?: number;
   protected _zHigh?: number;
-  constructor(clipEventHandler?: ViewClipEventHandler, protected _orientation = ClipOrientation.Face) { super(clipEventHandler); }
+
+  public get orientation(): ClipOrientation { return this._orientationValue.value as ClipOrientation; }
+  public set orientation(option: ClipOrientation) { this._orientationValue.value = option; }
+
+  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+    const toolSettings = new Array<ToolSettingsPropertyRecord>();
+    toolSettings.push(new ToolSettingsPropertyRecord(this._orientationValue.clone() as PrimitiveValue, ViewClipTool._getEnumAsOrientationDescription(), { rowPriority: 0, columnIndex: 2 }));
+    return toolSettings;
+  }
+
+  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+    if (updatedValue.propertyName === ViewClipTool._orientationName) {
+      if (this._orientationValue.value !== updatedValue.value.value)
+        this.orientation = updatedValue.value.value as ClipOrientation;
+      this._points.length = 0;
+      this._matrix = undefined;
+      this.setupAndPromptForNextAction();
+      return true;
+    }
+    return false;
+  }
 
   protected showPrompt(): void {
     switch (this._points.length) {
@@ -347,7 +412,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
       return EventHandled.Yes;
     }
 
-    if (undefined === this._matrix && undefined === (this._matrix = ViewClipTool.getClipOrientation(this._orientation, this.targetView)))
+    if (undefined === this._matrix && undefined === (this._matrix = ViewClipTool.getClipOrientation(this.orientation, this.targetView)))
       return EventHandled.No;
 
     const currPt = ev.point.clone();

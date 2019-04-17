@@ -1242,7 +1242,7 @@ export const enum ExclusiveAccessOption {
 }
 
 // @beta
-export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => boolean;
+export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
 // @beta
 export interface ExportGraphicsInfo {

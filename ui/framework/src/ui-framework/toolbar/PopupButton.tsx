@@ -39,6 +39,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
     if (props.label)
       this._label = props.label;
+    // istanbul ignore else
     else if (props.labelKey)
       this._label = UiFramework.i18n.translate(props.labelKey);
 
@@ -83,11 +84,6 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     });
   }
 
-  /** Checks if ExpandableItem is expanded. */
-  public isExpanded = () => {
-    return this.state.isPressed;
-  }
-
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
     // istanbul ignore if
     if (this._componentUnmounting) return;
@@ -95,9 +91,11 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     let refreshState = false;
     let newState: BaseItemState = { ...this.state };
 
+    // istanbul ignore else
     if (!refreshState && this.props.stateSyncIds && this.props.stateSyncIds.length > 0)
       refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
     if (refreshState) {
+      // istanbul ignore else
       if (this.props.stateFunc)
         newState = this.props.stateFunc(newState);
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
