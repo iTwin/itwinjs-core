@@ -228,10 +228,13 @@
         "NotSuportedElmType": "Element type not valid for this tool",
         "ProjectExtents": "Invalid location. All elements must fit within the volume defined by the project extents."
       },
-      "SelectionOptions": {
+      "SelectionMethods": {
         "Pick": "Select single",
         "Line": "Select all crossing line",
-        "Box": "Select by range",
+        "Box": "Select by range"
+      },
+      "SelectionModes": {
+        "Replace": "Replace current selection",
         "Add": "Add to selection",
         "Remove": "Remove from selection"
       }

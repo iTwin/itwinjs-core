@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update the ToolSettings properties defined in the Select Tool so two groups of options are presented, one for selection method and one for selection mode.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "bill.steinbock@bentley.com"
+}

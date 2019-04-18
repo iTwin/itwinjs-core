@@ -59,17 +59,6 @@ export const enum SelectionProcessing {
   ReplaceSelectionWithElement,
 }
 
-/** The selection options to display in the tool settings.
- * @public
- */
-export const enum SelectOptions {
-  PickAndReplace,
-  LineAndReplace,
-  BoxAndReplace,
-  PickAndAdd,
-  PickAndRemove,
-}
-
 /** Tool for picking a set of elements of interest, selected by the user.
  * @public
  */
@@ -81,7 +70,8 @@ export class SelectionTool extends PrimitiveTool {
   public readonly points: Point3d[] = [];
   private _selectionMode = SelectionMode.Replace;
   private _selectionMethod = SelectionMethod.Pick;
-  private _selectionOptionValue = new ToolSettingsValue(SelectOptions.PickAndReplace);
+  private _selectionMethodValue = new ToolSettingsValue(SelectionMethod.Pick);
+  private _selectionModeValue = new ToolSettingsValue(SelectionMode.Replace);
 
   public requireWriteableTarget(): boolean { return false; }
   public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
@@ -96,12 +86,12 @@ export class SelectionTool extends PrimitiveTool {
   protected setSelectionMode(mode: SelectionMode): void { this._selectionMode = mode; }
   protected wantToolSettings(): boolean { return false; }
 
-  private static optionMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionOptions." + str); }
-  private static _optionsName = "selectionOptions";
+  private static methodMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionMethods." + str); }
+  private static _methodsName = "selectionMethods";
   /* The property descriptions used to generate ToolSettings UI. */
   private static _getOptionsDescription(): PropertyDescription {
     return {
-      name: SelectionTool._optionsName,
+      name: SelectionTool._methodsName,
       displayLabel: IModelApp.i18n.translate("CoreTools:tools.ElementSet.Prompts.Mode"),
       typename: "enum",
       editor: {
@@ -113,6 +103,35 @@ export class SelectionTool extends PrimitiveTool {
               { iconClass: "icon icon-select-single" },
               { iconClass: "icon icon-select-line" },
               { iconClass: "icon icon-select-box" },
+            ],
+          },
+        ],
+      },
+      enum: {
+        choices: [
+          { label: SelectionTool.methodMessage("Pick"), value: SelectionMethod.Pick },
+          { label: SelectionTool.methodMessage("Line"), value: SelectionMethod.Line },
+          { label: SelectionTool.methodMessage("Box"), value: SelectionMethod.Box },
+        ],
+      },
+    };
+  }
+
+  private static modesMessage(str: string) { return IModelApp.i18n.translate("CoreTools:tools.ElementSet.SelectionModes." + str); }
+  private static _modesName = "selectionModes";
+  /* The property descriptions used to generate ToolSettings UI. */
+  private static _getModesDescription(): PropertyDescription {
+    return {
+      name: SelectionTool._modesName,
+      displayLabel: "",
+      typename: "enum",
+      editor: {
+        name: "enum-buttongroup",
+        params: [
+          {
+            type: PropertyEditorParamTypes.ButtonGroupData,
+            buttons: [
+              { iconClass: "icon icon-cursor-click" },
               { iconClass: "icon icon-select-plus" },
               {
                 iconClass: "icon icon-select-minus",
@@ -120,15 +139,17 @@ export class SelectionTool extends PrimitiveTool {
               },
             ],
           },
+          {
+            type: PropertyEditorParamTypes.SuppressEditorLabel,
+            suppressLabelPlaceholder: true,
+          },
         ],
       },
       enum: {
         choices: [
-          { label: SelectionTool.optionMessage("Pick"), value: SelectOptions.PickAndReplace },
-          { label: SelectionTool.optionMessage("Line"), value: SelectOptions.LineAndReplace },
-          { label: SelectionTool.optionMessage("Box"), value: SelectOptions.BoxAndReplace },
-          { label: SelectionTool.optionMessage("Add"), value: SelectOptions.PickAndAdd },
-          { label: SelectionTool.optionMessage("Remove"), value: SelectOptions.PickAndRemove },
+          { label: SelectionTool.modesMessage("Replace"), value: SelectionMode.Replace },
+          { label: SelectionTool.modesMessage("Add"), value: SelectionMode.Add },
+          { label: SelectionTool.modesMessage("Remove"), value: SelectionMode.Remove },
         ],
       },
     };
@@ -211,7 +232,8 @@ export class SelectionTool extends PrimitiveTool {
         return false;
     }
     // always force UI to sync display of options since the select option of PickAndRemove should only be enabled if the selection set has elements.
-    if (returnValue) this.syncSelectionOption();
+    if (returnValue)
+      this.syncSelectionMode();
     return returnValue;
   }
 
@@ -321,7 +343,7 @@ export class SelectionTool extends PrimitiveTool {
       if (0 === contents.size) {
         if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev)) {
           this.iModel.selectionSet.emptyAll();
-          this.syncSelectionOption();
+          this.syncSelectionMode();
         }
         return;
       }
@@ -413,7 +435,7 @@ export class SelectionTool extends PrimitiveTool {
     if (SelectionMethod.Pick !== this.getSelectionMethod()) {
       if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev)) {
         this.iModel.selectionSet.emptyAll();
-        this.syncSelectionOption();
+        this.syncSelectionMode();
       }
       if (InputSource.Touch !== ev.inputSource)
         this.selectByPointsStart(ev); // Require touch move and not tap to start crossing line/box selection...
@@ -443,7 +465,7 @@ export class SelectionTool extends PrimitiveTool {
 
     if (!ev.isControlKey && 0 !== this.iModel.selectionSet.size && this.wantSelectionClearOnMiss(ev)) {
       this.iModel.selectionSet.emptyAll();
-      this.syncSelectionOption();
+      this.syncSelectionMode();
     }
 
     return EventHandled.Yes;
@@ -534,58 +556,28 @@ export class SelectionTool extends PrimitiveTool {
 
   public static startTool(): boolean { return new SelectionTool().run(); }
 
-  private syncSelectionOption(): void {
-    if (SelectOptions.PickAndRemove === this._selectionOptionValue.value && !this.iModel.selectionSet.isActive) {
-      // No selection active resetting selection option since PickAndRemove is no longer valid
-      this._selectionOptionValue.value = SelectOptions.PickAndReplace;
+  private syncSelectionMode(): void {
+    if (SelectionMode.Remove === this._selectionModeValue.value && !this.iModel.selectionSet.isActive) {
+      // No selection active resetting selection mode since there is nothing to Remove
+      this._selectionModeValue.value = SelectionMode.Replace;
       this.setSelectionMode(SelectionMode.Replace);
-      this.setSelectionMethod(SelectionMethod.Pick);
       this.initSelectTool();
     }
-
-    const syncItem: ToolSettingsPropertySyncItem = { value: this._selectionOptionValue.clone(), propertyName: SelectionTool._optionsName };
+    const syncItem: ToolSettingsPropertySyncItem = { value: this._selectionModeValue.clone(), propertyName: SelectionTool._modesName };
     this.syncToolSettingsProperties([syncItem]);
   }
 
-  public get selectionOption(): SelectOptions {
-    return this._selectionOptionValue.value as SelectOptions;
-  }
-
-  public set selectionOption(option: SelectOptions) {
-    this._selectionOptionValue.value = option;
-    this.syncSelectionOption();
-  }
-
-  private applySelectionOption(options: SelectOptions): void {
+  private applySelectionOption(newMethod: SelectionMethod, newMode: SelectionMode): void {
     let restartRequired = false;
-    switch (options) {
-      case SelectOptions.PickAndReplace:
-        restartRequired = (this.getSelectionMethod() !== SelectionMethod.Pick);
-        this.setSelectionMode(SelectionMode.Replace);
-        this.setSelectionMethod(SelectionMethod.Pick);
-        break;
-      case SelectOptions.LineAndReplace:
-        restartRequired = (this.getSelectionMethod() !== SelectionMethod.Line);
-        this.setSelectionMode(SelectionMode.Replace);
-        this.setSelectionMethod(SelectionMethod.Line);
-        break;
-      case SelectOptions.BoxAndReplace:
-        restartRequired = (this.getSelectionMethod() !== SelectionMethod.Box);
-        this.setSelectionMode(SelectionMode.Replace);
-        this.setSelectionMethod(SelectionMethod.Box);
-        break;
-      case SelectOptions.PickAndAdd:
-        restartRequired = (this.getSelectionMethod() !== SelectionMethod.Pick);
-        this.setSelectionMode(SelectionMode.Add);
-        this.setSelectionMethod(SelectionMethod.Pick);
-        break;
-      case SelectOptions.PickAndRemove:
-        if (this.iModel.selectionSet.size > 0) {
-          restartRequired = (this.getSelectionMethod() !== SelectionMethod.Pick);
-          this.setSelectionMode(SelectionMode.Remove);
-          this.setSelectionMethod(SelectionMethod.Pick);
-        }
-        break;
+
+    if (this.getSelectionMode() !== newMode) {
+      this.setSelectionMode(newMode);
+      restartRequired = true;
+    }
+
+    if (this.getSelectionMethod() !== newMethod) {
+      this.setSelectionMethod(newMethod);
+      restartRequired = true;
     }
 
     if (restartRequired)
@@ -597,17 +589,23 @@ export class SelectionTool extends PrimitiveTool {
     if (!this.wantToolSettings())
       return undefined;
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    // generate 2 columns - label will be placed in column 0 and editor in column 1.
-    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionOptionValue.clone() as PrimitiveValue, SelectionTool._getOptionsDescription(), { rowPriority: 0, columnIndex: 1 }));
+    // generate 3 columns - label will be placed in column 0 and button group editors in columns 1 and 2.
+    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionMethodValue.clone() as PrimitiveValue, SelectionTool._getOptionsDescription(), { rowPriority: 0, columnIndex: 1 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionModeValue.clone() as PrimitiveValue, SelectionTool._getModesDescription(), { rowPriority: 0, columnIndex: 2 }));
     return toolSettings;
   }
 
   /** Used to send changes from UI back to Tool */
   public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
-    if (updatedValue.propertyName === SelectionTool._optionsName) {
-      if (this._selectionOptionValue.update(updatedValue.value))
-        this.applySelectionOption(updatedValue.value.value as SelectOptions);
+    if (updatedValue.propertyName === SelectionTool._methodsName) {
+      if (this._selectionMethodValue.update(updatedValue.value))
+        this.applySelectionOption(this._selectionMethodValue.value as SelectionMethod, this._selectionModeValue.value as SelectionMode);
     }
+    if (updatedValue.propertyName === SelectionTool._modesName) {
+      if (this._selectionModeValue.update(updatedValue.value))
+        this.applySelectionOption(this._selectionMethodValue.value as SelectionMethod, this._selectionModeValue.value as SelectionMode);
+    }
+
     // return true is change is valid
     return true;
   }

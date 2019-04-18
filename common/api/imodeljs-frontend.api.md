@@ -4983,8 +4983,6 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     selectDecoration(ev: BeButtonEvent, currHit?: HitDetail): Promise<EventHandled>;
     // (undocumented)
-    selectionOption: SelectOptions;
-    // (undocumented)
     protected setSelectionMethod(method: SelectionMethod): void;
     // (undocumented)
     protected setSelectionMode(mode: SelectionMode): void;
@@ -5007,20 +5005,6 @@ export class SelectionTool extends PrimitiveTool {
     protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean;
     // (undocumented)
     protected wantToolSettings(): boolean;
-}
-
-// @public
-export const enum SelectOptions {
-    // (undocumented)
-    BoxAndReplace = 2,
-    // (undocumented)
-    LineAndReplace = 1,
-    // (undocumented)
-    PickAndAdd = 3,
-    // (undocumented)
-    PickAndRemove = 4,
-    // (undocumented)
-    PickAndReplace = 0
 }
 
 // @internal
