@@ -1711,6 +1711,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
 // @public
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
+    // @internal (undocumented)
+    addContextRealityModel(contextRealityModel: ContextRealityModelProps, iModel: IModelConnection): void;
     analysisStyle: AnalysisStyle | undefined;
     backgroundColor: ColorDef;
     // Warning: (ae-forgotten-export) The symbol "BackgroundMapState" needs to be exported by the entry point imodeljs-frontend.d.ts
@@ -1737,6 +1739,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     monochromeColor: ColorDef;
     readonly name: string;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+    // @internal (undocumented)
+    removeContextRealityModel(index: number): void;
     // Warning: (ae-forgotten-export) The symbol "RenderScheduleState" needs to be exported by the entry point imodeljs-frontend.d.ts
     // 
     // @internal (undocumented)
