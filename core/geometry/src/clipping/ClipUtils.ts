@@ -233,13 +233,16 @@ export class ClipUtilities {
    * Return the range of various types of clippers
    * * `ConvexClipPlaneSet` -- dispatch to `rangeOfConvexClipPlaneSetIntersectionWithRange`
    * * `UnionOfConvexClipPlaneset` -- union of ranges of member `ConvexClipPlaneSet`
-   * * `ClipPrimitive` -- access its `UnionOfConvexClipPlaneSet`
-   * * `ClipVector` -- intersection of the ranges of its `ClipPrimitive`
+   * * `ClipPrimitive` -- access its `UnionOfConvexClipPlaneSet`.
+   * * `ClipVector` -- intersection of the ranges of its `ClipPrimitive`.
    * * `undefined` -- entire input range.
+   * * If `observeInvisibleFlag` is false, the "invisbile" properties are ignored, and this effectively returns the range of the edgework of the members
+   * * If `observeInvisibleFlag` is false, the "invisbile" properties are observed, and "invisble" parts do not restrict the range.
    * @param clipper
    * @param range non-null range.
+   * @param observeInvisibleFlag indicates how "invisible" bit is applied for ClipPrimitive.
    */
-  public static rangeOfClipperIntersectionWithRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d): Range3d {
+  public static rangeOfClipperIntersectionWithRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag: boolean = true): Range3d {
     if (clipper === undefined)
       return range.clone();
     if (clipper instanceof ConvexClipPlaneSet)
@@ -253,17 +256,23 @@ export class ClipUtilities {
       return rangeUnion;
     }
     if (clipper instanceof ClipPrimitive) {
+      if (observeInvisibleFlag && clipper.invisible)
+        return range.clone();
       return this.rangeOfClipperIntersectionWithRange(clipper.fetchClipPlanesRef(), range);
     }
     if (clipper instanceof ClipVector) {
-      const rangeIntersection = Range3d.createNull();
+      const rangeIntersection = range.clone();
       for (const c of clipper.clips) {
-        const rangeC = this.rangeOfClipperIntersectionWithRange(c, range);
-        rangeIntersection.intersect(rangeC, rangeIntersection);
+        if (observeInvisibleFlag && c.invisible) {
+        // trivial range tests do not expose the effects.   Assume the hole allows everything.
+        } else {
+          const rangeC = this.rangeOfClipperIntersectionWithRange(c, range, observeInvisibleFlag);
+          rangeIntersection.intersect(rangeC, rangeIntersection);
+        }
       }
       return rangeIntersection;
 
     }
-    return Range3d.createNull();
+    return range.clone();
   }
 }

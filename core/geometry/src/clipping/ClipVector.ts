@@ -39,20 +39,6 @@ export class ClipVector {
         return new ClipVector();
     }
 
-    /** Create a ClipVector from an array of ClipShapes.
-     * @deprecated This just passes args through to `CreateCapture ()`
-     */
-    public static createClipShapeRefs(clips: ClipShape[], result?: ClipVector): ClipVector {
-        return this.createCapture(clips, result);
-    }
-
-    /** Create a ClipVector from an array of ClipShapes, each one becoming a deep copy.
-     * @deprecated this just passes the args to `Create ()`
-     */
-    public static createClipShapeClones(clips: ClipShape[], result?: ClipVector): ClipVector {
-        return this.create(clips, result);
-    }
-
     /** Create a ClipVector from an array of ClipPrimitives (or derived classes) (capture the pointers) */
     public static createCapture(clips: ClipPrimitive[], result?: ClipVector): ClipVector {
         if (result) {

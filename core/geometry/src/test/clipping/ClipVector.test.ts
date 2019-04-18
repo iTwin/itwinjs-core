@@ -133,14 +133,14 @@ describe("ClipVector", () => {
       Point3d.create(7.7, -4.5),
       Point3d.create(6.3, -4.5),
     ], -5, 5)!;
-    clipVector012 = ClipVector.createClipShapeRefs([clipShape0, clipShape1, clipShape2]);
-    // clipVector234 = ClipVector.createClipShapeRefs([clipShape2, clipShape3, clipShape4]);
+    clipVector012 = ClipVector.createCapture([clipShape0, clipShape1, clipShape2]);
+    // clipVector234 = ClipVector.createCapture([clipShape2, clipShape3, clipShape4]);
   });
 
-  const ck = new Checker();
   it("ClipVector creation and to/from JSON", () => {
+    const ck = new Checker();
     // Test the ability to parse ClipPlanes from all ClipShapes in a ClipVector (this test must be completed first before other tests cause the ClipShapes to cache their sets)
-    const newlyCreatedClipVector = ClipVector.createClipShapeRefs([clipShape0, clipShape1, clipShape2, clipShape3, clipShape4]);
+    const newlyCreatedClipVector = ClipVector.createCapture([clipShape0, clipShape1, clipShape2, clipShape3, clipShape4]);
     for (const clip of newlyCreatedClipVector.clips)
       ck.testFalse(clip.arePlanesDefined());
     newlyCreatedClipVector.parseClipPlanes();
@@ -183,11 +183,11 @@ describe("ClipVector", () => {
     const parsedClipVector = ClipVector.fromJSON(clipJSON);
     ck.testTrue(clipVectorsAreEqual(clipVector012, parsedClipVector), "ClipVector is the same after roundtrip to and from JSON");
 
-    ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("Point proximity and classification", () => {
+    const ck = new Checker();
     const shape0Extremities: Point3d[] = [
       Point3d.create(-5, -3),
       Point3d.create(-3, -2),
@@ -241,7 +241,7 @@ describe("ClipVector", () => {
     }
     // Ensure that pointInside check only passes for points within intersecting ClipShapes
     ck.testFalse(clipVector012.pointInside(Point3d.create(-4, -3)), "Point inside check should fail for non-intersecting ClipShapes");
-    const intersectionClipVector = ClipVector.createClipShapeRefs([
+    const intersectionClipVector = ClipVector.createCapture([
       ClipShape.createShape([Point3d.create(-5, 5), Point3d.create(-5, -5), Point3d.create(0.00001, 0)], -0.00001, 0.00001)!,
       ClipShape.createShape([Point3d.create(5, 5), Point3d.create(5, -5), Point3d.create(-0.00001, 0)], -0.00001, 0.00001)!,
     ]);
@@ -249,11 +249,11 @@ describe("ClipVector", () => {
     ck.testFalse(intersectionClipVector.pointInside(Point3d.create(0.00011)), "Point inside one of two triangles fails pointInside check");
     ck.testFalse(intersectionClipVector.pointInside(Point3d.create(-0.00011)), "Point inside one of two triangles fails pointInside check");
 
-    ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("Transformations and matrix multiplication", () => {
+    const ck = new Checker();
     const m0 = Matrix4d.createIdentity();
     const t0 = Transform.createIdentity();
     const clipVectorClone = clipVector012.clone();
@@ -272,6 +272,7 @@ describe("ClipVector", () => {
   });
 
   it("Extract boundary loops", () => {
+    const ck = new Checker();
     const vectorLen = clipVector012.clips.length;
     const lastShape = clipVector012.clips[vectorLen - 1] as ClipShape;
     const expClipMask = ClipMaskXYZRangePlanes.XAndY | (lastShape.zLowValid ? ClipMaskXYZRangePlanes.ZLow : 0) | (lastShape.zHighValid ? ClipMaskXYZRangePlanes.ZHigh : 0);
@@ -306,7 +307,6 @@ describe("ClipVector", () => {
 
     // TODO: Attempt the same check, with member transforms in each of the ClipShapes s.t. the points are transformed as they are extracted
 
-    ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });
 });

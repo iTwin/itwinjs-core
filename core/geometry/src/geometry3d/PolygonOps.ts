@@ -139,7 +139,7 @@ export class PolygonOps {
       const area = 0.5 * normalSum.magnitude();
       const inverseArea = Geometry.conditionalDivideFraction(1, area);
       if (inverseArea !== undefined) {
-        const result = Ray3d.createCapture(origin.plusScaled(centroidSum, inverseArea, origin), normalSum);
+        const result = Ray3d.createCapture(origin.plusScaled(centroidSum, inverseArea), normalSum);
         result.tryNormalizeInPlaceWithAreaWeight(area);
         return result;
       }

@@ -1153,7 +1153,7 @@ export class ClipUtilities {
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
     static loopsOfConvexClipPlaneIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): GeometryQuery[];
     static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus;
-    static rangeOfClipperIntersectionWithRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d): Range3d;
+    static rangeOfClipperIntersectionWithRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): Range3d;
     static rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d): Range3d;
     // (undocumented)
     static selectIntervals01(curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
@@ -1173,10 +1173,6 @@ export class ClipVector {
     clone(result?: ClipVector): ClipVector;
     static create(clips: ClipPrimitive[], result?: ClipVector): ClipVector;
     static createCapture(clips: ClipPrimitive[], result?: ClipVector): ClipVector;
-    // @deprecated
-    static createClipShapeClones(clips: ClipShape[], result?: ClipVector): ClipVector;
-    // @deprecated
-    static createClipShapeRefs(clips: ClipShape[], result?: ClipVector): ClipVector;
     static createEmpty(result?: ClipVector): ClipVector;
     extractBoundaryLoops(loopPoints: Point3d[][], transform?: Transform): number[];
     static fromJSON(json: any, result?: ClipVector): ClipVector;

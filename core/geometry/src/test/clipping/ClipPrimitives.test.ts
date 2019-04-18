@@ -606,7 +606,9 @@ describe("ClipPrimitive", () => {
           { dist: -0.09250245365197413, normal: [0.9999999999999999, 0, 0] },
           { dist: -4.620474647250288, normal: [-0.9999999999999999, 0, 0] },
           { dist: -6.984123210872675, normal: [0, -0.9999999999999999, 6.123233995736765e-17] },
-          { dist: -0.09250245365197496, normal: [0, 0.9999999999999999, -6.123233995736765e-17] }]]}}];
+          { dist: -0.09250245365197496, normal: [0, 0.9999999999999999, -6.123233995736765e-17] }]],
+      },
+    }];
     const clipper = ClipVector.fromJSON(json);
     if (ck.testPointer(clipper, "ClipVector.fromJSON for test fragment") && clipper) {
       const q = 10.0; // big enough so that adding or subtracting from any inside point moves outside.
@@ -652,14 +654,16 @@ describe("ClipPrimitive", () => {
   it("ClipVectorWithHole", () => {
     const ck = new Checker();
     const outerClip = ClipPrimitive.createCapture(ConvexClipPlaneSet.createXYBox(-1, -2, 8, 10));
+    ck.testFalse (outerClip.invisible);
     const holeClip = ClipPrimitive.createCapture(ConvexClipPlaneSet.createXYBox(1, 1, 4, 5), true);
+    ck.testTrue (holeClip.invisible);
     const clipVector0 = ClipVector.create([outerClip, holeClip]);
     const clipVector1 = clipVector0.clone();
     const json0 = clipVector0.toJSON();
     const clipVector2 = ClipVector.fromJSON(json0);
-    console.log(prettyPrint(json0));
-    const json2 = clipVector2.toJSON();
-    console.log(prettyPrint(json2));
+    // console.log(prettyPrint(json0));
+    // const json2 = clipVector2.toJSON();
+    // console.log(prettyPrint(json2));
     for (const cv of [clipVector0, clipVector1, clipVector2]) {
       ck.testTrue(cv.pointInside(Point3d.create(7, 2)));
       ck.testTrue(cv.pointInside(Point3d.create(0, 0)));
@@ -667,7 +671,17 @@ describe("ClipPrimitive", () => {
       ck.testFalse(cv.pointInside(Point3d.create(-1.1, 0)));
       ck.testFalse(cv.pointInside(Point3d.create(2, 2)));
     }
-
+    const bigQ = 1000.0;
+    const outerRange = Range3d.createXYZXYZ(-bigQ, -bigQ, -bigQ, bigQ, bigQ, bigQ);
+    const rangeOfUndefinedClipper = ClipUtilities.rangeOfClipperIntersectionWithRange(undefined, outerRange);
+    ck.testRange3d(rangeOfUndefinedClipper, outerRange);
+    const outerClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(outerClip, outerRange);
+    const holeClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(holeClip, outerRange);
+    const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clipVector1, outerRange);
+    console.log("outerRange", outerRange);
+    console.log("outerClipRange", outerClipRange);
+    console.log("holeClipRange", holeClipRange);
+    console.log("clippedRange", clippedRange);
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });
