@@ -96,6 +96,8 @@ export interface CheckBoxInfo {
     isVisible?: boolean;
     // (undocumented)
     state?: CheckBoxState;
+    // (undocumented)
+    tooltip?: string;
 }
 
 // @beta
@@ -622,6 +624,7 @@ export interface ImageCheckBoxProps extends CommonProps {
     inputClassName?: string;
     inputStyle?: React.CSSProperties;
     onClick?: (checked: boolean) => any;
+    tooltip?: string;
 }
 
 // @beta
@@ -859,6 +862,7 @@ export interface NodeCheckboxProps {
     isDisabled?: boolean;
     onClick?: (newState: CheckBoxState) => void;
     state?: CheckBoxState;
+    tooltip?: string;
 }
 
 // @public

@@ -40,6 +40,8 @@ export interface NodeCheckboxProps {
   onClick?: (newState: CheckBoxState) => void;
   /** Indicates whether checkbox is disabled */
   isDisabled?: boolean;
+  /** Tooltip to be displayed when mouse is hovered over checkbox */
+  tooltip?: string;
 }
 
 /** Properties for the [[TreeNode]] React component
@@ -94,6 +96,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         label: "",
         checked: this.props.checkboxProps.state === CheckBoxState.On,
         disabled: this.props.checkboxProps.isDisabled,
+        title: this.props.checkboxProps.tooltip,
         onClick: this._onCheckboxClick,
         onChange: this._onCheckboxChange,
       };

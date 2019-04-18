@@ -300,6 +300,8 @@ export interface BeInspireTreeNodeConfig {
 // @public
 export interface BeInspireTreeNodeITree {
     // (undocumented)
+    checkboxTooltip?: string;
+    // (undocumented)
     icon?: string;
     // (undocumented)
     state?: {
@@ -2331,6 +2333,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     static readonly defaultProps: Partial<TreeProps>;
     // @internal (undocumented)
     static getDerivedStateFromProps(props: TreeProps, state: TreeState): TreeState | null;
+    getLoadedNode(id: string): TreeNodeItem | undefined;
     // @internal
     static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>, base?: BeInspireTreeNodeConfig): BeInspireTreeNodeConfig;
     // @internal (undocumented)

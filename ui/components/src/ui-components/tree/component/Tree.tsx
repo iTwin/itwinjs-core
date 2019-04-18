@@ -817,6 +817,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         isDisabled: node.itree!.state!.checkboxDisabled,
         state: node.itree!.state!.checked ? CheckBoxState.On : CheckBoxState.Off,
         onClick: this._onCheckboxClick,
+        tooltip: node.itree!.checkboxTooltip,
       } : undefined,
       cellEditing: this.state.cellEditingEngine,
       showDescription: this.props.showDescriptions,
@@ -841,6 +842,12 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       onMouseMove: (e: React.MouseEvent) => { if (e.buttons === 1) this._selectionHandler.updateDragAction(node); },
 
     };
+  }
+
+  /** Get loaded node by its ID */
+  public getLoadedNode(id: string): TreeNodeItem | undefined {
+    const node = this.state.model.node(id);
+    return node ? node.payload : undefined;
   }
 
   /** @internal */

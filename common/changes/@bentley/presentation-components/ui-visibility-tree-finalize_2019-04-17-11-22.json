@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "`viewWithUnifiedSelection` was refactored to only do 1 way synchronization: logical selection -> iModel hilite list",
+      "comment": "Temporarily disable hiliting model and category elements until a more performant way to do that exists",
       "packageName": "@bentley/presentation-components",
       "type": "none"
     }

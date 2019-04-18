@@ -27,6 +27,8 @@ export interface ImageCheckBoxProps extends CommonProps {
   inputClassName?: string;
   /** Custom CSS Style for the checkbox input element */
   inputStyle?: React.CSSProperties;
+  /** Tooltip to be displayed when mouse is hovered over the checkbox */
+  tooltip?: string;
 }
 
 /**
@@ -58,7 +60,7 @@ export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
     const checkBoxClass = classnames("core-image-checkbox", this.props.className);
     const imageClass = classnames("image icon", this.props.checked ? this.props.imageOn : this.props.imageOff);
     return (
-      <label className={checkBoxClass} style={this.props.style} onClick={this._onLabelClick}>
+      <label className={checkBoxClass} style={this.props.style} onClick={this._onLabelClick} title={this.props.tooltip}>
         <input type="checkbox" className={this.props.inputClassName} style={this.props.inputStyle}
           checked={this.props.checked} disabled={this.props.disabled} onChange={this._onChange} onClick={this._onInputClick} />
         <span className={imageClass} />

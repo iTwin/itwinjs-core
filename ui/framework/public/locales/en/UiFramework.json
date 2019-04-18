@@ -135,5 +135,31 @@
     "searchViews": "Search Views...",
     "listView": "List",
     "thumbnailView": "Thumbnails"
+  },
+  "visibilityTree": {
+    "status": {
+      "visible": "Visible",
+      "hidden": "Hidden",
+      "disabled": "Disabled"
+    },
+    "tooltips": {
+      "subject": {
+        "atLeastOneModelVisible": "At least one model is visible",
+        "allModelsHidden": "All models are hidden"
+      },
+      "category": {
+        "modelNotDisplayed": "Can't control category display if model is not displayed",
+        "displayedThroughPerModelOverride": "Per-model category override set to 'Show'",
+        "hiddenThroughPerModelOverride": "Per-model category override set to 'Hide'",
+        "displayedThroughCategorySelector": "Category display enabled through category selector",
+        "hiddenThroughCategorySelector": "Category display disabled through category selector"
+      },
+      "element": {
+        "modelNotDisplayed": "Can't control element display if model is not displayed",
+        "hiddenThroughNeverDrawnList": "Element in \"never drawn\" list",
+        "displayedThroughAlwaysDrawnList": "Element in \"always drawn\" list",
+        "hiddenThroughCategory": "Category not displayed"
+      }
+    }
   }
 }

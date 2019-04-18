@@ -20,4 +20,5 @@ export interface CheckBoxInfo {
   isVisible?: boolean;
   isDisabled?: boolean;
   state?: CheckBoxState;
+  tooltip?: string;
 }

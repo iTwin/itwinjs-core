@@ -23,7 +23,6 @@ import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
-import { InstanceKey } from '@bentley/presentation-common';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { Matrix3d } from '@bentley/geometry-core';
@@ -3258,16 +3257,38 @@ export class ViewUtilities {
 
 // @internal (undocumented)
 export class VisibilityHandler implements IDisposable {
-    constructor(vp: Viewport, onVisibilityChange: () => void);
+    constructor(props: VisibilityHandlerProps);
     // (undocumented)
-    changeVisibility(key: InstanceKey, on: boolean): Promise<void>;
+    changeVisibility(node: TreeNodeItem, on: boolean): Promise<boolean>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    isDisplayed(key: InstanceKey): boolean | Promise<boolean>;
+    getDisplayStatus(node: TreeNodeItem): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
     onVisibilityChange: () => void;
     }
+
+// @internal (undocumented)
+export interface VisibilityHandlerProps {
+    // (undocumented)
+    dataProvider: IPresentationTreeDataProvider;
+    // (undocumented)
+    getLoadedNode: (id: string) => TreeNodeItem | undefined;
+    // (undocumented)
+    onVisibilityChange: () => void;
+    // (undocumented)
+    viewport: Viewport;
+}
+
+// @internal (undocumented)
+export interface VisibilityStatus {
+    // (undocumented)
+    isDisabled?: boolean;
+    // (undocumented)
+    isDisplayed: boolean;
+    // (undocumented)
+    tooltip?: string;
+}
 
 // Warning: (ae-forgotten-export) The symbol "VisibilityTreeState" needs to be exported by the entry point ui-framework.d.ts
 // 

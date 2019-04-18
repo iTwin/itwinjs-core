@@ -6,36 +6,13 @@
       "ruleType": "Content",
       "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"Model\", \"BisCore\")",
       "onlyIfNotHandled": true,
-      "specifications": [
-        {
-          "specType": "ContentRelatedInstances",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ModelContainsElements"
-            ]
-          },
-          "requiredDirection": "Forward"
-        }
-      ]
+      "specifications": []
     },
     {
       "ruleType": "Content",
       "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"Category\", \"BisCore\")",
       "onlyIfNotHandled": true,
-      "specifications": [
-        {
-          "specType": "ContentRelatedInstances",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "GeometricElement2dIsInCategory",
-              "GeometricElement3dIsInCategory"
-            ]
-          },
-          "requiredDirection": "Backward"
-        }
-      ]
+      "specifications": []
     },
     {
       "ruleType": "Content",

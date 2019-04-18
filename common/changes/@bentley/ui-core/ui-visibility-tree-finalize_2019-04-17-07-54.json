@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Fix tree placeholder styling (set correct background and offset)",
+      "comment": "Add ability to set tooltips on tree node checkboxes",
       "packageName": "@bentley/ui-core",
       "type": "none"
     }

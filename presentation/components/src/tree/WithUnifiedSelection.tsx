@@ -5,7 +5,7 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { Keys, Subtract, Omit, StandardNodeTypes, ECInstanceNodeKey } from "@bentley/presentation-common";
+import { Keys, StandardNodeTypes, ECInstanceNodeKey } from "@bentley/presentation-common";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { TreeProps, TreeNodeItem } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
@@ -42,19 +42,23 @@ export interface Props {
  * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<Omit<P, "selectedNodes">, Props> & Props> {
+export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>) {
 
-  type CombinedProps = Subtract<Omit<P, "selectedNodes">, Props> & Props;
+  type TreeComponentInstance = InstanceType<typeof TreeComponent>;
+  type CombinedProps = P & Props;
+  type CombinedPropsWithForwardedRef = CombinedProps & {
+    forwardedRef: React.Ref<TreeComponentInstance>;
+  };
 
   interface State {
     isNodeSelected: (node: TreeNodeItem) => boolean;
   }
 
-  return class WithUnifiedSelection extends React.Component<CombinedProps, State> implements IUnifiedSelectionComponent {
+  class WithUnifiedSelection extends React.Component<CombinedPropsWithForwardedRef, State> implements IUnifiedSelectionComponent {
 
     private _selectionHandler?: SelectionHandler;
 
-    public constructor(props: CombinedProps, context: any) {
+    public constructor(props: CombinedPropsWithForwardedRef, context: any) {
       super(props, context);
       this.state = {
         isNodeSelected: this.createIsNodeSelectedCallback(),
@@ -175,19 +179,21 @@ export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: Rea
 
     public render() {
       const {
-        selectionTarget, selectionHandler, // do not bleed our props
-        selectedNodes, onNodesSelected, onNodesDeselected, // take out the props we're overriding
+        forwardedRef, selectionHandler, // do not bleed our props
         ...props /* tslint:disable-line: trailing-comma */ // pass-through props
-      } = this.props as any;
+      } = this.props;
       return (
         <TreeComponent
-          selectedNodes={this.state.isNodeSelected} onNodesSelected={this.onNodesSelected} onNodesDeselected={this.onNodesDeselected}
-          {...props}
+          {...props as CombinedProps}
+          ref={forwardedRef}
+          selectedNodes={this.state.isNodeSelected}
+          onNodesSelected={this.onNodesSelected}
+          onNodesDeselected={this.onNodesDeselected}
         />
       );
     }
-
-  };
+  }
+  return React.forwardRef<TreeComponentInstance, CombinedProps>((props, ref) => <WithUnifiedSelection {...props} forwardedRef={ref} />);
 }
 
 let counter = 1;
