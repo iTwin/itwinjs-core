@@ -14,6 +14,7 @@ import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { Loop } from "../curve/Loop";
 import { LineString3d } from "../curve/LineString3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
+import { ClipVector } from "./ClipVector";
 
 /** Enumerated type for describing where geometry lies with respect to clipping planes. */
 export const enum ClipPlaneContainment {
@@ -227,5 +228,42 @@ export class ClipUtilities {
       },
       true, true, false);
     return result;
+  }
+  /**
+   * Return the range of various types of clippers
+   * * `ConvexClipPlaneSet` -- dispatch to `rangeOfConvexClipPlaneSetIntersectionWithRange`
+   * * `UnionOfConvexClipPlaneset` -- union of ranges of member `ConvexClipPlaneSet`
+   * * `ClipPrimitive` -- access its `UnionOfConvexClipPlaneSet`
+   * * `ClipVector` -- intersection of the ranges of its `ClipPrimitive`
+   * * `undefined` -- entire input range.
+   * @param clipper
+   * @param range non-null range.
+   */
+  public static rangeOfClipperIntersectionWithRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d): Range3d {
+    if (clipper === undefined)
+      return range.clone();
+    if (clipper instanceof ConvexClipPlaneSet)
+      return this.rangeOfConvexClipPlaneSetIntersectionWithRange(clipper, range);
+    if (clipper instanceof UnionOfConvexClipPlaneSets) {
+      const rangeUnion = Range3d.createNull();
+      for (const c of clipper.convexSets) {
+        const rangeC = this.rangeOfConvexClipPlaneSetIntersectionWithRange(c, range);
+        rangeUnion.extendRange(rangeC);
+      }
+      return rangeUnion;
+    }
+    if (clipper instanceof ClipPrimitive) {
+      return this.rangeOfClipperIntersectionWithRange(clipper.fetchClipPlanesRef(), range);
+    }
+    if (clipper instanceof ClipVector) {
+      const rangeIntersection = Range3d.createNull();
+      for (const c of clipper.clips) {
+        const rangeC = this.rangeOfClipperIntersectionWithRange(c, range);
+        rangeIntersection.intersect(rangeC, rangeIntersection);
+      }
+      return rangeIntersection;
+
+    }
+    return Range3d.createNull();
   }
 }

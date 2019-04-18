@@ -136,27 +136,6 @@ export class ClipVector {
         return true;
     }
 
-    /** Returns the three-dimensional range of the ClipShapes (ignoring other kinds of clippers) that this ClipVector spans, which may be null. */
-    public getRange(transform?: Transform, result?: Range3d): Range3d | undefined {
-        const range = Range3d.createNull(result);
-
-        for (const shape of this._clips) {
-            if (shape instanceof ClipShape) {
-                const thisRange = shape.getRange(false, transform);
-                if (thisRange !== undefined) {
-                    if (range.isNull)
-                        range.setFrom(thisRange);
-                    else
-                        range.intersect(thisRange, range);
-                }
-            }
-        }
-        if (!this.boundingRange.isNull)
-            range.intersect(this.boundingRange, range);
-
-        return range;
-    }
-
     /** Returns true if the given point lies inside all of this ClipVector's ClipShapes (by rule of intersection). */
     public pointInside(point: Point3d, onTolerance: number = Geometry.smallMetricDistanceSquared): boolean {
         if (!this.boundingRange.isNull && !this.boundingRange.containsPoint(point))

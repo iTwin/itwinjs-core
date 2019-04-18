@@ -1060,8 +1060,6 @@ export const enum ClipPlaneContainment {
 // @public
 export class ClipPrimitive {
     protected constructor(planeSet?: UnionOfConvexClipPlaneSets | undefined, isInvisible?: boolean);
-    static addOutsideEdgeSetToParams(x0: number, y0: number, x1: number, y1: number, pParams: PlaneSetParamsCache, isInvisible?: boolean): void;
-    static addShapeToParams(shape: Point3d[], pFlags: number[], pParams: PlaneSetParamsCache): void;
     arePlanesDefined(): boolean;
     classifyPointContainment(points: Point3d[], ignoreInvisibleSetting: boolean): ClipPlaneContainment;
     protected _clipPlanes?: UnionOfConvexClipPlaneSets;
@@ -1076,11 +1074,9 @@ export class ClipPrimitive {
     static fromJSON(json: any): ClipPrimitive | undefined;
     // (undocumented)
     static fromJSONClipPrimitive(json: any): ClipPrimitive | undefined;
-    getRange(_returnMaskRange: boolean, _transform: Transform, _result?: Range3d): Range3d | undefined;
     // (undocumented)
     readonly invisible: boolean;
     protected _invisible: boolean;
-    static isLimitEdge(limitValue: number, point0: Point3d, point1: Point3d): boolean;
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     pointInside(point: Point3d, onTolerance?: number): boolean;
     setInvisible(invisible: boolean): void;
@@ -1097,11 +1093,9 @@ export class ClipShape extends ClipPrimitive {
     static createEmpty(isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
     static createFrom(other: ClipShape, result?: ClipShape): ClipShape;
     static createShape(polygon?: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean, result?: ClipShape): ClipShape | undefined;
-    // (undocumented)
     ensurePlaneSets(): void;
     // (undocumented)
     static fromClipShapeJSON(json: any, result?: ClipShape): ClipShape | undefined;
-    getRange(returnMaskRange?: boolean, transform?: Transform, result?: Range3d): Range3d | undefined;
     initSecondaryProps(isMask: boolean, zLow?: number, zHigh?: number, transform?: Transform): void;
     readonly invisible: boolean;
     readonly isMask: boolean;
@@ -1121,27 +1115,23 @@ export class ClipShape extends ClipPrimitive {
     toJSON(): any;
     readonly transformFromClip: Transform | undefined;
     // (undocumented)
-    protected _transformFromClip: Transform | undefined;
+    protected _transformFromClip?: Transform;
     // (undocumented)
     transformInPlace(transform: Transform): boolean;
+    // (undocumented)
+    readonly transformIsValid: boolean;
     readonly transformToClip: Transform | undefined;
     // (undocumented)
-    protected _transformToClip: Transform | undefined;
+    protected _transformToClip?: Transform;
     readonly transformValid: boolean;
-    // (undocumented)
-    protected _transformValid: boolean;
     readonly zHigh: number | undefined;
     // (undocumented)
-    protected _zHigh: number | undefined;
+    protected _zHigh?: number;
     readonly zHighValid: boolean;
-    // (undocumented)
-    protected _zHighValid: boolean;
     readonly zLow: number | undefined;
     // (undocumented)
-    protected _zLow: number | undefined;
+    protected _zLow?: number;
     readonly zLowValid: boolean;
-    // (undocumented)
-    protected _zLowValid: boolean;
 }
 
 // @public
@@ -1163,6 +1153,7 @@ export class ClipUtilities {
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
     static loopsOfConvexClipPlaneIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): GeometryQuery[];
     static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus;
+    static rangeOfClipperIntersectionWithRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d): Range3d;
     static rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d): Range3d;
     // (undocumented)
     static selectIntervals01(curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
@@ -1189,7 +1180,6 @@ export class ClipVector {
     static createEmpty(result?: ClipVector): ClipVector;
     extractBoundaryLoops(loopPoints: Point3d[][], transform?: Transform): number[];
     static fromJSON(json: any, result?: ClipVector): ClipVector;
-    getRange(transform?: Transform, result?: Range3d): Range3d | undefined;
     isAnyLineStringPointInside(points: Point3d[]): boolean;
     isLineStringCompletelyContained(points: Point3d[]): boolean;
     readonly isValid: boolean;
@@ -3759,27 +3749,6 @@ export class PlaneByOriginAndVectors4d {
     vectorV: Point4d;
 }
 
-// @public
-export class PlaneSetParamsCache {
-    constructor(zLow: number, zHigh: number, localOrigin?: Point3d, isMask?: boolean, isInvisible?: boolean, focalLength?: number);
-    // (undocumented)
-    clipPlaneSet: UnionOfConvexClipPlaneSets;
-    // (undocumented)
-    focalLength: number;
-    // (undocumented)
-    invisible: boolean;
-    // (undocumented)
-    isMask: boolean;
-    // (undocumented)
-    limitValue: number;
-    // (undocumented)
-    localOrigin: Point3d;
-    // (undocumented)
-    zHigh: number;
-    // (undocumented)
-    zLow: number;
-}
-
 // @public (undocumented)
 export class Point2d extends XY implements BeJSONFunctions {
     constructor(x?: number, y?: number);
@@ -4052,17 +4021,6 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     setFromJSON(json?: any): void;
     toJSON(): any;
     tryTransformInPlace(transform: Transform): boolean;
-}
-
-// @public
-export class PolyEdge {
-    constructor(origin: Point3d, next: Point3d, normal: Vector2d, z: number);
-    // (undocumented)
-    next: Point3d;
-    // (undocumented)
-    normal: Vector2d;
-    // (undocumented)
-    origin: Point3d;
 }
 
 // @public

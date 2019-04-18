@@ -5,14 +5,11 @@
 
 import { expect } from "chai";
 import { Checker } from "../Checker";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { ClipMaskXYZRangePlanes, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipVector } from "../../clipping/ClipVector";
-import { SmallSystem } from "../../numerics/Polynomials";
-import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
 
 // External test functions
@@ -96,7 +93,7 @@ describe("ClipVector", () => {
   let clipShape3: ClipShape;
   let clipShape4: ClipShape;
   let clipVector012: ClipVector;
-  let clipVector234: ClipVector;
+  // let clipVector234: ClipVector;
 
   /** Create a few polygonal regions, contained by several ClipShapes. The outcome will be the following (labeled by number):
    *                                 (3,3)  ________ (6,3)
@@ -137,7 +134,7 @@ describe("ClipVector", () => {
       Point3d.create(6.3, -4.5),
     ], -5, 5)!;
     clipVector012 = ClipVector.createClipShapeRefs([clipShape0, clipShape1, clipShape2]);
-    clipVector234 = ClipVector.createClipShapeRefs([clipShape2, clipShape3, clipShape4]);
+    // clipVector234 = ClipVector.createClipShapeRefs([clipShape2, clipShape3, clipShape4]);
   });
 
   const ck = new Checker();
@@ -251,68 +248,6 @@ describe("ClipVector", () => {
     ck.testTrue(intersectionClipVector.pointInside(Point3d.create(0, 0, 0)), "Origin point is inside ClipVector of intersecting triangles");
     ck.testFalse(intersectionClipVector.pointInside(Point3d.create(0.00011)), "Point inside one of two triangles fails pointInside check");
     ck.testFalse(intersectionClipVector.pointInside(Point3d.create(-0.00011)), "Point inside one of two triangles fails pointInside check");
-
-    ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  it("GetRange", () => {
-    // Check individual ranges of a single held ClipShape
-    for (const shape of clipVector012.clips) {
-      if (shape instanceof ClipShape) {
-        const clipVectorSingleShape = ClipVector.createClipShapeRefs([shape]);
-        // Calculate the highest x, y, and z values
-        let minX: number = Number.MAX_VALUE;
-        let minY: number = Number.MAX_VALUE;
-        const minZ: number = shape.zLowValid ? shape.zLow! : -Number.MAX_VALUE;  // If low z is present use it, otherwise, this represents -infinity.
-        let maxX: number = -Number.MAX_VALUE;
-        let maxY: number = -Number.MAX_VALUE;
-        const maxZ: number = shape.zHighValid ? shape.zHigh! : Number.MAX_VALUE; // If high z is present use it, otherwise, this represents +infinity.
-        for (const point of shape.polygon) {
-          if (point.x < minX)
-            minX = point.x;
-          if (point.x > maxX)
-            maxX = point.x;
-          if (point.y < minY)
-            minY = point.y;
-          if (point.y > maxY)
-            maxY = point.y;
-        }
-        const rangeFormed = Range3d.createXYZXYZ(minX, minY, minZ, maxX, maxY, maxZ);
-        ck.testRange3d(rangeFormed, clipVectorSingleShape.getRange()!, "Expect range of ClipVector of one ClipShape to match expected");
-      }
-    }
-
-    // Test range of intersection of ClipShapes 2 and 3
-    const clipVector23 = ClipVector.createClipShapeRefs([clipShape2, clipShape3]);
-    ck.testRange3d(Range3d.createXYZXYZ(6, -5, -.2, 6.5, -4, -.1), clipVector23.getRange()!, "Expect range of ClipVector with intersecting ClipShapes to match expected");
-
-    // Test range of intersection of ClipShapes 2 and 4
-    const clipVector24 = ClipVector.createClipShapeRefs([clipShape2, clipShape4]);
-    const triangleLine = LineSegment3d.createXYXY(6.3, -4.5, 7, -8);
-    const intersections = Vector2d.create();
-    SmallSystem.lineSegment2dXYTransverseIntersectionUnbounded(
-      Point2d.create(6.3, -4.5),
-      Point2d.create(7, -8),
-      Point2d.create(6, -5),
-      Point2d.create(10, -5),
-      intersections,
-    );
-    const intersectPoint = triangleLine.fractionToPoint(intersections.x);
-    ck.testRange3d(Range3d.createXYZXYZ(6.3, intersectPoint.y, -.2, 7.7, -4.5, -.1), clipVector24.getRange()!, "Expect range of ClipVector with intersecting ClipShapes to match expected");
-
-    // Test range of intersection of ClipShapes 2, 3, and 4
-    const clipVecRange = clipVector234.getRange()!;
-    const expectedRange = Range3d.createXYZXYZ(6.3, intersectPoint.y, -.2, 6.5, -4.5, -.1);
-    ck.testRange3d(expectedRange, clipVector234.getRange()!, "Expect range of ClipVector with intersecting ClipShapes to match expected");
-    ck.testTrue(clipVecRange.containsXYZ(6.4, -4.7, -.15), "Approximate center of intersection lies within ClipVector range");
-    ck.testFalse(clipVecRange.containsXYZ(6.1, -4.5, -.15), "Point within intersection of only 2 of 3 ClipShapes does not lie in range");
-
-    // Test range containment
-    Range3d.createXYZXYZ(intersectPoint.x, intersectPoint.y, -.2, 6.5, -4.5, -.1, expectedRange);
-    ck.testExactNumber(clipVector234.classifyRangeContainment(expectedRange, true), 1, "Expect exact intersection range to be strongly inside the ClipVector");
-    expectedRange.extendXYZ(expectedRange.low.x - 0.0001, expectedRange.low.y, expectedRange.low.z);
-    ck.testExactNumber(clipVector234.classifyRangeContainment(expectedRange, true), 2, "Expect exact range shifted by .0001 to be ambiguous to ClipVector (part in & part out)");
 
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);

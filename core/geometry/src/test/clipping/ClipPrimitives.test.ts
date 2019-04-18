@@ -5,7 +5,7 @@
 
 import { Checker } from "../Checker";
 import { expect } from "chai";
-import { ClipPrimitive, PlaneSetParamsCache, ClipMaskXYZRangePlanes, ClipShape } from "../../clipping/ClipPrimitive";
+import { ClipPrimitive, ClipMaskXYZRangePlanes, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
@@ -13,33 +13,14 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Geometry } from "../../Geometry";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { Triangulator } from "../../topology/Triangulation";
 import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../../topology/Graph";
 import { ClipVector } from "../../clipping/ClipVector";
 import { Angle } from "../../geometry3d/Angle";
 import { prettyPrint } from "../testFunctions";
-import { Sample } from "../../serialization/GeometrySamples";
 
 // tslint:disable:no-console
-
-/** Returns true if the range given does not contain any values extending to +/- infinity. */
-function isFiniteRange(range: Range3d): boolean {
-  if (range.low.x === -Number.MAX_VALUE)
-    return false;
-  if (range.low.y === -Number.MAX_VALUE)
-    return false;
-  if (range.low.z === -Number.MAX_VALUE)
-    return false;
-  if (range.high.x === Number.MAX_VALUE)
-    return false;
-  if (range.high.y === Number.MAX_VALUE)
-    return false;
-  if (range.high.z === Number.MAX_VALUE)
-    return false;
-  return true;
-}
 
 /** EXPENSIVE -- Returns true if two convex sets are equal, allowing reordering of arrays */
 function convexSetsAreEqual(convexSet0: ConvexClipPlaneSet, convexSet1: ConvexClipPlaneSet): boolean {
@@ -377,7 +358,6 @@ describe("ClipPrimitive", () => {
   it("GetRange", () => {
     const ck = new Checker();
     const clipPrimitive = ClipShape.createEmpty();
-    const clipPrimitiveRange = Range3d.createNull();
     const convexSet = ConvexClipPlaneSet.createEmpty();
     const convexSetRange = Range3d.createNull();
     const numIterations = 10;
@@ -395,9 +375,6 @@ describe("ClipPrimitive", () => {
       convexSetRange.setNull();
       convexSet.computePlanePlanePlaneIntersections(undefined, convexSetRange);
       ck.testTrue(convexSetRange !== undefined);
-      clipPrimitive.getRange(false, undefined, clipPrimitiveRange);
-      ck.testTrue(clipPrimitiveRange !== undefined);
-      ck.testRange3d(convexSetRange, clipPrimitiveRange, "Expect range of convex set to be equal to range of ClipShape");
 
       ck.testTrue(clipPrimitive.isValidPolygon);
 
@@ -408,9 +385,6 @@ describe("ClipPrimitive", () => {
       convexSetRange.setNull();
       convexSet.computePlanePlanePlaneIntersections(undefined, convexSetRange);
       ck.testTrue(convexSetRange !== undefined);
-      clipPrimitive.getRange(false, undefined, clipPrimitiveRange);
-      ck.testTrue(clipPrimitiveRange !== undefined);
-      ck.testRange3d(convexSetRange, clipPrimitiveRange, "Expect range of convex set to be equal to range of ClipShape");
     }
 
     // Exercise check for z-clips
@@ -440,98 +414,6 @@ describe("ClipPrimitive", () => {
     ck.testPoint3d(originalPoint, testPoint, "Point should be unchanged when transformed with ClipShape containing identity transform");
 
     // TODO: Provide checks for correct application of an actual transform into a new coordinate system
-
-    ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  it("Plane edge additions using PlaneSetParamsCache", () => {
-    const ck = new Checker();
-    const clipCache = new PlaneSetParamsCache(-5, 5);
-    const values = [-87, -30, 0, 15.45, 1067];
-    const sideLength = 10;
-    // Creates several boxed regions using an AddPlaneSetParams object
-    for (const i of values)
-      ClipPrimitive.addOutsideEdgeSetToParams(i, i, i + sideLength, i, clipCache);   // This will take care of z clipping specified by low and high of params
-    // ck.testFalse(isFiniteRange(clipCache.clipPlaneSet.getRangeOfAlignedPlanes()!), "Unbounded planes in AddPlaneSetParams will have undefined range");
-    let idx = 0;
-    for (const convexSet of clipCache.clipPlaneSet.convexSets) {
-      const xPlane = convexSet.planes[0];
-      const yPlane = convexSet.planes[1];
-      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(xPlane.inwardNormalRef.negate(), Point3d.create(values[idx] + sideLength, values[idx] - sideLength, 0)));
-      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(yPlane.inwardNormalRef.negate(), Point3d.create(values[idx] + sideLength, values[idx] - sideLength, 0)));
-      idx++;
-    }
-    const expectedRange = Range3d.createXYZXYZ(values[0], values[0] - sideLength, clipCache.zLow, values[values.length - 1] + sideLength, values[values.length - 1], clipCache.zHigh);
-    const computedRange = Range3d.createNull();
-    clipCache.clipPlaneSet.computePlanePlanePlaneIntersectionsInAllConvexSets(undefined, computedRange);
-    ck.testTrue(isFiniteRange(computedRange), "After closing unbounded planes in AddPlaneSetParams, expect range to form");
-    ck.testRange3d(computedRange, expectedRange, "After closing unbounded planes in AddPlaneSetParams, expected range to match with the array extremities");
-
-    // Loop through and check that each convex set correctly formed an enclosed box of expected size
-    const expectedDiagonal = Math.sqrt(3 * (sideLength * sideLength));
-    for (const convexSet of clipCache.clipPlaneSet.convexSets) {
-      const setRange = Range3d.createNull();
-      convexSet.computePlanePlanePlaneIntersections(undefined, setRange);
-      ck.testTrue(setRange !== undefined, "Convex set representing box should have defined range");
-      const diagonal = setRange!.diagonal().magnitude();
-      ck.testTrue(Geometry.isAlmostEqualNumber(diagonal, expectedDiagonal), "Diagonals of convex set boxes should match expected value");
-    }
-
-    ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  it("Plane set additions using PlaneSetParamsCache", () => {
-    const ck = new Checker();
-    const minZ = -10;
-    const maxZ = 10;
-    const clipCache = new PlaneSetParamsCache(minZ, maxZ);
-    ClipPrimitive.addShapeToParams(octogonalPoints, [], clipCache);
-
-    const midpoint = Point3d.create((min2D.x + max2D.x) / 2, (min2D.y + max2D.y) / 2, (minZ + maxZ) / 2);    // Is midpoint of polygon
-
-    // check corners
-    const planeSet = clipCache.clipPlaneSet;
-    for (const point of octogonalPoints) {
-      ck.testTrue(planeSet.isPointOnOrInside(point, Geometry.smallMetricDistanceSquared), "Corner point should be on plane");
-      ck.testFalse(planeSet.isPointInside(point), "Corner points should not be inside of clipped region");
-    }
-    // check midpoint and 3 extremities (one from each axis)
-    ck.testTrue(planeSet.isPointInside(midpoint), "Midpoint should be inside of clipped region");
-    const testPoint = Point3d.create(midpoint.x, midpoint.y, midpoint.z + maxZ);
-    ck.testTrue(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "Extremity should fall on object");
-    testPoint.z += 0.0001;
-    ck.testFalse(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "External point should be outside object");
-    testPoint.set(min2D.x - 5, midpoint.y, 0);
-    ck.testTrue(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "Extremity should fall on object");
-    testPoint.x -= 0.0001;
-    ck.testFalse(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "External point should be outside object");
-    testPoint.set(midpoint.x, max2D.y, 0);
-    ck.testTrue(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "Extremity should fall on object");
-    testPoint.y += 0.0001;
-    ck.testFalse(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "External point should be outside object");
-    // Angled edge case
-    testPoint.set((min2D.x + octogonalPoints[octogonalPoints.length - 1].x) / 2, (min2D.y + octogonalPoints[octogonalPoints.length - 1].y) / 2, 0);
-    ck.testTrue(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "Midpoint of angled edge should fall on object");
-    testPoint.x -= .0001;
-    ck.testFalse(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "External point should be outside object");
-
-    ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  it("Plane set additions using PlaneSetParamsCache and perspective", () => {
-    const ck = new Checker();
-    const minZ = -10;
-    const maxZ = -2;
-    const clipCache = new PlaneSetParamsCache(minZ, maxZ, undefined, false, false, 5.0);
-    const points = Sample.createRectangle(-1, -1, 3, 4, -4);
-    ClipPrimitive.addShapeToParams(points, [], clipCache);
-
-    // check corners
-    const planeSet = clipCache.clipPlaneSet;
-    ck.testPointer(planeSet);
 
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
