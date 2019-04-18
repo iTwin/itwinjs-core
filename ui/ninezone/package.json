@@ -21,7 +21,7 @@
     "lint": "tslint --project . 1>&2 && tslint --project ./demo/tsconfig.json 1>&2",
     "pack": "npm run build && node ../../scripts/pack.js",
     "start": "webpack-dev-server --config ./demo/webpack.dev.js",
-    "test": "mocha --opts ../mocha.opts lib/test/**/*.test.js",
+    "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "iModelJs": {

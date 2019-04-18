@@ -17,7 +17,7 @@
     "lint": "tslint --project . 1>&2",
     "pack": "node ../../scripts/pack.js",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ui-components",
-    "test": "mocha --opts ../mocha.opts lib/test/**/*.test.js",
+    "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "iModelJs": {
