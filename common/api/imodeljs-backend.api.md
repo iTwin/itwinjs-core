@@ -652,22 +652,11 @@ export namespace ConcurrencyControl {
 
 // @alpha
 export interface CrashReportingConfig {
-    // (undocumented)
-    crashDumpDir: string; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    maxDumpsInDir?: number; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    maxReportsPerDay?: number; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    maxUploadRetries?: number; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    params?: CrashReportingConfigNameValuePair[]; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    uploadRetryWaitInterval?: number; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    uploadUrl?: string; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    wantFullMemory?: boolean; /** custom parameters to send to the crash server. Put your product name and GPRID in here. If you are using a commercial crash server, this is the place to put your API key. */
+    crashDir: string;
+    maxDumpsInDir?: number;
+    params?: CrashReportingConfigNameValuePair[];
+    wantFullMemory?: boolean;
+    writeDumpsToCrashDir?: boolean;
 }
 
 // @alpha (undocumented)
@@ -2311,22 +2300,11 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export interface NativeCrashReportingConfig {
-        // (undocumented)
-        crashDumpDir: string; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        maxDumpsInDir?: number; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        maxReportsPerDay?: number; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        maxUploadRetries?: number; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        params?: NativeCrashReportingConfigNameValuePair[]; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        uploadRetryWaitInterval?: number; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        uploadUrl?: string; /** The directory to which .dmp files are written. */
-        // (undocumented)
+        crashDir: string;
+        maxDumpsInDir?: number;
+        params?: NativeCrashReportingConfigNameValuePair[];
         wantFullMemory?: boolean;
+        writeDumpsToCrashDir?: boolean;
     }
     // (undocumented)
     export interface NativeCrashReportingConfigNameValuePair {
