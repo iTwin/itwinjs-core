@@ -16,7 +16,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>,
 /** Basic text input
  * @beta
  */
-export class Input extends React.Component<InputProps> {
+export class Input extends React.PureComponent<InputProps> {
   public render(): JSX.Element {
     const { className, style, ...props } = this.props;
     return (

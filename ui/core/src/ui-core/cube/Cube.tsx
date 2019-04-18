@@ -37,6 +37,10 @@ export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, Comm
  * @beta
  */
 export class Cube extends React.Component<CubeProps> {
+  constructor(props: CubeProps) {
+    super(props);
+  }
+
   public render(): React.ReactNode {
     const { faces, rotMatrix, className, ...props } = this.props;
     return (

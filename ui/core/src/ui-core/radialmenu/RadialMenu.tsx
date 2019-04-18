@@ -60,6 +60,10 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
     sectors: [],
   };
 
+  constructor(props: RadialMenuProps) {
+    super(props);
+  }
+
   public render(): JSX.Element {
     const width = 2 * (this.props.outerRadius + 1);
     let x = this.props.left, y = this.props.top;
@@ -186,6 +190,10 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
 
   /** @internal */
   public readonly state: Readonly<RadialButtonState> = { hover: this.props.selected || false };
+
+  constructor(props: RadialButtonProps) {
+    super(props);
+  }
 
   public render(): JSX.Element {
     const sector = this.props.annularSector;

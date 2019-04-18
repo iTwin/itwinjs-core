@@ -831,6 +831,7 @@ export enum CubeHover {
 // 
 // @public
 export class CubeNavigationAid extends React_2.Component<CommonProps, CubeNavigationState> {
+    constructor(props: CommonProps);
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -905,6 +906,7 @@ export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndC
 
 // @beta
 export class DragDropLayerRendererComponent extends React_2.Component<DragDropLayerRendererProps> {
+    constructor(props: DragDropLayerRendererProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1078,6 +1080,7 @@ export interface EachWidgetProps {
 // 
 // @public
 export class ElementTooltip extends React_2.Component<CommonProps, ElementTooltipState> {
+    constructor(props: CommonProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1117,7 +1120,7 @@ export interface ElementTooltipChangedEventArgs {
 // Warning: (ae-forgotten-export) The symbol "ExpandableSectionState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @beta
-export class ExpandableSection extends React_2.Component<ExpandableSectionProps, ExpandableSectionState> {
+export class ExpandableSection extends React_2.PureComponent<ExpandableSectionProps, ExpandableSectionState> {
     constructor(props: ExpandableSectionProps);
     render(): JSX.Element;
 }
@@ -1663,7 +1666,7 @@ export interface IModelUserInfo {
 }
 
 // @beta
-export class InputFieldMessage extends React_2.Component<InputFieldMessageProps> {
+export class InputFieldMessage extends React_2.PureComponent<InputFieldMessageProps> {
     // (undocumented)
     render(): React_2.ReactNode;
 }
@@ -1837,7 +1840,7 @@ export class KeyboardShortcutManager {
     }
 
 // @public
-export class KeyboardShortcutMenu extends React_2.Component<CommonProps, KeyboardShortcutMenuState> {
+export class KeyboardShortcutMenu extends React_2.PureComponent<CommonProps, KeyboardShortcutMenuState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1965,7 +1968,7 @@ export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
 // Warning: (ae-forgotten-export) The symbol "ListPickerState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @beta
-export class ListPickerBase extends React_2.Component<ListPickerProps, ListPickerState> {
+export class ListPickerBase extends React_2.PureComponent<ListPickerProps, ListPickerState> {
     constructor(props: any);
     getExpandedContent(): JSX.Element | undefined;
     isExpanded: () => boolean;
@@ -1974,7 +1977,7 @@ export class ListPickerBase extends React_2.Component<ListPickerProps, ListPicke
     }
 
 // @beta
-export class ListPickerItem extends React_2.Component<ListPickerItemProps> {
+export class ListPickerItem extends React_2.PureComponent<ListPickerItemProps> {
     render(): JSX.Element;
 }
 
@@ -2102,7 +2105,7 @@ export class ModalDialogManager {
 // Warning: (ae-forgotten-export) The symbol "ModalDialogRendererState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class ModalDialogRenderer extends React_2.Component<CommonProps, ModalDialogRendererState> {
+export class ModalDialogRenderer extends React_2.PureComponent<CommonProps, ModalDialogRendererState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -2113,6 +2116,7 @@ export class ModalDialogRenderer extends React_2.Component<CommonProps, ModalDia
 
 // @public
 export class ModalFrontstage extends React_2.Component<ModalFrontstageProps> {
+    constructor(props: ModalFrontstageProps);
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2225,9 +2229,9 @@ export class NavigationAidControl extends ConfigurableUiControl {
 export class NavigationWidget extends React_2.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
     constructor(props: NavigationWidgetPropsEx);
     componentDidMount(): void;
-    componentWillUnmount(): void;
     // (undocumented)
-    static getDerivedStateFromProps(newProps: NavigationWidgetPropsEx, state: NavigationWidgetState): NavigationWidgetState | null;
+    componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState): void;
+    componentWillUnmount(): void;
     // (undocumented)
     render(): React_2.ReactNode;
     // @internal (undocumented)
@@ -2315,7 +2319,7 @@ export interface PointerMessageProps extends CommonProps {
 
 // @public
 export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemState> {
-    constructor(props: any);
+    constructor(props: PopupButtonProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -2480,7 +2484,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
 }
 
 // @public
-export class SignIn extends React_2.Component<SignInProps> {
+export class SignIn extends React_2.PureComponent<SignInProps> {
     constructor(props: SignInProps);
     // (undocumented)
     componentDidMount(): void;
@@ -2642,7 +2646,7 @@ export enum StagePanelState {
 // Warning: (ae-forgotten-export) The symbol "StandardMessageBoxState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class StandardMessageBox extends React_2.Component<StandardMessageBoxProps, StandardMessageBoxState> {
+export class StandardMessageBox extends React_2.PureComponent<StandardMessageBoxProps, StandardMessageBoxState> {
     constructor(props: StandardMessageBoxProps);
     // (undocumented)
     render(): JSX.Element;
@@ -2682,6 +2686,7 @@ export type StateType<R extends Reducer<any, any>> = DeepReadonly<ReturnType<R>>
 // 
 // @public
 export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState> implements IStatusBar {
+    constructor(props: StatusBarProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -3055,7 +3060,7 @@ export class ToolUiProvider extends ConfigurableUiControl {
 export class ToolWidget extends React_2.Component<ToolWidgetPropsEx, ToolWidgetState> {
     constructor(props: ToolWidgetPropsEx);
     // (undocumented)
-    static getDerivedStateFromProps(newProps: ToolWidgetPropsEx, state: ToolWidgetState): ToolWidgetState | null;
+    componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState): void;
     // (undocumented)
     render(): React_2.ReactNode;
     // @internal (undocumented)
@@ -3167,6 +3172,7 @@ export interface UiVisibilityEventArgs {
 
 // @beta
 export class ValidationTextbox extends React_2.Component<ValidationTextboxProps> {
+    constructor(props: ValidationTextboxProps);
     // @internal (undocumented)
     render(): React_2.ReactNode;
     }

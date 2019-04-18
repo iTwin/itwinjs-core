@@ -33,6 +33,10 @@ export interface ModalFrontstageProps extends CommonProps {
  * @public
  */
 export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
+  constructor(props: ModalFrontstageProps) {
+    super(props);
+  }
+
   private _onGoBack = () => {
     this.props.navigateBack();
     this.props.closeModal();

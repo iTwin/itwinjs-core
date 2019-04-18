@@ -5,7 +5,7 @@
 /** @module Utilities */
 
 /** Available directions.
- * @alpha
+ * @beta
  */
 export enum Direction {
   Left,

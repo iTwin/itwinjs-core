@@ -28,7 +28,7 @@ export interface SignInProps extends CommonProps {
  * then `props.onSignedIn` is called after sign-in has completed.
  * @public
  */
-export class SignIn extends React.Component<SignInProps> {
+export class SignIn extends React.PureComponent<SignInProps> {
   constructor(props: SignInProps) {
     super(props);
   }

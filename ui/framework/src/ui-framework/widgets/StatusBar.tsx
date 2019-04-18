@@ -68,6 +68,10 @@ export interface StatusBarProps extends CommonProps {
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> implements IStatusBar {
   private _footerMessages: any;
 
+  constructor(props: StatusBarProps) {
+    super(props);
+  }
+
   public static severityToStatus(severity: MessageSeverity): Status {
     switch (severity) {
       case MessageSeverity.Error:

@@ -26,6 +26,9 @@ export interface PropertyViewProps extends SharedRendererProps {
  * @public
  */
 export class PropertyView extends React.Component<PropertyViewProps> {
+  constructor(props: PropertyViewProps) {
+    super(props);
+  }
 
   private _onClick = () => {
     if (this.props.onClick)

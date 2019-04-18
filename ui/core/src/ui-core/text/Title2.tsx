@@ -11,7 +11,7 @@ import { TextProps } from "./TextProps";
 /** Styled title text
  * @beta
  */
-export class Title2 extends React.Component<TextProps> {
+export class Title2 extends React.PureComponent<TextProps> {
   public render(): JSX.Element {
     const { className, style, ...props } = this.props;
 

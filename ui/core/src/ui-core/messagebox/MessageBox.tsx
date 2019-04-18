@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module MessageBox */
+/** @module Dialog */
 
 import * as React from "react";
 import * as classnames from "classnames";
@@ -64,7 +64,7 @@ export interface MessageBoxProps extends CommonProps {
 /** Message Box React component.
  * @beta
  */
-export class MessageBox extends React.Component<MessageBoxProps> {
+export class MessageBox extends React.PureComponent<MessageBoxProps> {
   public static defaultProps: Partial<MessageBoxProps> = {
     minWidth: 400,
     minHeight: 400,
@@ -102,7 +102,7 @@ export interface MessageContainerProps extends CommonProps {
 /** Message Container React component.
  * @beta
  */
-export class MessageContainer extends React.Component<MessageContainerProps> {
+export class MessageContainer extends React.PureComponent<MessageContainerProps> {
   public static getIconClassName(severity: MessageSeverity, hollow?: boolean): string {
     let iconClassName = "";
 

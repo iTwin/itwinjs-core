@@ -26,7 +26,7 @@ export class KeyboardShortcutMenuEvent extends UiEvent<KeyboardShortcutMenuState
 /** Widget State Changed Event class.
  * @public
  */
-export class KeyboardShortcutMenu extends React.Component<CommonProps, KeyboardShortcutMenuState> {
+export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, KeyboardShortcutMenuState> {
 
   /** @internal */
   public readonly state: KeyboardShortcutMenuState = {

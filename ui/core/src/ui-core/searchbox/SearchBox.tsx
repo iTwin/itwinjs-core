@@ -47,6 +47,10 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   /** @internal */
   public readonly state: Readonly<SearchBoxState> = { value: this.props.initialValue || "" };
 
+  constructor(props: SearchBoxProps) {
+    super(props);
+  }
+
   /** @internal */
   public render(): React.ReactNode {
     const searchClassName = classnames("core-searchbox", this.props.className);

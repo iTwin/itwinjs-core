@@ -13,7 +13,7 @@ import { DragDropContext, ContextComponent } from "react-dnd";
  * This component should not be used directly. Instead, should be used.
  * @beta
  */
-export class BeDragDropContextComponent extends React.Component {
+export class BeDragDropContextComponent extends React.PureComponent {
   public render(): React.ReactNode {
     return (
       <>

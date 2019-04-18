@@ -11,7 +11,7 @@ import { TextProps } from "./TextProps";
 /** Styled body text
  * @beta
  */
-export class BodyText extends React.Component<TextProps> {
+export class BodyText extends React.PureComponent<TextProps> {
   public render(): JSX.Element {
     const { className, style, ...props } = this.props;
 

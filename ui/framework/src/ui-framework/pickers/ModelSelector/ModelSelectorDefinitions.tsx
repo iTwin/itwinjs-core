@@ -51,7 +51,7 @@ export enum Groups {
 export interface ModelSelectorWidgetProps {
   /** [[IModelConnection]] for current iModel */
   iModelConnection: IModelConnection;
-  /** Flag for accomodating all viewports */
+  /** Flag for accommodating all viewports */
   allViewports?: boolean;
   /** Active viewport */
   activeView?: Viewport;

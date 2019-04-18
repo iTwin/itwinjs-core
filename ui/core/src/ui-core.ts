@@ -138,7 +138,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Dialog
- * Classes for working with a Dialog.
+ * Classes for working with a Dialog or MessageBox.
  */
 /**
  * @docs-group-description ElementSeparator
@@ -153,20 +153,12 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Component that renders ui-core icon when given an icon name.
  */
 /**
- * @docs-group-description ImageCheckBox
- * Component for working with two image states, checked and unchecked.
- */
-/**
  * @docs-group-description Inputs
- * Classes for working with input controls, such as Input, Radio, Checkbox and Select.
+ * Classes for working with input controls, such as Input, Radio, Checkbox, Select and Toggle.
  */
 /**
  * @docs-group-description Loading
  * Classes for working with Loading spinner and progress indicator.
- */
-/**
- * @docs-group-description MessageBox
- * Classes for working with a MessageBox.
  */
 /**
  * @docs-group-description Popup
@@ -191,10 +183,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Text
  * Classes for working with different text controls.
- */
-/**
- * @docs-group-description Toggle
- * Classes for working with a Toggle.
  */
 /**
  * @docs-group-description Tree

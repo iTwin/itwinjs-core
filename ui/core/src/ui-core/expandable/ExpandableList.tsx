@@ -28,7 +28,7 @@ interface ExpandableListState {
  * ExpandableList React component
  * @public
  */
-export class ExpandableList extends React.Component<ExpandableListProps, ExpandableListState> {
+export class ExpandableList extends React.PureComponent<ExpandableListProps, ExpandableListState> {
 
   constructor(props: ExpandableListProps) {
     super(props);

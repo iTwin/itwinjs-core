@@ -137,6 +137,11 @@
       "jsdom-global/register",
       "source-map-support/register",
       "ts-node/register"
-    ]
+    ],
+    "check-coverage": true,
+    "statements": 87,
+    "branches": 78,
+    "functions": 83,
+    "lines": 87
   }
 }

@@ -78,6 +78,10 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
     },
   };
 
+  constructor(props: CommonProps) {
+    super(props);
+  }
+
   public render() {
     if (!this.state.isVisible)
       return null;

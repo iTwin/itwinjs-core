@@ -25,6 +25,9 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
  * @public
  */
 export class PrimitivePropertyRenderer extends React.Component<PrimitiveRendererProps> {
+  constructor(props: PrimitiveRendererProps) {
+    super(props);
+  }
 
   /** @internal */
   public render() {

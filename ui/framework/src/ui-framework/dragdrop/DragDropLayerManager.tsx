@@ -87,6 +87,11 @@ export interface DragDropLayerRendererProps extends CommonProps {
  */
 export class DragDropLayerRendererComponent extends React.Component<DragDropLayerRendererProps> {
   private _dragging: boolean = false;
+
+  constructor(props: DragDropLayerRendererProps) {
+    super(props);
+  }
+
   public componentDidMount() {
     window.addEventListener("dragstart", this._handleDragStart);
     window.addEventListener("dragend", this._handleDragEnd);

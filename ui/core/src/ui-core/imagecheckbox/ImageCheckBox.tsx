@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module ImageCheckBox */
+/** @module Inputs */
 
 import * as React from "react";
 import * as classnames from "classnames";
@@ -36,7 +36,7 @@ export interface ImageCheckBoxProps extends CommonProps {
  * Component to show a checked or unchecked image'
  * @beta
  */
-export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
+export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
 
   private _onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.stopPropagation)

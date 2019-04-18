@@ -56,7 +56,7 @@ export enum InputContext {
 /** A helper component for filtering trees and stepping through results
  * @public
  */
-export class FilteringInput extends React.Component<FilteringInputProps, FilteringInputState> {
+export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
   constructor(props: FilteringInputProps) {
     super(props);
     this.state = {

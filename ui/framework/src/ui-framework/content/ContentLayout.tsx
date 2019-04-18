@@ -124,12 +124,10 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
     }
   }
 
-  public static getDerivedStateFromProps(newProps: ContentWrapperProps, state: ContentWrapperState): ContentWrapperState | null {
-    if (state.content !== newProps.content) {
-      return { content: newProps.content, isActive: newProps.content === ContentViewManager.getActiveContent() };
+  public componentDidUpdate(prevProps: ContentWrapperProps, _prevState: ContentWrapperState) {
+    if (this.props.content !== prevProps.content) {
+      this.setState({ content: this.props.content, isActive: this.props.content === ContentViewManager.getActiveContent() });
     }
-
-    return null;
   }
 
 }
@@ -218,11 +216,13 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
     window.removeEventListener("resize", this._handleWindowResize, true);
   }
 
-  public static getDerivedStateFromProps(_newProps: SplitContainerProps, _state: SplitContainerState): SplitContainerState | null {
-    return {
-      pane2Width: "100%",
-      pane2Height: "100%",
-    };
+  public componentDidUpdate(prevProps: SplitContainerProps, _prevState: SplitContainerState) {
+    if (this.props !== prevProps) {
+      this.setState({
+        pane2Width: "100%",
+        pane2Height: "100%",
+      });
+    }
   }
 
   private _handleWindowResize = () => {

@@ -77,6 +77,10 @@ export interface TreeNodeProps extends CommonProps {
  * @public
  */
 export class TreeNode extends React.Component<TreeNodeProps> {
+  constructor(props: TreeNodeProps) {
+    super(props);
+  }
+
   public render() {
     const className = classnames(
       "core-tree-node",
