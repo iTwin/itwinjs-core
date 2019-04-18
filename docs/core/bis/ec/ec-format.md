@@ -87,7 +87,7 @@ Supported scientific type:
 
 - Example: StationOffsetSize of 2, in base 10, represents an offset of 100.
 
-**stationSeparator** the character used to separate the
+**stationSeparator** the character used to separate the station and off set portions of a `station` formatted value.
 
 ## Sub-Elements
 
