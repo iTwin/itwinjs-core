@@ -19,7 +19,7 @@ interface TimelineComponentProps {
   totalDuration: number;  // total duration in milliseconds
   initialDuration?: number;  // initial value for current duration in milliseconds
   milestones?: Milestone[]; // optional milestones
-  hideTimeline?: boolean;  // show in mini-mode
+  minimized?: boolean;  // show in minimized mode
   onChange?: (duration: number) => void; // callback with current value (as a fraction)
   onPlayPause?: (playing: boolean) => void; // callback with play/pause button is pressed
 }
@@ -27,7 +27,7 @@ interface TimelineComponentProps {
 interface TimelineComponentState {
   isSettingsOpen: boolean; // settings popup is opened or closed
   isPlaying: boolean; // timeline is currently playing or paused
-  hideTimeline?: boolean;
+  minimized?: boolean; // minimized mode
   currentDuration: number; // current duration in milliseconds
   totalDuration: number;  // total duration in milliseconds
   repeat: boolean; // automatically restart when the timeline is finished playing
@@ -45,7 +45,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     this.state = {
       isSettingsOpen: false,
       isPlaying: false,
-      hideTimeline: this.props.hideTimeline,
+      minimized: this.props.minimized,
       currentDuration: props.initialDuration ? props.initialDuration : 0,
       totalDuration: this.props.totalDuration,
       repeat: false,
@@ -185,11 +185,11 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     this.setState({ isSettingsOpen: false });
   }
 
-  private _onHideTimelineChanged = () => {
-    this.setState({ hideTimeline: !this.state.hideTimeline, isSettingsOpen: false });
+  private _onModeChanged = () => {
+    this.setState({ minimized: !this.state.minimized, isSettingsOpen: false });
   }
 
-  private _onLoopChanged = () => {
+  private _onRepeatChanged = () => {
     this.setState({ repeat: !this.state.repeat, isSettingsOpen: false });
   }
 
@@ -203,14 +203,14 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   }
 
   private _renderSettings = () => {
-    const className = classnames("timeline-settings icon icon-more-vertical-2", this.state.hideTimeline && "mini-mode");
-    const expandName = (this.state.hideTimeline) ? "Expand" : "Minimize";
+    const expandName = (this.state.minimized) ? "Expand" : "Minimize";
+    const hasDates = this.props.startDate && this.props.endDate;
     return (
       <>
-        <span className={className} ref={(element) => this._settings = element} onClick={this._onSettingsClick} ></span>
+        <span className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick} ></span>
         <ContextMenu parent={this._settings} isOpened={this.state.isSettingsOpen} onClickOutside={this._onCloseSettings.bind(this)} position={Position.BottomRight}>
-          <ContextMenuItem name={expandName} onClick={this._onHideTimelineChanged} />
-          <ContextMenuItem name="Repeat" checked={this.state.repeat} onClick={this._onLoopChanged} />
+          {hasDates && <ContextMenuItem name={expandName} onClick={this._onModeChanged} />}
+          <ContextMenuItem name="Repeat" checked={this.state.repeat} onClick={this._onRepeatChanged} />
         </ContextMenu>
       </>
     );
@@ -218,66 +218,52 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
   public render() {
     const { startDate, endDate, milestones } = this.props;
-    const { currentDuration, totalDuration, hideTimeline } = this.state;
+    const { currentDuration, totalDuration, minimized } = this.state;
     const currentDate = this._currentDate();
     const durationString = this._displayTime(currentDuration);
     const totalDurationString = this._displayTime(totalDuration);
-    // const miniMode = this.state.hideTimeline || undefined === startDate || undefined === endDate;
-    // const hasMilestones = this.props.milestones && this.props.milestones.length > 0 ? true : false;
-    const hasDates = startDate && endDate ? true : false;
-    const miniMode = hideTimeline || !hasDates;
+    const hasDates = startDate && endDate;
+    const miniMode = minimized || !hasDates;
 
     return (
-      <div className="timeline-component">
-        {!miniMode &&
-          <>
-            <div className="header">
-              <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
-              <PlayerButton className="play-backward" onClick={this._onBackward}>
-                <span className="icon icon-caret-left"></span>
-              </PlayerButton>
-              <PlayerButton className="play-button-step" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause}>
-                <span className="icon icon-media-controls-circular-play"></span>
-              </PlayerButton>
-              <PlayerButton className="play-forward" onClick={this._onForward}>
-                <span className="icon icon-caret-right"></span>
-              </PlayerButton>
-              <span className="current-date">{currentDate.toLocaleDateString()}</span>
-              {this._renderSettings()}
-            </div>
-            <Timeline
-              className="timeline-timeline"
-              startDate={startDate!}
-              endDate={endDate!}
-              selectedDate={currentDate}
-              milestones={milestones}
-              isPlaying={this.state.isPlaying} />
-          </>
-        }
+      <div className={classnames("timeline-component", miniMode && "minimized", hasDates && "has-dates")}>
+        <div className="header">
+          <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
+          <PlayerButton className="play-backward" icon="icon-caret-left" onClick={this._onBackward}/>
+          <PlayerButton className="play-button-step" icon="icon-media-controls-circular-play" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause}/>
+          <PlayerButton className="play-forward" icon="icon-caret-right"  onClick={this._onForward}/>
+          <span className="current-date">{currentDate.toLocaleDateString()}</span>
+          {!miniMode && this._renderSettings()}
+        </div>
+        <Timeline
+          className="timeline-timeline"
+          startDate={startDate!}
+          endDate={endDate!}
+          selectedDate={currentDate}
+          milestones={milestones}
+          isPlaying={this.state.isPlaying}
+        />
         <div className="scrubber">
-          {miniMode && <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />}
-          <div className="scrubber-container">
-            {(miniMode && hasDates) &&
-              <div className="dates-container">
-                <span className="start-date">{startDate!.toLocaleDateString()}</span>
-                <span className="end-date">{endDate!.toLocaleDateString()}</span>
-              </div>
-            }
-            <div className="content">
-              <span className="start-time">{durationString}</span>
-              <Scrubber
-                className="scrubber-scrubber"
-                currentDuration={this.state.currentDuration}
-                totalDuration={totalDuration}
-                startDate={startDate}
-                endDate={endDate}
-                isPlaying={this.state.isPlaying}
-                onChange={this._onTimelineChange}
-                onUpdate={this._onTimelineChange} />
-              <InlineEdit className="end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />
-            </div>
+          <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
+          <div className="start-time-container">
+            <span className="start-date">{startDate!.toLocaleDateString()}</span>
+            <span className="start-time">{durationString}</span>
           </div>
-         {miniMode && this._renderSettings()}
+          <Scrubber
+            className="slider"
+            currentDuration={this.state.currentDuration}
+            totalDuration={totalDuration}
+            startDate={startDate}
+            endDate={endDate}
+            isPlaying={this.state.isPlaying}
+            onChange={this._onTimelineChange}
+            onUpdate={this._onTimelineChange}
+          />
+          <div className="end-time-container">
+            <span className="end-date">{endDate!.toLocaleDateString()}</span>
+            <InlineEdit className="end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />
+          </div>
+          {miniMode && this._renderSettings()}
         </div>
       </div>
     );
