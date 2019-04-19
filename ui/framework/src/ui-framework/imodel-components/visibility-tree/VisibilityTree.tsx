@@ -20,6 +20,8 @@ import "./VisibilityTree.scss";
 // tslint:disable-next-line:variable-name naming-convention
 const Tree = treeWithUnifiedSelection(BasicTree);
 
+const pageSize = 20;
+
 /** @internal */
 export const RULESET: Ruleset = require("./Hierarchy.json"); // tslint:disable-line: no-var-requires
 let rulesetRegistered = 0;
@@ -73,7 +75,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
     this.state = {
       prevProps: props,
       ruleset: RULESET,
-      dataProvider: props.dataProvider ? props.dataProvider : new PresentationTreeDataProvider(props.imodel, RULESET.id),
+      dataProvider: props.dataProvider ? props.dataProvider : createDataProvider(props.imodel),
       checkboxInfo: this.createCheckBoxInfoCallback(),
     };
     this._treeRef = React.createRef();
@@ -86,10 +88,10 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
     this.registerRuleset(); // tslint:disable-line:no-floating-promises
   }
 
-  public static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState) {
+  public static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): Partial<VisibilityTreeState> | null {
     const base = { ...state, prevProps: nextProps };
     if (nextProps.imodel !== state.prevProps.imodel || nextProps.dataProvider !== state.prevProps.dataProvider)
-      return { ...base, dataProvider: nextProps.dataProvider ? nextProps.dataProvider : new PresentationTreeDataProvider(nextProps.imodel, RULESET.id) };
+      return { ...base, dataProvider: nextProps.dataProvider ? nextProps.dataProvider : createDataProvider(nextProps.imodel) };
     return base;
   }
 
@@ -209,12 +211,18 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
           onCheckboxClick={this.onCheckboxStateChange}
           showIcons={true}
           renderOverrides={{ renderCheckbox: this.renderNodeCheckbox }}
-          pageSize={20}
+          pageSize={pageSize}
         />
       </div>
     );
   }
 }
+
+const createDataProvider = (imodel: IModelConnection): IPresentationTreeDataProvider => {
+  const provider = new PresentationTreeDataProvider(imodel, RULESET.id);
+  provider.pagingSize = pageSize;
+  return provider;
+};
 
 const createCheckBoxInfo = (status: VisibilityStatus): CheckBoxInfo => ({
   state: status.isDisplayed ? CheckBoxState.On : CheckBoxState.Off,

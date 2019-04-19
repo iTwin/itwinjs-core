@@ -42,7 +42,6 @@ import { PageOptions } from '@bentley/ui-components';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-ninezone';
-import { PresentationTreeDataProvider } from '@bentley/presentation-components';
 import * as PropTypes from 'prop-types';
 import * as React_2 from 'react';
 import { RectangleProps } from '@bentley/ui-ninezone';
@@ -3306,12 +3305,7 @@ export class VisibilityTree extends React_2.PureComponent<VisibilityTreeProps, V
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): {
-        dataProvider: IPresentationTreeDataProvider | PresentationTreeDataProvider;
-        prevProps: VisibilityTreeProps;
-        ruleset: Ruleset;
-        checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
-    };
+    static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): Partial<VisibilityTreeState> | null;
     // (undocumented)
     render(): JSX.Element;
     }
