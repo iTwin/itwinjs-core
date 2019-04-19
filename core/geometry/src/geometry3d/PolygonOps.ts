@@ -121,18 +121,22 @@ export class PolygonOps {
       return undefined;
     }
     if (n >= 3) {
-      const origin = points[0];
+      const origin = points[0].clone();
+      const normal = PolygonOps.areaNormal(points);
+      normal.normalizeInPlace();
       const vector0 = origin.vectorTo(points[1]);
       let vector1 = Vector3d.create();
       let cross = Vector3d.create();
       const centroidSum = Vector3d.createZero();
       const normalSum = Vector3d.createZero();
+      let signedTriangleArea;
       // This will work with or without closure edge.  If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
         vector1 = origin.vectorTo(points[i], vector1);
         cross = vector0.crossProduct(vector1, cross);
+        signedTriangleArea = normal.dotProduct(cross);    // well, actually twice the area.
         normalSum.addInPlace(cross); // this grows to twice the area
-        const b = cross.magnitude() / 6.0;
+        const b = signedTriangleArea / 6.0;
         centroidSum.plus2Scaled(vector0, b, vector1, b, centroidSum);
         vector0.setFrom(vector1);
       }

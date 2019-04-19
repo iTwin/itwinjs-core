@@ -28,6 +28,7 @@ import { Cartographic } from '@bentley/imodeljs-common';
 import { CartographicRange } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ClipShape } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { Code } from '@bentley/imodeljs-common';
 import { CodeSpec } from '@bentley/imodeljs-common';
@@ -6746,6 +6747,19 @@ export class ViewClipClearTool extends ViewClipTool {
 }
 
 // @internal
+export class ViewClipControlArrow {
+    constructor(origin: Point3d, direction: Vector3d, sizeInches: number, name?: string);
+    // (undocumented)
+    direction: Vector3d;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    origin: Point3d;
+    // (undocumented)
+    sizeInches: number;
+}
+
+// @internal
 export class ViewClipDecoration extends EditManipulator.HandleProvider {
     constructor(_clipView: Viewport, _clipEventHandler?: ViewClipEventHandler | undefined);
     // (undocumented)
@@ -6757,19 +6771,19 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     protected _clipEventHandler?: ViewClipEventHandler | undefined;
     // (undocumented)
+    protected _clipExtents?: Range1d;
+    // (undocumented)
     readonly clipId: string | undefined;
     // (undocumented)
     protected _clipId?: string;
     // (undocumented)
-    protected _clipRange?: Range3d;
+    protected _clipShape?: ClipShape;
     // (undocumented)
     protected _clipView: Viewport;
     // (undocumented)
-    protected _controlAxis: Vector3d[];
-    // (undocumented)
     protected _controlIds: string[];
     // (undocumented)
-    protected _controlPoint: Point3d[];
+    protected _controls: ViewClipControlArrow[];
     // (undocumented)
     static create(vp: Viewport, clipEventHandler?: ViewClipEventHandler): string | undefined;
     // (undocumented)
@@ -6845,22 +6859,22 @@ export interface ViewClipEventHandler {
 }
 
 // @internal
-export class ViewClipModifyTool extends EditManipulator.HandleTool {
-    constructor(manipulator: EditManipulator.HandleProvider, hitId: string, ids: string[], base: Point3d[], axis: Vector3d[], vp: Viewport, clip: ClipVector);
+export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
+    constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[]);
     // (undocumented)
     protected accept(ev: BeButtonEvent): boolean;
     // (undocumented)
     protected _anchorIndex: number;
     // (undocumented)
-    protected _axis: Vector3d[];
-    // (undocumented)
-    protected _base: Point3d[];
-    // (undocumented)
     protected _clip: ClipVector;
     // (undocumented)
     protected _clipView: Viewport;
     // (undocumented)
+    protected _controls: ViewClipControlArrow[];
+    // (undocumented)
     decorate(context: DecorateContext): void;
+    // (undocumented)
+    protected abstract drawViewClip(_context: DecorateContext): void;
     // (undocumented)
     protected _ids: string[];
     // (undocumented)
@@ -6871,6 +6885,18 @@ export class ViewClipModifyTool extends EditManipulator.HandleTool {
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     protected _restoreClip: boolean;
+    // (undocumented)
+    protected abstract updateViewClip(_ev: BeButtonEvent, _saveInUndo: boolean): boolean;
+    // (undocumented)
+    protected _viewRange: Range3d;
+}
+
+// @internal
+export class ViewClipShapeModifyTool extends ViewClipModifyTool {
+    // (undocumented)
+    protected drawViewClip(context: DecorateContext): void;
+    // (undocumented)
+    protected updateViewClip(ev: BeButtonEvent, saveInUndo: boolean): boolean;
 }
 
 // @internal
@@ -6887,11 +6913,17 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     static doClipToRange(viewport: Viewport, saveInUndo: boolean, range: Range3d, transform?: Transform): boolean;
     // (undocumented)
-    static doClipToShape(viewport: Viewport, saveInUndo: boolean, xyPoints: Point3d[], transform: Transform, zLow?: number, zHigh?: number): boolean;
+    static doClipToShape(viewport: Viewport, saveInUndo: boolean, xyPoints: Point3d[], transform?: Transform, zLow?: number, zHigh?: number): boolean;
+    // (undocumented)
+    static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, id?: string, color?: ColorDef, weight?: number): void;
     // (undocumented)
     protected static enumAsOrientationMessage(str: string): any;
     // (undocumented)
     static getClipOrientation(orientation: ClipOrientation, viewport: Viewport): Matrix3d | undefined;
+    // (undocumented)
+    static getClipShapeExtents(shape: ClipShape, viewRange: Range3d): Range1d;
+    // (undocumented)
+    static getClipShapePoints(shape: ClipShape, z: number): Point3d[];
     // (undocumented)
     protected static _getEnumAsOrientationDescription: () => PropertyDescription;
     // (undocumented)
@@ -6900,6 +6932,8 @@ export class ViewClipTool extends PrimitiveTool {
     static hasClip(viewport: Viewport): boolean;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    static isSingleClipShape(clip: ClipVector): ClipShape | undefined;
     // (undocumented)
     static isSingleConvexClipPlaneSet(clip: ClipVector): ConvexClipPlaneSet | undefined;
     // (undocumented)
