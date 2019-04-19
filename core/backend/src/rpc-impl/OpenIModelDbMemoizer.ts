@@ -54,7 +54,9 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
     const openQP = memoizeOpenIModelDb(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
     const waitPromise = BeDuration.wait(100); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded.
-    await Promise.race([openQP.promise, waitPromise]); // This resolves as soon as either the open is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
+
+    await Promise.race([openQP.promise, waitPromise]).catch(() => Promise.resolve()); // This resolves as soon as either the open is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
+    // Note: Rejections must be caught so that the memoization entry can be deleted
 
     if (openQP.isPending) {
       Logger.logTrace(loggerCategory, "Issuing pending status in OpenIModelDbMemoizer.openIModelDb", () => iModelToken);
