@@ -45,6 +45,16 @@ export interface Props {
    */
   activeLocale?: string;
 
+  /**
+   * An identifier which helps separate multiple presentation managers. It's
+   * mostly useful in tests where multiple presentation managers can co-exist
+   * and try to share the same resources, which we don't want. With this identifier
+   * set, managers put their resources into id-named subdirectories.
+   *
+   * @hidden
+   */
+  id?: string;
+
   /** @hidden */
   addon?: NativePlatformDefinition;
 }
@@ -114,7 +124,7 @@ export default class PresentationManager {
     if (this._isDisposed)
       throw new PresentationError(PresentationStatus.UseAfterDisposal, "Attempting to use Presentation manager after disposal");
     if (!this._nativePlatform) {
-      const nativePlatformImpl = createDefaultNativePlatform();
+      const nativePlatformImpl = createDefaultNativePlatform(this._props.id);
       this._nativePlatform = new nativePlatformImpl();
     }
     return this._nativePlatform!;
