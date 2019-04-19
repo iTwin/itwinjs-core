@@ -39,11 +39,4 @@ export class TestUsers {
       password: Config.App.getString("imjs_test_super_manager_user_password"),
     };
   }
-  /** Just another user */
-  public static get user1(): ImsUserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_user1_user_name"),
-      password: Config.App.getString("imjs_test_user1_user_password"),
-    };
-  }
 }
