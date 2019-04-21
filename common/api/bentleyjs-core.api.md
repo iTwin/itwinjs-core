@@ -844,6 +844,11 @@ export class Logger {
 }
 
 // @public
+export const enum LoggerCategory {
+    Performance = "Performance"
+}
+
+// @public
 export interface LoggerCategoryAndLevel {
     // (undocumented)
     category: string;
@@ -913,7 +918,7 @@ export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
 
 // @public
 export class PerfLogger implements IDisposable {
-    constructor(routine: string);
+    constructor(operation: string, metaData?: GetMetaDataFunction);
     // (undocumented)
     dispose(): void;
     }

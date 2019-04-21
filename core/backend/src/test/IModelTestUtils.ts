@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel } from "@bentley/bentleyjs-core";
-import { AccessToken, Config, ChangeSet, AuthorizedClientRequestContext, ImsUserCredentials } from "@bentley/imodeljs-clients";
+import { Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, LoggerCategory as BentleyLoggerCategory } from "@bentley/bentleyjs-core";
+import { AccessToken, Config, ChangeSet, AuthorizedClientRequestContext, ImsUserCredentials, LoggerCategory as ClientsLoggerCategory } from "@bentley/imodeljs-clients";
 import { Code, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
@@ -283,16 +283,13 @@ export class IModelTestUtils {
   // Convenience method used to debug specific tests/fixtures
   public static setupDebugLogLevels() {
     Logger.setLevelDefault(LogLevel.Warning);
-    Logger.setLevel("Performance", LogLevel.Info);
+    Logger.setLevel(BentleyLoggerCategory.Performance, LogLevel.Info);
     Logger.setLevel(BackendLoggerCategory.IModelDb, LogLevel.Trace);
-    Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
-    Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
-    Logger.setLevel("imodeljs-clients.Request", LogLevel.Trace);
-    Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
+    Logger.setLevel(ClientsLoggerCategory.Clients, LogLevel.Trace);
+    Logger.setLevel(ClientsLoggerCategory.IModelHub, LogLevel.Trace);
+    Logger.setLevel(ClientsLoggerCategory.Request, LogLevel.Trace);
     Logger.setLevel(IModelJsNative.LoggerCategory.DgnCore, LogLevel.Error);
     Logger.setLevel(IModelJsNative.LoggerCategory.BeSQLite, LogLevel.Error);
-    Logger.setLevel("Bentley.LICENSING", LogLevel.Error);
-    Logger.setLevel("imodeljs-addon", LogLevel.Error);
   }
 }
 

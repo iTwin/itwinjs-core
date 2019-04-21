@@ -7,6 +7,7 @@ import { assert } from "chai";
 import { OpenMode, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
 import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
+import { Version } from "@bentley/imodeljs-clients";
 import {
   IModelDb, OpenParams, PhysicalModel, AuthorizedBackendRequestContext,
   BriefcaseManager, IModelJsFs,
@@ -23,9 +24,47 @@ describe.skip("DebugHubIssues (#integration)", () => {
   before(async () => {
     IModelTestUtils.setupLogging();
     await RequestHost.initialize();
-    IModelTestUtils.setupDebugLogLevels();
+    // IModelTestUtils.setupDebugLogLevels();
 
     requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.super);
+  });
+
+  it.skip("should be able to open the Mott model", async () => {
+    const projectName = "DesignReviewTestDataSets";
+    const iModelName = "Mott Dataset 2 - Section 6";
+
+    const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
+
+    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    assert.exists(iModel);
+    assert(iModel.openParams.openMode === OpenMode.Readonly);
+
+    await iModel.close(requestContext);
+  });
+
+  it.skip("should be able to delete any iModel on the Hub", async () => {
+    await HubUtility.deleteIModel(requestContext, "DesignReviewTestDatasets", "PenChemOSBL5");
+  });
+
+  it.skip("should be able to dump iModel links for test files", async () => {
+    const projectName = "DesignReviewTestDatasets";
+    const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
+
+    const urlPrefix = "https://dev-connect-imodelweb.bentley.com/imodeljs";
+    const urlSuffix = "&version=v2.0";
+
+    const iModels = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId);
+    for (const iModel of iModels) {
+      const versions: Version[] = await BriefcaseManager.imodelClient.versions.get(requestContext, iModel.id!);
+      if (versions.length === 0)
+        continue;
+
+      const version = versions[versions.length - 1];
+      const changeSetId = version.changeSetId;
+      const link = `${urlPrefix}?projectId=${projectId}&iModelId=${iModel.id}&ChangeSetId=${changeSetId}${urlSuffix}`;
+      console.log(`${iModel.name};${version.name};${link}`); // tslint:disable-line:no-console
+    }
   });
 
   it.skip("should be able to upload a single file to the Hub", async () => {
@@ -57,16 +96,15 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to download and backup required test files from the Hub", async () => {
-    const projectName = "Oil and Gas for Digital Operations";
-    const iModelName = "OG_REF_SMALL";
+    const projectName = "DesignReviewTestDatasets";
+    const iModelName = "PenChemOSBL5";
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {
-    const projectName = "iModelJsIntegrationTest";
-
-    const iModelName = "OG_REF_SMALL";
+    const projectName = "DesignReviewTestDatasets";
+    const iModelName = "PenChemOSBL5";
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
   });

@@ -7,6 +7,7 @@
 import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
 import { IDisposable } from "./Disposable";
 import { ClientRequestContext } from "./ClientRequestContext";
+import { LoggerCategory } from "./LoggerCategory";
 
 /** Defines the *signature* for a log function.
  * @public
@@ -305,30 +306,40 @@ export class Logger {
  * @public
  */
 export class PerfLogger implements IDisposable {
-  private static _loggerName: string = "Performance";
   private static _severity: LogLevel = LogLevel.Info;
 
-  private _routine: string;
+  private _operation: string;
+  private _metaData?: GetMetaDataFunction;
   private _startTimeStamp: number;
 
-  public constructor(routine: string) {
-    this._routine = routine;
+  public constructor(operation: string, metaData?: GetMetaDataFunction) {
+    this._operation = operation;
+    this._metaData = metaData;
 
-    if (!Logger.isEnabled(PerfLogger._loggerName, PerfLogger._severity)) {
+    if (!Logger.isEnabled(LoggerCategory.Performance, PerfLogger._severity)) {
       this._startTimeStamp = 0;
       return;
     }
 
-    Logger.logInfo(PerfLogger._loggerName, `${this._routine},START`);
+    Logger.logInfo(LoggerCategory.Performance, `${this._operation},START`, this._metaData);
     this._startTimeStamp = new Date().getTime(); // take timestamp
   }
 
-  public dispose(): void {
+  private logMessage(): void {
     const endTimeStamp: number = new Date().getTime();
-    if (!Logger.isEnabled(PerfLogger._loggerName, PerfLogger._severity))
+    if (!Logger.isEnabled(LoggerCategory.Performance, PerfLogger._severity))
       return;
 
-    Logger.logInfo(PerfLogger._loggerName, `${this._routine},END,${endTimeStamp - this._startTimeStamp} ms`);
+    Logger.logInfo(LoggerCategory.Performance, `${this._operation},END`, () => {
+      const mdata = this._metaData ? this._metaData() : {};
+      return {
+        ...mdata, TimeElapsed: endTimeStamp - this._startTimeStamp,
+      };
+    });
+  }
+
+  public dispose(): void {
+    this.logMessage();
   }
 }
 

@@ -56,29 +56,5 @@ describe("ApplyChangeSets (#integration)", () => {
     projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
     await testAllOperations(requestContext, projectId, iModelId);
-
-    // Project was removed - find replacement
-    // projectName = "SampleBisPlant"; iModelName = "samplePlant20";
-    // projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    // iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    // await testAllOperations(requestContext, projectId, iModelId);
-
-    // iModel was removed - find permanent replacement
-    // projectName = "plant-sta"; iModelName = "atp_10K.bim";
-    // projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    // iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    // await testAllOperations(requestContext, projectId, iModelId);
-
-    // Fails due to an assertion DgnGeoCoord
-    // projectName = "iModelHubTest"; iModelName = "Office Building4";
-    // projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    // iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    // await testAllOperations(requestContext, projectId, iModelId);
-
-    // Waiting for new Db after converter fix
-    // projectName = "AbdTestProject"; iModelName = "ATP_2018050310145994_scenario22";
-    // projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    // iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    // await testAllOperations(requestContext, projectId, iModelId);
   });
 });
