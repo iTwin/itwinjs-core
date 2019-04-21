@@ -441,7 +441,7 @@ export class AlternatingCCTreeNodeCurveClipper {
       const f1 = interval.high;
       const xyz0 = curve.fractionToPoint(f0);
       const xyz1 = curve.fractionToPoint(f1);
-      insideIntervals.push(CurveLocationDetailPair.createDetailRef(
+      insideIntervals.push(CurveLocationDetailPair.createCapture(
         CurveLocationDetail.createCurveFractionPoint(curve, f0, xyz0),
         CurveLocationDetail.createCurveFractionPoint(curve, f1, xyz1),
       ));

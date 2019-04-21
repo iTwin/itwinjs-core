@@ -210,9 +210,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     static create(center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d;
+    static createCenterNormalRadius(center: Point3d, normal: Vector3d, radius: number, result?: Arc3d): Arc3d;
     static createCircularStartMiddleEnd(pointA: XYAndZ, pointB: XYAndZ, pointC: XYAndZ, result?: Arc3d): Arc3d | LineString3d | undefined;
     static createRefs(center: Point3d, matrix: Matrix3d, sweep: AngleSweep, result?: Arc3d): Arc3d;
-    static createScaledXYColumns(center: Point3d, matrix: Matrix3d, radius0: number, radius90: number, sweep: AngleSweep, result?: Arc3d): Arc3d;
+    static createScaledXYColumns(center: Point3d, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d): Arc3d;
     static createUnitCircle(): Arc3d;
     static createXY(center: Point3d, radius: number, sweep?: AngleSweep): Arc3d;
     static createXYEllipse(center: Point3d, radiusA: number, radiusB: number, sweep?: AngleSweep): Arc3d;
@@ -1520,6 +1521,14 @@ export class CurveCurve {
 }
 
 // @public
+export enum CurveCurveApproachType {
+    CoincidentGeometry = 2,
+    Intersection = 0,
+    ParallelGeometry = 3,
+    PerpendicularChord = 1
+}
+
+// @public
 export enum CurveIntervalRole {
     intervalEnd = 12,
     intervalInterior = 11,
@@ -1540,6 +1549,7 @@ export class CurveLocationDetail {
     static createCurveFractionPoint(curve: CurvePrimitive, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: Point3d, a: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveFractionPointDistanceCurveSearchStatus(curve: CurvePrimitive, fraction: number, point: Point3d, distance: number, status: CurveSearchStatus, result?: CurveLocationDetail): CurveLocationDetail;
+    static createRayFractionPoint(ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail;
     curve?: CurvePrimitive;
     curveSearchStatus?: CurveSearchStatus;
     fraction: number;
@@ -1547,6 +1557,7 @@ export class CurveLocationDetail {
     readonly isIsolated: boolean;
     point: Point3d;
     pointQ: Point3d;
+    ray?: Ray3d;
     setCurve(curve: CurvePrimitive): void;
     setDistanceTo(point: Point3d): void;
     setFP(fraction: number, point: Point3d, vector?: Vector3d, a?: number): void;
@@ -1568,8 +1579,10 @@ export class CurveLocationDetailArrayPair {
 // @public
 export class CurveLocationDetailPair {
     constructor();
+    // (undocumented)
+    approachType?: CurveCurveApproachType;
     clone(result?: CurveLocationDetailPair): CurveLocationDetailPair;
-    static createDetailRef(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair;
+    static createCapture(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     // (undocumented)
     detailA: CurveLocationDetail;
     // (undocumented)
@@ -4555,6 +4568,7 @@ export class Ray3d implements BeJSONFunctions {
     a?: number;
     clone(result?: Ray3d): Ray3d;
     cloneTransformed(transform: Transform): Ray3d;
+    static closestApproachRay3dRay3d(rayA: Ray3d, rayB: Ray3d): CurveLocationDetailPair;
     // (undocumented)
     static create(origin: Point3d, direction: Vector3d, result?: Ray3d): Ray3d;
     static createCapture(origin: Point3d, direction: Vector3d): Ray3d;

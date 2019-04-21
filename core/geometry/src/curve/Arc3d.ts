@@ -151,11 +151,23 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param sweep sweep limits
    * @param result optional preallocated result.
    */
-  public static createScaledXYColumns(center: Point3d, matrix: Matrix3d, radius0: number, radius90: number, sweep: AngleSweep, result?: Arc3d): Arc3d {
+  public static createScaledXYColumns(center: Point3d, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d): Arc3d {
     const vector0 = matrix.columnX();
     const vector90 = matrix.columnY();
     return Arc3d.create(center, vector0.scale(radius0, vector0), vector90.scale(radius90, vector90), sweep, result);
   }
+  /**
+   * Create a (full circular) arc from center, normal and radius
+   * @param center center of ellipse
+   * @param normal normal vector
+   * @param radius radius in x direction.
+   * @param result optional preallocated result.
+   */
+  public static createCenterNormalRadius(center: Point3d, normal: Vector3d, radius: number, result?: Arc3d): Arc3d {
+    const frame = Matrix3d.createRigidHeadsUp(normal, AxisOrder.ZYX);
+    return Arc3d.createScaledXYColumns(center, frame, radius, radius, undefined, result);
+  }
+
   /**
    * Creat an arc by center with vectors to points at 0 and 90 degrees in parameter space.
    * @param center arc center

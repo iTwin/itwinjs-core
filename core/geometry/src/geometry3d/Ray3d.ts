@@ -10,6 +10,9 @@ import { Matrix3d } from "./Matrix3d";
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { XYAndZ } from "./XYZProps";
+import { CurveLocationDetail, CurveLocationDetailPair, CurveCurveApproachType } from "../curve/CurveLocationDetail";
+import { SmallSystem } from "../numerics/Polynomials";
+import { Vector2d } from "./Point2dVector2d";
 /** A Ray3d contains
  * * an origin point.
  * * a direction vector.  The vector is NOT required to be normalized.
@@ -246,5 +249,45 @@ export class Ray3d implements BeJSONFunctions {
     const fraction = Geometry.safeDivideFraction(uv, uu, 0.0);
     return vectorV.plusScaled(this.direction, -fraction, result);
 
+  }
+  /** Determine the closest approach between two rays.
+   *
+   */
+  public static closestApproachRay3dRay3d(rayA: Ray3d, rayB: Ray3d): CurveLocationDetailPair {
+    // A = point on rayA
+    // B = point on rayB
+    // close approach condition
+    //    (B-A) dot directionA = 0
+    //    (B-A) dot directionB = 0 = (B.origin -A.origin + B.direction * b - A.direction * a ) dot B.direction = 0
+    //                              (B.origin -A.origin) dot B.direction = - B.direction dot B.direction * b + (A.direction * a ) dot B.direction
+    const dotWA = rayA.direction.dotProductStartEnd(rayA.origin, rayB.origin);
+    const dotWB = rayB.direction.dotProductStartEnd(rayA.origin, rayB.origin);
+    const dotAB = rayA.direction.dotProduct(rayB.direction);
+    const dotAA = rayA.direction.magnitudeSquared();
+    const dotBB = rayB.direction.magnitudeSquared();
+    const intersectionFractions = Vector2d.create();
+    let pairType;
+    let fractionA;
+    let fractionB;
+    let pointA;
+    let pointB;
+    if (SmallSystem.linearSystem2d(dotAA, dotAB, dotAB, dotBB, dotWA, dotWB, intersectionFractions)) {
+      fractionA = intersectionFractions.x;
+      fractionB = -intersectionFractions.y;
+      pointA = rayA.fractionToPoint(fractionA);
+      pointB = rayB.fractionToPoint(fractionB);
+      pairType = pointA.isAlmostEqualMetric (pointB) ? CurveCurveApproachType.Intersection : CurveCurveApproachType.PerpendicularChord;
+    } else {
+      fractionB = 0.0;
+      fractionA = rayA.pointToFraction(rayB.origin);
+      pointA = rayA.fractionToPoint(fractionA);
+      pointB = rayB.fractionToPoint(fractionB);
+      pairType = pointA.isAlmostEqualMetric(pointB) ? CurveCurveApproachType.CoincidentGeometry : CurveCurveApproachType.ParallelGeometry;
+    }
+    const pair = CurveLocationDetailPair.createCapture(
+      CurveLocationDetail.createRayFractionPoint(rayA, fractionA, rayA.fractionToPoint(fractionA)),
+      CurveLocationDetail.createRayFractionPoint(rayB, fractionB, rayB.fractionToPoint(fractionB)));
+    pair.approachType = pairType;
+    return pair;
   }
 }

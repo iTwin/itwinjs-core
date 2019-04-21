@@ -28,8 +28,19 @@ import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraph } from "../../topology/Graph";
 
 import { Triangulator } from "../../topology/Triangulation";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Loop } from "../../curve/Loop";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Ray3d } from "../../geometry3d/Ray3d";
 /* tslint:disable:no-console */
-
+/**
+ * Return the radius of a circle with area matching centroidData.a
+ * @param centroidData result of centroid calculation, with "a" property.
+ */
+function equivalentCircleRadius(centroidData: Ray3d): number {
+  return Math.sqrt(centroidData.a === undefined ? 0.0 : centroidData.a / Math.PI);
+}
 describe("FrameBuilder.HelloWorld", () => {
   it("FrameBuilder.HellowWorld", () => {
     const ck = new Checker();
@@ -800,4 +811,45 @@ describe("PolygonAreas", () => {
     ck.checkpoint("PolygonAreas.TriangleVariants");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("LShape", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const pointA = [
+      Point3d.create(-0.9351812543901677, -7.103406859177103, -14.793064616249996),
+      Point3d.create(0.8399443606226988, 6.380010831659742, -14.793064616249996),
+      Point3d.create(-12.986794582812577, 8.200335547052022, -14.793064616249996),
+      Point3d.create(-13.582645174519337, 3.6744009645259488, -14.793064616249996),
+      Point3d.create(-3.545902502657718, 2.3530387241332935, -14.793064616249996),
+      Point3d.create(-4.725177525963828, -6.604444384177479, -14.793064616249996),
+      Point3d.create(-0.9351812543901677, -7.103406859177103, -14.793064616249996),
+    ];
+    const centroidA = PolygonOps.centroidAreaNormal(pointA)!;
+    GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointA));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidA.origin, centroidA.direction, equivalentCircleRadius (centroidA)));
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(centroidA.origin, centroidA.origin.plus(centroidA.direction)));
+    const a = 2.0;
+    const scaleTransform = Transform.createFixedPointAndMatrix(centroidA.origin, Matrix3d.createScale(a, a, a))!;
+    const pointB = scaleTransform.multiplyPoint3dArray(pointA);
+    const centroidB = PolygonOps.centroidAreaNormal(pointB)!;
+    GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointB));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidB.origin, centroidB.direction, equivalentCircleRadius (centroidB)));
+    ck.testPoint3d(centroidA.origin, centroidB.origin, "origin is invariant after scale around origin");
+    ck.testVector3d(centroidA.direction, centroidB.direction, "origin is invariant after scale around origin");
+    ck.testCoordinate(a * a * centroidA.a!, centroidB.a!, "area scales");
+
+    const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 1, 3), Matrix3d.createRotationAroundVector(Vector3d.create(2, 3, 1), Angle.createDegrees(45.0))!)!;
+    const pointC = rotationTransform.multiplyPoint3dArray(pointA);
+    const centroidC = PolygonOps.centroidAreaNormal(pointC)!;
+    const centroidC1 = centroidA.cloneTransformed(rotationTransform);
+    GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointC));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidC.origin, centroidC.direction, equivalentCircleRadius (centroidC)));
+    ck.testPoint3d(centroidC.origin, centroidC1.origin);
+    ck.testVector3d(centroidC.direction, centroidC1.direction);
+    ck.testCoordinate((centroidA as any).a, (centroidC as any).a);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonAreas", "LShape");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
