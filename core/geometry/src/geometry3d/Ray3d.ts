@@ -248,35 +248,29 @@ export class Ray3d implements BeJSONFunctions {
     const uv = this.direction.dotProductStartEnd(this.origin, targetPoint);
     const fraction = Geometry.safeDivideFraction(uv, uu, 0.0);
     return vectorV.plusScaled(this.direction, -fraction, result);
-
   }
-  /** Determine the closest approach between two rays.
-   *
+  /** Determine if two rays intersect, are fully overlapped, parallel but no coincident, or skew
+   * * Return a CurveLocationDetailPair which
+   * * contains fraction and point on each ray.
+   * * has (in the CurveLocationDetailPair structure, as member approachType) annotation indicating one of these relationships
+   *   * CurveCurveApproachType.Intersection -- the rays have a simple intersection, at fractions indicated in detailA and detailB
+   *   * CurveCurveApproachType.PerpendicularChord -- there is pair of where the rays have closest approach.  The rays are skew in space.
+   *   * CurveCurveApproachType.CoincidentGeometry -- the rays are the same unbounded line in space. The fractions and points are a representative single common point.
+   *   * CurveCurveApproachType.Parallel -- the rays are parallel (and not coincident).   The two points are at the minimum distance
    */
   public static closestApproachRay3dRay3d(rayA: Ray3d, rayB: Ray3d): CurveLocationDetailPair {
-    // A = point on rayA
-    // B = point on rayB
-    // close approach condition
-    //    (B-A) dot directionA = 0
-    //    (B-A) dot directionB = 0 = (B.origin -A.origin + B.direction * b - A.direction * a ) dot B.direction = 0
-    //                              (B.origin -A.origin) dot B.direction = - B.direction dot B.direction * b + (A.direction * a ) dot B.direction
-    const dotWA = rayA.direction.dotProductStartEnd(rayA.origin, rayB.origin);
-    const dotWB = rayB.direction.dotProductStartEnd(rayA.origin, rayB.origin);
-    const dotAB = rayA.direction.dotProduct(rayB.direction);
-    const dotAA = rayA.direction.magnitudeSquared();
-    const dotBB = rayB.direction.magnitudeSquared();
     const intersectionFractions = Vector2d.create();
+    let fractionA, fractionB;
+    let pointA, pointB;
     let pairType;
-    let fractionA;
-    let fractionB;
-    let pointA;
-    let pointB;
-    if (SmallSystem.linearSystem2d(dotAA, dotAB, dotAB, dotBB, dotWA, dotWB, intersectionFractions)) {
+    if (SmallSystem.ray3dXYZUVWClosestApproachUnbounded(
+      rayA.origin.x, rayA.origin.y, rayA.origin.z, rayA.direction.x, rayA.direction.y, rayA.direction.z,
+      rayB.origin.x, rayB.origin.y, rayB.origin.z, rayB.direction.x, rayB.direction.y, rayB.direction.z, intersectionFractions)) {
       fractionA = intersectionFractions.x;
-      fractionB = -intersectionFractions.y;
+      fractionB = intersectionFractions.y;
       pointA = rayA.fractionToPoint(fractionA);
       pointB = rayB.fractionToPoint(fractionB);
-      pairType = pointA.isAlmostEqualMetric (pointB) ? CurveCurveApproachType.Intersection : CurveCurveApproachType.PerpendicularChord;
+      pairType = pointA.isAlmostEqualMetric(pointB) ? CurveCurveApproachType.Intersection : CurveCurveApproachType.PerpendicularChord;
     } else {
       fractionB = 0.0;
       fractionA = rayA.pointToFraction(rayB.origin);

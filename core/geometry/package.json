@@ -58,6 +58,12 @@
   },
   "dependencies": {},
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "check-coverage": true,
+    "statements": 85,
+    "functions": 85,
+    "branches": 70,
+    "lines": 85
   }
+
 }

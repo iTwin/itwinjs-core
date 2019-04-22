@@ -4793,7 +4793,6 @@ export class Segment1d {
 
 // @public (undocumented)
 export class SmallSystem {
-    // (undocumented)
     static linearSystem2d(ux: number, vx: number, // first row of matrix
     uy: number, vy: number, // second row of matrix
     cx: number, cy: number, // right side
@@ -4809,15 +4808,18 @@ export class SmallSystem {
     static lineSegment3dHXYTransverseIntersectionUnbounded(hA0: Point4d, hA1: Point4d, hB0: Point4d, hB1: Point4d, result?: Vector2d): Vector2d | undefined;
     static lineSegment3dXYClosestPointUnbounded(pointA0: Point3d, pointA1: Point3d, spacePoint: Point3d): number | undefined;
     static lineSegment3dXYTransverseIntersectionUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, result: Vector2d): boolean;
+    static ray3dXYZUVWClosestApproachUnbounded(ax: number, ay: number, az: number, au: number, av: number, aw: number, bx: number, by: number, bz: number, bu: number, bv: number, bw: number, result: Vector2d): boolean;
 }
 
 // @public (undocumented)
 export class SmoothTransformBetweenFrusta {
-    static create(cornerA: Point3d[], cornerB: Point3d[]): SmoothTransformBetweenFrusta | undefined;
+    static create(cornerA: Point3d[], cornerB: Point3d[], preferSimpleRotation?: boolean): SmoothTransformBetweenFrusta | undefined;
     // (undocumented)
     fractionToWorldCorners(fraction: number, result?: Point3d[]): Point3d[];
     // (undocumented)
     interpolateLocalCorners(fraction: number, result?: Point3d[]): Point3d[];
+    readonly localToWorldA: Transform;
+    readonly localToWorldB: Transform;
     }
 
 // @public

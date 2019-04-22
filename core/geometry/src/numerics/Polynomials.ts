@@ -1343,26 +1343,46 @@ export class SmallSystem {
    */
   public static lineSegment3dClosestApproachUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d,
     result: Vector2d): boolean {
-    const ux = a1.x - a0.x;
-    const uy = a1.y - a0.y;
-    const uz = a1.z - a0.z;
+    return this.ray3dXYZUVWClosestApproachUnbounded(
+      a0.x, a0.y, a0.z,
+      a1.x - a0.x, a1.y - a0.y, a1.z - a0.z,
+      b0.x, b0.y, b0.z,
+      b1.x - b0.x, b1.y - b0.y, b1.z - b0.z,
+      result);
+  }
+  /**
+   * Return true if lines (a0,a1) to (b0, b1) have closest approach (go by each other) in 3d
+   * Return the fractional (not xy) coordinates as x and y parts of a Point2d.
+   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   */
+  public static ray3dXYZUVWClosestApproachUnbounded(
+    ax: number, ay: number, az: number, au: number, av: number, aw: number,
+    bx: number, by: number, bz: number, bu: number, bv: number, bw: number,
+    result: Vector2d): boolean {
 
-    const vx = b1.x - b0.x;
-    const vy = b1.y - b0.y;
-    const vz = b1.z - b0.z;
+    const cx = bx - ax;
+    const cy = by - ay;
+    const cz = bz - az;
 
-    const cx = b0.x - a0.x;
-    const cy = b0.y - a0.y;
-    const cz = b0.z - a0.z;
-
-    const uu = Geometry.dotProductXYZXYZ(ux, uy, uz, ux, uy, uz);
-    const vv = Geometry.dotProductXYZXYZ(vx, vy, vz, vx, vy, vz);
-    const uv = Geometry.dotProductXYZXYZ(ux, uy, uz, vx, vy, vz);
-    const cu = Geometry.dotProductXYZXYZ(cx, cy, cz, ux, uy, uz);
-    const cv = Geometry.dotProductXYZXYZ(cx, cy, cz, vx, vy, vz);
+    const uu = Geometry.hypotenuseSquaredXYZ(au, av, aw);
+    const vv = Geometry.hypotenuseSquaredXYZ(bu, bv, bw);
+    const uv = Geometry.dotProductXYZXYZ(au, av, aw, bu, bv, bw);
+    const cu = Geometry.dotProductXYZXYZ(cx, cy, cz, au, av, aw);
+    const cv = Geometry.dotProductXYZXYZ(cx, cy, cz, bu, bv, bw);
     return SmallSystem.linearSystem2d(uu, -uv, uv, -vv, cu, cv, result);
   }
-
+/**
+ * Solve the pair of linear equations
+ * * `ux * x + vx + y = cx`
+ * * `uy * x + vy * y = cy`
+ * @param ux xx coefficient
+ * @param vx xy coefficient
+ * @param uy yx coefficient
+ * @param vy yy ceofficient
+ * @param cx x right hand side
+ * @param cy y right hand side
+ * @param result (x,y) solution.  (MUST be preallocated by caller)
+ */
   public static linearSystem2d(
     ux: number, vx: number, // first row of matrix
     uy: number, vy: number, // second row of matrix
