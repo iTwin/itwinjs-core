@@ -1327,12 +1327,12 @@ export class BriefcaseManager {
     if (briefcase.openParams!.accessMode === AccessMode.Shared)
       throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changes when the Db allows shared access - open with AccessMode.Exclusive", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
 
-    const { changeSetId, changeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, reverseToVersion, briefcase.iModelId);
+    const { changeSetId: targetChangeSetId, changeSetIndex: targetChangeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, reverseToVersion, briefcase.iModelId);
     requestContext.enter();
-    if (changeSetIndex >= briefcase.currentChangeSetIndex)
-      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse to a later version", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), changeSetId, changeSetIndex }));
+    if (targetChangeSetIndex > briefcase.currentChangeSetIndex)
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse to a later version", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex }));
 
-    return BriefcaseManager.processChangeSets(requestContext, briefcase, changeSetId, changeSetIndex);
+    return BriefcaseManager.processChangeSets(requestContext, briefcase, targetChangeSetId, targetChangeSetIndex);
   }
 
   public static async reinstateChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, reinstateToVersion?: IModelVersion): Promise<void> {
@@ -1342,12 +1342,12 @@ export class BriefcaseManager {
 
     const targetVersion: IModelVersion = reinstateToVersion || IModelVersion.asOfChangeSet(briefcase.changeSetId);
 
-    const { changeSetId, changeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, targetVersion, briefcase.iModelId);
+    const { changeSetId: targetChangeSetId, changeSetIndex: targetChangeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, targetVersion, briefcase.iModelId);
     requestContext.enter();
-    if (changeSetIndex < briefcase.currentChangeSetIndex)
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reinstate to an earlier version", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), changeSetId, changeSetIndex })));
+    if (targetChangeSetIndex < briefcase.currentChangeSetIndex)
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Can reinstate only to a later version", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex })));
 
-    return BriefcaseManager.processChangeSets(requestContext, briefcase, changeSetId, changeSetIndex);
+    return BriefcaseManager.processChangeSets(requestContext, briefcase, targetChangeSetId, targetChangeSetIndex);
   }
 
   /** Pull and merge changes from the hub
@@ -1358,18 +1358,16 @@ export class BriefcaseManager {
    */
   public static async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
-    if (briefcase.openParams!.accessMode === AccessMode.Shared)
-      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot pull and merge changes when the Db allows shared access - open with AccessMode.Exclusive", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
 
-    const { changeSetId, changeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, mergeToVersion, briefcase.iModelId);
+    const { changeSetId: targetChangeSetId, changeSetIndex: targetChangeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, mergeToVersion, briefcase.iModelId);
     requestContext.enter();
-    if (changeSetIndex < briefcase.currentChangeSetIndex)
-      return Promise.reject(new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), changeSetId, changeSetIndex })));
+    if (targetChangeSetIndex < briefcase.currentChangeSetIndex)
+      return Promise.reject(new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex })));
 
     await BriefcaseManager.updatePendingChangeSets(requestContext, briefcase);
     requestContext.enter();
 
-    return BriefcaseManager.processChangeSets(requestContext, briefcase, changeSetId, changeSetIndex);
+    return BriefcaseManager.processChangeSets(requestContext, briefcase, targetChangeSetId, targetChangeSetIndex);
   }
 
   private static startCreateChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
