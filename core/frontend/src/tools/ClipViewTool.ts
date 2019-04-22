@@ -290,11 +290,8 @@ export class ViewClipByPlaneTool extends ViewClipTool {
   }
 
   public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
-    if (updatedValue.propertyName === ViewClipTool._orientationName) {
-      if (this._orientationValue.value !== updatedValue.value.value)
-        this.orientation = updatedValue.value.value as ClipOrientation;
-      return true;
-    }
+    if (updatedValue.propertyName === ViewClipTool._orientationName)
+      return this._orientationValue.update(updatedValue.value);
     return false;
   }
 
@@ -340,10 +337,11 @@ export class ViewClipByShapeTool extends ViewClipTool {
 
   public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
     if (updatedValue.propertyName === ViewClipTool._orientationName) {
-      if (this._orientationValue.value !== updatedValue.value.value)
-        this.orientation = updatedValue.value.value as ClipOrientation;
+      if (!this._orientationValue.update(updatedValue.value))
+        return false;
       this._points.length = 0;
       this._matrix = undefined;
+      IModelApp.accuDraw.deactivate();
       this.setupAndPromptForNextAction();
       return true;
     }

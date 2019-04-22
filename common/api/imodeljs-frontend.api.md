@@ -4932,17 +4932,13 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
     // (undocumented)
-    protected getSelectionMethod(): SelectionMethod;
-    // (undocumented)
-    protected getSelectionMode(): SelectionMode;
-    // (undocumented)
     static hidden: boolean;
     // (undocumented)
     protected initSelectTool(): void;
     // (undocumented)
-    isSelectByPoints: boolean;
+    protected _isSelectByPoints: boolean;
     // (undocumented)
-    isSuspended: boolean;
+    protected _isSuspended: boolean;
     // (undocumented)
     onCleanup(): void;
     // (undocumented)
@@ -4974,7 +4970,7 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     onUnsuspend(): void;
     // (undocumented)
-    readonly points: Point3d[];
+    protected readonly _points: Point3d[];
     // (undocumented)
     processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean>;
     // (undocumented)
@@ -4988,9 +4984,9 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     selectDecoration(ev: BeButtonEvent, currHit?: HitDetail): Promise<EventHandled>;
     // (undocumented)
-    protected setSelectionMethod(method: SelectionMethod): void;
+    selectionMethod: SelectionMethod;
     // (undocumented)
-    protected setSelectionMode(mode: SelectionMode): void;
+    selectionMode: SelectionMode;
     // (undocumented)
     protected showPrompt(mode: SelectionMode, method: SelectionMethod): void;
     // (undocumented)
