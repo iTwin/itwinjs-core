@@ -561,8 +561,7 @@ export class SelectionTool extends PrimitiveTool {
       this.initSelectTool();
     }
     const syncMode: ToolSettingsPropertySyncItem = { value: this._selectionModeValue.clone(), propertyName: SelectionTool._modesName };
-    const syncMethod: ToolSettingsPropertySyncItem = { value: this._selectionMethodValue.clone(), propertyName: SelectionTool._methodsName };
-    this.syncToolSettingsProperties([syncMode, syncMethod]);
+    this.syncToolSettingsProperties([syncMode]);
   }
 
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
