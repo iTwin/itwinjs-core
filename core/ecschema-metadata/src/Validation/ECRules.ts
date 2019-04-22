@@ -24,85 +24,164 @@ import { IRuleSet } from "./Rules";
 const ruleSetName = "ECObjects";
 
 function getCode(code: number): string {
-  return ruleSetName + ":" + code;
+  return ruleSetName + "-" + code;
 }
 
 /**
  * The unique diagnostic codes for ECObjects rules.
+ *
+ * To provide meaning to code values, with anticipation
+ * of future rules for all current EC Types, the following
+ * value ranges should be used:
+ *
+ * - Schema:                    000-099
+ * - Class:                     100-199
+ * - Constant:                  200-299
+ * - CustomAttribute            300-399
+ * - CustomAttributeClass:      400-499
+ * - CustomAttributeContainer:  500-599
+ * - EntityClass:               600-699
+ * - Enumeration:               700-799
+ * - Format:                    800-899
+ * - InvertedUnit:              900-999
+ * - KindOfQuantity:            1000-1099
+ * - Mixin:                     1100-1199
+ * - Phenomenon:                1200-1299
+ * - Property:                  1300-1399
+ * - PropertyCategory:          1400-1499
+ * - RelationshipClass:         1500-1599
+ * - RelationshipConstraint:    1600-1699
+ * - StructClass:               1700-1799
+ * - Unit:                      1800-1899
+ * - UnitSystem:                1900-1999
  * @beta
  */
-export const DiagnosticCodes = { // tslint:disable-line:variable-name
+// tslint:disable-next-line:variable-name
+export const DiagnosticCodes = {
+  // Class Rule Codes (100-199)
   BaseClassIsSealed: getCode(100),
   BaseClassOfDifferentType: getCode(101),
-  IncompatibleValueTypePropertyOverride: getCode(102),
-  IncompatibleTypePropertyOverride: getCode(103),
-  IncompatibleUnitPropertyOverride: getCode(104),
-  MixinAppliedToClassMustDeriveFromConstraint: getCode(105),
-  AbstractConstraintMustNarrowBaseConstraints: getCode(106),
-  DerivedConstraintsMustNarrowBaseConstraints: getCode(107),
-  ConstraintClassesDeriveFromAbstractContraint: getCode(108),
-  AtLeastOneConstraintClassDefined: getCode(109),
-  AbstractConstraintMustExistWithMultipleConstraints: getCode(110),
-  CustomAttributeNotOfConcreteClass: getCode(111),
-  EnumerationTypeUnsupported: getCode(112),
+
+  // CA Container Rule Codes (500-599)
+  CustomAttributeNotOfConcreteClass: getCode(500),
+
+  // Enumeration Rule Codes (700-799)
+  EnumerationTypeUnsupported: getCode(700),
+
+  // Mixin Rule Codes (1100-1199)
+  MixinAppliedToClassMustDeriveFromConstraint: getCode(1100),
+
+  // Property Rule Codes (1300-1399)
+  IncompatibleValueTypePropertyOverride: getCode(1300),
+  IncompatibleTypePropertyOverride: getCode(1301),
+  IncompatibleUnitPropertyOverride: getCode(1302),
+
+  // Relationship Rule Codes (1500-1599)
+  AbstractConstraintMustNarrowBaseConstraints: getCode(1500),
+  DerivedConstraintsMustNarrowBaseConstraints: getCode(1501),
+  ConstraintClassesDeriveFromAbstractContraint: getCode(1502),
+
+  // Relationship Constraint Rule Codes (1600-1699)
+  AtLeastOneConstraintClassDefined: getCode(1600),
+  AbstractConstraintMustExistWithMultipleConstraints: getCode(1601),
 };
 
 /**
  * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
  * @beta
  */
-export const Diagnostics = { // tslint:disable-line:variable-name
-  /** Required message parameters: childClass.FullName, baseClass.FullName */
+// tslint:disable-next-line:variable-name
+export const Diagnostics = {
+  /**
+   * EC-100
+   * Required message parameters: childClass.FullName, baseClass.FullName
+   */
   BaseClassIsSealed: createClassDiagnosticClass<[string, string]>(DiagnosticCodes.BaseClassIsSealed,
     "Class '{0}' cannot derive from sealed base class '{1}'."),
 
-  /** Required message parameters: childClass.FullName, baseClass.FullName, baseClass.schemaItemType */
+  /**
+   * EC-101
+   * Required message parameters: childClass.FullName, baseClass.FullName, baseClass.schemaItemType
+   */
   BaseClassIsOfDifferentType: createClassDiagnosticClass<[string, string, string]>(DiagnosticCodes.BaseClassOfDifferentType,
     "Class '{0}' cannot derive from base class '{1}' of type '{2}'."),
 
-  /** Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type */
-  IncompatibleValueTypePropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string]>(DiagnosticCodes.IncompatibleValueTypePropertyOverride,
-    "The ECProperty '{0}:{1}' has a base property '{2}:{1}' with a value type of {3} which is incompatible with the value type of {4}."),
-
-  /** Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type */
-  IncompatibleTypePropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string]>(DiagnosticCodes.IncompatibleTypePropertyOverride,
-    "The ECProperty '{0}:{1}' has a base property '{2}:{1}' with a type of {3} which is incompatible with the type of {4}."),
-
-  /** Required message parameters: childClass.Name, property name, baseClass.Name, baseClass Koq name, baseClass Koq persistence unit name, child class Koq persistence unit name, child class Koq name */
-  IncompatibleUnitPropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string, string, string]>(DiagnosticCodes.IncompatibleUnitPropertyOverride,
-    "The ECProperty '{0}:{1}' has a base property '{2}:{1}' with KindOfQuantity '{3}' with persistence unit '{4}' which is not the same as the persistence unit '{5}' of the provided KindOfQuantity '{6}'."),
-
-  /** Required message parameters: relationship end (source/target), relationship name */
-  AtLeastOneConstraintClassDefined: createRelationshipConstraintDiagnosticClass<[string, string]>(DiagnosticCodes.AtLeastOneConstraintClassDefined,
-    "The {0}-Constraint of '{1}' does not contain any constraint classes."),
-
-  /** Required message parameters: relationship end (source/target), relationship name */
-  AbstractConstraintMustExistWithMultipleConstraints: createRelationshipConstraintDiagnosticClass<[string, string]>(DiagnosticCodes.AbstractConstraintMustExistWithMultipleConstraints,
-    "The {0}-Constraint of '{1}' has multiple constraint classes which requires an abstract constraint to be defined."),
-
-  /** Required message parameters: Enumeration name */
-  EnumerationTypeUnsupported: createSchemaItemDiagnosticClass<Enumeration, [string]>(DiagnosticCodes.EnumerationTypeUnsupported,
-    "Enumeration '{0}' has invalid primitive type."),
-
-  /** Required message parameters: mixin class fullName, class fullName, applies to constraint class fullName */
-  MixinAppliedToClassMustDeriveFromConstraint: createSchemaItemDiagnosticClass<EntityClass, [string, string, string]>(DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint,
-    "Mixin '{0}' cannot be applied to the class '{1}' because it does not satisfy the applies to constraint '{2}'."),
-
-  /** Required message parameters: CustomAttribute container name and CustomAttributeClass name. */
+  /**
+   * EC-500
+   * Required message parameters: CustomAttribute container name and CustomAttributeClass name.
+   */
   CustomAttributeNotOfConcreteClass: createCustomAttributeContainerDiagnosticClass<[string, string]>(DiagnosticCodes.CustomAttributeNotOfConcreteClass,
     "The CustomAttribute container '{0}' has a CustomAttribute with the class '{1}' which is not a concrete class."),
 
-  /** Required message parameters: abstract constraint class name, relationship end (source/target), relationship name, base relationship name */
+  /**
+   * EC-700
+   * Required message parameters: Enumeration name
+   */
+  EnumerationTypeUnsupported: createSchemaItemDiagnosticClass<Enumeration, [string]>(DiagnosticCodes.EnumerationTypeUnsupported,
+    "Enumeration '{0}' has invalid primitive type."),
+
+  /**
+   * EC-1100
+   * Required message parameters: mixin class fullName, class fullName, applies to constraint class fullName
+   */
+  MixinAppliedToClassMustDeriveFromConstraint: createSchemaItemDiagnosticClass<EntityClass, [string, string, string]>(DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint,
+    "Mixin '{0}' cannot be applied to the class '{1}' because it does not satisfy the applies to constraint '{2}'."),
+
+  /**
+   * EC-1300
+   * Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type
+   */
+  IncompatibleValueTypePropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string]>(DiagnosticCodes.IncompatibleValueTypePropertyOverride,
+    "The ECProperty '{0}:{1}' has a base property '{2}:{1}' with a value type of {3} which is incompatible with the value type of {4}."),
+
+  /**
+   * EC-1301
+   * Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type
+   */
+  IncompatibleTypePropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string]>(DiagnosticCodes.IncompatibleTypePropertyOverride,
+    "The ECProperty '{0}:{1}' has a base property '{2}:{1}' with a type of {3} which is incompatible with the type of {4}."),
+
+  /**
+   * EC-1302
+   * Required message parameters: childClass.Name, property name, baseClass.Name, baseClass Koq name, baseClass Koq persistence unit name, child class Koq persistence unit name, child class Koq name
+   */
+  IncompatibleUnitPropertyOverride: createPropertyDiagnosticClass<[string, string, string, string, string, string, string]>(DiagnosticCodes.IncompatibleUnitPropertyOverride,
+    "The ECProperty '{0}:{1}' has a base property '{2}:{1}' with KindOfQuantity '{3}' with persistence unit '{4}' which is not the same as the persistence unit '{5}' of the provided KindOfQuantity '{6}'."),
+
+  /**
+   * EC-1500
+   * Required message parameters: abstract constraint class name, relationship end (source/target), relationship name, base relationship name
+   */
   AbstractConstraintMustNarrowBaseConstraints: createSchemaItemDiagnosticClass<RelationshipClass, [string, string, string, string]>(DiagnosticCodes.AbstractConstraintMustNarrowBaseConstraints,
     "The abstract constraint class '{0}' on the {1}-Constraint of '{2}' is not supported by the base class constraint in '{3}'."),
 
-  /** Required message parameters: constraint class name, relationship end (source/target), relationship name, base relationship name */
+  /**
+   * EC-1501
+   * Required message parameters: constraint class name, relationship end (source/target), relationship name, base relationship name
+   */
   DerivedConstraintsMustNarrowBaseConstraints: createSchemaItemDiagnosticClass<RelationshipClass, [string, string, string, string]>(DiagnosticCodes.DerivedConstraintsMustNarrowBaseConstraints,
     "The constraint class '{0}' on the {1}-Constraint of '{2}' is not supported by the base class constraint in '{3}'."),
 
-  /** Required message parameters: constraint class name, relationship end (source/target), relationship name, abstract constraint class name */
+  /**
+   * EC-1502
+   * Required message parameters: constraint class name, relationship end (source/target), relationship name, abstract constraint class name
+   */
   ConstraintClassesDeriveFromAbstractContraint: createSchemaItemDiagnosticClass<RelationshipClass, [string, string, string, string]>(DiagnosticCodes.ConstraintClassesDeriveFromAbstractContraint,
     "The constraint class '{0}' on the {1}-Constraint of '{2}' is not derived from the abstract constraint class '{3}'."),
+
+  /**
+   * EC-1600
+   * Required message parameters: relationship end (source/target), relationship name
+   */
+  AtLeastOneConstraintClassDefined: createRelationshipConstraintDiagnosticClass<[string, string]>(DiagnosticCodes.AtLeastOneConstraintClassDefined,
+    "The {0}-Constraint of '{1}' does not contain any constraint classes."),
+
+  /**
+   * EC-1601
+   * Required message parameters: relationship end (source/target), relationship name
+   */
+  AbstractConstraintMustExistWithMultipleConstraints: createRelationshipConstraintDiagnosticClass<[string, string]>(DiagnosticCodes.AbstractConstraintMustExistWithMultipleConstraints,
+    "The {0}-Constraint of '{1}' has multiple constraint classes which requires an abstract constraint to be defined."),
 };
 
 /**
@@ -158,7 +237,7 @@ export async function* baseClassIsSealed(ecClass: AnyClass): AsyncIterable<Class
 
 /**
  * EC Rule: Base and child class must be of the same type (i.e. Entity, Mixin, Relationship, etc.)
- * @internal
+ * @internal Should we make all of these methods internal??
  */
 export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncIterable<ClassDiagnostic<any[]>> {
   if (!ecClass.baseClass)
