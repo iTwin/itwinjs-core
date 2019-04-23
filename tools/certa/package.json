@@ -37,7 +37,7 @@
     "jsonc-parser": "~2.0.3",
     "lodash": "^4.17.10",
     "mocha": "^5.2.0",
-    "nyc": "^13.0.1",
+    "nyc": "^14.0.0",
     "puppeteer": "~1.11.0",
     "source-map-support": "^0.5.6",
     "uuid": "~3.3.2",
