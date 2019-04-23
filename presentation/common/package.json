@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-common",
-  "version": "0.191.0-dev.54",
+  "version": "0.191.0-dev.55",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
@@ -49,14 +49,14 @@
     }
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^0.191.0-dev.54",
-    "@bentley/imodeljs-common": "^0.191.0-dev.54"
+    "@bentley/bentleyjs-core": "^0.191.0-dev.55",
+    "@bentley/imodeljs-common": "^0.191.0-dev.55"
   },
   "devDependencies": {
-    "@bentley/build-tools": "0.191.0-dev.54",
-    "@bentley/bentleyjs-core": "0.191.0-dev.54",
-    "@bentley/imodeljs-common": "0.191.0-dev.54",
-    "@bentley/webpack-tools": "0.191.0-dev.54",
+    "@bentley/build-tools": "0.191.0-dev.55",
+    "@bentley/bentleyjs-core": "0.191.0-dev.55",
+    "@bentley/imodeljs-common": "0.191.0-dev.55",
+    "@bentley/webpack-tools": "0.191.0-dev.55",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
