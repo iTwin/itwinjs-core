@@ -22,7 +22,7 @@ export interface LoadingSpinnerProps extends SpinnerProps {
  * A loading spinner component.
  * @beta
  */
-export class LoadingSpinner extends React.Component<LoadingSpinnerProps> {
+export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
   public static defaultProps: Partial<LoadingSpinnerProps> = {
     messageOnTop: false,
   };

@@ -207,10 +207,10 @@ export namespace EditManipulator {
       return lineRay.projectPointToRay(projectedPt);
     }
 
-    /** Get a transform to orient arrow shape to view direction. If arrow direction is almost perpendicular to view direction will return undefined. */
+    /** Get a transform to orient arrow shape to view direction. If arrow direction is close to perpendicular to view direction will return undefined. */
     public static getArrowTransform(vp: Viewport, base: Point3d, direction: Vector3d, sizeInches: number): Transform | undefined {
       const boresite = EditManipulator.HandleUtils.getBoresite(base, vp);
-      if (Math.abs(direction.dotProduct(boresite.direction)) >= 0.99)
+      if (Math.abs(direction.dotProduct(boresite.direction)) >= 0.9)
         return undefined;
 
       const pixelSize = vp.pixelsFromInches(sizeInches);

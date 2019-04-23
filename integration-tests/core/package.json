@@ -19,21 +19,21 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.48",
-    "@bentley/express-server": "0.191.0-dev.48",
-    "@bentley/geometry-core": "0.191.0-dev.48",
-    "@bentley/imodeljs-backend": "0.191.0-dev.48",
-    "@bentley/imodeljs-clients": "0.191.0-dev.48",
-    "@bentley/imodeljs-common": "0.191.0-dev.48",
-    "@bentley/imodeljs-i18n": "0.191.0-dev.48",
-    "@bentley/imodeljs-frontend": "0.191.0-dev.48",
+    "@bentley/bentleyjs-core": "0.191.0-dev.56",
+    "@bentley/express-server": "0.191.0-dev.56",
+    "@bentley/geometry-core": "0.191.0-dev.56",
+    "@bentley/imodeljs-backend": "0.191.0-dev.56",
+    "@bentley/imodeljs-clients": "0.191.0-dev.56",
+    "@bentley/imodeljs-common": "0.191.0-dev.56",
+    "@bentley/imodeljs-i18n": "0.191.0-dev.56",
+    "@bentley/imodeljs-frontend": "0.191.0-dev.56",
     "chai": "^4.1.2",
     "electron": "^4.1.0"
   },
   "devDependencies": {
-    "@bentley/certa": "0.191.0-dev.48",
-    "@bentley/config-loader": "0.191.0-dev.48",
-    "@bentley/build-tools": "0.191.0-dev.48",
+    "@bentley/certa": "0.191.0-dev.56",
+    "@bentley/config-loader": "0.191.0-dev.56",
+    "@bentley/build-tools": "0.191.0-dev.56",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -47,7 +47,7 @@
     "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "typescript": "~3.2.2",
-    "nyc": "^13.0.1",
+    "nyc": "^14.0.0",
     "webpack": "^4.20.2"
   }
 }

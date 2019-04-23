@@ -96,7 +96,6 @@ export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonPr
  * @internal
  */
 interface NavigationWidgetState {
-  navigationWidgetProps: NavigationWidgetPropsEx;
   navigationWidgetDef: NavigationWidgetDef;
 }
 
@@ -111,7 +110,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
   constructor(props: NavigationWidgetPropsEx) {
     super(props);
 
-    this.state = { navigationWidgetProps: props, navigationWidgetDef: new NavigationWidgetDef(props) };
+    this.state = { navigationWidgetDef: new NavigationWidgetDef(props) };
   }
 
   /** Adds listeners */
@@ -144,12 +143,10 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
     });
   }
 
-  public static getDerivedStateFromProps(newProps: NavigationWidgetPropsEx, state: NavigationWidgetState): NavigationWidgetState | null {
-    if (newProps !== state.navigationWidgetProps) {
-      return { navigationWidgetProps: newProps, navigationWidgetDef: new NavigationWidgetDef(newProps) };
+  public componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState) {
+    if (this.props !== prevProps) {
+      this.setState({ navigationWidgetDef: new NavigationWidgetDef(this.props) });
     }
-
-    return null;
   }
 
   public render(): React.ReactNode {

@@ -38,7 +38,7 @@ export interface LoadingPromptProps {
  * A component to display during loading.
  * @beta
  */
-export class LoadingPrompt extends React.Component<LoadingPromptProps> {
+export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
   public static defaultProps: Partial<LoadingPromptProps> = {
     showPercentage: false,
     showStatus: false,

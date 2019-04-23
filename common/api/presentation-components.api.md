@@ -190,7 +190,7 @@ export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: Rea
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
 // 
 // @public
-export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<Omit<P, "selectedNodes">, Props_3> & Props_3>;
+export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>): React.ForwardRefExoticComponent<React.PropsWithoutRef<P & Props_3> & React.RefAttributes<React.Component<P, any, any>>>;
 
 // @public
 export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): {

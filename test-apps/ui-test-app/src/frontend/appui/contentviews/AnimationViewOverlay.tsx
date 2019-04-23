@@ -217,7 +217,7 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
             initialDuration={this.state.dataProvider.getInitialDuration()}
             totalDuration={this.state.dataProvider.getSettings().duration}
             milestones={this.state.dataProvider.getMilestones()}
-            hideTimeline={this.state.dataProvider.getMilestones().length === 0}
+            minimized={this.state.dataProvider.getMilestones().length === 0}
             onChange={this.state.dataProvider.onAnimationFractionChanged}
             onPlayPause={this.props.onPlayPause} />
         </div>

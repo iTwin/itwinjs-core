@@ -88,11 +88,11 @@ export class IModelConnection extends IModel {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken))));
   }
   /** The set of Context Reality Model tile trees for this IModelConnection.
-   * @hidden
+   * @internal
    */
   private _contextRealityModelTileTrees = new Map<string, TileTreeState>();
   /** Get the context reality model tile tree for a URL.
-   * @hidden
+   * @internal
    */
   public getContextRealityModelTileTree(url: string): TileTreeState {
     const found = this._contextRealityModelTileTrees.get(url);

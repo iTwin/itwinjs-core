@@ -53,6 +53,7 @@ export interface BeInspireTreeNodeConfig {
  */
 export interface BeInspireTreeNodeITree {
   icon?: string;
+  checkboxTooltip?: string;
   state?: {
     checkboxVisible?: boolean;
     checkboxDisabled?: boolean;
@@ -568,6 +569,10 @@ export class BeInspireTree<TNodePayload> {
 
   private updateNodeCheckboxInfo(node: BeInspireTreeNode<TNodePayload>, status: CheckBoxInfo) {
     let hasChanges = false;
+    if (node.itree!.checkboxTooltip !== status.tooltip) {
+      node.itree!.checkboxTooltip = status.tooltip;
+      hasChanges = true;
+    }
     if (node.itree!.state!.checkboxVisible !== status.isVisible) {
       node.itree!.state!.checkboxVisible = status.isVisible;
       hasChanges = true;

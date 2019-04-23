@@ -80,7 +80,7 @@ interface ModalDialogRendererState {
 /** ModalDialogRenderer React component.
  * @public
  */
-export class ModalDialogRenderer extends React.Component<CommonProps, ModalDialogRendererState> {
+export class ModalDialogRenderer extends React.PureComponent<CommonProps, ModalDialogRendererState> {
 
   public render(): React.ReactNode {
     const activeModalDialog: React.ReactNode | undefined = ModalDialogManager.activeModalDialog;

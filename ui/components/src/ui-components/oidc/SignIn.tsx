@@ -31,6 +31,11 @@ export interface SignInProps extends CommonProps {
 /** @internal */
 interface SignInState {
   isSigningIn: boolean;
+  prompt: string;
+  signInButton: string;
+  profilePrompt: string;
+  registerAnchor: string;
+  offlineButton: string;
 }
 
 /**
@@ -38,16 +43,18 @@ interface SignInState {
  * @public
  */
 export class SignIn extends React.PureComponent<SignInProps, SignInState> {
-  private _prompt = UiComponents.i18n.translate("UiComponents:signIn.prompt");
-  private _signInButton = UiComponents.i18n.translate("UiComponents:signIn.signInButton");
-  private _profilePrompt = UiComponents.i18n.translate("UiComponents:signIn.profilePrompt");
-  private _registerAnchor = UiComponents.i18n.translate("UiComponents:signIn.register");
-  private _offlineButton = UiComponents.i18n.translate("UiComponents:signIn.offlineButton");
 
   constructor(props: SignInProps) {
     super(props);
 
-    this.state = { isSigningIn: false };
+    this.state = {
+      isSigningIn: false,
+      prompt: UiComponents.i18n.translate("UiComponents:signIn.prompt"),
+      signInButton: UiComponents.i18n.translate("UiComponents:signIn.signInButton"),
+      profilePrompt: UiComponents.i18n.translate("UiComponents:signIn.profilePrompt"),
+      registerAnchor: UiComponents.i18n.translate("UiComponents:signIn.register"),
+      offlineButton: UiComponents.i18n.translate("UiComponents:signIn.offlineButton"),
+    };
   }
 
   private _onSignInClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -61,13 +68,13 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
       <div className={classnames("components-signin", this.props.className)} style={this.props.style}>
         <div className="components-signin-content">
           <span className="icon icon-user" />
-          <span className="components-signin-prompt">{this._prompt}</span>
-          <button className="components-signin-button" type="button" disabled={this.state.isSigningIn} onClick={this._onSignInClick}>{this._signInButton}</button>
+          <span className="components-signin-prompt">{this.state.prompt}</span>
+          <button className="components-signin-button" type="button" disabled={this.state.isSigningIn} onClick={this._onSignInClick}>{this.state.signInButton}</button>
           {this.props.onRegister !== undefined &&
-            <span className="components-signin-register">{this._profilePrompt}<a onClick={this.props.onRegister}>{this._registerAnchor}</a></span>
+            <span className="components-signin-register">{this.state.profilePrompt}<a onClick={this.props.onRegister}>{this.state.registerAnchor}</a></span>
           }
           {this.props.onOffline !== undefined &&
-            <a className="components-signin-offline" onClick={this.props.onOffline}>{this._offlineButton}</a>
+            <a className="components-signin-offline" onClick={this.props.onOffline}>{this.state.offlineButton}</a>
           }
         </div>
       </div>

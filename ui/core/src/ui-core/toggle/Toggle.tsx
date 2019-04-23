@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Toggle */
+/** @module Inputs */
 
 import * as React from "react";
 import * as classnames from "classnames";
@@ -50,7 +50,7 @@ interface ToggleState {
  * Toggle React component to show an "on" or "off state
  * @beta
  */
-export class Toggle extends React.Component<ToggleProps, ToggleState> {
+export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
   private _padding: number = 2;
 
   constructor(props: ToggleProps) {

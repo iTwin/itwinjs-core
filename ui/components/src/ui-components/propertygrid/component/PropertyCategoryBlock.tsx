@@ -24,6 +24,10 @@ export interface PropertyCategoryBlockProps extends CommonProps {
  * @public
  */
 export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlockProps> {
+  constructor(props: PropertyCategoryBlockProps) {
+    super(props);
+  }
+
   private toggleExpansion() {
     if (this.props.onExpansionToggled)
       this.props.onExpansionToggled(this.props.category.name);

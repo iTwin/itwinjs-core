@@ -25,7 +25,7 @@ export interface LoadingBarProps extends CommonProps {
  * A loading bar with optional percentage text.
  * @beta
  */
-export class LoadingBar extends React.Component<LoadingBarProps> {
+export class LoadingBar extends React.PureComponent<LoadingBarProps> {
   public static defaultProps: Partial<LoadingBarProps> = {
     barHeight: 4,
   };

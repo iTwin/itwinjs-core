@@ -18,11 +18,12 @@ import {
   DisplayStyle3dSettings,
   BackgroundMapProps,
   AnalysisStyle,
+  ContextRealityModelProps,
 
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { JsonUtils, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, TextureImage, AnimationBranchStates } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { TileTreeModelState } from "./ModelState";
@@ -137,9 +138,29 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined { return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime); }
 
-  /** @internal */
+  /** Note - do not push or remove members from contextRealityModelsProperty - use add/remove so that the json properties are kept in synch properly.
+   * @internal
+   */
   public get contextRealityModels(): ContextRealityModelState[] { return this._contextRealityModels; }
+  /** @internal */
   public set contextRealityModels(contextRealityModels: ContextRealityModelState[]) { this._contextRealityModels = contextRealityModels; }
+  /** @internal */
+  public addContextRealityModel(contextRealityModel: ContextRealityModelProps, iModel: IModelConnection) {
+    this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, iModel));
+    if (undefined === this.jsonProperties.contextRealityModels)
+      this.jsonProperties.contextRealityModels = [];
+
+    this.jsonProperties.contextRealityModels.push(contextRealityModel);
+  }
+  /** @internal */
+  public removeContextRealityModel(index: number) {
+    if (index >= this._contextRealityModels.length || !Array.isArray(this.jsonProperties.contextRealityModels) || index >= this.jsonProperties.contextRealityModels.length) {
+      assert(false);
+      return;
+    }
+    this._contextRealityModels.splice(index, 1);
+    this.jsonProperties.contextRealityModels.splice(index, 1);
+  }
 
   /** @internal */
   public containsContextRealityModel(contextRealityModel: ContextRealityModelState) {

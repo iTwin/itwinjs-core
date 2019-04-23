@@ -78,6 +78,10 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     displayValue: UiComponents.i18n.translate("UiComponents:general.loading"),
   };
 
+  constructor(props: PropertyRendererProps) {
+    super(props);
+  }
+
   public static getLabelOffset(indentation?: number) {
     if (!indentation)
       return 0;

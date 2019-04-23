@@ -23,7 +23,6 @@ import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
-import { InstanceKey } from '@bentley/presentation-common';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { Matrix3d } from '@bentley/geometry-core';
@@ -43,7 +42,6 @@ import { PageOptions } from '@bentley/ui-components';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-ninezone';
-import { PresentationTreeDataProvider } from '@bentley/presentation-components';
 import * as PropTypes from 'prop-types';
 import * as React_2 from 'react';
 import { RectangleProps } from '@bentley/ui-ninezone';
@@ -206,34 +204,6 @@ export class AppNotificationManager extends NotificationManager {
     protected _showPointerMessage(message: NotifyMessageDetails): void;
     protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
 }
-
-// @beta
-export interface AppState {
-    // (undocumented)
-    numItemsSelected: number;
-    // (undocumented)
-    property?: any;
-}
-
-// @beta
-export const enum AppStateActionId {
-    // (undocumented)
-    SetCurrentProperty = "appstate:set-current-property",
-    // (undocumented)
-    SetNumItemsSelected = "appstate:set-num-items-selected"
-}
-
-// @beta
-export const AppStateActions: {
-    setNumItemsSelected: (numSelected: number) => import("./utils/redux-ts").ActionWithPayload<AppStateActionId.SetNumItemsSelected, number>;
-    setCurrentProperty: (property: any) => import("./utils/redux-ts").ActionWithPayload<AppStateActionId.SetCurrentProperty, any>;
-};
-
-// @beta
-export type AppStateActionsUnion = ActionsUnion<typeof AppStateActions>;
-
-// @beta
-export function AppStateReducer(state: AppState | undefined, _action: AppStateActionsUnion): AppState;
 
 // Warning: (ae-forgotten-export) The symbol "BackstageState" needs to be exported by the entry point ui-framework.d.ts
 // 
@@ -832,6 +802,7 @@ export enum CubeHover {
 // 
 // @public
 export class CubeNavigationAid extends React_2.Component<CommonProps, CubeNavigationState> {
+    constructor(props: CommonProps);
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -906,6 +877,7 @@ export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndC
 
 // @beta
 export class DragDropLayerRendererComponent extends React_2.Component<DragDropLayerRendererProps> {
+    constructor(props: DragDropLayerRendererProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1079,6 +1051,7 @@ export interface EachWidgetProps {
 // 
 // @public
 export class ElementTooltip extends React_2.Component<CommonProps, ElementTooltipState> {
+    constructor(props: CommonProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1118,7 +1091,7 @@ export interface ElementTooltipChangedEventArgs {
 // Warning: (ae-forgotten-export) The symbol "ExpandableSectionState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @beta
-export class ExpandableSection extends React_2.Component<ExpandableSectionProps, ExpandableSectionState> {
+export class ExpandableSection extends React_2.PureComponent<ExpandableSectionProps, ExpandableSectionState> {
     constructor(props: ExpandableSectionProps);
     render(): JSX.Element;
 }
@@ -1156,18 +1129,18 @@ export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement>
 // @beta
 export const FrameworkReducer: (state: import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
-    appState: typeof AppStateReducer;
-}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./AppState").AppStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./AppState").AppStateActionId.SetCurrentProperty, any>>) => import("./utils/redux-ts").CombinedReducerState<{
+    sessionState: typeof SessionStateReducer;
+}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./UiFramework").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>>) => import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
-    appState: typeof AppStateReducer;
+    sessionState: typeof SessionStateReducer;
 }>;
 
 // @beta
 export interface FrameworkState {
     // (undocumented)
-    appState: AppState;
-    // (undocumented)
     configurableUiState: ConfigurableUiState;
+    // (undocumented)
+    sessionState: SessionState;
 }
 
 // Warning: (ae-forgotten-export) The symbol "FrameworkZoneState" needs to be exported by the entry point ui-framework.d.ts
@@ -1664,7 +1637,7 @@ export interface IModelUserInfo {
 }
 
 // @beta
-export class InputFieldMessage extends React_2.Component<InputFieldMessageProps> {
+export class InputFieldMessage extends React_2.PureComponent<InputFieldMessageProps> {
     // (undocumented)
     render(): React_2.ReactNode;
 }
@@ -1838,7 +1811,7 @@ export class KeyboardShortcutManager {
     }
 
 // @public
-export class KeyboardShortcutMenu extends React_2.Component<CommonProps, KeyboardShortcutMenuState> {
+export class KeyboardShortcutMenu extends React_2.PureComponent<CommonProps, KeyboardShortcutMenuState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1966,7 +1939,7 @@ export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
 // Warning: (ae-forgotten-export) The symbol "ListPickerState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @beta
-export class ListPickerBase extends React_2.Component<ListPickerProps, ListPickerState> {
+export class ListPickerBase extends React_2.PureComponent<ListPickerProps, ListPickerState> {
     constructor(props: any);
     getExpandedContent(): JSX.Element | undefined;
     isExpanded: () => boolean;
@@ -1975,7 +1948,7 @@ export class ListPickerBase extends React_2.Component<ListPickerProps, ListPicke
     }
 
 // @beta
-export class ListPickerItem extends React_2.Component<ListPickerItemProps> {
+export class ListPickerItem extends React_2.PureComponent<ListPickerItemProps> {
     render(): JSX.Element;
 }
 
@@ -2103,7 +2076,7 @@ export class ModalDialogManager {
 // Warning: (ae-forgotten-export) The symbol "ModalDialogRendererState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class ModalDialogRenderer extends React_2.Component<CommonProps, ModalDialogRendererState> {
+export class ModalDialogRenderer extends React_2.PureComponent<CommonProps, ModalDialogRendererState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -2114,6 +2087,7 @@ export class ModalDialogRenderer extends React_2.Component<CommonProps, ModalDia
 
 // @public
 export class ModalFrontstage extends React_2.Component<ModalFrontstageProps> {
+    constructor(props: ModalFrontstageProps);
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2226,9 +2200,9 @@ export class NavigationAidControl extends ConfigurableUiControl {
 export class NavigationWidget extends React_2.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
     constructor(props: NavigationWidgetPropsEx);
     componentDidMount(): void;
-    componentWillUnmount(): void;
     // (undocumented)
-    static getDerivedStateFromProps(newProps: NavigationWidgetPropsEx, state: NavigationWidgetState): NavigationWidgetState | null;
+    componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState): void;
+    componentWillUnmount(): void;
     // (undocumented)
     render(): React_2.ReactNode;
     // @internal (undocumented)
@@ -2316,7 +2290,7 @@ export interface PointerMessageProps extends CommonProps {
 
 // @public
 export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemState> {
-    constructor(props: any);
+    constructor(props: PopupButtonProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -2332,6 +2306,14 @@ export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemSta
 export interface PopupButtonProps extends ItemProps, CommonProps {
     // (undocumented)
     onExpanded?: (expand: boolean) => void;
+}
+
+// @beta
+export interface PresentationSelectionScope {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
 }
 
 // @internal
@@ -2414,6 +2396,39 @@ export class SeparatorBackstageItem extends React_2.PureComponent<BackstageItemP
     render(): React_2.ReactNode;
     }
 
+// @beta
+export interface SessionState {
+    // (undocumented)
+    activeSelectionScope: string;
+    // (undocumented)
+    availableSelectionScopes: PresentationSelectionScope[];
+    // (undocumented)
+    numItemsSelected: number;
+}
+
+// @beta
+export const enum SessionStateActionId {
+    // (undocumented)
+    SetAvailableSelectionScopes = "sessionstate:set-available-selection-scopes",
+    // (undocumented)
+    SetNumItemsSelected = "sessionstate:set-num-items-selected",
+    // (undocumented)
+    SetSelectionScope = "sessionstate:set-selection-scope"
+}
+
+// @beta
+export const SessionStateActions: {
+    setNumItemsSelected: (numSelected: number) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetNumItemsSelected, number>;
+    setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
+    setSelectionScope: (activeSelectionScope: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetSelectionScope, string>;
+};
+
+// @beta
+export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
+
+// @beta
+export function SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): SessionState;
+
 // Warning: (ae-forgotten-export) The symbol "SheetCardState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @alpha
@@ -2481,7 +2496,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
 }
 
 // @public
-export class SignIn extends React_2.Component<SignInProps> {
+export class SignIn extends React_2.PureComponent<SignInProps> {
     constructor(props: SignInProps);
     // (undocumented)
     componentDidMount(): void;
@@ -2643,7 +2658,7 @@ export enum StagePanelState {
 // Warning: (ae-forgotten-export) The symbol "StandardMessageBoxState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class StandardMessageBox extends React_2.Component<StandardMessageBoxProps, StandardMessageBoxState> {
+export class StandardMessageBox extends React_2.PureComponent<StandardMessageBoxProps, StandardMessageBoxState> {
     constructor(props: StandardMessageBoxProps);
     // (undocumented)
     render(): JSX.Element;
@@ -2683,6 +2698,7 @@ export type StateType<R extends Reducer<any, any>> = DeepReadonly<ReturnType<R>>
 // 
 // @public
 export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState> implements IStatusBar {
+    constructor(props: StatusBarProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -3056,7 +3072,7 @@ export class ToolUiProvider extends ConfigurableUiControl {
 export class ToolWidget extends React_2.Component<ToolWidgetPropsEx, ToolWidgetState> {
     constructor(props: ToolWidgetPropsEx);
     // (undocumented)
-    static getDerivedStateFromProps(newProps: ToolWidgetPropsEx, state: ToolWidgetState): ToolWidgetState | null;
+    componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState): void;
     // (undocumented)
     render(): React_2.ReactNode;
     // @internal (undocumented)
@@ -3129,6 +3145,10 @@ export class UiFramework {
     static readonly frameworkStateKey: string;
     // (undocumented)
     static getAccudrawSnapMode(): SnapMode;
+    // (undocumented)
+    static getActiveSelectionScope(): string;
+    // @beta (undocumented)
+    static getAvailableSelectionScopes(): PresentationSelectionScope[];
     // @beta (undocumented)
     static getColorTheme(): string;
     // @beta (undocumented)
@@ -3146,6 +3166,8 @@ export class UiFramework {
     static readonly projectServices: ProjectServices;
     // (undocumented)
     static setAccudrawSnapMode(snapMode: SnapMode): void;
+    // (undocumented)
+    static setActiveSelectionScope(selectionScopeId: string): void;
     // @beta (undocumented)
     static setColorTheme(theme: string): void;
     // @beta (undocumented)
@@ -3168,6 +3190,7 @@ export interface UiVisibilityEventArgs {
 
 // @beta
 export class ValidationTextbox extends React_2.Component<ValidationTextboxProps> {
+    constructor(props: ValidationTextboxProps);
     // @internal (undocumented)
     render(): React_2.ReactNode;
     }
@@ -3258,16 +3281,38 @@ export class ViewUtilities {
 
 // @internal (undocumented)
 export class VisibilityHandler implements IDisposable {
-    constructor(vp: Viewport, onVisibilityChange: () => void);
+    constructor(props: VisibilityHandlerProps);
     // (undocumented)
-    changeVisibility(key: InstanceKey, on: boolean): Promise<void>;
+    changeVisibility(node: TreeNodeItem, on: boolean): Promise<boolean>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    isDisplayed(key: InstanceKey): boolean | Promise<boolean>;
+    getDisplayStatus(node: TreeNodeItem): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
     onVisibilityChange: () => void;
     }
+
+// @internal (undocumented)
+export interface VisibilityHandlerProps {
+    // (undocumented)
+    dataProvider: IPresentationTreeDataProvider;
+    // (undocumented)
+    getLoadedNode: (id: string) => TreeNodeItem | undefined;
+    // (undocumented)
+    onVisibilityChange: () => void;
+    // (undocumented)
+    viewport: Viewport;
+}
+
+// @internal (undocumented)
+export interface VisibilityStatus {
+    // (undocumented)
+    isDisabled?: boolean;
+    // (undocumented)
+    isDisplayed: boolean;
+    // (undocumented)
+    tooltip?: string;
+}
 
 // Warning: (ae-forgotten-export) The symbol "VisibilityTreeState" needs to be exported by the entry point ui-framework.d.ts
 // 
@@ -3279,12 +3324,7 @@ export class VisibilityTree extends React_2.PureComponent<VisibilityTreeProps, V
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): {
-        dataProvider: IPresentationTreeDataProvider | PresentationTreeDataProvider;
-        prevProps: VisibilityTreeProps;
-        ruleset: Ruleset;
-        checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
-    };
+    static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): Partial<VisibilityTreeState> | null;
     // (undocumented)
     render(): JSX.Element;
     }

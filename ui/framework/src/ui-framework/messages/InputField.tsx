@@ -29,7 +29,7 @@ export interface InputFieldMessageProps extends CommonProps {
 /** InputField message is a popup error message that appears under invalid user input.
  * @beta
  */
-export class InputFieldMessage extends React.Component<InputFieldMessageProps> {
+export class InputFieldMessage extends React.PureComponent<InputFieldMessageProps> {
   public render(): React.ReactNode {
     return ReactDOM.createPortal(this._getErrorMessage(), this.props.target);
   }

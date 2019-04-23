@@ -628,28 +628,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with interface data provider updateNodesCheckboxes with promise sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "isExpanded": true,
-    "level": 0,
-  },
-  Object {
-    "id": "0-0",
-    "level": 1,
-  },
-  Object {
-    "id": "0-1",
-    "level": 1,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with interface data provider updateNodesCheckboxes with promise sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -713,28 +691,6 @@ Array [
   Object {
     "id": "0-1",
     "isCheckboxDisabled": true,
-    "level": 1,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
-exports[`BeInspireTree with interface data provider updateNodesCheckboxes with result sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "isExpanded": true,
-    "level": 0,
-  },
-  Object {
-    "id": "0-0",
-    "level": 1,
-  },
-  Object {
-    "id": "0-1",
     "level": 1,
   },
   Object {
@@ -886,7 +842,7 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with interface data provider updateTreeCheckboxes with promise sets all node statuses to checked 1`] = `
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with promise sets all node statuses to checked / unchecked 1`] = `
 Array [
   Object {
     "id": "0",
@@ -896,6 +852,19 @@ Array [
   Object {
     "id": "1",
     "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with promise sets all node statuses to checked / unchecked 2`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
     "level": 0,
   },
 ]
@@ -916,19 +885,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with interface data provider updateTreeCheckboxes with promise sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "level": 0,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with interface data provider updateTreeCheckboxes with promise sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -944,7 +900,22 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with interface data provider updateTreeCheckboxes with result sets all node statuses to checked 1`] = `
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with promise sets node checkbox tooltips 1`] = `
+Array [
+  Object {
+    "checkboxTooltip": "test",
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "checkboxTooltip": "test",
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with result sets all node statuses to checked / unchecked 1`] = `
 Array [
   Object {
     "id": "0",
@@ -954,6 +925,19 @@ Array [
   Object {
     "id": "1",
     "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with result sets all node statuses to checked / unchecked 2`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
     "level": 0,
   },
 ]
@@ -974,19 +958,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with interface data provider updateTreeCheckboxes with result sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "level": 0,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with interface data provider updateTreeCheckboxes with result sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -997,6 +968,21 @@ Array [
   Object {
     "id": "1",
     "isCheckboxVisible": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with interface data provider updateTreeCheckboxes with result sets node checkbox tooltips 1`] = `
+Array [
+  Object {
+    "checkboxTooltip": "test",
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "checkboxTooltip": "test",
+    "id": "1",
     "level": 0,
   },
 ]
@@ -1411,28 +1397,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with method data provider updateNodesCheckboxes with promise sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "isExpanded": true,
-    "level": 0,
-  },
-  Object {
-    "id": "0-0",
-    "level": 1,
-  },
-  Object {
-    "id": "0-1",
-    "level": 1,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with method data provider updateNodesCheckboxes with promise sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -1496,28 +1460,6 @@ Array [
   Object {
     "id": "0-1",
     "isCheckboxDisabled": true,
-    "level": 1,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
-exports[`BeInspireTree with method data provider updateNodesCheckboxes with result sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "isExpanded": true,
-    "level": 0,
-  },
-  Object {
-    "id": "0-0",
-    "level": 1,
-  },
-  Object {
-    "id": "0-1",
     "level": 1,
   },
   Object {
@@ -1669,7 +1611,7 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with method data provider updateTreeCheckboxes with promise sets all node statuses to checked 1`] = `
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with promise sets all node statuses to checked / unchecked 1`] = `
 Array [
   Object {
     "id": "0",
@@ -1679,6 +1621,19 @@ Array [
   Object {
     "id": "1",
     "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with promise sets all node statuses to checked / unchecked 2`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
     "level": 0,
   },
 ]
@@ -1699,19 +1654,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with method data provider updateTreeCheckboxes with promise sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "level": 0,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with method data provider updateTreeCheckboxes with promise sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -1727,7 +1669,22 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with method data provider updateTreeCheckboxes with result sets all node statuses to checked 1`] = `
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with promise sets node checkbox tooltips 1`] = `
+Array [
+  Object {
+    "checkboxTooltip": "test",
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "checkboxTooltip": "test",
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with result sets all node statuses to checked / unchecked 1`] = `
 Array [
   Object {
     "id": "0",
@@ -1737,6 +1694,19 @@ Array [
   Object {
     "id": "1",
     "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with result sets all node statuses to checked / unchecked 2`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
     "level": 0,
   },
 ]
@@ -1757,19 +1727,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with method data provider updateTreeCheckboxes with result sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "level": 0,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with method data provider updateTreeCheckboxes with result sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -1780,6 +1737,21 @@ Array [
   Object {
     "id": "1",
     "isCheckboxVisible": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with method data provider updateTreeCheckboxes with result sets node checkbox tooltips 1`] = `
+Array [
+  Object {
+    "checkboxTooltip": "test",
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "checkboxTooltip": "test",
+    "id": "1",
     "level": 0,
   },
 ]
@@ -2194,28 +2166,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with promise data provider updateNodesCheckboxes with promise sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "isExpanded": true,
-    "level": 0,
-  },
-  Object {
-    "id": "0-0",
-    "level": 1,
-  },
-  Object {
-    "id": "0-1",
-    "level": 1,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with promise data provider updateNodesCheckboxes with promise sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -2279,28 +2229,6 @@ Array [
   Object {
     "id": "0-1",
     "isCheckboxDisabled": true,
-    "level": 1,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
-exports[`BeInspireTree with promise data provider updateNodesCheckboxes with result sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "isExpanded": true,
-    "level": 0,
-  },
-  Object {
-    "id": "0-0",
-    "level": 1,
-  },
-  Object {
-    "id": "0-1",
     "level": 1,
   },
   Object {
@@ -2452,7 +2380,7 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with promise data provider updateTreeCheckboxes with promise sets all node statuses to checked 1`] = `
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with promise sets all node statuses to checked / unchecked 1`] = `
 Array [
   Object {
     "id": "0",
@@ -2462,6 +2390,19 @@ Array [
   Object {
     "id": "1",
     "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with promise sets all node statuses to checked / unchecked 2`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
     "level": 0,
   },
 ]
@@ -2482,19 +2423,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with promise data provider updateTreeCheckboxes with promise sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "level": 0,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with promise data provider updateTreeCheckboxes with promise sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -2510,7 +2438,22 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with promise data provider updateTreeCheckboxes with result sets all node statuses to checked 1`] = `
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with promise sets node checkbox tooltips 1`] = `
+Array [
+  Object {
+    "checkboxTooltip": "test",
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "checkboxTooltip": "test",
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with result sets all node statuses to checked / unchecked 1`] = `
 Array [
   Object {
     "id": "0",
@@ -2520,6 +2463,19 @@ Array [
   Object {
     "id": "1",
     "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with result sets all node statuses to checked / unchecked 2`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
     "level": 0,
   },
 ]
@@ -2540,19 +2496,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with promise data provider updateTreeCheckboxes with result sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "level": 0,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with promise data provider updateTreeCheckboxes with result sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -2563,6 +2506,21 @@ Array [
   Object {
     "id": "1",
     "isCheckboxVisible": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with promise data provider updateTreeCheckboxes with result sets node checkbox tooltips 1`] = `
+Array [
+  Object {
+    "checkboxTooltip": "test",
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "checkboxTooltip": "test",
+    "id": "1",
     "level": 0,
   },
 ]
@@ -2977,28 +2935,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with raw data provider updateNodesCheckboxes with promise sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "isExpanded": true,
-    "level": 0,
-  },
-  Object {
-    "id": "0-0",
-    "level": 1,
-  },
-  Object {
-    "id": "0-1",
-    "level": 1,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with raw data provider updateNodesCheckboxes with promise sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -3062,28 +2998,6 @@ Array [
   Object {
     "id": "0-1",
     "isCheckboxDisabled": true,
-    "level": 1,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
-exports[`BeInspireTree with raw data provider updateNodesCheckboxes with result sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "isExpanded": true,
-    "level": 0,
-  },
-  Object {
-    "id": "0-0",
-    "level": 1,
-  },
-  Object {
-    "id": "0-1",
     "level": 1,
   },
   Object {
@@ -3235,7 +3149,7 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with raw data provider updateTreeCheckboxes with promise sets all node statuses to checked 1`] = `
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with promise sets all node statuses to checked / unchecked 1`] = `
 Array [
   Object {
     "id": "0",
@@ -3245,6 +3159,19 @@ Array [
   Object {
     "id": "1",
     "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with promise sets all node statuses to checked / unchecked 2`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
     "level": 0,
   },
 ]
@@ -3265,19 +3192,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with raw data provider updateTreeCheckboxes with promise sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "level": 0,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with raw data provider updateTreeCheckboxes with promise sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -3293,7 +3207,22 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with raw data provider updateTreeCheckboxes with result sets all node statuses to checked 1`] = `
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with promise sets node checkbox tooltips 1`] = `
+Array [
+  Object {
+    "checkboxTooltip": "test",
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "checkboxTooltip": "test",
+    "id": "1",
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with result sets all node statuses to checked / unchecked 1`] = `
 Array [
   Object {
     "id": "0",
@@ -3303,6 +3232,19 @@ Array [
   Object {
     "id": "1",
     "isChecked": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with result sets all node statuses to checked / unchecked 2`] = `
+Array [
+  Object {
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "id": "1",
     "level": 0,
   },
 ]
@@ -3323,19 +3265,6 @@ Array [
 ]
 `;
 
-exports[`BeInspireTree with raw data provider updateTreeCheckboxes with result sets all node statuses to unchecked 1`] = `
-Array [
-  Object {
-    "id": "0",
-    "level": 0,
-  },
-  Object {
-    "id": "1",
-    "level": 0,
-  },
-]
-`;
-
 exports[`BeInspireTree with raw data provider updateTreeCheckboxes with result sets all node statuses to visible 1`] = `
 Array [
   Object {
@@ -3346,6 +3275,21 @@ Array [
   Object {
     "id": "1",
     "isCheckboxVisible": true,
+    "level": 0,
+  },
+]
+`;
+
+exports[`BeInspireTree with raw data provider updateTreeCheckboxes with result sets node checkbox tooltips 1`] = `
+Array [
+  Object {
+    "checkboxTooltip": "test",
+    "id": "0",
+    "level": 0,
+  },
+  Object {
+    "checkboxTooltip": "test",
+    "id": "1",
     "level": 0,
   },
 ]

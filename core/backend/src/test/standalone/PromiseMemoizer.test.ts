@@ -111,12 +111,12 @@ describe("A wrapper around PromiseMemoizer", () => {
     const startTime = Date.now();
     let retString = await testMemoizer.callMemoizedTestFn(0, resolveWaitTime);
     const firstEndTime = Date.now();
-    assert.isAbove(firstEndTime - startTime, pendingWaitTime - 1);
+    assert.isAbove(firstEndTime - startTime, pendingWaitTime - 2);
     assert.equal(retString, "Pending");
 
     retString = await testMemoizer.callMemoizedTestFn(0, resolveWaitTime);
     const secondEndTime = Date.now();
-    assert.isAbove(secondEndTime - firstEndTime, pendingWaitTime - 1);
+    assert.isAbove(secondEndTime - firstEndTime, pendingWaitTime - 2);
     assert.equal(retString, "Pending");
 
     await BeDuration.wait(resolveWaitTime - 2 * pendingWaitTime + 1);

@@ -331,17 +331,17 @@ export function diagnosticCategoryToString(category: DiagnosticCategory): "Error
 export const DiagnosticCodes: {
     BaseClassIsSealed: string;
     BaseClassOfDifferentType: string;
+    CustomAttributeNotOfConcreteClass: string;
+    EnumerationTypeUnsupported: string;
+    MixinAppliedToClassMustDeriveFromConstraint: string;
     IncompatibleValueTypePropertyOverride: string;
     IncompatibleTypePropertyOverride: string;
     IncompatibleUnitPropertyOverride: string;
-    MixinAppliedToClassMustDeriveFromConstraint: string;
     AbstractConstraintMustNarrowBaseConstraints: string;
     DerivedConstraintsMustNarrowBaseConstraints: string;
     ConstraintClassesDeriveFromAbstractContraint: string;
     AtLeastOneConstraintClassDefined: string;
     AbstractConstraintMustExistWithMultipleConstraints: string;
-    CustomAttributeNotOfConcreteClass: string;
-    EnumerationTypeUnsupported: string;
 };
 
 // @beta
@@ -366,6 +366,41 @@ export const Diagnostics: {
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
+            messageArgs: [string, string, string];
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    CustomAttributeNotOfConcreteClass: {
+        new (container: CustomAttributeContainerProps, messageArgs: [string, string]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: CustomAttributeContainerProps;
+            messageArgs: [string, string];
+        };
+    };
+    EnumerationTypeUnsupported: {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Enumeration;
+            messageArgs: [string];
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    MixinAppliedToClassMustDeriveFromConstraint: {
+        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: EntityClass;
             messageArgs: [string, string, string];
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
@@ -403,63 +438,6 @@ export const Diagnostics: {
             messageArgs: [string, string, string, string, string, string, string];
         };
     };
-    AtLeastOneConstraintClassDefined: {
-        new (constraint: RelationshipConstraint, messageArgs: [string, string]): {
-            readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
-            readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
-            ecDefinition: RelationshipConstraint;
-            messageArgs: [string, string];
-        };
-    };
-    AbstractConstraintMustExistWithMultipleConstraints: {
-        new (constraint: RelationshipConstraint, messageArgs: [string, string]): {
-            readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
-            readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
-            ecDefinition: RelationshipConstraint;
-            messageArgs: [string, string];
-        };
-    };
-    EnumerationTypeUnsupported: {
-        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string]): {
-            readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
-            readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
-            ecDefinition: Enumeration;
-            messageArgs: [string];
-        };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
-    };
-    MixinAppliedToClassMustDeriveFromConstraint: {
-        new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string]): {
-            readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
-            readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
-            ecDefinition: EntityClass;
-            messageArgs: [string, string, string];
-        };
-        diagnosticType: import("./Diagnostic").DiagnosticType;
-    };
-    CustomAttributeNotOfConcreteClass: {
-        new (container: CustomAttributeContainerProps, messageArgs: [string, string]): {
-            readonly code: string;
-            readonly category: import("./Diagnostic").DiagnosticCategory;
-            readonly messageText: string;
-            readonly schema: import("../ecschema-metadata").Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
-            ecDefinition: CustomAttributeContainerProps;
-            messageArgs: [string, string];
-        };
-    };
     AbstractConstraintMustNarrowBaseConstraints: {
         new (ecDefinition: import("../ecschema-metadata").SchemaItem, messageArgs: [string, string, string, string]): {
             readonly code: string;
@@ -495,6 +473,28 @@ export const Diagnostics: {
             messageArgs: [string, string, string, string];
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    AtLeastOneConstraintClassDefined: {
+        new (constraint: RelationshipConstraint, messageArgs: [string, string]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: RelationshipConstraint;
+            messageArgs: [string, string];
+        };
+    };
+    AbstractConstraintMustExistWithMultipleConstraints: {
+        new (constraint: RelationshipConstraint, messageArgs: [string, string]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: import("../ecschema-metadata").Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: RelationshipConstraint;
+            messageArgs: [string, string];
+        };
     };
 };
 

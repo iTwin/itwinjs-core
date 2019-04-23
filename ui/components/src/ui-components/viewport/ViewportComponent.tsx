@@ -44,6 +44,7 @@ export interface ViewportProps extends CommonProps {
   getViewOverlay?: (viewState: ViewState) => React.ReactNode;
 }
 
+/** @internal */
 interface ViewportState {
   viewId: string;
 }

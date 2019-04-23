@@ -9,6 +9,7 @@ import "./PlayerButton.scss";
 
 export interface PlayButtonProps extends CommonProps {
   onClick?: () => void;
+  icon?: string;
 }
 
 export class PlayerButton extends React.PureComponent<any> {
@@ -18,9 +19,10 @@ export class PlayerButton extends React.PureComponent<any> {
   }
 
   public render() {
+    const { icon } = this.props;
     return (
       <button className={classnames("player-button", this.props.className)} onClick={this._onClick}>
-        {this.props.children}
+        <span className={classnames("icon", icon && icon)}></span>
       </button>
     );
   }
@@ -65,7 +67,7 @@ export class PlayButton extends React.Component<PlayButtonProps, PlayButtonState
   }
 
   public render() {
-    const iconClassName = this.state.isPlaying ? "icon icon-media-controls-circular-pause" : "icon icon-media-controls-circular-play";
+    const iconClassName = this.state.isPlaying ? "icon icon-media-controls-pause" : "icon icon-media-controls-play";
     return (
       <button className={classnames("player-button", this.props.className)} onClick={this._onClick}>
         <span className={iconClassName}></span>

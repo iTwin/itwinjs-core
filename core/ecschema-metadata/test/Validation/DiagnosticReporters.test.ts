@@ -32,7 +32,7 @@ describe("DiagnosticReporters tests", () => {
     testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
     testSchemaItem = new EntityClass(testSchema, "TestEntity");
     testProperty = await (testSchemaItem as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-    const diagnosticClass = createPropertyDiagnosticClass("TestRuleSet:100", "Test Message {0} {1}", category);
+    const diagnosticClass = createPropertyDiagnosticClass("TestRuleSet-100", "Test Message {0} {1}", category);
     const diagnostic = new diagnosticClass(testProperty, messageArgs);
     // These were added to a test collection because the generator, createAsyncIterableDiagnostic,
     // can only be consumed once, hence the need for the collection, which allows the tests access
@@ -108,7 +108,7 @@ describe("DiagnosticReporters tests", () => {
       assert.isDefined(metaDataFunc);
       const metaData = metaDataFunc!();
       assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet:100");
+      expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Error);
       expect(metaData.ecDefinition).to.equal(testProperty);
       expect(metaData.messageText).to.be.undefined;
@@ -159,7 +159,7 @@ describe("DiagnosticReporters tests", () => {
       assert.isDefined(metaDataFunc);
       const metaData = metaDataFunc!();
       assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet:100");
+      expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Warning);
       expect(metaData.ecDefinition).to.equal(testProperty);
       expect(metaData.messageText).to.be.undefined;
@@ -178,7 +178,7 @@ describe("DiagnosticReporters tests", () => {
       assert.isDefined(metaDataFunc);
       const metaData = metaDataFunc!();
       assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet:100");
+      expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Message);
       expect(metaData.ecDefinition).to.equal(testProperty);
       expect(metaData.messageText).to.be.undefined;
@@ -197,7 +197,7 @@ describe("DiagnosticReporters tests", () => {
       assert.isDefined(metaDataFunc);
       const metaData = metaDataFunc!();
       assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet:100");
+      expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Suggestion);
       expect(metaData.ecDefinition).to.equal(testProperty);
       expect(metaData.messageText).to.be.undefined;

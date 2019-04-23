@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add ability to set tooltips on tree node checkboxes",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.petraitis@bentley.com"
+}

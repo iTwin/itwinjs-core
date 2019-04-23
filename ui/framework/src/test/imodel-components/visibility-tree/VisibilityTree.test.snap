@@ -45,17 +45,6 @@ exports[`VisibilityTree #integration renders component with real data and no act
                       class="toggle icon icon-chevron-right"
                     />
                   </div>
-                  <label
-                    class="core-image-checkbox"
-                  >
-                    <input
-                      disabled=""
-                      type="checkbox"
-                    />
-                    <span
-                      class="image icon icon-visibility-hide-2"
-                    />
-                  </label>
                   <div
                     class="core-tree-node-icon"
                   >

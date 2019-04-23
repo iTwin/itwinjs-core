@@ -47,6 +47,10 @@ export interface ValidationTextboxProps extends CommonProps {
 export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
   private _isValid: boolean = true;
 
+  constructor(props: ValidationTextboxProps) {
+    super(props);
+  }
+
   /** @internal */
   public render(): React.ReactNode {
     const sizeStyle: React.CSSProperties = {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "API methods for adding and removing context reality models",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}

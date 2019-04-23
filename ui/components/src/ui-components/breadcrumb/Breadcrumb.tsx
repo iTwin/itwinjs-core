@@ -875,6 +875,10 @@ export interface BreadcrumbNodeProps {
  * @beta
  */
 export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
+  constructor(props: BreadcrumbNodeProps) {
+    super(props);
+  }
+
   public render(): React.ReactNode {
     const { icon, label } = this.props;
     return <span data-testid="components-breadcrumb-node"><span className={classnames("icon", icon)} /> {label}</span>;

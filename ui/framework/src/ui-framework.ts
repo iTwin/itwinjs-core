@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./ui-framework/UiFramework";
 
-export * from "./ui-framework/AppState";
+export * from "./ui-framework/SessionState";
 export * from "./ui-framework/FrameworkState";
 export * from "./ui-framework/UiFramework";
 export * from "./ui-framework/CoreToolDefinitions";

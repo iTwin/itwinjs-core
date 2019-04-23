@@ -10,11 +10,11 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { Backstage } from "../backstage/Backstage";
 import { WorkflowManager } from "../workflow/Workflow";
 import { ContentViewManager } from "../content/ContentViewManager";
-import { AppStateActionId } from "../AppState";
-import { UiFramework } from "../UiFramework";
+import { SessionStateActionId } from "../SessionState";
+import { UiFramework, PresentationSelectionScope } from "../UiFramework";
 import { IModelConnection, SelectEventType, IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
-import { getInstancesCount } from "@bentley/presentation-common";
+import { SelectionScope, getInstancesCount } from "@bentley/presentation-common";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
@@ -244,8 +244,25 @@ export class SyncUiEventDispatcher {
       }
       const selection = provider.getSelection(args.imodel, args.level);
       const numSelected = getInstancesCount(selection);
-      UiFramework.dispatchActionToStore(AppStateActionId.SetNumItemsSelected, numSelected);
+      UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, numSelected);
     });
+
+    Presentation.selection.scopes.getSelectionScopes(iModelConnection).then((availableScopes: SelectionScope[]) => { // tslint:disable-line:no-floating-promises
+      if (availableScopes) {
+        const presentationScopes: PresentationSelectionScope[] = [];
+        availableScopes.map((scope) => presentationScopes.push(scope));
+        UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, presentationScopes);
+      }
+    });
+
+    const activeSelectionScope = Presentation.selection.scopes.activeScope;
+    if (activeSelectionScope) {
+      if (typeof (activeSelectionScope) === "object") {
+        UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, (activeSelectionScope as SelectionScope).id);
+      } else {
+        UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, activeSelectionScope);
+      }
+    }
   }
 
 }

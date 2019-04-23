@@ -24,7 +24,7 @@ export const withTimeout = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
 ) => {
-  return class WithTimeout extends React.Component<ComponentProps & WithTimeoutProps> {
+  return class WithTimeout extends React.PureComponent<ComponentProps & WithTimeoutProps> {
     public timer: Timer = new Timer(0);
 
     public componentDidMount(): void {

@@ -73,7 +73,9 @@ export class QueryPageMemoizer extends PromiseMemoizer<any[]> {
     args.requestContext.enter();
     const pageQP = this.memoize(args);
     const waitPromise = BeDuration.wait(this._timeout);
-    await Promise.race([pageQP.promise, waitPromise]);
+
+    await Promise.race([pageQP.promise, waitPromise]).catch(() => Promise.resolve());
+    // Note: Rejections must be caught so that the memoization entry can be deleted
 
     args.requestContext.enter();
 

@@ -9,18 +9,14 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 import { Point3dArray } from "./PointHelpers";
 import { Matrix3d } from "./Matrix3d";
-import { AxisOrder } from "../Geometry";
+import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
 /*
 * context for constructing smooth motion a startFrsutum and endFrutum.
 * The externally interesting calls are
-*   1) Declare and initialize a context to shift corner0 to corner1, with the (NPC coordinate) point (fractionU, fractionV, fractionW)
-*             moving along its connecting segment, all other points rotating smoothly from the start orientation to end orientation:
-*
-*              SmoothTransformBetweenFrusta context;
-*              if (context.InitFractionalFrustumTransform (corner0, corner1, fractionU, fractionV, fractionW)) ....
-*           (this only fails for flattened frustum -- should not happen)
-*   2) Get any intermediate 8 corners (at fraction) with
+* * Create a context to shift corner0 to corner1, with the (NPC coordinate) point (fractionU, fractionV, fractionW) moving along its connecting segment, all other points rotating smoothly from the start orientation to end orientation:
+*             `const context = SmoothTransformBetweenFrusta (cornerA, cornerB)`
+* * Get any intermediate 8 corners (at fraction) with `context.fractionToWorldCorners(fraction)`
 */
 export class SmoothTransformBetweenFrusta {
   // raw frusta:
@@ -29,7 +25,10 @@ export class SmoothTransformBetweenFrusta {
 
   private _localToWorldA: Transform;
   private _localToWorldB: Transform;
-
+  /** (property accessor) rigid frame at start of motion */
+  public get localToWorldA(): Transform { return this._localToWorldA; }
+  /** (property accessor) rigid frame at end of motion */
+  public get localToWorldB(): Transform { return this._localToWorldB; }
   private _rotationAxis: Vector3d;
   private _rotationAngle: Angle;
 
@@ -50,12 +49,13 @@ export class SmoothTransformBetweenFrusta {
     this._rotationAxis = rotationAxis;
     this._rotationAngle = rotationAngle;
   }
+
   /**
    * Set up rotation data for smooth transition from 8 point frusta cornerA and cornerB
    * @param cornerA
    * @param cornerB
    */
-  public static create(cornerA: Point3d[], cornerB: Point3d[]): SmoothTransformBetweenFrusta | undefined {
+  public static create(cornerA: Point3d[], cornerB: Point3d[], preferSimpleRotation: boolean = true): SmoothTransformBetweenFrusta | undefined {
     const localToWorldA = Point3dArray.evaluateTrilinearDerivativeTransform(cornerA, 0.5, 0.5, 0.5);
     const localToWorldB = Point3dArray.evaluateTrilinearDerivativeTransform(cornerB, 0.5, 0.5, 0.5);
     const rigidA = Transform.createOriginAndMatrix(localToWorldA.origin, Matrix3d.createRigidFromMatrix3d(localToWorldA.matrix, AxisOrder.ZXY));
@@ -65,6 +65,26 @@ export class SmoothTransformBetweenFrusta {
       const spinAxis = spinMatrix.getAxisAndAngleOfRotation();
       const localCornerA = rigidA.multiplyInversePoint3dArray(cornerA)!;
       const localCornerB = rigidB.multiplyInversePoint3dArray(cornerB)!;
+      /** Is this a pure rotation -- i.e. no clip volume resizing for camera or clip changes */
+      if (preferSimpleRotation && Point3dArray.isAlmostEqual(localCornerA, localCornerB) && !spinAxis.angle.isAlmostZero) {
+        // world vectors
+        const worldOriginShift = Vector3d.createStartEnd(localToWorldA.origin, localToWorldB.origin);
+        const chordMidPoint = localToWorldA.getOrigin().interpolate(0.5, localToWorldB.getOrigin());
+        const bisector = spinAxis.axis.unitCrossProduct(worldOriginShift);
+        if (bisector) {
+          const halfChordLength = 0.5 * worldOriginShift.magnitude();
+          const alpha = Geometry.conditionalDivideFraction(halfChordLength, Math.tan(spinAxis.angle.radians * 0.5));
+          if (alpha !== undefined) {
+            const spinCenter = chordMidPoint.plusScaled(bisector, alpha);
+            const rigidA1 = Transform.createOriginAndMatrix(spinCenter, rigidA.matrix);
+            const rigidB1 = Transform.createOriginAndMatrix(spinCenter, rigidB.matrix);
+            const localCornerA1 = rigidA1.multiplyInversePoint3dArray(cornerA)!;
+            const localCornerB1 = rigidB1.multiplyInversePoint3dArray(cornerB)!;
+            return new SmoothTransformBetweenFrusta(rigidA1, localCornerA1, rigidB1, localCornerB1,
+              spinAxis.axis, spinAxis.angle);
+          }
+        }
+      }
       return new SmoothTransformBetweenFrusta(rigidA, localCornerA, rigidB, localCornerB,
         spinAxis.axis, spinAxis.angle);
     }

@@ -8,7 +8,7 @@ declare const global: any;
 const isFrontend = (typeof (window) !== "undefined");
 export type CertaBackendCallback = (...args: any[]) => void | null | undefined | number | string | boolean;
 
-/** @hidden */
+/** @internal */
 export function getCallbacksRegisteredOnBackend(): { [name: string]: CertaBackendCallback } {
   if (isFrontend)
     throw new Error("This should only be called on the backend!");
@@ -17,7 +17,7 @@ export function getCallbacksRegisteredOnBackend(): { [name: string]: CertaBacken
   return global._CertaRegisteredCallbacks;
 }
 
-/** @hidden */
+/** @internal */
 export function executeRegisteredCallback(name: string, args: any[]): any {
   const registeredCallbacks = getCallbacksRegisteredOnBackend();
   if (!(name in registeredCallbacks))

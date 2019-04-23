@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/index";
+@import "@bentley/ui-core/lib/ui-core/_z-index";
 @import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
 
 #uifw-configurableui-wrapper {
@@ -45,10 +46,20 @@
   width: 100%;
 }
 
-.uifw-element-tooltip {
-  width: max-content;
-  font-size: $uicore-font-size;
+.uifw-element-tooltip-container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
+
+  @include uicore-z-index(tooltip);
+
+  > .uifw-element-tooltip {
+    width: max-content;
+    font-size: $uicore-font-size;
+  }
 }
 
 .uifw-item-svg-icon {

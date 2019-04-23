@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelConnection, Viewport, PerModelCategoryVisibility } from "@bentley/imodeljs-frontend";
 import { KeySet, isInstanceNodeKey, Ruleset, InstanceKey, RegisteredRuleset, ContentFlags, DescriptorOverrides } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { IPresentationTreeDataProvider, PresentationTreeDataProvider, treeWithUnifiedSelection, ContentDataProvider } from "@bentley/presentation-components";
@@ -14,10 +14,13 @@ import {
   CheckBoxInfo, CheckBoxState, isPromiseLike, ImageCheckBox, NodeCheckboxRenderProps,
 } from "@bentley/ui-core";
 import { Tree as BasicTree, SelectionMode, TreeNodeItem } from "@bentley/ui-components";
+import { UiFramework } from "../../UiFramework";
 import "./VisibilityTree.scss";
 
 // tslint:disable-next-line:variable-name naming-convention
 const Tree = treeWithUnifiedSelection(BasicTree);
+
+const pageSize = 20;
 
 /** @internal */
 export const RULESET: Ruleset = require("./Hierarchy.json"); // tslint:disable-line: no-var-requires
@@ -63,30 +66,32 @@ interface VisibilityTreeState {
  */
 export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, VisibilityTreeState> {
 
+  private _treeRef: React.RefObject<BasicTree>;
   private _visibilityHandler?: VisibilityHandler;
   private _rulesetRegistration?: RegisteredRuleset;
 
   public constructor(props: VisibilityTreeProps) {
     super(props);
+    this.state = {
+      prevProps: props,
+      ruleset: RULESET,
+      dataProvider: props.dataProvider ? props.dataProvider : createDataProvider(props.imodel),
+      checkboxInfo: this.createCheckBoxInfoCallback(),
+    };
+    this._treeRef = React.createRef();
     if (props.visibilityHandler) {
       this._visibilityHandler = props.visibilityHandler;
       this._visibilityHandler.onVisibilityChange = this.onVisibilityChange;
     } else if (props.activeView) {
-      this._visibilityHandler = new VisibilityHandler(props.activeView, this.onVisibilityChange);
+      this._visibilityHandler = this.createVisibilityHandler(props.activeView);
     }
-    this.state = {
-      prevProps: props,
-      ruleset: RULESET,
-      dataProvider: props.dataProvider ? props.dataProvider : new PresentationTreeDataProvider(props.imodel, RULESET.id),
-      checkboxInfo: this.createCheckBoxInfoCallback(),
-    };
     this.registerRuleset(); // tslint:disable-line:no-floating-promises
   }
 
-  public static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState) {
+  public static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): Partial<VisibilityTreeState> | null {
     const base = { ...state, prevProps: nextProps };
     if (nextProps.imodel !== state.prevProps.imodel || nextProps.dataProvider !== state.prevProps.dataProvider)
-      return { ...base, dataProvider: nextProps.dataProvider ? nextProps.dataProvider : new PresentationTreeDataProvider(nextProps.imodel, RULESET.id) };
+      return { ...base, dataProvider: nextProps.dataProvider ? nextProps.dataProvider : createDataProvider(nextProps.imodel) };
     return base;
   }
 
@@ -96,8 +101,9 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
         this._visibilityHandler.dispose();
         this._visibilityHandler = undefined;
       }
-      if (this.props.activeView)
-        this._visibilityHandler = new VisibilityHandler(this.props.activeView, this.onVisibilityChange);
+      if (this.props.activeView) {
+        this._visibilityHandler = this.createVisibilityHandler(this.props.activeView);
+      }
       this.setState({ checkboxInfo: this.createCheckBoxInfoCallback() });
     }
   }
@@ -108,6 +114,22 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
       this._visibilityHandler = undefined;
     }
     this.unregisterRuleset(); // tslint:disable-line:no-floating-promises
+  }
+
+  // tslint:disable-next-line: naming-convention
+  private getLoadedNode = (id: string): TreeNodeItem | undefined => {
+    if (!this._treeRef.current)
+      return undefined;
+    return this._treeRef.current.getLoadedNode(id);
+  }
+
+  private createVisibilityHandler(viewport: Viewport): VisibilityHandler {
+    return new VisibilityHandler({
+      viewport,
+      dataProvider: this.state.dataProvider,
+      getLoadedNode: this.getLoadedNode,
+      onVisibilityChange: this.onVisibilityChange,
+    });
   }
 
   private async registerRuleset() {
@@ -149,17 +171,12 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
 
   private getNodeCheckBoxInfo(node: TreeNodeItem): CheckBoxInfo | Promise<CheckBoxInfo> {
     if (!this._visibilityHandler)
-      return { isDisabled: true, state: CheckBoxState.Off };
+      return { isVisible: false };
 
-    const key = this.state.dataProvider.getNodeKey(node);
-    if (isInstanceNodeKey(key)) {
-      const result = this._visibilityHandler.isDisplayed(key.instanceKey);
-      if (isPromiseLike(result))
-        return result.then((isDisplayed) => ({ state: isDisplayed ? CheckBoxState.On : CheckBoxState.Off }));
-      return { state: result ? CheckBoxState.On : CheckBoxState.Off };
-    }
-
-    return { isVisible: false };
+    const result = this._visibilityHandler.getDisplayStatus(node);
+    if (isPromiseLike(result))
+      return result.then(createCheckBoxInfo);
+    return createCheckBoxInfo(result);
   }
 
   // tslint:disable-next-line: naming-convention
@@ -167,9 +184,8 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
     if (!this._visibilityHandler)
       return;
 
-    const key = this.state.dataProvider.getNodeKey(node);
-    if (isInstanceNodeKey(key))
-      await this._visibilityHandler.changeVisibility(key.instanceKey, state === CheckBoxState.On);
+    // tslint:disable-next-line: no-floating-promises
+    this._visibilityHandler.changeVisibility(node, state === CheckBoxState.On);
   }
 
   // tslint:disable-next-line: naming-convention
@@ -180,6 +196,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
       imageOn="icon-visibility"
       imageOff="icon-visibility-hide-2"
       onClick={props.onChange}
+      tooltip={props.title}
     />
   )
 
@@ -187,148 +204,255 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
     return (
       <div className="fw-visibility-tree">
         <Tree
+          ref={this._treeRef}
           dataProvider={this.state.dataProvider}
           selectionMode={this.props.selectionMode}
           checkboxInfo={this.state.checkboxInfo}
           onCheckboxClick={this.onCheckboxStateChange}
           showIcons={true}
           renderOverrides={{ renderCheckbox: this.renderNodeCheckbox }}
-          pageSize={20}
+          pageSize={pageSize}
         />
       </div>
     );
   }
 }
 
+const createDataProvider = (imodel: IModelConnection): IPresentationTreeDataProvider => {
+  const provider = new PresentationTreeDataProvider(imodel, RULESET.id);
+  provider.pagingSize = pageSize;
+  return provider;
+};
+
+const createCheckBoxInfo = (status: VisibilityStatus): CheckBoxInfo => ({
+  state: status.isDisplayed ? CheckBoxState.On : CheckBoxState.Off,
+  isDisabled: status.isDisabled,
+  isVisible: true,
+  tooltip: status.tooltip,
+});
+
+const createTooltip = (status: "visible" | "hidden" | "disabled", tooltipStringId: string | undefined): string => {
+  const statusStringId = `UiFramework:visibilityTree.status.${status}`;
+  const statusString = UiFramework.i18n.translate(statusStringId);
+  if (!tooltipStringId)
+    return statusString;
+
+  tooltipStringId = `UiFramework:visibilityTree.tooltips.${tooltipStringId}`;
+  const tooltipString = UiFramework.i18n.translate(tooltipStringId);
+  return `${statusString}: ${tooltipString}`;
+};
+
+/** @internal */
+export interface VisibilityStatus {
+  isDisplayed: boolean;
+  isDisabled?: boolean;
+  tooltip?: string;
+}
+
+/** @internal */
+export interface VisibilityHandlerProps {
+  viewport: Viewport;
+  dataProvider: IPresentationTreeDataProvider;
+  getLoadedNode: (id: string) => TreeNodeItem | undefined;
+  onVisibilityChange: () => void;
+}
+
 /** @internal */
 export class VisibilityHandler implements IDisposable {
 
-  private _vp: Viewport;
+  private _props: VisibilityHandlerProps;
   private _onVisibilityChange: () => void;
   private _subjectModelIdsCache = new Map<Id64String, Id64String[]>();
-  private _elementDisplayCache = new Map<Id64String, boolean | Promise<boolean>>();
+  private _elementDisplayCache = new Map<Id64String, VisibilityStatus | Promise<VisibilityStatus>>();
   private _elementCategoryAndModelLoader: ElementCategoryAndModelRequestor;
 
-  constructor(vp: Viewport, onVisibilityChange: () => void) {
-    this._vp = vp;
-    this._onVisibilityChange = onVisibilityChange;
-    this._elementCategoryAndModelLoader = new ElementCategoryAndModelRequestor(vp.iModel);
-    vp.onViewedCategoriesChanged.addListener(this.onViewChanged);
-    vp.onViewedModelsChanged.addListener(this.onViewChanged);
-    vp.onAlwaysDrawnChanged.addListener(this.onElementAlwaysDrawnChanged);
-    vp.onNeverDrawnChanged.addListener(this.onElementNeverDrawnChanged);
+  constructor(props: VisibilityHandlerProps) {
+    this._props = props;
+    this._onVisibilityChange = props.onVisibilityChange;
+    this._elementCategoryAndModelLoader = new ElementCategoryAndModelRequestor(this._props.viewport.iModel);
+    this._props.viewport.onViewedCategoriesPerModelChanged.addListener(this.onViewChanged);
+    this._props.viewport.onViewedCategoriesChanged.addListener(this.onViewChanged);
+    this._props.viewport.onViewedModelsChanged.addListener(this.onViewChanged);
+    this._props.viewport.onAlwaysDrawnChanged.addListener(this.onElementAlwaysDrawnChanged);
+    this._props.viewport.onNeverDrawnChanged.addListener(this.onElementNeverDrawnChanged);
   }
 
   public dispose() {
-    this._vp.onViewedCategoriesChanged.removeListener(this.onViewChanged);
-    this._vp.onViewedModelsChanged.removeListener(this.onViewChanged);
-    this._vp.onAlwaysDrawnChanged.removeListener(this.onElementAlwaysDrawnChanged);
-    this._vp.onNeverDrawnChanged.removeListener(this.onElementNeverDrawnChanged);
+    this._props.viewport.onViewedCategoriesPerModelChanged.removeListener(this.onViewChanged);
+    this._props.viewport.onViewedCategoriesChanged.removeListener(this.onViewChanged);
+    this._props.viewport.onViewedModelsChanged.removeListener(this.onViewChanged);
+    this._props.viewport.onAlwaysDrawnChanged.removeListener(this.onElementAlwaysDrawnChanged);
+    this._props.viewport.onNeverDrawnChanged.removeListener(this.onElementNeverDrawnChanged);
   }
 
   public get onVisibilityChange() { return this._onVisibilityChange; }
   public set onVisibilityChange(callback: () => void) { this._onVisibilityChange = callback; }
 
-  public isDisplayed(key: InstanceKey): boolean | Promise<boolean> {
-    switch (key.className) {
-      case "BisCore:Subject":
-        return this.isSubjectDisplayed(key.id);
-      case "BisCore:PhysicalModel":
-        return this.isModelDisplayed(key.id);
-      case "BisCore:SpatialCategory":
-      case "BisCore:DrawingCategory":
-        return this.isCategoryDisplayed(key.id);
-      default:
-        return this.isElementDisplayed(key.id);
+  public getDisplayStatus(node: TreeNodeItem): VisibilityStatus | Promise<VisibilityStatus> {
+    const key = this._props.dataProvider.getNodeKey(node);
+    if (isInstanceNodeKey(key)) {
+      switch (key.instanceKey.className) {
+        case "BisCore:Subject":
+          return this.getSubjectDisplayStatus(key.instanceKey.id);
+        case "BisCore:PhysicalModel":
+          return this.getModelDisplayStatus(key.instanceKey.id);
+        case "BisCore:SpatialCategory":
+        case "BisCore:DrawingCategory":
+          return this.getCategoryDisplayStatus(key.instanceKey.id, this.getCategoryParentModelId(node));
+        default:
+          return this.getElementDisplayStatus(key.instanceKey.id);
+      }
     }
+    return { isDisplayed: false, isDisabled: true };
   }
 
-  private async isSubjectDisplayed(id: Id64String): Promise<boolean> {
+  private getCategoryParentModelId(categoryNode: TreeNodeItem): Id64String | undefined {
+    if (!categoryNode.parentId) {
+      return undefined;
+    }
+
+    const parentNode = this._props.getLoadedNode(categoryNode.parentId);
+    if (!parentNode) {
+      return undefined;
+    }
+
+    const parentNodeKey = this._props.dataProvider.getNodeKey(parentNode);
+    if (!isInstanceNodeKey(parentNodeKey)) {
+      return undefined;
+    }
+
+    return parentNodeKey.instanceKey.id;
+  }
+
+  private async getSubjectDisplayStatus(id: Id64String): Promise<VisibilityStatus> {
     const modelIds = await this.getSubjectModelIds(id);
-    return modelIds.some((modelId) => this.isModelDisplayed(modelId));
+    const isDisplayed = modelIds.some((modelId) => this.getModelDisplayStatus(modelId).isDisplayed);
+    if (isDisplayed)
+      return { isDisplayed, tooltip: createTooltip("visible", "subject.atLeastOneModelVisible") };
+    return { isDisplayed, tooltip: createTooltip("hidden", "subject.allModelsHidden") };
   }
 
-  private isModelDisplayed(id: Id64String): boolean {
-    return this._vp.view.isSpatialView() && this._vp.view.viewsModel(id);
+  private getModelDisplayStatus(id: Id64String): VisibilityStatus {
+    const isDisplayed = this._props.viewport.view.isSpatialView() && this._props.viewport.view.viewsModel(id);
+    return { isDisplayed, tooltip: createTooltip(isDisplayed ? "visible" : "hidden", undefined) };
   }
 
-  private isCategoryDisplayed(id: Id64String): boolean {
-    return this._vp.view.viewsCategory(id);
+  private getCategoryDisplayStatus(id: Id64String, parentModelId: Id64String | undefined): VisibilityStatus {
+    if (parentModelId) {
+      if (!this.getModelDisplayStatus(parentModelId).isDisplayed)
+        return { isDisplayed: false, isDisabled: true, tooltip: createTooltip("disabled", "category.modelNotDisplayed") };
+
+      const override = this._props.viewport.perModelCategoryVisibility.getOverride(parentModelId, id);
+      switch (override) {
+        case PerModelCategoryVisibility.Override.Show:
+          return { isDisplayed: true, tooltip: createTooltip("visible", "category.displayedThroughPerModelOverride") };
+        case PerModelCategoryVisibility.Override.Hide:
+          return { isDisplayed: false, tooltip: createTooltip("hidden", "category.hiddenThroughPerModelOverride") };
+      }
+    }
+    const isDisplayed = this._props.viewport.view.viewsCategory(id);
+    return {
+      isDisplayed,
+      tooltip: isDisplayed
+        ? createTooltip("visible", "category.displayedThroughCategorySelector")
+        : createTooltip("hidden", "category.hiddenThroughCategorySelector"),
+    };
   }
 
-  private isElementDisplayed(id: Id64String): boolean | Promise<boolean> {
+  private getElementDisplayStatus(id: Id64String): VisibilityStatus | Promise<VisibilityStatus> {
     let result = this._elementDisplayCache.get(id);
     if (undefined === result) {
-      if (this._vp.neverDrawn !== undefined && this._vp.neverDrawn.has(id)) {
-        result = false;
-      } else {
-        result = this._elementCategoryAndModelLoader.getCategoryAndModelId(id).then((props) => {
-          if (!this._vp.view.viewsModel(props.modelId))
-            return false;
-          if (this._vp.alwaysDrawn !== undefined && this._vp.alwaysDrawn.has(id))
-            return true;
-          return this._vp.view.viewsCategory(props.categoryId);
-        }).then((isDisplayed: boolean) => {
-          this._elementDisplayCache.set(id, isDisplayed); // replace promise with an actual value
-          return isDisplayed;
-        });
-      }
+      result = this._elementCategoryAndModelLoader.getCategoryAndModelId(id).then((props) => {
+        if (!this._props.viewport.view.viewsModel(props.modelId))
+          return { isDisabled: true, isDisplayed: false, tooltip: createTooltip("disabled", "element.modelNotDisplayed") };
+        if (this._props.viewport.neverDrawn !== undefined && this._props.viewport.neverDrawn.has(id))
+          return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenThroughNeverDrawnList") };
+        if (this._props.viewport.alwaysDrawn !== undefined && this._props.viewport.alwaysDrawn.has(id))
+          return { isDisplayed: true, tooltip: createTooltip("visible", "element.displayedThroughAlwaysDrawnList") };
+        const categoryDisplayStatus = this.getCategoryDisplayStatus(props.categoryId, props.modelId);
+        if (categoryDisplayStatus.isDisplayed)
+          return { isDisplayed: true, tooltip: createTooltip("visible", undefined) };
+        return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenThroughCategory") };
+      }).then((value) => {
+        this._elementDisplayCache.set(id, value); // replace promise with an actual value
+        return value;
+      });
       this._elementDisplayCache.set(id, result);
     }
     return result;
   }
 
-  public async changeVisibility(key: InstanceKey, on: boolean) {
-    switch (key.className) {
-      case "BisCore:Subject":
-        await this.changeSubjectState(key.id, on);
-        break;
-      case "BisCore:PhysicalModel":
-        this.changeModelState(key.id, on);
-        break;
-      case "BisCore:SpatialCategory":
-      case "BisCore:DrawingCategory":
-        this.changeCategoryState(key.id, on);
-        break;
-      default:
-        await this.changeElementState(key.id, on);
+  public async changeVisibility(node: TreeNodeItem, on: boolean) {
+    const key = this._props.dataProvider.getNodeKey(node);
+    if (isInstanceNodeKey(key)) {
+      switch (key.instanceKey.className) {
+        case "BisCore:Subject":
+          await this.changeSubjectState(key.instanceKey.id, on);
+          break;
+        case "BisCore:PhysicalModel":
+          this.changeModelState(key.instanceKey.id, on);
+          break;
+        case "BisCore:SpatialCategory":
+        case "BisCore:DrawingCategory":
+          this.changeCategoryState(key.instanceKey.id, this.getCategoryParentModelId(node), on);
+          break;
+        default:
+          await this.changeElementState(key.instanceKey.id, on);
+      }
     }
+    return false;
   }
 
   private async changeSubjectState(id: Id64String, on: boolean) {
-    if (!this._vp.view.isSpatialView())
+    if (!this._props.viewport.view.isSpatialView())
       return;
 
     const modelIds = await this.getSubjectModelIds(id);
-    this._vp.changeModelDisplay(modelIds, on);
+    this._props.viewport.changeModelDisplay(modelIds, on);
   }
 
   private changeModelState(id: Id64String, on: boolean) {
-    if (!this._vp.view.isSpatialView())
+    if (!this._props.viewport.view.isSpatialView())
       return;
 
-    this._vp.changeModelDisplay([id], on);
+    this._props.viewport.changeModelDisplay([id], on);
   }
 
-  private changeCategoryState(id: Id64String, on: boolean) {
-    this._vp.changeCategoryDisplay([id], on);
+  private changeCategoryState(categoryId: Id64String, parentModelId: Id64String | undefined, on: boolean) {
+    if (parentModelId) {
+      const isDisplayedInSelector = this._props.viewport.view.viewsCategory(categoryId);
+      const ovr = (on === isDisplayedInSelector) ? PerModelCategoryVisibility.Override.None
+        : on ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide;
+      this._props.viewport.perModelCategoryVisibility.setOverride(parentModelId, categoryId, ovr);
+    }
+    this._props.viewport.changeCategoryDisplay([categoryId], on);
+  }
+
+  private async areElementCategoryAndModelDisplayed(elementId: Id64String): Promise<boolean> {
+    return this._elementCategoryAndModelLoader.getCategoryAndModelId(elementId).then((props) => {
+      return this.getModelDisplayStatus(props.modelId).isDisplayed
+        && this.getCategoryDisplayStatus(props.categoryId, props.modelId).isDisplayed;
+    });
   }
 
   private async changeElementState(id: Id64String, on: boolean) {
-    const currNeverDrawn = new Set(this._vp.neverDrawn ? this._vp.neverDrawn : []);
-    const currAlwaysDrawn = new Set(this._vp.alwaysDrawn ? this._vp.alwaysDrawn : []);
+    const isDisplayedByDefault = await this.areElementCategoryAndModelDisplayed(id);
+    const currNeverDrawn = new Set(this._props.viewport.neverDrawn ? this._props.viewport.neverDrawn : []);
+    const currAlwaysDrawn = new Set(this._props.viewport.alwaysDrawn ? this._props.viewport.alwaysDrawn : []);
     const elementIds = [id, ...await this.getAssemblyElementIds(id)];
     elementIds.forEach((elementId) => {
       if (on) {
         currNeverDrawn.delete(elementId);
-        currAlwaysDrawn.add(elementId);
+        if (!isDisplayedByDefault)
+          currAlwaysDrawn.add(elementId);
       } else {
         currAlwaysDrawn.delete(elementId);
-        currNeverDrawn.add(elementId);
+        if (isDisplayedByDefault)
+          currNeverDrawn.add(elementId);
       }
     });
-    this._vp.setNeverDrawn(currNeverDrawn);
-    this._vp.setAlwaysDrawn(currAlwaysDrawn);
+    this._props.viewport.setNeverDrawn(currNeverDrawn);
+    this._props.viewport.setAlwaysDrawn(currAlwaysDrawn);
   }
 
   // tslint:disable-next-line: naming-convention
@@ -355,14 +479,14 @@ export class VisibilityHandler implements IDisposable {
 
   private async getSubjectModelIds(subjectId: Id64String): Promise<Id64String[]> {
     if (!this._subjectModelIdsCache.has(subjectId)) {
-      const modelIdsProvider = new SubjectModelIdsProvider(this._vp.iModel, subjectId);
+      const modelIdsProvider = new SubjectModelIdsProvider(this._props.viewport.iModel, subjectId);
       this._subjectModelIdsCache.set(subjectId, await modelIdsProvider.getModelIds());
     }
     return this._subjectModelIdsCache.get(subjectId)!;
   }
 
   private async getAssemblyElementIds(assemblyId: Id64String): Promise<Id64String[]> {
-    const provider = new AssemblyElementIdsProvider(this._vp.iModel, assemblyId);
+    const provider = new AssemblyElementIdsProvider(this._props.viewport.iModel, assemblyId);
     return provider.getElementIds();
   }
 }

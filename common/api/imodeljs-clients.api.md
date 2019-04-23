@@ -324,6 +324,7 @@ export class Config {
     getVars(): string[];
     has(varName: string): boolean;
     merge(source: any): void;
+    query(varName: string): any;
     remove(varName: string): void;
     set(varName: string, value: ValueType): void;
     }

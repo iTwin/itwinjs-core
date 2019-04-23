@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "In FrustumAnimation, detect true center of rotationn",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

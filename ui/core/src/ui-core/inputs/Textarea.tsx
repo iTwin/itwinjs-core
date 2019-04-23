@@ -21,7 +21,7 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 /** Basic textarea component
  * @beta
  */
-export class Textarea extends React.Component<TextareaProps> {
+export class Textarea extends React.PureComponent<TextareaProps> {
   public static defaultProps: Partial<TextareaProps> = {
     rows: 3,
   };

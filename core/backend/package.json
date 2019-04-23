@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.191.0-dev.48",
+  "version": "0.191.0-dev.56",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -39,24 +39,24 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^0.191.0-dev.48",
-    "@bentley/geometry-core": "^0.191.0-dev.48",
-    "@bentley/imodeljs-clients": "^0.191.0-dev.48",
-    "@bentley/imodeljs-clients-backend": "^0.191.0-dev.48",
-    "@bentley/imodeljs-common": "^0.191.0-dev.48"
+    "@bentley/bentleyjs-core": "^0.191.0-dev.56",
+    "@bentley/geometry-core": "^0.191.0-dev.56",
+    "@bentley/imodeljs-clients": "^0.191.0-dev.56",
+    "@bentley/imodeljs-clients-backend": "^0.191.0-dev.56",
+    "@bentley/imodeljs-common": "^0.191.0-dev.56"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.191.0-dev.48",
-    "@bentley/bentleyjs-core": "0.191.0-dev.48",
-    "@bentley/build-tools": "0.191.0-dev.48",
-    "@bentley/geometry-core": "0.191.0-dev.48",
-    "@bentley/imodeljs-clients": "0.191.0-dev.48",
-    "@bentley/imodeljs-clients-backend": "0.191.0-dev.48",
-    "@bentley/imodeljs-common": "0.191.0-dev.48",
+    "@bentley/config-loader": "0.191.0-dev.56",
+    "@bentley/bentleyjs-core": "0.191.0-dev.56",
+    "@bentley/build-tools": "0.191.0-dev.56",
+    "@bentley/geometry-core": "0.191.0-dev.56",
+    "@bentley/imodeljs-clients": "0.191.0-dev.56",
+    "@bentley/imodeljs-clients-backend": "0.191.0-dev.56",
+    "@bentley/imodeljs-common": "0.191.0-dev.56",
     "@types/chai": "^4.1.4",
     "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",
@@ -72,7 +72,7 @@
     "cpx": "^1.5.0",
     "formidable": "^1.2.1",
     "mocha": "^5.2.0",
-    "nyc": "^13.0.1",
+    "nyc": "^14.0.0",
     "rimraf": "^2.6.2",
     "source-map-support": "^0.5.6",
     "ts-node": "^7.0.1",
@@ -84,7 +84,7 @@
     "asn1": "0.2.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "~0.117.0",
+    "@bentley/imodeljs-native": "~0.118.0",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",

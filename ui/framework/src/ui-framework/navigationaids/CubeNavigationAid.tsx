@@ -109,6 +109,10 @@ export class CubeNavigationAid extends React.Component<CommonProps, CubeNavigati
     hoverMap: {},
   };
 
+  constructor(props: CommonProps) {
+    super(props);
+  }
+
   /** @internal */
   public componentDidMount() {
     ViewportComponentEvents.onViewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);

@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module ImageCheckBox */
+/** @module Inputs */
 
 import * as React from "react";
 import * as classnames from "classnames";
@@ -27,6 +27,8 @@ export interface ImageCheckBoxProps extends CommonProps {
   inputClassName?: string;
   /** Custom CSS Style for the checkbox input element */
   inputStyle?: React.CSSProperties;
+  /** Tooltip to be displayed when mouse is hovered over the checkbox */
+  tooltip?: string;
 }
 
 /**
@@ -34,7 +36,7 @@ export interface ImageCheckBoxProps extends CommonProps {
  * Component to show a checked or unchecked image'
  * @beta
  */
-export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
+export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
 
   private _onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.stopPropagation)
@@ -58,7 +60,7 @@ export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
     const checkBoxClass = classnames("core-image-checkbox", this.props.className);
     const imageClass = classnames("image icon", this.props.checked ? this.props.imageOn : this.props.imageOff);
     return (
-      <label className={checkBoxClass} style={this.props.style} onClick={this._onLabelClick}>
+      <label className={checkBoxClass} style={this.props.style} onClick={this._onLabelClick} title={this.props.tooltip}>
         <input type="checkbox" className={this.props.inputClassName} style={this.props.inputStyle}
           checked={this.props.checked} disabled={this.props.disabled} onChange={this._onChange} onClick={this._onInputClick} />
         <span className={imageClass} />

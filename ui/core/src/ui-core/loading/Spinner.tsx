@@ -32,7 +32,7 @@ export interface SpinnerProps {
  * A spinner component.
  * @public
  */
-export class Spinner extends React.Component<SpinnerProps> {
+export class Spinner extends React.PureComponent<SpinnerProps> {
 
   public render() {
     let sizeClass = "core-spinner-medium";

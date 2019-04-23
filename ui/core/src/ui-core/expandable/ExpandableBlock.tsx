@@ -28,7 +28,7 @@ export interface ExpandableBlockProps extends CommonProps {
 /** ExpandableBlock is a React component that shows and hides child content.
  * @public
  */
-export class ExpandableBlock extends React.Component<ExpandableBlockProps> {
+export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {
 
   public render() {
     const cName = classnames(

@@ -286,20 +286,22 @@ export class ViewAttributes {
   }
 
   private updateEnvironment(newEnv: SkyBoxProps): void {
-    const oldEnv = (this._vp.view as ViewState3d).getDisplayStyle3d().environment.sky as SkyGradient;
+    const oldEnv = (this._vp.view as ViewState3d).getDisplayStyle3d().environment;
+    const oldSkyEnv = oldEnv.sky as SkyGradient;
     newEnv = {
-      display: (oldEnv as SkyBox).display,
-      twoColor: undefined !== newEnv.twoColor ? newEnv.twoColor : oldEnv.twoColor,
-      zenithColor: undefined !== newEnv.zenithColor ? new ColorDef(newEnv.zenithColor) : oldEnv.zenithColor,
-      skyColor: undefined !== newEnv.skyColor ? new ColorDef(newEnv.skyColor) : oldEnv.skyColor,
-      groundColor: undefined !== newEnv.groundColor ? new ColorDef(newEnv.groundColor) : oldEnv.groundColor,
-      nadirColor: undefined !== newEnv.nadirColor ? new ColorDef(newEnv.nadirColor) : oldEnv.nadirColor,
-      skyExponent: undefined !== newEnv.skyExponent ? newEnv.skyExponent : oldEnv.skyExponent,
-      groundExponent: undefined !== newEnv.groundExponent ? newEnv.groundExponent : oldEnv.groundExponent,
+      display: (oldSkyEnv as SkyBox).display,
+      twoColor: undefined !== newEnv.twoColor ? newEnv.twoColor : oldSkyEnv.twoColor,
+      zenithColor: undefined !== newEnv.zenithColor ? new ColorDef(newEnv.zenithColor) : oldSkyEnv.zenithColor,
+      skyColor: undefined !== newEnv.skyColor ? new ColorDef(newEnv.skyColor) : oldSkyEnv.skyColor,
+      groundColor: undefined !== newEnv.groundColor ? new ColorDef(newEnv.groundColor) : oldSkyEnv.groundColor,
+      nadirColor: undefined !== newEnv.nadirColor ? new ColorDef(newEnv.nadirColor) : oldSkyEnv.nadirColor,
+      skyExponent: undefined !== newEnv.skyExponent ? newEnv.skyExponent : oldSkyEnv.skyExponent,
+      groundExponent: undefined !== newEnv.groundExponent ? newEnv.groundExponent : oldSkyEnv.groundExponent,
     };
     (this._vp.view as ViewState3d).getDisplayStyle3d().environment = new Environment(
       {
         sky: new SkyGradient(newEnv),
+        ground: oldEnv.ground,
       });
     this.sync();
   }

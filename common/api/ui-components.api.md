@@ -170,7 +170,7 @@ export class BasicPropertyEditor extends PropertyEditorBase {
 export const BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent<any>;
 
 // @beta
-export class BeDragDropContextComponent extends React.Component {
+export class BeDragDropContextComponent extends React.PureComponent {
     // (undocumented)
     render(): React.ReactNode;
 }
@@ -299,6 +299,8 @@ export interface BeInspireTreeNodeConfig {
 
 // @public
 export interface BeInspireTreeNodeITree {
+    // (undocumented)
+    checkboxTooltip?: string;
     // (undocumented)
     icon?: string;
     // (undocumented)
@@ -524,6 +526,7 @@ export enum BreadcrumbMode {
 
 // @beta
 export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
+    constructor(props: BreadcrumbNodeProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -990,7 +993,7 @@ export class EventsMuteContext implements IDisposable {
 // Warning: (ae-forgotten-export) The symbol "FilteringInputState" needs to be exported by the entry point ui-components.d.ts
 // 
 // @public
-export class FilteringInput extends React.Component<FilteringInputProps, FilteringInputState> {
+export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
     constructor(props: FilteringInputProps);
     // (undocumented)
     static getDerivedStateFromProps(props: FilteringInputProps, state: FilteringInputState): {
@@ -1337,6 +1340,7 @@ export interface NonPrimitivePropertyLabelRendererProps extends PrimitivePropert
 // 
 // @public
 export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePropertyRendererProps, NonPrimitivePropertyRendererState> {
+    constructor(props: NonPrimitivePropertyRendererProps);
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -1432,6 +1436,7 @@ export interface PrimitivePropertyLabelRendererProps extends PropertyLabelRender
 
 // @public
 export class PrimitivePropertyRenderer extends React.Component<PrimitiveRendererProps> {
+    constructor(props: PrimitiveRendererProps);
     // @internal (undocumented)
     render(): JSX.Element;
 }
@@ -1460,6 +1465,7 @@ export interface PropertyCategory {
 
 // @public
 export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlockProps> {
+    constructor(props: PropertyCategoryBlockProps);
     // @internal (undocumented)
     render(): JSX.Element;
     }
@@ -1629,6 +1635,7 @@ export interface PropertyPopupState {
 // 
 // @public
 export class PropertyRenderer extends React.Component<PropertyRendererProps, PropertyRendererState> {
+    constructor(props: PropertyRendererProps);
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -1694,6 +1701,7 @@ export class PropertyValueRendererManager {
 
 // @public
 export class PropertyView extends React.Component<PropertyViewProps> {
+    constructor(props: PropertyViewProps);
     // @internal (undocumented)
     render(): JSX.Element;
 }
@@ -1707,7 +1715,7 @@ export interface PropertyViewProps extends SharedRendererProps {
 // Warning: (ae-forgotten-export) The symbol "ResultSelectorState" needs to be exported by the entry point ui-components.d.ts
 // 
 // @public
-export class ResultSelector extends React.Component<ResultSelectorProps, ResultSelectorState> {
+export class ResultSelector extends React.PureComponent<ResultSelectorProps, ResultSelectorState> {
     // @internal
     constructor(props: ResultSelectorProps);
     // @internal (undocumented)
@@ -1810,7 +1818,7 @@ export class ShortDateTypeConverter extends TypeConverter implements LessGreater
 // Warning: (ae-forgotten-export) The symbol "ShowHideDialogState" needs to be exported by the entry point ui-components.d.ts
 // 
 // @public
-export class ShowHideDialog<T extends ShowHideID> extends React.Component<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
+export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
     constructor(props: ShowHideDialogProps<T>);
     // @internal (undocumented)
     componentDidUpdate(oldProps: ShowHideDialogProps<T>): void;
@@ -1841,7 +1849,7 @@ export interface ShowHideItem<T extends ShowHideID> {
 // Warning: (ae-forgotten-export) The symbol "ShowHideMenuState" needs to be exported by the entry point ui-components.d.ts
 // 
 // @public
-export class ShowHideMenu<T extends ShowHideID> extends React.Component<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
+export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
     // @internal
     constructor(props: ShowHideMenuProps<T>);
     // @internal (undocumented)
@@ -1870,7 +1878,7 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
     constructor(props: SignInProps);
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @public
 export interface SignInProps extends CommonProps {
@@ -2331,6 +2339,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     static readonly defaultProps: Partial<TreeProps>;
     // @internal (undocumented)
     static getDerivedStateFromProps(props: TreeProps, state: TreeState): TreeState | null;
+    getLoadedNode(id: string): TreeNodeItem | undefined;
     // @internal
     static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>, base?: BeInspireTreeNodeConfig): BeInspireTreeNodeConfig;
     // @internal (undocumented)

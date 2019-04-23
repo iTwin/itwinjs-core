@@ -652,22 +652,11 @@ export namespace ConcurrencyControl {
 
 // @alpha
 export interface CrashReportingConfig {
-    // (undocumented)
-    crashDumpDir: string; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    maxDumpsInDir?: number; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    maxReportsPerDay?: number; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    maxUploadRetries?: number; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    params?: CrashReportingConfigNameValuePair[]; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    uploadRetryWaitInterval?: number; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    uploadUrl?: string; /** The directory to which .dmp files are written. */
-    // (undocumented)
-    wantFullMemory?: boolean; /** custom parameters to send to the crash server. Put your product name and GPRID in here. If you are using a commercial crash server, this is the place to put your API key. */
+    crashDir: string;
+    maxDumpsInDir?: number;
+    params?: CrashReportingConfigNameValuePair[];
+    wantFullMemory?: boolean;
+    writeDumpsToCrashDir?: boolean;
 }
 
 // @alpha (undocumented)
@@ -894,9 +883,7 @@ export class ECDb implements IDisposable, PageableECSql {
     getCachedStatementCount(): number;
     importSchema(pathName: string): void;
     readonly isOpen: boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "nativeDb" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     readonly nativeDb: IModelJsNative.ECDb;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
@@ -945,7 +932,7 @@ export class ECSchemaXmlContext {
 
 // @public
 export class ECSqlBinder {
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // @internal
     constructor(binder: IModelJsNative.ECSqlBinder);
     addArrayElement(): ECSqlBinder;
     bind(val: any): void;
@@ -1053,7 +1040,7 @@ export class ECSqlStatementCache {
 
 // @public
 export class ECSqlValue {
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // @internal
     constructor(val: IModelJsNative.ECSqlValue);
     readonly columnInfo: ECSqlColumnInfo;
     getArray(): any[];
@@ -1082,7 +1069,7 @@ export class ECSqlValue {
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     // (undocumented)
     [Symbol.iterator](): IterableIterator<ECSqlValue>;
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // @internal
     constructor(it: IModelJsNative.ECSqlValueIterator);
     // (undocumented)
     next(): IteratorResult<ECSqlValue>;
@@ -1474,7 +1461,7 @@ export class IModelDb extends IModel implements PageableECSql {
     // @deprecated
     closeStandalone(): void;
     readonly codeSpecs: CodeSpecs;
-    // Warning: (ae-incompatible-release-tags) The symbol "concurrencyControl" is marked as @public, but its signature references "ConcurrencyControl" which is marked as @beta
+    // @beta
     readonly concurrencyControl: ConcurrencyControl;
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
@@ -1654,9 +1641,7 @@ export class IModelHost {
     static sessionId: GuidString;
     static shutdown(): void;
     static startup(configuration?: IModelHostConfiguration): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "tileCacheService" is marked as @public, but its signature references "CloudStorageService" which is marked as @beta
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     static tileCacheService: CloudStorageService;
     static readonly tileContentRequestTimeout: number;
     static readonly tileTreeRequestTimeout: number;
@@ -2315,22 +2300,11 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export interface NativeCrashReportingConfig {
-        // (undocumented)
-        crashDumpDir: string; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        maxDumpsInDir?: number; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        maxReportsPerDay?: number; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        maxUploadRetries?: number; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        params?: NativeCrashReportingConfigNameValuePair[]; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        uploadRetryWaitInterval?: number; /** The directory to which .dmp files are written. */
-        // (undocumented)
-        uploadUrl?: string; /** The directory to which .dmp files are written. */
-        // (undocumented)
+        crashDir: string;
+        maxDumpsInDir?: number;
+        params?: NativeCrashReportingConfigNameValuePair[];
         wantFullMemory?: boolean;
+        writeDumpsToCrashDir?: boolean;
     }
     // (undocumented)
     export interface NativeCrashReportingConfigNameValuePair {

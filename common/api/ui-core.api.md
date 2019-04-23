@@ -46,13 +46,13 @@ export class Annulus {
 }
 
 // @beta
-export class BodyText extends React.Component<TextProps> {
+export class BodyText extends React.PureComponent<TextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @public
-export class Button extends React.Component<ButtonProps> {
+export class Button extends React.PureComponent<ButtonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -96,6 +96,8 @@ export interface CheckBoxInfo {
     isVisible?: boolean;
     // (undocumented)
     state?: CheckBoxState;
+    // (undocumented)
+    tooltip?: string;
 }
 
 // @beta
@@ -119,13 +121,13 @@ export enum CheckBoxState {
 }
 
 // @beta
-export class CheckListBox extends React.Component<CommonProps> {
+export class CheckListBox extends React.PureComponent<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @beta
-export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
+export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps> {
     constructor(props: CheckListBoxItemProps);
     // (undocumented)
     render(): JSX.Element;
@@ -164,7 +166,7 @@ export interface CommonProps extends ClassNameProps {
 // Warning: (ae-forgotten-export) The symbol "ContextMenuState" needs to be exported by the entry point ui-core.d.ts
 // 
 // @beta
-export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
+export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMenuState> {
     constructor(props: ContextMenuProps);
     // @internal (undocumented)
     static autoFlip: (dir: ContextMenuDirection, rect: ClientRect, windowWidth: number, windowHeight: number) => ContextMenuDirection;
@@ -213,7 +215,7 @@ export enum ContextMenuDirection {
 }
 
 // @beta
-export class ContextMenuDivider extends React.Component<CommonProps> {
+export class ContextMenuDivider extends React.PureComponent<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -221,7 +223,7 @@ export class ContextMenuDivider extends React.Component<CommonProps> {
 // Warning: (ae-forgotten-export) The symbol "ContextMenuItemState" needs to be exported by the entry point ui-core.d.ts
 // 
 // @beta
-export class ContextMenuItem extends React.Component<ContextMenuItemProps, ContextMenuItemState> {
+export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, ContextMenuItemState> {
     constructor(props: ContextMenuItemProps);
     // (undocumented)
     componentDidMount(): void;
@@ -303,6 +305,7 @@ export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">
 
 // @beta
 export class Cube extends React.Component<CubeProps> {
+    constructor(props: CubeProps);
     // (undocumented)
     render(): React.ReactNode;
 }
@@ -472,7 +475,7 @@ export interface ElementSeparatorProps extends CommonProps {
 export type ExecuteHandler = (this: void) => void;
 
 // @public
-export class ExpandableBlock extends React.Component<ExpandableBlockProps> {
+export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -489,7 +492,7 @@ export interface ExpandableBlockProps extends CommonProps {
 // Warning: (ae-forgotten-export) The symbol "ExpandableListState" needs to be exported by the entry point ui-core.d.ts
 // 
 // @public
-export class ExpandableList extends React.Component<ExpandableListProps, ExpandableListState> {
+export class ExpandableList extends React.PureComponent<ExpandableListProps, ExpandableListState> {
     constructor(props: ExpandableListProps);
     // (undocumented)
     static defaultProps: Partial<ExpandableListProps>;
@@ -544,7 +547,7 @@ export const getDisplayName: (component: React.ComponentType<any>) => string;
 export function getUserColor(email: string): string;
 
 // @beta
-export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
+export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps> {
     constructor(props: GlobalContextMenuProps);
     // (undocumented)
     componentWillUnmount(): void;
@@ -576,7 +579,7 @@ export interface GlobalDialogProps extends DialogProps {
 }
 
 // @beta
-export class Headline extends React.Component<TextProps> {
+export class Headline extends React.PureComponent<TextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -594,7 +597,7 @@ export const enum HorizontalAlignment {
 }
 
 // @beta
-export class HorizontalTabs extends React.Component<HorizontalTabsProps> {
+export class HorizontalTabs extends React.PureComponent<HorizontalTabsProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -608,7 +611,7 @@ export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListEl
 }
 
 // @beta
-export class ImageCheckBox extends React.Component<ImageCheckBoxProps> {
+export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
     // @internal (undocumented)
     render(): JSX.Element;
 }
@@ -622,10 +625,11 @@ export interface ImageCheckBoxProps extends CommonProps {
     inputClassName?: string;
     inputStyle?: React.CSSProperties;
     onClick?: (checked: boolean) => any;
+    tooltip?: string;
 }
 
 // @beta
-export class Input extends React.Component<InputProps> {
+export class Input extends React.PureComponent<InputProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -658,7 +662,7 @@ export interface LabeledComponentProps {
 }
 
 // @beta
-export class LabeledInput extends React.Component<LabeledInputProps> {
+export class LabeledInput extends React.PureComponent<LabeledInputProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -668,7 +672,7 @@ export interface LabeledInputProps extends InputProps, LabeledComponentProps, Me
 }
 
 // @beta
-export class LabeledSelect extends React.Component<LabeledSelectProps> {
+export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -678,7 +682,7 @@ export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, 
 }
 
 // @beta
-export class LabeledTextarea extends React.Component<LabeledTextareaProps> {
+export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -688,13 +692,13 @@ export interface LabeledTextareaProps extends TextareaProps, LabeledComponentPro
 }
 
 // @beta
-export class LeadingText extends React.Component<TextProps> {
+export class LeadingText extends React.PureComponent<TextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @beta
-export class LeadingText2 extends React.Component<TextProps> {
+export class LeadingText2 extends React.PureComponent<TextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -710,7 +714,7 @@ export class Line {
 }
 
 // @beta
-export class LoadingBar extends React.Component<LoadingBarProps> {
+export class LoadingBar extends React.PureComponent<LoadingBarProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingBarProps>;
     // (undocumented)
@@ -725,7 +729,7 @@ export interface LoadingBarProps extends CommonProps {
 }
 
 // @beta
-export class LoadingPrompt extends React.Component<LoadingPromptProps> {
+export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingPromptProps>;
     // (undocumented)
@@ -746,7 +750,7 @@ export interface LoadingPromptProps {
 }
 
 // @beta
-export class LoadingSpinner extends React.Component<LoadingSpinnerProps> {
+export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingSpinnerProps>;
     // (undocumented)
@@ -760,7 +764,7 @@ export interface LoadingSpinnerProps extends SpinnerProps {
 }
 
 // @beta
-export class LoadingStatus extends React.Component<LoadingStatusProps> {
+export class LoadingStatus extends React.PureComponent<LoadingStatusProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingStatusProps>;
     // (undocumented)
@@ -787,7 +791,7 @@ export class LocalUiSettings implements UiSettings {
 }
 
 // @beta
-export class MessageBox extends React.Component<MessageBoxProps> {
+export class MessageBox extends React.PureComponent<MessageBoxProps> {
     // (undocumented)
     static defaultProps: Partial<MessageBoxProps>;
     // (undocumented)
@@ -812,7 +816,7 @@ export interface MessageBoxProps extends CommonProps {
 }
 
 // @beta
-export class MessageContainer extends React.Component<MessageContainerProps> {
+export class MessageContainer extends React.PureComponent<MessageContainerProps> {
     // (undocumented)
     static getIconClassName(severity: MessageSeverity, hollow?: boolean): string;
     // (undocumented)
@@ -849,7 +853,7 @@ export enum MessageSeverity {
 }
 
 // @beta
-export class MutedText extends React.Component<TextProps> {
+export class MutedText extends React.PureComponent<TextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -859,6 +863,7 @@ export interface NodeCheckboxProps {
     isDisabled?: boolean;
     onClick?: (newState: CheckBoxState) => void;
     state?: CheckBoxState;
+    tooltip?: string;
 }
 
 // @public
@@ -950,6 +955,7 @@ export enum Position {
 // 
 // @beta
 export class RadialButton extends React.Component<RadialButtonProps, RadialButtonState> {
+    constructor(props: RadialButtonProps);
     // (undocumented)
     render(): JSX.Element;
     select: () => void;
@@ -971,6 +977,7 @@ export interface RadialButtonProps extends CommonProps {
 // 
 // @beta
 export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState> {
+    constructor(props: RadialMenuProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -1000,7 +1007,7 @@ export interface RadialMenuProps extends CommonProps {
 }
 
 // @beta
-export class Radio extends React.Component<RadioProps> {
+export class Radio extends React.PureComponent<RadioProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1013,6 +1020,7 @@ export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>,
 // 
 // @beta
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
+    constructor(props: SearchBoxProps);
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -1035,7 +1043,7 @@ export interface SearchBoxProps extends CommonProps {
 }
 
 // @beta
-export class Select extends React.Component<SelectProps> {
+export class Select extends React.PureComponent<SelectProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1055,7 +1063,7 @@ export const shallowDiffers: (a: {
 } | undefined) => boolean;
 
 // @beta
-export class SmallText extends React.Component<TextProps> {
+export class SmallText extends React.PureComponent<TextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1071,7 +1079,7 @@ export enum SortDirection {
 }
 
 // @public
-export class Spinner extends React.Component<SpinnerProps> {
+export class Spinner extends React.PureComponent<SpinnerProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1098,6 +1106,7 @@ export enum SpinnerSize {
 // 
 // @beta
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
+    constructor(props: SplitButtonProps);
     // (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -1120,13 +1129,13 @@ export interface SplitButtonProps extends CommonProps {
 }
 
 // @beta
-export class Subheading extends React.Component<TextProps> {
+export class Subheading extends React.PureComponent<TextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @beta
-export class Subheading2 extends React.Component<TextProps> {
+export class Subheading2 extends React.PureComponent<TextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1156,7 +1165,7 @@ export interface SvgSpriteProps extends CommonProps {
 }
 
 // @beta
-export class Textarea extends React.Component<TextareaProps> {
+export class Textarea extends React.PureComponent<TextareaProps> {
     // (undocumented)
     static defaultProps: Partial<TextareaProps>;
     // (undocumented)
@@ -1201,13 +1210,13 @@ export class Timer {
     }
 
 // @beta
-export class Title extends React.Component<TextProps> {
+export class Title extends React.PureComponent<TextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @beta
-export class Title2 extends React.Component<TextProps> {
+export class Title2 extends React.PureComponent<TextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1215,7 +1224,7 @@ export class Title2 extends React.Component<TextProps> {
 // Warning: (ae-forgotten-export) The symbol "ToggleState" needs to be exported by the entry point ui-core.d.ts
 // 
 // @beta
-export class Toggle extends React.Component<ToggleProps, ToggleState> {
+export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
     constructor(props: ToggleProps);
     // (undocumented)
     componentDidUpdate(prevProps: ToggleProps): void;
@@ -1265,6 +1274,7 @@ export interface TreeBranchProps extends CommonProps {
 
 // @public
 export class TreeNode extends React.Component<TreeNodeProps> {
+    constructor(props: TreeNodeProps);
     // (undocumented)
     render(): JSX.Element;
 }

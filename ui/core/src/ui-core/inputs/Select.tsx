@@ -35,7 +35,7 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 /** Basic select component
  * @beta
  */
-export class Select extends React.Component<SelectProps> {
+export class Select extends React.PureComponent<SelectProps> {
   public render(): JSX.Element {
     const showPlaceholder = !!this.props.placeholder && !this.props.value && !this.props.defaultValue;
     const defaultValue =

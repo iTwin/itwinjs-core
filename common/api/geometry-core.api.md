@@ -210,9 +210,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     static create(center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d;
+    static createCenterNormalRadius(center: Point3d, normal: Vector3d, radius: number, result?: Arc3d): Arc3d;
     static createCircularStartMiddleEnd(pointA: XYAndZ, pointB: XYAndZ, pointC: XYAndZ, result?: Arc3d): Arc3d | LineString3d | undefined;
     static createRefs(center: Point3d, matrix: Matrix3d, sweep: AngleSweep, result?: Arc3d): Arc3d;
-    static createScaledXYColumns(center: Point3d, matrix: Matrix3d, radius0: number, radius90: number, sweep: AngleSweep, result?: Arc3d): Arc3d;
+    static createScaledXYColumns(center: Point3d, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d): Arc3d;
     static createUnitCircle(): Arc3d;
     static createXY(center: Point3d, radius: number, sweep?: AngleSweep): Arc3d;
     static createXYEllipse(center: Point3d, radiusA: number, radiusB: number, sweep?: AngleSweep): Arc3d;
@@ -1060,8 +1061,6 @@ export const enum ClipPlaneContainment {
 // @public
 export class ClipPrimitive {
     protected constructor(planeSet?: UnionOfConvexClipPlaneSets | undefined, isInvisible?: boolean);
-    static addOutsideEdgeSetToParams(x0: number, y0: number, x1: number, y1: number, pParams: PlaneSetParamsCache, isInvisible?: boolean): void;
-    static addShapeToParams(shape: Point3d[], pFlags: number[], pParams: PlaneSetParamsCache): void;
     arePlanesDefined(): boolean;
     classifyPointContainment(points: Point3d[], ignoreInvisibleSetting: boolean): ClipPlaneContainment;
     protected _clipPlanes?: UnionOfConvexClipPlaneSets;
@@ -1076,11 +1075,9 @@ export class ClipPrimitive {
     static fromJSON(json: any): ClipPrimitive | undefined;
     // (undocumented)
     static fromJSONClipPrimitive(json: any): ClipPrimitive | undefined;
-    getRange(_returnMaskRange: boolean, _transform: Transform, _result?: Range3d): Range3d | undefined;
     // (undocumented)
     readonly invisible: boolean;
     protected _invisible: boolean;
-    static isLimitEdge(limitValue: number, point0: Point3d, point1: Point3d): boolean;
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     pointInside(point: Point3d, onTolerance?: number): boolean;
     setInvisible(invisible: boolean): void;
@@ -1097,11 +1094,9 @@ export class ClipShape extends ClipPrimitive {
     static createEmpty(isMask?: boolean, invisible?: boolean, transform?: Transform, result?: ClipShape): ClipShape;
     static createFrom(other: ClipShape, result?: ClipShape): ClipShape;
     static createShape(polygon?: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean, result?: ClipShape): ClipShape | undefined;
-    // (undocumented)
     ensurePlaneSets(): void;
     // (undocumented)
     static fromClipShapeJSON(json: any, result?: ClipShape): ClipShape | undefined;
-    getRange(returnMaskRange?: boolean, transform?: Transform, result?: Range3d): Range3d | undefined;
     initSecondaryProps(isMask: boolean, zLow?: number, zHigh?: number, transform?: Transform): void;
     readonly invisible: boolean;
     readonly isMask: boolean;
@@ -1121,27 +1116,23 @@ export class ClipShape extends ClipPrimitive {
     toJSON(): any;
     readonly transformFromClip: Transform | undefined;
     // (undocumented)
-    protected _transformFromClip: Transform | undefined;
+    protected _transformFromClip?: Transform;
     // (undocumented)
     transformInPlace(transform: Transform): boolean;
+    // (undocumented)
+    readonly transformIsValid: boolean;
     readonly transformToClip: Transform | undefined;
     // (undocumented)
-    protected _transformToClip: Transform | undefined;
+    protected _transformToClip?: Transform;
     readonly transformValid: boolean;
-    // (undocumented)
-    protected _transformValid: boolean;
     readonly zHigh: number | undefined;
     // (undocumented)
-    protected _zHigh: number | undefined;
+    protected _zHigh?: number;
     readonly zHighValid: boolean;
-    // (undocumented)
-    protected _zHighValid: boolean;
     readonly zLow: number | undefined;
     // (undocumented)
-    protected _zLow: number | undefined;
+    protected _zLow?: number;
     readonly zLowValid: boolean;
-    // (undocumented)
-    protected _zLowValid: boolean;
 }
 
 // @public
@@ -1163,6 +1154,7 @@ export class ClipUtilities {
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
     static loopsOfConvexClipPlaneIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): GeometryQuery[];
     static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus;
+    static rangeOfClipperIntersectionWithRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): Range3d;
     static rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d): Range3d;
     // (undocumented)
     static selectIntervals01(curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
@@ -1182,14 +1174,9 @@ export class ClipVector {
     clone(result?: ClipVector): ClipVector;
     static create(clips: ClipPrimitive[], result?: ClipVector): ClipVector;
     static createCapture(clips: ClipPrimitive[], result?: ClipVector): ClipVector;
-    // @deprecated
-    static createClipShapeClones(clips: ClipShape[], result?: ClipVector): ClipVector;
-    // @deprecated
-    static createClipShapeRefs(clips: ClipShape[], result?: ClipVector): ClipVector;
     static createEmpty(result?: ClipVector): ClipVector;
     extractBoundaryLoops(loopPoints: Point3d[][], transform?: Transform): number[];
     static fromJSON(json: any, result?: ClipVector): ClipVector;
-    getRange(transform?: Transform, result?: Range3d): Range3d | undefined;
     isAnyLineStringPointInside(points: Point3d[]): boolean;
     isLineStringCompletelyContained(points: Point3d[]): boolean;
     readonly isValid: boolean;
@@ -1534,6 +1521,14 @@ export class CurveCurve {
 }
 
 // @public
+export enum CurveCurveApproachType {
+    CoincidentGeometry = 2,
+    Intersection = 0,
+    ParallelGeometry = 3,
+    PerpendicularChord = 1
+}
+
+// @public
 export enum CurveIntervalRole {
     intervalEnd = 12,
     intervalInterior = 11,
@@ -1554,6 +1549,7 @@ export class CurveLocationDetail {
     static createCurveFractionPoint(curve: CurvePrimitive, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: Point3d, a: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveFractionPointDistanceCurveSearchStatus(curve: CurvePrimitive, fraction: number, point: Point3d, distance: number, status: CurveSearchStatus, result?: CurveLocationDetail): CurveLocationDetail;
+    static createRayFractionPoint(ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail;
     curve?: CurvePrimitive;
     curveSearchStatus?: CurveSearchStatus;
     fraction: number;
@@ -1561,6 +1557,7 @@ export class CurveLocationDetail {
     readonly isIsolated: boolean;
     point: Point3d;
     pointQ: Point3d;
+    ray?: Ray3d;
     setCurve(curve: CurvePrimitive): void;
     setDistanceTo(point: Point3d): void;
     setFP(fraction: number, point: Point3d, vector?: Vector3d, a?: number): void;
@@ -1582,8 +1579,10 @@ export class CurveLocationDetailArrayPair {
 // @public
 export class CurveLocationDetailPair {
     constructor();
+    // (undocumented)
+    approachType?: CurveCurveApproachType;
     clone(result?: CurveLocationDetailPair): CurveLocationDetailPair;
-    static createDetailRef(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair;
+    static createCapture(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     // (undocumented)
     detailA: CurveLocationDetail;
     // (undocumented)
@@ -3759,27 +3758,6 @@ export class PlaneByOriginAndVectors4d {
     vectorV: Point4d;
 }
 
-// @public
-export class PlaneSetParamsCache {
-    constructor(zLow: number, zHigh: number, localOrigin?: Point3d, isMask?: boolean, isInvisible?: boolean, focalLength?: number);
-    // (undocumented)
-    clipPlaneSet: UnionOfConvexClipPlaneSets;
-    // (undocumented)
-    focalLength: number;
-    // (undocumented)
-    invisible: boolean;
-    // (undocumented)
-    isMask: boolean;
-    // (undocumented)
-    limitValue: number;
-    // (undocumented)
-    localOrigin: Point3d;
-    // (undocumented)
-    zHigh: number;
-    // (undocumented)
-    zLow: number;
-}
-
 // @public (undocumented)
 export class Point2d extends XY implements BeJSONFunctions {
     constructor(x?: number, y?: number);
@@ -4052,17 +4030,6 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     setFromJSON(json?: any): void;
     toJSON(): any;
     tryTransformInPlace(transform: Transform): boolean;
-}
-
-// @public
-export class PolyEdge {
-    constructor(origin: Point3d, next: Point3d, normal: Vector2d, z: number);
-    // (undocumented)
-    next: Point3d;
-    // (undocumented)
-    normal: Vector2d;
-    // (undocumented)
-    origin: Point3d;
 }
 
 // @public
@@ -4363,9 +4330,11 @@ export class Range1d extends RangeBase {
 
 // @public
 export class Range1dArray {
+    static appendFractionalPoints(data: Range1d[], initialRangeFraction: number | undefined, rangeFraction: number | undefined, includeDegenerateRange: boolean, gapFraction: number | undefined, includeDegenerateGap: boolean, finalRangeFraction: number | undefined, result: GrowableFloat64Array | number[]): GrowableFloat64Array | number[];
     static countContainingRanges(data: Range1d[], value: number): number;
     static differenceSorted(dataA: Range1d[], dataB: Range1d[]): Range1d[];
-    static getBreaks(data: Range1d[], result?: GrowableFloat64Array, sort?: boolean, compress?: boolean): GrowableFloat64Array;
+    static firstLowToLastHigh(data: Range1d[]): Range1d;
+    static getBreaks(data: Range1d[], result?: GrowableFloat64Array, sort?: boolean, compress?: boolean, clear?: boolean): GrowableFloat64Array;
     // (undocumented)
     static intersectSorted(dataA: Range1d[], dataB: Range1d[]): Range1d[];
     static isSorted(data: Range1d[], strict?: boolean): boolean;
@@ -4601,6 +4570,7 @@ export class Ray3d implements BeJSONFunctions {
     a?: number;
     clone(result?: Ray3d): Ray3d;
     cloneTransformed(transform: Transform): Ray3d;
+    static closestApproachRay3dRay3d(rayA: Ray3d, rayB: Ray3d): CurveLocationDetailPair;
     // (undocumented)
     static create(origin: Point3d, direction: Vector3d, result?: Ray3d): Ray3d;
     static createCapture(origin: Point3d, direction: Vector3d): Ray3d;
@@ -4825,7 +4795,6 @@ export class Segment1d {
 
 // @public (undocumented)
 export class SmallSystem {
-    // (undocumented)
     static linearSystem2d(ux: number, vx: number, // first row of matrix
     uy: number, vy: number, // second row of matrix
     cx: number, cy: number, // right side
@@ -4841,15 +4810,18 @@ export class SmallSystem {
     static lineSegment3dHXYTransverseIntersectionUnbounded(hA0: Point4d, hA1: Point4d, hB0: Point4d, hB1: Point4d, result?: Vector2d): Vector2d | undefined;
     static lineSegment3dXYClosestPointUnbounded(pointA0: Point3d, pointA1: Point3d, spacePoint: Point3d): number | undefined;
     static lineSegment3dXYTransverseIntersectionUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, result: Vector2d): boolean;
+    static ray3dXYZUVWClosestApproachUnbounded(ax: number, ay: number, az: number, au: number, av: number, aw: number, bx: number, by: number, bz: number, bu: number, bv: number, bw: number, result: Vector2d): boolean;
 }
 
 // @public (undocumented)
 export class SmoothTransformBetweenFrusta {
-    static create(cornerA: Point3d[], cornerB: Point3d[]): SmoothTransformBetweenFrusta | undefined;
+    static create(cornerA: Point3d[], cornerB: Point3d[], preferSimpleRotation?: boolean): SmoothTransformBetweenFrusta | undefined;
     // (undocumented)
     fractionToWorldCorners(fraction: number, result?: Point3d[]): Point3d[];
     // (undocumented)
     interpolateLocalCorners(fraction: number, result?: Point3d[]): Point3d[];
+    readonly localToWorldA: Transform;
+    readonly localToWorldB: Transform;
     }
 
 // @public

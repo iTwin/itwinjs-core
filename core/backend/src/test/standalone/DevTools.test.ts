@@ -39,9 +39,6 @@ describe("DevTools", () => {
       assert.isDefined(cpu.times);
       const cpuTimes = cpu.times as StringIndexedObject<number>;
       assert.isTrue(Object.keys(cpuTimes).length > 0);
-      for (const type of Object.keys(cpuTimes)) {
-        assert.isTrue(cpuTimes[type] < 100);
-      }
     }
   });
 

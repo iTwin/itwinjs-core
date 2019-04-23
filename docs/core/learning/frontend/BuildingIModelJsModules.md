@@ -252,7 +252,9 @@ Sometimes, it might be desirable to put certain submodules, such as Plugins or W
 
 ### Creating a Configuration file
 
-For Bentley applications only, the "makeConfig" property is specified to create a config.json file that configures the server with the variables specified in the unpublished @bentley/imodeljs-config package. See examples in the rush repository for usage.
+The "makeConfig" property can optionally be specified to create a config.json file that is loaded into the frontend at runtime to initialize Config.App singleton instance of the Config class. There are two possible shapes for the makeConfig property. The first shape is used only for Bentley internal applications, which can use the configuration file that is contained in the internal-only imodeljs-config repository. That shape consists of a "dest" property that designates where the created config.json file is put, and an optional "filter" property that is a regexp expression that can be used to select only the entries from the default config file that match the filter.
+
+The second shape for the makeConfig property consists of the same "dest" property, but that is followed by "sources" property that is an array of {file, filter} pairs. The resulting config file is composed of the entries from each designated file, filtered by the corresponding filter. Entries from later files in the array override entries from earlier files. The filter property can be an empty string to accept all entries. There are two special values for the "file" property - "process.env" to use the variables in your local environment during the build (which is not recommended), and "imodeljs-config" to use the above-mentioned Bentley-internal default configuration file. The source files can be JSON5 files or plain JSON files. Relative paths for the source files can be specified, relative to the directory containing package.json.
 
 ### PseudoLocalizing json locale files
 

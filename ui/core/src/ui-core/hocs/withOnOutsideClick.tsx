@@ -24,7 +24,7 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
   defaultOnOutsideClick?: (event: MouseEvent) => any,
   useCapture: boolean = true,
 ) => {
-  return class WithOnOutsideClick extends React.Component<ComponentProps & WithOnOutsideClickProps> {
+  return class WithOnOutsideClick extends React.PureComponent<ComponentProps & WithOnOutsideClickProps> {
     public ref: HTMLDivElement | undefined;
 
     public componentDidMount() {

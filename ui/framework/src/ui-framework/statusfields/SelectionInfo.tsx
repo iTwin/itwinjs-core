@@ -50,7 +50,7 @@ function mapStateToProps(state: any) {
   if (!frameworkState)
     return undefined;
 
-  return { selectionCount: frameworkState.appState.numItemsSelected };
+  return { selectionCount: frameworkState.sessionState.numItemsSelected };
 }
 
 // we declare the variable and export that rather than using export default.

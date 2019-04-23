@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+import { ToolSettingsTracker } from "./ToolSettingsTracker";
 import { FpsTracker } from "./FpsTracker";
 import { MemoryTracker } from "./MemoryTracker";
 import { StatsTracker } from "./TileStatisticsTracker";
@@ -13,12 +14,12 @@ import { ToolBarDropDown } from "./ToolBar";
 import { FrustumDecorator } from "./FrustumDecoration";
 
 const flagNames: Array<[ChangeFlag, string]> = [
-  [ ChangeFlag.AlwaysDrawn, "Always Drawn" ],
-  [ ChangeFlag.NeverDrawn, "Never Drawn" ],
-  [ ChangeFlag.ViewedCategories, "Categories" ],
-  [ ChangeFlag.ViewedModels, "Models" ],
-  [ ChangeFlag.DisplayStyle, "DisplayStyle" ],
-  [ ChangeFlag.FeatureOverrideProvider, "FeatureOverrideProvider" ],
+  [ChangeFlag.AlwaysDrawn, "Always Drawn"],
+  [ChangeFlag.NeverDrawn, "Never Drawn"],
+  [ChangeFlag.ViewedCategories, "Categories"],
+  [ChangeFlag.ViewedModels, "Models"],
+  [ChangeFlag.DisplayStyle, "DisplayStyle"],
+  [ChangeFlag.FeatureOverrideProvider, "FeatureOverrideProvider"],
 ];
 
 function onViewportChanged(_vp: Viewport, flags: ChangeFlags): void {
@@ -45,6 +46,7 @@ export class DebugPanel extends ToolBarDropDown {
   private readonly _fpsTracker: FpsTracker;
   private readonly _memoryTracker: MemoryTracker;
   private readonly _statsTracker: StatsTracker;
+  private readonly _toolSettingsTracker: ToolSettingsTracker;
   private readonly _frustumCheckbox: CheckBox;
   private _currentViewId?: string;
 
@@ -94,6 +96,9 @@ export class DebugPanel extends ToolBarDropDown {
     this.addSeparator();
     this._memoryTracker = new MemoryTracker(this._element, vp);
 
+    this.addSeparator();
+    this._toolSettingsTracker = new ToolSettingsTracker(this._element, vp);
+
     parentElement.appendChild(this._element);
   }
 
@@ -101,6 +106,7 @@ export class DebugPanel extends ToolBarDropDown {
     this._fpsTracker.dispose();
     this._memoryTracker.dispose();
     this._statsTracker.dispose();
+    this._toolSettingsTracker.dispose();
 
     this._viewport.debugBoundingBoxes = Tile.DebugBoundingBoxes.None;
     this._viewport.freezeScene = false;

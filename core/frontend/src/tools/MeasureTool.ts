@@ -29,13 +29,13 @@ class MeasureLabel implements CanvasDecoration {
   }
 
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    ctx.font = "14px san-serif";
+    ctx.font = "16px san-serif";
     const labelHeight = ctx.measureText("M").width; // Close enough for border padding...
     const labelWidth = ctx.measureText(this.label).width + labelHeight;
 
     ctx.lineWidth = 1;
     ctx.strokeStyle = "white";
-    ctx.fillStyle = "rgba(0,0,0,.15)";
+    ctx.fillStyle = "rgba(0,0,0,.4)";
     ctx.shadowColor = "black";
     ctx.shadowBlur = 10;
     ctx.fillRect(-(labelWidth / 2), -labelHeight, labelWidth, labelHeight * 2);
@@ -343,8 +343,12 @@ export class MeasureDistanceTool extends PrimitiveTool {
     return toolTip;
   }
 
-  protected async updateSelectedMarkerToolTip(seg: any): Promise<void> {
+  protected async updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent): Promise<void> {
     seg.marker.title = await this.getMarkerToolTip(seg.distance, seg.slope, seg.start, seg.end, seg.marker.isSelected ? seg.delta : undefined);
+    if (undefined === ev.viewport || !IModelApp.notifications.isToolTipOpen)
+      return;
+    IModelApp.notifications.clearToolTip();
+    ev.viewport.openToolTip(seg.marker.title, ev.viewPoint);
   }
 
   protected async acceptNewSegments(): Promise<void> {
@@ -379,7 +383,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
             const wasSelected = seg.marker.isSelected;
             seg.marker.isSelected = (seg.marker === selectedMarker);
             if (wasSelected !== seg.marker.isSelected)
-              this.updateSelectedMarkerToolTip(seg); // tslint:disable-line:no-floating-promises
+              this.updateSelectedMarkerToolTip(seg, ev); // tslint:disable-line:no-floating-promises
           }
 
           if (undefined !== ev.viewport)

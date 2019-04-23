@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { ShaderBuilder, VertexShaderBuilder, VariableType } from "../ShaderBuilder";
+import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 
 const computeLUTCoords = `
 vec2 computeLUTCoords(float index, vec2 dimensions, vec2 center, float mult) {
@@ -27,34 +27,31 @@ vec2 compute_{LUTNAME}_coords(float index) {
 
 const initializerTemplate = `
   {LUTSTEPX} = 1.0 / {LUTPARAMS}.x;
-  {LUTSTEPY} = 1.0 / {LUTPARAMS}.y;
+  float {LUTSTEPY} = 1.0 / {LUTPARAMS}.y;
   {LUTCENTER} = vec2(0.5*{LUTSTEPX}, 0.5*{LUTSTEPY});
 `;
 
 /** @internal */
-export function addLookupTable(sb: ShaderBuilder, lutName: string, mult: string = "1.0") {
+export function addLookupTable(sb: VertexShaderBuilder, lutName: string, mult: string = "1.0") {
   sb.addFunction(computeLUTCoords);
 
-  if (sb instanceof VertexShaderBuilder) {
-    const lutStepX = "g_" + lutName + "_stepX";
-    const lutStepY = "g_" + lutName + "_stepY";
-    const lutCenter = "g_" + lutName + "_center";
-    const lutParams = "u_" + lutName + "Params";
+  const lutStepX = "g_" + lutName + "_stepX";
+  const lutStepY = lutName + "_stepY";
+  const lutCenter = "g_" + lutName + "_center";
+  const lutParams = "u_" + lutName + "Params";
 
-    sb.addGlobal(lutStepX, VariableType.Float);
-    sb.addGlobal(lutStepY, VariableType.Float);
-    sb.addGlobal(lutCenter, VariableType.Vec2);
+  sb.addGlobal(lutStepX, VariableType.Float);
+  sb.addGlobal(lutCenter, VariableType.Vec2);
 
-    let initializerSpecific = initializerTemplate;
-    initializerSpecific = initializerSpecific.replace(/{LUTSTEPX}/g, lutStepX);
-    initializerSpecific = initializerSpecific.replace(/{LUTSTEPY}/g, lutStepY);
-    initializerSpecific = initializerSpecific.replace(/{LUTCENTER}/g, lutCenter);
-    initializerSpecific = initializerSpecific.replace(/{LUTPARAMS}/g, lutParams);
-    sb.addInitializer(initializerSpecific);
+  let initializerSpecific = initializerTemplate;
+  initializerSpecific = initializerSpecific.replace(/{LUTSTEPX}/g, lutStepX);
+  initializerSpecific = initializerSpecific.replace(/{LUTSTEPY}/g, lutStepY);
+  initializerSpecific = initializerSpecific.replace(/{LUTCENTER}/g, lutCenter);
+  initializerSpecific = initializerSpecific.replace(/{LUTPARAMS}/g, lutParams);
+  sb.addInitializer(initializerSpecific);
 
-    let computeCoordsSpecific = computeCoordsTemplate;
-    computeCoordsSpecific = computeCoordsSpecific.replace(/{LUTNAME}/g, lutName);
-    computeCoordsSpecific = computeCoordsSpecific.replace(/{MULT}/g, mult);
-    sb.addFunction(computeCoordsSpecific);
-  }
+  let computeCoordsSpecific = computeCoordsTemplate;
+  computeCoordsSpecific = computeCoordsSpecific.replace(/{LUTNAME}/g, lutName);
+  computeCoordsSpecific = computeCoordsSpecific.replace(/{MULT}/g, mult);
+  sb.addFunction(computeCoordsSpecific);
 }

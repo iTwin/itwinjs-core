@@ -42,6 +42,10 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
     isExpanded: !this.props.isCollapsible,
   };
 
+  constructor(props: NonPrimitivePropertyRendererProps) {
+    super(props);
+  }
+
   private _onExpanded = () => {
     this.setState({ isExpanded: true });
   }

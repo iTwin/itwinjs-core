@@ -319,8 +319,8 @@ export function diagnosticTypeToString(type: DiagnosticType) {
 }
 
 function validateCode(code: string) {
-  const msg = `Diagnostic code ${code} is invalid. Expected the format <ruleSetName>:<number>.`;
-  const parts = code.split(":");
+  const msg = `Diagnostic code ${code} is invalid. Expected the format <ruleSetName>-<number>.`;
+  const parts = code.split("-");
   if (parts.length !== 2) throw new Error(msg);
   if (isNaN(Number(parts[1]))) throw new Error(msg);
 }

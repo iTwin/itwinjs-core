@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed memoization problem that caused an endless stream of 404 NotFound errors. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}
