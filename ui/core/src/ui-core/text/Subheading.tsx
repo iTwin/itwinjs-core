@@ -12,7 +12,7 @@ import { TextProps } from "./TextProps";
  * @beta
  */
 
-export class Subheading extends React.Component<TextProps> {
+export class Subheading extends React.PureComponent<TextProps> {
   public render(): JSX.Element {
     const { className, style, ...props } = this.props;
 

@@ -15,6 +15,7 @@ import {
   ListPickerBase,
   ListItemType,
 } from "../../ui-framework";
+import { Item } from "@bentley/ui-ninezone";
 
 const title = "Test";
 const listItems = new Array<ListItem>();
@@ -219,6 +220,29 @@ describe("ListPicker", () => {
 
     it("should return expanded content", () => {
       listPickerBaseInstance.getExpandedContent();
+    });
+
+    it("simulate expanding via click", () => {
+      const spyOnExpanded = sinon.spy();
+
+      const component = enzyme.mount(
+        <ListPickerBase
+          title={title}
+          items={listItems}
+          setEnabled={setEnabled}
+          onExpanded={spyOnExpanded}
+        />,
+      );
+
+      const itemComponent = component.find(Item);
+      expect(itemComponent).not.to.be.undefined;
+      itemComponent.simulate("click");
+      component.update();
+
+      // tslint:disable-next-line:no-console
+      // console.log(component.debug());
+      expect(spyOnExpanded.calledOnce).to.be.true;
+      component.unmount();
     });
 
     it("should unmount correctly", () => {

@@ -308,7 +308,7 @@ export class RealityModelTileClient {
   // the relative path to root document is extracted from the reality data. Otherwise the full url to root document should have been provided at
   // the construction of the instance.
   public async getRootDocument(url: string): Promise<any> {
-    if (this._token) {
+    if (this.rdsProps && this._token) {
       const authRequestContext = new AuthorizedFrontendRequestContext(this._token);
       authRequestContext.enter();
 
@@ -331,7 +331,7 @@ export class RealityModelTileClient {
     const requestContext = this._token ? new AuthorizedFrontendRequestContext(this._token) : new FrontendRequestContext();
     requestContext.enter();
 
-    if (this._token) {
+    if (this.rdsProps && this._token) {
       await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
       requestContext.enter();
     }
@@ -355,7 +355,7 @@ export class RealityModelTileClient {
     const requestContext = this._token ? new AuthorizedFrontendRequestContext(this._token) : new FrontendRequestContext();
     requestContext.enter();
 
-    if (this._token) {
+    if (this.rdsProps && this._token) {
       await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
       requestContext.enter();
     }

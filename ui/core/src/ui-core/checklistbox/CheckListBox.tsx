@@ -27,7 +27,7 @@ export interface CheckListBoxItemProps extends CommonProps {
 /** Item with a checkbox added to a [[CheckListBox]].
  * @beta
  */
-export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
+export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps> {
 
   constructor(props: CheckListBoxItemProps) {
     super(props);
@@ -66,7 +66,7 @@ export const CheckListBoxSeparator: React.StatelessComponent = () => {
 /** React component showing a list of Checkbox items.
  * @beta
  */
-export class CheckListBox extends React.Component<CommonProps> {
+export class CheckListBox extends React.PureComponent<CommonProps> {
   public render() {
     const className = classnames("core-chk-listbox", this.props.className);
     return (

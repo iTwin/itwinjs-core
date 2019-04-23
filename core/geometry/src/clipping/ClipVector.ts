@@ -39,20 +39,6 @@ export class ClipVector {
         return new ClipVector();
     }
 
-    /** Create a ClipVector from an array of ClipShapes.
-     * @deprecated This just passes args through to `CreateCapture ()`
-     */
-    public static createClipShapeRefs(clips: ClipShape[], result?: ClipVector): ClipVector {
-        return this.createCapture(clips, result);
-    }
-
-    /** Create a ClipVector from an array of ClipShapes, each one becoming a deep copy.
-     * @deprecated this just passes the args to `Create ()`
-     */
-    public static createClipShapeClones(clips: ClipShape[], result?: ClipVector): ClipVector {
-        return this.create(clips, result);
-    }
-
     /** Create a ClipVector from an array of ClipPrimitives (or derived classes) (capture the pointers) */
     public static createCapture(clips: ClipPrimitive[], result?: ClipVector): ClipVector {
         if (result) {
@@ -134,27 +120,6 @@ export class ClipVector {
             return false;
         this._clips.push(clip);
         return true;
-    }
-
-    /** Returns the three-dimensional range of the ClipShapes (ignoring other kinds of clippers) that this ClipVector spans, which may be null. */
-    public getRange(transform?: Transform, result?: Range3d): Range3d | undefined {
-        const range = Range3d.createNull(result);
-
-        for (const shape of this._clips) {
-            if (shape instanceof ClipShape) {
-                const thisRange = shape.getRange(false, transform);
-                if (thisRange !== undefined) {
-                    if (range.isNull)
-                        range.setFrom(thisRange);
-                    else
-                        range.intersect(thisRange, range);
-                }
-            }
-        }
-        if (!this.boundingRange.isNull)
-            range.intersect(this.boundingRange, range);
-
-        return range;
     }
 
     /** Returns true if the given point lies inside all of this ClipVector's ClipShapes (by rule of intersection). */

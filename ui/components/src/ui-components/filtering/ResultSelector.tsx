@@ -34,7 +34,7 @@ export interface ResultSelectorProps extends CommonProps {
 /** Component for stepping through results/entries
  * @public
  */
-export class ResultSelector extends React.Component<ResultSelectorProps, ResultSelectorState> {
+export class ResultSelector extends React.PureComponent<ResultSelectorProps, ResultSelectorState> {
 
   /** @internal */
   constructor(props: ResultSelectorProps) {

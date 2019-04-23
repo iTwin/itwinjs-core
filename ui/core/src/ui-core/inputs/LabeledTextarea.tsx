@@ -18,7 +18,7 @@ export interface LabeledTextareaProps extends TextareaProps, LabeledComponentPro
 /** Textarea wrapper that allows for additional styling and labelling
  * @beta
  */
-export class LabeledTextarea extends React.Component<LabeledTextareaProps> {
+export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
   public render(): JSX.Element {
     const { label, status, className, style,
       inputClassName, inputStyle,

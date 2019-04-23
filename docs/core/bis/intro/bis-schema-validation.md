@@ -18,72 +18,169 @@ The rules are broken into the different parts of the Schema they are validated a
 
 ### General (Schema) Rules
 
-- A schema must load and pass EC3.1 spec validation. **_XXXX NEED LINK XXXX_**.
-- A schema's ECXML version must be at least, 3.1
-  - http://www.bentley.com/schemas/Bentley.ECXML.3.1
-- A schema may not reference any EC2 or EC3.0 schemas
-- A schema must specify a three-part version number
+#### BIS-001 <a name="BIS-001"></a>
+
+A schema must load and pass EC3.1 spec validation. **_XXXX NEED LINK_**
+
+#### BIS-002 <a name="BIS-002"></a>
+
+A schema's ECXML version must be at least, 3.1
+
+- http://www.bentley.com/schemas/Bentley.ECXML.3.1
+
+#### BIS-003 <a name="BIS-003"></a>
+
+A schema may not reference any EC2 or EC3.0 schemas
+
+#### BIS-004 <a name="BIS-004"></a>
+
+A schema must specify a three-part version number
   - The version number must be in the format RR.WW.mm (that is, Read.Write.Minor)
   - Each version component must be zero-padded to two digits (e.g. 01.02.00)
-- A schema reference must specify a three-part version number (in the same format described above)
-- If the schema contains 'dynamic' (case-insensitive) in its name it must apply the **CoreCA:DynamicSchema** custom attribute
-- Classes within the same schema cannot have the same display label
-- Classes may not use custom attributes that are deprecated
 
-### Mixin Rules
+#### BIS-0 <a name="BIS-005"></a>
 
-- Mixin classes may not override an inherited property.
+A schema reference must specify a three-part version number (in the same format described above)
 
-### Entity Classes
+#### BIS-006 <a name="BIS-006"></a>
 
-- Entity classes must derive from the BIS hierarchy.
-- Entity classes may only derive from one base Entity class.
-- Entity classes may not inherit a property from more than one base class.
-- A mixin property cannot override an Entity property inherited from a base Entity class.
-- If any aspect (ECClass which derives from **ElementMultiAspect**) exists, there must be a relationship that derives from the **ElementOwnsMultiAspects** relationship with this class supported as a target constraint.
-- If any aspect (ECClass which derives from **ElementUniqueAspect**) exists, there must be a relationship that derives from the **ElementOwnsUniqueAspect** relationship with this class supported as a target constraint.
-- Entity classes cannot implement both **bis:IParentElement** and **bis:ISubModeledElement**.
-- Entity classes cannot subclass the following classes:
-  - **bis:PhysicalModel**
-  - **bis:SpatialLocationModel**
-  - **bis:GroupInformationModel**
-  - **bis:InformationRecordModel**
-  - **bis:DefinitionModel**
-    - **bis:DictionaryModel** and **bis:RepositoryModel** are the only classes allowed to subclass **bis:DefinitionModel**
-  - **bis:DocumentListModel**
-  - **bis:LinkModel**
-- Property overrides cannot change the persistence unit.
-- Subclasses of **bis:Model** cannot have additional properties defined outside of **BisCore**.
-- Entity classes may not subclass deprecated classes
+If the schema contains 'dynamic' (case-insensitive) in its name it must apply the **CoreCA:DynamicSchema** custom attribute
 
-### Relationship Classes
+#### BIS-007 <a name="BIS-007"></a>
 
-- Relationship classes must not use the holding strength.
-- Relationship classes must not have a source constraint multiplicity upper bound greater than 1 if the strength is embedding and the direction is forward.
-- Relationship classes must not have a target constraint multiplicity upper bound greater than 1 if the strength is embedding and the direction is backward.
-- Relationship classes must not have an abstract constraint if there is only one concrete constraint set.
-- Relationship classes must not have an **ElementAspect** target constraint (or source constraint if direction is backwards), unless they derive from **ElementOwnsUniqueAspect** or **ElementOwnsMultiAspect**
-- Embedding relationships should not have 'Has' in the class name.
+Classes within the same schema cannot have the same display label
 
-### Struct Classes
+#### BIS-008 <a name="BIS-008"></a>
 
-- Struct classes must not have base classes.
+Classes may not use custom attributes that are deprecated
 
 ### Custom Attribute Classes
 
-- Custom Attribute classes must not have base classes.
+#### BIS-400 <a name="BIS-400"></a>
+
+Custom Attribute classes must not have base classes.
+
+### Entity Class Rules
+
+#### BIS-600 <a name="BIS-600"></a>
+
+Entity classes must derive from the BIS hierarchy.
+
+#### BIS-601 <a name="BIS-601"></a>
+
+Entity classes may only derive from one base Entity class.
+
+#### BIS-602 <a name="BIS-602"></a>
+
+Entity classes may not inherit a property from more than one base class.
+
+#### BIS-603 <a name="BIS-603"></a>
+
+A mixin property cannot override an Entity property inherited from a base Entity class.
+
+#### BIS-604 <a name="BIS-604"></a>
+
+If any aspect (ECClass which derives from **ElementMultiAspect**) exists, there must be a relationship that derives from the **ElementOwnsMultiAspects** relationship with this class supported as a target constraint.
+
+#### BIS-605 <a name="BIS-605"></a>
+
+If any aspect (ECClass which derives from **ElementUniqueAspect**) exists, there must be a relationship that derives from the **ElementOwnsUniqueAspect** relationship with this class supported as a target constraint.
+
+#### BIS-606 <a name="BIS-606"></a>
+
+Entity classes cannot implement both **bis:IParentElement** and **bis:ISubModeledElement**.
+
+#### BIS-607 <a name="BIS-607"></a>
+
+Entity classes cannot subclass the following classes:
+
+- **bis:PhysicalModel**
+- **bis:SpatialLocationModel**
+- **bis:GroupInformationModel**
+- **bis:InformationRecordModel**
+- **bis:DefinitionModel**
+  - **bis:DictionaryModel** and **bis:RepositoryModel** are the only classes allowed to subclass **bis:DefinitionModel**
+- **bis:DocumentListModel**
+- **bis:LinkModel**
+
+#### BIS-608 <a name="BIS-608"></a>
+
+Property overrides cannot change the persistence unit.
+
+#### BIS-609 <a name="BIS-609"></a>
+
+Subclasses of **bis:Model** cannot have additional properties defined outside of **BisCore**.
+
+#### BIS-610 <a name="BIS-610"></a>
+
+Entity classes may not subclass deprecated classes
 
 ### KindOfQuantities
 
-- Kind Of Quantities must not use 'PERCENTAGE' or other unitless ratios.
-- Kind Of Quantities must use an SI Unit for their persistence unit.
+#### BIS-700 <a name="BIS-700"></a>
+
+Kind Of Quantities must not use 'PERCENTAGE' or other unitless ratios.
+
+#### BIS-1000 <a name="BIS-1000"></a>
+
+Kind Of Quantities must use an SI Unit for their persistence unit.
+
+### Mixin Rules
+
+#### BIS-1100 <a name="BIS-1100"></a>
+
+Mixin classes may not override an inherited property.
 
 ### Properties
 
-- Properties should not be of type **long**. These properties should be navigation properties if they represent a FK or be of type **int** or **double** if they represent a number.
-- Properties within the same class and category cannot have the same display label.
-- Properties must use the following supported ExtendedTypes:
-  - **BeGuid**
-  - **GeometryStream**
-  - **Json**
-- Properties must not use CustomAttribute **bis:CustomHandledProperty** unless CustomAttribute **bis:ClassHasHandler** is defined on their parent class (**not** derived from a base class)
+#### BIS-1300 <a name="BIS-1300"></a>
+
+Properties should not be of type **long**. These properties should be navigation properties if they represent a FK or be of type **int** or **double** if they represent a number.
+
+#### BIS-1301 <a name="BIS-1301"></a>
+
+Properties within the same class and category cannot have the same display label.
+
+#### BIS-1302 <a name="BIS-1302"></a>
+
+Properties must use the following supported ExtendedTypes:
+
+- **BeGuid**
+- **GeometryStream**
+- **Json**
+
+#### BIS-1303 <a name="BIS-1303"></a>
+
+Properties must not use CustomAttribute **bis:CustomHandledProperty** unless CustomAttribute **bis:ClassHasHandler** is defined on their parent class (**not** derived from a base class).
+
+### Relationship Classes
+
+#### BIS-1500 <a name="BIS-1500"></a>
+
+Relationship classes must not use the holding strength.
+
+#### BIS-1501 <a name="BIS-1501"></a>
+
+Relationship classes must not have a source constraint multiplicity upper bound greater than 1 if the strength is embedding and the direction is forward.
+
+#### BIS-1502 <a name="BIS-1502"></a>
+
+Relationship classes must not have a target constraint multiplicity upper bound greater than 1 if the strength is embedding and the direction is backward.
+
+#### BIS-1503 <a name="BIS-1503"></a>
+
+Relationship classes must not have an abstract constraint if there is only one concrete constraint set.
+
+#### BIS-1504 <a name="BIS-1504"></a>
+
+Relationship classes must not have an **ElementAspect** target constraint (or source constraint if direction is backwards), unless they derive from **ElementOwnsUniqueAspect** or **ElementOwnsMultiAspect**
+
+#### BIS-1505 <a name="BIS-1505"></a>
+
+Embedding relationships should not have 'Has' in the class name.
+
+### Struct Classes
+
+#### BIS-1700 <a name="BIS-1700"></a>
+
+Struct classes must not have base classes.

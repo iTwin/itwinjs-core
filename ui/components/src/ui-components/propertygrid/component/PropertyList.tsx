@@ -61,6 +61,10 @@ export class PropertyList extends React.Component<PropertyListProps, PropertyLis
   /** @internal */
   public readonly state: PropertyListState = {};
 
+  constructor(props: PropertyListProps) {
+    super(props);
+  }
+
   private _listRef = React.createRef<HTMLDivElement>();
 
   private _onEditCommit = (args: PropertyUpdatedArgs) => {

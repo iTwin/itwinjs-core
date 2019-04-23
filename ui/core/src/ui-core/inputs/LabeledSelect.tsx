@@ -18,7 +18,7 @@ export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, 
 /** Dropdown wrapper that allows for additional styling and labelling
  * @beta
  */
-export class LabeledSelect extends React.Component<LabeledSelectProps> {
+export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
   public render(): JSX.Element {
     const { label, status, className, style,
       inputClassName, inputStyle,

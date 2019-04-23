@@ -15,8 +15,10 @@ import { OidcClientWrapper, SnapMode, IModelApp } from "@bentley/imodeljs-fronte
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { FrameworkState } from "./FrameworkState";
 import { ConfigurableUiActionId } from "./configurableui/state";
+import { SessionStateActionId } from "./SessionState";
 import { UiEvent } from "@bentley/ui-core";
 import { COLOR_THEME_DEFAULT } from "./theme/ThemeManager";
+import { Presentation } from "@bentley/presentation-frontend";
 
 /** UiVisibility Event Args interface.
  * @beta
@@ -25,6 +27,14 @@ export interface UiVisibilityEventArgs {
   visible: boolean;
 }
 
+/** PresentationSelectionScope holds the id and the localized label for a selection scope supported for a specific iModel.
+ * Added to avoid an api-extract error caused by using SelectionScope.
+ * @beta
+ */
+export interface PresentationSelectionScope {
+  id: string;
+  label: string;
+}
 /** UiVisibility Event class.
  * @beta
  */
@@ -151,6 +161,26 @@ export class UiFramework {
 
   public static getAccudrawSnapMode(): SnapMode {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.snapMode : SnapMode.NearestKeypoint;
+  }
+
+  public static getActiveSelectionScope(): string {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.activeSelectionScope : "element";
+  }
+
+  public static setActiveSelectionScope(selectionScopeId: string): void {
+    if (UiFramework.frameworkState) {
+      const foundIndex = UiFramework.frameworkState.sessionState.availableSelectionScopes.findIndex((selectionScope: PresentationSelectionScope) => selectionScope.id === selectionScopeId);
+      if (-1 !== foundIndex) {
+        const scope = UiFramework.frameworkState.sessionState.availableSelectionScopes[foundIndex];
+        UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, scope.id);
+        Presentation.selection.scopes.activeScope = scope.id;
+      }
+    }
+  }
+
+  /** @beta */
+  public static getAvailableSelectionScopes(): PresentationSelectionScope[] {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.availableSelectionScopes : [{ id: "element", label: "Element" } as PresentationSelectionScope];
   }
 
   /** @beta */

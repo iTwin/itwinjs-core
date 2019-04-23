@@ -245,7 +245,7 @@ export interface DialogProps extends CommonProps {
     titleBar?: React.ReactNode;
 }
 
-// @alpha
+// @beta
 export enum Direction {
     // (undocumented)
     Bottom = 3,
@@ -329,13 +329,13 @@ export interface ExpandableButtonProps extends CommonProps {
     children?: React.ReactNode;
 }
 
-// @alpha
+// @beta
 export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @beta
 export interface ExpandableItemProps extends CommonProps {
     history?: React.ReactNode;
     isActive?: boolean;
@@ -718,13 +718,13 @@ export class HorizontalAnchorHelpers {
 // @alpha (undocumented)
 export const isStatusZone: (zone: ZonePropsBase) => zone is StatusZoneManagerProps;
 
-// @alpha
+// @beta
 export class Item extends React.PureComponent<ItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @beta
 export interface ItemProps extends CommonProps {
     icon?: React.ReactNode;
     isActive?: boolean;
@@ -1159,13 +1159,13 @@ export class OrthogonalDirectionHelpers {
     static readonly VERTICAL_CLASS_NAME = "nz-vertical";
 }
 
-// @alpha
+// @beta
 export class Overflow extends React.PureComponent<OverflowProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @beta
 export interface OverflowProps extends ExpandableItemProps {
     onClick?: () => void;
 }
@@ -1952,7 +1952,7 @@ export interface ToolAssistanceSeparatorProps extends CommonProps {
     children?: string;
 }
 
-// @alpha
+// @beta
 export class Toolbar extends React.PureComponent<ToolbarProps> {
     // (undocumented)
     static readonly defaultProps: {
@@ -2000,7 +2000,7 @@ export interface ToolbarItemProps<TItem extends ToolbarItem = ToolbarItem> {
     readonly toolbarItemRef?: React.Ref<TItem>;
 }
 
-// @alpha
+// @beta
 export enum ToolbarPanelAlignment {
     // (undocumented)
     End = 1,
@@ -2016,7 +2016,9 @@ export class ToolbarPanelAlignmentHelpers {
     static readonly START_CLASS_NAME = "nz-panel-alignment-start";
 }
 
-// @alpha
+// Warning: (ae-incompatible-release-tags) The symbol "ToolbarProps" is marked as @beta, but its signature references "NoChildrenProps" which is marked as @alpha
+// 
+// @beta
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
     items?: React.ReactNode;

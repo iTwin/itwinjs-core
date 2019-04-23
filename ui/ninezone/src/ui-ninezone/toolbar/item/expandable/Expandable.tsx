@@ -12,7 +12,7 @@ import { ToolbarItem, ToolbarItemProps } from "../../Toolbar";
 import "./Expandable.scss";
 
 /** Properties of [[ExpandableItem]] component.
- * @alpha
+ * @beta
  */
 export interface ExpandableItemProps extends CommonProps {
   /** History of the toolbar. See [[]] */
@@ -73,7 +73,7 @@ class ActualItem extends React.PureComponent<ExpandableItemProps> implements Too
 }
 
 /** Expandable toolbar item.
- * @alpha
+ * @beta
  */
 export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
   public render() {

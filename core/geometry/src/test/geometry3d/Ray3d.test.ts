@@ -9,6 +9,8 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Checker } from "../Checker";
 import { expect } from "chai";
+import { CurveCurveApproachType } from "../../curve/CurveLocationDetail";
+import { AxisOrder } from "../../Geometry";
 
 /** create rays, using optional result (which may be undefined)
  */
@@ -103,4 +105,55 @@ describe("Ray3d", () => {
         new Float64Array([2, 1, 4, 0])));
     expect(ck.getNumErrors()).equals(0);
   });
+  it("ClosestApproach", () => {
+    const ck = new Checker();
+    // we expect that there are no parallel pairs or intersecting pairs here . . .
+    const raySample = [
+      Ray3d.createXYZUVW(0, 1, 0, 1, 0, 0),
+      Ray3d.createXYZUVW(0, 0, 1, 0, 1, 0),
+      Ray3d.createXYZUVW(1, 0, 0, 0, 0, 1),
+      Ray3d.createXYZUVW(1, 2, 3, 5, 2, -1),
+      Ray3d.createXYZUVW(-3, 2, 4, -1, 3, 4),
+    ];
+    /* fractions for contrived intersections  */
+    const f1 = 0.13123;
+    const f2 = -0.1232;
+    for (let indexA = 0; indexA < raySample.length; indexA++) {
+      const rayA = raySample[indexA];
+      const frame = Matrix3d.createRigidHeadsUp(rayA.direction, AxisOrder.ZXY);
+      for (let indexB = 0; indexB < raySample.length; indexB++) {
+        const rayB = raySample[indexB];
+        const approach = Ray3d.closestApproachRay3dRay3d(rayA, rayB)!;
+        if (indexA === indexB) {
+          ck.testExactNumber(approach.approachType!, CurveCurveApproachType.CoincidentGeometry, indexA);
+          const rayC = rayA.clone();
+          const shiftDistance = 34.2 + indexA;
+          rayC.origin.addScaledInPlace(frame.columnY(), shiftDistance);
+          const approachC = Ray3d.closestApproachRay3dRay3d(rayA, rayC)!;
+          ck.testExactNumber(approachC.approachType!, CurveCurveApproachType.ParallelGeometry, indexA);
+          ck.testCoordinate(shiftDistance, approachC.detailA.point.distance(approachC.detailB.point));
+
+        } else {
+          ck.testExactNumber(approach.approachType!, CurveCurveApproachType.PerpendicularChord, [indexA, indexB]);
+          const vector = Vector3d.createStartEnd(approach.detailA.point, approach.detailB.point);
+          ck.testPerpendicular(vector, rayA.direction);
+          ck.testPerpendicular(vector, rayB.direction);
+          const rayE1 = rayA.clone();
+          const rayE2 = rayB.clone();
+          const point1 = rayE1.fractionToPoint (f1);
+          const point2 = rayE2.fractionToPoint (f2);
+          const vector12 = Vector3d.createStartEnd (point1, point2);
+          rayE1.origin.addInPlace (vector12);
+          // rayE2 at fraction f2 has been moved to rayE1 at fraction f1.  Confirm intersection there . .
+          const approachE = Ray3d.closestApproachRay3dRay3d (rayE1, rayE2);
+          ck.testExactNumber(approachE.approachType!, CurveCurveApproachType.Intersection, "forced intersection", [indexA, indexB]);
+          ck.testCoordinate (f1, approachE.detailA.fraction);
+          ck.testCoordinate (f2, approachE.detailB.fraction);
+        }
+      }
+    }
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

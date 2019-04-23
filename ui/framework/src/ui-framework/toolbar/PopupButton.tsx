@@ -34,7 +34,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
   private _label: string | StringGetter = "";
   private _componentUnmounting = false;
 
-  constructor(props: any) {
+  constructor(props: PopupButtonProps) {
     super(props);
 
     if (props.label)

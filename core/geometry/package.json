@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "0.191.0-dev.50",
+  "version": "0.191.0-dev.56",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
@@ -39,8 +39,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "0.191.0-dev.50",
-    "@bentley/webpack-tools": "0.191.0-dev.50",
+    "@bentley/build-tools": "0.191.0-dev.56",
+    "@bentley/webpack-tools": "0.191.0-dev.56",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -48,7 +48,7 @@
     "cpx": "^1.5.0",
     "debug": "^2.6.9",
     "mocha": "^5.2.0",
-    "nyc": "^13.0.1",
+    "nyc": "^14.0.0",
     "rimraf": "^2.6.2",
     "semver": "^5.5.0",
     "ts-node": "^7.0.1",
@@ -58,6 +58,11 @@
   },
   "dependencies": {},
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "check-coverage": true,
+    "statements": 85,
+    "functions": 85,
+    "branches": 70,
+    "lines": 85
   }
 }

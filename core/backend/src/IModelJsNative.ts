@@ -189,6 +189,7 @@ export declare namespace IModelJsNative {
     public updateLinkTableRelationship(props: string): DbResult;
     public updateModel(modelProps: string): IModelStatus;
     public updateProjectExtents(newExtentsJson: string): void;
+    public static vacuum(dbName: string, pageSize?: number): DbResult;
   }
 
   export class ECDb implements IDisposable {

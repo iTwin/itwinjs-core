@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Notification */
+/** @module Dialog */
 
 import * as React from "react";
 
@@ -37,7 +37,7 @@ interface StandardMessageBoxState {
 /** StandardMessageBox React component displays a standard icon, message text and a standard button set in the lower right.
  * @public
  */
-export class StandardMessageBox extends React.Component<StandardMessageBoxProps, StandardMessageBoxState> {
+export class StandardMessageBox extends React.PureComponent<StandardMessageBoxProps, StandardMessageBoxState> {
 
   /** @internal */
   public readonly state: Readonly<StandardMessageBoxState>;

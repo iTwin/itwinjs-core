@@ -121,19 +121,22 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
       // ToolSettings supports only primitive property types
       if (commit.newValue.valueFormat === PropertyValueFormat.Primitive && commit.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
         const newPrimitiveValue = (commit.newValue as PrimitiveValue).value;
-        const currentPrimitiveValue = (commit.propertyRecord.value as PrimitiveValue).value;
-        if (newPrimitiveValue === currentPrimitiveValue) {
+        if (newPrimitiveValue === (commit.propertyRecord.value as PrimitiveValue).value) {
           // tslint:disable-next-line:no-console
           // console.log(`Ignore commit - value of '${propertyName}' has not changed`);
           return;  // don't sync if no change occurred
         }
 
+        // update the propertyRecord's value since this value is cached by ToolUiManager and is used if the ToolSettings widget is redrawn.
+        (commit.propertyRecord.value as PrimitiveValue).value = newPrimitiveValue;
+
+        // create a new property record and put it in valueMap - a new property record ensure a re-render with the updated value
         const colValue = this.state.valueMap.get(propertyName);
         if (colValue) {
           const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(colValue, commit.newValue as ToolSettingsValue);
           this.state.valueMap.set(propertyName, updatedPropertyRecord);
           // tslint:disable-next-line:no-console
-          // console.log(`Updating data in column - value=${(commit.newValue as PrimitiveValue).value} property='${propertyName}'`);
+          // console.log(`Updating data in column - value=${(commit.newValue as PrimitiveValue).value} property = '${propertyName}'`);
         }
 
         // if we updated state then force child components to update
@@ -141,7 +144,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
           // send change to active tool
           const syncItem: ToolSettingsPropertySyncItem = { value: commit.newValue as ToolSettingsValue, propertyName };
           // tslint:disable-next-line:no-console
-          // console.log(`Sending new value of ${(commit.newValue as PrimitiveValue).value} for '${propertyName}' to tool`);
+          // console.log(`Sending new value of ${ (commit.newValue as PrimitiveValue).value } for '${propertyName}' to tool`);
           activeTool.applyToolSettingPropertyChange(syncItem);
         });
       }
@@ -179,8 +182,8 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
   private getCol(col: TsCol, rowIndex: number, colIndex: number) {
     if (col.type === ColumnType.Empty) {
       return ( // return a <span> as a placeholder elements
-        <React.Fragment key={`${rowIndex.toString()}-${colIndex.toString()}`}>
-          <span key={`${rowIndex.toString()}-${colIndex.toString()}`}></span>
+        <React.Fragment key={`${rowIndex.toString()} -${colIndex.toString()}`}>
+          <span key={`${rowIndex.toString()} -${colIndex.toString()}`}></span>
         </React.Fragment>
       );
     }

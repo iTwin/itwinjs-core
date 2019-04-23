@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { TitleBar } from "../footer/dialog/TitleBar";
+import { TitleBar } from "./tool-settings/TitleBar";
 import "./ToolSettings.scss";
 
 /** Properties of [[ToolSettings]] component.

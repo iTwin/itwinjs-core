@@ -23,7 +23,7 @@ export interface LoadingStatusProps extends CommonProps {
  * A loading indicator that shows status text along with the percentage.
  * @beta
  */
-export class LoadingStatus extends React.Component<LoadingStatusProps> {
+export class LoadingStatus extends React.PureComponent<LoadingStatusProps> {
   public static defaultProps: Partial<LoadingStatusProps> = {
     message: "",
     percent: 0,

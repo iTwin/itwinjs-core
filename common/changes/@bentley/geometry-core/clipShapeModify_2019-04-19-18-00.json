@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix for PolygonOps.centroidAreaNormal.",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Brien.Bastings@bentley.com"
+}

@@ -66,7 +66,7 @@ interface ContextMenuState {
  * Can be nested using [[ContextSubMenu]] component.
  * @beta
  */
-export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
+export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMenuState> {
   private _rootElement: HTMLElement | null = null;
   private _menuElement: HTMLElement | null = null;
   private _selectedElement: ContextMenuItem | ContextSubMenu | null = null;
@@ -374,7 +374,7 @@ export interface GlobalContextMenuProps extends ContextMenuProps {
 /** GlobalContextMenu React component used to display a [[ContextMenu]] at the cursor
  * @beta
  */
-export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
+export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps> {
   private _container: HTMLDivElement;
   constructor(props: GlobalContextMenuProps) {
     super(props);
@@ -444,7 +444,7 @@ interface ContextMenuItemState {
  * Menu Item class for use within a [[ContextMenu]] component.
  * @beta
  */
-export class ContextMenuItem extends React.Component<ContextMenuItemProps, ContextMenuItemState> {
+export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, ContextMenuItemState> {
   private _root: HTMLElement | null = null;
   private _lastChildren: React.ReactNode;
   private _parsedChildren: React.ReactNode;
@@ -538,7 +538,7 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps, Conte
  * Menu Divider for [[ContextMenu]]. Inserts a line between items, used for list item grouping.
  * @beta
  */
-export class ContextMenuDivider extends React.Component<CommonProps> {
+export class ContextMenuDivider extends React.PureComponent<CommonProps> {
   public render(): JSX.Element {
     const { className, ...props } = this.props;
     return (

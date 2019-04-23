@@ -69,7 +69,7 @@ export interface ListPickerItemProps extends CommonProps {
 /** List Picker Item React component
  * @beta
  */
-export class ListPickerItem extends React.Component<ListPickerItemProps> {
+export class ListPickerItem extends React.PureComponent<ListPickerItemProps> {
   /** Renders ListPickerItem */
   public render() {
     const itemClassName = classnames(
@@ -106,7 +106,7 @@ interface ExpandableSectionState {
 /** Expandable Section React component used by [[ListPickerBase]]
  * @beta
  */
-export class ExpandableSection extends React.Component<ExpandableSectionProps, ExpandableSectionState> {
+export class ExpandableSection extends React.PureComponent<ExpandableSectionProps, ExpandableSectionState> {
   /** Creates an ExpandableSection */
   constructor(props: ExpandableSectionProps) {
     super(props);
@@ -149,7 +149,7 @@ export class ExpandableSection extends React.Component<ExpandableSectionProps, E
  * Used to provide an expandable list of items to enable/disable items.
  * @beta
  */
-export class ListPickerBase extends React.Component<ListPickerProps, ListPickerState> {
+export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPickerState> {
   /** Creates a ListPickerBase */
   constructor(props: any) {
     super(props);

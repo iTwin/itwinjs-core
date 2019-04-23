@@ -56,6 +56,10 @@
     "bisector": "Bisector",
     "multi": "Multiple"
   },
+  "selecionScopeField": {
+    "label": "Scope",
+    "toolTip": "Selection Scope"
+  },
   "tests": {
     "singleContent": "Single Content",
     "label": "Test Label",

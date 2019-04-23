@@ -41,7 +41,7 @@ interface ShowHideMenuState<T extends ShowHideID> {
  * Component includes a "list" button that displays a dialog with the same checkboxes.
  * @public
  */
-export class ShowHideMenu<T extends ShowHideID> extends React.Component<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
+export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
   /** @internal */
   public readonly state: ShowHideMenuState<T>;
 

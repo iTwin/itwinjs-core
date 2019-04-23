@@ -66,7 +66,6 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
  * @internal
  */
 interface ToolWidgetState {
-  toolWidgetProps: ToolWidgetPropsEx;
   toolWidgetDef: ToolWidgetDef;
 }
 
@@ -81,15 +80,13 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
   constructor(props: ToolWidgetPropsEx) {
     super(props);
 
-    this.state = { toolWidgetProps: props, toolWidgetDef: new ToolWidgetDef(props) };
+    this.state = { toolWidgetDef: new ToolWidgetDef(props) };
   }
 
-  public static getDerivedStateFromProps(newProps: ToolWidgetPropsEx, state: ToolWidgetState): ToolWidgetState | null {
-    if (newProps !== state.toolWidgetProps) {
-      return { toolWidgetProps: newProps, toolWidgetDef: new ToolWidgetDef(newProps) };
+  public componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState) {
+    if (this.props !== prevProps) {
+      this.setState({ toolWidgetDef: new ToolWidgetDef(this.props) });
     }
-
-    return null;
   }
 
   public render(): React.ReactNode {

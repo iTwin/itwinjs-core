@@ -148,6 +148,8 @@ describe("VisibilityTree", () => {
         setupDataProvider([createElementNode()]);
         dataProvider.getNodeKey = (): BaseNodeKey => ({ type: "test", pathFromRoot: [] });
 
+        visibilityHandlerMock.setup((x) => x.getDisplayStatus(moq.It.isAny())).returns(() => ({ isDisplayed: false }));
+
         const result = render(<VisibilityTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         const renderedNode = await waitForElement(() => result.getByText("element"));
         expect(within(renderedNode).queryAllByTestId("tree-node-checkbox").length).to.eq(0);

@@ -30,7 +30,7 @@ interface ShowHideDialogState<T extends ShowHideID> {
  * [Dialog]($ui-core) Component used to toggle show/hide items, given through items prop, through a list of checkboxes.
  * @public
  */
-export class ShowHideDialog<T extends ShowHideID> extends React.Component<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
+export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
   /** @internal */
   public readonly state: ShowHideDialogState<T>;
   constructor(props: ShowHideDialogProps<T>) {

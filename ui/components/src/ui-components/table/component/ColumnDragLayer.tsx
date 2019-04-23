@@ -13,6 +13,10 @@ import { DragLayerProps } from "../../dragdrop/DragDropDef";
  * @public
  */
 export class ColumnDragLayer extends React.Component<DragLayerProps> {
+  constructor(props: DragLayerProps) {
+    super(props);
+  }
+
   public render(): React.ReactNode {
     const args = this.props.args!;
     const spos = args.sourceClientOffset || { x: -1000, y: -1000 };

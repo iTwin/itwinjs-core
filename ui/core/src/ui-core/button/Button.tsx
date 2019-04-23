@@ -43,7 +43,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 /** Generic button component
  * @public
  */
-export class Button extends React.Component<ButtonProps> {
+export class Button extends React.PureComponent<ButtonProps> {
   public render() {
     let className = "";
 

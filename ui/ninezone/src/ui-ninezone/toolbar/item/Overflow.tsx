@@ -11,7 +11,7 @@ import { Item } from "./Item";
 import "./Overflow.scss";
 
 /** Properties of [[Overflow]] component.
- * @alpha
+ * @beta
  */
 export interface OverflowProps extends ExpandableItemProps {
   /** Function called when button is clicked. */
@@ -19,7 +19,7 @@ export interface OverflowProps extends ExpandableItemProps {
 }
 
 /** Expandable toolbar item component that displays ellipsis icon. Used in [[Toolbar]] component.
- * @alpha
+ * @beta
  */
 export class Overflow extends React.PureComponent<OverflowProps> {
   public render() {

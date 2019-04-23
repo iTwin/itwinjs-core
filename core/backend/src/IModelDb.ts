@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, ProductVersion, UsageType, LogPostingResponse } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
@@ -274,7 +274,7 @@ export class IModelDb extends IModel implements PageableECSql {
    */
   public static async open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     requestContext.enter();
-    Logger.logTrace(loggerCategory, "Started IModelDb.open", () => ({ iModelId, contextId, ...openParams }));
+    const perfLogger = new PerfLogger("Opening iModel", () => ({ contextId, iModelId, ...openParams }));
 
     IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
 
@@ -291,12 +291,13 @@ export class IModelDb extends IModel implements PageableECSql {
     requestContext.enter();
     IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
 
-    // TODO: Included for temporary debugging using SEQ. Should really turn into a trace/assertion
+    // TODO: Included for temporary debugging using SEQ. To be removed!!
     if (!IModelDb.find(iModelDb.iModelToken))
       Logger.logError(loggerCategory, "Error with IModelDb.open. Cannot find briefcase!", () => ({ ...iModelDb.iModelToken, ...openParams }));
     else
       Logger.logTrace(loggerCategory, "Finished IModelDb.open", () => ({ ...iModelDb.iModelToken, ...openParams }));
 
+    perfLogger.dispose();
     return iModelDb;
   }
 

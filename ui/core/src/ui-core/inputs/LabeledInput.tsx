@@ -18,7 +18,7 @@ export interface LabeledInputProps extends InputProps, LabeledComponentProps, Me
 /** Text input wrapper that provides additional styling and labeling
  * @beta
  */
-export class LabeledInput extends React.Component<LabeledInputProps> {
+export class LabeledInput extends React.PureComponent<LabeledInputProps> {
   public render(): JSX.Element {
     const { label, status, className, style,
       inputClassName, inputStyle,

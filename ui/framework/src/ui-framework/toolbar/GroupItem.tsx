@@ -258,12 +258,10 @@ class GroupItem extends React.Component<Props, GroupItemState> {
     return state;
   }
 
-  public static getDerivedStateFromProps(newProps: Props, state: GroupItemState) {
-    if (newProps.groupItemDef !== state.groupItemDef) {
-      return GroupItem.processGroupItemDef(newProps.groupItemDef);
+  public componentDidUpdate(prevProps: Props, _prevState: GroupItemState) {
+    if (this.props !== prevProps) {
+      this.setState(GroupItem.processGroupItemDef(this.props.groupItemDef));
     }
-
-    return null;
   }
 
   private get _tray() {

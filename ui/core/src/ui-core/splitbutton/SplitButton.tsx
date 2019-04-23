@@ -48,6 +48,10 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   /** @internal */
   public readonly state: Readonly<SplitButtonState> = { expanded: false };
 
+  constructor(props: SplitButtonProps) {
+    super(props);
+  }
+
   public render(): JSX.Element {
     let icon = (<></>);
     if (this.props.icon !== undefined) {

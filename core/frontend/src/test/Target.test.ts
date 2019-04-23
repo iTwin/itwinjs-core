@@ -57,7 +57,7 @@ describe.skip("Clips", () => {
     if (undefined !== s) {
       const clipShapes: ClipShape[] = [];
       clipShapes[0] = s;
-      const clipVector: ClipVector = ClipVector.createClipShapeClones(clipShapes);
+      const clipVector: ClipVector = ClipVector.create(clipShapes);
       assert.isTrue(clipVector.isValid, "should be able to create valid clipVector");
 
       const clips: Clips = new Clips();

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add TitleBar component for toolsetting instead of using one from footer. Title bas needed to be more compact in toolsettings widget.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "bill.steinbock@bentley.com"
+}

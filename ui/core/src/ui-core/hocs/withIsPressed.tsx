@@ -23,7 +23,7 @@ export const withIsPressed = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
 ) => {
-  return class WithIsPressed extends React.Component<ComponentProps & WithIsPressedProps> {
+  return class WithIsPressed extends React.PureComponent<ComponentProps & WithIsPressedProps> {
     public handleOnPointerDown = () => {
       this.changeIsPressed(true);
     }

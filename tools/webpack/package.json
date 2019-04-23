@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools",
-  "version": "0.191.0-dev.50",
+  "version": "0.191.0-dev.56",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
   "repository": {
@@ -24,7 +24,7 @@
     "buildIModelJsModule": "./bin/buildIModelJsModule.js"
   },
   "dependencies": {
-    "@bentley/config-loader": "0.191.0-dev.50",
+    "@bentley/config-loader": "0.191.0-dev.56",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "^3.1.12",
     "@types/mocha": "^5.2.5",
@@ -64,7 +64,7 @@
     "node-sass": "^4.9.2",
     "nodemon": "^1.18.3",
     "null-loader": "^0.1.1",
-    "nyc": "^13.0.1",
+    "nyc": "^14.0.0",
     "object-assign": "^4.1.1",
     "postcss-flexbugs-fixes": "^3.3.1",
     "postcss-loader": "^2.1.6",

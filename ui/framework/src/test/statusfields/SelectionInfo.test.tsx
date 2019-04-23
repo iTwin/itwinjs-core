@@ -20,7 +20,7 @@ import {
   ConfigurableUiControlType,
   WidgetDef,
   UiFramework,
-  AppStateActionId,
+  SessionStateActionId,
 } from "../../ui-framework";
 
 describe("SelectionInfoField", () => {
@@ -66,7 +66,7 @@ describe("SelectionInfoField", () => {
   });
 
   it("SelectionInfoField should render with 1", () => {
-    UiFramework.frameworkState!.appState.numItemsSelected = 1;
+    UiFramework.frameworkState!.sessionState.numItemsSelected = 1;
     const component = render(<Provider store={TestUtils.store}>
       <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
     </Provider>);
@@ -80,7 +80,7 @@ describe("SelectionInfoField", () => {
       <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
     </Provider>);
     expect(component).not.to.be.undefined;
-    UiFramework.dispatchActionToStore(AppStateActionId.SetNumItemsSelected, 99);
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, 99);
     const foundText = component.getAllByText("99");
     expect(foundText).not.to.be.undefined;
   });

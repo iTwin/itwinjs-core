@@ -235,8 +235,15 @@ export class IModelHost {
     //   };
     // }
 
-    if (configuration.crashReportingConfig && this._platform && (Platform.isNodeJs && !Platform.electron)) // We do crash-reporting *only* in node.js and *not* in electron
+    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
+
+      // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
+      const nodereport = require("node-report/api");
+      nodereport.setEvents("exception+fatalerror+apicall");
+      nodereport.setDirectory(configuration.crashReportingConfig.crashDir);
+      nodereport.setVerbose("yes");
+    }
 
     if (configuration.imodelClient)
       BriefcaseManager.imodelClient = configuration.imodelClient;

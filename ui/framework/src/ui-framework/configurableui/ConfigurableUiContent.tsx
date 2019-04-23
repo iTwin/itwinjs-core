@@ -10,6 +10,7 @@ import { connect } from "react-redux";
 import { CommonProps } from "@bentley/ui-core";
 
 import { ModalDialogRenderer } from "../ModalDialogManager";
+import { ElementTooltip } from "../feedback/ElementTooltip";
 import { FrontstageComposer } from "../frontstage/FrontstageComposer";
 import { PointerMessage } from "../messages/Pointer";
 import { UiFramework } from "../UiFramework";
@@ -61,6 +62,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
         {this.props.appBackstage}
         <FrontstageComposer style={{ position: "relative", height: "100%" }} />
         <ModalDialogRenderer />
+        <ElementTooltip />
         <PointerMessage />
         <KeyboardShortcutMenu />
       </div>

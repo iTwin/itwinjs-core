@@ -13,7 +13,7 @@ import { Items } from "./Items";
 import "./Toolbar.scss";
 
 /** Available alignment modes of [[Toolbar]] panels.
- * @alpha
+ * @beta
  */
 export enum ToolbarPanelAlignment {
   Start,
@@ -137,12 +137,12 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
 }
 
 /** Properties of [[Toolbar]] component.
- * @alpha
+ * @beta
  */
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
   /** Describes to which direction the history/panel items are expanded. Defaults to: [[Direction.Bottom]] */
   expandsTo?: Direction;
-  /** Items of the toolbar. I.e. [[ExpandableItem]], [[Icon]], [[Item]], [[Overflow]] */
+  /** Items of the toolbar. I.e. [[Item]], [[ExpandableItem]], [[Overflow]] */
   items?: React.ReactNode;
   /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
   panelAlignment?: ToolbarPanelAlignment;
@@ -156,7 +156,7 @@ export const getToolbarDirection = (expandsTo: Direction): OrthogonalDirection =
 
 /** A toolbar that may contain items.
  * @note See [[Scrollable]] for toolbar with scroll overflow strategy.
- * @alpha
+ * @beta
  */
 export class Toolbar extends React.PureComponent<ToolbarProps> {
   public static readonly defaultProps = {

@@ -292,7 +292,6 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   public static getDerivedStateFromProps(props: TreeProps, state: TreeState): TreeState | null {
     const providerChanged = (props.dataProvider !== state.prev.dataProvider);
     const selectedNodesChanged = (props.selectedNodes !== state.prev.selectedNodes);
-    const checkboxInfoChanged = (props.checkboxInfo !== state.prev.checkboxInfo);
     const modelReadyChanged = (state.modelReady !== state.prev.modelReady);
 
     // create derived state that just updates `prev` values
@@ -334,15 +333,6 @@ export class Tree extends React.Component<TreeProps, TreeState> {
           state.model.updateTreeSelection(props.selectedNodes);
         });
       }
-      if ((modelBecameReady || checkboxInfoChanged) && props.checkboxInfo) {
-        // note: using `pauseRendering()` here - need it to fire `ChangesApplied`
-        // event after checkboxes are asynchronously updated
-        // tslint:disable-next-line: no-floating-promises
-        using((state.model.pauseRendering()), async (_r) => {
-          // note: calling this may actually mutate `model` in state
-          await state.model.updateTreeCheckboxes(props.checkboxInfo!);
-        });
-      }
     }
 
     return derivedState;
@@ -356,6 +346,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
     if (this.state.cellEditingEngine && !this.state.cellEditingEngine.hasSubscriptions)
       this.state.cellEditingEngine.subscribe(this._getCellEditorState, this._setCellEditorState);
+
+    // tslint:disable-next-line: no-floating-promises
+    this.handleCheckboxes(this.state.prev, this.props);
 
     /* istanbul ignore next */
     if (this.props.onRender)
@@ -421,9 +414,26 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       this.state.cellEditingEngine.subscribe(this._getCellEditorState, this._setCellEditorState);
     }
 
+    // tslint:disable-next-line: no-floating-promises
+    this.handleCheckboxes(prevProps, this.props);
+
     /* istanbul ignore next */
     if (this.props.onRender)
       this.props.onRender();
+  }
+
+  private async handleCheckboxes(prevProps: TreeProps, newProps: TreeProps, force?: boolean) {
+    const checkboxInfoChanged = (prevProps.checkboxInfo !== newProps.checkboxInfo);
+    if ((force || checkboxInfoChanged) && newProps.checkboxInfo) {
+      // note: using `pauseRendering()` here - need it to fire `ChangesApplied`
+      // event after checkboxes are asynchronously updated
+      await using((this.state.model.pauseRendering()), async (_r) => {
+        // note: calling this may actually mutate `model` in state - in
+        // that case a `ChangesApplied` event will be emitted and the
+        // `_onModelChanged` callback will be called
+        await this.state.model.updateTreeCheckboxes(newProps.checkboxInfo!);
+      });
+    }
   }
 
   private assignModelListeners(model: BeInspireTree<TreeNodeItem>) {
@@ -433,9 +443,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     model.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
     model.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     // tslint:disable-next-line:no-floating-promises
-    model.ready.then(() => {
+    model.ready.then(async () => {
       if (model === this.state.model)
-        this._onModelReady();
+        await this._onModelReady();
     });
   }
 
@@ -460,10 +470,12 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     this.setState((prev) => ({ model: prev.model }));
   }
 
-  private _onModelReady = () => {
+  private _onModelReady = async () => {
     // istanbul ignore else
-    if (this._mounted)
+    if (this._mounted) {
+      await this.handleCheckboxes(this.state.prev, this.props, true);
       this.setState({ modelReady: true });
+    }
   }
 
   private scrollToActiveNode() {

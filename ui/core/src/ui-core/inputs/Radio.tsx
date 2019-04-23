@@ -17,7 +17,7 @@ export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>,
 /** Basic radio input component
  * @beta
  */
-export class Radio extends React.Component<RadioProps> {
+export class Radio extends React.PureComponent<RadioProps> {
   public render(): JSX.Element {
     const { label, disabled, status, className, style, inputStyle, inputClassName, ...props } = this.props;
 

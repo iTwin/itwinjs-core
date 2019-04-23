@@ -25,7 +25,7 @@ export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListEl
 /** Horizontal tabs meant to represent the current position in a page/section
  * @beta
  */
-export class HorizontalTabs extends React.Component<HorizontalTabsProps> {
+export class HorizontalTabs extends React.PureComponent<HorizontalTabsProps> {
   public render(): JSX.Element {
     const ulClassNames = classnames(
       "uicore-tabs-horizontal",

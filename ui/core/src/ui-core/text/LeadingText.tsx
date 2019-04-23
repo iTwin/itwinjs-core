@@ -12,7 +12,7 @@ import { TextProps } from "./TextProps";
  * @beta
  */
 
-export class LeadingText extends React.Component<TextProps> {
+export class LeadingText extends React.PureComponent<TextProps> {
   public render(): JSX.Element {
     const { className, style, ...props } = this.props;
 
