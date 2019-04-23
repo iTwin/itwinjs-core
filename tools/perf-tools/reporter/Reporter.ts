@@ -7,24 +7,24 @@ import * as fs from "fs-extra";
 interface Entry {
   testSuite: string;
   testName: string;
-  valueName: string;
+  valueDescription: string;
   value: number;
-  info: any;
+  info?: any;
 }
 
-export class PerfReporter {
+export class Reporter {
   private _entries: Entry[] = [];
 
   /**
    * Add entries to performance test report
    * @param testSuite Name of the test suite that is being run
    * @param testName The particular test that is being reported
-   * @param valueName The name/description of the value being recorded
+   * @param valueDescription The description of the value being recorded
    * @param value The actual value of the test
    * @param info A JSON object for additional details
    */
-  public addEntry(testSuite: string, testName: string, valueName: string, value: number, info: any) {
-    const entry: Entry = { testSuite, testName, valueName, value, info };
+  public addEntry(testSuite: string, testName: string, valueDescription: string, value: number, info?: any) {
+    const entry: Entry = { testSuite, testName, valueDescription, value, info };
     this._entries.push(entry);
   }
 
@@ -38,10 +38,10 @@ export class PerfReporter {
       fileName = fileName + ".csv";
     }
     if (!fs.existsSync(fileName)) {
-      finalReport += "Test Suite,Test Name,Value Name,Value,Info\n";
+      finalReport += "TestSuite,TestName,ValueDescription,Value,Info\n";
     }
     for (const entry of this._entries) {
-      finalReport += `${entry.testName},${entry.testSuite},${entry.valueName},${entry.value},${JSON.stringify(entry.info)}\n`;
+      finalReport += `${entry.testSuite},${entry.testName},${entry.valueDescription},${entry.value},${JSON.stringify(entry.info)}\n`;
     }
     fs.appendFileSync(fileName, finalReport);
   }
