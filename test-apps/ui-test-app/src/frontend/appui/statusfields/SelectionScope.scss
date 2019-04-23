@@ -1,0 +1,36 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+@import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
+
+.uifw-statusFields-selectionScope {
+  $font-size-medium: 12px;
+  $font-size-small: $font-size-medium;
+  overflow: hidden;
+  padding-right: 0px;
+
+  >.uifw-statusFields-selectionScope-label {
+    display: inline;
+    padding-right: 4px;
+  }
+
+  @media only screen and (max-width: 768px) {
+    >.uifw-statusFields-selectionScope-label {
+      display: none;
+      padding-right: 0px;
+    }
+
+    font-size: $font-size-medium;
+  }
+
+  @media only screen and (max-width: 600px) {
+    >.uifw-statusFields-selectionScope-label {
+      display: none;
+      padding-right: 0px;
+    }
+
+    font-size: $font-size-small;
+  }
+}

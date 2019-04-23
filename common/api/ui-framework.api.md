@@ -205,34 +205,6 @@ export class AppNotificationManager extends NotificationManager {
     protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
 }
 
-// @beta
-export interface AppState {
-    // (undocumented)
-    numItemsSelected: number;
-    // (undocumented)
-    property?: any;
-}
-
-// @beta
-export const enum AppStateActionId {
-    // (undocumented)
-    SetCurrentProperty = "appstate:set-current-property",
-    // (undocumented)
-    SetNumItemsSelected = "appstate:set-num-items-selected"
-}
-
-// @beta
-export const AppStateActions: {
-    setNumItemsSelected: (numSelected: number) => import("./utils/redux-ts").ActionWithPayload<AppStateActionId.SetNumItemsSelected, number>;
-    setCurrentProperty: (property: any) => import("./utils/redux-ts").ActionWithPayload<AppStateActionId.SetCurrentProperty, any>;
-};
-
-// @beta
-export type AppStateActionsUnion = ActionsUnion<typeof AppStateActions>;
-
-// @beta
-export function AppStateReducer(state: AppState | undefined, _action: AppStateActionsUnion): AppState;
-
 // Warning: (ae-forgotten-export) The symbol "BackstageState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
@@ -1157,18 +1129,18 @@ export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement>
 // @beta
 export const FrameworkReducer: (state: import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
-    appState: typeof AppStateReducer;
-}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./AppState").AppStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./AppState").AppStateActionId.SetCurrentProperty, any>>) => import("./utils/redux-ts").CombinedReducerState<{
+    sessionState: typeof SessionStateReducer;
+}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./UiFramework").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>>) => import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
-    appState: typeof AppStateReducer;
+    sessionState: typeof SessionStateReducer;
 }>;
 
 // @beta
 export interface FrameworkState {
     // (undocumented)
-    appState: AppState;
-    // (undocumented)
     configurableUiState: ConfigurableUiState;
+    // (undocumented)
+    sessionState: SessionState;
 }
 
 // Warning: (ae-forgotten-export) The symbol "FrameworkZoneState" needs to be exported by the entry point ui-framework.d.ts
@@ -2336,6 +2308,14 @@ export interface PopupButtonProps extends ItemProps, CommonProps {
     onExpanded?: (expand: boolean) => void;
 }
 
+// @beta
+export interface PresentationSelectionScope {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+}
+
 // @internal
 export interface ProjectInfo {
     // (undocumented)
@@ -2415,6 +2395,39 @@ export class SeparatorBackstageItem extends React_2.PureComponent<BackstageItemP
     // (undocumented)
     render(): React_2.ReactNode;
     }
+
+// @beta
+export interface SessionState {
+    // (undocumented)
+    activeSelectionScope: string;
+    // (undocumented)
+    availableSelectionScopes: PresentationSelectionScope[];
+    // (undocumented)
+    numItemsSelected: number;
+}
+
+// @beta
+export const enum SessionStateActionId {
+    // (undocumented)
+    SetAvailableSelectionScopes = "sessionstate:set-available-selection-scopes",
+    // (undocumented)
+    SetNumItemsSelected = "sessionstate:set-num-items-selected",
+    // (undocumented)
+    SetSelectionScope = "sessionstate:set-selection-scope"
+}
+
+// @beta
+export const SessionStateActions: {
+    setNumItemsSelected: (numSelected: number) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetNumItemsSelected, number>;
+    setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
+    setSelectionScope: (activeSelectionScope: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetSelectionScope, string>;
+};
+
+// @beta
+export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
+
+// @beta
+export function SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): SessionState;
 
 // Warning: (ae-forgotten-export) The symbol "SheetCardState" needs to be exported by the entry point ui-framework.d.ts
 // 
@@ -3132,6 +3145,10 @@ export class UiFramework {
     static readonly frameworkStateKey: string;
     // (undocumented)
     static getAccudrawSnapMode(): SnapMode;
+    // (undocumented)
+    static getActiveSelectionScope(): string;
+    // @beta (undocumented)
+    static getAvailableSelectionScopes(): PresentationSelectionScope[];
     // @beta (undocumented)
     static getColorTheme(): string;
     // @beta (undocumented)
@@ -3149,6 +3166,8 @@ export class UiFramework {
     static readonly projectServices: ProjectServices;
     // (undocumented)
     static setAccudrawSnapMode(snapMode: SnapMode): void;
+    // (undocumented)
+    static setActiveSelectionScope(selectionScopeId: string): void;
     // @beta (undocumented)
     static setColorTheme(theme: string): void;
     // @beta (undocumented)

@@ -13,6 +13,8 @@ import {
 import { FooterSeparator } from "@bentley/ui-ninezone";
 
 import { ToolAssistanceField } from "../statusfields/ToolAssistance";
+import { SelectionScopeField } from "../statusfields/SelectionScope";
+
 import "./AppStatusBar.scss";
 
 export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
@@ -51,6 +53,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
           </BooleanSyncUiListener>
         </div>
         <div className="statusbar-right">
+          <SelectionScopeField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
           <SelectionInfoField isInFooterMode={isInFooterMode} />
         </div>
       </div>

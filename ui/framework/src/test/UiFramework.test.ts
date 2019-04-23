@@ -7,6 +7,8 @@ import TestUtils from "./TestUtils";
 import { UiFramework, ColorTheme } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
+import { Presentation } from "@bentley/presentation-frontend";
+import { NoRenderApp } from "@bentley/imodeljs-frontend";
 
 describe("UiFramework", () => {
 
@@ -60,4 +62,43 @@ describe("UiFramework", () => {
     TestUtils.terminateUiFramework();
   });
 
+  it("test selection scope state data", async () => {
+    await TestUtils.initializeUiFramework();
+    expect(UiFramework.getActiveSelectionScope()).to.equal("element");
+    const scopes = UiFramework.getAvailableSelectionScopes();
+    expect(scopes.length).to.be.greaterThan(0);
+
+    // since "file" is not a valid scope the active scope should still be element
+    UiFramework.setActiveSelectionScope("file");
+    expect(UiFramework.getActiveSelectionScope()).to.equal("element");
+
+    TestUtils.terminateUiFramework();
+  });
+});
+
+// before we can test setting scope to a valid scope id we must make sure Presentation Manager is initialized.
+describe("Requires Presentation", () => {
+  const shutdownIModelApp = () => {
+    if (NoRenderApp.initialized)
+      NoRenderApp.shutdown();
+  };
+
+  beforeEach(() => {
+    shutdownIModelApp();
+    NoRenderApp.startup();
+    Presentation.terminate();
+  });
+
+  describe("initialize and setActiveSelectionScope", () => {
+
+    it("creates manager instances", async () => {
+      Presentation.initialize();
+      await TestUtils.initializeUiFramework();
+      UiFramework.setActiveSelectionScope("element");
+      TestUtils.terminateUiFramework();
+
+      Presentation.terminate();
+      shutdownIModelApp();
+    });
+  });
 });
