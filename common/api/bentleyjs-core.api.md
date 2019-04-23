@@ -806,6 +806,8 @@ export namespace JsonUtils {
     export function asInt(json: any, defaultVal?: number): number;
     export function asObject(json: any): any;
     export function asString(json: any, defaultVal?: string): string;
+    export function isEmptyObject(json: any): boolean;
+    export function isEmptyObjectOrUndefined(json: any): boolean;
     export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean): void;
     export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number): void;
     export function toObject(val: any): any;

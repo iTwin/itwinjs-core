@@ -1102,17 +1102,24 @@ export namespace HiddenLine {
      */
     public readonly width?: number;
 
-    private constructor(json?: StyleProps) {
-      if (undefined === json)
-        return;
+    private constructor(json?: StyleProps, hidden?: true) {
+      if (JsonUtils.isEmptyObjectOrUndefined(json)) {
+        if (hidden)
+          this.pattern = LinePixels.HiddenLine;
 
+        return;
+      }
+
+      json = json as StyleProps; // per JsonUtils.isEmptyObjectOrUndefined()
       if (undefined !== json.color && false !== json.ovrColor)
         this.color = ColorDef.fromJSON(json.color);
 
       if (undefined !== json.pattern) {
-        const pattern = JsonUtils.asInt(json.pattern, LinePixels.Invalid);
+        const pattern = JsonUtils.asInt(json.pattern, hidden ? LinePixels.HiddenLine : LinePixels.Invalid);
         if (LinePixels.Invalid !== pattern)
           this.pattern = pattern;
+      } else if (hidden) {
+        this.pattern = LinePixels.HiddenLine;
       }
 
       if (undefined !== json.width) {
@@ -1124,9 +1131,15 @@ export namespace HiddenLine {
       }
     }
 
-    public static defaults = new Style({});
+    public static readonly defaultVisible = new Style({});
+    public static readonly defaultHidden = new Style({}, true);
 
-    public static fromJSON(json?: StyleProps): Style { return undefined !== json ? new Style(json) : this.defaults; }
+    public static fromJSON(json?: StyleProps, hidden?: true): Style {
+      if (undefined !== json)
+        return new Style(json, hidden);
+
+      return hidden ? this.defaultHidden : this.defaultVisible;
+    }
 
     /** Create a Style equivalent to this one but with the specified color override. */
     public overrideColor(color: ColorDef): Style {
@@ -1198,12 +1211,12 @@ export namespace HiddenLine {
 
     /** Create a DisplaySettings from its JSON representation. */
     public static fromJSON(json?: SettingsProps): Settings {
-      if (undefined === json)
+      if (JsonUtils.isEmptyObjectOrUndefined(json))
         return this.defaults;
       else if (json instanceof Settings)
         return json;
       else
-        return new Settings(json);
+        return new Settings(json!);
     }
 
     public toJSON(): SettingsProps {
@@ -1216,7 +1229,7 @@ export namespace HiddenLine {
 
     private constructor(json: SettingsProps) {
       this.visible = Style.fromJSON(json.visible);
-      this.hidden = Style.fromJSON(json.hidden);
+      this.hidden = Style.fromJSON(json.hidden, true);
       this.transparencyThreshold = JsonUtils.asDouble(json.transThreshold, 1.0);
     }
   }

@@ -2091,10 +2091,12 @@ export namespace HiddenLine {
     export class Style implements StyleProps {
         readonly color?: ColorDef;
         // (undocumented)
-        static defaults: Style;
+        static readonly defaultHidden: Style;
+        // (undocumented)
+        static readonly defaultVisible: Style;
         equals(other: Style): boolean;
         // (undocumented)
-        static fromJSON(json?: StyleProps): Style;
+        static fromJSON(json?: StyleProps, hidden?: true): Style;
         overrideColor(color: ColorDef): Style;
         // @internal (undocumented)
         readonly ovrColor: boolean;
