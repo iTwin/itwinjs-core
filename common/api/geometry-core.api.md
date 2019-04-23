@@ -4330,9 +4330,11 @@ export class Range1d extends RangeBase {
 
 // @public
 export class Range1dArray {
+    static appendFractionalPoints(data: Range1d[], initialRangeFraction: number | undefined, rangeFraction: number | undefined, includeDegenerateRange: boolean, gapFraction: number | undefined, includeDegenerateGap: boolean, finalRangeFraction: number | undefined, result: GrowableFloat64Array | number[]): GrowableFloat64Array | number[];
     static countContainingRanges(data: Range1d[], value: number): number;
     static differenceSorted(dataA: Range1d[], dataB: Range1d[]): Range1d[];
-    static getBreaks(data: Range1d[], result?: GrowableFloat64Array, sort?: boolean, compress?: boolean): GrowableFloat64Array;
+    static firstLowToLastHigh(data: Range1d[]): Range1d;
+    static getBreaks(data: Range1d[], result?: GrowableFloat64Array, sort?: boolean, compress?: boolean, clear?: boolean): GrowableFloat64Array;
     // (undocumented)
     static intersectSorted(dataA: Range1d[], dataB: Range1d[]): Range1d[];
     static isSorted(data: Range1d[], strict?: boolean): boolean;
