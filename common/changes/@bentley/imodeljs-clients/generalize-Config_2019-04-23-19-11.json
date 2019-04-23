@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Enhance Config so that it can contain nested properties - used by Design Review",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Barry.Bentley@bentley.com"
+}

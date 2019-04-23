@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection,
-  OidcClientWrapper, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, WebGLExtensionName,
+  OidcClientWrapper, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -20,7 +20,7 @@ import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConf
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
 
-let curDisabledExts = new Set<WebGLExtensionName>(); // Keep track of disabled webgl extensions
+let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
 
 // Retrieve default config data from json file
@@ -122,6 +122,8 @@ function setViewFlagOverrides(vf: any, vfo?: ViewFlag.Overrides): ViewFlag.Overr
       vfo.setUseHlineMaterialColors(vf.hLineMaterialColors);
     if (vf.hasOwnProperty("edgeMask"))
       vfo.setEdgeMask(Number(vf.edgeMask));
+    if (vf.hasOwnProperty("forceSurfaceDiscard"))
+      vfo.setForceSurfaceDiscard(vf.forceSurfaceDiscard);
 
     if (vf.hasOwnProperty("renderMode")) {
       const rm: string = vf.renderMode.toString();
@@ -166,9 +168,9 @@ function getRenderMode(): string {
   }
 }
 
-function getDisabledExts(): string {
-  let extString = curDisabledExts.size > 0 ? " " : "";
-  curDisabledExts.forEach((ext) => {
+function getRenderOpts(): string {
+  let extString = "";
+  if (curRenderOpts.disabledExtensions) curRenderOpts.disabledExtensions.forEach((ext) => {
     switch (ext) {
       case "WEBGL_draw_buffers":
         extString += "-drawBuf";
@@ -199,6 +201,7 @@ function getDisabledExts(): string {
         break;
     }
   });
+  // if (curRenderOpts.enableOptimizedSurfaceShaders) extString += "+optSurf";
   return extString;
 }
 
@@ -238,6 +241,7 @@ function getViewFlagsString(): string {
   if (vf.edgeMask === 1) vfString += "+genM";
   if (vf.edgeMask === 2) vfString += "+useM";
   if (vf.ambientOcclusion) vfString += "+ao";
+  if (vf.forceSurfaceDiscard) vfString += "+fsd";
   return vfString;
 }
 
@@ -285,9 +289,9 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   rowData.set("Screen Size", configs.view!.width + "X" + configs.view!.height);
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
   rowData.set("Render Mode", getRenderMode());
-  rowData.set("View Flags", " " + getViewFlagsString());
-  rowData.set("Disabled Ext", " " + getDisabledExts());
-  rowData.set("Tile Props", " " + getTileProps());
+  rowData.set("View Flags", getViewFlagsString() !== "" ? " " + getViewFlagsString() : "");
+  rowData.set("Render Options", getRenderOpts() !== "" ? " " + getRenderOpts() : "");
+  rowData.set("Tile Props", getTileProps() !== "" ? " " + getTileProps() : "");
   if (pixSelectStr) rowData.set("ReadPixels Selector", " " + pixSelectStr);
   rowData.set("Tile Loading Time", curTileLoadingTime);
 
@@ -331,9 +335,9 @@ function getImageString(configs: DefaultConfigs, prefix = ""): string {
   output += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
   output += configs.viewName ? "_" + configs.viewName : "";
   output += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
-  output += getRenderMode() ? "_" + getRenderMode() : "";
+  output += getRenderMode() !== "" ? "_" + getRenderMode() : "";
   output += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
-  output += getDisabledExts() ? "_" + getDisabledExts() : "";
+  output += getRenderOpts() !== "" ? "_" + getRenderOpts() : "";
   output += getTileProps() !== "" ? "_" + getTileProps() : "";
   output += ".png";
   return output;
@@ -604,31 +608,25 @@ async function closeIModel(isSnapshot: boolean) {
       await activeViewState.iModelConnection!.close();
     }
   }
-
   debugPrint("end closeIModel");
 }
 
 // Restart the IModelApp if either the TileAdmin.Props or the Render.Options has changed
 function restartIModelApp(testConfig: DefaultConfigs) {
-  const newDisabledExts = new Set<WebGLExtensionName>(testConfig.renderOptions ? testConfig.renderOptions.disabledExtensions : undefined);
+  const newRenderOpts: RenderSystem.Options = testConfig.renderOptions ? testConfig.renderOptions : {};
   const newTileProps: TileAdmin.Props = testConfig.tileProps ? testConfig.tileProps : {};
   if (IModelApp.initialized) {
-    if (curTileProps !== newTileProps || curTileProps.disableThrottling !== newTileProps.disableThrottling || curTileProps.elideEmptyChildContentRequests !== newTileProps.elideEmptyChildContentRequests
-      || curTileProps.enableInstancing !== newTileProps.enableInstancing || curTileProps.maxActiveRequests !== newTileProps.maxActiveRequests || curTileProps.retryInterval !== newTileProps.retryInterval) {
+    if (curTileProps.disableThrottling !== newTileProps.disableThrottling || curTileProps.elideEmptyChildContentRequests !== newTileProps.elideEmptyChildContentRequests
+      || curTileProps.enableInstancing !== newTileProps.enableInstancing || curTileProps.maxActiveRequests !== newTileProps.maxActiveRequests || curTileProps.retryInterval !== newTileProps.retryInterval
+      /*|| curRenderOpts.enableOptimizedSurfaceShaders !== newRenderOpts.enableOptimizedSurfaceShaders*/ || ((curRenderOpts.disabledExtensions ? curRenderOpts.disabledExtensions.length : 0) !== (newRenderOpts.disabledExtensions ? newRenderOpts.disabledExtensions.length : 0))) {
       if (theViewport) {
         theViewport.dispose();
         theViewport = undefined;
       }
       IModelApp.shutdown();
-    } else if (newDisabledExts.size !== curDisabledExts.size) {
-      if (theViewport) {
-        theViewport.dispose();
-        theViewport = undefined;
-      }
-      IModelApp.shutdown();
-    } else {
-      for (const ext in newDisabledExts) {
-        if (!curDisabledExts.has(ext as WebGLExtensionName)) {
+    } else if (curRenderOpts.disabledExtensions !== newRenderOpts.disabledExtensions) {
+      for (let i = 0; i < (curRenderOpts.disabledExtensions ? curRenderOpts.disabledExtensions.length : 0); i++) {
+        if (curRenderOpts.disabledExtensions && newRenderOpts.disabledExtensions && curRenderOpts.disabledExtensions[i] !== newRenderOpts.disabledExtensions[i]) {
           if (theViewport) {
             theViewport.dispose();
             theViewport = undefined;
@@ -639,7 +637,7 @@ function restartIModelApp(testConfig: DefaultConfigs) {
       }
     }
   }
-  curDisabledExts = newDisabledExts;
+  curRenderOpts = newRenderOpts;
   curTileProps = newTileProps;
   if (!IModelApp.initialized) {
     IModelApp.tileAdmin = TileAdmin.create(curTileProps);

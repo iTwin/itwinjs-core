@@ -116,7 +116,7 @@ export class Config {
   }
   /** retrieves a property if it exists, otherwise returns undefined */
   public query(varName: string): any {
-    return this.has (varName) ? this.get(varName) : undefined;
+    return this.has(varName) ? this.get(varName) : undefined;
   }
   /** Get number type property */
   public getNumber(name: string, defaultVal?: number): number {
@@ -156,22 +156,32 @@ export class Config {
    */
   public merge(source: any) {
     if (source === undefined || source === null || source !== Object(source)) {
-      throw new Error("source should be a object");
+      throw new Error("source should be an object");
     }
+    this._copyProperties(this._container, source, true);
+  }
 
+  // copies the properties, recursing into object properties. Only do the translateVar at the top level.
+  private _copyProperties(destination: any, source: any, doTranslate: boolean) {
     Object.keys(source).forEach((varName) => {
-      const name = this.translateVar(varName);
-      const val = source[name];
-      if (typeof val === "object" || typeof val === "undefined" || val === null)
-        return;
+      // if subkey is an object, recurse.
+      if (typeof (source[varName]) === "object") {
+        destination[varName] = {};
+        this._copyProperties(destination[varName], source[varName], false);
 
-      const descriptor = Object.getOwnPropertyDescriptor(this._container, name);
-      if (descriptor !== undefined) {
-        if (!descriptor.writable)
+      } else {
+        const name = doTranslate ? this.translateVar(varName) : varName;
+        const val = source[name];
+        if (typeof val === "object" || typeof val === "undefined" || val === null)
           return;
-      }
 
-      this.set(name, val);
+        const descriptor = Object.getOwnPropertyDescriptor(source, name);
+        if (descriptor !== undefined) {
+          if (!descriptor.writable)
+            return;
+        }
+        destination[name] = val;
+      }
     });
   }
   /**
