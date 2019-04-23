@@ -999,28 +999,11 @@
         {
           "iModelName": "TimingTest_02_TranslucencyNone.bim",
           "viewName": "W0",
-          "tileProps": {
-            "enableInstancing": true
-          }
-        },
-        {
-          "iModelName": "TimingTest_02_TranslucencyNone.bim",
-          "viewName": "W0",
           "viewFlags": {
             "visibleEdges": true
           },
           "tileProps": {
             "enableInstancing": false
-          }
-        },
-        {
-          "iModelName": "TimingTest_02_TranslucencyNone.bim",
-          "viewName": "W0",
-          "viewFlags": {
-            "visibleEdges": true
-          },
-          "tileProps": {
-            "enableInstancing": true
           }
         },
         {
@@ -1028,6 +1011,23 @@
           "viewName": "W0",
           "tileProps": {
             "enableInstancing": false
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyNone.bim",
+          "viewName": "W0",
+          "tileProps": {
+            "enableInstancing": true
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyNone.bim",
+          "viewName": "W0",
+          "viewFlags": {
+            "visibleEdges": true
+          },
+          "tileProps": {
+            "enableInstancing": true
           }
         },
         {
