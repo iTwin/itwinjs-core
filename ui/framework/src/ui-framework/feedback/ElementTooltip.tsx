@@ -97,14 +97,16 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
       message = <div dangerouslySetInnerHTML={{ __html: this.state.message.outerHTML }} />;
 
     return (
-      <ToolSettingsTooltip
-        className={className}
-        style={this.props.style}
-        position={this.state.position}
-        onSizeChanged={this._handleSizeChanged}
-      >
-        {message}
-      </ToolSettingsTooltip>
+      <div className="uifw-element-tooltip-container">
+        <ToolSettingsTooltip
+          className={className}
+          style={this.props.style}
+          position={this.state.position}
+          onSizeChanged={this._handleSizeChanged}
+        >
+          {message}
+        </ToolSettingsTooltip>
+      </div>
     );
   }
 
@@ -140,7 +142,8 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
 
       const containerBounds = Rectangle.create(this._element.getBoundingClientRect());
       const relativeBounds = Rectangle.createFromSize(this._size).offset(this._position);
-      const position = adjustPosition(relativeBounds, containerBounds.getSize());
+      const adjustedPosition = adjustPosition(relativeBounds, containerBounds.getSize());
+      const position = adjustedPosition.offset(containerBounds.topLeft());
 
       if (Point.create(position).equals(prevState.position))
         return null;
