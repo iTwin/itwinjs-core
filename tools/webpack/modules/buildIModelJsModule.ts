@@ -624,30 +624,54 @@ class IModelJsModuleBuilder {
   }
 
   private makeConfig(): Promise<Result> {
+    let useCreateConfig: boolean = false;
     if (!this._moduleDescription.makeConfig)
       return Promise.resolve(new Result("makeConfig", 0));
     if (!this._moduleDescription.makeConfig.dest)
       return Promise.resolve(new Result("makeConfig", 1, undefined, undefined, 'The iModelJs.buildModule.makeConfig must have a "dest" property'));
+    if (this._moduleDescription.makeConfig.sources) {
+      useCreateConfig = true;
+      if (!Array.isArray(this._moduleDescription.makeConfig.sources)) {
+        return Promise.resolve(new Result("makeConfig", 1, undefined, undefined, 'iModelJs.buildModule.makeConfig.sources must be an array of {file, filter} pairs'));
+      }
+      for (const thisSource of this._moduleDescription.makeConfig.sources) {
+        if (!thisSource.file || (undefined === thisSource.filter))
+          return Promise.resolve(new Result("makeConfig", 1, undefined, undefined, 'iModelJs.buildModule.makeConfig.sources must be an array of {file, filter} pairs'));
+      }
+    }
+    const scriptName = useCreateConfig ? "createConfigFile.js" : "write.js";
 
     try {
       // get the path to config-loader/scripts/write.js module
       let makeConfigFullPath;
-      const nestedConfigLoaderPath = 'node_modules/@bentley/webpack-tools/node_modules/@bentley/config-loader/scripts/write.js';
+      const nestedConfigLoaderPath = `node_modules/@bentley/webpack-tools/node_modules/@bentley/config-loader/scripts/${scriptName}`;
       if (fs.existsSync(nestedConfigLoaderPath)) {
         // use the nested config-loader dependency
         makeConfigFullPath = path.resolve(process.cwd(), nestedConfigLoaderPath);
       }
       else {
         // attempt to use the sibling config-loader dependency. Would need to be explicitly declared as a dependency in a consumer's package.json
-        const siblingConfigLoaderPath = 'node_modules/@bentley/config-loader/scripts/write.js';
+        const siblingConfigLoaderPath = `node_modules/@bentley/config-loader/scripts/${scriptName}`;
         makeConfigFullPath = path.resolve(process.cwd(), siblingConfigLoaderPath);
       }
+
+      // figure out the arguments.
       const args: string[] = [makeConfigFullPath, this._moduleDescription.makeConfig.dest];
-      if (this._moduleDescription.makeConfig.filter)
-        args.push(this._moduleDescription.makeConfig.filter);
+      if (useCreateConfig) {
+        for (const thisSource of this._moduleDescription.makeConfig.sources) {
+          let filter: string = thisSource.filter;
+          if (0 === filter.length)
+            args.push (`${thisSource.file}`);
+          else
+            args.push(`${thisSource.file}|${filter}`);
+        }
+      } else {
+        if (this._moduleDescription.makeConfig.filter)
+          args.push(this._moduleDescription.makeConfig.filter);
+      }
 
       if (this._detail > 0)
-        console.log("Starting makeConfig");
+        console.log("Starting makeConfig with arguments", args);
 
       return new Promise((resolve, _reject) => {
         child_process.execFile("node", args, { cwd: process.cwd() }, (error: Error | null, stdout: string, stderr: string) => {

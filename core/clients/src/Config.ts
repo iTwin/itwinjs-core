@@ -114,6 +114,10 @@ export class Config {
     const name = this.translateVar(varName);
     return this._container.hasOwnProperty(name);
   }
+  /** retrieves a property if it exists, otherwise returns undefined */
+  public query(varName: string): any {
+    return this.has (varName) ? this.get(varName) : undefined;
+  }
   /** Get number type property */
   public getNumber(name: string, defaultVal?: number): number {
     return Number(this.get(name, defaultVal));

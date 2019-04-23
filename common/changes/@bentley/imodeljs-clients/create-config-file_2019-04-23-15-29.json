@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added 'query' method for Config, which combines the functions of 'has' and 'get'",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Barry.Bentley@bentley.com"
+}
