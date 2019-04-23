@@ -6,7 +6,7 @@ import * as React from "react";
 
 import {
   TimelineDataProvider,
-  BaseTimelineDataProvider, PlaybackSettings, TimelineDetail,
+  BaseTimelineDataProvider, PlaybackSettings, TimelineDetail, Milestone,
 } from "@bentley/ui-components";
 import { ContentViewManager, SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "@bentley/ui-framework";
 import { ViewState } from "@bentley/imodeljs-frontend";
@@ -46,6 +46,12 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
       const timeRange = this._viewState.scheduleScript!.duration;
       this.start = new Date(timeRange.low * 1000);
       this.end = new Date(timeRange.high * 1000);
+
+      const quarter = (this.end.getTime() - this.start.getTime()) / 4;
+      const milestones: Milestone[] = [];
+      milestones.push({ id: "1", label: "1st Floor Concrete", date: new Date(this.start.getTime() + quarter), readonly: true });
+      milestones.push({ id: "2", label: "2nd Floor Concrete", date: new Date(this.end.getTime() - quarter), readonly: true });
+      this._milestones = milestones;
 
       return Promise.resolve(true);
     }
@@ -93,7 +99,7 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
 
       // for now just initial settings
       this.updateSettings({
-        duration: 20 * 1000,
+        duration: 5 * 1000,
         loop: true,
         displayDetail: TimelineDetail.Minimal,
       });
@@ -217,7 +223,7 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
             initialDuration={this.state.dataProvider.getInitialDuration()}
             totalDuration={this.state.dataProvider.getSettings().duration}
             milestones={this.state.dataProvider.getMilestones()}
-            minimized={this.state.dataProvider.getMilestones().length === 0}
+            minimized={true}
             onChange={this.state.dataProvider.onAnimationFractionChanged}
             onPlayPause={this.props.onPlayPause} />
         </div>

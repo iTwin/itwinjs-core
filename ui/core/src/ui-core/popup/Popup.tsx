@@ -144,6 +144,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     if (this.props.onOutsideClick)
       return this.props.onOutsideClick(event);
 
+    // istanbul ignore if
     if (this.props.target && this.props.target.contains(event.target as Node))
       return;
 
@@ -324,6 +325,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     if (!this._popup || !target)
       return position;
 
+    // istanbul ignore if
     if (this._isPositionAbsolute())
       return position;
 
@@ -410,13 +412,19 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       this.props.className,
     );
 
+    const style: React.CSSProperties = {
+      top: this.state.top,
+      left: this.state.left,
+      ...this.props.style,
+    };
+
     if (!this.props.isOpen) {
       return null;
     }
 
     return ReactDOM.createPortal(
       (
-        <div className={className} data-testid="core-popup" style={{ top: this.state.top, left: this.state.left }} ref={(element) => { this._popup = element; }}>
+        <div className={className} data-testid="core-popup" style={style} ref={(element) => { this._popup = element; }}>
           {this.props.children}
         </div>
       ), document.body);

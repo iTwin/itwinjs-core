@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Small tweak to Popup class.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "bill.steinbock@bentley.com"
+}

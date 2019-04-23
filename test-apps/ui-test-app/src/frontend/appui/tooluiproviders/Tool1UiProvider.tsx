@@ -8,7 +8,7 @@ import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { HSVColor, ColorDef } from "@bentley/imodeljs-common";
 
-import { ColorSwatch, HueSlider, AlphaSlider, SaturationPicker, ColorPickerButton } from "@bentley/ui-components";
+import { ColorSwatch, HueSlider, AlphaSlider, SaturationPicker, ColorPickerButton, WeightPickerButton } from "@bentley/ui-components";
 import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../..";
 
@@ -28,6 +28,7 @@ interface State {
   alpha: number;    // slider value from 0 to 1 (ColorDef want 0-255)
   hsv: HSVColor;
   userColor: ColorDef;
+  userWeight: number;
 }
 
 class Tool1Settings extends React.Component<{}, State> {
@@ -40,7 +41,14 @@ class Tool1Settings extends React.Component<{}, State> {
     const alpha = .5;
     const userColor = hsv.toColorDef();
     userColor.setAlpha(alpha * 255);
-    this.state = { alpha, hsv, userColor };
+    const userWeight = 3;
+    this.state = { alpha, hsv, userColor, userWeight };
+  }
+
+  private _handleWeightChange = (weight: number) => {
+    const msg = `Weight set to ${weight}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    this.setState({ userWeight: weight });
   }
 
   private _handleColorChange = (color: ColorDef) => {
@@ -99,7 +107,6 @@ class Tool1Settings extends React.Component<{}, State> {
     const redDef = ColorDef.from(255, 0, 0, 0);
     const blueDef = ColorDef.from(0, 0, 255, 0);
     const purpleDef = new ColorDef("#800080");
-    const brownDef = new ColorDef("hsl(59,67%,30%)");
 
     return (
       <div>
@@ -142,10 +149,6 @@ class Tool1Settings extends React.Component<{}, State> {
               <td> <ColorSwatch colorDef={purpleDef} onColorPick={this._handleColorChange} round={true} /> </td>
             </tr>
             <tr>
-              <td>Brown</td>
-              <td> <ColorSwatch colorDef={brownDef} onColorPick={this._handleColorChange} round={true} /> </td>
-            </tr>
-            <tr>
               <td>User Color</td>
               <td> <ColorSwatch colorDef={this.state.userColor} onColorPick={this._handleColorChange} round={true} /> </td>
             </tr>
@@ -165,6 +168,10 @@ class Tool1Settings extends React.Component<{}, State> {
               <td>Color Picker</td>
               <td> <ColorPickerButton activeColor={this.state.userColor} onColorPick={this._onColorPick} /></td>
             </tr>
+            <tr>
+              <td>Weight Picker</td>
+              <td> <WeightPickerButton activeWeight={this.state.userWeight} onLineWeightPick={this._handleWeightChange} /></td>
+            </tr>
           </tbody>
         </table>
       </div >
@@ -173,6 +180,8 @@ class Tool1Settings extends React.Component<{}, State> {
 }
 
 /*
+  <td> <WeightPickerButton colorDef={blueDef} activeWeight={this.state.userWeight} onLineWeightPick={this._handleWeightChange} /></td>
+
    <td> <AlphaSlider alpha={this.state.alpha} onAlphaChange={this._handleAlphaChange} isHorizontal={true} /> </td>
     <td> <div style={vertDivStyle}><AlphaSlider alpha={this.state.alpha} onAlphaChange={this._handleAlphaChange} isHorizontal={false} /></div> </td>
     <td> <div style={vertDivStyle}><HueSlider hsv={this.state.hsv} onHueChange={this._handleHueChange} isHorizontal={false} /></div> </td>

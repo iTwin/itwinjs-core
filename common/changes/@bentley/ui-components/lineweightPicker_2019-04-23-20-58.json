@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add components to show and select a line weight.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "bill.steinbock@bentley.com"
+}

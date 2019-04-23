@@ -110,7 +110,8 @@ interface HandleProps {
   key: string;
   handle: SliderItem;
   disabled?: boolean;
-  isPlaying?: boolean;
+  showTooltipWhenPlaying?: boolean;
+  showTooltipOnMouseOver?: boolean;
   startDate?: Date;
   endDate?: Date;
   domain: number[];
@@ -144,7 +145,8 @@ class Handle extends React.Component<HandleProps, HandleState> {
     const {
       domain: [min, max],
       handle: { id, value, percent },
-      isPlaying,
+      showTooltipWhenPlaying,
+      showTooltipOnMouseOver,
       startDate,
       endDate,
       getHandleProps,
@@ -154,7 +156,7 @@ class Handle extends React.Component<HandleProps, HandleState> {
 
     return (
       <>
-        {(isPlaying || mouseOver) &&
+        {(showTooltipWhenPlaying || (mouseOver && showTooltipOnMouseOver)) &&
           <div className="tooltip-rail" style={{ left: `${percent}%` }}>
             <div className="tooltip">
               <span className="tooltip-text">{toolTip}</span>
@@ -200,6 +202,7 @@ export interface ScrubberProps extends CommonProps {
   currentDuration: number;
   totalDuration: number;
   isPlaying: boolean;
+  inMiniMode: boolean;
   startDate?: Date;
   endDate?: Date;
   onChange?: (values: ReadonlyArray<number>) => void;
@@ -210,8 +213,10 @@ export interface ScrubberProps extends CommonProps {
 export class Scrubber extends React.Component<ScrubberProps> {
 
   public render() {
-    const { currentDuration, totalDuration, onChange, onUpdate, onSlideStart, isPlaying, startDate, endDate  } = this.props;
+    const { currentDuration, totalDuration, onChange, onUpdate, onSlideStart, isPlaying, inMiniMode, startDate, endDate } = this.props;
     const domain = [0, totalDuration];
+    const showTooltip = isPlaying && inMiniMode;
+    const showMouseTooltip = !isPlaying && inMiniMode;
 
     return (
       <Slider
@@ -233,7 +238,8 @@ export class Scrubber extends React.Component<ScrubberProps> {
               {handles.map((handle) => (
                 <Handle
                   key={handle.id}
-                  isPlaying={isPlaying}
+                  showTooltipWhenPlaying={showTooltip}
+                  showTooltipOnMouseOver={showMouseTooltip}
                   startDate={startDate}
                   endDate={endDate}
                   handle={handle}

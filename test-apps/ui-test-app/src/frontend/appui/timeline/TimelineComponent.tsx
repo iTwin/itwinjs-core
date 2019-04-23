@@ -129,6 +129,11 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       this.setState({ isPlaying: false });
       if (this.state.repeat)
         this._replay();
+      else {
+        if (this.props.onPlayPause)
+          this.props.onPlayPause(false);
+      }
+
       return;
     }
 
@@ -229,9 +234,9 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       <div className={classnames("timeline-component", miniMode && "minimized", hasDates && "has-dates")}>
         <div className="header">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
-          <PlayerButton className="play-backward" icon="icon-caret-left" onClick={this._onBackward}/>
-          <PlayerButton className="play-button-step" icon="icon-media-controls-circular-play" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause}/>
-          <PlayerButton className="play-forward" icon="icon-caret-right"  onClick={this._onForward}/>
+          <PlayerButton className="play-backward" icon="icon-caret-left" onClick={this._onBackward} />
+          <PlayerButton className="play-button-step" icon="icon-media-controls-circular-play" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
+          <PlayerButton className="play-forward" icon="icon-caret-right" onClick={this._onForward} />
           <span className="current-date">{currentDate.toLocaleDateString()}</span>
           {!miniMode && this._renderSettings()}
         </div>
@@ -256,6 +261,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
             startDate={startDate}
             endDate={endDate}
             isPlaying={this.state.isPlaying}
+            inMiniMode={miniMode}
             onChange={this._onTimelineChange}
             onUpdate={this._onTimelineChange}
           />

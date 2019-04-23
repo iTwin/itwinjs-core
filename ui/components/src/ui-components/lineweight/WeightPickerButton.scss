@@ -1,0 +1,41 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.components-weightpicker-button {
+  color: $buic-foreground-body;
+  background: $buic-background-control;
+  border: 1px solid $buic-inputs-border;
+  border-radius: 3px;
+  min-width: 100px;
+
+  &:not(.readonly):not([disabled]) {
+    cursor: pointer;
+  }
+}
+
+.components-weightpicker-popup {
+  border: 1px solid $buic-inputs-border;
+
+  > .components-weightpicker-popup-container {
+      color: $buic-foreground-body;
+      background: $buic-background-control;
+      min-width: 100px;
+
+      > ul {
+          padding: 4px 0;
+          margin: 0;
+          list-style: none;
+
+          > .components-weightpicker-swatch:hover {
+            background: $buic-row-hover;
+          }
+
+          > .components-weightpicker-swatch.active {
+            background: $buic-row-selection;
+          }
+      }
+  }
+}

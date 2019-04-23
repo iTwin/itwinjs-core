@@ -85,6 +85,9 @@ export * from "./ui-components/color/AlphaSlider";
 export * from "./ui-components/color/SaturationPicker";
 export * from "./ui-components/color/ColorPickerButton";
 
+export * from "./ui-components/lineweight/Swatch";
+export * from "./ui-components/lineweight/WeightPickerButton";
+
 export * from "./ui-components/table/TableDataProvider";
 export * from "./ui-components/table/SimpleTableDataProvider";
 export {

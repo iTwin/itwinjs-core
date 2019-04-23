@@ -1226,6 +1226,20 @@ export interface LessGreaterOperatorProcessor {
     isLessThanOrEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
+// @beta
+export const LineWeightSwatch: React.FunctionComponent<LineWeightSwatchProps>;
+
+// @beta
+export interface LineWeightSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+    colorDef?: ColorDef;
+    disabled?: boolean;
+    focusRef?: React.Ref<HTMLButtonElement>;
+    hideLabel?: boolean;
+    onClick?: () => void;
+    readonly?: boolean;
+    weight: number;
+}
+
 // @public
 export interface LoadedBinaryImage extends LoadedImage {
     // (undocumented)
@@ -2598,6 +2612,32 @@ export interface ViewRotationChangeEventArgs {
     animationTime?: number;
     // (undocumented)
     viewport: Viewport;
+}
+
+// Warning: (ae-forgotten-export) The symbol "WeightPickerState" needs to be exported by the entry point ui-components.d.ts
+// 
+// @beta
+export class WeightPickerButton extends React.PureComponent<WeightPickerProps, WeightPickerState> {
+    // @internal
+    constructor(props: WeightPickerProps);
+    // (undocumented)
+    static defaultProps: {
+        weights: number[];
+    };
+    // @internal (undocumented)
+    render(): JSX.Element;
+    }
+
+// @beta
+export interface WeightPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+    activeWeight: number;
+    colorDef?: ColorDef;
+    disabled?: boolean;
+    dropDownTitle?: string;
+    hideLabel?: boolean;
+    onLineWeightPick?: ((weight: number) => void) | undefined;
+    readonly?: boolean;
+    weights: number[];
 }
 
 // @beta
