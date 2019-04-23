@@ -10,8 +10,8 @@ import * as os from "os";
 import * as path from "path";
 import * as fs from "fs";
 import { IModelHost } from "../IModelHost";
-import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
+import { IModelTestUtils } from "../test/IModelTestUtils";
 IModelTestUtils.init();
 function makeRandStr(length: number) {
   let text = "";
@@ -101,7 +101,7 @@ function changePageSize(iModelPath: string, pageSizeInKb: number) {
     });
   });
 
-  const r = IModelHost.platform.ECDb.vacuum(iModelPath, pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024);
+  const r = IModelHost.platform.DgnDb.vacuum(iModelPath, pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024);
   if (r !== DbResult.BE_SQLITE_OK)
     throw new Error("fail to vacuum or changesize of the page");
   sp.stop();
@@ -187,16 +187,16 @@ async function runReadTest(param: ReadParams) {
 }
 /* This test suite require configuring dataset path
 **/
-describe("SQLite performance test", () => {
-  it.only("Read Test", async () => {
+describe.skip("SQLite performance test", () => {
+  it("Read Test", async () => {
     const seedDir = path.join(KnownTestLocations.outputDir, "perf_test");
-    const pageSizes = [1, 4, 8, 16, 32, 64, 128, 256, 512];
-    const targets = ["D:\\test", "E:\\test"];
+    const pageSizes = [1, 4 /*, 8, 16, 32, 64, 128, 256, 512*/];
+    const targets = ["C:\\test", "F:\\test", "Y:\\test", "Z:\\test"];
     for (const targetFolder of targets) {
       for (const pageSize of pageSizes) {
         await runReadTest({
-          runCount: 5,
-          seedRowCount: 500000,
+          runCount: 1,
+          seedRowCount: 50000,
           columnsCount: 20,
           startId: 1,
           percentageOfRowsToRead: 50,
