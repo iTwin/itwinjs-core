@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d } from "@bentley/geometry-core";
+import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d } from "@bentley/geometry-core";
 import { Placement2d, Placement3d, Placement2dProps, ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { BeButtonEvent, EventHandled } from "./Tool";
@@ -179,11 +179,11 @@ export class ViewClipTool extends PrimitiveTool {
     return this.setViewClip(viewport, saveInUndo);
   }
 
-  public static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, id?: string, color?: ColorDef, weight?: number): void {
+  public static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void {
     const shapePtsLo = ViewClipTool.getClipShapePoints(shape, extents.low);
     const shapePtsHi = ViewClipTool.getClipShapePoints(shape, extents.high);
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay, shape.transformFromClip, id);
-    builder.setSymbology(undefined === color ? ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor) : color, ColorDef.black, undefined === weight ? 3 : weight);
+    builder.setSymbology(color, ColorDef.black, weight);
     for (let i: number = 0; i < shapePtsLo.length; i++)
       builder.addLineString([shapePtsLo[i].clone(), shapePtsHi[i].clone()]);
     builder.addLineString(shapePtsLo);
@@ -228,6 +228,29 @@ export class ViewClipTool extends PrimitiveTool {
     if (!prim.isValidPolygon)
       return undefined;
     return prim;
+  }
+
+  public static drawClipPlanesLoops(context: DecorateContext, loops: GeometryQuery[], color: ColorDef, weight: number, fill?: ColorDef, id?: string): void {
+    if (loops.length < 1)
+      return;
+    const builderEdge = context.createGraphicBuilder(GraphicType.WorldOverlay, undefined, id);
+    builderEdge.setSymbology(color, ColorDef.black, weight);
+    for (const geom of loops) {
+      if (!(geom instanceof Loop))
+        continue;
+      builderEdge.addPath(Path.createArray(geom.children));
+    }
+    context.addDecorationFromBuilder(builderEdge);
+    if (undefined === fill)
+      return;
+    const builderFace = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
+    builderFace.setSymbology(fill, fill, 0);
+    for (const geom of loops) {
+      if (!(geom instanceof Loop))
+        continue;
+      builderFace.addLoop(geom);
+    }
+    context.addDecorationFromBuilder(builderFace);
   }
 
   public static isSingleConvexClipPlaneSet(clip: ClipVector): ConvexClipPlaneSet | undefined {
@@ -767,7 +790,53 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     if (undefined === clipShape)
       return;
     const clipExtents = ViewClipTool.getClipShapeExtents(clipShape, this._viewRange);
-    ViewClipTool.drawClipShape(context, clipShape, clipExtents, undefined, undefined, 1);
+    ViewClipTool.drawClipShape(context, clipShape, clipExtents, ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor), 1);
+  }
+}
+
+/** @internal Interactive tool to modify a view's clip defined by a ConvexClipPlaneSet */
+export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
+  protected updateViewClip(ev: BeButtonEvent, saveInUndo: boolean): boolean {
+    if (-1 === this._anchorIndex || undefined === ev.viewport || ev.viewport !== this._clipView)
+      return false;
+
+    // NOTE: Use AccuDraw z instead of view z if AccuDraw is explicitly enabled...
+    const projectedPt = EditManipulator.HandleUtils.projectPointToLineInView(ev.point, this._controls[this._anchorIndex].origin, this._controls[this._anchorIndex].direction, ev.viewport, true);
+    if (undefined === projectedPt)
+      return false;
+
+    const anchorPt = this._controls[this._anchorIndex].origin;
+    const offsetVec = Vector3d.createStartEnd(anchorPt, projectedPt);
+    let offset = offsetVec.normalizeWithLength(offsetVec).mag;
+    if (offset < Geometry.smallMetricDistance)
+      return false;
+    if (offsetVec.dotProduct(this._controls[this._anchorIndex].direction) < 0.0)
+      offset *= -1.0;
+
+    const planeSet = ConvexClipPlaneSet.createEmpty();
+    for (let i: number = 0; i < this._controls.length; i++) {
+      const selected = (i === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[i]));
+      const origin = this._controls[i].origin.clone();
+      const direction = this._controls[i].direction;
+      if (selected)
+        origin.plusScaled(direction, offset, origin);
+      planeSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(direction.negate(), origin));
+    }
+
+    return ViewClipTool.doClipToConvexClipPlaneSet(this._clipView, saveInUndo, planeSet);
+  }
+
+  protected drawViewClip(context: DecorateContext): void {
+    const clip = this._clipView.view.getViewClip();
+    if (undefined === clip)
+      return;
+    const clipPlanes = ViewClipTool.isSingleConvexClipPlaneSet(clip);
+    if (undefined === clipPlanes)
+      return;
+    const clipPlanesLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipPlanes, this._viewRange, true, false, true);
+    if (undefined === clipPlanesLoops)
+      return;
+    ViewClipTool.drawClipPlanesLoops(context, clipPlanesLoops, ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor), 1);
   }
 }
 
@@ -791,7 +860,9 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   protected _clip?: ClipVector;
   protected _clipId?: string;
   protected _clipShape?: ClipShape;
-  protected _clipExtents?: Range1d;
+  protected _clipShapeExtents?: Range1d;
+  protected _clipPlanes?: ConvexClipPlaneSet;
+  protected _clipPlanesLoops?: GeometryQuery[];
   protected _controlIds: string[] = [];
   protected _controls: ViewClipControlArrow[] = [];
   protected _removeViewCloseListener?: () => void;
@@ -844,38 +915,51 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 
   private getClipData(): boolean {
-    this._clip = this._clipShape = this._clipExtents = undefined;
+    this._clip = this._clipShape = this._clipShapeExtents = this._clipPlanes = this._clipPlanesLoops = undefined;
     const clip = this._clipView.view.getViewClip();
     if (undefined === clip)
       return false;
-    this._clipShape = ViewClipTool.isSingleClipShape(clip);
-    if (undefined !== this._clipShape) {
-      const viewRange = this._clipView.computeViewRange();
-      this._clipExtents = ViewClipTool.getClipShapeExtents(this._clipShape, viewRange);
+    const clipShape = ViewClipTool.isSingleClipShape(clip);
+    if (undefined !== clipShape) {
+      this._clipShapeExtents = ViewClipTool.getClipShapeExtents(clipShape, this._clipView.computeViewRange());
+      this._clipShape = clipShape;
     } else {
-      // ##TODO Create proper handles clip planes primitive...
-      return false;
+      const clipPlanes = ViewClipTool.isSingleConvexClipPlaneSet(clip);
+      if (undefined === clipPlanes || clipPlanes.planes.length > 12)
+        return false;
+      const clipPlanesLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipPlanes, this._clipView.computeViewRange(), true, false, true);
+      if (undefined === clipPlanesLoops || clipPlanesLoops.length < 1 || clipPlanesLoops.length > clipPlanes.planes.length)
+        return false;
+      this._clipPlanesLoops = clipPlanesLoops;
+      this._clipPlanes = clipPlanes;
     }
     this._clip = clip;
     return true;
+  }
+
+  private ensureNumControls(numReqControls: number): void {
+    const numCurrent = this._controlIds.length;
+    if (numCurrent < numReqControls) {
+      const transientIds = this.iModel.transientIds;
+      for (let i: number = numCurrent; i < numReqControls; i++)
+        this._controlIds[i] = transientIds.next;
+    } else if (numCurrent > numReqControls) {
+      this._controlIds.length = numReqControls;
+    }
   }
 
   private createClipShapeControls(): boolean {
     if (undefined === this._clipShape)
       return false;
 
-    const shapePtsLo = ViewClipTool.getClipShapePoints(this._clipShape, this._clipExtents!.low);
-    const shapePtsHi = ViewClipTool.getClipShapePoints(this._clipShape, this._clipExtents!.high);
+    const shapePtsLo = ViewClipTool.getClipShapePoints(this._clipShape, this._clipShapeExtents!.low);
+    const shapePtsHi = ViewClipTool.getClipShapePoints(this._clipShape, this._clipShapeExtents!.high);
     const shapeArea = PolygonOps.centroidAreaNormal(shapePtsLo);
     if (undefined === shapeArea)
       return false;
 
     const numControls = shapePtsLo.length + 1; // Number of edge midpoints plus zLow and zHigh...
-    if (0 === this._controlIds.length) {
-      const transientIds = this.iModel.transientIds;
-      for (let i: number = 0; i < numControls; i++)
-        this._controlIds[i] = transientIds.next;
-    }
+    this.ensureNumControls(numControls);
 
     for (let i: number = 0; i < numControls - 2; i++) {
       const midPtLo = shapePtsLo[i].interpolate(0.5, shapePtsLo[i + 1]);
@@ -888,6 +972,44 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
     this._controls[numControls - 2] = new ViewClipControlArrow(shapeArea.origin, Vector3d.unitZ(-1.0), 0.75, "zLow");
     this._controls[numControls - 1] = new ViewClipControlArrow(shapeArea.origin.plusScaled(Vector3d.unitZ(), shapePtsLo[0].distance(shapePtsHi[0])), Vector3d.unitZ(), 0.75, "zHigh");
+
+    return true;
+  }
+
+  private createClipPlanesControls(): boolean {
+    if (undefined === this._clipPlanes)
+      return false;
+
+    const loopData: Ray3d[] = [];
+    for (const geom of this._clipPlanesLoops!) {
+      if (!(geom instanceof Loop) || geom.children.length > 1)
+        return false;
+      const child = geom.getChild(0);
+      if (!(child instanceof LineString3d))
+        return false;
+      const loopArea = PolygonOps.centroidAreaNormal(child.points);
+      if (undefined === loopArea)
+        return false;
+      loopData.push(loopArea);
+    }
+
+    const numControls = this._clipPlanes.planes.length;
+    this.ensureNumControls(numControls);
+
+    let iLoop: number = 0;
+    for (let i: number = 0; i < this._clipPlanes.planes.length; i++) {
+      const plane = this._clipPlanes.planes[i].getPlane3d();
+      if (iLoop < loopData.length) {
+        if (loopData[iLoop].direction.isParallelTo(plane.getNormalRef(), false) && plane.isPointInPlane(loopData[iLoop].origin)) {
+          const outwardNormal = loopData[iLoop].direction.negate();
+          this._controls[i] = new ViewClipControlArrow(loopData[iLoop].origin, outwardNormal, 0.75);
+          iLoop++;
+          continue;
+        }
+      }
+      const defaultOutwardNormal = plane.getNormalRef().negate();
+      this._controls[i] = new ViewClipControlArrow(plane.getOriginRef(), defaultOutwardNormal, 0.0); // Don't show, this plane currently doesn't contribute to clip...
+    }
 
     return true;
   }
@@ -917,8 +1039,9 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
     if (undefined !== this._clipShape)
       return this.createClipShapeControls();
+    else if (undefined !== this._clipPlanes)
+      return this.createClipPlanesControls();
 
-    // ### TODO ClipPlaneSet controls...
     return false;
   }
 
@@ -931,12 +1054,34 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     if (undefined === this._clip)
       return false;
     if (undefined !== this._clipShape) {
-      const manipTool = new ViewClipShapeModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
-      return manipTool.run();
-    } else {
-      // ### TODO ClipPlaneSet modify...
+      const clipShapeModifyTool = new ViewClipShapeModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
+      return clipShapeModifyTool.run();
+    } else if (undefined !== this._clipPlanes) {
+      const clipPlanesModifyTool = new ViewClipPlanesModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
+      return clipPlanesModifyTool.run();
     }
     return false;
+  }
+
+  protected async onRightClick(hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> {
+    if (undefined === this._clipPlanes)
+      return EventHandled.No;
+
+    const index = this._controlIds.indexOf(hit.sourceId);
+    if (-1 === index)
+      return EventHandled.No;
+
+    const planeSet = ConvexClipPlaneSet.createEmpty();
+    for (let i: number = 0; i < this._clipPlanes.planes.length; i++) {
+      const plane = (i === index ? this._clipPlanes.planes[i].cloneNegated() : this._clipPlanes.planes[i]);
+      planeSet.addPlaneToConvexSet(plane);
+    }
+
+    if (!ViewClipTool.doClipToConvexClipPlaneSet(this._clipView, true, planeSet))
+      return EventHandled.No;
+
+    this.onManipulatorEvent(EditManipulator.EventType.Accept);
+    return EventHandled.Yes;
   }
 
   public onManipulatorEvent(eventType: EditManipulator.EventType): void {
@@ -958,11 +1103,10 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     if (this._clipView !== vp)
       return;
 
-    if (undefined !== this._clipShape) {
-      ViewClipTool.drawClipShape(context, this._clipShape, this._clipExtents!, this._clipId);
-    } else {
-      // ### TODO ClipPlaneSet display...
-    }
+    if (undefined !== this._clipShape)
+      ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents!, ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor), 3, this._clipId);
+    else if (undefined !== this._clipPlanes)
+      ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoops!, ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor), 3, ColorDef.from(0, 255, 255, 225), this._clipId);
 
     if (!this._isActive)
       return;
@@ -970,9 +1114,14 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     const outlineColor = ColorDef.from(0, 0, 0, 50).adjustForContrast(vp.view.backgroundColor);
     const fillVisColor = ColorDef.from(150, 250, 200, 225);
     const fillHidColor = fillVisColor.clone(); fillHidColor.setAlpha(200);
+    const fillSelColor = fillVisColor.invert(); fillSelColor.setAlpha(75);
     const shapePts = EditManipulator.HandleUtils.getArrowShape(0.0, 0.15, 0.55, 1.0, 0.3, 0.5, 0.1);
 
     for (let iFace = 0; iFace < this._controlIds.length; iFace++) {
+      const sizeInches = this._controls[iFace].sizeInches;
+      if (0.0 === sizeInches)
+        continue;
+
       let facePt = this._controls[iFace].origin;
       let faceDir = this._controls[iFace].direction;
 
@@ -981,7 +1130,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
         faceDir = this._clipShape.transformFromClip.multiplyVector(faceDir); faceDir.normalizeInPlace();
       }
 
-      const transform = EditManipulator.HandleUtils.getArrowTransform(vp, facePt, faceDir, this._controls[iFace].sizeInches);
+      const transform = EditManipulator.HandleUtils.getArrowTransform(vp, facePt, faceDir, sizeInches);
       if (undefined === transform)
         continue;
 
@@ -989,10 +1138,11 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       const hidPts: Point3d[] = []; for (const pt of shapePts) hidPts.push(pt.clone());
       const arrowVisBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._controlIds[iFace]);
       const arrowHidBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, transform);
+      const isSelected = this.iModel.selectionSet.has(this._controlIds[iFace]);
 
-      arrowVisBuilder.setSymbology(outlineColor, outlineColor, 2);
+      arrowVisBuilder.setSymbology(outlineColor, outlineColor, isSelected ? 4 : 2);
       arrowVisBuilder.addLineString(visPts);
-      arrowVisBuilder.setBlankingFill(fillVisColor);
+      arrowVisBuilder.setBlankingFill(isSelected ? fillSelColor : fillVisColor);
       arrowVisBuilder.addShape(visPts);
       context.addDecorationFromBuilder(arrowVisBuilder);
 

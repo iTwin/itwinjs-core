@@ -193,7 +193,7 @@ export namespace EditManipulator {
     public static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw: boolean = false, checkACS: boolean = false): Point3d | undefined {
       const lineRay = Ray3d.create(linePt, lineDirection);
       const rayToEye = EditManipulator.HandleUtils.getBoresite(spacePt, vp, checkAccuDraw, checkACS);
-      if (rayToEye.direction.isParallelTo(lineRay.direction))
+      if (rayToEye.direction.isParallelTo(lineRay.direction, true))
         return lineRay.projectPointToRay(spacePt);
       const matrix = Matrix3d.createRigidFromColumns(lineRay.direction, rayToEye.direction, AxisOrder.XZY);
       if (undefined === matrix)

@@ -65,6 +65,7 @@ import * as Fuse from 'fuse.js';
 import { GeoCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
 import { GeometryClass } from '@bentley/imodeljs-common';
+import { GeometryQuery } from '@bentley/geometry-core';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
 import { Gradient } from '@bentley/imodeljs-common';
 import { GraphicParams } from '@bentley/imodeljs-common';
@@ -790,7 +791,7 @@ export class AnimationBranchState {
 // @internal
 export type AnimationBranchStates = Map<string, AnimationBranchState>;
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface AppearanceOverrideProps {
     // (undocumented)
     color?: ColorDefProps;
@@ -1987,22 +1988,20 @@ export const enum ElemSource {
     SelectionSet = 2
 }
 
-// @public
+// @internal
 export class EmphasizeElements implements FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, vp: Viewport): void;
     static clear(vp: Viewport, inactiveOnly?: boolean): void;
-    // @internal
     clearAlwaysDrawnElements(vp: Viewport): boolean;
     clearEmphasizedElements(vp: Viewport): boolean;
     clearHiddenElements(vp: Viewport): boolean;
     clearIsolatedElements(vp: Viewport): boolean;
-    // @internal
     clearNeverDrawnElements(vp: Viewport): boolean;
     clearOverriddenElements(vp: Viewport, key?: number): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     protected createAppearanceFromKey(key: number): FeatureSymbology.Appearance;
     createDefaultAppearance(): FeatureSymbology.Appearance;
-    // @internal (undocumented)
+    // (undocumented)
     protected createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
     readonly defaultAppearance: FeatureSymbology.Appearance | undefined;
     emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean): boolean;
@@ -2010,16 +2009,13 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     // (undocumented)
     fromJSON(props: EmphasizeElementsProps, vp: Viewport): boolean;
     static get(vp: Viewport): EmphasizeElements | undefined;
-    // @internal
     getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined;
     getEmphasizedElements(vp: Viewport): Id64Set | undefined;
     getHiddenElements(vp: Viewport): Id64Set | undefined;
     getIsolatedElements(vp: Viewport): Id64Set | undefined;
-    // @internal
     getNeverDrawnElements(vp: Viewport): Id64Set | undefined;
     static getOrCreate(vp: Viewport): EmphasizeElements;
     getOverriddenElements(): Map<number, Id64Set> | undefined;
-    // @internal
     getOverriddenElementsByKey(key: number): Id64Set | undefined;
     getOverrideFromKey(key: number, color: ColorDef): FeatureOverrideType;
     hideElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
@@ -2029,15 +2025,13 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     isolateSelectedElements(vp: Viewport, replace?: boolean, clearSelection?: boolean): boolean;
     overrideElements(ids: Id64Arg, vp: Viewport, color: ColorDef, override?: FeatureOverrideType, replace?: boolean): boolean;
     overrideSelectedElements(vp: Viewport, color: ColorDef, override?: FeatureOverrideType, replace?: boolean, clearSelection?: boolean): boolean;
-    // @internal
     setAlwaysDrawnElements(ids: Id64Arg, vp: Viewport, exclusive?: boolean, replace?: boolean): boolean;
-    // @internal
     setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
     // (undocumented)
     toJSON(vp: Viewport): EmphasizeElementsProps;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface EmphasizeElementsProps {
     // (undocumented)
     alwaysDrawn?: Id64Set;
@@ -2147,7 +2141,7 @@ export interface FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
 
-// @public
+// @internal
 export const enum FeatureOverrideType {
     // (undocumented)
     AlphaOnly = 1,
@@ -6767,13 +6761,17 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     protected _clipEventHandler?: ViewClipEventHandler | undefined;
     // (undocumented)
-    protected _clipExtents?: Range1d;
-    // (undocumented)
     readonly clipId: string | undefined;
     // (undocumented)
     protected _clipId?: string;
     // (undocumented)
+    protected _clipPlanes?: ConvexClipPlaneSet;
+    // (undocumented)
+    protected _clipPlanesLoops?: GeometryQuery[];
+    // (undocumented)
     protected _clipShape?: ClipShape;
+    // (undocumented)
+    protected _clipShapeExtents?: Range1d;
     // (undocumented)
     protected _clipView: Viewport;
     // (undocumented)
@@ -6794,6 +6792,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onManipulatorEvent(eventType: EditManipulator.EventType): void;
+    // (undocumented)
+    protected onRightClick(hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onViewClose(vp: ScreenViewport): void;
     // (undocumented)
@@ -6888,6 +6888,14 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
 }
 
 // @internal
+export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
+    // (undocumented)
+    protected drawViewClip(context: DecorateContext): void;
+    // (undocumented)
+    protected updateViewClip(ev: BeButtonEvent, saveInUndo: boolean): boolean;
+}
+
+// @internal
 export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     // (undocumented)
     protected drawViewClip(context: DecorateContext): void;
@@ -6911,7 +6919,9 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     static doClipToShape(viewport: Viewport, saveInUndo: boolean, xyPoints: Point3d[], transform?: Transform, zLow?: number, zHigh?: number): boolean;
     // (undocumented)
-    static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, id?: string, color?: ColorDef, weight?: number): void;
+    static drawClipPlanesLoops(context: DecorateContext, loops: GeometryQuery[], color: ColorDef, weight: number, fill?: ColorDef, id?: string): void;
+    // (undocumented)
+    static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void;
     // (undocumented)
     protected static enumAsOrientationMessage(str: string): any;
     // (undocumented)

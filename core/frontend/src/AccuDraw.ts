@@ -1472,7 +1472,7 @@ export class AccuDraw {
         const baseRMatrix = this.getBaseRotation();
         const baseZ = baseRMatrix.getRow(2);
 
-        if (baseZ.isParallelTo(this.axes.z))
+        if (baseZ.isParallelTo(this.axes.z, true))
           return;
       }
 
