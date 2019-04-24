@@ -88,9 +88,9 @@ dependencies:
   '@types/node': 10.14.1
   '@types/puppeteer': 1.3.0
   '@types/qs': 6.5.3
-  '@types/react': 16.7.22
+  '@types/react': 16.8.14
   '@types/react-data-grid': 4.0.2
-  '@types/react-dom': 16.0.11
+  '@types/react-dom': 16.8.4
   '@types/react-highlight-words': 0.11.1
   '@types/react-redux': 7.0.8
   '@types/react-resize-detector': 3.1.1
@@ -664,7 +664,7 @@ packages:
   /@types/enzyme/3.9.1:
     dependencies:
       '@types/cheerio': 0.22.11
-      '@types/react': 16.7.22
+      '@types/react': 16.8.14
     dev: false
     resolution:
       integrity: sha512-CasnOP73BFE3/5JvGkod+oQtGOD1+CVWz9BV2iAqDFJ+sofL5gTiizSr8ZM3lpDY27ptC8yjAdrUCdv8diKKqw==
@@ -751,7 +751,7 @@ packages:
       integrity: sha512-ui3WwXmjTaY73fOQ3/m3nnajU/Orhi6cEu5rzX+BrAAJxa3eITXZ5ch9suPqtM03OWhAHhPSyBGCN4UKoxO20Q==
   /@types/hoist-non-react-statics/3.3.1:
     dependencies:
-      '@types/react': 16.7.22
+      '@types/react': 16.8.14
       hoist-non-react-statics: 3.3.0
     dev: false
     resolution:
@@ -881,40 +881,40 @@ packages:
       integrity: sha512-ewFXqrQHlFsgc09MK5jP5iR7vumV/BYayNC6PgJO2LPe8vrnNFyjQjSppfEngITi0qvfKtzFvgKymGheFM9UOA==
   /@types/react-data-grid/4.0.2:
     dependencies:
-      '@types/react': 16.7.22
+      '@types/react': 16.8.14
     dev: false
     resolution:
       integrity: sha512-no7HnLfm5CSLicuLixZjgsfq0myt6+aBxyVCIo9XiJdNLiZUC0uogMa2f4wq+xdTaslYHeyzwsVL6KF0B765Yg==
-  /@types/react-dom/16.0.11:
+  /@types/react-dom/16.8.4:
     dependencies:
-      '@types/react': 16.7.22
+      '@types/react': 16.8.14
     dev: false
     resolution:
-      integrity: sha512-x6zUx9/42B5Kl2Vl9HlopV8JF64wLpX3c+Pst9kc1HgzrsH+mkehe/zmHMQTplIrR48H2gpU7ZqurQolYu8XBA==
+      integrity: sha512-eIRpEW73DCzPIMaNBDP5pPIpK1KXyZwNgfxiVagb5iGiz6da+9A5hslSX6GAQKdO7SayVCS/Fr2kjqprgAvkfA==
   /@types/react-highlight-words/0.11.1:
     dependencies:
-      '@types/react': 16.7.22
+      '@types/react': 16.8.14
     dev: false
     resolution:
       integrity: sha512-zBrtCb0qhn6XqmkIPZhDzLjZ41k4ppeGoC5iaZotAwBEThGO0BrcpRTLWX69oWplnuBsbiNFvHj0IcT6gl9mdg==
   /@types/react-redux/7.0.8:
     dependencies:
       '@types/hoist-non-react-statics': 3.3.1
-      '@types/react': 16.7.22
+      '@types/react': 16.8.14
       redux: 4.0.1
     dev: false
     resolution:
       integrity: sha512-vIBC15E84ehN6RzdGwRVa41whp9e4CkfPm+WfD0r6y6vqBf4tQPKZeKEBfLLM8k79uSwQC7rh3rH/MFaN1IESQ==
   /@types/react-resize-detector/3.1.1:
     dependencies:
-      '@types/react': 16.7.22
+      '@types/react': 16.8.14
     dev: false
     resolution:
       integrity: sha512-3FVExywb3kC0p+dKRd2IC6wmUlfurx/9J0b1mtHd0rigwZWNJC79fnbTJaMmLNM8PhhgqDwaNOhFdv0u9YGAzA==
   /@types/react-router-dom/4.3.2:
     dependencies:
       '@types/history': 4.7.2
-      '@types/react': 16.7.22
+      '@types/react': 16.8.14
       '@types/react-router': 4.4.5
     dev: false
     resolution:
@@ -922,24 +922,24 @@ packages:
   /@types/react-router/4.4.5:
     dependencies:
       '@types/history': 4.7.2
-      '@types/react': 16.7.22
+      '@types/react': 16.8.14
     dev: false
     resolution:
       integrity: sha512-12+VOu1+xiC8RPc9yrgHCyLI79VswjtuqeS2gPrMcywH6tkc8rGIUhs4LaL3AJPqo5d+RPnfRpNKiJ7MK2Qhcg==
   /@types/react-virtualized/9.21.1:
     dependencies:
       '@types/prop-types': 15.7.1
-      '@types/react': 16.7.22
+      '@types/react': 16.8.14
     dev: false
     resolution:
       integrity: sha512-BwWXk6Vy+YuWbc2jZsmm0fn8bglPUpqUWPH/JUUBfvfKfL2nDvvmCiauyxMCWrxZMVBbkxaUuP82SviaDv0wGw==
-  /@types/react/16.7.22:
+  /@types/react/16.8.14:
     dependencies:
       '@types/prop-types': 15.7.1
       csstype: 2.6.4
     dev: false
     resolution:
-      integrity: sha512-j/3tVoY09kHcTfbia4l67ofQn9xvktUvlC/4QN0KuBHAXlbU/wuGKMb8WfEb/vIcWxsOxHv559uYprkFDFfP8Q==
+      integrity: sha512-26tFVJ1omGmzIdFTFmnC5zhz1GTaqCjxgUxV4KzWvsybF42P7/j4RBn6UeO3KbHPXqKWZszMXMoI65xIWm954A==
   /@types/request-promise-native/1.0.15:
     dependencies:
       '@types/request': 2.48.1
@@ -14557,8 +14557,8 @@ packages:
       '@types/faker': 4.1.5
       '@types/lodash': 4.14.123
       '@types/mocha': 5.2.6
-      '@types/react': 16.7.22
-      '@types/react-dom': 16.0.11
+      '@types/react': 16.8.14
+      '@types/react-dom': 16.8.4
       '@types/sinon': 5.0.7
       '@types/sinon-chai': 3.2.2
       chai: 4.2.0
@@ -14667,8 +14667,8 @@ packages:
     dependencies:
       '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.14
       '@types/bunyan': 1.8.6
-      '@types/react': 16.7.22
-      '@types/react-dom': 16.0.11
+      '@types/react': 16.8.14
+      '@types/react-dom': 16.8.4
       autoprefixer: 8.6.5
       electron: 4.1.4
       electron-chromedriver: 2.0.0
@@ -14795,9 +14795,9 @@ packages:
       '@types/faker': 4.1.5
       '@types/lodash': 4.14.123
       '@types/mocha': 5.2.6
-      '@types/react': 16.7.22
+      '@types/react': 16.8.14
       '@types/react-data-grid': 4.0.2
-      '@types/react-dom': 16.0.11
+      '@types/react-dom': 16.8.4
       '@types/react-highlight-words': 0.11.1
       '@types/react-resize-detector': 3.1.1
       '@types/react-virtualized': 9.21.1
@@ -14863,8 +14863,8 @@ packages:
       '@types/enzyme': 3.9.1
       '@types/mocha': 5.2.6
       '@types/node': 10.14.1
-      '@types/react': 16.7.22
-      '@types/react-dom': 16.0.11
+      '@types/react': 16.8.14
+      '@types/react-dom': 16.8.4
       '@types/sinon': 5.0.7
       '@types/sinon-chai': 3.2.2
       chai: 4.2.0
@@ -14913,8 +14913,8 @@ packages:
       '@types/lodash': 4.14.123
       '@types/mocha': 5.2.6
       '@types/node': 10.14.1
-      '@types/react': 16.7.22
-      '@types/react-dom': 16.0.11
+      '@types/react': 16.8.14
+      '@types/react-dom': 16.8.4
       '@types/react-redux': 7.0.8
       '@types/rimraf': 2.0.2
       '@types/sinon': 5.0.7
@@ -14974,8 +14974,8 @@ packages:
       '@types/highlight.js': 9.12.3
       '@types/mocha': 5.2.6
       '@types/node': 10.14.1
-      '@types/react': 16.7.22
-      '@types/react-dom': 16.0.11
+      '@types/react': 16.8.14
+      '@types/react-dom': 16.8.4
       '@types/react-router-dom': 4.3.2
       '@types/sinon': 5.0.7
       chai: 4.2.0
@@ -15033,8 +15033,8 @@ packages:
       '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.14
       '@types/classnames': 2.2.7
       '@types/node': 10.14.1
-      '@types/react': 16.7.22
-      '@types/react-dom': 16.0.11
+      '@types/react': 16.8.14
+      '@types/react-dom': 16.8.4
       '@types/react-redux': 7.0.8
       '@types/semver': 5.5.0
       autoprefixer: 8.6.5
@@ -15079,8 +15079,8 @@ packages:
       '@types/glob': 5.0.36
       '@types/mocha': 5.2.6
       '@types/node': 10.14.1
-      '@types/react': 16.7.22
-      '@types/react-dom': 16.0.11
+      '@types/react': 16.8.14
+      '@types/react-dom': 16.8.4
       '@types/sinon': 5.0.7
       '@types/webdriverio': 4.13.3
       '@types/yargs': 12.0.12
@@ -15300,9 +15300,9 @@ specifiers:
   '@types/node': 10.14.1
   '@types/puppeteer': 1.3.0
   '@types/qs': ^6.5.0
-  '@types/react': 16.7.22
+  '@types/react': ^16.8.0
   '@types/react-data-grid': 4.0.2
-  '@types/react-dom': 16.0.11
+  '@types/react-dom': ^16.8.0
   '@types/react-highlight-words': ^0.11.1
   '@types/react-redux': ^7.0.1
   '@types/react-resize-detector': ^3.1.0
@@ -15426,21 +15426,21 @@ specifiers:
   raf: ^3.4.0
   raf-schd: ^4.0.0
   raw-loader: ^0.5.1
-  react: ^16.4.2
+  react: ^16.8.0
   react-compound-slider: ^1.2.0
   react-data-grid: 6.0.1
   react-dev-utils: ^6.0.0
   react-dnd: ^5.0.0
   react-dnd-html5-backend: ^5.0.1
   react-dnd-test-backend: ^5.0.1
-  react-dom: ^16.4.2
+  react-dom: ^16.8.0
   react-highlight-words: ^0.14.0
   react-markdown: ^3.2.1
   react-redux: ^5.0.7
   react-resize-detector: ^3.2.0
   react-router-dom: ^4.2.2
   react-split-pane: 0.1.77
-  react-test-renderer: ^16.4.2
+  react-test-renderer: ^16.8.0
   react-testing-library: ^5.8.0
   react-virtualized: ^9.21.0
   readline: ^1.3.0

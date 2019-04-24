@@ -93,7 +93,7 @@ const NestedToolGroupContained = withContainIn(withOnOutsideClick(NestedGroup, u
 // tslint:disable-next-line:variable-name
 const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
   <Button
-    type={ButtonType.Blue}
+    buttonType={ButtonType.Blue}
     {...props}
   />
 );
@@ -101,7 +101,7 @@ const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
 // tslint:disable-next-line:variable-name
 const HollowButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (
   <Button
-    type={ButtonType.Hollow}
+    buttonType={ButtonType.Hollow}
     {...props}
   />
 );
@@ -1622,7 +1622,7 @@ interface ToolZoneToolbarProps {
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public static readonly defaultProps = {
     // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
-    children: function(this: ToolZoneToolbarProps, items: React.ReactNode) {
+    children: function (this: ToolZoneToolbarProps, items: React.ReactNode) {
       return (
         <Toolbar
           expandsTo={this.expandsTo}

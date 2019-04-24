@@ -96,8 +96,8 @@
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
-    "@types/react": "16.7.22",
-    "@types/react-dom": "16.0.11",
+    "@types/react": "^16.8.0",
+    "@types/react-dom": "^16.8.0",
     "@types/react-redux": "^7.0.1",
     "@types/rimraf": "^2.0.2",
     "@types/sinon": "^5.0.5",
@@ -140,8 +140,8 @@
     "immutable": "^3.8.2",
     "lodash": "^4.17.10",
     "oidc-client": "^1.5.2",
-    "react": "^16.4.2",
-    "react-dom": "^16.4.2",
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0",
     "react-dnd": "^5.0.0",
     "react-dnd-html5-backend": "^5.0.1",
     "react-redux": "^5.0.7",
@@ -157,9 +157,9 @@
       "ts-node/register"
     ],
     "check-coverage": true,
-    "statements": 83,
-    "branches": 75,
-    "functions": 82,
-    "lines": 84
+    "statements": 85,
+    "branches": 78,
+    "functions": 83,
+    "lines": 86
   }
 }

@@ -12,7 +12,7 @@ The iModel.js UI library requires a JavaScript engine with es2017 support.
 
 ## React version requirements
 
-iModel.js UI is compatible with React 16.4 and later
+iModel.js UI is compatible with React 16.8 and later.
 
 ## Library Organization
 

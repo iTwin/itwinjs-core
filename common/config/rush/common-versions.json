@@ -1,6 +1,6 @@
 {
   "preferredVersions": {
-    "@types/react": "16.7.22",
+    "@types/react": "^16.8.0",
     "event-stream": "~4.0.1",
     "ssri": "^6.0.1",
     "typescript": "~3.2.2"

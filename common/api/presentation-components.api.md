@@ -222,9 +222,9 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<P & Props_5>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callBack?: (() => void) | undefined): void;
-        readonly props: Readonly<{
+        readonly props: Readonly<P & Props_5> & Readonly<{
             children?: React.ReactNode;
-        }> & Readonly<P & Props_5>;
+        }>;
         state: Readonly<{}>;
         refs: {
             [key: string]: React.ReactInstance;
@@ -242,9 +242,9 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<P & Props_5>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callBack?: (() => void) | undefined): void;
-        readonly props: Readonly<{
+        readonly props: Readonly<P & Props_5> & Readonly<{
             children?: React.ReactNode;
-        }> & Readonly<P & Props_5>;
+        }>;
         state: Readonly<{}>;
         refs: {
             [key: string]: React.ReactInstance;

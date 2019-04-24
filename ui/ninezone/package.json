@@ -75,8 +75,8 @@
     "@types/highlight.js": "^9.12.3",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
-    "@types/react": "16.7.22",
-    "@types/react-dom": "16.0.11",
+    "@types/react": "^16.8.0",
+    "@types/react-dom": "^16.8.0",
     "@types/react-router-dom": "^4.2.7",
     "@types/sinon": "^5.0.5",
     "chai": "^4.1.2",
@@ -127,8 +127,8 @@
   ],
   "dependencies": {
     "classnames": "^2.2.5",
-    "react": "^16.4.2",
-    "react-dom": "^16.4.2"
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",

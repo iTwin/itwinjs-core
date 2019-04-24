@@ -35,7 +35,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   /** Default and large sizes */
   size?: ButtonSize;
   /** 4 styles to tweak the content of the button */
-  type?: ButtonType;
+  buttonType?: ButtonType;
   /** A function to be run when the element is clicked */
   onClick?: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void);
 }
@@ -43,29 +43,32 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 /** Generic button component
  * @public
  */
+
 export class Button extends React.PureComponent<ButtonProps> {
   public render() {
-    let className = "";
+    const { buttonType, size, className, style, onClick, ...props } = this.props;
 
-    switch (this.props.type) {
+    let typeClassName = "";
+
+    switch (buttonType) {
       case ButtonType.Blue:
-        className = "uicore-buttons-blue";
+        typeClassName = "uicore-buttons-blue";
         break;
       case ButtonType.Disabled:
-        className = "uicore-buttons-disabled";
+        typeClassName = "uicore-buttons-disabled";
         break;
       case ButtonType.Hollow:
-        className = "uicore-buttons-hollow";
+        typeClassName = "uicore-buttons-hollow";
         break;
       case ButtonType.Primary:
       default:
-        className = "uicore-buttons-blue";
+        typeClassName = "uicore-buttons-blue";
         break;
     }
 
-    if (this.props.size === ButtonSize.Large)
-      className += "-large";
+    if (size === ButtonSize.Large)
+      typeClassName += "-large";
 
-    return <button {...this.props} className={classnames(className, this.props.className)} style={this.props.style} onClick={this.props.onClick} />;
+    return <button {...props} className={classnames(typeClassName, className)} style={style} onClick={onClick} />;
   }
 }
