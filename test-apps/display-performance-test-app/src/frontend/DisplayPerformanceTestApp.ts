@@ -14,6 +14,7 @@ import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection,
   OidcClientWrapper, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
+import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
@@ -642,6 +643,7 @@ function restartIModelApp(testConfig: DefaultConfigs) {
   if (!IModelApp.initialized) {
     IModelApp.tileAdmin = TileAdmin.create(curTileProps);
     DisplayPerfTestApp.startup(undefined, testConfig.renderOptions);
+    (IModelApp.renderSystem as System).techniques.compileShaders();
   }
 }
 
@@ -865,6 +867,7 @@ window.onload = () => {
   // ###TODO: Raman added one-time initialization logic IModelApp.startup which replaces a couple of RpcRequest-related functions.
   // Cheap hacky workaround until that's fixed.
   DisplayPerfTestApp.startup();
+  (IModelApp.renderSystem as System).techniques.compileShaders();
 
   main(); // tslint:disable-line:no-floating-promises
 };
