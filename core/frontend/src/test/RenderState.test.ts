@@ -47,7 +47,7 @@ describe("RenderState API", () => {
 
     b.depthFunc = GL.DepthFunc.NotEqual;
     assert.isFalse(a.equals(b), "expected different depthFunc to compare as !equal");
-    b.depthFunc = GL.DepthFunc.Less;
+    b.depthFunc = GL.DepthFunc.LessOrEqual;
     assert.isTrue(a.equals(b), "expected same depthFunc to compare as equal");
 
     // Test flags

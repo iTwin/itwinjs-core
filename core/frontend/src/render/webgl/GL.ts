@@ -117,7 +117,7 @@ export namespace GL {
     NotEqual = WebGLRenderingContext.NOTEQUAL,
     GreaterOrEqual = WebGLRenderingContext.GEQUAL,
     Always = WebGLRenderingContext.ALWAYS,
-    Default = Less,
+    Default = LessOrEqual,
   }
 
   export enum Capability {

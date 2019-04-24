@@ -1225,7 +1225,7 @@ class MPGeometry extends Geometry {
 // The chief use case is iOS.
 class MPCompositor extends Compositor {
   private _currentRenderTargetIndex: number = 0;
-  private _firstOfMultiPass: boolean = true;
+  private _drawMultiPassDepth: boolean = true;
   private readonly _opaqueRenderStateWithEqualDepthFunc = new RenderState();
   private readonly _opaqueRenderStateWithEqualDepthFuncNoZWt = new RenderState();
 
@@ -1244,7 +1244,7 @@ class MPCompositor extends Compositor {
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
-        return this._firstOfMultiPass ? this._opaqueRenderStateWithEqualDepthFunc : this._opaqueRenderStateWithEqualDepthFuncNoZWt;
+        return this._drawMultiPassDepth ? this._opaqueRenderStateWithEqualDepthFunc : this._opaqueRenderStateWithEqualDepthFuncNoZWt;
     }
 
     return super.getRenderState(pass);
@@ -1262,8 +1262,8 @@ class MPCompositor extends Compositor {
   protected clearOpaque(needComposite: boolean): void {
     const bg = this.target.bgColor;
     this.clearFbo(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, bg.red, bg.green, bg.blue, bg.alpha, true);
-    this.clearFbo(this._fbos.depthAndOrder!, 0, 0, 0, 0, true);
-    this.clearFbo(this._fbos.featureId!, 0, 0, 0, 0, true);
+    this.clearFbo(this._fbos.depthAndOrder!, 0, 0, 0, 0, false);
+    this.clearFbo(this._fbos.featureId!, 0, 0, 0, 0, false);
   }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {
@@ -1285,6 +1285,7 @@ class MPCompositor extends Compositor {
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
     if (!renderForReadPixels && !needAO) {
       System.instance.frameBufferStack.execute(colorFbo, true, () => {
+        this._drawMultiPassDepth = true;  // for OpaqueGeneral
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
@@ -1308,14 +1309,14 @@ class MPCompositor extends Compositor {
   // ###TODO: For readPixels(), could skip rendering color...also could skip rendering depth and/or element ID depending upon selector...
   private drawOpaquePass(colorFbo: FrameBuffer, commands: RenderCommands, pass: RenderPass, pingPong: boolean): void {
     const stack = System.instance.frameBufferStack;
-    this._firstOfMultiPass = true;
+    this._drawMultiPassDepth = true;
     if (!this.target.isReadPixelsInProgress) {
       stack.execute(colorFbo, true, () => this.drawPass(commands, pass, pingPong));
-      this._firstOfMultiPass = false;
+      this._drawMultiPassDepth = false;
     }
     this._currentRenderTargetIndex++;
-    stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, pingPong && this._firstOfMultiPass));
-    this._firstOfMultiPass = false;
+    stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth));
+    this._drawMultiPassDepth = false;
     this._currentRenderTargetIndex++;
     stack.execute(this._fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, false));
     this._currentRenderTargetIndex = 0;
