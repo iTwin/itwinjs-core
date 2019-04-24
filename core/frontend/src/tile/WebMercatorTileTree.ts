@@ -729,6 +729,19 @@ export class BackgroundMapState {
     // this.providerData = JsonUtils.asString(json.providerData, "aerial");
     this._groundBias = JsonUtils.asDouble(json.groundBias, 0.0);
     this.mapType = json.providerData ? JsonUtils.asInt(json.providerData.mapType, BackgroundMapType.Hybrid) : BackgroundMapType.Hybrid;
+
+    // JSON may specify MapType.None (0) which is not defined in enum and is not meaningful.
+    // (May also specify any other arbitrary meaningless integer value).
+    // If so, use default
+    switch (this.mapType) {
+      case BackgroundMapType.Street:
+      case BackgroundMapType.Aerial:
+      case BackgroundMapType.Hybrid:
+        break;
+      default:
+        this.mapType = BackgroundMapType.Hybrid;
+        break;
+    }
   }
 
   private testGcsConverter() {
