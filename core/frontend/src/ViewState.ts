@@ -104,22 +104,42 @@ export abstract class ViewState extends ElementState {
   private _extentLimits?: ExtentLimits;
   public description?: string;
   public isPrivate?: boolean;
+  /** Selects the categories that are display by this ViewState. */
+  public categorySelector: CategorySelectorState;
+  /** Selects the styling parameters for this this ViewState. */
+  public displayStyle: DisplayStyleState;
   /** Time this ViewState was saved in view undo. */
   public undoTime?: BeTimePoint;
   public static get className() { return "ViewDefinition"; }
 
   /** @internal */
-  protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, public categorySelector: CategorySelectorState, public displayStyle: DisplayStyleState) {
+  protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState) {
     super(props, iModel);
     this.description = props.description;
     this.isPrivate = props.isPrivate;
-    if (categorySelector instanceof ViewState) { // from clone, 3rd argument is source ViewState
-      this.categorySelector = categorySelector.categorySelector.clone();
-      this.displayStyle = categorySelector.displayStyle.clone();
-      this._extentLimits = categorySelector._extentLimits;
-      this._auxCoordSystem = categorySelector._auxCoordSystem;
-    }
+    this.displayStyle = displayStyle;
+    this.categorySelector = categoryOrClone;
+    if (!(categoryOrClone instanceof ViewState))  // is this from the clone method?
+      return; // not from clone
+
+    // from clone, 3rd argument is source ViewState
+    const source = categoryOrClone as ViewState;
+    this.categorySelector = source.categorySelector;
+    this.displayStyle = source.displayStyle;
+    this._extentLimits = source._extentLimits;
+    this._auxCoordSystem = source._auxCoordSystem;
   }
+
+  /** Make an independent copy of this ViewState.
+   * @note This will ONLY clone the contents of the ViewState - the clone will point to the same DisplayStyle, CategorySelector, ModelSelector, etc.
+   * If you *really* wish to clone those too, first clone the ViewState and then clone them individually, e.g.:
+   *  ```ts
+   * const view2 = view1.clone();
+   * view2.displayStyle = view2.displayStyle.clone();
+   * view2.categorySelector = view2.categorySelector.clone();
+   *  ```
+   */
+  public clone(iModel?: IModelConnection): this { return super.clone(iModel); } // this method exists only to supply documentation above.
 
   /** Create a new ViewState object from a set of properties. Generally this is called internally by [[IModelConnection.Views.load]] after the properties
    * have been read from an iModel. But, it can also be used to create a ViewState in memory, from scratch or from properties stored elsewhere.
@@ -148,15 +168,13 @@ export abstract class ViewState extends ElementState {
   public equals(other: this): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
 
   /** Determine whether this ViewState is equivalent to another for the purposes of display.
+   * @note this ONLY compares the contents of this ViewState - it does NOT compare DisplayStyle, CategorySelector, or ModelSelector
    * @see [[ViewState.equals]] for determining exact equality.
    */
   public equalState(other: ViewState): boolean {
     if (this.isPrivate !== other.isPrivate || this.name !== other.name || this.id !== other.id)
       return false;
-    else if (!this.categorySelector.equalState(other.categorySelector) || !this.displayStyle.equalState(other.displayStyle))
-      return false;
-    else
-      return JSON.stringify(this.getDetails()) === JSON.stringify(other.getDetails());
+    return JSON.stringify(this.getDetails()) === JSON.stringify(other.getDetails());
   }
 
   public toJSON(): ViewDefinitionProps {
@@ -910,14 +928,12 @@ export abstract class ViewState3d extends ViewState {
         this.lookAt(this.getEyePoint(), this.getTargetPoint(), this.getYVector(), this.extents, this.getFrontDistance(), this.getBackDistance());
     }
   }
-
   public toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this._cameraOn;
     val.origin = this.origin;
     val.extents = this.extents;
     val.angles = YawPitchRollAngles.createFromMatrix3d(this.rotation)!.toJSON();
-    assert(undefined !== val.angles, "rotMatrix is illegal");
     val.camera = this.camera;
     return val;
   }
@@ -1428,17 +1444,11 @@ export class SpatialViewState extends ViewState3d {
     super(props, iModel, arg3, displayStyle);
     this.modelSelector = modelSelector;
     if (arg3 instanceof SpatialViewState) { // from clone
-      this.modelSelector = arg3.modelSelector.clone();
+      this.modelSelector = arg3.modelSelector;
     }
   }
+
   public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
-
-  public equalState(other: SpatialViewState): boolean {
-    if (!super.equalState(other))
-      return false;
-
-    return this.modelSelector.equalState(other.modelSelector);
-  }
 
   public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }

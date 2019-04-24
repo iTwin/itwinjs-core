@@ -72,10 +72,6 @@ describe("Viewport", () => {
     assert.isFalse(vp.isUndoPossible, "no undo");
     assert.isFalse(vp.isCameraOn, "camera is off");
 
-    const saveView = vpView.clone();
-    assert.notEqual(saveView.modelSelector, vpView.modelSelector, "clone should copy modelSelector");
-    assert.notEqual(saveView.categorySelector, vpView.categorySelector, "clone should copy categorySelector");
-    assert.notEqual(saveView.displayStyle, vpView.displayStyle, "clone should copy displayStyle");
     const frustSave = vp.getFrustum();
 
     const vpView2 = spatialView.clone(imodel2);
@@ -270,7 +266,7 @@ class ViewportChangedHandler {
   }
 
   public static test(vp: Viewport, func: (mon: ViewportChangedHandler) => void): void {
-    using (new ViewportChangedHandler(vp), (mon) => func(mon));
+    using(new ViewportChangedHandler(vp), (mon) => func(mon));
   }
 
   public expect(flags: ChangeFlag, func: () => void): void {
@@ -423,17 +419,6 @@ describe("Viewport changed events", async () => {
       newFlags.constructions = !newFlags.constructions;
       mon.expect(ChangeFlag.DisplayStyle, () => vp.viewFlags = newFlags);
 
-      // Undo changes
-      vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.doUndo());
-      expect(vp.viewFlags.constructions).to.equal(!newFlags.constructions);
-      expect(vp.viewFlags.solarLight).to.equal(!newFlags.solarLight);
-
-      // Redo changes
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.doRedo());
-      expect(vp.viewFlags.constructions).to.equal(newFlags.constructions);
-      expect(vp.viewFlags.solarLight).to.equal(newFlags.solarLight);
-
       // No event if modify display style directly.
       mon.expect(ChangeFlag.None, () => {
         vp.displayStyle.backgroundColor = ColorDef.red;
@@ -457,10 +442,6 @@ describe("Viewport changed events", async () => {
       });
 
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.doUndo());
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.doUndo());
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.doRedo());
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.doRedo());
 
       // Override subcategories directly on display style => no event
       const ovr = SubCategoryOverride.fromJSON({ color: ColorDef.green });
@@ -485,13 +466,6 @@ describe("Viewport changed events", async () => {
       // Apply different override to same subcategory
       vp.saveViewUndo();
       mon.expect(ChangeFlag.DisplayStyle, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red })));
-
-      // Undo/redo detects net changes to subcategory overrides
-      vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.doUndo()); // red => green
-      mon.expect(ChangeFlag.ViewedModels, () => vp.doUndo()); // green => green
-      mon.expect(ChangeFlag.ViewedModels, () => vp.doRedo());
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.doRedo());
     });
   });
 
@@ -641,7 +615,7 @@ describe("Viewport changed events", async () => {
       mon.expect(ChangeFlag.None, () => vis.setOverride(idSet, new Set<string>(), PerModelCategoryVisibility.Override.Show));
       mon.expect(ChangeFlag.None, () => vis.setOverride(new Set<string>(), idSet, PerModelCategoryVisibility.Override.Show));
 
-      const idList = [ "0x1234567" ];
+      const idList = ["0x1234567"];
       mon.expect(ChangeFlag.None, () => vis.setOverride([], [], PerModelCategoryVisibility.Override.Show));
       mon.expect(ChangeFlag.None, () => vis.setOverride(idList, [], PerModelCategoryVisibility.Override.Show));
       mon.expect(ChangeFlag.None, () => vis.setOverride([], idList, PerModelCategoryVisibility.Override.Show));

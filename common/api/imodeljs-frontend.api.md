@@ -5260,8 +5260,6 @@ export class SpatialViewState extends ViewState3d {
     // (undocumented)
     equals(other: this): boolean;
     // (undocumented)
-    equalState(other: SpatialViewState): boolean;
-    // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
     // Warning: (ae-incompatible-release-tags) The symbol "forEachTileTreeModel" is marked as @public, but its signature references "TileTreeModelState" which is marked as @beta
     // 
@@ -7560,7 +7558,7 @@ export class ViewRedoTool extends ViewTool {
 // @public
 export abstract class ViewState extends ElementState {
     // @internal
-    protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categorySelector: CategorySelectorState, displayStyle: DisplayStyleState);
+    protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState);
     // @internal (undocumented)
     protected adjustAspectRatio(windowAspect: number): void;
     abstract allow3dManipulations(): boolean;
@@ -7570,10 +7568,10 @@ export abstract class ViewState extends ElementState {
     readonly auxiliaryCoordinateSystem: AuxCoordSystemState;
     readonly backgroundColor: ColorDef;
     calculateFrustum(result?: Frustum): Frustum | undefined;
-    // (undocumented)
     categorySelector: CategorySelectorState;
     // (undocumented)
     static readonly className: string;
+    clone(iModel?: IModelConnection): this;
     abstract computeFitRange(): Range3d;
     // @internal (undocumented)
     computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d): {
@@ -7594,7 +7592,6 @@ export abstract class ViewState extends ElementState {
     abstract readonly defaultExtentLimits: ExtentLimits;
     // (undocumented)
     description?: string;
-    // (undocumented)
     displayStyle: DisplayStyleState;
     // @internal (undocumented)
     drawGrid(context: DecorateContext): void;
