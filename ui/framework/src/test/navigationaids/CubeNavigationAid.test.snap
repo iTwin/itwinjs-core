@@ -12,43 +12,43 @@ exports[`CubeNavigationAid <CubeNavigationAid /> renders correctly 1`] = `
       className="nav-cube"
       faces={
         Object {
-          "1": <NavCubeFace
-            face={1}
-            hoverMap={Object {}}
-            label="cube.left"
-            onFaceCellClick={[Function]}
-            onFaceCellHoverChange={[Function]}
-          />,
-          "2": <NavCubeFace
-            face={2}
-            hoverMap={Object {}}
-            label="cube.right"
-            onFaceCellClick={[Function]}
-            onFaceCellHoverChange={[Function]}
-          />,
-          "3": <NavCubeFace
-            face={3}
+          "back": <NavCubeFace
+            face="back"
             hoverMap={Object {}}
             label="cube.back"
             onFaceCellClick={[Function]}
             onFaceCellHoverChange={[Function]}
           />,
-          "4": <NavCubeFace
-            face={4}
-            hoverMap={Object {}}
-            label="cube.front"
-            onFaceCellClick={[Function]}
-            onFaceCellHoverChange={[Function]}
-          />,
-          "5": <NavCubeFace
-            face={5}
+          "bottom": <NavCubeFace
+            face="bottom"
             hoverMap={Object {}}
             label="cube.bottom"
             onFaceCellClick={[Function]}
             onFaceCellHoverChange={[Function]}
           />,
-          "6": <NavCubeFace
-            face={6}
+          "front": <NavCubeFace
+            face="front"
+            hoverMap={Object {}}
+            label="cube.front"
+            onFaceCellClick={[Function]}
+            onFaceCellHoverChange={[Function]}
+          />,
+          "left": <NavCubeFace
+            face="left"
+            hoverMap={Object {}}
+            label="cube.left"
+            onFaceCellClick={[Function]}
+            onFaceCellHoverChange={[Function]}
+          />,
+          "right": <NavCubeFace
+            face="right"
+            hoverMap={Object {}}
+            label="cube.right"
+            onFaceCellClick={[Function]}
+            onFaceCellHoverChange={[Function]}
+          />,
+          "top": <NavCubeFace
+            face="top"
             hoverMap={Object {}}
             label="cube.top"
             onFaceCellClick={[Function]}
@@ -120,7 +120,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
   >
     <FaceCell
       center={false}
-      face={0}
+      face=""
       hoverMap={Object {}}
       key="-1"
       onFaceCellClick={[Function]}
@@ -135,7 +135,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
     />
     <FaceCell
       center={true}
-      face={0}
+      face=""
       hoverMap={Object {}}
       key="0"
       onFaceCellClick={[Function]}
@@ -150,7 +150,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
     />
     <FaceCell
       center={false}
-      face={0}
+      face=""
       hoverMap={Object {}}
       key="1"
       onFaceCellClick={[Function]}
@@ -170,7 +170,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
   >
     <FaceCell
       center={false}
-      face={0}
+      face=""
       hoverMap={Object {}}
       key="-1"
       onFaceCellClick={[Function]}
@@ -185,7 +185,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
     />
     <FaceCell
       center={true}
-      face={6}
+      face="top"
       hoverMap={Object {}}
       key="0"
       onFaceCellClick={[Function]}
@@ -202,7 +202,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
     </FaceCell>
     <FaceCell
       center={false}
-      face={0}
+      face=""
       hoverMap={Object {}}
       key="1"
       onFaceCellClick={[Function]}
@@ -222,7 +222,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
   >
     <FaceCell
       center={false}
-      face={0}
+      face=""
       hoverMap={Object {}}
       key="-1"
       onFaceCellClick={[Function]}
@@ -237,7 +237,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
     />
     <FaceCell
       center={true}
-      face={0}
+      face=""
       hoverMap={Object {}}
       key="0"
       onFaceCellClick={[Function]}
@@ -252,7 +252,7 @@ exports[`CubeNavigationAid <NavCubeFace /> renders correctly 1`] = `
     />
     <FaceCell
       center={false}
-      face={0}
+      face=""
       hoverMap={Object {}}
       key="1"
       onFaceCellClick={[Function]}

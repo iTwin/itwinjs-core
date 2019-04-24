@@ -5,7 +5,7 @@
 /** @module Viewport */
 
 import { IModelApp, Viewport, SelectedViewportChangedArgs, StandardViewId } from "@bentley/imodeljs-frontend";
-import { UiEvent } from "@bentley/ui-core";
+import { UiEvent, Face } from "@bentley/ui-core";
 import { Matrix3d, Point3d, Vector3d } from "@bentley/geometry-core";
 
 /** Arguments for [[DrawingViewportChangeEvent]]
@@ -27,6 +27,7 @@ export class DrawingViewportChangeEvent extends UiEvent<DrawingViewportChangeEve
  */
 export interface CubeRotationChangeEventArgs {
   rotMatrix: Matrix3d;
+  face: Face;
   animationTime?: number;
 }
 
@@ -102,6 +103,7 @@ export class ViewportComponentEvents {
       this._removeListener = IModelApp.viewManager.onSelectedViewportChanged.addListener(ViewportComponentEvents.handleSelectedViewportChanged);
   }
 
+  public static face = Face.None;
   public static readonly origin = Point3d.createZero();
   public static readonly extents = Vector3d.createZero();
   public static readonly rotationMatrix = Matrix3d.createIdentity();
@@ -117,9 +119,10 @@ export class ViewportComponentEvents {
       ViewportComponentEvents.setViewMatrix(args.current);
   }
 
-  public static setCubeMatrix(rotMatrix: Matrix3d, animationTime?: number): void {
+  public static setCubeMatrix(rotMatrix: Matrix3d, face = Face.None, animationTime?: number): void {
     this.rotationMatrix.setFrom(rotMatrix);
-    this.onCubeRotationChangeEvent.emit({ rotMatrix, animationTime });
+    this.face = face;
+    this.onCubeRotationChangeEvent.emit({ rotMatrix, animationTime, face });
   }
 
   public static setDrawingViewportState(origin: Point3d, rotation: Matrix3d, complete: boolean = false): void {

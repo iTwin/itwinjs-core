@@ -525,19 +525,19 @@ export interface ExpansionToggleProps extends CommonProps {
 // @beta
 export enum Face {
     // (undocumented)
-    Back = 3,
+    Back = "back",
     // (undocumented)
-    Bottom = 5,
+    Bottom = "bottom",
     // (undocumented)
-    Front = 4,
+    Front = "front",
     // (undocumented)
-    Left = 1,
+    Left = "left",
     // (undocumented)
-    None = 0,
+    None = "",
     // (undocumented)
-    Right = 2,
+    Right = "right",
     // (undocumented)
-    Top = 6
+    Top = "top"
 }
 
 // @internal

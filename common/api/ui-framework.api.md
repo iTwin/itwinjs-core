@@ -798,11 +798,11 @@ export enum CubeHover {
     None = 0
 }
 
-// Warning: (ae-forgotten-export) The symbol "CubeNavigationState" needs to be exported by the entry point ui-framework.d.ts
+// Warning: (ae-forgotten-export) The symbol "CubeNavigationAidState" needs to be exported by the entry point ui-framework.d.ts
+// Warning: (ae-incompatible-release-tags) The symbol "CubeNavigationAid" is marked as @public, but its signature references "CubeNavigationAidProps" which is marked as @internal
 // 
 // @public
-export class CubeNavigationAid extends React_2.Component<CommonProps, CubeNavigationState> {
-    constructor(props: CommonProps);
+export class CubeNavigationAid extends React_2.Component<CubeNavigationAidProps, CubeNavigationAidState> {
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -810,14 +810,26 @@ export class CubeNavigationAid extends React_2.Component<CommonProps, CubeNaviga
     // (undocumented)
     render(): React_2.ReactNode;
     // (undocumented)
-    readonly state: Readonly<CubeNavigationState>;
-    }
+    readonly state: Readonly<CubeNavigationAidState>;
+}
 
 // @public
 export class CubeNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
+}
+
+// @internal (undocumented)
+export interface CubeNavigationAidProps extends CommonProps {
+    // (undocumented)
+    animationTime?: number;
+    // (undocumented)
+    contentControlOverride?: ContentControl | undefined;
+    // (undocumented)
+    iModelConnection: IModelConnection;
+    // (undocumented)
+    onAnimationEnd?: () => void;
 }
 
 // @public
@@ -1005,6 +1017,8 @@ export interface DrawingNavigationAidState {
     startOrigin: Point3d;
     // (undocumented)
     startRotation: Matrix3d;
+    // (undocumented)
+    viewId: string;
 }
 
 // @internal (undocumented)
@@ -1031,6 +1045,8 @@ export interface DrawingNavigationCanvasProps {
     screenViewportOverride?: typeof ScreenViewport;
     // (undocumented)
     view: ViewState | undefined;
+    // (undocumented)
+    viewId?: string;
     // (undocumented)
     viewManagerOverride?: ViewManager;
     // (undocumented)
@@ -1113,13 +1129,13 @@ export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement>
     // (undocumented)
     center?: boolean;
     // (undocumented)
-    face?: Face;
+    face: Face;
     // (undocumented)
     hoverMap: {
         [key: string]: CubeHover;
     };
     // (undocumented)
-    onFaceCellClick: (vector: Vector3d, face?: Face) => void;
+    onFaceCellClick: (vector: Vector3d, face: Face) => void;
     // (undocumented)
     onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
     // (undocumented)
@@ -2171,7 +2187,7 @@ export interface NavCubeFaceProps extends React_2.AllHTMLAttributes<HTMLDivEleme
     // (undocumented)
     label: string;
     // (undocumented)
-    onFaceCellClick: (vector: Vector3d, face?: Face) => void;
+    onFaceCellClick: (vector: Vector3d, face: Face) => void;
     // (undocumented)
     onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
 }
