@@ -1060,6 +1060,9 @@ export function using<T extends IDisposable, TResult>(resources: T | T[], func: 
 // @public
 export function utf8ToString(utf8: Uint8Array): string | undefined;
 
+// @internal
+export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
+
 // @beta
 export const enum WSStatus {
     // (undocumented)
