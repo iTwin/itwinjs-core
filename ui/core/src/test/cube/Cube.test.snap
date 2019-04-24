@@ -3,11 +3,10 @@
 exports[`Cube <Cube /> renders correctly 1`] = `
 <div
   className="core-cube-css3d"
-  data-testid="core-cube"
 >
   <CubeFace
-    face="front"
-    key="front"
+    face={4}
+    key="4"
     rotMatrix={
       Array [
         Array [
@@ -29,8 +28,8 @@ exports[`Cube <Cube /> renders correctly 1`] = `
     }
   />
   <CubeFace
-    face="back"
-    key="back"
+    face={3}
+    key="3"
     rotMatrix={
       Array [
         Array [
@@ -52,8 +51,8 @@ exports[`Cube <Cube /> renders correctly 1`] = `
     }
   />
   <CubeFace
-    face="right"
-    key="right"
+    face={2}
+    key="2"
     rotMatrix={
       Array [
         Array [
@@ -75,8 +74,8 @@ exports[`Cube <Cube /> renders correctly 1`] = `
     }
   />
   <CubeFace
-    face="left"
-    key="left"
+    face={1}
+    key="1"
     rotMatrix={
       Array [
         Array [
@@ -98,8 +97,8 @@ exports[`Cube <Cube /> renders correctly 1`] = `
     }
   />
   <CubeFace
-    face="top"
-    key="top"
+    face={6}
+    key="6"
     rotMatrix={
       Array [
         Array [
@@ -121,8 +120,8 @@ exports[`Cube <Cube /> renders correctly 1`] = `
     }
   />
   <CubeFace
-    face="bottom"
-    key="bottom"
+    face={5}
+    key="5"
     rotMatrix={
       Array [
         Array [
@@ -149,11 +148,10 @@ exports[`Cube <Cube /> renders correctly 1`] = `
 exports[`Cube <Cube /> renders with faces correctly 1`] = `
 <div
   className="core-cube-css3d"
-  data-testid="core-cube"
 >
   <CubeFace
-    face="front"
-    key="front"
+    face={4}
+    key="4"
     rotMatrix={
       Array [
         Array [
@@ -179,8 +177,8 @@ exports[`Cube <Cube /> renders with faces correctly 1`] = `
     </div>
   </CubeFace>
   <CubeFace
-    face="back"
-    key="back"
+    face={3}
+    key="3"
     rotMatrix={
       Array [
         Array [
@@ -206,8 +204,8 @@ exports[`Cube <Cube /> renders with faces correctly 1`] = `
     </div>
   </CubeFace>
   <CubeFace
-    face="right"
-    key="right"
+    face={2}
+    key="2"
     rotMatrix={
       Array [
         Array [
@@ -233,8 +231,8 @@ exports[`Cube <Cube /> renders with faces correctly 1`] = `
     </div>
   </CubeFace>
   <CubeFace
-    face="left"
-    key="left"
+    face={1}
+    key="1"
     rotMatrix={
       Array [
         Array [
@@ -260,8 +258,8 @@ exports[`Cube <Cube /> renders with faces correctly 1`] = `
     </div>
   </CubeFace>
   <CubeFace
-    face="top"
-    key="top"
+    face={6}
+    key="6"
     rotMatrix={
       Array [
         Array [
@@ -287,8 +285,8 @@ exports[`Cube <Cube /> renders with faces correctly 1`] = `
     </div>
   </CubeFace>
   <CubeFace
-    face="bottom"
-    key="bottom"
+    face={5}
+    key="5"
     rotMatrix={
       Array [
         Array [
@@ -321,11 +319,10 @@ exports[`Cube <CubeFace /> correctly renders nothing when face is Face.None 1`] 
 exports[`Cube <CubeFace /> renders correctly 1`] = `
 <div
   className="face top"
-  data-testid="core-cube-face-top"
   style={
     Object {
-      "WebkitTransform": "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)",
-      "transform": "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)",
+      "WebkitTransform": "matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)",
+      "transform": "matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)",
     }
   }
 />

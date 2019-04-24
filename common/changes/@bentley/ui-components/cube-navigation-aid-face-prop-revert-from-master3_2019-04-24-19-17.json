@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Added face property to CubeRotationChangeEventArgs",
+      "comment": "Reverted CubeNavigationAid changes",
       "packageName": "@bentley/ui-components",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-components",
-  "email": "Simeon.McGraw@bentley.com"
+  "email": "dan.east@bentley.com"
 }

@@ -52,33 +52,65 @@ export class StandardRotationNavigationAid extends React.Component<CommonProps, 
 
   constructor(props: any) {
     super(props);
-    const list: RotationData[] = [
-      {
-        label: UiFramework.i18n.translate("UiFramework:rotations.top"),
-        iconClassName: "icon-cube-faces-top",
-      }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.bottom"),
-        iconClassName: "icon-cube-faces-bottom",
-      }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.left"),
-        iconClassName: "icon-cube-faces-left",
-      }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.right"),
-        iconClassName: "icon-cube-faces-right",
-      }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.front"),
-        iconClassName: "icon-cube-faces-front",
-      }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.rear"),
-        iconClassName: "icon-cube-faces-rear",
-      }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.isoLeft"),
-        iconClassName: "icon-cube-faces-iso-left",
-      }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.isoRight"),
-        iconClassName: "icon-cube-faces-iso-right",
-      },
-    ];
+    let list: RotationData[];
+
+    try {
+      list = [
+        {
+          label: UiFramework.i18n.translate("UiFramework:rotations.top"),
+          iconClassName: "icon-cube-faces-top",
+        }, {
+          label: UiFramework.i18n.translate("UiFramework:rotations.bottom"),
+          iconClassName: "icon-cube-faces-bottom",
+        }, {
+          label: UiFramework.i18n.translate("UiFramework:rotations.left"),
+          iconClassName: "icon-cube-faces-left",
+        }, {
+          label: UiFramework.i18n.translate("UiFramework:rotations.right"),
+          iconClassName: "icon-cube-faces-right",
+        }, {
+          label: UiFramework.i18n.translate("UiFramework:rotations.front"),
+          iconClassName: "icon-cube-faces-front",
+        }, {
+          label: UiFramework.i18n.translate("UiFramework:rotations.rear"),
+          iconClassName: "icon-cube-faces-rear",
+        }, {
+          label: UiFramework.i18n.translate("UiFramework:rotations.isoLeft"),
+          iconClassName: "icon-cube-faces-iso-left",
+        }, {
+          label: UiFramework.i18n.translate("UiFramework:rotations.isoRight"),
+          iconClassName: "icon-cube-faces-iso-right",
+        },
+      ];
+    } catch (e) {
+      list = [
+        {
+          label: "Top",
+          iconClassName: "icon-cube-faces-top",
+        }, {
+          label: "Bottom",
+          iconClassName: "icon-cube-faces-bottom",
+        }, {
+          label: "Left",
+          iconClassName: "icon-cube-faces-left",
+        }, {
+          label: "Right",
+          iconClassName: "icon-cube-faces-right",
+        }, {
+          label: "Front",
+          iconClassName: "icon-cube-faces-front",
+        }, {
+          label: "Rear",
+          iconClassName: "icon-cube-faces-rear",
+        }, {
+          label: "Iso Left",
+          iconClassName: "icon-cube-faces-iso-left",
+        }, {
+          label: "Iso Right",
+          iconClassName: "icon-cube-faces-iso-right",
+        },
+      ];
+    }
     this.state = {
       element: null,
       isExpanded: false,
