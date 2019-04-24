@@ -5,6 +5,7 @@
 
 import {
   JsonUtils,
+  Id64String,
 } from "@bentley/bentleyjs-core";
 import {
   ViewState,
@@ -13,6 +14,9 @@ import {
   SkyGradient,
   Environment,
   SkyBox,
+  DisplayStyle3dState,
+  DisplayStyle2dState,
+  DisplayStyleState,
 } from "@bentley/imodeljs-frontend";
 import {
   AmbientOcclusion,
@@ -24,11 +28,11 @@ import {
   SkyBoxProps,
 } from "@bentley/imodeljs-common";
 import { CheckBox, createCheckBox } from "./CheckBox";
-import { createComboBox } from "./ComboBox";
+import { createComboBox, ComboBox } from "./ComboBox";
 import { createSlider, Slider } from "./Slider";
 import { createButton } from "./Button";
 import { ToolBarDropDown } from "./ToolBar";
-import { createRadioBox, RadioBox } from "./RabioBox";
+import { createRadioBox, RadioBox } from "./RadioBox";
 import { createColorInput, ColorInput } from "./ColorInput";
 
 type UpdateAttribute = (view: ViewState) => void;
@@ -61,7 +65,15 @@ export class ViewAttributes {
   private _eeNadirColor?: ColorInput;
   private _eeSkyExponent?: Slider;
   private _eeGroundExponent?: Slider;
-  private _eeBackgroundInput?: ColorInput;
+  private _eeBackgroundColor?: ColorInput;
+
+  private _displayStylePickerDiv?: HTMLDivElement;
+  public set displayStylePickerInput(newComboBox: ComboBox) {
+    while (this._displayStylePickerDiv!.hasChildNodes())
+      this._displayStylePickerDiv!.removeChild(this._displayStylePickerDiv!.firstChild!);
+
+    this._displayStylePickerDiv!.appendChild(newComboBox.div);
+  }
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
@@ -71,6 +83,7 @@ export class ViewAttributes {
 
     this._removeMe = vp.onViewChanged.addListener((_vp) => this.update());
 
+    this.addDisplayStylePicker();
     this.addRenderMode();
     this._element.appendChild(document.createElement("hr"));
 
@@ -137,11 +150,16 @@ export class ViewAttributes {
     this._parent.removeChild(this._element);
   }
 
+  private addDisplayStylePicker(): void {
+    this._displayStylePickerDiv = document.createElement("div");
+    this._element.appendChild(this._displayStylePickerDiv);
+  }
+
   private addEnvironmentEditor() {
     const is3d = this._vp.view.is3d();
-    const view2d = this._vp.view;
 
-    this._eeBackgroundInput = createColorInput({
+    this._eeBackgroundColor = createColorInput({
+      parent: this._element,
       value: this._vp.view.backgroundColor.toHexString(),
       handler: (value) => {
         this._vp.view.displayStyle.backgroundColor = new ColorDef(value);
@@ -151,24 +169,32 @@ export class ViewAttributes {
       label: "Background Color",
       display: is3d ? "none" : "block",
     });
-    this._eeBackgroundInput.div.style.textAlign = "right";
+    this._eeBackgroundColor.div.style.textAlign = "right";
 
-    if (!is3d) {
-      this._element.appendChild(this._eeBackgroundInput.div);
-      return;
-    }
+    this._vp.onDisplayStyleChanged.addListener((vp) => {
+      this.updateEnvironmentEditorUI(vp.view);
+    });
+
+    let currentEnvironment: SkyGradient | undefined;
     const eeDiv = document.createElement("div");
-    const style = (view2d as ViewState3d).getDisplayStyle3d();
-    const currentEvnimorment = style.environment.sky as SkyGradient;
+    if (this._vp.view.is3d()) {
+      const env = this._vp.view.getDisplayStyle3d().environment.sky;
+
+      // Could be a SkySphere, SkyCube, etc...we currently only support editing a SkyGradient.
+      if (env instanceof SkyGradient)
+        currentEnvironment = env;
+    }
+
+    eeDiv.hidden = undefined !== currentEnvironment && !currentEnvironment.display;
 
     const showSkyboxControls = (enabled: boolean) => {
       eeDiv.hidden = !enabled;
-      this._eeBackgroundInput!.div.style.display = enabled ? "none" : "block";
+      this._eeBackgroundColor!.div.style.display = enabled ? "none" : "block";
     };
 
     this.addEnvAttribute(this._element, "Sky Box", "sky", showSkyboxControls);
 
-    this._element.appendChild(this._eeBackgroundInput.div);
+    this._element.appendChild(this._eeBackgroundColor.div);
 
     this._eeSkyboxType = createRadioBox({
       id: this._nextId,
@@ -180,18 +206,19 @@ export class ViewAttributes {
         this.updateEnvironment({ twoColor: value === "2colors" });
 
         // Hide elements not relevant to 2 colors
-        this._eeSkyColor!.div.hidden = value !== "4colors";
-        this._eeGroundColor!.div.hidden = value !== "4colors";
-        this._eeSkyExponent!.div.style.display = value !== "4colors" ? "none" : "block";
-        this._eeGroundExponent!.div.style.display = value !== "4colors" ? "none" : "block";
+        const twoColors = value !== "4colors";
+        this._eeSkyColor!.div.hidden = twoColors;
+        this._eeGroundColor!.div.hidden = twoColors;
+        this._eeSkyExponent!.div.style.display = twoColors ? "none" : "block";
+        this._eeGroundExponent!.div.style.display = twoColors ? "none" : "block";
       },
       parent: eeDiv,
-      defaultValue: currentEvnimorment.twoColor ? "2colors" : "4colors",
+      defaultValue: (undefined !== currentEnvironment && currentEnvironment.twoColor) ? "2colors" : "4colors",
     });
 
     this._eeZenithColor = createColorInput({
       handler: (value: string) => this.updateEnvironment({ zenithColor: new ColorDef(value) }),
-      value: currentEvnimorment.zenithColor.toHexString(),
+      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.zenithColor.toHexString(),
       label: "Zenith Color",
       parent: eeDiv,
     });
@@ -199,7 +226,7 @@ export class ViewAttributes {
 
     this._eeSkyColor = createColorInput({
       handler: (value: string) => this.updateEnvironment({ skyColor: new ColorDef(value) }),
-      value: currentEvnimorment.skyColor.toHexString(),
+      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.skyColor.toHexString(),
       label: "Sky Color",
       parent: eeDiv,
     });
@@ -207,7 +234,7 @@ export class ViewAttributes {
 
     this._eeGroundColor = createColorInput({
       handler: (value: string) => this.updateEnvironment({ groundColor: new ColorDef(value) }),
-      value: currentEvnimorment.groundColor.toHexString(),
+      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.groundColor.toHexString(),
       label: "Ground Color",
       parent: eeDiv,
     });
@@ -215,7 +242,7 @@ export class ViewAttributes {
 
     this._eeNadirColor = createColorInput({
       handler: (value: string) => this.updateEnvironment({ nadirColor: new ColorDef(value) }),
-      value: currentEvnimorment.nadirColor.toHexString(),
+      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.nadirColor.toHexString(),
       label: "Nadir Color",
       parent: eeDiv,
     });
@@ -228,7 +255,7 @@ export class ViewAttributes {
       min: "0.0",
       step: "0.25",
       max: "20.0",
-      value: currentEvnimorment.skyExponent.toString(),
+      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.skyExponent.toString(),
       handler: (slider) => this.updateEnvironment({ skyExponent: parseFloat(slider.value) }),
     });
     this._eeSkyExponent.div.style.textAlign = "right";
@@ -240,7 +267,7 @@ export class ViewAttributes {
       min: "0.0",
       step: "0.25",
       max: "20.0",
-      value: currentEvnimorment.groundExponent.toString(),
+      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.groundExponent.toString(),
       handler: (slider) => this.updateEnvironment({ groundExponent: parseFloat(slider.value) }),
     });
     this._eeGroundExponent.div.style.textAlign = "right";
@@ -270,7 +297,7 @@ export class ViewAttributes {
     buttonDiv.style.textAlign = "center";
     eeDiv.appendChild(buttonDiv);
 
-    showSkyboxControls(currentEvnimorment.display);
+    showSkyboxControls(undefined !== currentEnvironment && currentEnvironment.display);
     this._element.appendChild(eeDiv);
     this._updates.push((view) => {
       let skyboxEnabled = false;
@@ -307,7 +334,7 @@ export class ViewAttributes {
   }
 
   private updateEnvironmentEditorUI(view: ViewState): void {
-    this._eeBackgroundInput!.input.value = view.backgroundColor.toHexString();
+    this._eeBackgroundColor!.input.value = view.backgroundColor.toHexString();
     if (view.is2d())
       return;
 
@@ -732,6 +759,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
   private readonly _vp: Viewport;
   private readonly _parent: HTMLElement;
   private _attributes?: ViewAttributes;
+  private _displayStylePickerInput?: ComboBox;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     super();
@@ -740,9 +768,63 @@ export class ViewAttributesPanel extends ToolBarDropDown {
     this.open();
   }
 
+  public async populate(): Promise<void> {
+    if (undefined !== this._displayStylePickerInput)
+      this._displayStylePickerInput.select.disabled = true;
+
+    const view = this._vp.view;
+    const is3d = view.is3d();
+    const sqlName: string = is3d ? DisplayStyle3dState.sqlName : DisplayStyle2dState.sqlName;
+    const displayStyleProps = await this._vp.view.iModel.elements.queryProps({ from: sqlName, where: "IsPrivate=FALSE" });
+    const displayStyles = new Map<Id64String, DisplayStyleState>();
+    const styleEntries = [];
+    const promises: Array<Promise<void>> = [];
+    for (const displayStyleProp of displayStyleProps) {
+      styleEntries.push({ name: displayStyleProp.code.value!, value: displayStyleProp.id });
+      let displayStyle: DisplayStyleState;
+      if (is3d)
+        displayStyle = new DisplayStyle3dState(displayStyleProp, view.iModel);
+      else
+        displayStyle = new DisplayStyle2dState(displayStyleProp, view.iModel);
+
+      // ###TODO: Is there such a concept as "2d reality models"???
+      promises.push(displayStyle.loadContextRealityModels());
+      displayStyles.set(displayStyleProp.id!, displayStyle);
+    }
+
+    await Promise.all(promises);
+
+    this._displayStylePickerInput = createComboBox({
+      name: "Style: ",
+      id: "DisplayStyles",
+      value: this._vp.view.displayStyle.id,
+      handler: (select) => {
+        this._vp.displayStyle = displayStyles.get(select.value)!;
+        this._vp.invalidateScene();
+      },
+      entries: styleEntries,
+    });
+
+    this._displayStylePickerInput.select.disabled = false;
+    if (undefined !== this._attributes)
+      this._attributes.displayStylePickerInput = this._displayStylePickerInput;
+  }
+  public get onViewChanged(): Promise<void> {
+    return this.populate();
+  }
+
   public get isOpen() { return undefined !== this._attributes; }
   protected _open(): void {
     this._attributes = new ViewAttributes(this._vp, this._parent);
+    const loadingComboBox = createComboBox({
+      name: "Style: ",
+      id: "DisplayStyles",
+      entries: [{name: "Now Loading...", value: undefined}],
+    });
+    if (undefined === this._displayStylePickerInput)
+      this._attributes.displayStylePickerInput = loadingComboBox;
+    else
+      this._attributes.displayStylePickerInput = this._displayStylePickerInput;
   }
 
   protected _close(): void {

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { BeDuration, Id64, Id64String, using } from "@bentley/bentleyjs-core";
+import { BeDuration, Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs-core";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import {
   Cartographic,
@@ -722,29 +722,44 @@ describe("Viewport changed events", async () => {
     expect(vp.view.viewsCategory(id64(0x1a))).to.be.false;
     expect(vp.view.viewsCategory(id64(0x1c))).to.be.false;
 
+    const waitForSubCats = async (catIds: Id64Arg): Promise<void> => {
+      Id64.forEach(catIds, (catId) => expect(subcats.getSubCategories(catId)).to.be.undefined);
+
+      // We used to wait half a second (no loop). That was sometimes apparently not long enough for the Linux CI job.
+      // Waiting for some async operation to happen in background within a limited amount of time is not great, but that is the
+      // behavior we are trying to test...
+      // Wait up to 4 seconds. Loop prevents tests from taking longer than necessary if response is speedy.
+      for (let i = 1; i < 16; i++) {
+        await BeDuration.wait(250);
+        let numLoaded = 0;
+        Id64.forEach(catIds, (catId) => {
+          if (subcats.getSubCategories(catId) !== undefined)
+            ++numLoaded;
+        });
+
+        if (0 !== numLoaded) {
+          // If one category was loaded, they all should have been.
+          expect(numLoaded).to.equal(Id64.sizeOf(catIds));
+          break;
+        }
+      }
+
+      Id64.forEach(catIds, (catId) => expect(subcats.getSubCategories(catId)).not.to.be.undefined);
+    };
+
     // Turning on another category for the first time causes subcategories to be asynchronously loaded if not in cache
     vp.changeCategoryDisplay(id64(0x01), true);
-    expect(subcats.getSubCategories(id64(0x01))).to.be.undefined; // asynchronous...not loaded yet
-    await BeDuration.wait(500);
-    expect(subcats.getSubCategories(id64(0x01))).not.to.be.undefined; // now loaded
+    await waitForSubCats(id64(0x01));
 
     // If we turn on 2 more categories at once, subcategories for both should be loaded asynchronously
     vp.changeCategoryDisplay([id64(0x03), id64(0x05)], true);
-    expect(subcats.getSubCategories(id64(0x05))).to.be.undefined;
-    expect(subcats.getSubCategories(id64(0x03))).to.be.undefined;
-    await BeDuration.wait(500);
-    expect(subcats.getSubCategories(id64(0x05))).not.to.be.undefined;
-    expect(subcats.getSubCategories(id64(0x03))).not.to.be.undefined;
+    await waitForSubCats([id64(0x03), id64(0x05)]);
 
     // If we turn on 2 more categories in succession, subcategories for both should be loaded asynchronously.
     // The loading of the first category's subcategories should not be interrupted by loading of second category's subcategories.
     vp.changeCategoryDisplay(id64(0x1a), true);
     vp.changeCategoryDisplay(id64(0x1c), true);
-    expect(subcats.getSubCategories(id64(0x1c))).to.be.undefined;
-    expect(subcats.getSubCategories(id64(0x1a))).to.be.undefined;
-    await BeDuration.wait(500);
-    expect(subcats.getSubCategories(id64(0x1c))).not.to.be.undefined;
-    expect(subcats.getSubCategories(id64(0x1a))).not.to.be.undefined;
+    await waitForSubCats([id64(0x1c), id64(0x1a)]);
   });
 });
 

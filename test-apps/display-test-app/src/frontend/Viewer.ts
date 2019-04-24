@@ -109,9 +109,6 @@ class DebugTools extends ToolBarDropDown {
       MarkupApp.props.result.maxWidth = 1500;
       const markupData = await MarkupApp.stop();
       // tslint:disable:no-console
-      console.log("rect: " + JSON.stringify(markupData.rect));
-      console.log("svg : " + markupData.svg);
-      console.log("size of image: " + markupData.image!.length);
       window.open(markupData.image, "Markup");
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
@@ -220,7 +217,11 @@ export class Viewer {
 
     this.toolBar.addDropDown({
       className: "bim-icon-settings",
-      createDropDown: async (container: HTMLElement) => Promise.resolve(new ViewAttributesPanel(this.viewport, container)),
+      createDropDown: async (container: HTMLElement) => {
+        const picker = new ViewAttributesPanel(this.viewport, container);
+        await picker.populate();
+        return picker;
+      },
     });
 
     this.toolBar.addItem(createImageButton({
