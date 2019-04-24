@@ -45,6 +45,7 @@ export * from "./ui-components/editors/EnumButtonGroupEditor";
 export * from "./ui-components/editors/BooleanEditor";
 export * from "./ui-components/editors/ToggleEditor";
 export * from "./ui-components/editors/ColorEditor";
+export * from "./ui-components/editors/WeightEditor";
 
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
@@ -150,6 +151,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Filtering
  * Classes for working with filtering.
+ */
+/**
+ * @docs-group-description LineWeight
+ * Classes for working with and picking a Line Weight.
  */
 /**
  * @docs-group-description OIDC

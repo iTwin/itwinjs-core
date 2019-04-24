@@ -140,6 +140,7 @@
         "Lock": "Lock",
         "City": "City",
         "Color": "Color",
+        "Weight": "Weight",
         "State": "State",
         "Coordinate": "Coordinate",
         "Length": "Length"

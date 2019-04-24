@@ -35,6 +35,7 @@
 - [Color]($components:Color)
 - [DragDrop]($components:DragDrop)
 - [Filtering]($components:Filtering)
+- [LineWeight]($components:LineWeight)
 - [OIDC]($components:OIDC)
 - [Properties]($components:Properties)
 - [PropertyEditors]($components:PropertyEditors)

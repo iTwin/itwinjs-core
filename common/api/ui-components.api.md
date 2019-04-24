@@ -2619,6 +2619,27 @@ export interface ViewRotationChangeEventArgs {
     viewport: Viewport;
 }
 
+// Warning: (ae-forgotten-export) The symbol "WeightEditorState" needs to be exported by the entry point ui-components.d.ts
+// 
+// @beta
+export class WeightEditor extends React.PureComponent<PropertyEditorProps, WeightEditorState> implements TypeEditor {
+    constructor(props: PropertyEditorProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    getValue(): number;
+    // (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: Readonly<WeightEditorState>;
+}
+
 // Warning: (ae-forgotten-export) The symbol "WeightPickerState" needs to be exported by the entry point ui-components.d.ts
 // 
 // @beta
@@ -2643,6 +2664,12 @@ export interface WeightPickerProps extends React.ButtonHTMLAttributes<HTMLButton
     onLineWeightPick?: ((weight: number) => void) | undefined;
     readonly?: boolean;
     weights: number[];
+}
+
+// @beta
+export class WeightPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    readonly reactElement: React.ReactNode;
 }
 
 // @beta

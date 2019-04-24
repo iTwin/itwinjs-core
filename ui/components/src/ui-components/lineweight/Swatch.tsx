@@ -81,7 +81,7 @@ export const LineWeightSwatch: React.FunctionComponent<LineWeightSwatchProps> = 
 
   return (
     <button {...otherProps} style={buttonStyle} className={classes} onClick={handleClick} ref={ref} disabled={disabled}>
-      <span>{weight.toFixed(0)}</span>
+      {!hideLabel && <span>{weight.toFixed(0)}</span>}
       <div style={svgStyle} />
     </button>
   );

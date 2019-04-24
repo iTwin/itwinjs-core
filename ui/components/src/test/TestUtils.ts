@@ -207,6 +207,29 @@ export class TestUtils {
     propertyRecord.isReadonly = false;
     return propertyRecord;
   }
+
+  public static createWeightProperty(propertyName: string, weight: number) {
+
+    const value: PrimitiveValue = {
+      displayValue: "",
+      value: weight,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      name: propertyName,
+      displayLabel: propertyName,
+      typename: "number",
+      editor: {
+        name: "weight-picker",
+      },
+    };
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+    return propertyRecord;
+  }
+
 }
 
 export default TestUtils;   // tslint:disable-line: no-default-export

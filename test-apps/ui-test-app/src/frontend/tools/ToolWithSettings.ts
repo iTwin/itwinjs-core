@@ -106,6 +106,29 @@ export class ToolWithSettings extends PrimitiveTool {
     this._optionsValue.value = value.tbgr;
   }
 
+  // ------------- Weight ---------------
+  private static _weightName = "weight";
+  private static _getWeightDescription = (): PropertyDescription => {
+    return {
+      name: ToolWithSettings._weightName,
+      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Weight"),
+      typename: "number",
+      editor: {
+        name: "weight-picker",
+      },
+    };
+  }
+
+  private _weightValue = new ToolSettingsValue(3);
+
+  public get weight(): number {
+    return this._weightValue.value as number;
+  }
+
+  public set weight(value: number) {
+    this._weightValue.value = value;
+  }
+
   // ------------- boolean based toggle button ---------------
   private static _lockToggleName = "lockToggle";
   private static _getLockToggleDescription = (): PropertyDescription => {
@@ -293,6 +316,7 @@ export class ToolWithSettings extends PrimitiveTool {
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
     toolSettings.push(new ToolSettingsPropertyRecord(this._optionsValue.clone() as PrimitiveValue, ToolWithSettings._getEnumAsPicklistDescription(), { rowPriority: 0, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._colorValue.clone() as PrimitiveValue, ToolWithSettings._getColorDescription(), { rowPriority: 2, columnIndex: 2 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._weightValue.clone() as PrimitiveValue, ToolWithSettings._getWeightDescription(), { rowPriority: 3, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._lockValue.clone() as PrimitiveValue, ToolWithSettings._getLockToggleDescription(), { rowPriority: 5, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._cityValue.clone() as PrimitiveValue, ToolWithSettings._getCityDescription(), { rowPriority: 10, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._stateValue.clone() as PrimitiveValue, ToolWithSettings._getStateDescription(), { rowPriority: 10, columnIndex: 4 }));
@@ -344,6 +368,9 @@ export class ToolWithSettings extends PrimitiveTool {
     } else if (updatedValue.propertyName === ToolWithSettings._colorName) {
       this.colorValue = updatedValue.value.value as number;
       this.showColorInfoFromUi(updatedValue);
+    } else if (updatedValue.propertyName === ToolWithSettings._weightName) {
+      this.weight = updatedValue.value.value as number;
+      this.showInfoFromUi(updatedValue);
     }
 
     // return true is change is valid

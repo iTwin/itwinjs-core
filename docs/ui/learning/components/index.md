@@ -9,6 +9,7 @@ Topics:
 * [Common](./Common.md)
 * [Drag & Drop](./DragDrop.md)
 * [Filtering](./Filtering.md)
+* [Line Weight](./LineWeight.md)
 * [OIDC](./OIDC.md)
 * [Properties](./Properties.md)
 * [Property Editors](./PropertyEditors.md)

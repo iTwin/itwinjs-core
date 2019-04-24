@@ -1,0 +1,16 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+$components-color-editor-item-height: 100%;
+
+.components-weight-editor {
+  font-family: $uicore-font-family;
+  font-size: $uicore-font-size;
+  color: $buic-foreground-body;
+  border: none;
+  box-sizing: border-box;
+  height: $components-color-editor-item-height;
+}
