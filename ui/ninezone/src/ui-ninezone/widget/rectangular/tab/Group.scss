@@ -6,10 +6,6 @@
 @import "../../_variables";
 
 .nz-widget-rectangular-tab-group {
-  @mixin nz-handle-gradient($direction) {
-    background: linear-gradient($direction, $buic-background-5, $buic-background-4);
-  }
-
   $border-radius: 2px;
   $offset: $nz-tab-width - 2;
   $width: 10px;
@@ -31,7 +27,7 @@
       border-bottom-right-radius: $border-radius;
       left: $offset;
 
-      @include nz-handle-gradient(to right);
+      background: linear-gradient(to right, $buic-background-5, $buic-background-4);
     }
   }
 
@@ -41,7 +37,7 @@
       border-bottom-left-radius: $border-radius;
       right: $offset;
 
-      @include nz-handle-gradient(to left);
+      background: linear-gradient(to left, $buic-background-5, $buic-background-4);
     }
   }
 

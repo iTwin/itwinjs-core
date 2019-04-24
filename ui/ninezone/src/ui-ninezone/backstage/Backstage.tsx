@@ -32,7 +32,7 @@ export interface BackstageProps extends CommonProps {
  */
 export type BackstageDefaultProps = Pick<BackstageProps, "showOverlay">;
 
-/** Backstage component of 9-zone UI app.
+/** Backstage component of 9-Zone UI app.
  * @beta
  */
 export class Backstage extends React.PureComponent<BackstageProps> {

@@ -1636,6 +1636,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
 // @alpha
 export interface StackedProps extends CommonProps, NoChildrenProps {
     content?: React.ReactNode;
+    contentRef?: React.Ref<HTMLDivElement>;
     fillZone?: boolean;
     horizontalAnchor: HorizontalAnchor;
     isDragged?: boolean;
@@ -2185,8 +2186,10 @@ export class Widget {
 // @alpha
 export class WidgetContent extends React.PureComponent<WidgetContentProps> {
     // (undocumented)
+    componentDidUpdate(): void;
+    // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @alpha
 export interface WidgetContentProps extends CommonProps, NoChildrenProps {

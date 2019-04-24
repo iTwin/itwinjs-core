@@ -25,6 +25,17 @@ export interface WidgetContentProps extends CommonProps, NoChildrenProps {
  * @alpha
  */
 export class WidgetContent extends React.PureComponent<WidgetContentProps> {
+  private _content = React.createRef<HTMLDivElement>();
+  private _scrollTop = 0;
+  private _scrollLeft = 0;
+
+  public componentDidUpdate() {
+    if (!this._content.current)
+      return;
+    this._content.current.scrollTop = this._scrollTop;
+    this._content.current.scrollLeft = this._scrollLeft;
+  }
+
   public render() {
     const className = classnames(
       "nz-widget-rectangular-content",
@@ -34,6 +45,8 @@ export class WidgetContent extends React.PureComponent<WidgetContentProps> {
     return (
       <div
         className={className}
+        ref={this._content}
+        onScroll={this._handleScroll}
         style={this.props.style}
       >
         <div className="nz-container">
@@ -41,5 +54,12 @@ export class WidgetContent extends React.PureComponent<WidgetContentProps> {
         </div>
       </div>
     );
+  }
+
+  private _handleScroll = () => {
+    if (!this._content.current)
+      return;
+    this._scrollTop = this._content.current.scrollTop;
+    this._scrollLeft = this._content.current.scrollLeft;
   }
 }

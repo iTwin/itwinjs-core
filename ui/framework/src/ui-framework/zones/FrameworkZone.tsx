@@ -22,6 +22,7 @@ import { CommonProps } from "@bentley/ui-core";
  * @internal
  */
 export interface FrameworkZoneProps extends CommonProps {
+  contentRef: React.RefObject<HTMLDivElement>;
   horizontalAnchor: HorizontalAnchor;
   verticalAnchor: VerticalAnchor;
   zoneProps: ZonePropsBase;
@@ -82,12 +83,15 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   }
 
   public render(): React.ReactNode {
+    const zIndexStyle: React.CSSProperties | undefined = this.props.zoneProps.floating ?
+      { zIndex: this.props.zoneProps.floating.stackId, position: "relative" } : undefined;
     return (
-      <>
+      <span style={zIndexStyle}>
         <NZ_Zone
+          bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}
           className={this.props.className}
           style={this.props.style}
-          bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}>
+        >
           {this._getWidget()}
         </NZ_Zone>
         <NZ_Zone bounds={this.props.zoneProps.bounds}>
@@ -102,7 +106,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
             <GhostOutline bounds={this.props.targetedBounds} />
           )
         }
-      </>
+      </span>
     );
   }
 
@@ -193,16 +197,12 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
       });
     });
 
-    let content: React.ReactNode;
-    if (widgetDefToActivate) {
-      content = widgetDefToActivate.reactElement;
-    }
-
     if (widgets.length === 0)
       return null;
 
     return (
       <StackedWidget
+        contentRef={this.props.contentRef}
         fillZone={this.props.fillZone || this.props.zoneProps.isLayoutChanged}
         horizontalAnchor={this.props.horizontalAnchor}
         isDragged={this.props.isDragged}
@@ -213,9 +213,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
         widgets={widgets}
         widgetChangeHandler={this.props.widgetChangeHandler}
         zoneId={this.props.zoneProps.id}
-      >
-        {content}
-      </StackedWidget>
+      />
     );
   }
 }

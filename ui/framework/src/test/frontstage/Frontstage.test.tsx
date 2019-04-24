@@ -15,13 +15,18 @@ import {
   FrontstageComposer,
   CoreTools,
 } from "../../ui-framework";
-import { TestFrontstage } from "./FrontstageTestUtils";
+import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
 
 describe("Frontstage", () => {
+  let widgetElementComponentDidMountSpy: sinon.SinonSpy | undefined;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
     FrontstageManager.clearFrontstageDefs();
+  });
+
+  beforeEach(() => {
+    widgetElementComponentDidMountSpy && widgetElementComponentDidMountSpy.restore();
   });
 
   it("should render", () => {
@@ -79,6 +84,100 @@ describe("Frontstage", () => {
 
       wrapper.unmount();
     }, 500);
+  });
+
+  it("should change DOM parent of widget content", async () => {
+    const wrapper = mount(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const widget = FrontstageManager.findWidget("widget3");
+    const saveTransientStateSpy = sinon.spy(widget!.widgetControl!, "saveTransientState");
+    const restoreTransientStateSpy = sinon.spy(widget!.widgetControl!, "restoreTransientState");
+
+    const nineZoneProps = FrontstageManager.NineZoneStateManager.mergeZone(4, 7, wrapper.state("nineZoneProps"));
+    wrapper.setState({ nineZoneProps });
+    wrapper.update();
+
+    expect(saveTransientStateSpy.calledOnce).true;
+    expect(restoreTransientStateSpy.calledOnce).true;
+  });
+
+  it("should remount widget if widget control is not provided", async () => {
+    const wrapper = mount(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
+    const widgetElement = contentRenderer.find(TestWidgetElement);
+    const widget = FrontstageManager.findWidget("widget3");
+    sinon.stub(widget!, "widgetControl").get(() => undefined);
+    const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
+    widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
+
+    expect(contentRenderer.state().widgetKey).eq(0);
+
+    const nineZoneProps = FrontstageManager.NineZoneStateManager.mergeZone(4, 7, wrapper.state("nineZoneProps"));
+    wrapper.setState({ nineZoneProps });
+    wrapper.update();
+
+    expect(contentRenderer.state().widgetKey).eq(1);
+    expect(componentWillUnmountSpy.calledOnce).true;
+    expect(widgetElementComponentDidMountSpy.calledOnce).true;
+  });
+
+  it("should remount widget if widget control did not handle state restoration", async () => {
+    const wrapper = mount(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
+    const widgetElement = contentRenderer.find(TestWidgetElement);
+    const widget = FrontstageManager.findWidget("widget3");
+    sinon.stub(widget!.widgetControl!, "restoreTransientState").returns(false);
+    const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
+    widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
+
+    expect(contentRenderer.state().widgetKey).eq(0);
+
+    const nineZoneProps = FrontstageManager.NineZoneStateManager.mergeZone(4, 7, wrapper.state("nineZoneProps"));
+    wrapper.setState({ nineZoneProps });
+    wrapper.update();
+
+    expect(contentRenderer.state().widgetKey).eq(1);
+    expect(componentWillUnmountSpy.calledOnce).true;
+    expect(widgetElementComponentDidMountSpy.calledOnce).true;
+  });
+
+  it("should not remount widget if widget control handled state restoration", async () => {
+    const wrapper = mount(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
+    const widgetElement = contentRenderer.find(TestWidgetElement);
+    const widget = FrontstageManager.findWidget("widget3");
+    sinon.stub(widget!.widgetControl!, "restoreTransientState").returns(true);
+    const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
+    widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
+
+    expect(contentRenderer.state().widgetKey).eq(0);
+
+    const nineZoneProps = FrontstageManager.NineZoneStateManager.mergeZone(4, 7, wrapper.state("nineZoneProps"));
+    wrapper.setState({ nineZoneProps });
+    wrapper.update();
+
+    expect(contentRenderer.state().widgetKey).eq(0);
+    expect(componentWillUnmountSpy.calledOnce).false;
+    expect(widgetElementComponentDidMountSpy.calledOnce).false;
   });
 
 });

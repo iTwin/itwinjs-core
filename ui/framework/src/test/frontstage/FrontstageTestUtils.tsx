@@ -34,7 +34,19 @@ export class TestWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <div />;
+    this.reactElement = <TestWidgetElement />;
+  }
+}
+
+export class TestWidgetElement extends React.Component {
+  public componentDidMount() {
+  }
+
+  public componentWillUnmount() {
+  }
+
+  public render() {
+    return <div />;
   }
 }
 
@@ -83,10 +95,24 @@ export class TestFrontstage extends FrontstageProvider {
             ]}
           />
         }
+        centerLeft={
+          <Zone defaultState={ZoneState.Open} allowsMerging={true}
+            widgets={[
+              <Widget id="widget3" defaultState={WidgetState.Open} control={TestWidget} />,
+            ]}
+          />
+        }
         centerRight={
           <Zone defaultState={ZoneState.Open}
             widgets={[
               <Widget id="widget1" defaultState={WidgetState.Open} element={<div />} />,
+            ]}
+          />
+        }
+        bottomLeft={
+          <Zone defaultState={ZoneState.Open} allowsMerging={true}
+            widgets={[
+              <Widget id="widget4" defaultState={WidgetState.Open} control={TestWidget} />,
             ]}
           />
         }

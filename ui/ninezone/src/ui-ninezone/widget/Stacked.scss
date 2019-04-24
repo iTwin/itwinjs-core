@@ -28,6 +28,8 @@
     width: 100%;
     position: absolute;
     top: -$grip-offset;
+
+    @include uicore-z-index(zones);
   }
 
   > .nz-content-container {
@@ -56,6 +58,8 @@
       width: 100%;
       position: absolute;
       bottom: -$grip-offset;
+
+      @include uicore-z-index(zones);
     }
 
     > .nz-content-grip {
@@ -63,6 +67,8 @@
       height: 100%;
       position: absolute;
       top: 0;
+
+      @include uicore-z-index(zones);
     }
   }
 
@@ -78,6 +84,8 @@
       > .nz-tabs-grip {
         position: absolute;
         height: 100%;
+
+        @include uicore-z-index(zones);
       }
     }
   }

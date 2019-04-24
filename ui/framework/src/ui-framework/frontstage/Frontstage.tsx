@@ -5,7 +5,9 @@
 /** @module Frontstage */
 
 import * as React from "react";
-
+import * as ReactDOM from "react-dom";
+import { CommonProps } from "@bentley/ui-core";
+import { Zones as NZ_Zones, NineZone, WidgetZoneIndex, WidgetZone } from "@bentley/ui-ninezone";
 import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
 import { FrontstageRuntimeProps } from "./FrontstageComposer";
@@ -13,11 +15,10 @@ import { FrontstageDef } from "./FrontstageDef";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { ZoneDef } from "../zones/ZoneDef";
 import { Zone, ZoneProps, ZoneRuntimeProps, ZoneLocation } from "../zones/Zone";
-import { Zones as NZ_Zones, NineZone, WidgetZoneIndex, WidgetZone } from "@bentley/ui-ninezone";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { StagePanelProps, StagePanel, StagePanelLocation, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
-import { CommonProps } from "@bentley/ui-core";
+import { WidgetDef } from "../widgets/WidgetDef";
 
 /** Properties for a [[Frontstage]] component.
  * @public
@@ -81,6 +82,7 @@ interface FrontstageState {
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
+  private _contentRefs = new Map<WidgetZoneIndex, React.RefObject<HTMLDivElement>>();
 
   /** @internal */
   constructor(props: FrontstageProps) {
@@ -251,6 +253,15 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     return panelElement;
   }
 
+  private getContentRef(widget: WidgetZoneIndex) {
+    const ref = this._contentRefs.get(widget);
+    if (ref)
+      return ref;
+    const newRef = React.createRef<HTMLDivElement>();
+    this._contentRefs.set(widget, newRef);
+    return newRef;
+  }
+
   // This uses ConfigurableUi to render the content
   private doContentLayoutRender(): any {
     // istanbul ignore else
@@ -305,6 +316,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const ghostOutline = zone.getGhostOutlineBounds();
       const dropTarget = zone.getDropTarget();
       const zoneRuntimeProps: ZoneRuntimeProps = {
+        contentRef: this.getContentRef(zone.props.id),
         zoneDef,
         zoneProps: runtimeProps.nineZoneProps.zones[zoneId],
         widgetChangeHandler: runtimeProps.widgetChangeHandler,
@@ -318,8 +330,42 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         lastPosition,
         isUnmergeDrag,
       };
-
       return React.cloneElement(zoneElement, { key: zoneId, runtimeProps: zoneRuntimeProps });
+    });
+  }
+
+  private cloneWidgetContentElements(zones: WidgetZoneIndex[], nineZone: NineZone, runtimeProps: FrontstageRuntimeProps): React.ReactNode[] {
+    const widgets = zones.reduce<Array<{ id: WidgetZoneIndex, def: WidgetDef, tabId: number }>>((prev, zoneId) => {
+      const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(zoneId);
+
+      // istanbul ignore if
+      if (!zoneDef)
+        return prev;
+
+      const widgetDefs = zoneDef.widgetDefs.filter((widgetDef: WidgetDef) => {
+        return widgetDef.isVisible && !widgetDef.isFloating;
+      });
+
+      for (let i = 0; i < widgetDefs.length; i++) {
+        prev.push({
+          id: zoneId,
+          def: widgetDefs[i],
+          tabId: i,
+        });
+      }
+
+      return prev;
+    }, []);
+    return widgets.map((widget) => {
+      const nzWidget = nineZone.getWidget(widget.id);
+      return (
+        <WidgetContentRenderer
+          isHidden={nzWidget.props.tabIndex !== widget.tabId}
+          key={`${widget.id}_${widget.tabId}`}
+          renderTo={this.getContentRef(nzWidget.zone.id)}
+          widget={widget.def}
+        />
+      );
     });
   }
 
@@ -388,21 +434,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     };
 
     const zones = Object.keys(runtimeProps.nineZoneProps.zones)
-      .map((key) => Number(key) as WidgetZoneIndex)
-      .sort((id1, id2) => {
-        const z1 = runtimeProps.nineZoneProps.zones[id1];
-        const z2 = runtimeProps.nineZoneProps.zones[id2];
-        if (!z1.floating && !z2.floating)
-          return z1.id - z2.id;
-
-        if (!z1.floating)
-          return -1;
-
-        if (!z2.floating)
-          return 1;
-
-        return z1.floating.stackId - z2.floating.stackId;
-      });
+      .map((key) => Number(key) as WidgetZoneIndex);
 
     const nineZone = new NineZone(runtimeProps.nineZoneProps);
     const frontstageDef = runtimeProps.frontstageDef;
@@ -422,6 +454,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 
               <NZ_Zones style={zonesStyle} isHidden={!this.state.isUiVisible}>
                 {this.cloneZoneElements(zones, nineZone, runtimeProps)}
+                {this.cloneWidgetContentElements(zones, nineZone, runtimeProps)}
               </NZ_Zones>
             </div>
 
@@ -435,5 +468,55 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       </div>
     );
   }
+}
 
+interface WidgetContentRendererProps {
+  isHidden: boolean;
+  renderTo: React.RefObject<HTMLDivElement>;
+  widget: WidgetDef;
+}
+
+interface WidgetContentRendererState {
+  widgetKey: number;
+}
+
+class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererProps, WidgetContentRendererState> {
+  private _content = document.createElement("span");
+
+  public readonly state: WidgetContentRendererState = {
+    widgetKey: 0,
+  };
+
+  public componentDidMount() {
+    if (!this.props.renderTo.current)
+      return;
+    this._content.style.display = this.props.isHidden ? "none" : null;
+
+    this.props.renderTo.current.appendChild(this._content);
+  }
+
+  public componentDidUpdate(prevProps: WidgetContentRendererProps) {
+    if (this.props.isHidden !== prevProps.isHidden) {
+      this._content.style.display = this.props.isHidden ? "none" : null;
+    }
+
+    if (prevProps.renderTo === this.props.renderTo || !this.props.renderTo.current)
+      return;
+
+    this.props.widget.widgetControl && this.props.widget.widgetControl.saveTransientState();
+    this.props.renderTo.current.appendChild(this._content);
+
+    const shouldRemount = this.props.widget.widgetControl ? !this.props.widget.widgetControl.restoreTransientState() : true;
+    shouldRemount && this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
+  }
+
+  public render() {
+    return ReactDOM.createPortal(
+      <React.Fragment
+        key={this.state.widgetKey}
+      >
+        {this.props.widget.reactElement}
+      </React.Fragment>, this._content,
+    );
+  }
 }

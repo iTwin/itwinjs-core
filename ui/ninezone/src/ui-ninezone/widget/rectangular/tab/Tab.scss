@@ -27,6 +27,7 @@
   align-items: center;
   justify-content: center;
   transition: all 500ms ease;
+  transition-property: color, background-color;
   color: $nz-tab-color;
 
   &:not(:first-child) {

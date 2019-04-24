@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Prevent widget content unmount in 9-Zone demo.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

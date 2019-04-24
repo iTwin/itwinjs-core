@@ -38,7 +38,7 @@ export interface EachWidgetProps {
  * @internal
  */
 export interface StackedWidgetProps extends CommonProps {
-  children?: React.ReactNode;
+  contentRef: React.RefObject<HTMLDivElement>;
   fillZone: boolean;
   isFloating: boolean;
   zoneId: WidgetZoneIndex;
@@ -89,7 +89,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
       <NZ_StackedWidget
         className={this.props.className}
         style={this.props.style}
-        content={this.props.children}
+        contentRef={this.props.contentRef}
         fillZone={this.props.fillZone}
         horizontalAnchor={this.props.horizontalAnchor}
         isDragged={this.props.isDragged}

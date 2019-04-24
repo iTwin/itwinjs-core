@@ -57,6 +57,7 @@ export interface ZoneProps extends CommonProps {
  * @internal
  */
 export interface ZoneRuntimeProps {
+  contentRef: React.RefObject<HTMLDivElement>;
   zoneDef: ZoneDef;
   zoneProps: NZ_ZoneProps;
   widgetChangeHandler: WidgetChangeHandler;
@@ -160,6 +161,7 @@ export class Zone extends React.Component<ZoneProps> {
       <FrameworkZone
         className={this.props.className}
         style={this.props.style}
+        contentRef={runtimeProps.contentRef}
         zoneProps={runtimeProps.zoneProps}
         widgetChangeHandler={runtimeProps.widgetChangeHandler}
         targetedBounds={runtimeProps.ghostOutline}

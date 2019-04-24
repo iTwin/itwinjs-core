@@ -5,6 +5,7 @@
 import * as React from "react";
 
 import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl, WidgetControl } from "@bentley/ui-framework";
+import { WidgetContent, HorizontalAnchor } from "@bentley/ui-ninezone";
 import { Orientation } from "@bentley/ui-core";
 
 import {
@@ -138,14 +139,29 @@ class VerticalPropertyGridWidget extends React.Component {
 ConfigurableUiManager.registerControl("VerticalPropertyGridDemoWidget", VerticalPropertyGridWidgetControl);
 
 export class HorizontalPropertyGridWidgetControl extends WidgetControl {
+  private _ref = React.createRef<WidgetContent>();
+
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <HorizontalPropertyGridWidget />;
+    this.reactElement = (
+      <WidgetContent
+        anchor={HorizontalAnchor.Right}
+        content={
+          <HorizontalPropertyGridWidget style={{ overflow: "unset" }} />
+        }
+        ref={this._ref}
+      />
+    );
+  }
+
+  public restoreTransientState() {
+    this._ref.current && this._ref.current.forceUpdate();
+    return true;
   }
 }
 
-class HorizontalPropertyGridWidget extends React.Component {
+class HorizontalPropertyGridWidget extends React.Component<{ style?: React.CSSProperties }> {
   private _dataProvider: SamplePropertyDataProvider;
 
   constructor(props: any) {
@@ -175,7 +191,7 @@ class HorizontalPropertyGridWidget extends React.Component {
   public render() {
     return (
       <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal}
-        isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} />
+        isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} style={this.props.style} />
     );
   }
 }

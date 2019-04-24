@@ -1161,6 +1161,8 @@ export class FrameworkZone extends React_2.Component<FrameworkZoneProps, Framewo
 // @internal
 export interface FrameworkZoneProps extends CommonProps {
     // (undocumented)
+    contentRef: React_2.RefObject<HTMLDivElement>;
+    // (undocumented)
     dropTarget: DropTarget;
     // (undocumented)
     fillZone?: boolean;
@@ -2568,7 +2570,7 @@ export class StackedWidget extends React_2.Component<StackedWidgetProps> {
 // @internal
 export interface StackedWidgetProps extends CommonProps {
     // (undocumented)
-    children?: React_2.ReactNode;
+    contentRef: React_2.RefObject<HTMLDivElement>;
     // (undocumented)
     fillZone: boolean;
     // (undocumented)
@@ -3368,6 +3370,8 @@ export class WidgetControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getType(): ConfigurableUiControlType;
     reactElement: React_2.ReactNode;
+    restoreTransientState(): boolean;
+    saveTransientState(): void;
     setWidgetState(state: WidgetState): void;
     widgetDef: WidgetDef;
     }
@@ -3649,6 +3653,8 @@ export interface ZoneProps extends CommonProps {
 
 // @internal
 export interface ZoneRuntimeProps {
+    // (undocumented)
+    contentRef: React_2.RefObject<HTMLDivElement>;
     // (undocumented)
     dropTarget: DropTarget;
     // (undocumented)

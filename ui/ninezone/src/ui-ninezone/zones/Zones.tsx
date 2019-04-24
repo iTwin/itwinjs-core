@@ -19,7 +19,7 @@ export interface ZonesProps extends CommonProps {
   isHidden?: boolean;
 }
 
-/** Zones component of 9-zone UI app.
+/** Zones component of 9-Zone UI app.
  * @alpha
  */
 export class Zones extends React.PureComponent<ZonesProps> {

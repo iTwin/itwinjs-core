@@ -75,6 +75,8 @@ export class VerticalAnchorHelpers {
 export interface StackedProps extends CommonProps, NoChildrenProps {
   /** Content of this widget. I.e. [[WidgetContent]] */
   content?: React.ReactNode;
+  /** Content ref of this widget. */
+  contentRef?: React.Ref<HTMLDivElement>;
   /** Describes if the widget should fill the zone. */
   fillZone?: boolean;
   /** Describes to which side the widget is horizontally anchored. */
@@ -124,7 +126,10 @@ export class Stacked extends React.PureComponent<StackedProps> {
         ref={this._widget}
       >
         <div className="nz-content-container">
-          <div className="nz-content">
+          <div
+            className="nz-content"
+            ref={this.props.contentRef}
+          >
             {this.props.content}
           </div>
           <ResizeGrip

@@ -10,50 +10,51 @@
   grid-gap: 20px;
   align-items: start;
   justify-items: start;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas: "button htools""vtools .";
+  grid-template-rows: minmax($mls-button-height, auto) 1fr;
 
   &.nz-reduced-gap {
     grid-gap: 3px;
-
-    >.nz-app-button {
-      min-height: 0;
-      min-width: 0;
-    }
   }
 
   &.nz-no-gap {
     grid-gap: 0;
+  }
 
-    >.nz-app-button {
-      min-height: 0;
-      min-width: 0;
-    }
+  &.nz-reduced-gap, &.nz-no-gap {
+    grid-template-rows: auto 1fr;
   }
 
   &.nz-navigation {
     justify-items: end;
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto 1fr;
-    grid-template-areas: "htools button""  .    vtools";
+    grid-template-areas: "htools button"". vtools";
+    grid-template-columns: 1fr minmax($mls-button-height, auto);
+
+    &.nz-reduced-gap, &.nz-no-gap {
+      grid-template-columns: 1fr auto;
+    }
   }
 
-  >* {
+  &:not(.nz-navigation) {
+    grid-template-areas: "button htools""vtools .";
+    grid-template-columns: minmax($mls-button-height, auto) 1fr;
+
+    &.nz-reduced-gap, &.nz-no-gap {
+      grid-template-columns: auto 1fr;
+    }
+  }
+
+  > .nz-app-button {
+    grid-area: button;
     pointer-events: auto;
   }
 
-  >.nz-app-button {
-    grid-area: button;
-    min-height: $mls-button-height;
-    min-width: $mls-button-width;
-  }
-
-  >.nz-horizontal-toolbar {
+  > .nz-horizontal-toolbar {
     grid-area: htools;
+    pointer-events: auto;
   }
 
-  >.nz-vertical-toolbar {
+  > .nz-vertical-toolbar {
     grid-area: vtools;
+    pointer-events: auto;
   }
 }
