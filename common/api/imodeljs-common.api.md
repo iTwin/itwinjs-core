@@ -316,7 +316,7 @@ export class BentleyCloudRpcManager extends RpcManager {
 
 // @public
 export interface BentleyCloudRpcParams {
-    // Warning: (ae-forgotten-export) The symbol "OpenAPIInfo" needs to be exported by the entry point imodeljs-common.d.ts
+    // Warning: (ae-incompatible-release-tags) The symbol "info" is marked as @public, but its signature references "OpenAPIInfo" which is marked as @internal
     info: OpenAPIInfo;
     pendingRequestListener?: RpcRequestEventHandler;
     protocol?: typeof BentleyCloudRpcProtocol;
@@ -2869,6 +2869,164 @@ export class OctEncodedNormalPair {
     second: OctEncodedNormal;
 }
 
+// @internal
+export interface OpenAPIContentMap {
+    // (undocumented)
+    [index: string]: OpenAPIMediaType;
+}
+
+// @internal
+export interface OpenAPIDocument {
+    // (undocumented)
+    info: OpenAPIInfo;
+    // (undocumented)
+    openapi: "3.0.0";
+    // (undocumented)
+    paths: OpenAPIPaths;
+}
+
+// @internal
+export interface OpenAPIEncoding {
+    // (undocumented)
+    allowReserved?: boolean;
+    // (undocumented)
+    contentType?: string;
+    // (undocumented)
+    explode?: boolean;
+    // (undocumented)
+    style?: string;
+}
+
+// @internal
+export interface OpenAPIInfo {
+    // (undocumented)
+    title: string;
+    // (undocumented)
+    version: string;
+}
+
+// @internal
+export interface OpenAPIMediaType {
+    // (undocumented)
+    schema?: OpenAPISchema;
+}
+
+// @internal
+export interface OpenAPIOperation {
+    // (undocumented)
+    operationId?: string;
+    // (undocumented)
+    parameters?: OpenAPIParameter[];
+    // (undocumented)
+    requestBody?: OpenAPIRequestBody;
+    // (undocumented)
+    responses: OpenAPIResponses;
+    // (undocumented)
+    summary?: string;
+}
+
+// @internal
+export interface OpenAPIParameter {
+    // (undocumented)
+    allowEmptyValue?: boolean;
+    // (undocumented)
+    allowReserved?: boolean;
+    // (undocumented)
+    content?: OpenAPIContentMap;
+    // (undocumented)
+    description?: string;
+    // (undocumented)
+    explode?: boolean;
+    // (undocumented)
+    in: "query" | "header" | "path" | "cookie";
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    required?: boolean;
+    // (undocumented)
+    schema?: OpenAPISchema;
+    // (undocumented)
+    style?: "matrix" | "label" | "form" | "simple" | "spaceDelimited" | "pipeDelimited" | "deepObject";
+}
+
+// @internal
+export interface OpenAPIPathItem {
+    // (undocumented)
+    delete?: OpenAPIOperation;
+    // (undocumented)
+    get?: OpenAPIOperation;
+    // (undocumented)
+    head?: OpenAPIOperation;
+    // (undocumented)
+    options?: OpenAPIOperation;
+    // (undocumented)
+    parameters?: OpenAPIParameter[];
+    // (undocumented)
+    patch?: OpenAPIOperation;
+    // (undocumented)
+    post?: OpenAPIOperation;
+    // (undocumented)
+    put?: OpenAPIOperation;
+    // (undocumented)
+    summary?: string;
+    // (undocumented)
+    trace?: OpenAPIOperation;
+}
+
+// @internal
+export interface OpenAPIPaths {
+    // (undocumented)
+    [index: string]: OpenAPIPathItem;
+}
+
+// @internal
+export interface OpenAPIRequestBody {
+    // (undocumented)
+    content: OpenAPIContentMap;
+    // (undocumented)
+    description?: string;
+    // (undocumented)
+    required?: boolean;
+}
+
+// @internal
+export interface OpenAPIResponse {
+    // (undocumented)
+    content?: {
+        [index: string]: OpenAPIMediaType;
+    };
+    // (undocumented)
+    description: string;
+}
+
+// @internal
+export interface OpenAPIResponses {
+    // (undocumented)
+    "200"?: OpenAPIResponse;
+    // (undocumented)
+    "301"?: OpenAPIResponse;
+    // (undocumented)
+    "302"?: OpenAPIResponse;
+    // (undocumented)
+    "400"?: OpenAPIResponse;
+    // (undocumented)
+    "404"?: OpenAPIResponse;
+    // (undocumented)
+    "500"?: OpenAPIResponse;
+    // (undocumented)
+    default?: OpenAPIResponse;
+}
+
+// @internal
+export interface OpenAPISchema {
+    // (undocumented)
+    description?: string;
+    // (undocumented)
+    nullable?: boolean;
+    // (undocumented)
+    type?: "boolean" | "object" | "array" | "number" | "string";
+}
+
 // @internal (undocumented)
 export const OPERATION: unique symbol;
 
@@ -3789,6 +3947,15 @@ export class RpcMultipart {
 
 // @public
 export class RpcNotFoundResponse extends RpcControlResponse {
+}
+
+// @internal
+export class RpcOpenAPIDescription {
+    constructor(protocol: WebAppRpcProtocol);
+    readonly document: OpenAPIDocument;
+    readonly paths: OpenAPIPaths;
+    readonly protocol: WebAppRpcProtocol;
+    toJSON(): OpenAPIDocument;
 }
 
 // @public
@@ -4955,15 +5122,16 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     handleOpenApiDescriptionRequest(_req: HttpServerRequest, res: HttpServerResponse): void;
     handleOperationGetRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
     handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "info" is marked as @public, but its signature references "OpenAPIInfo" which is marked as @internal
     abstract info: OpenAPIInfo;
     isTimeout(code: number): boolean;
-    // Warning: (ae-forgotten-export) The symbol "RpcOpenAPIDescription" needs to be exported by the entry point imodeljs-common.d.ts
+    // Warning: (ae-incompatible-release-tags) The symbol "openAPIDescription" is marked as @public, but its signature references "RpcOpenAPIDescription" which is marked as @internal
     readonly openAPIDescription: RpcOpenAPIDescription;
     pathPrefix: string;
     // (undocumented)
     preserveStreams: boolean;
     readonly requestType: typeof WebAppRpcRequest;
-    // Warning: (ae-forgotten-export) The symbol "OpenAPIParameter" needs to be exported by the entry point imodeljs-common.d.ts
+    // Warning: (ae-incompatible-release-tags) The symbol "supplyPathParametersForOperation" is marked as @public, but its signature references "OpenAPIParameter" which is marked as @internal
     abstract supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
 }
 

@@ -97,7 +97,7 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
  * viewport updates its highlighted elements when `imodel.hilited`
  * changes.
  *
- * @hidden
+ * @internal
  */
 export class ViewportSelectionHandler implements IDisposable {
 

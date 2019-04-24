@@ -7,25 +7,33 @@
 import { RpcOperation } from "../core/RpcOperation";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
-/** An OpenAPI 3.0 root document object. */
+/** An OpenAPI 3.0 root document object.
+ * @internal
+ */
 export interface OpenAPIDocument {
   openapi: "3.0.0";
   info: OpenAPIInfo;
   paths: OpenAPIPaths;
 }
 
-/** An OpenAPI 3.0 info object. */
+/** An OpenAPI 3.0 info object.
+ * @internal
+ */
 export interface OpenAPIInfo {
   title: string;
   version: string;
 }
 
-/** An OpenAPI 3.0 paths object. */
+/** An OpenAPI 3.0 paths object.
+ * @internal
+ */
 export interface OpenAPIPaths {
   [index: string]: OpenAPIPathItem;
 }
 
-/** An OpenAPI 3.0 path item object. */
+/** An OpenAPI 3.0 path item object.
+ * @internal
+ */
 export interface OpenAPIPathItem {
   summary?: string;
   get?: OpenAPIOperation;
@@ -39,7 +47,9 @@ export interface OpenAPIPathItem {
   parameters?: OpenAPIParameter[];
 }
 
-/** An OpenAPI 3.0 operation object. */
+/** An OpenAPI 3.0 operation object.
+ * @internal
+ */
 export interface OpenAPIOperation {
   summary?: string;
   operationId?: string;
@@ -48,12 +58,16 @@ export interface OpenAPIOperation {
   responses: OpenAPIResponses;
 }
 
-/** An OpenAPI 3.0 content map. */
+/** An OpenAPI 3.0 content map.
+ * @internal
+ */
 export interface OpenAPIContentMap {
   [index: string]: OpenAPIMediaType;
 }
 
-/** An OpenAPI 3.0 parameter object. */
+/** An OpenAPI 3.0 parameter object.
+ * @internal
+ */
 export interface OpenAPIParameter {
   name: string;
   in: "query" | "header" | "path" | "cookie";
@@ -67,19 +81,25 @@ export interface OpenAPIParameter {
   content?: OpenAPIContentMap;
 }
 
-/** An OpenAPI 3.0 media type object. */
+/** An OpenAPI 3.0 media type object.
+ * @internal
+ */
 export interface OpenAPIMediaType {
   schema?: OpenAPISchema;
 }
 
-/** An OpenAPI 3.0 schema object. */
+/** An OpenAPI 3.0 schema object.
+ * @internal
+ */
 export interface OpenAPISchema {
   type?: "boolean" | "object" | "array" | "number" | "string";
   nullable?: boolean;
   description?: string;
 }
 
-/** An OpenAPI 3.0 encoding object. */
+/** An OpenAPI 3.0 encoding object.
+ * @internal
+ */
 export interface OpenAPIEncoding {
   contentType?: string;
   style?: string;
@@ -87,14 +107,18 @@ export interface OpenAPIEncoding {
   allowReserved?: boolean;
 }
 
-/** An OpenAPI 3.0 parameter object. */
+/** An OpenAPI 3.0 parameter object.
+ * @internal
+ */
 export interface OpenAPIRequestBody {
   description?: string;
   content: OpenAPIContentMap;
   required?: boolean;
 }
 
-/** An OpenAPI 3.0 responses object. */
+/** An OpenAPI 3.0 responses object.
+ * @internal
+ */
 export interface OpenAPIResponses {
   default?: OpenAPIResponse;
   "200"?: OpenAPIResponse;
@@ -105,13 +129,17 @@ export interface OpenAPIResponses {
   "500"?: OpenAPIResponse;
 }
 
-/** An OpenAPI 3.0 response object. */
+/** An OpenAPI 3.0 response object.
+ * @internal
+ */
 export interface OpenAPIResponse {
   description: string;
   content?: { [index: string]: OpenAPIMediaType };
 }
 
-/** An OpenAPI-compatible description of an RPC protocol. */
+/** An OpenAPI-compatible description of an RPC protocol.
+ * @internal
+ */
 export class RpcOpenAPIDescription {
   /** The protocol for this description. */
   public readonly protocol: WebAppRpcProtocol;

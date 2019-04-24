@@ -19,7 +19,7 @@ function copyKeys(destination, source, filter) {
       copyKeys(destination[key], source[key], filter);
     } else {
       const value = source[key].toString();
-      if (!((key.toLowerCase === "path") && (0 === value.trim().length) && ((filter.length > 0) && (null === key.match(filter)))))
+      if ((key.toLowerCase !== "path") && (0 !== value.trim().length) && ((filter.length === 0) || (null !== key.match(filter))))
         destination[key] = source[key];
     }
   });

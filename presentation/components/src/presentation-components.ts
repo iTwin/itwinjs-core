@@ -24,7 +24,7 @@ export { treeWithUnifiedSelection } from "./tree/WithUnifiedSelection";
 export { treeWithFilteringSupport } from "./tree/WithFilteringSupport";
 
 /** @module Viewport */
-export { viewWithUnifiedSelection } from "./viewport/WithUnifiedSelection";
+export { viewWithUnifiedSelection, ViewportSelectionHandler } from "./viewport/WithUnifiedSelection";
 
 /** @module DisplayLabels */
 export { IPresentationLabelsProvider, LabelsProvider } from "./labels/LabelsProvider";

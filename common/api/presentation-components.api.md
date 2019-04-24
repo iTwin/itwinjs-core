@@ -192,6 +192,22 @@ export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: Rea
 // @public
 export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>): React.ForwardRefExoticComponent<React.PropsWithoutRef<P & Props_3> & React.RefAttributes<React.Component<P, any, any>>>;
 
+// @internal
+export class ViewportSelectionHandler implements IDisposable {
+    constructor(imodel: IModelConnection, ruleset: Ruleset | string);
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    imodel: IModelConnection;
+    readonly pendingAsyncs: Set<string>;
+    // (undocumented)
+    ruleset: Ruleset | string;
+    // (undocumented)
+    readonly rulesetId: string;
+    // (undocumented)
+    readonly selectionHandler: SelectionHandler;
+    }
+
 // @public
 export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): {
     new (props: Readonly<P & Props_5>): {
@@ -244,8 +260,9 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 
 // Warnings were encountered during analysis:
 // 
-// src/viewport/WithUnifiedSelection.tsx:12:55 - (ae-forgotten-export) The symbol "ViewportSelectionHandler" needs to be exported by the entry point presentation-components.d.ts
+// src/viewport/WithUnifiedSelection.tsx:12:55 - (ae-incompatible-release-tags) The symbol "viewportSelectionHandler" is marked as @public, but its signature references "ViewportSelectionHandler" which is marked as @internal
 // src/viewport/WithUnifiedSelection.tsx:27:5 - (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
+// src/viewport/WithUnifiedSelection.tsx:47:5 - (ae-incompatible-release-tags) The symbol "viewportSelectionHandler" is marked as @public, but its signature references "ViewportSelectionHandler" which is marked as @internal
 
 // (No @packageDocumentation comment for this package)
 

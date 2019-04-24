@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added ViewportSelectionHandler to the barrel file",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "Barry.Bentley@bentley.com"
+}

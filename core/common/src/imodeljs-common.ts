@@ -59,6 +59,7 @@ export * from "./rpc/core/RpcPendingQueue";
 export * from "./rpc/electron/ElectronRpcManager";
 export * from "./rpc/mobile/MobileRpcManager";
 export * from "./rpc/web/BentleyCloudRpcManager";
+export * from "./rpc/web/OpenAPI";
 export * from "./rpc/web/WebAppRpcProtocol";
 export * from "./rpc/web/RpcMultipart";
 export * from "./rpc/web/WebAppRpcRequest";
