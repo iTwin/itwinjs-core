@@ -5,7 +5,7 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { KeySet, InstanceKey, Subtract, instanceKeyFromJSON } from "@bentley/presentation-common";
+import { KeySet, InstanceKey, Subtract } from "@bentley/presentation-common";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { Table as BaseTable, TableProps, RowItem } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
@@ -155,14 +155,10 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       this.displaySelection(evt.level);
     }
 
-    private getRowKey(row: RowItem): InstanceKey {
-      return instanceKeyFromJSON(JSON.parse(row.key));
-    }
-
     private async getRowKeys(rows: AsyncIterableIterator<RowItem>): Promise<InstanceKey[]> {
       const keys = new Array<InstanceKey>();
       for await (const row of rows)
-        keys.push(this.getRowKey(row));
+        keys.push(this.props.dataProvider.getRowKey(row));
       return keys;
     }
 
@@ -176,7 +172,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
         return false;
 
       const selection = this._selectionHandler.getSelection(this._boundarySelectionLevel);
-      return selection.has(this.getRowKey(row));
+      return selection.has(this.props.dataProvider.getRowKey(row));
     }
 
     // tslint:disable-next-line:naming-convention

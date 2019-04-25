@@ -102,7 +102,9 @@ export interface IPresentationLabelsProvider {
 export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
 
 // @public
-export type IPresentationTableDataProvider = TableDataProvider & IContentDataProvider;
+export type IPresentationTableDataProvider = TableDataProvider & IContentDataProvider & {
+    getRowKey: (row: RowItem) => InstanceKey;
+};
 
 // Warning: (ae-forgotten-export) The symbol "IPresentationDataProvider" needs to be exported by the entry point presentation-components.d.ts
 // 
@@ -147,6 +149,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     getColumns: (() => Promise<ColumnDescription[]>) & _.MemoizedFunction;
     getLoadedRow(rowIndex: number): Readonly<RowItem> | undefined;
     getRow(rowIndex: number): Promise<RowItem>;
+    getRowKey(row: RowItem): InstanceKey;
     getRowsCount(): Promise<number>;
     // (undocumented)
     protected invalidateCache(props: CacheInvalidationProps): void;

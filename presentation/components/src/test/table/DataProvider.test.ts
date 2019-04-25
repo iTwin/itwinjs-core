@@ -21,6 +21,7 @@ import {
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PresentationTableDataProvider } from "../../table/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
+import { RowItem } from "@bentley/ui-components";
 
 /**
  * This is just a helper class to provide public access to
@@ -85,6 +86,20 @@ describe("TableDataProvider", () => {
     it("sets default sorting properties", () => {
       expect(provider.sortColumnKey).to.be.undefined;
       expect(provider.sortDirection).to.eq(SortDirection.NoSort);
+    });
+
+  });
+
+  describe("getRowKey", () => {
+
+    it("returns valid deserialized InstanceKey", () => {
+      const key = createRandomECInstanceKey();
+      const row: RowItem = {
+        key: JSON.stringify(key),
+        cells: [],
+      };
+      const result = provider.getRowKey(row);
+      expect(result).to.deep.eq(key);
     });
 
   });
