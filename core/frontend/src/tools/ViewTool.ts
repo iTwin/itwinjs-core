@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipVector, ClipUtilities } from "@bentley/geometry-core";
+import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities } from "@bentley/geometry-core";
 import { ColorDef, Frustum, Npc, NpcCenter } from "@bentley/imodeljs-common";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
@@ -528,27 +528,15 @@ export abstract class ViewManip extends ViewTool {
     return (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
   }
 
-  private static getClippedRange(range: Range3d, clip: ClipVector): Range3d {
-    const clipRange = Range3d.create();
-    for (const clipPrim of clip.clips) {
-      const clipPlaneSet = clipPrim.fetchClipPlanesRef();
-      if (undefined === clipPlaneSet)
-        continue;
-      for (const convexSet of clipPlaneSet.convexSets)
-        clipRange.extendRange(ClipUtilities.rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet, range));
-    }
-    return clipRange;
-  }
-
   protected static _useViewAlignedVolume: boolean = false;
   public static fitView(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
-    const before = viewport.getWorldFrustum();
+    const before = viewport.getFrustum();
 
     const clip = viewport.view.getViewClip();
     if (undefined !== clip) {
-      const clipRange = this.getClippedRange(range, clip);
+      const clipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clip, range);
       if (!clipRange.isNull)
         range.setFrom(clipRange);
     }
@@ -559,11 +547,13 @@ export abstract class ViewManip extends ViewTool {
       viewport.view.lookAtVolume(range, aspect, marginPercent);
 
     viewport.synchWithView(false);
-    viewport.viewCmdTargetCenter = undefined;
-    if (doAnimate)
-      viewport.animateFrustumChange(before, viewport.getFrustum());
-
+    const after = viewport.getFrustum();
+    viewport.view.setupFromFrustum(after);
     viewport.synchWithView(true);
+    viewport.viewCmdTargetCenter = undefined;
+
+    if (doAnimate)
+      viewport.animateFrustumChange(before, after);
   }
 
   public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): Promise<boolean> {

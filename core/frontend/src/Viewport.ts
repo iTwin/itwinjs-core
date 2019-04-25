@@ -2186,7 +2186,7 @@ export abstract class Viewport implements IDisposable {
   public applyViewState(val: ViewState, animationTime?: BeDuration) {
     this.updateChangeFlags(val);
     const startFrust = this.getFrustum();
-    this._viewFrustum.view = val.clone(this.view.iModel); // preserve our iModel in case val is coming from a different connection
+    this._viewFrustum.view = val;
     this.synchWithView(false);
     if (animationTime)
       this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
@@ -2843,7 +2843,9 @@ export class ScreenViewport extends Viewport {
 
     this._forwardStack.push(this._currentBaseline!);
     this._currentBaseline = this._backStack.pop()!;
-    this.applyViewState(this._currentBaseline, animationTime);
+    const view = this._currentBaseline.clone();
+    view.jsonProperties = this.view.jsonProperties; // undo should not change json properties
+    this.applyViewState(view, animationTime);
     this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Undo);
   }
 
@@ -2854,7 +2856,9 @@ export class ScreenViewport extends Viewport {
 
     this._backStack.push(this._currentBaseline!);
     this._currentBaseline = this._forwardStack.pop()!;
-    this.applyViewState(this._currentBaseline, animationTime);
+    const view = this._currentBaseline.clone();
+    view.jsonProperties = this.view.jsonProperties; // undo should not change json properties
+    this.applyViewState(view, animationTime);
     this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Redo);
   }
 
@@ -2941,7 +2945,7 @@ export class TwoWayViewportSync {
   private syncView(source: Viewport, target: Viewport) {
     if (this._isEcho) return;
     this._isEcho = true; // so we don't react to the echo of this sync
-    target.applyViewState(source.view);
+    target.applyViewState(source.view.clone(target.iModel));
     this._isEcho = false;
   }
 
@@ -2949,7 +2953,7 @@ export class TwoWayViewportSync {
   public connect(view1: Viewport, view2: Viewport) {
     this.disconnect();
 
-    view2.applyViewState(view1.view); // use view1 as the starting point
+    view2.applyViewState(view1.view.clone(view2.iModel)); // use view1 as the starting point
 
     // listen to the onViewChanged events from both views
     this._removals.push(view1.onViewChanged.addListener(() => this.syncView(view1, view2)));

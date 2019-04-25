@@ -2060,7 +2060,7 @@ export class EntityState implements EntityProps {
     // (undocumented)
     readonly iModel: IModelConnection;
     // (undocumented)
-    readonly jsonProperties: {
+    jsonProperties: {
         [key: string]: any;
     };
     // (undocumented)
@@ -6736,13 +6736,17 @@ export class ViewClipClearTool extends ViewClipTool {
 
 // @internal
 export class ViewClipControlArrow {
-    constructor(origin: Point3d, direction: Vector3d, sizeInches: number, name?: string);
+    constructor(origin: Point3d, direction: Vector3d, sizeInches: number, fill?: ColorDef, outline?: ColorDef, name?: string);
     // (undocumented)
     direction: Vector3d;
+    // (undocumented)
+    fill?: ColorDef;
     // (undocumented)
     name?: string;
     // (undocumented)
     origin: Point3d;
+    // (undocumented)
+    outline?: ColorDef;
     // (undocumented)
     sizeInches: number;
 }
@@ -6765,7 +6769,13 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     protected _clipPlanes?: ConvexClipPlaneSet;
     // (undocumented)
+    readonly clipPlaneSet: ConvexClipPlaneSet | undefined;
+    // (undocumented)
     protected _clipPlanesLoops?: GeometryQuery[];
+    // (undocumented)
+    protected _clipPlanesLoopsNoncontributing?: GeometryQuery[];
+    // (undocumented)
+    readonly clipShape: ClipShape | undefined;
     // (undocumented)
     protected _clipShape?: ClipShape;
     // (undocumented)
@@ -6783,6 +6793,16 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
+    doClipPlaneClear(index: number): boolean;
+    // (undocumented)
+    doClipPlaneNegate(index: number): boolean;
+    // (undocumented)
+    doClipPlaneOrientView(index: number): boolean;
+    // (undocumented)
+    static get(vp: Viewport): ViewClipDecoration | undefined;
+    // (undocumented)
+    getControlIndex(id: string): number;
+    // (undocumented)
     getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     // (undocumented)
     protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean;
@@ -6791,15 +6811,11 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     onManipulatorEvent(eventType: EditManipulator.EventType): void;
     // (undocumented)
-    protected onRightClick(hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled>;
+    protected onRightClick(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onViewClose(vp: ScreenViewport): void;
     // (undocumented)
-    onViewUndoRedo(vp: Viewport, _event: ViewUndoEvent): void;
-    // (undocumented)
     protected _removeViewCloseListener?: () => void;
-    // (undocumented)
-    protected _removeViewUndoRedoListener?: () => void;
     // (undocumented)
     protected stop(): void;
     // (undocumented)
@@ -6829,6 +6845,8 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
     // (undocumented)
     onNewClipPlane(viewport: Viewport): void;
     // (undocumented)
+    onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean;
+    // (undocumented)
     selectOnCreate(): boolean;
     // (undocumented)
     showDecoration(vp: Viewport): void;
@@ -6849,6 +6867,8 @@ export interface ViewClipEventHandler {
     // (undocumented)
     onNewClipPlane(viewport: Viewport): void;
     // (undocumented)
+    onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean;
+    // (undocumented)
     selectOnCreate(): boolean;
 }
 
@@ -6868,7 +6888,7 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
-    protected abstract drawViewClip(_context: DecorateContext): void;
+    protected abstract drawViewClip(context: DecorateContext): void;
     // (undocumented)
     protected _ids: string[];
     // (undocumented)
@@ -6880,7 +6900,7 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     // (undocumented)
     protected _restoreClip: boolean;
     // (undocumented)
-    protected abstract updateViewClip(_ev: BeButtonEvent, _saveInUndo: boolean): boolean;
+    protected abstract updateViewClip(ev: BeButtonEvent, isAccept: boolean): boolean;
     // (undocumented)
     protected _viewRange: Range3d;
 }
@@ -6890,7 +6910,7 @@ export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
     // (undocumented)
     protected drawViewClip(context: DecorateContext): void;
     // (undocumented)
-    protected updateViewClip(ev: BeButtonEvent, saveInUndo: boolean): boolean;
+    protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean;
 }
 
 // @internal
@@ -6898,7 +6918,7 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     // (undocumented)
     protected drawViewClip(context: DecorateContext): void;
     // (undocumented)
-    protected updateViewClip(ev: BeButtonEvent, saveInUndo: boolean): boolean;
+    protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean;
 }
 
 // @internal
@@ -6907,17 +6927,17 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     protected _clipEventHandler?: ViewClipEventHandler | undefined;
     // (undocumented)
-    static doClipClear(viewport: Viewport, saveInUndo: boolean): boolean;
+    static doClipClear(viewport: Viewport): boolean;
     // (undocumented)
-    static doClipToConvexClipPlaneSet(viewport: Viewport, saveInUndo: boolean, planes: ConvexClipPlaneSet): boolean;
+    static doClipToConvexClipPlaneSet(viewport: Viewport, planes: ConvexClipPlaneSet): boolean;
     // (undocumented)
-    static doClipToPlane(viewport: Viewport, saveInUndo: boolean, origin: Point3d, normal: Vector3d, clearExistingPlanes: boolean): boolean;
+    static doClipToPlane(viewport: Viewport, origin: Point3d, normal: Vector3d, clearExistingPlanes: boolean): boolean;
     // (undocumented)
-    static doClipToRange(viewport: Viewport, saveInUndo: boolean, range: Range3d, transform?: Transform): boolean;
+    static doClipToRange(viewport: Viewport, range: Range3d, transform?: Transform): boolean;
     // (undocumented)
-    static doClipToShape(viewport: Viewport, saveInUndo: boolean, xyPoints: Point3d[], transform?: Transform, zLow?: number, zHigh?: number): boolean;
+    static doClipToShape(viewport: Viewport, xyPoints: Point3d[], transform?: Transform, zLow?: number, zHigh?: number): boolean;
     // (undocumented)
-    static drawClipPlanesLoops(context: DecorateContext, loops: GeometryQuery[], color: ColorDef, weight: number, fill?: ColorDef, id?: string): void;
+    static drawClipPlanesLoops(context: DecorateContext, loops: GeometryQuery[], color: ColorDef, weight: number, dashed?: boolean, fill?: ColorDef, id?: string): void;
     // (undocumented)
     static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void;
     // (undocumented)
@@ -6957,7 +6977,7 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
-    static setViewClip(viewport: Viewport, saveInUndo: boolean, clip?: ClipVector): boolean;
+    static setViewClip(viewport: Viewport, clip?: ClipVector): boolean;
     // (undocumented)
     protected showPrompt(): void;
 }
