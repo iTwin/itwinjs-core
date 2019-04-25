@@ -194,6 +194,18 @@ function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   image.data[i1] = tmp;
 }
 
+/** Used for debugging purposes, to toggle display of instanced or batched primitives.
+ * @internal
+ */
+export const enum PrimitiveVisibility {
+  /** Draw all primitives. */
+  All,
+  /** Only draw instanced primitives. */
+  Instanced,
+  /** Only draw un-instanced primitives. */
+  Uninstanced,
+}
+
 /** @internal */
 export abstract class Target extends RenderTarget {
   protected _decorations?: Decorations;
@@ -249,6 +261,7 @@ export abstract class Target extends RenderTarget {
   private _isReadPixelsInProgress = false;
   private _drawNonLocatable = true;
   public isFadeOutActive = false;
+  public primitiveVisibility: PrimitiveVisibility = PrimitiveVisibility.All;
 
   protected constructor(rect?: ViewRect) {
     super();
