@@ -1,12 +1,12 @@
 # Building iModel.js Modules
 
-This article describes the tools provided by iModel.js to build frontend modules. In this context, frontend modules are JavaScript files (transpiled and webpacked from TypeScript source files) that are intended to run in either a browser or in an Electron application. Some background on iModel.js modules is provided in [Modularizing iModel.js](ModularizingIModelJs.md).
+This article describes the tools provided by iModel.js to build frontend modules. In this context, frontend modules are JavaScript files (transpiled and webpacked from TypeScript source files) that are intended to run in either a browser or in an Electron application. Some background on iModel.js modules is provided in [Modularizing iModel.js](./ModularizingIModelJs.md).
 
 ## Types of Modules
 
 There are four types of modules in the iModel.js frontend ecosystem :
 
-1. System modules. The iModel.js frontend system is composed of a set of modules that perform functions such as geometry calculations, user interface customization, and coordinating remote procedure calls to iModel.js backend functions. Each such module is built using the technique described here.
+1. System modules. The iModel.js frontend system is composed of a set of modules that perform myriad functions, such as geometry calculations, user interface implementation, and coordinating remote procedure calls to iModel.js backend functions. Each such module is built using the technique described here.
 
 2. Application modules. An iModel.js application consists of a module that contains the code for its unique functionality, with calls into the iModel.js system modules that take advantage of the classes and methods provided by iModel.js. An application module is loaded by the browser (or Electron) at startup.
 
@@ -68,7 +68,7 @@ There are several steps in building a module, which are sequenced by the buildIM
 3. Webpacking the module.
 4. For application modules, copying the external modules required into the directory from which the web server delivers files in response to HTTP requests.
 5. For applications, building any Plugins or other submodules that are in the same package as the main application.
-6. For Bentley applications only, creating the configuration file that accompanies the system modules.
+6. Optionally creating the configuration file that accompanies the system modules.
 7. For application localization testing, create pseudo-localized files to make it easy to spot strings that are not localizable.
 
 Not all steps are required by every module. In particular, application modules are more complicated, and they are usually the only ones that require the last four steps.
@@ -153,7 +153,7 @@ This copies or symlinks all the .scss files in all subdirectories of the src dir
 
 ### Webpacking
 
-Webpacking consolidates the source files that make up a module into a single file and generates the code necessary to import symbols from external modules. Webpacking has a confusing array of options that control how the code is generated, but the buildIModelJsModule script configures all of those for you. All you have to provide a "webpack" property that specifies the entry point for your module, where the output is to be put, and the name of the bundle created by webpack. For applications, the bundleName should always be "main". For system modules, bundleName matches the name of the "barrel" file that consolidates the imports for the module. The bundleName for plugins should be something descriptive. For example:
+Webpacking consolidates the source files that make up a module into a single file and generates the code necessary to import symbols from external modules. Webpacking has a confusing array of options that control how the code is generated, but the buildIModelJsModule script configures all of those for you. All you have to provide a "webpack" property that specifies the entry point for your module, where the output is to be put, and the name of the bundle created by webpack. For applications, the bundleName should always be "main". For system modules, bundleName matches the name of the "barrel" file that consolidates the imports for the module. The bundleName for plugins should be something descriptive. Here is an application module example:
 
 ```json
    "iModelJs": {
@@ -296,7 +296,7 @@ The "--detail" argument requires a number between 0 and 4, (e.g., --detail=2). D
 
 The "--stats" argument affects the webpack step by passing the "--json" argument to it and directing webpack's output to a file called "webpackStats.json" in the same directory as the module. That can be useful for analyzing the packages used by the module as well as other webpack performance information. A downside to using that argument is that webpack also directs all errors to the webpackStats.json file, so if you encounter a webpack error with the --stats argument, look in webpackStat.json to get more information about the error.
 
-For packages that are not in the iModel.js mono repository, the build command is generally invoked using the "npm run build" command. To pass arguments to the script that npm invokes rather than to npm inself, you must put in a "separator" argument, "--" before the arguments that should be passed to the builIModelJsModule script. For example, to build a production version and show detail level 1, you would use this command:
+For packages that are not in the iModel.js mono repository, the build command is generally invoked using the "npm run build" command. To pass arguments to the script that npm invokes rather than to npm itself, you must put in a "separator" argument, "--" before the arguments that should be passed to the builIModelJsModule script. For example, to build a production version and show detail level 1, you would use this command:
 
 ```shell
 npm run build -- --production --detail=1
@@ -317,16 +317,9 @@ usage: rush build [-h] [-p COUNT] [-t PROJECT1]
                   [-o] [--production] [-s] [-d {0,1,2,3,4}]
 
 
-This command is similar to "rush rebuild", except that "rush build" performs
-an incremental build. In other words, it only builds projects whose source
-files have changed since the last successful build. The analysis requires a
-Git working tree, and only considers source files that are tracked by Git and
-whose path is under the project folder. (For more details about this
-algorithm, see the documentation for the "package-deps-hash" NPM package.)
-The incremental build state is tracked in a file "package-deps.json" which
-should NOT be added to Git. The build command is tracked by the "arguments"
-field in this JSON file; a full rebuild is forced whenever the command has
-changed (e.g. "--production" or not).
+This command is similar to "rush rebuild", except that "rush build" performs an incremental build. In other words, it only builds projects whose source files have changed since the last successful build. The analysis requires a Git working tree, and only considers source files that are tracked by Git and whose path is under the project folder. (For more details about this algorithm, see the documentation for the "package-deps-hash" NPM package.)
+
+The incremental build state is tracked in a file "package-deps.json" whichshould NOT be added to Git. The build command is tracked by the "arguments" field in this JSON file; a full rebuild is forced whenever the command has changed (e.g. "--production" or not).
 
 Optional arguments:
   -h, --help            Show this help message and exit.

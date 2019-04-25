@@ -2,19 +2,13 @@
 
 A [Plugin]($frontend) is a separately webpacked JavaScript module that is loaded on demand into a browser (or Electron) running the the frontend iModel.js environment.
 
-A [Plugin]($frontend) is typically written in Typescript. It has access to all classes in the iModel.js host environment. In all such hosts, that will always include
-bentleyjs-core, geometry-core, imodeljs-i18n, imodeljs-clients, imodeljs-common, imodeljs-quantity, and imodeljs-frontend. In hosts that use the iModel.js user interface
-classes, it will also include ui-core, ui-components, ui-ninezone, and ui-framework. In hosts that are designed to format and display EC data, the presentation-common,
-presentation-components, and presentation-frontend modules will be available as well. An example host is Design Review, which includes all of the modules above.
+A [Plugin]($frontend) is typically written in Typescript. It has access to all classes in the iModel.js host environment. In all iModel.js hosts, that will always include the members of bentleyjs-core, geometry-core, imodeljs-i18n, imodeljs-clients, imodeljs-common, imodeljs-quantity, and imodeljs-frontend. In hosts that use the iModel.js user interface classes, it will also include the members of ui-core, ui-components, ui-ninezone, and ui-framework. In hosts that are designed to format and display EC data, the presentation-common, presentation-components, and presentation-frontend modules will be available as well. An example host is Design Review, which includes all of the modules above.
 
 ## Loading Plugins
 
-A [Plugin]($frontend) can be loaded by calling the `loadPlugin` static method of the [PluginAdmin]($frontend) class. An [ImmediateTool](./Tools.md#immediate-tools) is provided that allows
-a user to initiate [Plugin]($frontend) loading using the "Plugin \<pluginName\> [argument list]" keyin.
+A [Plugin]($frontend) can be loaded by calling the `loadPlugin` static method of the [PluginAdmin]($frontend) class. An [ImmediateTool](./Tools.md#immediate-tools) is provided that allows a user to initiate [Plugin]($frontend) loading using the "Plugin \<pluginName\> [argument list]" keyin.
 
-When the [PluginAdmin]($frontend) loadPlugin method is called, it initiates loading of the designated [Plugin]($frontend). The [Plugin]($frontend) is loaded as a typical JavaScript script,
-so any code that is outside the definition of a function or class is immediately executed. By convention, a [Plugin]($frontend) defines a "main" function and executes that main function as the
-last line in the script. Generally, the only responsibility of the main function is to instantiate the subclass of [Plugin]($frontend) defined therein and register it with the [PluginAdmin]($frontend). Here is an example:
+When the [PluginAdmin]($frontend) loadPlugin method is called, it initiates loading of the designated [Plugin]($frontend). The [Plugin]($frontend) is loaded as a typical JavaScript script, so any code that is outside the definition of a function or class is immediately executed. By convention, a [Plugin]($frontend) defines a "main" function and executes that main function as the last line in the script. Generally, the only responsibility of the main function is to instantiate the subclass of [Plugin]($frontend) defined therein and register it with the [PluginAdmin]($frontend). Here is an example:
 
 ```ts
 declare var IMODELJS_VERSIONS_REQUIRED: string;
@@ -28,27 +22,17 @@ function main() {
 main();
 ```
 
-In the code above, note the declaration of IMODELJS_VERSIONS_REQUIRED and PLUGIN_NAME. These variables are converted to actual strings when your [Plugin]($frontend) is webpack'ed as described below.
-PLUGIN_NAME is used by the [PluginAdmin]($frontend) to keep track of loaded Plugins, and IMODELJS_VERSIONS_REQUIRED is used to validate that the runtime environment has the iModel.js modules
-that the [Plugin]($frontend) needs and that the versions loaded are compatible with those required by the [Plugin]($frontend).
+In the code above, note the declaration of IMODELJS_VERSIONS_REQUIRED and PLUGIN_NAME. These variables are converted to actual strings when your [Plugin]($frontend) is webpack'ed as described below. PLUGIN_NAME is used by the [PluginAdmin]($frontend) to keep track of loaded Plugins, and IMODELJS_VERSIONS_REQUIRED is used to validate that the runtime environment includes the iModel.js modules that the [Plugin]($frontend) needs and that the versions loaded are compatible with those required by the [Plugin]($frontend).
 
 ## Building Plugins
 
-The code for the [Plugin]($frontend) is typically transpiled to JavaScript and then converted to a loadable module with [webpack](https://webpack.js.org). iModel.js provides a
-webpack configuration file, webpackModule.config.js, in the modules directory of the webpack-tools package. You provide arguments to webpack-cli that are passed to webpackModule.config.js :
-  * --env.outdir=[outdir] specifies the output directory for the webpacked [Plugin]($frontend).
-  * --env.entry=[entryScript] specifies the (transpiled) source for the entry point of the Plugin.
-  * --env.bundlename=[moduleName] specifies the name of webpacked the output file.
-  * --env.isplugin tells webpackModule.config.js that you are creating a [Plugin]($frontend), which configures webpack to define the PLUGIN_NAME and IMODELJS_VERSIONS_REQUIRED variables that are used
-  in the startup code as shown above.
+The code for the [Plugin]($frontend) is typically transpiled to JavaScript and then converted to a loadable module with [webpack](https://webpack.js.org). Those steps (and others that might be required), are sequenced by the buildIModelJsModule script. See [Building iModel.js Modules](./BuildingIModelJsModules.md) for a full description of building a [Plugin]($frontend).
 
 The versions of iModel.js packages that are required by the [Plugin](%frontend) are extracted from the "dependencies" key in the package.json file that is in the root directory of the package that contains the Plugin source. Each iModel.js module from which classes or functions are imported should appear in that dependencies key, along with the version number as is required by [npm](https://docs.npmjs.org). A string that contains each such dependency is generated by webpack and replaces every occurrence of IMODELJS_VERSIONS_REQUIRED in the output JavaScript module.
 
 ## Plugin startup
 
-Plugins are loaded by the PluginAdmin class. The "main" function in the [Plugin]($frontend) code should instantiate and register the Plugin as illustrated above. The PluginAdmin.register method
-checks whether the iModel.js runtime environment is compatible with the [Plugin]($frontend)'s requirements. If not, an error is displayed to the user (and a list of the errors encountered is
-returned from the call to PluginAdmin.register) and the Plugin can proceed no further. If the validation succeeds, the `onLoad` method of your [Plugin]($frontend) subclass is called. The argument to the onLoad and onExecute method is an array of strings. The first member of the array is the plugin name. A typical use of the `onLoad` method is to register any tools that the Plugin provides. Here is a simple subclass of [Plugin]($frontend):
+Plugins are loaded by the PluginAdmin class. The "main" function in the [Plugin]($frontend) code should instantiate and register the Plugin as illustrated above. The PluginAdmin.register method checks whether the iModel.js runtime environment is compatible with the [Plugin]($frontend)'s requirements. If not, an error is displayed to the user (and a list of the errors encountered is returned from the call to PluginAdmin.register) and the Plugin can proceed no further. If the validation succeeds, the `onLoad` method of your [Plugin]($frontend) subclass is called. The argument to the onLoad and onExecute method is an array of strings. The first member of the array is the plugin name. A typical use of the `onLoad` method is to register any tools that the Plugin provides. Here is a simple subclass of [Plugin]($frontend):
 
 ```ts
 class MeasurePointsPlugin extends Plugin {
@@ -76,6 +60,5 @@ class MeasurePointsPlugin extends Plugin {
 }
 ```
 
-The Plugin subclass' onExecute method is called immediately after the call to `onLoad`. The difference between `onLoad` and `onExecute` is that `onExecute` is called each time
-[PluginAdmin]($frontend).loadPlugin is called for the same plugin. Therefore, anything that need be done only once (such as registering a Tool), should go into the `onLoad` method and everything that should be done each time the Plugin is loaded (in this case, starting the registered Tool), should be done in the `onExecute` method.
+The Plugin subclass' onExecute method is called immediately after the call to `onLoad`. The difference between `onLoad` and `onExecute` is that `onExecute` is called each time [PluginAdmin]($frontend).loadPlugin is called for the same plugin. Therefore, anything that need be done only once (such as registering a Tool), should go into the `onLoad` method and everything that should be done each time the Plugin is loaded (in this case, starting the registered Tool), should be done in the `onExecute` method.
 
