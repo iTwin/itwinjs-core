@@ -287,8 +287,7 @@ export class RenderStateStencil {
  * to modify the context for a rendering operation, do *not* directly call
  * functions like glDepthMask(), glBlendFunc(), etc - otherwise such calls may adversely
  * affect subsequent rendering operations.
- * Instead, set up a RenderState as desired and invoke Target::ApplyRenderState() or
- * System::ApplyRenderState().
+ * Instead, set up a RenderState as desired and invoke System.instance.applyRenderState()
  * The context tracks the most-recently applied RenderState, allowing it to minimize
  * the number of GL state changes actually invoked, improving performance.
  * @internal

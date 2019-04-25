@@ -509,6 +509,9 @@ export class System extends RenderSystem {
     if (undefined === capabilities)
       throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
 
+    // set actual gl state to match desired state defaults
+    context.depthFunc(GL.DepthFunc.Default);  // LessOrEqual
+
     return new System(canvas, context, capabilities);
   }
 
