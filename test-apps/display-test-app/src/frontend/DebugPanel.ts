@@ -9,7 +9,7 @@ import { MemoryTracker } from "./MemoryTracker";
 import { StatsTracker } from "./TileStatisticsTracker";
 import { createCheckBox, CheckBox } from "./CheckBox";
 import { createComboBox } from "./ComboBox";
-import { ChangeFlag, ChangeFlags, Tile, Viewport } from "@bentley/imodeljs-frontend";
+import { ChangeFlag, ChangeFlags, PrimitiveVisibility, Target, Tile, Viewport } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 import { FrustumDecorator } from "./FrustumDecoration";
 
@@ -89,6 +89,7 @@ export class DebugPanel extends ToolBarDropDown {
     });
 
     this.addBoundingBoxDropdown(this._element);
+    this.addVisibilityDropdown(this._element);
 
     this.addSeparator();
     this._statsTracker = new StatsTracker(this._element, vp);
@@ -102,6 +103,8 @@ export class DebugPanel extends ToolBarDropDown {
     parentElement.appendChild(this._element);
   }
 
+  private get _target(): Target { return this._viewport.target as Target; }
+
   public dispose(): void {
     this._fpsTracker.dispose();
     this._memoryTracker.dispose();
@@ -110,6 +113,7 @@ export class DebugPanel extends ToolBarDropDown {
 
     this._viewport.debugBoundingBoxes = Tile.DebugBoundingBoxes.None;
     this._viewport.freezeScene = false;
+    this._target.primitiveVisibility = PrimitiveVisibility.All;
 
     this._parentElement.removeChild(this._element);
   }
@@ -154,6 +158,24 @@ export class DebugPanel extends ToolBarDropDown {
         { name: "Volume and Content", value: Tile.DebugBoundingBoxes.Both },
         { name: "Children", value: Tile.DebugBoundingBoxes.ChildVolumes },
         { name: "Sphere", value: Tile.DebugBoundingBoxes.Sphere },
+      ],
+    });
+  }
+
+  private addVisibilityDropdown(parent: HTMLElement): void {
+    createComboBox({
+      name: "Visibility: ",
+      id: "debugPanel_visibility",
+      parent,
+      value: PrimitiveVisibility.All,
+      handler: (select) => {
+        this._target.primitiveVisibility = Number.parseInt(select.value, 10);
+        this._viewport.invalidateScene();
+      },
+      entries: [
+        { name: "All", value: PrimitiveVisibility.All },
+        { name: "Instanced", value: PrimitiveVisibility.Instanced },
+        { name: "Batched", value: PrimitiveVisibility.Uninstanced },
       ],
     });
   }

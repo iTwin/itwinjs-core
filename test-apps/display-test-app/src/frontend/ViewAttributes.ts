@@ -94,14 +94,16 @@ export class ViewAttributes {
     flagsToggle.innerText = "View Flags";
     flagsHeader.appendChild(flagsToggle);
 
+    flagsHeader.onclick = () => {
+      ViewAttributes._expandViewFlags = !ViewAttributes._expandViewFlags;
+      flagsDiv.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
+      toggleFlagsButton.button.value = ViewAttributes._expandViewFlags ? "-" : "+";
+    };
+
     const toggleFlagsButton = createButton({
       parent: flagsHeader,
       inline: true,
-      handler: () => {
-        ViewAttributes._expandViewFlags = !ViewAttributes._expandViewFlags;
-        flagsDiv.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
-        toggleFlagsButton.button.value = ViewAttributes._expandViewFlags ? "-" : "+";
-      },
+      handler: () => undefined, // handled by div.onclick
       value: ViewAttributes._expandViewFlags ? "-" : "+",
     });
 
