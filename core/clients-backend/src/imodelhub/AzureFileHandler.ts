@@ -12,7 +12,7 @@ import * as path from "path";
 import { Transform, TransformCallback, PassThrough } from "stream";
 import { LoggerCategory } from "../LoggerCategory";
 import WriteStreamAtomic = require("fs-write-stream-atomic");
-
+import { AzCopy, ProgressEventArgs, StringEventArgs, InitEventArgs } from "../util/AzCopy";
 const loggerCategory: string = LoggerCategory.IModelHub;
 
 /**
@@ -136,6 +136,85 @@ export class AzureFileHandler implements FileHandler {
     fs.mkdirSync(dirPath);
   }
 
+  private async downloadFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number,
+    progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, `Using AzCopy with verison ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
+    const azcopy = new AzCopy();
+    if (progressCallback) {
+      const cb = (args: ProgressEventArgs) => {
+        progressCallback({ total: args.TotalBytesEnumerated, loaded: args.BytesOverWire, percent: args.BytesOverWire ? (args.BytesOverWire / args.TotalBytesEnumerated) : 0 });
+      };
+
+      azcopy.on("azprogress", cb);
+      azcopy.on("azexit", cb);
+    }
+
+    azcopy.on("azerror", (args: StringEventArgs) => {
+      requestContext.enter();
+      Logger.logError(loggerCategory, `AzCopy reported error: '${args.MessageContent}'`);
+    });
+
+    azcopy.on("azinit", (args: InitEventArgs) => {
+      requestContext.enter();
+      Logger.logInfo(loggerCategory, `AzCopy started JobId: ${args.JobID} and log file located at ${args.LogFileLocation}`);
+    });
+
+    azcopy.on("azruntimeerror", (args: string) => {
+      requestContext.enter();
+      Logger.logInfo(loggerCategory, `AzCopy runtime error: ${args}`);
+    });
+    // start download by spawning in a azcopy process
+    const rc = await azcopy.copy(downloadUrl, downloadToPathname);
+    if (rc !== 0) {
+      return Promise.reject(`AzCopy failed with return code: ${rc}`);
+    }
+  }
+
+  private async downloadFileUsingHttps(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number,
+    progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+
+    let bufferedStream: Transform;
+    if (this.useBufferedDownload(downloadToPathname)) {
+      bufferedStream = new BufferedStream(this._threshold);
+    } else {
+      bufferedStream = new PassThrough();
+    }
+
+    const fileStream = new WriteStreamAtomic(downloadToPathname, { encoding: "binary" });
+    let bytesWritten: number = 0;
+
+    if (progressCallback) {
+      fileStream.on("drain", () => {
+        progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
+      });
+      fileStream.on("finish", () => {
+        progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
+      });
+    }
+
+    return new Promise((resolve, reject) => {
+      https.get(downloadUrl, ((res) => {
+        res.pipe(bufferedStream)
+          .on("data", (chunk: any) => {
+            bytesWritten += chunk.length;
+          })
+          .pipe(fileStream)
+          .on("error", (error: any) => {
+            const parsedError = ResponseError.parse(error);
+            reject(parsedError);
+          })
+          .on("finish", () => {
+            resolve();
+          });
+      }))
+        .on("error", (error: any) => {
+          const parsedError = ResponseError.parse(error);
+          reject(parsedError);
+        });
+    });
+  }
+
   /**
    * Download a file from AzureBlobStorage for the iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
    * @param requestContext The client request context
@@ -157,47 +236,12 @@ export class AzureFileHandler implements FileHandler {
       fs.unlinkSync(downloadToPathname);
 
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
-
-    let bufferedStream: Transform;
-    if (this.useBufferedDownload(downloadToPathname)) {
-      bufferedStream = new BufferedStream(this._threshold);
-    } else {
-      bufferedStream = new PassThrough();
-    }
-
-    const fileStream = new WriteStreamAtomic(downloadToPathname, { encoding: "binary" });
-    let bytesWritten: number = 0;
-
-    if (progressCallback) {
-      fileStream.on("drain", () => {
-        progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
-      });
-      fileStream.on("finish", () => {
-        progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
-      });
-    }
-
     try {
-      await new Promise((resolve, reject) => {
-        https.get(downloadUrl, ((res) => {
-          res.pipe(bufferedStream)
-            .on("data", (chunk: any) => {
-              bytesWritten += chunk.length;
-            })
-            .pipe(fileStream)
-            .on("error", (error: any) => {
-              const parsedError = ResponseError.parse(error);
-              reject(parsedError);
-            })
-            .on("finish", () => {
-              resolve();
-            });
-        }))
-          .on("error", (error: any) => {
-            const parsedError = ResponseError.parse(error);
-            reject(parsedError);
-          });
-      });
+      if (AzCopy.isAvaliable) {
+        await this.downloadFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback);
+      } else {
+        await this.downloadFileUsingHttps(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback);
+      }
     } catch (err) {
       requestContext.enter();
       if (fs.existsSync(downloadToPathname))
@@ -208,7 +252,6 @@ export class AzureFileHandler implements FileHandler {
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Downloaded file from ${downloadUrl}`);
   }
-
   /** Get encoded block id from its number. */
   private getBlockId(blockId: number) {
     return Base64.encode(blockId.toString(16).padStart(5, "0"));
