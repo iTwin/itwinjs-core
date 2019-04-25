@@ -43,7 +43,7 @@ export interface ViewClipEventHandler {
   onNewClip(viewport: Viewport): void; // Called by tools that set or replace the existing view clip with a new clip.
   onNewClipPlane(viewport: Viewport): void; // Called by tools that add a single plane to the view clip. When there is more than one plane, the new plane is always last.
   onModifyClip(viewport: Viewport): void; // Called by tools after modifying the view clip.
-  onClearClip(viewport: Viewport): void; // Called when the view clip is cleared either by a tool or view undo.
+  onClearClip(viewport: Viewport): void; // Called when the view clip is cleared from the view.
   onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean; // Called when user right clicks on clip geometry or clip modify handle. Return true if event handled.
 }
 
@@ -1037,7 +1037,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 
   protected async createControls(): Promise<boolean> {
-    // Always update to current view clip to handle view undo/redo, post-modify, etc.
+    // Always update to current view clip to handle post-modify, etc.
     if (undefined === this._clipId || !this.getClipData())
       return false;
 

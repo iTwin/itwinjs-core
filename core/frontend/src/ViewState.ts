@@ -102,6 +102,7 @@ export interface ExtentLimits {
 export abstract class ViewState extends ElementState {
   private _auxCoordSystem?: AuxCoordSystemState;
   private _extentLimits?: ExtentLimits;
+  private _clipVector?: ClipVector;
   public description?: string;
   public isPrivate?: boolean;
   /** Selects the categories that are display by this ViewState. */
@@ -128,6 +129,7 @@ export abstract class ViewState extends ElementState {
     this.displayStyle = source.displayStyle;
     this._extentLimits = source._extentLimits;
     this._auxCoordSystem = source._auxCoordSystem;
+    this._clipVector = source._clipVector;
   }
 
   /** Make an independent copy of this ViewState.
@@ -677,6 +679,7 @@ export abstract class ViewState extends ElementState {
    * @param clip the new clipping volume. If undefined, clipping is removed from view.
    */
   public setViewClip(clip?: ClipVector) {
+    this._clipVector = clip;
     if (clip && clip.isValid)
       this.setDetail("clip", clip.toJSON());
     else
@@ -685,11 +688,11 @@ export abstract class ViewState extends ElementState {
 
   /** Get the clipping volume for this view, if defined */
   public getViewClip(): ClipVector | undefined {
-    const clip = this.peekDetail("clip");
-    if (clip === undefined)
-      return undefined;
-    const clipVector = ClipVector.fromJSON(clip);
-    return clipVector.isValid ? clipVector : undefined;
+    if (undefined === this._clipVector) {
+      const clip = this.peekDetail("clip");
+      this._clipVector = (undefined !== clip ? ClipVector.fromJSON(clip) : ClipVector.createEmpty());
+    }
+    return this._clipVector.isValid ? this._clipVector : undefined;
   }
 
   /** Set the grid settings for this view */
