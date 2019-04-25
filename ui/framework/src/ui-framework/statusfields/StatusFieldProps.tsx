@@ -5,16 +5,16 @@
 /** @module Notification */
 
 import { CommonProps } from "@bentley/ui-core";
-import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
+import { StatusBarFieldId } from "../widgets/StatusBarWidgetControl";
 
 /** Properties for a StatusBar field component
  * @public
  */
 export interface StatusFieldProps extends CommonProps {
-  /** Interface to StatusBar */
-  statusBar: IStatusBar;
   /** Indicates whether the StatusBar is in footer mode */
   isInFooterMode: boolean;
+  /** Function called when the widget is opened or closed. */
+  onOpenWidget: (widget: StatusBarFieldId) => void;
   /** Field Id for open widgets */
   openWidget: StatusBarFieldId;
 }

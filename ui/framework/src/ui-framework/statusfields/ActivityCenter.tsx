@@ -25,8 +25,6 @@ interface ActivityCenterState {
  * @public
  */
 export class ActivityCenterField extends React.Component<StatusFieldProps, ActivityCenterState> {
-  private _element: any;
-
   constructor(p: StatusFieldProps) {
     super(p);
     this.state = {
@@ -89,7 +87,6 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
     } else {
       footerMessages = <div />;
     }
-    this.props.statusBar.setFooterMessages(this._element);
     return footerMessages;
   }
 }

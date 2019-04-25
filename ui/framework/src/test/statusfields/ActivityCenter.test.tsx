@@ -10,14 +10,13 @@ import TestUtils from "../TestUtils";
 import {
   ActivityCenterField,
   StatusBarWidgetControl,
-  IStatusBar,
-  StatusBarFieldId,
   WidgetState,
   ConfigurableUiControlType,
   WidgetDef,
   ConfigurableCreateInfo,
   StatusBar,
   MessageManager,
+  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
 
 describe("ActivityCenter", () => {
@@ -27,10 +26,10 @@ describe("ActivityCenter", () => {
       super(info, options);
     }
 
-    public getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode {
+    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <ActivityCenterField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
+          <ActivityCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
         </>
       );
     }

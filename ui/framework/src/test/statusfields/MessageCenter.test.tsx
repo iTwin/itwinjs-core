@@ -15,11 +15,10 @@ import {
   ConfigurableUiManager,
   WidgetState,
   ConfigurableCreateInfo,
-  IStatusBar,
-  StatusBarFieldId,
   MessageManager,
   ConfigurableUiControlType,
   WidgetDef,
+  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { FooterPopup } from "@bentley/ui-ninezone";
@@ -31,10 +30,10 @@ describe("MessageCenter", () => {
       super(info, options);
     }
 
-    public getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode {
+    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <MessageCenterField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
+          <MessageCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
         </>
       );
     }
@@ -141,13 +140,13 @@ describe("MessageCenter", () => {
     const footerPopup = wrapper.find(FooterPopup);
 
     const statusBarInstance = wrapper.instance();
-    const spy = sinon.spy(statusBarInstance, "setOpenWidget");
+    statusBarInstance.setState(() => ({ openWidget: "test-widget" }));
 
     const outsideClick = new MouseEvent("");
     sinon.stub(outsideClick, "target").get(() => document.createElement("div"));
     footerPopup.prop("onOutsideClick")!(outsideClick);
 
-    expect(spy.calledWithExactly(null)).true;
+    expect(statusBarInstance.state.openWidget).null;
   });
 
   it("Message Center should not close on outside click", () => {
@@ -155,12 +154,12 @@ describe("MessageCenter", () => {
     const footerPopup = wrapper.find(FooterPopup);
 
     const statusBarInstance = wrapper.instance();
-    const spy = sinon.spy(statusBarInstance, "setOpenWidget");
+    statusBarInstance.setState(() => ({ openWidget: "test-widget" }));
 
     const outsideClick = new MouseEvent("");
     footerPopup.prop("onOutsideClick")!(outsideClick);
 
-    expect(spy.calledWithExactly(null)).false;
+    expect(statusBarInstance.state.openWidget).eq("test-widget");
   });
 
   // nz-footer-messageCenter-tab

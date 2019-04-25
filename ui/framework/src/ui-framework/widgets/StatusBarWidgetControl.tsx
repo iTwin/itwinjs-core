@@ -12,12 +12,18 @@ import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurab
  */
 export type StatusBarFieldId = string | null;
 
-/** Status Bar interface.
+/** Status Bar Widget Control render prop arguments.
  * @public
- */
-export interface IStatusBar {
-  setOpenWidget(openWidget: StatusBarFieldId): void;
-  setFooterMessages(footerMessages: any): void;
+ */
+export interface StatusBarWidgetControlArgs {
+  /** Describes whether the footer is in widget or footer mode. */
+  isInFooterMode: boolean;
+  /** Currently open widget or null if no widget is open. */
+  openWidget: StatusBarFieldId;
+  /** Function called when the widget is being opened or closed. */
+  onOpenWidget: (widget: StatusBarFieldId) => void;
+  /** Element reference to which the toast will animate out to. */
+  toastTargetRef: React.Ref<HTMLElement>;
 }
 
 /** Status Bar Widget Control.
@@ -29,7 +35,7 @@ export abstract class StatusBarWidgetControl extends WidgetControl {
   }
 
   /** Gets the React node associated with this StatusBar Widget Control */
-  public abstract getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode;
+  public abstract getReactNode(args: StatusBarWidgetControlArgs): React.ReactNode;
 
   /** Gets the type of ConfigurableUiControl, which is 'StatusBarWidget' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.StatusBarWidget; }

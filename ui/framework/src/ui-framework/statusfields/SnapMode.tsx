@@ -154,7 +154,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
 
   /** Opens the pop-up window. */
   private setOpenWidget(openWidget: StatusBarFieldId) {
-    this.props.statusBar.setOpenWidget(openWidget);
+    this.props.onOpenWidget(openWidget);
   }
 }
 

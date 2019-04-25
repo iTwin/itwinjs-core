@@ -5,23 +5,17 @@
 import * as React from "react";
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { IStatusBar, StatusBarFieldId, FrontstageManager } from "@bentley/ui-framework";
+import { StatusBarFieldId, FrontstageManager, StatusFieldProps } from "@bentley/ui-framework";
 import { ToolAssistance, ToolAssistanceDialog, FooterPopup } from "@bentley/ui-ninezone";
-
-export interface ToolAssistanceProps {
-  statusBar: IStatusBar;
-  isInFooterMode: boolean;
-  openWidget: StatusBarFieldId;
-}
 
 /** Tool Assistance Field React component.
  */
-export class ToolAssistanceField extends React.Component<ToolAssistanceProps> {
+export class ToolAssistanceField extends React.Component<StatusFieldProps> {
   private _className: string;
   private _target = React.createRef<HTMLDivElement>();
   private _indicator = React.createRef<HTMLDivElement>();
 
-  constructor(p: ToolAssistanceProps) {
+  constructor(p: StatusFieldProps) {
     super(p);
 
     const instance = this.constructor;
@@ -85,6 +79,6 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceProps> {
   }
 
   private setOpenWidget(openWidget: StatusBarFieldId) {
-    this.props.statusBar.setOpenWidget(openWidget);
+    this.props.onOpenWidget(openWidget);
   }
 }

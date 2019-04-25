@@ -33,20 +33,29 @@ interface MessageCenterState {
   activeTab: MessageCenterActiveTab;
 }
 
+/** Properties of [[MessageCenterField]] component.
+ * @public
+ */
+export interface MessageCenterFieldProps extends StatusFieldProps {
+  /** Message center dialog target. */
+  targetRef?: React.Ref<HTMLElement>;
+}
+
 /** Message Center Field React component.
  * @public
  */
-export class MessageCenterField extends React.Component<StatusFieldProps, MessageCenterState> {
+export class MessageCenterField extends React.Component<MessageCenterFieldProps, MessageCenterState> {
   private _className: string;
-  private _element: any;
-  private _target = React.createRef<HTMLDivElement>();
+  private _target: React.MutableRefObject<HTMLDivElement | null> = {
+    current: null,
+  };
   private _indicator = React.createRef<HTMLDivElement>();
 
   public readonly state: Readonly<MessageCenterState> = {
     activeTab: MessageCenterActiveTab.AllMessages,
   };
 
-  constructor(p: StatusFieldProps) {
+  constructor(p: MessageCenterFieldProps) {
     super(p);
 
     const instance = this.constructor;
@@ -64,8 +73,7 @@ export class MessageCenterField extends React.Component<StatusFieldProps, Messag
           isInFooterMode={this.props.isInFooterMode}
           label={this.props.isInFooterMode ? UiFramework.i18n.translate("UiFramework:messageCenter.messages") : undefined}
           onClick={this._handleMessageIndicatorClick}
-          ref={(element: any) => { this._element = element; }}
-          targetRef={this._target}
+          targetRef={this._handleTargetRef}
         >
           {messageCount.toString()}
         </MessageCenter>
@@ -111,9 +119,15 @@ export class MessageCenterField extends React.Component<StatusFieldProps, Messag
       </>
     );
 
-    this.props.statusBar.setFooterMessages(this._element);
-
     return footerMessages;
+  }
+
+  private _handleTargetRef = (instance: HTMLDivElement | null) => {
+    if (typeof this.props.targetRef === "function")
+      this.props.targetRef(instance);
+    else if (this.props.targetRef)
+      (this.props.targetRef as React.MutableRefObject<HTMLElement | null>).current = instance;
+    this._target.current = instance;
   }
 
   private _handleClose = () => {
@@ -190,7 +204,6 @@ export class MessageCenterField extends React.Component<StatusFieldProps, Messag
   }
 
   private setOpenWidget(openWidget: StatusBarFieldId) {
-    this.props.statusBar.setOpenWidget(openWidget);
+    this.props.onOpenWidget(openWidget);
   }
-
 }

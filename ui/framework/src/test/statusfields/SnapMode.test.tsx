@@ -18,11 +18,10 @@ import {
   StatusBar,
   WidgetState,
   ConfigurableCreateInfo,
-  IStatusBar,
-  StatusBarFieldId,
   WidgetDef,
   ConfigurableUiControlType,
   UiFramework,
+  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
 
 describe("SnapModeField", () => {
@@ -32,10 +31,10 @@ describe("SnapModeField", () => {
       super(info, options);
     }
 
-    public getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode {
+    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <SnapModeField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
+          <SnapModeField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
         </>
       );
     }
@@ -114,13 +113,13 @@ describe("SnapModeField", () => {
     const footerPopup = wrapper.find(FooterPopup);
 
     const statusBarInstance = statusBar.instance() as StatusBar;
-    const spy = sinon.spy(statusBarInstance, "setOpenWidget");
+    statusBarInstance.setState(() => ({ openWidget: "test-widget" }));
 
     const outsideClick = new MouseEvent("");
     sinon.stub(outsideClick, "target").get(() => document.createElement("div"));
     footerPopup.prop("onOutsideClick")!(outsideClick);
 
-    expect(spy.calledWithExactly(null)).true;
+    expect(statusBarInstance.state.openWidget).null;
   });
 
   it("should not close on outside click", () => {
@@ -131,12 +130,11 @@ describe("SnapModeField", () => {
     const footerPopup = wrapper.find(FooterPopup);
 
     const statusBarInstance = statusBar.instance() as StatusBar;
-    const spy = sinon.spy(statusBarInstance, "setOpenWidget");
-
+    statusBarInstance.setState(() => ({ openWidget: "test-widget" }));
     const outsideClick = new MouseEvent("");
     footerPopup.prop("onOutsideClick")!(outsideClick);
 
-    expect(spy.calledWithExactly(null)).false;
+    expect(statusBarInstance.state.openWidget).eq("test-widget");
   });
 
 });

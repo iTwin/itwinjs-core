@@ -11,8 +11,6 @@ import { render, cleanup } from "react-testing-library";
 import TestUtils from "../TestUtils";
 import {
   StatusBar,
-  StatusBarFieldId,
-  IStatusBar,
   SelectionInfoField,
   StatusBarWidgetControl,
   WidgetState,
@@ -21,6 +19,7 @@ import {
   WidgetDef,
   UiFramework,
   SessionStateActionId,
+  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
 
 describe("SelectionInfoField", () => {
@@ -32,8 +31,8 @@ describe("SelectionInfoField", () => {
       super(info, options);
     }
 
-    public getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode {
-      if (statusBar && openWidget) { }
+    public getReactNode({ isInFooterMode, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+      if (openWidget) { }
       return (
         <>
           <SelectionInfoField isInFooterMode={isInFooterMode} />

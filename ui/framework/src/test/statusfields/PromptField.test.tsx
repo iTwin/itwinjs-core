@@ -10,8 +10,6 @@ import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import {
   StatusBar,
-  StatusBarFieldId,
-  IStatusBar,
   PromptField,
   StatusBarWidgetControl,
   WidgetState,
@@ -19,6 +17,7 @@ import {
   MessageManager,
   ConfigurableUiControlType,
   WidgetDef,
+  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
 
 describe("PromptField", () => {
@@ -28,8 +27,8 @@ describe("PromptField", () => {
       super(info, options);
     }
 
-    public getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode {
-      if (statusBar && openWidget) { }
+    public getReactNode({ isInFooterMode, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+      if (openWidget) { }
       return (
         <>
           <PromptField isInFooterMode={isInFooterMode} />

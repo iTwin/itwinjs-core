@@ -10,13 +10,12 @@ import {
   StatusBarWidgetControl,
   ConfigurableCreateInfo,
   MessageCenterField,
-  IStatusBar,
-  StatusBarFieldId,
   WidgetState,
   StatusBar,
   AppNotificationManager,
   WidgetDef,
   ConfigurableUiControlType,
+  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
 
 import {
@@ -36,10 +35,10 @@ describe("StatusBar", () => {
       super(info, options);
     }
 
-    public getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode {
+    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <MessageCenterField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
+          <MessageCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
         </>
       );
     }

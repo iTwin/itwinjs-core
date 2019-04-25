@@ -1676,14 +1676,6 @@ export enum InputStatus {
 }
 
 // @public
-export interface IStatusBar {
-    // (undocumented)
-    setFooterMessages(footerMessages: any): void;
-    // (undocumented)
-    setOpenWidget(openWidget: StatusBarFieldId): void;
-}
-
-// @public
 export abstract class ItemDefBase {
     constructor(itemProps: ItemProps);
     // (undocumented)
@@ -2013,13 +2005,18 @@ export interface MessageAddedEventArgs {
 // Warning: (ae-forgotten-export) The symbol "MessageCenterState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class MessageCenterField extends React_2.Component<StatusFieldProps, MessageCenterState> {
-    constructor(p: StatusFieldProps);
+export class MessageCenterField extends React_2.Component<MessageCenterFieldProps, MessageCenterState> {
+    constructor(p: MessageCenterFieldProps);
     // (undocumented)
     render(): React_2.ReactNode;
     // (undocumented)
     readonly state: Readonly<MessageCenterState>;
     }
+
+// @public
+export interface MessageCenterFieldProps extends StatusFieldProps {
+    targetRef?: React_2.Ref<HTMLElement>;
+}
 
 // @public
 export class MessageManager {
@@ -2699,7 +2696,7 @@ export type StateType<R extends Reducer<any, any>> = DeepReadonly<ReturnType<R>>
 // Warning: (ae-forgotten-export) The symbol "StatusBarState" needs to be exported by the entry point ui-framework.d.ts
 // 
 // @public
-export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState> implements IStatusBar {
+export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState> {
     constructor(props: StatusBarProps);
     // (undocumented)
     componentDidMount(): void;
@@ -2708,14 +2705,10 @@ export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState>
     // (undocumented)
     render(): React_2.ReactNode;
     // (undocumented)
-    setFooterMessages(element: any): void;
-    // (undocumented)
-    setOpenWidget(openWidget: StatusBarFieldId): void;
-    // (undocumented)
     static severityToStatus(severity: MessageSeverity): Status;
     // @internal (undocumented)
     readonly state: Readonly<StatusBarState>;
-}
+    }
 
 // @public
 export type StatusBarFieldId = string | null;
@@ -2731,8 +2724,16 @@ export interface StatusBarProps extends CommonProps {
 // @public
 export abstract class StatusBarWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
-    abstract getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode;
+    abstract getReactNode(args: StatusBarWidgetControlArgs): React.ReactNode;
     getType(): ConfigurableUiControlType;
+}
+
+// @public
+export interface StatusBarWidgetControlArgs {
+    isInFooterMode: boolean;
+    onOpenWidget: (widget: StatusBarFieldId) => void;
+    openWidget: StatusBarFieldId;
+    toastTargetRef: React.Ref<HTMLElement>;
 }
 
 // @internal
@@ -2760,8 +2761,8 @@ export interface StatusBarZoneProps extends CommonProps {
 // @public
 export interface StatusFieldProps extends CommonProps {
     isInFooterMode: boolean;
+    onOpenWidget: (widget: StatusBarFieldId) => void;
     openWidget: StatusBarFieldId;
-    statusBar: IStatusBar;
 }
 
 // @public

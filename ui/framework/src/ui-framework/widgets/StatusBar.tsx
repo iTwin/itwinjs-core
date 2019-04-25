@@ -5,7 +5,7 @@
 /** @module StatusBar */
 
 import * as React from "react";
-import { StatusBarFieldId, IStatusBar, StatusBarWidgetControl } from "./StatusBarWidgetControl";
+import { StatusBarFieldId, StatusBarWidgetControl } from "./StatusBarWidgetControl";
 
 import {
   Footer,
@@ -65,13 +65,12 @@ export interface StatusBarProps extends CommonProps {
 /** Status Bar React component.
  * @public
  */
-export class StatusBar extends React.Component<StatusBarProps, StatusBarState> implements IStatusBar {
-  private _footerMessages: any;
+export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
+  private _toastTarget = React.createRef<HTMLDivElement>();
 
   constructor(props: StatusBarProps) {
     super(props);
   }
-
   public static severityToStatus(severity: MessageSeverity): Status {
     switch (severity) {
       case MessageSeverity.Error:
@@ -96,7 +95,12 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     let footerSections: React.ReactNode = null;
     const widgetControl = this.props.widgetControl;
     if (widgetControl && widgetControl.getReactNode) {
-      footerSections = widgetControl.getReactNode(this, this.props.isInFooterMode, this.state.openWidget);
+      footerSections = widgetControl.getReactNode({
+        isInFooterMode: this.props.isInFooterMode,
+        openWidget: this.state.openWidget,
+        toastTargetRef: this._toastTarget,
+        onOpenWidget: this._handleOpenWidget,
+      });
     }
 
     return (
@@ -175,7 +179,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
       case (StatusBarMessageType.Toast): {
         return (
           <ToastMessage
-            animateOutTo={this._footerMessages}
+            animateOutTo={this._toastTarget}
             onAnimatedOut={() => this._hideMessages()}
             timeout={2500}
             content={
@@ -295,7 +299,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     }));
   }
 
-  public setOpenWidget(openWidget: StatusBarFieldId) {
+  private _handleOpenWidget = (openWidget: StatusBarFieldId) => {
     this.setState((_prevState, _props) => {
       return {
         openWidget,
@@ -312,9 +316,5 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
       visibleMessage,
       messageDetails,
     }));
-  }
-
-  public setFooterMessages(element: any): void {
-    this._footerMessages = element;
   }
 }
