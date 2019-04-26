@@ -92,22 +92,181 @@ describe("Render", () => {
 
     // Assert that ordering of symbology is correct using implemented compare method
     const symbArr: Gradient.Symb[] = [];
-    const numCreated = 10;
-    for (let i = 0; i < numCreated; i++) {
-      symb = Gradient.Symb.fromJSON({
-        mode: (i < 1) ? Math.floor(Math.random() * 1234) % 7 : Gradient.Mode.Linear,
-        flags: (i < 2) ? Math.floor(Math.random() * 1234) % 3 : Gradient.Flags.None,
-        tint: (i < 3) ? Math.random() : 5,
-        shift: (i < 4) ? Math.random() * 10 : 6,
-        angle: (i < 5) ? Angle.createDegrees(Math.random() * 100) : Angle.create360(),
-        keys: [{ value: (i < 6) ? Math.random() : 5, color: new ColorDef(Math.random() * 1000) }, { value: Math.random(), color: new ColorDef(Math.random() * 1000) }],
-      });
-      symbArr.push(symb);
-    }
-    symbArr[numCreated - 1].keys.pop(); // Get a symbology with a fewer # of keys
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 0,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 2,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.02,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.6,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 2,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 5.576,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(20.6),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(122),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.333, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.78, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(425) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(611) }, { value: 0.731472008309797, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.6767, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.8787, color: new ColorDef(230) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(231) }],
+    });
+    symbArr.push(symb);
+    symb = Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: new ColorDef(610) }, { value: 0.731472008309797, color: new ColorDef(229) }],
+    });
+    symbArr.push(symb);
+
     symbArr.sort(Gradient.Symb.compareSymb);
 
-    for (let i = 1; i < numCreated; i++) {
+    for (let i = 1; i < symbArr.length; i++) {
       const prev = symbArr[i - 1];
       const current = symbArr[i];
       if (current.mode !== prev.mode) {
@@ -140,6 +299,14 @@ describe("Render", () => {
       }
       if (current.keys[0].color.tbgr !== prev.keys[0].color.tbgr) {
         assert.isTrue(current.keys[0].color.tbgr > prev.keys[0].color.tbgr);
+        continue;
+      }
+      if (current.keys[1].value !== prev.keys[1].value) {
+        assert.isTrue(current.keys[1].value > prev.keys[1].value);
+        continue;
+      }
+      if (current.keys[1].color.tbgr !== prev.keys[1].color.tbgr) {
+        assert.isTrue(current.keys[1].color.tbgr > prev.keys[1].color.tbgr);
         continue;
       }
       assert.isTrue(current.equals(prev));

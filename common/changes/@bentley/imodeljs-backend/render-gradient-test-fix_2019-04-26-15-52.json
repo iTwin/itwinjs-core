@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix for Render Gradient.Symb test",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Heather.Neely@bentley.com"
+}
