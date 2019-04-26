@@ -362,15 +362,16 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
     }>;
     forEach(func: (key: K, value: V) => void): void;
     get(key: K): V | undefined;
+    has(key: K): boolean;
     insert(key: K, value: V): boolean;
     // (undocumented)
     protected _keys: K[];
-    readonly length: number;
     protected lowerBound(key: K): {
         index: number;
         equal: boolean;
     };
     set(key: K, value: V): void;
+    readonly size: number;
     // (undocumented)
     protected _values: V[];
 }
@@ -409,6 +410,22 @@ export class Entry<K, V> {
     older?: Entry<K, V>;
     // (undocumented)
     value: V;
+}
+
+// @public
+export interface EntryContainer<K, V> {
+    // (undocumented)
+    clear(): void;
+    // (undocumented)
+    delete(key: K): void;
+    // (undocumented)
+    get(key: K): Entry<K, V> | undefined;
+    // (undocumented)
+    has(key: K): boolean;
+    // (undocumented)
+    set(key: K, value: Entry<K, V>): void;
+    // (undocumented)
+    readonly size: number;
 }
 
 // @alpha
@@ -882,21 +899,21 @@ export function lowerBound<T, U = T>(value: T, list: U[], compare: OrderedCompar
 };
 
 // @public
-export class LRUMap<K, V> {
-    constructor(limit: number);
+export class LRUCache<K, V> {
+    constructor(limit: number, container: EntryContainer<K, V>);
     assign(entries: Iterable<[K, V]>): void;
     clear(): void;
     delete(key: K): V | undefined;
     entries(): Iterator<[K, V] | undefined> | undefined;
     find(key: K): V | undefined;
-    forEach(fun: (value: V, key: K, m: LRUMap<K, V>) => void, thisObj?: any): void;
+    forEach(fun: (value: V, key: K, m: LRUCache<K, V>) => void, thisObj?: any): void;
     get(key: K): V | undefined;
     has(key: K): boolean;
     keys(): Iterator<K | undefined> | undefined;
     limit: number;
     newest?: Entry<K, V>;
     oldest?: Entry<K, V>;
-    set(key: K, value: V): LRUMap<K, V>;
+    set(key: K, value: V): LRUCache<K, V>;
     shift(): [K, V] | undefined;
     size: number;
     toJSON(): Array<{
@@ -905,6 +922,16 @@ export class LRUMap<K, V> {
     }>;
     toString(): string;
     values(): Iterator<V | undefined> | undefined;
+}
+
+// @public
+export class LRUDictionary<K, V> extends LRUCache<K, V> {
+    constructor(limit: number, compareKeys: OrderedComparator<K>);
+}
+
+// @public
+export class LRUMap<K, V> extends LRUCache<K, V> {
+    constructor(limit: number);
 }
 
 // @public

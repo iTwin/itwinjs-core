@@ -163,7 +163,7 @@ describe("Dictionary", () => {
       expect(found!).to.equal(val);
     }
 
-    expect(dict.length).to.equal(entries.length);
+    expect(dict.size).to.equal(entries.length);
 
     const arrays = dict.extractArrays();
     expectSorted(arrays.keys, entries.length, false, compareIds);
@@ -180,7 +180,7 @@ describe("Dictionary", () => {
         ++numEntries;
       }
 
-      expect(numEntries).to.equal(dict.length);
+      expect(numEntries).to.equal(dict.size);
     };
 
     countEntries();

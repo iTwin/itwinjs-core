@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert, BeDuration, Id64String, Id64, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, dispose, Id64String, Id64, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, ClipVector, Constant, IndexedPolyface, IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
   ColorDef, ElementAlignedBox2d, ElementAlignedBox3d, Feature, FeatureTable, Gradient, GraphicParams, ImageBuffer,
@@ -13,10 +13,11 @@ import {
 } from "@bentley/imodeljs-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
+import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { GraphicList, PackedFeatureTable, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
+import { GraphicList, PackedFeatureTable, RenderClipVolume, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
 import { Tile, TileLoader, TileTree } from "./tile/TileTree";
 import { TileRequest } from "./tile/TileRequest";
 import { DecorateContext, SceneContext } from "./ViewContext";
@@ -286,7 +287,7 @@ export namespace Attachments {
 
       const drawArgs = viewRoot.createDrawArgs(args.context);
       drawArgs.location.setFrom(myRoot.drawingToAttachment);
-      drawArgs.clip = myRoot.graphicsClip;
+      drawArgs.clipVolume = myRoot.graphicsClip;
       drawArgs.graphics.setViewFlagOverrides(this.root.viewFlagOverrides);
       drawArgs.graphics.symbologyOverrides = myRoot.symbologyOverrides;
 
@@ -445,7 +446,8 @@ export namespace Attachments {
       ];
 
       // first create the polys for the tile so we can get the range (create graphics from polys later)
-      this._tilePolyfaces = system.createSheetTilePolyfaces(corners, tree.graphicsClip);
+      const clip = undefined !== tree.graphicsClip ? tree.graphicsClip.clipVector : undefined;
+      this._tilePolyfaces = system.createSheetTilePolyfaces(corners, clip);
     }
 
     public createGraphics(context: SceneContext) {
@@ -569,7 +571,12 @@ export namespace Attachments {
 
   /** @internal */
   export abstract class Tree extends TileTree {
-    public graphicsClip?: ClipVector;
+    public graphicsClip?: RenderClipVolume;
+
+    public dispose(): void {
+      super.dispose();
+      this.graphicsClip = dispose(this.graphicsClip);
+    }
 
     public constructor(loader: AttachmentTileLoader, iModel: IModelConnection, modelId: Id64String) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
@@ -642,14 +649,17 @@ export namespace Attachments {
       // (Containment tests can also be more efficiently performed if boundary range is specified)
       const clipTf = location.inverse();
       if (clipTf !== undefined) {
-        this.clipVector = attachment.getOrCreateClip(clipTf);
-        clipTf.multiplyRange(attachRange, this.clipVector.boundingRange);
+        const clip = attachment.getOrCreateClip(clipTf);
+        this.clipVolume = IModelApp.renderSystem.createClipVolume(clip);
+        if (undefined !== this.clipVolume)
+          clipTf.multiplyRange(attachRange, this.clipVolume.clipVector.boundingRange);
       }
 
       const sheetToDrawing = this.drawingToAttachment.inverse();
       if (sheetToDrawing !== undefined) {
-        this.graphicsClip = attachment.getOrCreateClip(sheetToDrawing);
-        sheetToDrawing.multiplyRange(attachRange, this.graphicsClip.boundingRange);
+        const graphicsClip = attachment.getOrCreateClip(sheetToDrawing);
+        sheetToDrawing.multiplyRange(attachRange, graphicsClip.boundingRange);
+        this.graphicsClip = IModelApp.renderSystem.createClipVolume(graphicsClip);
       }
 
       this._rootTile = new Tile2d(this, attachment.placement.bbox);
@@ -762,8 +772,10 @@ export namespace Attachments {
       this.viewport.toParent.matrix.scaleColumns(scale.x, scale.y, 1, this.viewport.toParent.matrix);
 
       const fromParent = this.viewport.toParent.inverse();
-      if (fromParent !== undefined)
-        this.graphicsClip = attachment.getOrCreateClip(fromParent);
+      if (fromParent !== undefined) {
+        const graphicsClip = attachment.getOrCreateClip(fromParent);
+        this.graphicsClip = IModelApp.renderSystem.createClipVolume(graphicsClip);
+      }
 
       this._rootTile = Tile3d.create(this, undefined, Tile3dPlacement.Root);
       (this._rootTile as Tile3d).createPolyfaces(sceneContext);    // graphics clip must be set before creating polys (the polys that represent the tile)

@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Collections */
 
+import { OrderedComparator } from "./Compare";
+import { Dictionary } from "./Dictionary";
+
 /*
  * Derived from:
  * Licensed under MIT. Copyright (c) 2010 Rasmus Andersson <http://hunch.se/>
@@ -62,10 +65,23 @@ class ValueIterator<K, V> implements Iterator<V | undefined> {
   }
 }
 
+/** The interface that must be satisified by the underlying container type used by a LRUCache.
+ * Compatible with a [[Dictionary]] or a standard Map.
+ * @public
+ */
+export interface EntryContainer<K, V> {
+  readonly size: number;
+  clear(): void;
+  get(key: K): Entry<K, V> | undefined;
+  set(key: K, value: Entry<K, V>): void;
+  has(key: K): boolean;
+  delete(key: K): void;
+}
+
 /**
- * A Map of a key/value pairs, where the size of the map can be limited.
+ * A mapping of a key/value pairs, where the size of the cache can be limited.
  *
- * When entries are inserted, if the map is "full", the
+ * When entries are inserted, if the cache is "full", the
  * least-recently-used (LRU) value is dropped. When entries are retrieved, they are moved to the front of the LRU list.
  *
  * Illustration of the design:
@@ -82,29 +98,29 @@ class ValueIterator<K, V> implements Iterator<V | undefined> {
  * ```
  * @public
  */
-export class LRUMap<K, V> {
-  private _keymap: Map<K, Entry<K, V>>;
+export class LRUCache<K, V> {
+  private _container: EntryContainer<K, V>;
 
   /** Current number of items */
   public size: number;
 
-  /** Maximum number of items this map can hold */
+  /** Maximum number of items this cache can hold */
   public limit: number;
 
-  /** Least recently-used entry. Invalidated when map is modified. */
+  /** Least recently-used entry. Invalidated when cache is modified. */
   public oldest?: Entry<K, V>;
 
-  /** Most recently-used entry. Invalidated when map is modified. */
+  /** Most recently-used entry. Invalidated when cache is modified. */
   public newest?: Entry<K, V>;
 
   /**
-   * Construct a new LRUMap to hold up to limit entries.
+   * Construct a new LRUCache to hold up to `limit` entries.
    */
-  constructor(limit: number) {
+  public constructor(limit: number, container: EntryContainer<K, V>) {
     this.size = 0;
     this.limit = limit;
     this.oldest = this.newest = undefined;
-    this._keymap = new Map<K, Entry<K, V>>();
+    this._container = container;
   }
 
   private markEntryAsUsed(entry: Entry<K, V>) {
@@ -132,15 +148,15 @@ export class LRUMap<K, V> {
     this.newest = entry;
   }
 
-  /**  Replace all values in this map with key-value pairs (2-element Arrays) from provided iterable. */
+  /**  Replace all values in this cache with key-value pairs (2-element Arrays) from provided iterable. */
   public assign(entries: Iterable<[K, V]>): void {
     let entry;
     let limit = this.limit || Number.MAX_VALUE;
-    this._keymap.clear();
+    this._container.clear();
     const it = entries[Symbol.iterator]();
     for (let itv = it.next(); !itv.done; itv = it.next()) {
       const e = new Entry(itv.value[0], itv.value[1]);
-      this._keymap.set(e.key, e);
+      this._container.set(e.key, e);
       if (!entry) {
         this.oldest = e;
       } else {
@@ -153,7 +169,7 @@ export class LRUMap<K, V> {
       }
     }
     this.newest = entry;
-    this.size = this._keymap.size;
+    this.size = this._container.size;
   }
 
   /** Get and register recent use of <key>.
@@ -161,7 +177,7 @@ export class LRUMap<K, V> {
    */
   public get(key: K): V | undefined {
     // First, find our cache entry
-    const entry = this._keymap.get(key);
+    const entry = this._container.get(key);
     if (!entry)
       return; // Not cached. Sorry.
     // As <key> was found in the cache, register it as being requested recently
@@ -172,8 +188,8 @@ export class LRUMap<K, V> {
   /** Put <value> into the cache associated with <key>. Replaces any existing entry with the same key.
    *  @returns `this`.
    */
-  public set(key: K, value: V): LRUMap<K, V> {
-    let entry = this._keymap.get(key);
+  public set(key: K, value: V): LRUCache<K, V> {
+    let entry = this._container.get(key);
     if (entry) {
       // update existing
       entry.value = value;
@@ -182,7 +198,7 @@ export class LRUMap<K, V> {
     }
 
     // new entry
-    this._keymap.set(key, (entry = new Entry(key, value)));
+    this._container.set(key, (entry = new Entry(key, value)));
 
     if (this.newest) {
       // link previous tail to the new tail (entry)
@@ -221,7 +237,7 @@ export class LRUMap<K, V> {
       // Remove last strong reference to <entry> and remove links from the purged
       // entry being returned:
       entry.newer = entry.older = undefined;
-      this._keymap.delete(entry.key);
+      this._container.delete(entry.key);
       --this.size;
       return [entry.key, entry.value];
     }
@@ -229,26 +245,26 @@ export class LRUMap<K, V> {
   }
 
   /** Access value for `key` without registering recent use. Useful if you do not
-   *  want to change the state of the map, but only "peek" at it.
+   *  want to change the state of the cache, but only "peek" at it.
    *  @returns The value associated with `key` if found, or undefined if not found.
    */
   public find(key: K): V | undefined {
-    const e = this._keymap.get(key);
+    const e = this._container.get(key);
     return e ? e.value : undefined;
   }
 
   /** Check if there's a value for key in the cache without registering recent use. */
   public has(key: K): boolean {
-    return this._keymap.has(key);
+    return this._container.has(key);
   }
 
   /**  Remove entry `key` from cache and return its value.
    *  @returns The removed value, or undefined if not found.
    */
   public delete(key: K): V | undefined {
-    const entry = this._keymap.get(key);
+    const entry = this._container.get(key);
     if (!entry) return;
-    this._keymap.delete(entry.key);
+    this._container.delete(entry.key);
     if (entry.newer && entry.older) {
       // re-link the older entry with the newer entry
       entry.older.newer = entry.newer;
@@ -276,7 +292,7 @@ export class LRUMap<K, V> {
     // Note: clearing links should be safe, as we don't expose live links to user
     this.oldest = this.newest = undefined;
     this.size = 0;
-    this._keymap.clear();
+    this._container.clear();
   }
 
   /** Returns an iterator over all keys, starting with the oldest. */
@@ -295,7 +311,7 @@ export class LRUMap<K, V> {
   }
 
   /**  Call `fun` for each entry, starting with the oldest entry. */
-  public forEach(fun: (value: V, key: K, m: LRUMap<K, V>) => void, thisObj?: any): void {
+  public forEach(fun: (value: V, key: K, m: LRUCache<K, V>) => void, thisObj?: any): void {
     if (typeof thisObj !== "object") {
       thisObj = this;
     }
@@ -330,5 +346,31 @@ export class LRUMap<K, V> {
       }
     }
     return s;
+  }
+}
+
+/** A [[LRUCache]] using a standard Map as its internal storage.
+ * @public
+ */
+export class LRUMap<K, V> extends LRUCache<K, V> {
+  /**
+   * Construct a new LRUMap to hold up to `limit` entries.
+   */
+  constructor(limit: number) {
+    super(limit, new Map<K, Entry<K, V>>());
+  }
+}
+
+/** A [[LRUCache]] using a [[Dictionary]] as its internal storage, permitting custom key comparison logic.
+ * @public
+ */
+export class LRUDictionary<K, V> extends LRUCache<K, V> {
+  /**
+   * Construct a new LRUDictionary to hold up to `limit` entries.
+   * @param limit The maximum number of entries permitted in the dictionary.
+   * @param compareKeys The function used to compare keys within the dictionary.
+   */
+  constructor(limit: number, compareKeys: OrderedComparator<K>) {
+    super(limit, new Dictionary<K, Entry<K, V>>(compareKeys));
   }
 }

@@ -677,6 +677,7 @@ export abstract class ViewState extends ElementState {
 
   /** Set or clear the clipping volume for this view.
    * @param clip the new clipping volume. If undefined, clipping is removed from view.
+   * @note The ViewState takes ownership of the supplied ClipVector - it should not be modified after passing it to this function.
    */
   public setViewClip(clip?: ClipVector) {
     this._clipVector = clip;
@@ -686,7 +687,9 @@ export abstract class ViewState extends ElementState {
       this.removeDetail("clip");
   }
 
-  /** Get the clipping volume for this view, if defined */
+  /** Get the clipping volume for this view, if defined
+   * @note Do *not* modify the returned ClipVector. If you wish to change the ClipVector, clone the returned ClipVector, modify it as desired, and pass the clone to [[setViewClip]].
+   */
   public getViewClip(): ClipVector | undefined {
     if (undefined === this._clipVector) {
       const clip = this.peekDetail("clip");

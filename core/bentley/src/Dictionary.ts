@@ -75,7 +75,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
   }
 
   /** The number of entries in the dictionary. */
-  public get length(): number { return this._keys.length; }
+  public get size(): number { return this._keys.length; }
 
   /** Returns an iterator over the key-value pairs in the Dictionary suitable for use in `for-of` loops. Entries are returned in sorted order by key. */
   public [Symbol.iterator](): Iterator<DictionaryEntry<K, V>> { return new DictionaryIterator<K, V>(this._keys, this._values); }
@@ -94,6 +94,15 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
   public get(key: K): V | undefined {
     const bound = this.lowerBound(key);
     return bound.equal ? this._values[bound.index] : undefined;
+  }
+
+  /**
+   * Determines if an entry exists for the specified key
+   * @param key The key to search for
+   * @returns true if an entry exists in this dictionary corresponding to the specified key.
+   */
+  public has(key: K): boolean {
+    return this.lowerBound(key).equal;
   }
 
   /**
@@ -151,7 +160,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    */
   public extractPairs(): Array<{ key: K, value: V }> {
     const pairs: Array<{ key: K, value: V }> = [];
-    for (let i = 0; i < this.length; i++)
+    for (let i = 0; i < this.size; i++)
       pairs.push({ key: this._keys[i], value: this._values[i] });
 
     this.clear();
@@ -174,7 +183,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    * @param func The function to be applied.
    */
   public forEach(func: (key: K, value: V) => void): void {
-    for (let i = 0; i < this.length; i++)
+    for (let i = 0; i < this.size; i++)
       func(this._keys[i], this._values[i]);
   }
 

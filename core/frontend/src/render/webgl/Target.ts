@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
+import { ClipVector, Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { assert, BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates, PlanarClassifierMap } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
@@ -194,6 +194,8 @@ function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   image.data[i1] = tmp;
 }
 
+type ClipVolume = ClipPlanesVolume | ClipMaskVolume;
+
 /** @internal */
 export abstract class Target extends RenderTarget {
   protected _decorations?: Decorations;
@@ -213,8 +215,8 @@ export abstract class Target extends RenderTarget {
   private _transparencyThreshold: number = 0;
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
-  public readonly compositor: SceneCompositor;
-  private _activeClipVolume?: ClipPlanesVolume | ClipMaskVolume;
+  protected _compositor: SceneCompositor;
+  private _activeClipVolume?: ClipVolume;
   private _clipMask?: TextureHandle;
   public readonly clips = new Clips();
   public readonly planarClassifiers = new PlanarClassifiers();
@@ -257,10 +259,11 @@ export abstract class Target extends RenderTarget {
     this._overlayRenderState.flags.depthMask = false;
     this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
-    this.compositor = SceneCompositor.create(this);  // compositor is created but not yet initialized... we are still undisposed
+    this._compositor = SceneCompositor.create(this);  // compositor is created but not yet initialized... we are still undisposed
     this.renderRect = rect ? rect : new ViewRect();  // if the rect is undefined, expect that it will be updated dynamically in an OnScreenTarget
   }
 
+  public get compositor() { return this._compositor; }
   public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
   public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
 
@@ -341,7 +344,7 @@ export abstract class Target extends RenderTarget {
   public dispose() {
     this.reset();
 
-    dispose(this.compositor);
+    dispose(this._compositor);
 
     this._dcAssigned = false;   // necessary to reassign to OnScreenTarget fbo member when re-validating render plan
   }
@@ -382,6 +385,20 @@ export abstract class Target extends RenderTarget {
       this._activeClipVolume.pop(this);
   }
 
+  private updateActiveVolume(clip?: ClipVector): void {
+    if (undefined === clip) {
+      this._activeClipVolume = dispose(this._activeClipVolume);
+      return;
+    }
+
+    // ###TODO: Currently we assume the active view ClipVector is never mutated in place.
+    // ###TODO: We may want to compare differing ClipVectors to determine if they are logically equivalent to avoid reallocating clip volume.
+    if (undefined === this._activeClipVolume || this._activeClipVolume.clipVector !== clip) {
+      this._activeClipVolume = dispose(this._activeClipVolume);
+      this._activeClipVolume = System.instance.createClipVolume(clip) as ClipVolume;
+    }
+  }
+
   public get batchState(): BatchState { return this._batchState; }
   public get currentBatchId(): number { return this._batchState.currentBatchId; }
   public pushBatch(batch: Batch) {
@@ -417,7 +434,7 @@ export abstract class Target extends RenderTarget {
   public get planFraction() { return this._planFraction; }
 
   public changeDecorations(decs: Decorations): void {
-    this._decorations = dispose(this._decorations);
+    dispose(this._decorations);
     this._decorations = decs;
   }
   public changeScene(scene: GraphicList) {
@@ -547,8 +564,7 @@ export abstract class Target extends RenderTarget {
     if (this._dcAssigned && plan.is3d !== this.is3d) {
       // changed the dimensionality of the Target. World decorations no longer valid.
       // (lighting is enabled or disabled based on 2d vs 3d).
-      dispose(this._worldDecorations);
-      this._worldDecorations = undefined;
+      this._worldDecorations = dispose(this._worldDecorations);
     }
 
     if (!this.assignDC()) {
@@ -565,14 +581,7 @@ export abstract class Target extends RenderTarget {
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
 
-    let clipVolume: ClipPlanesVolume | ClipMaskVolume | undefined;
-    if (plan.activeVolume !== undefined)
-      if (plan.activeVolume.type === ClippingType.Planes)
-        clipVolume = plan.activeVolume as ClipPlanesVolume;
-      else if (plan.activeVolume.type === ClippingType.Mask)
-        clipVolume = plan.activeVolume as ClipMaskVolume;
-
-    this._activeClipVolume = clipVolume;
+    this.updateActiveVolume(plan.activeVolume);
 
     const scratch = Target._scratch;
     let visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible : undefined;
@@ -670,7 +679,7 @@ export abstract class Target extends RenderTarget {
     this._scene.length = 0;
 
     // Clear decorations
-    dispose(this._decorations);
+    this._decorations = dispose(this._decorations);
     this._dynamics = disposeArray(this._dynamics);
     this._worldDecorations = dispose(this._worldDecorations);
 
@@ -685,7 +694,7 @@ export abstract class Target extends RenderTarget {
 
     this._batches = [];
 
-    dispose(this._activeClipVolume);
+    this._activeClipVolume = dispose(this._activeClipVolume);
   }
 
   public get wantInvertBlackBackground(): boolean { return false; }
@@ -881,6 +890,7 @@ export abstract class Target extends RenderTarget {
 
       dispose(fbo);
     }
+
     dispose(texture);
 
     receiver(result);
@@ -1265,8 +1275,7 @@ export class OnScreenTarget extends Target {
 
   public onResized(): void {
     this._dcAssigned = false;
-    dispose(this._fbo);
-    this._fbo = undefined;
+    this._fbo = dispose(this._fbo);
   }
 }
 
@@ -1299,7 +1308,7 @@ export class OffScreenTarget extends Target {
 
     this._dcAssigned = false;
     this._fbo = dispose(this._fbo);
-    dispose(this.compositor);
+    dispose(this._compositor);
   }
 
   protected _assignDC(): boolean {

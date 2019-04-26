@@ -5,12 +5,12 @@
 /** @module Views */
 
 import { RenderSchedule, RgbColor } from "@bentley/imodeljs-common";
-import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets, Point4d } from "@bentley/geometry-core";
+import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets, Point4d } from "@bentley/geometry-core";
 import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./render/FeatureSymbology";
+import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { ClipPlanesVolume } from "./render/webgl/ClipVolume";
-import { AnimationBranchStates, AnimationBranchState } from "./render/System";
+import { AnimationBranchStates, AnimationBranchState, RenderClipVolume } from "./render/System";
 
 /** @internal */
 export namespace RenderScheduleState {
@@ -59,7 +59,7 @@ export namespace RenderScheduleState {
     }
   }
   export class ElementTimeline implements RenderSchedule.ElementTimelineProps {
-    public currentClip: ClipPlanesVolume | undefined = undefined;
+    public currentClip?: RenderClipVolume;
     public elementIds: Id64String[];
     public batchId: number;
     public visibilityTimeline?: VisibilityEntry[];
@@ -197,7 +197,7 @@ export namespace RenderScheduleState {
       return transform;
     }
 
-    public getAnimationClip(time: number, interval: Interval): ClipPlanesVolume | undefined {
+    public getAnimationClip(time: number, interval: Interval): RenderClipVolume | undefined {
       if (this.currentClip) {
         this.currentClip.dispose();
         this.currentClip = undefined;
@@ -225,8 +225,11 @@ export namespace RenderScheduleState {
       const plane = Plane3dByOriginAndUnitNormal.create(position, direction);
       const clipPlane = ClipPlane.createPlane(plane!);
       const clipPlaneSet = UnionOfConvexClipPlaneSets.createConvexSets([ConvexClipPlaneSet.createPlanes([clipPlane])]);
+      const clipPrimitive = ClipPrimitive.createCapture(clipPlaneSet);
+      const clipVector = ClipVector.createCapture([clipPrimitive]);
 
-      return (this.currentClip = ClipPlanesVolume.createFromClipPlaneSet(clipPlaneSet));
+      this.currentClip = IModelApp.renderSystem.createClipVolume(clipVector);
+      return this.currentClip;
     }
   }
 

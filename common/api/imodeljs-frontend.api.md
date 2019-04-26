@@ -162,7 +162,6 @@ import { TileProps } from '@bentley/imodeljs-common';
 import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
-import { UnionOfConvexClipPlaneSets } from '@bentley/geometry-core';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
@@ -958,7 +957,9 @@ export namespace Attachments {
     export abstract class Tree extends TileTree {
         constructor(loader: AttachmentTileLoader, iModel: IModelConnection, modelId: Id64String);
         // (undocumented)
-        graphicsClip?: ClipVector;
+        dispose(): void;
+        // (undocumented)
+        graphicsClip?: RenderClipVolume;
     }
     // (undocumented)
     export class Tree2d extends Tree {
@@ -4332,9 +4333,14 @@ export class RenderClassifierModel {
     readonly type: ClassifierType;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "RenderClipVolume" is marked as @beta, but its signature references "RenderMemory" which is marked as @internal
+// 
 // @beta
-export abstract class RenderClipVolume implements IDisposable {
-    // (undocumented)
+export abstract class RenderClipVolume implements IDisposable, RenderMemory.Consumer {
+    protected constructor(clipVector: ClipVector);
+    readonly clipVector: ClipVector;
+    // @internal (undocumented)
+    abstract collectStatistics(stats: RenderMemory.Statistics): void;
     abstract dispose(): void;
     abstract readonly type: ClippingType;
 }
@@ -4522,7 +4528,7 @@ export class RenderPlan {
     // (undocumented)
     readonly aaText: AntiAliasPref;
     // (undocumented)
-    readonly activeVolume?: RenderClipVolume;
+    readonly activeVolume?: ClipVector;
     // (undocumented)
     readonly analysisStyle?: AnalysisStyle;
     // (undocumented)
@@ -4533,8 +4539,6 @@ export class RenderPlan {
     readonly bgColor: ColorDef;
     // (undocumented)
     classificationTextures?: Map<Id64String, RenderTexture>;
-    // (undocumented)
-    static create(options: any, vp: Viewport): RenderPlan;
     // (undocumented)
     static createFromViewport(vp: Viewport): RenderPlan;
     // (undocumented)
@@ -4580,6 +4584,8 @@ export abstract class RenderSystem implements IDisposable {
     // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderClipVolume" which is marked as @beta
     // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderPlanarClassifier" which is marked as @beta
     abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
+    // @internal (undocumented)
+    createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
     // Warning: (ae-forgotten-export) The symbol "PolylineArgs" needs to be exported by the entry point imodeljs-frontend.d.ts
@@ -4623,8 +4629,6 @@ export abstract class RenderSystem implements IDisposable {
     enableDiagnostics(_enable: RenderDiagnostics): void;
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
-    // @internal (undocumented)
-    getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
     // @internal (undocumented)
     getSpatialClassificationModel(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined;
@@ -5563,10 +5567,12 @@ export abstract class Target extends RenderTarget {
     clipMask: TextureHandle | undefined;
     // (undocumented)
     readonly clips: Clips;
+    // (undocumented)
+    readonly compositor: SceneCompositor;
     // Warning: (ae-forgotten-export) The symbol "SceneCompositor" needs to be exported by the entry point imodeljs-frontend.d.ts
     // 
     // (undocumented)
-    readonly compositor: SceneCompositor;
+    protected _compositor: SceneCompositor;
     // (undocumented)
     readonly currentBatchId: number;
     // (undocumented)
@@ -5965,9 +5971,11 @@ export namespace Tile {
         Volume = 1
     }
     export class DrawArgs {
-        constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector);
+        constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume);
         // (undocumented)
-        clip?: ClipVector;
+        readonly clip: ClipVector | undefined;
+        // (undocumented)
+        clipVolume?: RenderClipVolume;
         // (undocumented)
         readonly context: SceneContext;
         // (undocumented)
@@ -6163,7 +6171,9 @@ export abstract class TileLoader {
 export class TileTree implements IDisposable, RenderMemory.Consumer {
     constructor(props: TileTree.Params);
     // (undocumented)
-    clipVector?: ClipVector;
+    readonly clipVector: ClipVector | undefined;
+    // (undocumented)
+    clipVolume?: RenderClipVolume;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)

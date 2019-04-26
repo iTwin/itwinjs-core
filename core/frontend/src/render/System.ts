@@ -183,7 +183,7 @@ export class RenderPlan {
   public readonly hiliteSettings: Hilite.Settings;
   public readonly aaLines: AntiAliasPref;
   public readonly aaText: AntiAliasPref;
-  public readonly activeVolume?: RenderClipVolume;
+  public readonly activeVolume?: ClipVector;
   public readonly hline?: HiddenLine.Settings;
   public readonly lights?: SceneLights;
   public readonly analysisStyle?: AnalysisStyle;
@@ -199,7 +199,7 @@ export class RenderPlan {
   public selectTerrainFrustum() { if (undefined !== this.terrainFrustum) this._curFrustum = this.terrainFrustum; }
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, terrainFrustum: ViewFrustum | undefined, activeVolume?: ClipVector, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
     this.is3d = is3d;
     this.viewFlags = viewFlags;
     this.bgColor = bgColor;
@@ -225,35 +225,12 @@ export class RenderPlan {
     const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
     const lights = undefined; // view.is3d() ? view.getLights() : undefined
     const clipVec = view.getViewClip();
-    const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
     const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, terrainFrustum!, activeVolume, hline, lights, style.analysisStyle, ao);
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, terrainFrustum!, clipVec, hline, lights, style.analysisStyle, ao);
     if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
       rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
     return rp;
-  }
-  public static create(options: any, vp: Viewport) {
-    if (!options) options = {};
-
-    const view = vp.view;
-    const style = view.displayStyle;
-
-    const hline = options.hline ? options.hline : (style.is3d() ? style.settings.hiddenLineSettings : undefined);
-    const ao = options.ambientOcclusionSettings ? options.ambientOcclusionSettings : (style.is3d() ? style.settings.ambientOcclusionSettings : undefined);
-    const lights = undefined; // view.is3d() ? view.getLights() : undefined
-    const clipVec = options.clipVec ? options.clipVec : view.getViewClip();
-    const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
-    const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-    return new RenderPlan(view.is3d(), options.viewFlags ? options.viewFlags : style.viewFlags,
-      options.backgroundColor ? options.backgroundColor : view.backgroundColor,
-      options.monochormeColor ? options.monochromeColor : style.monochromeColor,
-      options.hilite ? options.hilite : vp.hilite,
-      undefined !== options.wantAntialasLines ? options.wantAntialiasLines : vp.wantAntiAliasLines,
-      undefined !== options.wantAntiAliasText ? options.wantAntiAliasText : vp.wantAntiAliasText,
-      options.viewFrustum ? options.viewFrustum : vp.viewFrustum,
-      undefined !== options.isFadeOutActive ? options.isFadeOutActive : vp.isFadeOutActive, terrainFrustum!, activeVolume, hline, lights,
-      options.analysisStyle ? options.analysisStyle : style.analysisStyle, ao);
   }
 }
 
@@ -284,12 +261,26 @@ export const enum ClippingType {
 }
 
 /** An opaque representation of a clip volume applied to geometry within a [[Viewport]].
+ * A RenderClipVolume is created from a [[ClipVector]] and takes ownership of that ClipVector, expecting that it will not be modified while the RenderClipVolume still references it.
+ * @see [System.createClipVolume]
  * @beta
  */
-export abstract class RenderClipVolume implements IDisposable {
+export abstract class RenderClipVolume implements IDisposable, RenderMemory.Consumer {
+  /** The ClipVector from which this volume was created. It must not be modified. */
+  public readonly clipVector: ClipVector;
+
+  protected constructor(clipVector: ClipVector) {
+    this.clipVector = clipVector;
+  }
+
   /** Returns the type of this clipping volume. */
   public abstract get type(): ClippingType;
+
+  /** Disposes of any WebGL resources owned by this volume. Must be invoked when finished with the clip volume object to prevent memory leaks. */
   public abstract dispose(): void;
+
+  /** @internal */
+  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
 /** An opaque representation of a planar classifier applied to geometry within a [[Viewport]].
@@ -901,7 +892,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList { return []; }
   /** @internal */
-  public getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined { return undefined; }
+  public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
   /** @internal */
   public getSpatialClassificationModel(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined { return undefined; }
   /** @internal */

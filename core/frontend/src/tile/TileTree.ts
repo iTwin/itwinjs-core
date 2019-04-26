@@ -39,7 +39,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { GraphicBranch, RenderGraphic, RenderMemory, RenderPlanarClassifier } from "../render/System";
+import { GraphicBranch, RenderClipVolume, RenderGraphic, RenderMemory, RenderPlanarClassifier } from "../render/System";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { ViewFrustum } from "../Viewport";
@@ -636,7 +636,7 @@ export namespace Tile {
   export class DrawArgs {
     public readonly location: Transform;
     public readonly root: TileTree;
-    public clip?: ClipVector;
+    public clipVolume?: RenderClipVolume;
     public readonly context: SceneContext;
     public viewFrustum?: ViewFrustum;
     public readonly graphics: GraphicBranch = new GraphicBranch();
@@ -653,10 +653,10 @@ export namespace Tile {
       return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
     }
 
-    public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector) {
+    public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
       this.location = location;
       this.root = root;
-      this.clip = clip;
+      this.clipVolume = clip;
       this.context = context;
       this.now = now;
       this.purgeOlderThan = purgeOlderThan;
@@ -677,12 +677,13 @@ export namespace Tile {
       return 0.5 * (tile.root.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
     }
 
+    public get clip(): ClipVector | undefined { return undefined !== this.clipVolume ? this.clipVolume.clipVector : undefined; }
+
     public drawGraphics(): void {
       if (this.graphics.isEmpty)
         return;
 
-      const clipVolume = this.clip !== undefined ? IModelApp.renderSystem.getClipVolume(this.clip, this.root.iModel) : undefined;
-      const branch = this.context.createBranch(this.graphics, this.location, clipVolume, this.planarClassifier);
+      const branch = this.context.createBranch(this.graphics, this.location, this.clipVolume, this.planarClassifier);
 
       this.context.outputGraphic(branch);
     }
@@ -755,7 +756,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   public readonly viewFlagOverrides: ViewFlag.Overrides;
   public readonly maxTilesToSkip: number;
   public expirationTime: BeDuration;
-  public clipVector?: ClipVector;
+  public clipVolume?: RenderClipVolume;
   protected _rootTile: Tile;
   public readonly loader: TileLoader;
   public readonly yAxisUp: boolean;
@@ -767,7 +768,10 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.modelId = Id64.fromJSON(props.modelId);
     this.location = props.location;
     this.expirationTime = BeDuration.fromSeconds(5); // ###TODO tile purging strategy
-    this.clipVector = props.clipVector;
+
+    if (undefined !== props.clipVector)
+      this.clipVolume = IModelApp.renderSystem.createClipVolume(props.clipVector);
+
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
     this.loader = props.loader;
     this._rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
@@ -776,13 +780,17 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   }
 
   public get rootTile(): Tile { return this._rootTile; }
+  public get clipVector(): ClipVector | undefined { return undefined !== this.clipVolume ? this.clipVolume.clipVector : undefined; }
 
   public dispose() {
     dispose(this._rootTile);
+    this.clipVolume = dispose(this.clipVolume);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this._rootTile.collectStatistics(stats);
+    if (undefined !== this.clipVolume)
+      this.clipVolume.collectStatistics(stats);
   }
 
   public get is2d(): boolean { return !this.is3d; }
@@ -810,7 +818,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {
     const now = BeTimePoint.now();
     const purgeOlderThan = now.minus(this.expirationTime);
-    return new Tile.DrawArgs(context, this.location.clone(), this, now, purgeOlderThan, this.clipVector);
+    return new Tile.DrawArgs(context, this.location.clone(), this, now, purgeOlderThan, this.clipVolume);
   }
 
   public debugForcedDepth?: number; // For debugging purposes - force selection of tiles of specified depth.
@@ -969,8 +977,7 @@ export class TileTreeState {
 
   }
   public clearTileTree() {
-    dispose(this.tileTree);
-    this.tileTree = undefined;
+    this.tileTree = dispose(this.tileTree);
     this.loadStatus = TileTree.LoadStatus.NotLoaded;
   }
 }

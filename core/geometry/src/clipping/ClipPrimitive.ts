@@ -218,8 +218,8 @@ export class ClipPrimitive {
     }
     return undefined;
   }
-
 }
+
 /** Internal helper class holding XYZ components that serves as a representation of polygon edges defined by clip planes */
 class PolyEdge {
   public origin: Point3d;
