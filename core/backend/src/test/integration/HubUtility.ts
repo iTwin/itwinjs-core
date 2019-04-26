@@ -5,7 +5,7 @@
 import {
   AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, IModelHubClient,
   HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType, Version,
-  AuthorizedClientRequestContext, ImsUserCredentials,
+  AuthorizedClientRequestContext, ImsUserCredentials, VersionQuery,
 } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, GuidString, PerfLogger, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb, BackendRequestContext } from "../../imodeljs-backend";
@@ -116,8 +116,11 @@ export class HubUtility {
 
   /** Download all named versions of the specified iModel */
   private static async downloadNamedVersions(requestContext: AuthorizedClientRequestContext, _projectId: string, iModelId: GuidString): Promise<Version[]> {
+    const query = new VersionQuery();
+    query.orderBy("createdDate");
+
     const perfLogger = new PerfLogger("HubUtility.downloadNamedVersions -> Get Version Infos");
-    const versions: Version[] = await BriefcaseManager.imodelClient.versions.get(requestContext, iModelId);
+    const versions: Version[] = await BriefcaseManager.imodelClient.versions.get(requestContext, iModelId, query);
     perfLogger.dispose();
     if (versions.length === 0)
       return new Array<ChangeSet>();
