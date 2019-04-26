@@ -8,7 +8,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { UiEvent, CommonProps } from "@bentley/ui-core";
 import { XAndY } from "@bentley/geometry-core";
-import { ToolSettingsTooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
+import { offsetAndContainInContainer, Point, PointProps, Rectangle, SizeProps, Tooltip } from "@bentley/ui-ninezone";
 import { RelativePosition, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import "./Pointer.scss";
 
@@ -43,17 +43,6 @@ export interface PointerMessageChangedEventArgs {
   viewport?: HTMLElement;
   pt?: XAndY;
 }
-
-const adjustmentOffset = 50;
-const adjustPosition = offsetAndContainInContainer();
-const adjustTopPosition = offsetAndContainInContainer({ x: 0, y: -adjustmentOffset });
-const adjustTopRightPosition = offsetAndContainInContainer({ x: adjustmentOffset, y: -adjustmentOffset });
-const adjustRightPosition = offsetAndContainInContainer({ x: adjustmentOffset, y: 0 });
-const adjustBottomRightPosition = offsetAndContainInContainer({ x: adjustmentOffset, y: adjustmentOffset });
-const adjustBottomPosition = offsetAndContainInContainer({ x: 0, y: adjustmentOffset });
-const adjustBottomLeftPosition = offsetAndContainInContainer({ x: -adjustmentOffset, y: adjustmentOffset });
-const adjustLeftPosition = offsetAndContainInContainer({ x: -adjustmentOffset, y: 0 });
-const adjustTopLeftPosition = offsetAndContainInContainer({ x: -adjustmentOffset, y: -adjustmentOffset });
 
 /** Pointer Message Changed Event emitted by the [[PointerMessage]] component
  * @public
@@ -115,7 +104,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
       this.props.className);
 
     return (
-      <ToolSettingsTooltip
+      <Tooltip
         className={className}
         onSizeChanged={this._handleSizeChanged}
         position={this.state.position}
@@ -137,7 +126,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
             dangerouslySetInnerHTML={{ __html: this.state.detailedMessage }}
           />
         }
-      </ToolSettingsTooltip>
+      </Tooltip>
     );
   }
 
@@ -168,31 +157,32 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
   }
 
   private updatePosition() {
-    let adjust = adjustPosition;
+    const adjustmentOffset = 50;
+    let offset: PointProps | undefined;
     switch (this._relativePosition) {
       case RelativePosition.Top:
-        adjust = adjustTopPosition;
+        offset = { x: 0, y: -adjustmentOffset };
         break;
       case RelativePosition.TopRight:
-        adjust = adjustTopRightPosition;
+        offset = { x: adjustmentOffset, y: -adjustmentOffset };
         break;
       case RelativePosition.Right:
-        adjust = adjustRightPosition;
+        offset = { x: adjustmentOffset, y: 0 };
         break;
       case RelativePosition.BottomRight:
-        adjust = adjustBottomRightPosition;
+        offset = { x: adjustmentOffset, y: adjustmentOffset };
         break;
       case RelativePosition.Bottom:
-        adjust = adjustBottomPosition;
+        offset = { x: 0, y: adjustmentOffset };
         break;
       case RelativePosition.BottomLeft:
-        adjust = adjustBottomLeftPosition;
+        offset = { x: -adjustmentOffset, y: adjustmentOffset };
         break;
       case RelativePosition.Left:
-        adjust = adjustLeftPosition;
+        offset = { x: -adjustmentOffset, y: 0 };
         break;
       case RelativePosition.TopLeft:
-        adjust = adjustTopLeftPosition;
+        offset = { x: -adjustmentOffset, y: -adjustmentOffset };
         break;
     }
 
@@ -206,7 +196,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
       const relativeBounds = Rectangle.createFromSize(this._size).offset(this._position);
       const viewportOffset = new Point().getOffsetTo(containerBounds.topLeft());
 
-      const adjustedPosition = adjust(relativeBounds, containerBounds.getSize());
+      const adjustedPosition = offsetAndContainInContainer(relativeBounds, containerBounds.getSize(), offset);
       const position = adjustedPosition.offset(viewportOffset);
 
       if (Point.create(position).equals(prevState.position))

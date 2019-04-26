@@ -8,10 +8,9 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 import { UiEvent, CommonProps } from "@bentley/ui-core";
+import { Tooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
 import { XAndY } from "@bentley/geometry-core";
 import { ToolTipOptions } from "@bentley/imodeljs-frontend";
-
-import { ToolSettingsTooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
 
 /** [[ElementTooltip]] State.
  * @internal
@@ -33,8 +32,6 @@ export interface ElementTooltipChangedEventArgs {
   pt?: XAndY;
   options?: ToolTipOptions;
 }
-
-const adjustPosition = offsetAndContainInContainer({ x: 8, y: 8 });
 
 /** ElementTooltip Changed Event class.
  * @public
@@ -98,14 +95,14 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
 
     return (
       <div className="uifw-element-tooltip-container">
-        <ToolSettingsTooltip
+        <Tooltip
           className={className}
           style={this.props.style}
           position={this.state.position}
           onSizeChanged={this._handleSizeChanged}
         >
           {message}
-        </ToolSettingsTooltip>
+        </Tooltip>
       </div>
     );
   }
@@ -142,7 +139,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
 
       const containerBounds = Rectangle.create(this._element.getBoundingClientRect());
       const relativeBounds = Rectangle.createFromSize(this._size).offset(this._position);
-      const adjustedPosition = adjustPosition(relativeBounds, containerBounds.getSize());
+      const adjustedPosition = offsetAndContainInContainer(relativeBounds, containerBounds.getSize(), { x: 8, y: 8 });
       const position = adjustedPosition.offset(containerBounds.topLeft());
 
       if (Point.create(position).equals(prevState.position))

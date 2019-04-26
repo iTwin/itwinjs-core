@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Back } from "../../../ui-ninezone";
+import { BackTarget } from "../../../ui-ninezone";
 
-describe("<Back />", () => {
+describe("<BackTarget />", () => {
   it("should render", () => {
-    mount(<Back zoneIndex={9} />);
+    mount(<BackTarget zoneIndex={9} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Back zoneIndex={9} />).should.matchSnapshot();
+    shallow(<BackTarget zoneIndex={9} />).should.matchSnapshot();
   });
 });

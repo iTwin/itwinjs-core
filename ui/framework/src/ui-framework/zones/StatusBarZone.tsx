@@ -9,9 +9,7 @@ import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/Frontsta
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { StatusBar } from "../widgets/StatusBar";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
-
-// import TemporaryMessage from "@bentley/ui-ninezone/messages/Temporary";
-import { StatusZoneManagerProps as NZ_ZoneProps, DropTarget, StatusZone, RectangleProps, GhostOutline } from "@bentley/ui-ninezone";
+import { StatusZoneManagerProps as NZ_ZoneProps, DropTarget, Zone, RectangleProps, Outline } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for the [[StatusBarZone]] component
@@ -33,7 +31,7 @@ export class StatusBarZone extends React.Component<StatusBarZoneProps> {
   public render(): React.ReactNode {
     return (
       <>
-        <StatusZone
+        <Zone
           className={this.props.className}
           style={this.props.style}
           isInFooterMode={this.props.zoneProps.isInFooterMode}
@@ -46,20 +44,15 @@ export class StatusBarZone extends React.Component<StatusBarZoneProps> {
               widgetControl={this.props.widgetControl}
             />
           }
-        </StatusZone>
-        <StatusZone bounds={this.props.zoneProps.bounds}>
+        </Zone>
+        <Zone bounds={this.props.zoneProps.bounds}>
           <ZoneTargets
             zoneId={this.props.zoneProps.id}
             dropTarget={this.props.dropTarget}
             targetChangeHandler={this.props.targetChangeHandler}
           />
-        </StatusZone>
-        {
-          this.props.targetedBounds &&
-          <StatusZone bounds={this.props.targetedBounds}>
-            <GhostOutline />
-          </StatusZone>
-        }
+        </Zone>
+        {this.props.targetedBounds && <Outline bounds={this.props.targetedBounds} />}
       </>
     );
   }

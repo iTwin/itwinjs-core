@@ -4,12 +4,14 @@ exports[`<Footer /> renders correctly 1`] = `
 <div
   className="nz-footer-footer"
 >
-  <div
-    className="nz-messages"
-  />
-  <div
-    className="nz-indicators"
-  />
+  <div>
+    <div
+      className="nz-messages"
+    />
+    <div
+      className="nz-indicators"
+    />
+  </div>
 </div>
 `;
 
@@ -17,11 +19,13 @@ exports[`<Footer /> renders correctly in footer mode 1`] = `
 <div
   className="nz-footer-footer nz-footer-mode"
 >
-  <div
-    className="nz-messages"
-  />
-  <div
-    className="nz-indicators"
-  />
+  <div>
+    <div
+      className="nz-messages"
+    />
+    <div
+      className="nz-indicators"
+    />
+  </div>
 </div>
 `;

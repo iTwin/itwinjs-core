@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ToolSettingsPopup /> renders correctly 1`] = `
+<Popup
+  className="nz-widget-toolSettings-popup"
+  isOpen={false}
+  left={-1}
+  offset={4}
+  position={5}
+  showArrow={true}
+  showShadow={false}
+  target={null}
+  top={-1}
+>
+  <div
+    className="nz-content"
+  />
+</Popup>
+`;

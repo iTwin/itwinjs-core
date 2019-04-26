@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import { Nested } from "../../../ui-ninezone";
+import { NestedToolSettings } from "../../../ui-ninezone";
 
-describe("<Nested />", () => {
+describe("<NestedToolSettings />", () => {
   it("should render", () => {
-    mount(<Nested />);
+    mount(<NestedToolSettings />);
   });
 
   it("renders correctly", () => {
-    shallow(<Nested />).should.matchSnapshot();
+    shallow(<NestedToolSettings />).should.matchSnapshot();
   });
 });

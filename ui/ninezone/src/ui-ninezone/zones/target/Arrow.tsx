@@ -7,16 +7,25 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
+import { WidgetZoneIndex } from "../state/NineZone";
 import "./Arrow.scss";
 
-/** Arrow icon.
- * @note Used in [[Merge]], [[Back]] components.
- * @alpha
+/** Properties of [[Arrow]] component.
+ * @internal
  */
-export class Arrow extends React.PureComponent<CommonProps> {
+export interface ArrowProps extends CommonProps {
+  /** Describes arrow rotation. */
+  zoneIndex: WidgetZoneIndex;
+}
+
+/** Arrow icon used in [[MergeTarget]], [[BackTarget]] components.
+ * @internal
+ */
+export class Arrow extends React.PureComponent<ArrowProps> {
   public render() {
     const className = classnames(
       "nz-zones-target-arrow",
+      `nz-zone-${this.props.zoneIndex}`,
       this.props.className);
 
     return (

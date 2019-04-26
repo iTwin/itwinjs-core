@@ -7,28 +7,37 @@
 @import "_variables";
 
 .nz-footer-footer {
-  background-color: $buic-background-statusbar;
-  border-width: 0;
-  border-top-width: 1px;
-  border-color: $buic-background-widget-stroke;
-  border-style: solid;
-  pointer-events: auto;
   position: relative;
-  height: $footer-height;
-  box-sizing: border-box;
+  height: 100%;
 
-  > .nz-messages {
+  > div {
+    background-color: $buic-background-statusbar;
+    border: {
+      width: 0;
+      top-width: 1px;
+      color: $buic-background-widget-stroke;
+      style: solid;
+    }
+    box-sizing: border-box;
     position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-100%);
+    bottom: 0;
+    width: 100%;
+    height: $footer-height;
+    pointer-events: auto;
 
-    @include uicore-z-index(status-message);
-  }
+    > .nz-messages {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100%);
 
-  > .nz-indicators {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
+      @include uicore-z-index(status-message);
+    }
+
+    > .nz-indicators {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
+    }
   }
 }

@@ -6,22 +6,13 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { MergeTargetProps } from "./Merge";
 import "./Target.scss";
 
-/** Properties of [[MergeTarget]] component.
- * @alpha
+/** Basic zone target component used by [[BackTarget]] and [[MergeTarget]] components.
+ * @internal
  */
-export interface MergeTargetProps extends CommonProps {
-  /** Function called when is targeted state of the target changes. */
-  onTargetChanged?: (isTargeted: boolean) => void;
-}
-
-/** Basic target component used in merge zone interactions.
- * @note Available targets: [[Back]], [[Merge]]
- * @alpha
- */
-export class MergeTarget extends React.PureComponent<MergeTargetProps> {
+export class ZoneTarget extends React.PureComponent<MergeTargetProps> {
   private _isTargeted = false;
 
   public componentWillUnmount() {
@@ -37,10 +28,13 @@ export class MergeTarget extends React.PureComponent<MergeTargetProps> {
       <div
         className={className}
         style={this.props.style}
-        onMouseEnter={this._handleMouseEnter}
-        onMouseLeave={this._handleMouseLeave}
       >
-        {this.props.children}
+        <div
+          onMouseEnter={this._handleMouseEnter}
+          onMouseLeave={this._handleMouseLeave}
+        >
+          {this.props.children}
+        </div>
       </div>
     );
   }

@@ -7,24 +7,24 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { TitleBar } from "./tool-settings/TitleBar";
+import { TitleBar } from "../footer/dialog/TitleBar";
 import "./ToolSettings.scss";
 
 /** Properties of [[ToolSettings]] component.
- * @alpha
+ * @beta
  */
 export interface ToolSettingsProps extends CommonProps {
-  /** Title bar buttons. I.e.: [[DialogButton]] */
+  /** Title bar buttons. I.e. [[TitleBarButton]] */
   buttons?: React.ReactNode;
-  /** Tool settings content. I.e.: [[ToolSettingsContent]], [[Nested]], [[ScrollableArea]] */
+  /** Tool settings content or content container. I.e. [[NestedToolSettings]], [[ScrollableToolSettings]] */
   children?: React.ReactNode;
-  /** Widget title. */
+  /** Tool settings title bar title. */
   title?: string;
 }
 
-/** Tool settings widget is used to display Tool Settings and Tool Assistance (Zone 2 in 9-Zone UI).
+/** Tool settings widget is used to display Tool Settings and Tool Assistance (in Zone 2 of 9-Zone UI).
  * @note Should be placed in [[Zone]] component.
- * @alpha
+ * @beta
  */
 export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
   public render() {
@@ -39,10 +39,13 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
       >
         <TitleBar
           title={this.props.title}
+          className="nz-title"
         >
           {this.props.buttons}
         </TitleBar>
-        {this.props.children}
+        <div className="nz-content">
+          {this.props.children}
+        </div>
       </div>
     );
   }

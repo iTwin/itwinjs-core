@@ -13,7 +13,7 @@ import "./Backstage.scss";
  * @beta
  */
 export interface BackstageProps extends CommonProps {
-  /** Backstage items and separators. I.e.: [[BackstageItem]], [[BackstageSeparator]] */
+  /** Backstage items and separators. I.e. [[BackstageItem]], [[BackstageSeparator]] */
   children?: React.ReactNode;
   /** Optional footer content. */
   footer?: React.ReactNode;

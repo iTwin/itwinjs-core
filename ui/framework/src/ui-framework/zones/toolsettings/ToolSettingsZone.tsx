@@ -9,7 +9,6 @@ import { CommonProps } from "@bentley/ui-core";
 import {
   ToolSettings,
   ToolSettingsTab,
-  ToolSettingsContent,
   RectangleProps,
   Zone,
   TitleBarButton,
@@ -139,9 +138,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
         ]}
         title={ToolUiManager.activeToolLabel}
       >
-        <ToolSettingsContent>
-          {FrontstageManager.activeToolSettingsNode}
-        </ToolSettingsContent>
+        {FrontstageManager.activeToolSettingsNode}
       </ToolSettings>
     );
   }

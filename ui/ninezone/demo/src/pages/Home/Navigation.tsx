@@ -25,9 +25,6 @@ export class Navigation extends React.PureComponent<Props> {
             <Link to="/zones">Zones</Link>
           </li>
           <li>
-            <Link to="/popovers">Popovers</Link>
-          </li>
-          <li>
             <Link to="/zone-targets">Zone Targets</Link>
           </li>
           <li>

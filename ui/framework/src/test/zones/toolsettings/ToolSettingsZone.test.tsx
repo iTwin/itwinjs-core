@@ -103,20 +103,20 @@ describe("ToolSettingsZone", () => {
       wrapper.update();
 
       // it should be open by default
-      const toolSettings = wrapper.find(".nz-widget-toolSettings-content");
+      const toolSettings = wrapper.find(".nz-widget-toolSettings");
       expect(toolSettings.length).to.eq(1);
       expect(wrapper.find(".nz-footer-dialog-button").length).to.eq(1);
 
       // simulate click to close it
       wrapper.find(".nz-footer-dialog-button").simulate("click");
       wrapper.update();
-      expect(wrapper.find(".nz-widget-toolSettings-content").length).to.eq(0);
+      expect(wrapper.find(".nz-widget-toolSettings").length).to.eq(0);
       expect(wrapper.find(".nz-footer-dialog-button").length).to.eq(0);
 
       // simulate click to open it
       wrapper.find(".nz-widget-toolSettings-tab").simulate("click");
       wrapper.update();
-      expect(wrapper.find(".nz-widget-toolSettings-content").length).to.eq(1);
+      expect(wrapper.find(".nz-widget-toolSettings").length).to.eq(1);
       expect(wrapper.find(".nz-footer-dialog-button").length).to.eq(1);
     }
 

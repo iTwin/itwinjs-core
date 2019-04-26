@@ -15,7 +15,7 @@ import "./Dialog.scss";
  * @beta
  */
 export interface MessageCenterDialogProps extends CommonProps {
-  /** Title bar buttons. I.e.: [[TitleBarButton]] */
+  /** Title bar buttons. I.e. [[TitleBarButton]] */
   buttons?: React.ReactNode;
   /** Messages of message center. I.e. [[MessageCenterMessage]] */
   children?: React.ReactNode;

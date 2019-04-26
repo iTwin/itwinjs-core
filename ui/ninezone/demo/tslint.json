@@ -1,8 +1,9 @@
 {
-  "extends": "@bentley/build-tools/tslint.json",
+  "extends": "../tslint.json",
   "rules": {
     "await-promise": false,
-    "promise-function-async": false,
-    "no-floating-promises": false
+    "completed-docs": false,
+    "no-floating-promises": false,
+    "promise-function-async": false
   }
 }

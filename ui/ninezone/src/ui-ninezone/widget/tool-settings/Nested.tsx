@@ -9,20 +9,22 @@ import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import "./Nested.scss";
 
-/** Properties of [[Nested]] component.
- * @alpha
+/** Properties of [[NestedToolSettings]] component.
+ * @beta
  */
-export interface NestedProps extends CommonProps {
-  /** Nested settings label. */
-  label?: string;
-  /** Back button icon. */
+export interface NestedToolSettingsProps extends CommonProps {
+  /** Back button. */
   backButton?: React.ReactNode;
+  /** Tool settings content or content container. I.e. [[ScrollableToolSettings]] */
+  children?: React.ReactNode;
+  /** Settings title. */
+  title?: string;
 }
 
-/** Nested tool settings component. Used as content in [[ToolSettings]] and [[Toggle]] components.
- * @alpha
+/** Used in [[ToolSettings]] component to display nested tool settings.
+ * @beta
  */
-export class Nested extends React.PureComponent<NestedProps> {
+export class NestedToolSettings extends React.PureComponent<NestedToolSettingsProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings-nested",
@@ -37,8 +39,8 @@ export class Nested extends React.PureComponent<NestedProps> {
           <div className="nz-button">
             {this.props.backButton}
           </div>
-          <div className="nz-label">
-            {this.props.label}
+          <div className="nz-title">
+            {this.props.title}
           </div>
         </div>
         {this.props.children}

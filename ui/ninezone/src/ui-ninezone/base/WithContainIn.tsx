@@ -57,6 +57,7 @@ export const withContainIn = <ComponentProps extends {}>(
       return containFn === undefined ? contain : containFn;
     }
 
+    /** @internal */
     public getContainerBounds(): Rectangle {
       if (!this.props.container || !this.props.container.current)
         return new Rectangle(0, 0, window.innerWidth, window.innerHeight);
@@ -65,6 +66,7 @@ export const withContainIn = <ComponentProps extends {}>(
       return new Rectangle(containerBounds.left, containerBounds.top, containerBounds.right, containerBounds.bottom);
     }
 
+    /** @internal */
     public getComponentBounds(root: HTMLElement): Rectangle {
       const bounds = root.getBoundingClientRect();
       return Rectangle.create(bounds);

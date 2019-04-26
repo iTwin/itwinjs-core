@@ -13,7 +13,7 @@ import "./Expandable.scss";
  * @alpha
  */
 export interface ExpandableButtonProps extends CommonProps {
-  /** One of toolbar buttons. I.e.: [[Item]] */
+  /** One of toolbar buttons. I.e. [[Item]] */
   children?: React.ReactNode;
 }
 

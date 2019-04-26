@@ -39,11 +39,13 @@ export class Footer extends React.PureComponent<FooterProps> {
         className={className}
         style={this.props.style}
       >
-        <div className="nz-messages">
-          {this.props.messages}
-        </div>
-        <div className="nz-indicators">
-          {this.props.children}
+        <div>
+          <div className="nz-messages">
+            {this.props.messages}
+          </div>
+          <div className="nz-indicators">
+            {this.props.children}
+          </div>
         </div>
       </div>
     );
