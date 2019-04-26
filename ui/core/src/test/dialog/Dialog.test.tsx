@@ -196,4 +196,14 @@ describe("Dialog", () => {
     });
   });
 
+  describe("modeless support", () => {
+    it("should call handler for pointerDown", () => {
+      const spyOnPointerDown = sinon.spy();
+      const component = render(<Dialog opened={true} modal={false} onModelessPointerDown={spyOnPointerDown} modelessId="Test1" />);
+      const head = component.getByTestId("core-dialog-head");
+      head.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 200, clientY: 5 }));
+      expect(spyOnPointerDown).to.be.calledOnce;
+    });
+  });
+
 });

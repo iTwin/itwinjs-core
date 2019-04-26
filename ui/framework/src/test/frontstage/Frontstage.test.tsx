@@ -54,36 +54,30 @@ describe("Frontstage", () => {
     }
   });
 
-  it("FrontstageProvider supplies Frontstage to FrontstageComposer", () => {
+  it("FrontstageProvider supplies Frontstage to FrontstageComposer", async () => {
     const wrapper = mount(<FrontstageComposer />);
 
-    const spyMethod = sinon.spy();
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
-      spyMethod();
-    });
-    setTimeout(() => {
-      spyMethod.calledOnce.should.true;
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
 
-      const widgetDef2 = FrontstageManager.findWidget("widget2");
-      expect(widgetDef2).to.not.be.undefined;
-      if (widgetDef2) {
-        expect(widgetDef2.isVisible).to.eq(false);
-        expect(widgetDef2.isActive).to.eq(false);
+    const widgetDef2 = FrontstageManager.findWidget("widget2");
+    expect(widgetDef2).to.not.be.undefined;
+    if (widgetDef2) {
+      expect(widgetDef2.isVisible).to.eq(false);
+      expect(widgetDef2.isActive).to.eq(false);
 
-        widgetDef2.setWidgetState(WidgetState.Open);
-        wrapper.update();
-        expect(widgetDef2.isVisible).to.eq(true);
-        expect(widgetDef2.isActive).to.eq(true);
+      widgetDef2.setWidgetState(WidgetState.Open);
+      wrapper.update();
+      expect(widgetDef2.isVisible).to.eq(true);
+      expect(widgetDef2.isActive).to.eq(true);
 
-        FrontstageManager.setWidgetState("widget2", WidgetState.Hidden);
-        wrapper.update();
-        expect(widgetDef2.isVisible).to.eq(false);
-      }
+      FrontstageManager.setWidgetState("widget2", WidgetState.Hidden);
+      wrapper.update();
+      expect(widgetDef2.isVisible).to.eq(false);
+    }
 
-      wrapper.unmount();
-    }, 500);
+    wrapper.unmount();
   });
 
   it("should change DOM parent of widget content", async () => {

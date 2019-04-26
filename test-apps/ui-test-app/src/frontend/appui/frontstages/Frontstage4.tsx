@@ -189,9 +189,9 @@ export class Frontstage4 extends FrontstageProvider {
           <>
             <ToolButton toolId={AppTools.item6.id} iconSpec={AppTools.item6.iconSpec!} labelKey={AppTools.item6.label} />
             <ToolButton toolId={AppTools.item5.id} iconSpec={AppTools.item5.iconSpec!} labelKey={AppTools.item5.label} />
-            <ToolButton toolId="openDialog" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.modalDialog())} />
-            <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
-            <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.testPopup())} />
+            <ToolButton toolId="openDialog" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.modalDialog())} />
+            <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.radialMenu())} />
+            <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.testPopup())} />
           </>
         }
       />;

@@ -7,9 +7,9 @@ import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 
-import { Dialog, LoadingSpinner } from "@bentley/ui-core";
+import { LoadingSpinner } from "@bentley/ui-core";
 import { ViewportComponent } from "@bentley/ui-components";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { ModelessDialog, ModelessDialogManager } from "@bentley/ui-framework";
 import { ExternalIModel } from "../widgets/ExternalIModel";
 
 import "./ViewportDialog.scss";
@@ -18,6 +18,7 @@ export interface ViewportDialogProps {
   opened: boolean;
   projectName: string;
   imodelName: string;
+  dialogId: string;
 }
 
 export interface ViewportDialogState {
@@ -58,24 +59,24 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
     const y = window.innerHeight - height - 90;
 
     return (
-      <Dialog
+      <ModelessDialog
         className="viewport-dialog"
-        title="Viewport"
+        title={this.props.dialogId}
         opened={this.state.opened}
         resizable={true}
         movable={true}
-        modal={false}
         width={width} height={height}
         x={x} y={y}
         minWidth={200} minHeight={100}
         onClose={() => this._handleClose()}
         onEscape={() => this._handleClose()}
         inset={false}
+        dialogId={this.props.dialogId}
       >
         <div className="viewport-dialog-container" >
           {this.getContent()}
         </div>
-      </Dialog>
+      </ModelessDialog >
     );
   }
 
@@ -103,7 +104,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
       opened: false,
     }), () => {
       if (!this.state.opened)
-        ModalDialogManager.closeModalDialog();
+        ModelessDialogManager.closeDialog(this.props.dialogId);
       followUp();
     });
   }

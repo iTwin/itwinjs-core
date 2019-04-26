@@ -109,8 +109,6 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   titleStyle?: React.CSSProperties;
   /** Custom CSS Style for footer */
   footerStyle?: React.CSSProperties;
-  /** Whether to show background overlay. Default: true */
-  modal?: boolean;
   /** Whether user can resize dialog with cursor. Default: false */
   resizable?: boolean;
   /** Whether user can move dialog with cursor. Default: false */
@@ -121,6 +119,15 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   contentClassName?: string;
   /** Custom CSS Style for the content */
   contentStyle?: React.CSSProperties;
+
+  /** Whether to show background overlay. Default: true.
+   * @note Modeless dialogs require an id and an implementation of onModelessPointerDown.
+   */
+  modal?: boolean;
+  /** An id for a modeless dialog */
+  modelessId?: string;
+  /** Pointer Down event handler when modeless (modal = false) */
+  onModelessPointerDown?: (event: React.PointerEvent, id: string) => void;
 }
 
 /** @internal */
@@ -171,7 +178,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       opened, title, footer, buttonCluster, onClose, onEscape, onOutsideClick,
       minWidth, minHeight, x, y, width, height, maxHeight, maxWidth,
       backgroundStyle, titleStyle, footerStyle, style, contentStyle, contentClassName,
-      modal, resizable, movable, className, alignment, inset, ...props } = this.props;
+      modal, resizable, movable, className, alignment, inset, modelessId, onModelessPointerDown, ...props } = this.props;
 
     const containerStyle: React.CSSProperties = {
       margin: "",
@@ -226,6 +233,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
               className={classnames("core-dialog-container", alignment)}
               style={containerStyle}
               data-testid="core-dialog-container"
+              onPointerDown={this._handleContainerPointerDown}
             >
               <div className={"core-dialog-area"} ref={this._containerRef}>
                 <div className={classnames(
@@ -336,6 +344,13 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   private _handleKeyUp = (event: KeyboardEvent) => {
     if (event.key === "Escape" && this.props.opened && this.props.onEscape) {
       this.props.onEscape();
+    }
+  }
+
+  private _handleContainerPointerDown = (event: React.PointerEvent): void => {
+    if (!this.props.modal) {
+      if (this.props.onModelessPointerDown && this.props.modelessId)
+        this.props.onModelessPointerDown(event, this.props.modelessId);
     }
   }
 

@@ -9,7 +9,7 @@ import * as React from "react";
 import { MessageBoxType, MessageBoxIconType, MessageBoxValue } from "@bentley/imodeljs-frontend";
 import { DialogButtonType, DialogButtonDef, MessageBox, MessageSeverity, CommonProps } from "@bentley/ui-core";
 
-import { ModalDialogManager } from "../ModalDialogManager";
+import { ModalDialogManager } from "./ModalDialogManager";
 
 /** Properties for [[StandardMessageBox]] React component
  * @public
@@ -126,7 +126,7 @@ export class StandardMessageBox extends React.PureComponent<StandardMessageBoxPr
     this.setState((_prevState) => ({
       opened: false,
     }), () => {
-      ModalDialogManager.closeModalDialog();
+      ModalDialogManager.closeDialog();
       followUp();
     });
   }

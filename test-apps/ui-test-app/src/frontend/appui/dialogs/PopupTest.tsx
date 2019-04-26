@@ -134,7 +134,7 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
       opened: false,
     }), () => {
       if (!this.state.opened)
-        ModalDialogManager.closeModalDialog();
+        ModalDialogManager.closeDialog();
     });
   }
 
@@ -173,7 +173,7 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
                   Top Left
                 </button>
                 <Popup className="popupcolors" isOpen={this.state.showTopLeft} position={Position.TopLeft} onClose={this._closeTopLeft} target={this._targetTopLeft}
-                                  showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
+                  showArrow={this.state.showArrow} showShadow={this.state.showShadow}>
                   {this.renderPopup("Top Left", this._closeTopLeft)}
                 </Popup>
               </div>
