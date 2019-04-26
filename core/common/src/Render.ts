@@ -456,7 +456,7 @@ export class Camera implements CameraProps {
   public get isValid() { return this.isLensValid && this.isFocusValid; }
   public equals(other: Camera) { return this.lens === other.lens && this.focusDist === other.focusDist && this.eye.isExactEqual(other.eye); }
   public clone() { return new Camera(this); }
-  public copyFrom(rhs: Camera) {
+  public setFrom(rhs: Camera) {
     this.lens.setFrom(rhs.lens);
     this.focusDist = rhs.focusDist;
     this.eye.setFrom(rhs.eye);

@@ -15,7 +15,7 @@ export class EntityState implements EntityProps {
   public readonly id: Id64String;
   public readonly iModel: IModelConnection;
   public readonly classFullName: string;
-  public jsonProperties: { [key: string]: any };
+  public readonly jsonProperties: { [key: string]: any };
   public static schemaName = "BisCore";
 
   /** Constructor for EntityState
