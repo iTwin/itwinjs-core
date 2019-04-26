@@ -294,7 +294,7 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
   });
 
   // Application/Project Setting
-  it.only("should save and retrieve a Project/Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should save and retrieve a Project/Application Setting (#integration)", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks)
       this.skip();
 
