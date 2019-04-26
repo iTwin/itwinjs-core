@@ -18,7 +18,8 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 
 /**
  * * A `Path` object is a collection of curves that join head-to-tail to form a path.
- * * A `Path` object does not bound a planar region.
+ * * A `Path` object does not bound a planar region.  Use `Loop` to indicate region bounding.
+ * @public
  */
 export class Path extends CurveChain {
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Path; }
@@ -60,6 +61,7 @@ export class Path extends CurveChain {
       curve.emitStrokes(strokes, options);
     return Path.create(strokes);
   }
+  /** Return the boundary type (1) of a corresponding  Microstation CurveVector */
   public dgnBoundaryType(): number { return 1; }
   /**
    * Return the `[index]` curve primitive, using `modulo` to map`index` to the cyclic indexing.

@@ -29,6 +29,7 @@ import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 
 /**
  * Weighted (Homogeneous) BSplineCurve in 3d
+ * @public
  */
 export class BSplineCurve3dH extends BSplineCurve3dBase {
   private _workBezier?: BezierCurve3dH;

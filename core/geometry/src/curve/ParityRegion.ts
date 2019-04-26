@@ -16,6 +16,7 @@ import { AnyCurve } from "./CurveChain";
  * * A `ParityRegion` is a collection of `Loop` objects.
  * * The loops collectively define a planar region.
  * * A point is "in" the composite region if it is "in" an odd number of the loops.
+ * @public
  */
 export class ParityRegion extends CurveCollection {
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof ParityRegion; }
@@ -29,7 +30,8 @@ export class ParityRegion extends CurveCollection {
     }
     return result;
   }
-  public dgnBoundaryType(): number { return 4; }
+/** Return the boundary type (4) of a corresponding  Microstation CurveVector */
+public dgnBoundaryType(): number { return 4; }
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceParityRegion(this, indexInParent);
   }

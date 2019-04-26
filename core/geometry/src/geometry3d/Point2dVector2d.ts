@@ -9,7 +9,13 @@ import { Geometry, BeJSONFunctions } from "../Geometry";
 import { Angle } from "./Angle";
 import { XAndY, XYProps } from "./XYZProps";
 
-/** Minimal object containing x,y and operations that are meaningful without change in both point and vector. */
+/** Minimal object containing x,y and operations that are meaningful without change in both point and vector.
+ *  * `XY` is not instantiable.
+ *  * The derived (instantiable) classes are
+ *    * `Point2d`
+ *    * `Vector2d`
+ * @public
+ */
 export class XY implements XAndY {
   /** x component */
   public x: number;
@@ -106,7 +112,9 @@ export class XY implements XAndY {
       targetA.x - origin.x, targetA.y - origin.y, targetB.x - origin.x, targetB.y - origin.y);
   }
 }
-
+/** 2D point with `x`,`y` as properties
+ * @public
+ */
 export class Point2d extends XY implements BeJSONFunctions {
   /** Constructor for Point2d */
   constructor(x: number = 0, y: number = 0) { super(x, y); }
@@ -247,7 +255,7 @@ export class Point2d extends XY implements BeJSONFunctions {
   /** Return the fractional coordinate of the projection of this instance x,y onto th eline from startPoint to endPoint.
    * @param startPoint start point of line
    * @param endPoint end point of line
-   * @param defaultFraction fractoin to return if startPoint and endPOint are equal.
+   * @param defaultFraction fraction to return if startPoint and endPOint are equal.
    */
   public fractionOfProjectionToLine(startPoint: Point2d, endPoint: Point2d, defaultFraction?: number): number {
     const denominator = startPoint.distanceSquared(endPoint);
@@ -256,7 +264,9 @@ export class Point2d extends XY implements BeJSONFunctions {
     return startPoint.dotVectorsToTargets(endPoint, this) / denominator;
   }
 }
-/** 2D vector with x,y properties */
+/** 2D vector with `x`,`y` as properties
+ * @public
+ */
 export class Vector2d extends XY implements BeJSONFunctions {
   constructor(x: number = 0, y: number = 0) { super(x, y); }
   /** Return a new Vector2d with the same x,y */

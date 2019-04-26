@@ -15,6 +15,10 @@ import { Transform } from "./Transform";
 import { Point4d } from "../geometry4d/Point4d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";
+/**
+ * The `NumberArray` class contains static methods that act on arrays of numbers.
+ * @public
+ */
 export class NumberArray {
   /** return the sum of values in an array,   The summation is done with correction terms which
    * improves last-bit numeric accuracy.
@@ -109,7 +113,10 @@ export class NumberArray {
   }
 
 }
-
+/**
+ * The `Point2dArray` class contains static methods that act on arrays of 2d points.
+ * @public
+ */
 export class Point2dArray {
   public static isAlmostEqual(dataA: undefined | Point2d[], dataB: undefined | Point2d[]): boolean {
     if (dataA && dataB) {
@@ -150,6 +157,10 @@ export class Point2dArray {
 
 }
 
+/**
+ * The `Vector3ddArray` class contains static methods that act on arrays of 2d vectors.
+ * @public
+ */
 export class Vector3dArray {
   public static isAlmostEqual(dataA: undefined | Vector3d[], dataB: undefined | Vector3d[]): boolean {
     if (dataA && dataB) {
@@ -171,6 +182,10 @@ export class Vector3dArray {
   }
 }
 
+/**
+ * The `Point4dArray` class contains static methods that act on arrays of 4d points.
+ * @public
+ */
 export class Point4dArray {
   /** pack each point and its corresponding weight into a buffer of xyzwxyzw... */
   public static packPointsAndWeightsToFloat64Array(points: Point3d[], weights: number[], result?: Float64Array): Float64Array {
@@ -269,6 +284,10 @@ export class Point4dArray {
   }
 
 }
+/**
+ * The `Point3dArray` class contains static methods that act on arrays of 3d points.
+ * @public
+ */
 
 export class Point3dArray {
   public static packToFloat64Array(data: Point3d[]): Float64Array {
@@ -634,6 +653,7 @@ export class Point3dArray {
  * * The collection holds only a reference to the actual array.
  * * The actual array may be replaced by the user as needed.
  * * When replaced, there is no cached data to be updated.
+ * @public
 */
 export class Point3dArrayCarrier extends IndexedXYZCollection {
   public data: Point3d[];

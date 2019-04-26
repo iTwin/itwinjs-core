@@ -121,6 +121,7 @@ class PackedMatrix3dOps {
  * * unknown: it is not know if the matrix is invertible.
  * * inverseStored: the matrix has its inverse stored
  * * singular: the matrix is known to be singular.
+ * @public
  */
 export enum InverseMatrixState {
   unknown,
@@ -141,6 +142,7 @@ export enum InverseMatrixState {
  * * Most matrix queries are present with both "column" and "row" variants.
  * * Usage elsewhere in the library is typically "column" based.  For example, in a Transform
  *     that carries a coordinate frame the matrix columns are the unit vectors for the axes.
+ * @public
  */
 export class Matrix3d implements BeJSONFunctions {
   public static useCachedInverse = true;  // cached inverse can be suppressed for testing.

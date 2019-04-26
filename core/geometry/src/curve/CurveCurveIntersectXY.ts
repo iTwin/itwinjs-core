@@ -36,6 +36,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 /**
  * * Private class for refining bezier-bezier intersections.
  * * The inputs are assumed pre-transoformed so that the target condition is to match x and y coordinates.
+ * @public
  */
 class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
   private _curveA: BezierCurveBase;
@@ -63,6 +64,7 @@ class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures such as produced by CurveCurve,IntersectXY and
  * CurveCurve.ClosestApproach
+ * @public
  */
 export class CurveLocationDetailArrayPair {
   public dataA: CurveLocationDetail[];
@@ -889,6 +891,10 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   }
 
 }
+/**
+ * `CurveCurve` has static method for various computations that work on a pair of curves or curve collections.
+ * @public
+ */
 export class CurveCurve {
   /**
    * Return xy intersections of 2 curves.

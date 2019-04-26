@@ -192,6 +192,7 @@ export * from "./curve/PointString3d";
 export * from "./curve/StrokeOptions";
 export * from "./curve/TransitionSpiral";
 export * from "./curve/UnionRegion";
+export * from "./curve/Query/StrokeCountMap";
 export * from "./solid/Box";
 export * from "./solid/Cone";
 export * from "./solid/LinearSweep";

@@ -10,9 +10,11 @@
 import { Geometry } from "../Geometry";
 import { NumberArray } from "../geometry3d/PointHelpers";
 /**
- * false ==> no wrap possible
- * true ==> wrapped by adding poles
- * 2 ==> wrapped by deleting extrme knots.
+ * Enumeration of the possible ways of converting a "periodic" knot vector to an open knot vector.
+ * None (0) ==> no wrap possible
+ * OpenByAddintControlPoints (1)  ==> wrapped by adding poles
+ * OpenByRemovingKnots (2)  ==> wrapped by deleting extrme knots.
+ * @public
  */
 export enum BSplineWrapMode {
   /** No conversion to periodic */
@@ -41,6 +43,7 @@ export enum BSplineWrapMode {
  * * This class provides queries to convert among spanFraction, fraction of knot range, and knot
  * * core computations (evaluateBasisFucntions) have leftKnotIndex and global knot value as inputs.  Caller's need to
  * know their primary values (global knot, spanFraction).
+ * @public
  */
 export class KnotVector {
   public knots: Float64Array;

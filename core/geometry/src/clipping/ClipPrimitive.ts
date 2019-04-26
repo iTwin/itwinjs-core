@@ -21,6 +21,7 @@ import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../topology/Graph";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.
+ * @public
  */
 export const enum ClipMaskXYZRangePlanes {
   /** no planes */
@@ -53,6 +54,7 @@ export const enum ClipMaskXYZRangePlanes {
  *     * Derived class is responsible for filling the plane sets.
  *     * At discrtionn of derived classes, plane construction can be done at construction time or "on demand when" queries call `ensurePlaneSets ()`
  * * ClipPrimitive can be constructetd with planes (and no derived class).
+ * @public
  */
 export class ClipPrimitive {
   /** The (union of) convex regions. */
@@ -234,6 +236,7 @@ class PolyEdge {
  * A clipping volume defined by a shape (an array of 3d points using only x and y dimensions).
  * May be given either a ClipPlaneSet to store directly, or an array of polygon points as well as other parameters
  * for parsing clipplanes from the shape later.
+ * @public
  */
 export class ClipShape extends ClipPrimitive {
   protected _polygon: Point3d[];

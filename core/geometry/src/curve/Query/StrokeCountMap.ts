@@ -17,6 +17,7 @@ import { Geometry } from "../../Geometry";
  * * For linestring and bspline curve, those numbers are totals for the overall curve, and breakdown within
  *     the components (line segments or bezier spans) is recoreded on the optional array `componentData[]`
  *   * Members of the array are annotated with componentIndex within the linestring or bspline curve
+ * @public
  */
 export class StrokeCountMap {
 

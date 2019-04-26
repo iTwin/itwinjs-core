@@ -36,7 +36,12 @@ import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
 import { BezierCurveBase } from "../bspline/BezierCurveBase";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Vector2d } from "./Point2dVector2d";
-
+/**
+ * * `GeometryHandler` defines the base abstract methods for double-dispatch geometry computation.
+ * * User code that wants to handle one or all of the commonly known geometry types implements a handler class.
+ * * User code that does not handle all types is most likely to start with `NullGeometryHandler`, which will provide no-op implementations for all types.
+ * @public
+ */
 export abstract class GeometryHandler {
   // Currently will include functionality on "how to handle" (note: Subclasses of CurveCollection are linked to one method)
   public abstract handleLineSegment3d(g: LineSegment3d): any;
@@ -50,6 +55,7 @@ export abstract class GeometryHandler {
   public abstract handleCoordinateXYZ(g: CoordinateXYZ): any;
   public abstract handleBSplineSurface3dH(g: BSplineSurface3dH): any;
   public abstract handleIndexedPolyface(g: IndexedPolyface): any;
+  /** @alpha */
   public abstract handleTransitionSpiral(g: TransitionSpiral3d): any;
 
   public handlePath(g: Path): any { return this.handleCurveCollection(g); }
@@ -80,6 +86,7 @@ export abstract class GeometryHandler {
  * * Create a handler instance `myHandler`
  * * To send a `GeometryQuery` object `candidateGeometry` through the (fast) dispatch, invoke   `candidateGeometry.dispatchToHandler (myHandler)
  * * The appropriate method or methods will get called with a strongly typed `_g ` value.
+ * @public
  */
 export class NullGeometryHandler extends GeometryHandler {
   public handleLineSegment3d(_g: LineSegment3d): any { return undefined; }
@@ -93,6 +100,7 @@ export class NullGeometryHandler extends GeometryHandler {
   public handleCoordinateXYZ(_g: CoordinateXYZ): any { return undefined; }
   public handleBSplineSurface3dH(_g: BSplineSurface3dH): any { return undefined; }
   public handleIndexedPolyface(_g: IndexedPolyface): any { return undefined; }
+  /** @alpha */
   public handleTransitionSpiral(_g: TransitionSpiral3d): any { return undefined; }
 
   public handlePath(_g: Path): any { return undefined; }
@@ -114,6 +122,7 @@ export class NullGeometryHandler extends GeometryHandler {
 }
 /**
  * Implement GeometryHandler methods, with all curve collection methods recursing to children.
+ * @public
  */
 export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   public handleLineSegment3d(_g: LineSegment3d): any { return undefined; }
@@ -127,6 +136,7 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   public handleCoordinateXYZ(_g: CoordinateXYZ): any { return undefined; }
   public handleBSplineSurface3dH(_g: BSplineSurface3dH): any { return undefined; }
   public handleIndexedPolyface(_g: IndexedPolyface): any { return undefined; }
+  /** @alpha */
   public handleTransitionSpiral(_g: TransitionSpiral3d): any { return undefined; }
 
   public handleChildren(g: GeometryQuery): any {
@@ -159,7 +169,6 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
  * CurvePrimitives emitStrokes () methods emit calls to a handler object with these methods.
  * The various CurvePrimitive types are free to announce either single points (announcePoint), linear fragments,
  * or fractional intervals of the parent curve.
- *
  * * handler.startCurvePrimitive (cp) -- announce the curve primitive whose strokes will follow.
  * * announcePointTangent (xyz, fraction, tangent) -- annunce a single point on the curve.
  * * announceIntervalForUniformStepStrokes (cp, numStrokes, fraction0, fraction1) -- announce a fraction
@@ -167,12 +176,11 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
  * * announceSegmentInterval (cp, point0, point1, numStrokes, fraction0, fraction1) -- announce
  *    that the fractional interval fraction0, fraction1 is a straight line which should be broken into
  *    numStrokes strokes.
- *
- * ** A LineSegment would make a single call to this.
- * ** A LineString would make one call to this for each of its segments, with fractions indicating position
+ *   * A LineSegment would make a single call to this.
+ *   * A LineString would make one call to this for each of its segments, with fractions indicating position
  * within the linestring.
  * * endCurvePrimitive (cp) -- announce the end of the curve primitive.
- *
+ * @public
  */
 export interface IStrokeHandler {
   /** announce a parent curve primitive
@@ -221,6 +229,7 @@ export interface IStrokeHandler {
 
 /**
  * Interface with methods for mapping (u,v) fractional coordinates to surface xyz and derivatives.
+ * @public
  */
 export interface UVSurface {
   /**
@@ -242,6 +251,7 @@ export interface UVSurface {
 }
 /**
  * Interface for queries of distance-along in u and v directions
+ * @public
  */
 export interface UVSurfaceIsoParametricDistance {
   /**

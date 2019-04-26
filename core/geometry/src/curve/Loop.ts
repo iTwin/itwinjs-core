@@ -17,6 +17,7 @@ import { AnyCurve } from "./CurveChain";
 
 /**
  * A `Loop` is a curve chain that is the boundary of a closed (planar) loop.
+ * @public
  */
 export class Loop extends CurveChain {
   public isInner: boolean = false;
@@ -55,7 +56,8 @@ export class Loop extends CurveChain {
       curve.emitStrokes(strokes, options);
     return Loop.create(strokes);
   }
-  public dgnBoundaryType(): number { return 2; } // (2) all "Loop" become "outer"
+  /** Return the boundary type (2) of a corresponding  Microstation CurveVector */
+    public dgnBoundaryType(): number { return 2; } // (2) all "Loop" become "outer"
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceLoop(this, indexInParent);
   }

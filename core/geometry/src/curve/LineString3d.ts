@@ -67,6 +67,7 @@ function accumulateGoodUnitPerpendicular(
 /**
  * * A LineString3d (sometimes called a PolyLine) is a sequence of xyz coordinates that are to be joined by line segments.
  * * The point coordinates are stored in a GrowableXYZArray.
+ * @public
  */
 export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   private static _workPointA = Point3d.create();
@@ -1155,8 +1156,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return destLinestring.numPoints() - numPoint0;
   }
 }
-/** An AnnotatedLineString3d is a linestring with additional data attached to each point
+/** An AnnotatedLineString3d is a linestring with additional surface-related data attached to each point
  * * This is useful in facet construction.
+ * @internal
  */
 export class AnnotatedLineString3d {
   public curveParam?: GrowableFloat64Array;

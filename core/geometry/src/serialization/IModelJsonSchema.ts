@@ -643,7 +643,7 @@ export namespace IModelJson {
         return CoordinateXYZ.create(point);
       return undefined;
     }
-
+    /** @alpha */
     public static parseTransitionSpiral(data?: any): TransitionSpiral3d | undefined {
       const axes = Reader.parseOrientation(data, true)!;
       const origin = Reader.parsePoint3dProperty(data, "origin");
@@ -1207,7 +1207,7 @@ export namespace IModelJson {
       }
       data.xyVectors = [vectorU.toJSON(), vectorV.toJSON()];
     }
-
+  /** @alpha */
     public handleTransitionSpiral(data: TransitionSpiral3d): any {
       // TODO: HANDLE NONRIGID TRANSFORM !!
       // the spiral may have indication of how it was defined.  If so, use defined/undefined state of the orignial data

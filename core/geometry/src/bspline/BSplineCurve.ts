@@ -284,6 +284,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
 /**
  * A BSplineCurve3d is a bspline curve whose poles are Point3d.
  * See BSplineCurve3dBase for description of knots, order, degree.
+ * @public
  */
 export class BSplineCurve3d extends BSplineCurve3dBase {
 
@@ -505,6 +506,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
    * Compute individual segment stroke counts.  Attach in a StrokeCountMap.
    * @param options StrokeOptions that determine count
    * @param parentStrokeMap evolving parent map.
+   * @alpha
    */
   public computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap) {
     const workBezier = this.initializeWorkBezier();

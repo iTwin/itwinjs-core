@@ -14,6 +14,7 @@ import { IndexedXYCollection } from "./IndexedXYCollection";
  * * The collection holds only a reference to the actual array.
  * * The actual array may be replaced by the user as needed.
  * * When replaced, there is no cached data to be updated.
+ * @public
 */
 export class Point2dArrayCarrier extends IndexedXYCollection {
   public data: Point2d[];

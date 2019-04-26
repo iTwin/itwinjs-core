@@ -9,6 +9,7 @@ import { CurvePrimitive } from "./CurvePrimitive";
 import { Geometry } from "../Geometry";
 /**
  * An enumeration of special conditions being described by a CurveLocationDetail.
+ * @public
  */
 export enum CurveIntervalRole {
   /** This point is an isolated point NOT at a primary vertex. */
@@ -24,6 +25,7 @@ export enum CurveIntervalRole {
 }
 /**
  * Return code for CurvePrimitive method `moveSignedDistanceFromFraction`
+ * @public
  */
 export enum CurveSearchStatus {
   /** unimplemented or zero length curve  */
@@ -49,6 +51,9 @@ function optionalVectorUpdate(source: Vector3d | undefined, result: Vector3d | u
 }
 /**
  * CurveLocationDetail carries point and paramter data about a point evaluated on a curve.
+ * * These are returned by a variety of queries.
+ * * Particular contents can vary among the queries.
+ * @public
  */
 export class CurveLocationDetail {
   /** The curve being evaluated */
@@ -288,7 +293,9 @@ export class CurveLocationDetail {
   }
 
 }
-/** Enumeration of configurations for intersections and min/max distance-between-curve */
+/** Enumeration of configurations for intersections and min/max distance-between-curve
+ * @public
+ */
 export enum CurveCurveApproachType {
   /** Intersection at a single point */
   Intersection = 0,
@@ -299,7 +306,9 @@ export enum CurveCurveApproachType {
   /** Completely parallel geometry. */
   ParallelGeometry = 3,
 }
-/** A pair of CurveLocationDetail. */
+/** A pair of CurveLocationDetail.
+ * @public
+ */
 export class CurveLocationDetailPair {
   public detailA: CurveLocationDetail;
   public detailB: CurveLocationDetail;

@@ -21,11 +21,18 @@ import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 
-/** function signature for callback which announces a pair of numbers, such as a fractional interval, along with a containing CurvePrimitive. */
+/** function signature for callback which announces a pair of numbers, such as a fractional interval, along with a containing CurvePrimitive.
+ * @public
+ */
 export type AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: CurvePrimitive) => void;
-/** Function signature for a callback which announces a pair of numbers */
+/** Function signature for a callback which announces a pair of numbers
+ * @public
+ */
+
 export type AnnounceNumberNumber = (a0: number, a1: number) => void;
-/** Function signature for a callback which announces a curve primitive */
+/** Function signature for a callback which announces a curve primitive
+ * @public
+ */
 export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
 
 /**
@@ -40,6 +47,7 @@ export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
  * * A BsplineCurve3d is only proportional for special cases.
  *
  * For fractions outside 0..1, the curve primitive class may either (a) return the near endpoint or (b) evaluate an extended curve.
+ * @public
  */
 export abstract class CurvePrimitive extends GeometryQuery {
   protected constructor() { super(); }

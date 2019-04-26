@@ -15,7 +15,11 @@ import { Geometry } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 
-/** Class holding an array structure of shapes defined by clip plane sets */
+/** Class holding an array structure of shapes defined by `ClipPrimitive`
+ * * The `ClipVector` defines an intersection of the member `ClipPrimitive` regions.
+ * * In the most common usage, one of the `ClipPrimitive` will be an outer region, and all others are holes with marker flag indicating that they outside of each hole is live.
+ * @public
+ */
 export class ClipVector {
     private _clips: ClipPrimitive[];
     public boundingRange: Range3d = Range3d.createNull();

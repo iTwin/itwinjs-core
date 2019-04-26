@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeJSONFunctions, AngleProps, Geometry, TrigValues } from "../Geometry";
 /**
- * Carries the numeric value of an angle.
+ * An `Angle` carries the numeric value of an angle, with methods to allow (require!) callers to be clear about whether their angle is degrees or radians.
  * * The numeric value is private, and callers should not know or care whether it is in degrees or radians.
  * * The various access method are named so that callers can specify whether untyped numbers passed in or out are degrees or radians.
+ * @public
  */
 export class Angle implements BeJSONFunctions {
     /** maximal accuracy value of pi/4 ( 45 degrees), in radians */

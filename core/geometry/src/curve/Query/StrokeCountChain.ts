@@ -234,6 +234,7 @@ export class StrokeCountChain {
  * class `StrokeCountSection`\
  * * contains an array of `StrokeCountChain`.
  * * Hence it is the internal node level of a (1-level-deep) tree of `StrokeCountChain`
+ * @internal
  */
 export class StrokeCountSection {
   public chains: StrokeCountChain[];

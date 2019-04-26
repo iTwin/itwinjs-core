@@ -17,7 +17,8 @@ import { Point2d, Vector2d } from "./Point2dVector2d";
  * ** Point2dArrayCarrier carries a (reference to) a Point2d[] and implements the methods with calls on that array reference.
  * * In addition to "point by point" accessors, there abstract members compute commonly useful vector data "between points".
  * * Methods that create vectors among multiple indices allow callers to avoid creating temporaries.
-*/
+ * @public
+ */
 export abstract class IndexedXYCollection {
   /**
    * @param index index of point within the array

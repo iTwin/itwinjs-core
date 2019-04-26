@@ -24,14 +24,13 @@ import { Clipper } from "../clipping/ClipUtils";
 /**
  * A LineSegment3d is:
  *
- * * A 3d line segment represented by
- *
- * ** startPoint
- * ** endPoint
- * parameterized with fraction 0 at the start and fraction 1 at the end, i.e. either of these equivalent forms:
- *
- * **  `X(f) = startPoint + f * (endPoint - startPoint)`
- * ** `X(f) = (1-f)*startPoint  + f * endPoint`
+ * * A 3d line segment represented by its start and end coordinates
+ *   * startPoint
+ *   * endPoint
+ * * The segment is parameterized with fraction 0 at the start and fraction 1 at the end, i.e. either of these equivalent forms to map fraction `f` to a point `X(f)`
+ *   *  `X(f) = startPoint + f * (endPoint - startPoint)`
+ *   * `X(f) = (1-f)*startPoint  + f * endPoint`
+ * @public
  */
 export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof LineSegment3d; }

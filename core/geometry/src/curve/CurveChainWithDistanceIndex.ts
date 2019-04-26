@@ -25,8 +25,9 @@ import { CurveLocationDetail } from "./CurveLocationDetail";
  * * The interval is marked with two pairs of numbers:
  * * * fraction0, fraction1 = fraction parameters along the child curve
  * * * distance0,distance1 = distances within containing CurveChainWithDistanceIndex
+ * @public
  */
-class PathFragment {
+export class PathFragment {
   public chainDistance0: number;
   public chainDistance1: number;
   public childFraction0: number;
@@ -161,6 +162,7 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
  * distance along a CurveChain.
  * * The curve chain can be any type derived from CurveChain.
  * * * i.e. either a `Path` or a `Loop`
+ * @public
  */
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
   private _path: CurveChain;

@@ -18,6 +18,7 @@ import { Geometry } from "../Geometry";
  * Context for constructing a curve that is interpolated between two other curves.
  * * The only callable method is the static `InterpolateBetween`.
  * * Other methods are called only by `dispatchToGeometryHandler`
+ * @public
  */
 export class ConstructCurveBetweenCurves extends NullGeometryHandler {
   // private geometry0: GeometryQuery;  <-- Never used

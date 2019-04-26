@@ -11,7 +11,9 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { KnotVector, BSplineWrapMode } from "./KnotVector";
 import { Geometry } from "../Geometry";
 
-/** Bspline knots and poles for 1d-to-Nd. */
+/** Bspline knots and poles for 1d-to-Nd.
+ * @public
+ */
 export class BSpline1dNd {
   public knots: KnotVector;
   public packedData: Float64Array;
