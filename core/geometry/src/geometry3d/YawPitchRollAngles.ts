@@ -11,13 +11,19 @@ import { Transform } from "./Transform";
 import { Matrix3d } from "./Matrix3d";
 import { Point3d } from "./Point3dVector3d";
 /** The properties that define [[YawPitchRollAngles]]. */
+/**
+ * angle properties of a `YawPitchRoll` orientation
+ * @public
+ */
 export interface YawPitchRollProps {
   yaw?: AngleProps;
   pitch?: AngleProps;
   roll?: AngleProps;
 }
 
-/** Three angles that determine the orientation of an object in space. Sometimes referred to as [Tait–Bryan angles](https://en.wikipedia.org/wiki/Euler_angles). */
+/** Three angles that determine the orientation of an object in space. Sometimes referred to as [Tait–Bryan angles](https://en.wikipedia.org/wiki/Euler_angles).
+ * @public
+ */
 export class YawPitchRollAngles {
   public yaw: Angle;
   public pitch: Angle;
@@ -37,6 +43,7 @@ export class YawPitchRollAngles {
   public static createRadians(yawRadians: number, pitchRadians: number, rollRadians: number): YawPitchRollAngles {
     return new YawPitchRollAngles(Angle.createRadians(yawRadians), Angle.createRadians(pitchRadians), Angle.createRadians(rollRadians));
   }
+  /** constructg a `YawPitchRoll` objecgt from an object with 3 named angles */
   public static fromJSON(json?: YawPitchRollProps): YawPitchRollAngles {
     json = json ? json : {};
     return new YawPitchRollAngles(Angle.fromJSON(json.yaw), Angle.fromJSON(json.pitch), Angle.fromJSON(json.roll));

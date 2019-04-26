@@ -5,16 +5,20 @@
 /** @module Numerics */
 import { BeJSONFunctions, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
+/**
+ * OPerations on a "complex number" class with real part `x` and complex part `y`
+ * @internal
+ */
 export class Complex implements BeJSONFunctions {
-  private _myX: number;
-  set x(value) { this._myX = value; }
-  get x() { return this._myX; }
+  private _x: number;
+  set x(value) { this._x = value; }
+  get x() { return this._x; }
 
-  private _myY: number;
-  set y(value) { this._myY = value; }
-  get y() { return this._myY; }
+  private _y: number;
+  set y(value) { this._y = value; }
+  get y() { return this._y; }
 
-  public constructor(x: number = 0, y: number = 0) { this._myX = x; this._myY = y; }
+  public constructor(x: number = 0, y: number = 0) { this._x = x; this._y = y; }
   public set(x: number = 0, y: number = 0): void { this.x = x; this.y = y; }
   public setFrom(other: Complex) { this.x = other.x; this.y = other.y; }
   public clone(): Complex { return new Complex(this.x, this.y); }

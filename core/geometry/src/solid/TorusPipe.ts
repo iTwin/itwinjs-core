@@ -27,6 +27,7 @@ import { Vector2d } from "../geometry3d/Point2dVector2d";
  * * Both radii are positive, with r0 >= r1 > 0
  * * The sweep is positive
  * * The coordinate system has positive determinant.
+ * @public
  */
 export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
   private _localToWorld: Transform;

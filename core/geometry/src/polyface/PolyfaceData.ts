@@ -22,8 +22,8 @@ import { Geometry } from "../Geometry";
  *
  * * IndexedPolyface carries a PolyfaceData as a member. (NOT as a base class -- it already has GeometryQuery as base)
  * * IndexedPolyfaceVisitor uses PolyfaceData as a base class.
+ * @public
  */
-
 export class PolyfaceData {
   // <ul
   // <li>optional arrays (normal, uv, color) must be indicated at constructor time.

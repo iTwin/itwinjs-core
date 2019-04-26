@@ -14,6 +14,10 @@ import { Point4d } from "../geometry4d/Point4d";
 // import { Arc3d } from "../curve/Arc3d";
 
 /* tslint:disable:variable-name*/
+/**
+ * degree 2 (quadratic) polynomial in for y = c0 + c1*x + c2*x^2
+ * @internal
+ */
 export class Degree2PowerPolynomial {
   public coffs: number[];
 
@@ -104,6 +108,10 @@ export class Degree2PowerPolynomial {
   }
 
 }
+/**
+ * degree 3 (cubic) polynomial in for y = c0 + c1*x + c2*x^2 + c3*x^3
+ * @internal
+ */
 export class Degree3PowerPolynomial {
   public coffs: number[];
 
@@ -147,6 +155,10 @@ export class Degree3PowerPolynomial {
   }
 
 }
+/**
+ * degree 4 (quartic) polynomial in for y = c0 + c1*x + c2*x^2 + c4*x^4
+ * @internal
+ */
 export class Degree4PowerPolynomial {
   public coffs: number[];
 
@@ -184,6 +196,13 @@ export class Degree4PowerPolynomial {
   }
 
 }
+/**
+ * polynomial services for an implicit torus with
+ * * z axis is "through the donut hole"
+ * * `majorRadius` is the radius of the circle "around the z axis"
+ * * `minorRadius` is the radius of circles around the major circle
+ * @internal
+ */
 export class TorusImplicit {
   public majorRadius: number;
   public minorRadius: number;
@@ -323,6 +342,7 @@ export class TorusImplicit {
 }
 /**
  * evaluation methods for an implicit sphere `x*x + y*y + z*z - r*r = 0`.
+ * @internal
  */
 export class SphereImplicit {
   public radius: number;
@@ -434,6 +454,7 @@ export class SphereImplicit {
     */
 }
 /** AnalyticRoots has static methods for solving quadratic, cubic, and quartic equations.
+ * @internal
  *
  */
 export class AnalyticRoots {
@@ -916,6 +937,10 @@ export class AnalyticRoots {
     return solutionType;
   }
 }
+/**
+ * manipulations of polynomials with where `coff[i]` multiplies x^i
+ * @internal
+ */
 
 export class PowerPolynomial {
 
@@ -958,6 +983,10 @@ export class PowerPolynomial {
     }
   }
 }
+/**
+ * manipmulation of polynomials with powers of sine and cosine
+ * @internal
+ */
 export class TrigPolynomial {
   // Constants taken from Angle.cpp (may be later moved to a constants module)
   public static readonly SmallAngle: number = 1.0e-11;
@@ -1184,7 +1213,10 @@ export class TrigPolynomial {
     return boolstat;
   }
 }
-
+/**
+ * static methods for commonly appearing sets of equations in 2 or 3 variables
+ * @public
+ */
 export class SmallSystem {
   /**
    * Return true if lines (a0,a1) to (b0, b1) have a simple intersection.

@@ -10,6 +10,7 @@ import { Transform } from "./Transform";
 /**
  * A Point3dVector3dVector3d is an origin and a pair of vectors.
  * This defines a plane with (possibly skewed) uv coordinates
+ * @public
  */
 export class Plane3dByOriginAndVectors implements BeJSONFunctions {
   public origin: Point3d;

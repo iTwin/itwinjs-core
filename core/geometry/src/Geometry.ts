@@ -13,7 +13,9 @@ import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
 import { Point4d } from "./geometry4d/Point4d";
 import { AngleSweep } from "./geometry3d/AngleSweep";
 
-/** Enumeration of the 6 possible orderings of XYZ axis order */
+/** Enumeration of the 6 possible orderings of XYZ axis order
+ * @public
+ */
 export const enum AxisOrder {
   /** Right handed system, X then Y then Z */
   XYZ = 0,
@@ -28,15 +30,18 @@ export const enum AxisOrder {
   /** Left handed system, Z then Y then X */
   ZYX = 6,
 }
-/* Enumeration of the 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z */
+/** Enumeration of the 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z
+ * @public
+ */
 export const enum AxisIndex {
   X = 0,
   Y = 1,
   Z = 2,
 }
 
-/* Standard views.   Used in `Matrix3d.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
-*/
+/** Standard views.   Used in `Matrix3d.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
+ * @public
+ */
 export const enum StandardViewIndex {
   Top = 1,
   Bottom = 2,
@@ -48,7 +53,9 @@ export const enum StandardViewIndex {
   RightIso = 8,
 }
 
-/** Enumeration among choice for how a coordinate transformation should incorporate scaling. */
+/** Enumeration among choice for how a coordinate transformation should incorporate scaling.
+ * @public
+ */
 export const enum AxisScaleSelect {
   /** All axes of unit length. */
   Unit = 0,
@@ -57,6 +64,9 @@ export const enum AxisScaleSelect {
   /** On each axis, the vector length matches he length of the corresponding edge of the range. */
   NonUniformRangeContainment = 2,
 }
+/** object with a radians value and its associated cosine and sine values.
+ * @public
+ */
 export interface TrigValues { c: number; s: number; radians: number; }
 /**
  * Interface so various plane representations can be used by algorithms that just want altitude evaluations.
@@ -64,6 +74,7 @@ export interface TrigValues { c: number; s: number; radians: number; }
  * Specific implementors are
  * * Plane3dByOriginAndUnitNormal
  * * Point4d (used for homogeneous plane coefficients)
+ * @public
  */
 export interface PlaneAltitudeEvaluator {
   /**
@@ -88,6 +99,10 @@ export interface PlaneAltitudeEvaluator {
    */
   weightedAltitude(point: Point4d): number;
 }
+/**
+ * Interace for `toJSON` and `setFromJSON` methods
+ * @public
+ */
 export interface BeJSONFunctions {
   /**
    * Set content from a JSON object.
@@ -100,6 +115,7 @@ export interface BeJSONFunctions {
 /** The Properties for a JSON representation of an Angle.
  * If value is a number, it is in *degrees*.
  * If value is an object, it can have either degrees or radians.
+ * @public
  */
 export type AngleProps = { degrees: number } | { radians: number } | { _radians: number } | { _degrees: number } | number;
 
@@ -108,6 +124,7 @@ export type AngleProps = { degrees: number } | { radians: number } | { _radians:
  * If AngleProps data is an array of two numbers, it is an angle in degrees.
  * If the AngleProps is an object with key degrees, the degrees value must be an array with the two degrees angles as numbers
  * If the AngleProps is an object with key radians, the radians value must be an array with the two radians angles as numbers
+ * @public
  */
 export type AngleSweepProps =
   AngleSweep |
@@ -115,6 +132,10 @@ export type AngleSweepProps =
   { radians: [number, number] } |
   [number, number];
 
+/**
+ * Class containing static methods for typical numeric operations.
+ * @public
+ */
 export class Geometry {
   public static readonly smallMetricDistance = 1.0e-6;
   public static readonly smallMetricDistanceSquared = 1.0e-12;

@@ -23,6 +23,7 @@ import { Matrix3d } from "./Matrix3d";
  * when describing the transform is NOT the "origin" stored in the transform.
  * Setup methods (e.g createFixedPointAndMatrix, createScaleAboutPoint)
  * take care of determining the appropriate origin coordinates.
+ * @public
  */
 export class Transform implements BeJSONFunctions {
   // static (one per class) vars for temporaries in computation.

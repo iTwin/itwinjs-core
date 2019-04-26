@@ -18,9 +18,16 @@ import { SweepContour } from "./SweepContour";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
 
 /**
- * type for a function argument taking 2 curves and returning another curve or failing with undefined.
+ * * type for a function argument taking 2 curves and returning another curve or failing with undefined.
+ * * This is used (for instance) by `RuleSweep.mutatePartners`
+ * @public
  */
 export type CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined;
+/**
+ * A ruled sweep (surface) is a collection of 2 or more contours.
+ * * All contours must have identical number and type of geometry. (paths, loops, parity regions, lines, arcs, other curves)
+ * @public
+ */
 export class RuledSweep extends SolidPrimitive {
   private _contours: SweepContour[];
   private constructor(contours: SweepContour[], capped: boolean) {
@@ -37,9 +44,11 @@ export class RuledSweep extends SolidPrimitive {
     }
     return new RuledSweep(sweepContours, capped);
   }
-  /** @returns Return a reference to the array of sweep contours. */
+  /** @returns Return a reference to the array of SweepContour. */
   public sweepContoursRef(): SweepContour[] { return this._contours; }
-
+  /** Return clones of all the sweep contours
+   * * See also cloneContours, which returns the spatial contours without their local coordinate system defintions)
+   */
   public cloneSweepContours(): SweepContour[] {
     const result = [];
     for (const sweepable of this._contours) {
@@ -47,6 +56,9 @@ export class RuledSweep extends SolidPrimitive {
     }
     return result;
   }
+  /** Return clones of all the contours
+   * * See also cloneContours, which returns the contours in their local coordinate systems
+   */
   public cloneContours(): CurveCollection[] {
     const result = [];
     for (const sweepable of this._contours) {

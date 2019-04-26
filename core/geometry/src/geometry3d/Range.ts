@@ -14,6 +14,7 @@ import { Transform } from "./Transform";
 import { LowAndHighXY, LowAndHighXYZ, Range1dProps, Range2dProps, Range3dProps, XAndY, XYAndZ } from "./XYZProps";
 /**
  * Base class for Range1d, Range2d, Range3d.
+ * @public
  */
 export abstract class RangeBase {
   /** Number considered impossibly large possibly for a coordinate in a range. */
@@ -70,6 +71,7 @@ export abstract class RangeBase {
  * * member `low` contains minimum coordinate of range box
  * * member  `high` contains maximum coordinate of range box
  * * The range i sconsidred null (empty) if any low member is larger than its high counterpart.
+ * @public
  */
 export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions {
   // low and high are always non-null objects
@@ -725,11 +727,15 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     }
   }
 }
-
+/**
+ * Range on a 1d axis
+ * * `low` and `high` members are always non-null objects
+ * * having `low > high` indicates an empty range.
+ * * the range contains x values for which `low <= x <= high`
+ * @public
+ */
 export class Range1d extends RangeBase {
 
-  // low and high are always non-null objects
-  // low > high is considered a null range.
   public low: number;
   public high: number;
 
@@ -1008,6 +1014,10 @@ export class Range1d extends RangeBase {
   }
 }
 
+/**
+ * Range box in xy plane
+ * @public
+ */
 export class Range2d extends RangeBase implements LowAndHighXY {
   // low and high are always non-null objects
   // any direction of low.q > high.q is considered a null range.

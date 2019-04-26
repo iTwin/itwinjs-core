@@ -43,38 +43,39 @@ import { Point4d } from "../geometry4d/Point4d";
  * * The is a strict relationship between knot and poles counts:  `numPoles + order = numKnots + 2'
  * * The number of spans is `numSpan = numPoles - degree`
  * * For a given `spanIndex`:
- * * * The `order` poles begin at index `spanIndex`.
- * * * The `2*order` knots begin as span index
- * * * The knot interval for this span is from `knot[degree+span-1] to knot[degree+span]`
+ *   * The `order` poles begin at index `spanIndex`.
+ *   * The `2*order` knots begin as span index
+ *   * The knot interval for this span is from `knot[degree+span-1] to knot[degree+span]`
  * * The active part of the knot axis is `knot[degree-1] < knot < knot[degree-1 + numSpan]` i.e. `knot[degree-1] < knot < knot[numPoles]
  *
  * Nearly all bsplines are "clamped ".
  * * Clamping make the curve pass through its first and last poles, with tangents directed along the first and last edges of the control polygon.
  * * The knots for a clampled bspline have `degree` copies of the lowest knot value and `degree` copies of the highest knot value.
  * * For instance, the knot vector `[0,0,0,1,2,3,3,3]
- * * * can be evaluated from `0<=knot<=3`
- * * * has 3 spans: 0 to 1, 1 to 2, 2 to 3
- * * * has 6 poles
- * * * passes through its first and last poles.
+ *   * can be evaluated from `0<=knot<=3`
+ *   * has 3 spans: 0 to 1, 1 to 2, 2 to 3
+ *   * has 6 poles
+ *   * passes through its first and last poles.
  * * `create` methods may allow classic convention that has an extra knot at the beginning and end of the knot vector.
- * * * The extra knots (first and last) were never referenced by the bspline recurrance relations.
- * * * When the `ceate` methods recognize the classic setup (`numPoles + order = numKnots`), the extra knot is not saved with the BSplineCurve3dBase knots.
+ *   * The extra knots (first and last) were never referenced by the bspline recurrance relations.
+ *   * When the `ceate` methods recognize the classic setup (`numPoles + order = numKnots`), the extra knot is not saved with the BSplineCurve3dBase knots.
  *
  * * The weighted variant has the problem that CurvePrimitive 3d typing does not allow undefined result where Point4d has zero weight.
  * * The convention for these is to return 000 in such places.
  *
  * * Note the class relationships:
- * * * BSpline1dNd knows the bspline reucurrance relations for control points (poles) with no physical meaning.
- * * * BsplineCurve3dBase owns a protected BSpline1dNd
- * * * BsplineCurve3dBase is derived from CurvePrimitive, which creates obligation to act as a 3D curve, such as
- * * * * evaluate fraction to point and derivatives wrt fraction
- * * * * compute intersection with plane
- * * * BSplineCurve3d and BSplineCurve3dH have variant logic driven by whether or not there are "weights" on the poles.
- * * * * For `BSplineCurve3d`, the xyz value of pole calculations are "final" values for 3d evaluation
- * * * * For `BSplineCurve3dH`, various `BSpline1dNd` results with xyzw have to be normalized back to xyz.
+ *   * BSpline1dNd knows the bspline reucurrance relations for control points (poles) with no physical meaning.
+ *   * BsplineCurve3dBase owns a protected BSpline1dNd
+ *   * BsplineCurve3dBase is derived from CurvePrimitive, which creates obligation to act as a 3D curve, such as
+ *     * evaluate fraction to point and derivatives wrt fraction
+ *     * compute intersection with plane
+ *   * BSplineCurve3d and BSplineCurve3dH have variant logic driven by whether or not there are "weights" on the poles.
+ *     * For `BSplineCurve3d`, the xyz value of pole calculations are "final" values for 3d evaluation
+ *     * For `BSplineCurve3dH`, various `BSpline1dNd` results with xyzw have to be normalized back to xyz.
  *
  * * These classes do not support "periodic" variants.
- * * * Periodic curves need to have certain leading knots and poles replicated at the end
+ *   * Periodic curves need to have certain leading knots and poles replicated at the end
+ * @public
  */
 export abstract class BSplineCurve3dBase extends CurvePrimitive {
   protected _bcurve: BSpline1dNd;
@@ -601,7 +602,11 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBSplineCurve3d(this);
   }
-
+/**
+ * Extend a range so in includes the range of this curve
+ * @param rangeToExtend
+ * @param transform transform to apply to points as they are entered into the range.
+ */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     const buffer = this._bcurve.packedData;
     const n = buffer.length - 2;

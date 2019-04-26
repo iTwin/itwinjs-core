@@ -17,6 +17,14 @@ import { Loop } from "../curve/Loop";
 import { CurveCollection } from "../curve/CurveCollection";
 import { LineString3d } from "../curve/LineString3d";
 /**
+ * A box-like solid defined by
+ * * A local coordinate frame
+ *   * (0,0,0) is left lower rear corner of box (considering "left" to reference x, "lower" to reference y, "rear and front" to reference z=0 and z=1)
+ *   * (0,0,1) is left lower front corner.
+ *   * (baseX,baseY,z) is right upper corner at z
+ *   * note that the frame x and y columns are unit vectors in local space, but z is full rear to front vector
+ * * The separate values for base and top x and y allow the box to be a "viewfrustum" with paralel back and front planes but independent x and y bellows effects.
+ * @public
  */
 export class Box extends SolidPrimitive {
   private _localToWorld: Transform;

@@ -18,7 +18,9 @@ import { PolygonOps } from "../geometry3d/PolygonOps";
 import { MomentData } from "../geometry4d/MomentData";
 import { IndexedEdgeMatcher, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 
-/** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each mtehod. */
+/** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each mtehod.
+ * @public
+ */
 export class PolyfaceQuery {
   /** copy the points from a visitor into a Linestring3d in a Loop object */
   public static visitorToLoop(visitor: PolyfaceVisitor) {

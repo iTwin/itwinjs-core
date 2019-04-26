@@ -10,6 +10,7 @@ import { IndexedPolyface, IndexedPolyfaceVisitor } from "./Polyface";
  * Data for a face in a polyface containing facets.
  * This is built up cooperatively by the PolyfaceBuilder and its
  * callers, and stored as a FaceData array in PolyfaceData.
+ * @public
  */
 export class FacetFaceData {
   private _paramDistanceRange: Range2d;

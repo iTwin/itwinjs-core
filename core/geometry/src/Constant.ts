@@ -5,7 +5,9 @@
 
 /** @module CartesianGeometry */
 
-/** Commonly used constant values. */
+/** Commonly used constant values.
+ * @alpha
+ */
 export class Constant {
   public static readonly oneMillimeter: number = 0.001;
   public static readonly oneCentimeter: number = 0.01;
@@ -13,5 +15,4 @@ export class Constant {
   public static readonly oneKilometer: number = 1000.0;
   public static readonly diameterOfEarth: number = 12742.0 * Constant.oneKilometer;
   public static readonly circumferenceOfEarth: number = 40075.0 * Constant.oneKilometer;
-  // public static readonly radiansPerDegree: number = 0.0174532925;  // EDL Dec 2018 Never used in imodeljs.  Use Angle.radiansPerDegbree instead (full 17 digits -- only 9 here)
 }

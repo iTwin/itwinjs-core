@@ -12,6 +12,7 @@ import { Point4d } from "./Point4d";
  *
  * * The parameterization of the plane is    `X = A + U*t + V*v`
  * * The unit coefficient of pointA makes this like a Plane3dByOriginAndVectors. Hence it is not a barycentric combination of 4d points.
+ * @public
  */
 export class PlaneByOriginAndVectors4d {
   public origin: Point4d;

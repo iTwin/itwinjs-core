@@ -27,7 +27,7 @@ import { Vector2d } from "../geometry3d/Point2dVector2d";
  * * In local coordinates, the sections at z=0 and z=1 are circles of radius r0 and r1.
  * * Either one individually  may be zero, but they may not both be zero.
  * * The stored matrix has unit vectors in the xy columns, and full-length z column.
- * *
+ * @public
  */
 export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
   private _localToWorld: Transform;       // Transform from local to global.

@@ -10,6 +10,7 @@ import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Geometry } from "../Geometry";
 /**
  * A Range1d array is a set of intervals, such as occur when a line is clipped to a (nonconvex) polygon
+ * @internal
  */
 export class Range1dArray {
   /** Internal step: Caller supplies rangeA = interval from left operand of set difference {A - B}
@@ -357,7 +358,9 @@ export class Range1dArray {
   }
 }
 
-/** Checks low's first, then high's */
+/** Checks low's first, then high's
+ * @internal
+ */
 export function compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number {
   if (a.low < b.low) return -1;
   if (a.low > b.low) return 1;

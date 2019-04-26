@@ -136,6 +136,7 @@ class FacetSector {
 }
 /**
  * UVSurfaceOps is a class containing static methods operating on UVSurface objects.
+ * @public
  */
 export class UVSurfaceOps {
   private constructor() { }  // private constructor -- no instances.
@@ -187,54 +188,53 @@ export class UVSurfaceOps {
  *
  * * Simple construction for strongly typed GeometryQuery objects:
  *
- * ** Create a builder with `builder = PolyfaceBuilder.create()`
- * ** Add GeemotryQuery objects:
+ *  * Create a builder with `builder = PolyfaceBuilder.create()`
+ *  * Add GeemotryQuery objects:
  *
- * *** `builder.addGeometryQuery(g: GeometryQuery)`
- * *** `builder.addCone(cone: Cone)`
- * *** `builder.addTorusPipe(surface: TorusPipe)`
- * *** `builder.addLinearSweepLineStrings(surface: LinearSweep)`
- * *** `builder.addRotationalSweep(surface: RotatationalSweep)`
- * *** `builder.addLinearSweep(surface: LinearSweep)`
- * *** `builder.addRuledSweep(surface: RuledSweep)`
- * *** `builder.addSphere(sphere: Sphere)`
- * *** `builder.addBox(box: Box)`
- * *** `buidler.addIndexedPolyface(polyface)`
- * **  Extract with `builder.claimPolyface (true)`
+ *    * `builder.addGeometryQuery(g: GeometryQuery)`
+ *    * `builder.addCone(cone: Cone)`
+ *    * `builder.addTorusPipe(surface: TorusPipe)`
+ *    * `builder.addLinearSweepLineStrings(surface: LinearSweep)`
+ *    * `builder.addRotationalSweep(surface: RotatationalSweep)`
+ *    * `builder.addLinearSweep(surface: LinearSweep)`
+ *    * `builder.addRuledSweep(surface: RuledSweep)`
+ *    * `builder.addSphere(sphere: Sphere)`
+ *    * `builder.addBox(box: Box)`
+ *    * `buidler.addIndexedPolyface(polyface)`
+ *  *  Extract with `builder.claimPolyface (true)`
  *
  * * Simple construction for ephemeral constructive data:
  *
- * ** Create a builder with `builder = PolyfaceBuilder.create()`
- * ** Add from fragmentary data:
- *
- * *** `builder.addBetweenLineStrings (linestringA, linestringB, addClosure)`
- * *** `builder.addBetweenTransformedLineStrings (curves, transformA, transformB, addClosure)`
- * *** `builder.addBetweenStroked (curveA, curveB)`
- * *** `builder.addLinearSweepLineStrigns (contour, vector)`
- * *** `builder.addPolygon (points, numPointsToUse)`
- * *** `builder.addTransformedUnitBox (transform)`
- * *** `builder.addTriangleFan (conePoint, linestring, toggleOrientation)`
- * *** `builder.addTrianglesInUnchedkedPolygon (linestring, toggle)`
- * *** `builder.addUVGrid(surface,numU, numV, createFanInCaps)`
- * *** `builder.addGraph(Graph, acceptFaceFunction)`
- * **  Extract with `builder.claimPolyface(true)`
+ *  * Create a builder with `builder = PolyfaceBuilder.create()`
+ *  * Add from fragmentary data:
+ *    * `builder.addBetweenLineStrings (linestringA, linestringB, addClosure)`
+ *    * `builder.addBetweenTransformedLineStrings (curves, transformA, transformB, addClosure)`
+ *    * `builder.addBetweenStroked (curveA, curveB)`
+ *    * `builder.addLinearSweepLineStrigns (contour, vector)`
+ *    * `builder.addPolygon (points, numPointsToUse)`
+ *    * `builder.addTransformedUnitBox (transform)`
+ *    * `builder.addTriangleFan (conePoint, linestring, toggleOrientation)`
+ *    * `builder.addTrianglesInUnchedkedPolygon (linestring, toggle)`
+ *    * `builder.addUVGrid(surface,numU, numV, createFanInCaps)`
+ *    * `builder.addGraph(Graph, acceptFaceFunction)`
+ *  *  Extract with `builder.claimPolyface(true)`
  *
  * * Low-level detail construction -- direct use of indices
- *
- * ** Create a builder with `builder = PolyfaceBuilder.create()`
- * ** Add GeometryQuery objects
- *
- * *** `builder.findOrAddPoint(point)`
- * *** `builder.findOrAddPointInLineString (linestring, index)`
- * *** `builder.findorAddTransformedPointInLineString(linestring, index, transform)`
- * *** `builder.findOrAddPointXYZ(x,y,z)`
- * *** `builder.addTriangle (point0, point1, point2)`
- * *** `builder.addQuad (point0, point1, point2, point3)`
- * *** `builder.addOneBasedPointIndex (index)`
+ *  * Create a builder with `builder = PolyfaceBuilder.create()`
+ *  * Add GeometryQuery objects
+ *    * `builder.findOrAddPoint(point)`
+ *    * `builder.findOrAddPointInLineString (linestring, index)`
+ *    * `builder.findorAddTransformedPointInLineString(linestring, index, transform)`
+ *    * `builder.findOrAddPointXYZ(x,y,z)`
+ *    * `builder.addTriangle (point0, point1, point2)`
+ *    * `builder.addQuad (point0, point1, point2, point3)`
+ *    * `builder.addOneBasedPointIndex (index)`
+ * @public
  */
 export class PolyfaceBuilder extends NullGeometryHandler {
   private _polyface: IndexedPolyface;
   private _options: StrokeOptions;
+  /** return (pointer to) the `StrokeOptions` in use by the builder. */
   public get options(): StrokeOptions { return this._options; }
   // State data that affects the current construction.
   private _reversed: boolean;
@@ -244,6 +244,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this._polyface.data.compress();
     return this._polyface;
   }
+  /** Toggle (reverse) the flag controlling orientation flips for newly added facets. */
   public toggleReversedFacetFlag() { this._reversed = !this._reversed; }
 
   private constructor(options?: StrokeOptions) {
@@ -253,7 +254,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this._options.needParams, this._options.needColors);
     this._reversed = false;
   }
-
+  /**
+   * Create a builder with given StrokeOptions
+   * @param options StrokeOptions (captured)
+   */
   public static create(options?: StrokeOptions): PolyfaceBuilder {
     return new PolyfaceBuilder(options);
   }
@@ -959,7 +963,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       }
     }
   }
-
+  /**
+   * Construct facets for a rotational sweep.
+   */
   public addRotationalSweep(surface: RotationalSweep) {
     const contour = surface.getCurves();
     const section0 = StrokeCountSection.createForParityRegionOrChain(contour, this._options);
@@ -1160,7 +1166,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
     return true;
   }
-
+  /**
+   * @param sphere Sphere to facet.
+   */
   public addSphere(sphere: Sphere, strokeCount?: number) {
     const numStrokeTheta = strokeCount ? strokeCount : this._options.defaultCircleStrokes;
     const numStrokePhi = Geometry.clampToStartEnd(numStrokeTheta * sphere.latitudeSweepFraction, 1, Math.ceil(numStrokeTheta * 0.5));
@@ -1182,7 +1190,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.endFace();
     }
   }
-
+  /**
+   * @param box `Box` to facet.
+   */
   public addBox(box: Box) {
     const corners = box.getCorners();
     const xLength = Geometry.maxXY(box.getBaseX(), box.getBaseX());
@@ -1286,6 +1296,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Test each face with f(node) for any node on the face.
    * * For each face that passes, pass its coordinates to the builder.
    * * Rely on the builder's compress step to find common vertex coordinates
+   * @internal
    */
   public addGraph(graph: HalfEdgeGraph, needParams: boolean, acceptFaceFunction: HalfEdgeToBooleanFunction = HalfEdge.testNodeMaskNotExterior) {
     let index = 0;
@@ -1317,10 +1328,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    *
-   * * Visit all faces
-   * * Test each face with f(node) for any node on the face.
-   * * For each face that passes, pass its coordinates to the builder.
-   * * Rely on the builder's compress step to find common vertex coordinates
+   * * For each ndoe in `faces`
+   *  * add all of its vertices to the polyface
+   *  * add point indices to form a new facet.
+   *    * (Note: no normal or param indices are added)
+   *  * terminate the facet
+   * @internal
    */
   public addGraphFaces(_graph: HalfEdgeGraph, faces: HalfEdge[]) {
     let index = 0;
@@ -1334,13 +1347,18 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this._polyface.terminateFacet();
     }
   }
-
+  /** Create a polyface containing the faces of a HalfEdgeGraph, with test function to filter faces.
+   * @internal
+   */
   public static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction: HalfEdgeToBooleanFunction = HalfEdge.testNodeMaskNotExterior): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
     builder.addGraph(graph, builder.options.needParams, acceptFaceFunction);
     builder.endFace();
     return builder.claimPolyface();
   }
+  /** Create a polyface containing an array of faces of a HalfEdgeGraph, with test function to filter faces.
+   * @internal
+   */
   public static graphFacesToPolyface(graph: HalfEdgeGraph, faces: HalfEdge[]): IndexedPolyface {
     const builder = PolyfaceBuilder.create();
     builder.addGraphFaces(graph, faces);

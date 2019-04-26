@@ -26,6 +26,7 @@ import { UnivariateBezier } from "../numerics/BezierPolynomials";
  * * This exists to support BezeierCurve3d and BezierCurve3dH.
  * * The implementations of "pure 3d" queries is based on calling `getPolePoint3d`.
  * * This has the subtle failure difference that `getPolePoint3d` call with a valid index on on a 3d curve always succeeds, but on 3dH curve fails when weight is zero.
+ * @public
  */
 export abstract class BezierCurveBase extends CurvePrimitive {
   protected _polygon: Bezier1dNd;
@@ -138,6 +139,9 @@ export abstract class BezierCurveBase extends CurvePrimitive {
   public quickLength(): number { return this.polygonLength(); }
   /** Concrete classes must implement extendRange . . .  */
   public abstract extendRange(rangeToExtend: Range3d, transform?: Transform): void;
+  /**
+   * @internal
+   */
   protected _workBezier?: UnivariateBezier; // available for bezier logic within a method
   protected _workCoffsA?: Float64Array;
   protected _workCoffsB?: Float64Array;

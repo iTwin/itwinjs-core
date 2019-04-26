@@ -12,6 +12,7 @@ import { SmallSystem } from "./Polynomials";
 /** base class for Newton iterations in various dimensions.
  * Dimension-specific classes carry all dimension-related data and answer generalized queries
  * from this base class.
+ * @internal
  */
 export abstract class AbstractNewtonIterator {
   /** Compute a step.  The current x and function values must be retained for use in later method calls */
@@ -89,6 +90,7 @@ export abstract class AbstractNewtonIterator {
 }
 /** object to evaluate a newton function.  The object must retain most-recent function and derivative
  * values for immediate query.
+ * @internal
  */
 export abstract class NewtonEvaluatorRtoRD {
 /** evaluate the function and its derivative at x. */
@@ -100,6 +102,7 @@ export abstract class NewtonEvaluatorRtoRD {
 }
 /**
  * Newton iterator for use when both function and derivative can be evaluated.
+ * @internal
  */
 export class Newton1dUnbounded extends AbstractNewtonIterator {
   private _func: NewtonEvaluatorRtoRD;
@@ -141,6 +144,7 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
 }
 
 /** object to evaluate a newton function (without derivative).  The object must retain most-recent function value.
+ * @internal
  */
 export abstract class NewtonEvaluatorRtoR {
 /** Evalute function value into member currentF */
@@ -149,7 +153,9 @@ export abstract class NewtonEvaluatorRtoR {
   public currentF!: number;
 }
 
-/** Newton iteration for a univariate function, using approximate derivatives. */
+/** Newton iteration for a univariate function, using approximate derivatives.
+ * @internal
+ */
 export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterator {
   private _func: NewtonEvaluatorRtoR;
   private _currentStep!: number;
@@ -193,6 +199,7 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
 }
 
 /** object to evaluate a 2-parameter newton function (with derivatives!!).
+ * @internal
  */
 export abstract class NewtonEvaluatorRRtoRRD {
   /** Iteration controller calls this to ask for evaluation of the function and its two partial derivatives.
@@ -212,6 +219,7 @@ export abstract class NewtonEvaluatorRRtoRRD {
 
 /**
  * Implement evaluation steps for newton iteration in 2 dimensions.
+ * @internal
  */
 export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   private _func: NewtonEvaluatorRRtoRRD;

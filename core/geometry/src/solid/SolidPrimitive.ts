@@ -11,7 +11,8 @@ import { Transform } from "../geometry3d/Transform";
 /**
  * Base class for SolidPrimitve variants.
  *
- * * Base class holds capped flag for all derived classes.
+ * * The base class holds capped flag for all derived classes.
+ * @public
  */
 export abstract class SolidPrimitive extends GeometryQuery {
   protected _capped: boolean;

@@ -11,6 +11,10 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 
+/**
+ * 4d point packed in an array of 4 numbers.
+ * @public
+ */
 export type Point4dProps = number[];
 /**
  *
@@ -21,8 +25,9 @@ export type Point4dProps = number[];
  * @param df derivative of (g/h)
  * @param divh = (1/h)
  * @param dgdivh previously computed first derivative of (g/h)
+ * @internal
  */
-export function quotientDerivative2(ddg: number, dh: number, ddh: number,
+function quotientDerivative2(ddg: number, dh: number, ddh: number,
   f: number, df: number, divh: number): number {
   return divh * (ddg - 2.0 * df * dh - f * ddh);
 }
@@ -33,6 +38,7 @@ export function quotientDerivative2(ddg: number, dh: number, ddh: number,
  * *
  * * The coordinates are physically stored as a single FLoat64Array with 4 entries. (w last)
  * *
+ * @public
  */
 export class Point4d implements BeJSONFunctions {
   public xyzw: Float64Array;

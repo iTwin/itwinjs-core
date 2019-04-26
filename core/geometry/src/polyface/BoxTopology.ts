@@ -17,6 +17,10 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 //      | /     F2       \ |
 //      0------------------1
 //
+/**
+ * methods for gathering points and indices of a box (8 corners, 6 faces, 12 edges)
+ * @internal
+ */
 export class BoxTopology {
   /**
    * static readonly array with the coordinates of the 8 unit cube corners in standard order, which is:

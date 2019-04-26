@@ -8,7 +8,9 @@
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Range1d } from "../geometry3d/Range";
 import { Geometry } from "../Geometry";
-
+/**
+ * @internal
+ */
 export class Ray2d {
   private _origin: Point2d;
   private _direction: Vector2d;
@@ -99,7 +101,9 @@ export class Ray2d {
     return this._origin.plusScaled(this._direction, f);
   }
 }
-
+/**
+ * @internal
+ */
 export class ConvexPolygon2d {
   // hull points in CCW order, WITHOUT final duplicate...
   private _hullPoints: Point2d[];

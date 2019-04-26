@@ -10,6 +10,10 @@ import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point4d, Point4dProps } from "./Point4d";
+/**
+ * Coordinate data with `Point4d` numeric data as an array `[x,y,z,w]`
+ * @public
+ */
 export type Matrix4dProps = Point4dProps[];
 
 /**
@@ -18,13 +22,14 @@ export type Matrix4dProps = Point4dProps[];
  * * The 4 columns may be described as the x,y,z,w columns.
  * * The matrix is physically stored as a FLoat64Array with 16 numbers.
  * * The layout in the Float64Array is "by row"
- * * * indices 0,1,2,3 are the "x row".   They may be called the xx,xy,xz,xw entries
- * * * indices 4,5,6,7 are the "y row"    They may be called the yx,yy,yz,yw entries
- * * * indices 8,9,10,11 are the "z row"  They may be called the zx,zy,zz,zw entries
- * * * indices 12,13,14,15 are the "w row".  They may be called the wx,wy,wz,ww entries
+ *   * indices 0,1,2,3 are the "x row".   They may be called the xx,xy,xz,xw entries
+ *   * indices 4,5,6,7 are the "y row"    They may be called the yx,yy,yz,yw entries
+ *   * indices 8,9,10,11 are the "z row"  They may be called the zx,zy,zz,zw entries
+ *   * indices 12,13,14,15 are the "w row".  They may be called the wx,wy,wz,ww entries
  * * If "w row" contains numeric values 0,0,0,1, the Matrix4d is equivalent to a Transform with
- * * * The upper right 3x3 matrix (entries 0,1,2,4,5,6,8,9,10) are the 3x3 matrix part of the transform
- * * * The far right column entries xw,yw,zw are the "origin" (sometimes called "translation") part of the transform.
+ *  * The upper right 3x3 matrix (entries 0,1,2,4,5,6,8,9,10) are the 3x3 matrix part of the transform
+ *  * The far right column entries xw,yw,zw are the "origin" (sometimes called "translation") part of the transform.
+ * @public
  */
 export class Matrix4d implements BeJSONFunctions {
   private _coffs: Float64Array;
