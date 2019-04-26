@@ -42,6 +42,7 @@ import {
   XYAndZ,
   XYZ,
   SmoothTransformBetweenFrusta,
+  ClipUtilities,
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle,
@@ -652,7 +653,14 @@ export class ViewFrustum {
     if (!view.is3d()) // only necessary for 3d views
       return;
 
-    let extents = view.getViewedExtents() as Range3d;
+    let extents = view.getViewedExtents();
+
+    const clip = (view.viewFlags.clipVolume ? view.getViewClip() : undefined);
+    if (undefined !== clip) {
+      const clipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clip, extents);
+      if (!clipRange.isNull)
+        extents.setFrom(clipRange);
+    }
 
     this.extendRangeForDisplayedPlane(extents);
 

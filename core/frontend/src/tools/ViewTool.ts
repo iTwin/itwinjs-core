@@ -534,7 +534,7 @@ export abstract class ViewManip extends ViewTool {
     const aspect = viewport.viewRect.aspect;
     const before = viewport.getFrustum();
 
-    const clip = viewport.view.getViewClip();
+    const clip = (viewport.viewFlags.clipVolume ? viewport.view.getViewClip() : undefined);
     if (undefined !== clip) {
       const clipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clip, range);
       if (!clipRange.isNull)
