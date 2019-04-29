@@ -27,7 +27,7 @@ function arraysEqual(array1: any, array2: any) {
 
 chai.should();
 
-describe("ConnectSettingsClient-User", () => {
+describe("ConnectSettingsClient-User (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
   const settingsClient = new ConnectSettingsClient("1001");
@@ -235,7 +235,7 @@ describe("ConnectSettingsClient-User", () => {
 
 });
 
-describe("ConnectSettingsClient-Administrator", () => {
+describe("ConnectSettingsClient-Administrator (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
   let settingsClient: ConnectSettingsClient;
@@ -445,7 +445,7 @@ describe("ConnectSettingsClient-Administrator", () => {
   });
 });
 
-describe("Reading non-user settings from ordinary user", () => {
+describe("Reading non-user settings from ordinary user (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
   let settingsClient: ConnectSettingsClient;

@@ -18,9 +18,10 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
 import { BezierCurveBase } from "./BezierCurveBase";
 import { Range3d } from "../geometry3d/Range";
-// ================================================================================================================
-// ================================================================================================================
-/** 3d curve with homogeneous weights. */
+
+/** 3d curve with homogeneous weights.
+ * @public
+ */
 export class BezierCurve3dH extends BezierCurveBase {
   public isSameGeometryClass(other: any): boolean { return other instanceof BezierCurve3dH; }
   /**

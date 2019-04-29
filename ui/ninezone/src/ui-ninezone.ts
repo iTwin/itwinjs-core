@@ -40,9 +40,7 @@ export * from "./ui-ninezone/footer/Indicator";
 export * from "./ui-ninezone/footer/Popup";
 export * from "./ui-ninezone/footer/Separator";
 
-export * from "./ui-ninezone/popup/popover/Popover";
-export * from "./ui-ninezone/popup/popover/Triangle";
-export * from "./ui-ninezone/popup/tooltip/Tooltip";
+export * from "./ui-ninezone/popup/Tooltip";
 
 export * from "./ui-ninezone/toolbar/item/Item";
 export * from "./ui-ninezone/toolbar/item/Overflow";
@@ -96,15 +94,12 @@ export * from "./ui-ninezone/widget/rectangular/tab/Group";
 export * from "./ui-ninezone/widget/rectangular/tab/Separator";
 export * from "./ui-ninezone/widget/rectangular/tab/Tab";
 
-export * from "./ui-ninezone/widget/tool-settings/Content";
 export * from "./ui-ninezone/widget/tool-settings/Nested";
-export * from "./ui-ninezone/widget/tool-settings/ScrollableArea";
+export * from "./ui-ninezone/widget/tool-settings/Popup";
+export * from "./ui-ninezone/widget/tool-settings/Scrollable";
 export * from "./ui-ninezone/widget/tool-settings/Tab";
-export * from "./ui-ninezone/widget/tool-settings/Toggle";
-export * from "./ui-ninezone/widget/tool-settings/Tooltip";
 
-export * from "./ui-ninezone/zones/GhostOutline";
-export * from "./ui-ninezone/zones/Status";
+export * from "./ui-ninezone/zones/Outline";
 export * from "./ui-ninezone/zones/Zone";
 export * from "./ui-ninezone/zones/Zones";
 
@@ -118,11 +113,8 @@ export * from "./ui-ninezone/zones/state/layout/Layout";
 export * from "./ui-ninezone/zones/state/layout/Layouts";
 export * from "./ui-ninezone/zones/state/layout/Root";
 
-export * from "./ui-ninezone/zones/target/Arrow";
 export * from "./ui-ninezone/zones/target/Back";
-export * from "./ui-ninezone/zones/target/Container";
 export * from "./ui-ninezone/zones/target/Merge";
-export * from "./ui-ninezone/zones/target/Target";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

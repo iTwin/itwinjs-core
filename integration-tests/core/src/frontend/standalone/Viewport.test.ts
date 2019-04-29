@@ -2,36 +2,16 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs-core";
-import { Point3d, Angle } from "@bentley/geometry-core";
+import { Angle, Point3d } from "@bentley/geometry-core";
+import { Cartographic, ColorDef, Feature, FontMap, FontType, SubCategoryOverride, ViewFlags } from "@bentley/imodeljs-common";
 import {
-  Cartographic,
-  ColorDef,
-  Feature,
-  FontMap,
-  FontType,
-  SubCategoryOverride,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
-import * as path from "path";
-import {
-  ChangeFlag,
-  ChangeFlags,
-  CompassMode,
-  FeatureSymbology,
-  IModelApp,
-  IModelConnection,
-  MockRender,
-  PanViewTool,
-  PerModelCategoryVisibility,
-  ScreenViewport,
-  SpatialViewState,
-  StandardViewId,
-  TwoWayViewportSync,
-  Viewport,
+  ChangeFlag, ChangeFlags, CompassMode, FeatureSymbology, IModelApp, IModelConnection, MockRender, PanViewTool,
+  PerModelCategoryVisibility, ScreenViewport, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
+import { assert, expect } from "chai";
+import * as path from "path";
 
 const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets");
 
@@ -72,8 +52,12 @@ describe("Viewport", () => {
     assert.isFalse(vp.isUndoPossible, "no undo");
     assert.isFalse(vp.isCameraOn, "camera is off");
 
-    const frustSave = vp.getFrustum();
+    const saveView = vpView.clone();
+    assert.notEqual(saveView.modelSelector, vpView.modelSelector, "clone should copy modelSelector");
+    assert.notEqual(saveView.categorySelector, vpView.categorySelector, "clone should copy categorySelector");
+    assert.notEqual(saveView.displayStyle, vpView.displayStyle, "clone should copy displayStyle");
 
+    const frustSave = vp.getFrustum();
     const vpView2 = spatialView.clone(imodel2);
     vpView2.setStandardRotation(StandardViewId.Top);
     const vp2 = ScreenViewport.create(viewDiv2!, vpView2);

@@ -67,7 +67,7 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
       opened: !this.state.opened,
     }), () => {
       if (!this.state.opened)
-        ModalDialogManager.closeModalDialog();
+        ModalDialogManager.closeDialog();
       if (this.props.onResult)
         this.props.onResult(DialogButtonType.Close);
     });

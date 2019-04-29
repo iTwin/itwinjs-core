@@ -48,12 +48,13 @@ describe("AppNotificationManager", () => {
 
   it("openMessageBox", () => {
     const spyMethod = sinon.spy(MessageManager, "openMessageBox");
+    expect(ModalDialogManager.dialogCount).to.eq(0);
     notifications.openMessageBox(MessageBoxType.OkCancel, "Message string", MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
     expect(spyMethod.calledOnce).to.be.true;
 
-    expect(ModalDialogManager.modalDialogCount).to.eq(1);
-    ModalDialogManager.closeModalDialog();
-    expect(ModalDialogManager.modalDialogCount).to.eq(0);
+    expect(ModalDialogManager.dialogCount).to.eq(1);
+    ModalDialogManager.closeDialog();
+    expect(ModalDialogManager.dialogCount).to.eq(0);
   });
 
   it("setupActivityMessage", () => {

@@ -21,6 +21,7 @@ import { Range3d } from "../geometry3d/Range";
 
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.
+ * @public
  */
 export class ConvexClipPlaneSet implements Clipper {
   public static readonly hugeVal = 1e37;

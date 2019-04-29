@@ -13,6 +13,7 @@ import { CheckBoxInfo } from '@bentley/ui-core';
 import { CommonProps } from '@bentley/ui-core';
 import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
+import { DialogProps } from '@bentley/ui-core';
 import { Direction } from '@bentley/ui-ninezone';
 import { DndComponentClass } from 'react-dnd';
 import { DragLayerProps } from '@bentley/ui-components';
@@ -851,6 +852,67 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 export interface DescriptionProps {
     description?: string | StringGetter;
     descriptionKey?: string;
+}
+
+// @public
+export class DialogChangedEvent extends UiEvent<DialogChangedEventArgs> {
+}
+
+// @public
+export interface DialogChangedEventArgs {
+    // (undocumented)
+    activeDialog: React_2.ReactNode | undefined;
+    // (undocumented)
+    dialogCount: number;
+}
+
+// @public
+export interface DialogInfo {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    reactNode: React_2.ReactNode;
+}
+
+// @internal
+export class DialogManagerBase {
+    constructor(onDialogChangedEvent: DialogChangedEvent);
+    // (undocumented)
+    readonly activeDialog: React_2.ReactNode | undefined;
+    // (undocumented)
+    closeDialog(dialog?: React_2.ReactNode): void;
+    // (undocumented)
+    readonly dialogCount: number;
+    // (undocumented)
+    readonly dialogs: DialogInfo[];
+    // (undocumented)
+    emitDialogChangedEvent(): void;
+    // (undocumented)
+    readonly onDialogChangedEvent: DialogChangedEvent;
+    // (undocumented)
+    openDialog(dialog: React_2.ReactNode, id?: string): void;
+    // (undocumented)
+    pushDialog(dialogInfo: DialogInfo): void;
+    // (undocumented)
+    removeDialog(dialog: React_2.ReactNode): void;
+    // (undocumented)
+    update(): void;
+}
+
+// @internal
+export class DialogRendererBase extends React_2.PureComponent<DialogRendererProps> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React_2.ReactNode;
+}
+
+// @internal
+export interface DialogRendererProps {
+    // (undocumented)
+    dialogManager: DialogManagerBase;
 }
 
 // @beta
@@ -2043,43 +2105,25 @@ export class MessageManager {
     }
 
 // @public
-export class ModalDialogChangedEvent extends UiEvent<ModalDialogChangedEventArgs> {
-}
-
-// @public
-export interface ModalDialogChangedEventArgs {
-    // (undocumented)
-    activeModalDialog: React_2.ReactNode | undefined;
-    // (undocumented)
-    modalDialogCount: number;
+export class ModalDialogChangedEvent extends DialogChangedEvent {
 }
 
 // @public
 export class ModalDialogManager {
-    // (undocumented)
-    static readonly activeModalDialog: React_2.ReactNode | undefined;
-    // (undocumented)
-    static closeModalDialog(): void;
-    // (undocumented)
-    static readonly modalDialogCount: number;
-    // (undocumented)
-    static readonly modalDialogs: Readonly<React_2.ReactNode[]>;
-    // (undocumented)
+    static readonly activeDialog: React_2.ReactNode | undefined;
+    static closeDialog(dialog?: React_2.ReactNode): void;
+    static readonly dialogCount: number;
+    // @internal (undocumented)
+    static readonly dialogManager: DialogManagerBase;
+    static readonly dialogs: import("./DialogManagerBase").DialogInfo[];
     static readonly onModalDialogChangedEvent: ModalDialogChangedEvent;
-    // (undocumented)
-    static openModalDialog(modalDialog: React_2.ReactNode): void;
-    // (undocumented)
-    static updateModalDialog(): void;
+    static openDialog(dialog: React_2.ReactNode, id?: string): void;
+    static update(): void;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ModalDialogRendererState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
-export class ModalDialogRenderer extends React_2.PureComponent<CommonProps, ModalDialogRendererState> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
+export class ModalDialogRenderer extends React_2.PureComponent<CommonProps> {
+    constructor(props: CommonProps);
     // (undocumented)
     render(): React_2.ReactNode;
 }
@@ -2118,6 +2162,45 @@ export interface ModalFrontstageProps extends CommonProps {
     isOpen?: boolean;
     navigateBack: () => any;
     title: string;
+}
+
+// @public
+export class ModelessDialog extends React_2.Component<ModelessDialogProps> {
+    constructor(props: ModelessDialogProps);
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @public
+export class ModelessDialogChangedEvent extends DialogChangedEvent {
+}
+
+// @public
+export class ModelessDialogManager {
+    static readonly activeDialog: React_2.ReactNode | undefined;
+    static closeDialog(id: string): void;
+    static readonly dialogCount: number;
+    // @internal (undocumented)
+    static readonly dialogManager: DialogManagerBase;
+    static readonly dialogs: import("./DialogManagerBase").DialogInfo[];
+    static getDialogZIndex(id: string): number;
+    static handlePointerDownEvent(_event: React_2.PointerEvent, id: string, updateFunc: () => void): void;
+    static readonly onModelessDialogChangedEvent: ModelessDialogChangedEvent;
+    static openDialog(dialog: React_2.ReactNode, id: string): void;
+    static update(): void;
+}
+
+// @public
+export interface ModelessDialogProps extends DialogProps {
+    // (undocumented)
+    dialogId: string;
+}
+
+// @public
+export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
+    constructor(props: CommonProps);
+    // (undocumented)
+    render(): React_2.ReactNode;
 }
 
 // Warning: (ae-forgotten-export) The symbol "ModelSelectorWidgetProps" needs to be exported by the entry point ui-framework.d.ts

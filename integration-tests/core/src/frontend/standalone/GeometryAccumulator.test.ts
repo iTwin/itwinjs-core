@@ -232,7 +232,7 @@ describe("GeometryAccumulator tests", () => {
 
     expect(accum.geometries.length).to.equal(2);
     const map = accum.toMeshBuilderMap(new GeometryOptions(), 0.22);
-    expect(map.length).to.equal(2);
+    expect(map.size).to.equal(2);
   });
 
   it("toMeshes works as expected", () => {

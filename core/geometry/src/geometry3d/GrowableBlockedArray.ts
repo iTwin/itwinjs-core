@@ -8,6 +8,7 @@ import { BlockComparisonFunction } from "./GrowableFloat64Array";
 /**
  * Array of contiguous doubles, indexed by block number and index within block.
  * * This is essentially a rectangular matrix, with each block being a row of the matrix.
+ * @public
  */
 export class GrowableBlockedArray {
   protected _data: Float64Array;

@@ -10,7 +10,7 @@ import { CommonProps } from "@bentley/ui-core";
 import "./Tab.scss";
 
 /** Properties of [[ToolSettingsTab]] component.
- * @alpha
+ * @beta
  */
 export interface ToolSettingsTabProps extends CommonProps {
   /** Tab icon. */
@@ -19,13 +19,13 @@ export interface ToolSettingsTabProps extends CommonProps {
   onClick?: () => void;
   /** Function called when a key is pressed. */
   onKeyDown?: (e: React.KeyboardEvent) => void;
-  /** Title for the item. */
+  /** Tab title. */
   title?: string;
 }
 
-/** Tool settings widget tab.
- * @note Used in [[ToolSettingsZone]] component.
- * @alpha
+/** Tool settings widget tab is displayed when the [[ToolSettings]] widget is closed.
+ * @note Used in [[Zone]] component.
+ * @beta
  */
 export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
   public render() {
@@ -36,9 +36,9 @@ export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
     return (
       <button
         className={className}
-        style={this.props.style}
         onClick={this.props.onClick}
         onKeyDown={this.props.onKeyDown}
+        style={this.props.style}
         title={this.props.title}
       >
         {this.props.children}

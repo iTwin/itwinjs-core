@@ -6,7 +6,7 @@ import { GrowableFloat64Array } from "./GrowableFloat64Array";
 import { Angle } from "./Angle";
 import { BeJSONFunctions, Geometry, AngleSweepProps } from "../Geometry";
 /**
- * An AngleSweep is a pair of angles at start and end of an interval.
+ * An `AngleSweep` is a pair of angles at start and end of an interval.
  *
  * *  For stroking purposes, the "included interval" is all angles numerically reached by theta = start + f*(end-start), where f is between 0 and 1.
  * *  This stroking formula is simple numbers -- 2PI shifts are not involved.
@@ -14,9 +14,9 @@ import { BeJSONFunctions, Geometry, AngleSweepProps } from "../Geometry";
  * *  If (start < end) the angle proceeds CCW around the unit circle.
  * *  If (end < start) the angle proceeds CW around the unit circle.
  * *  Angles beyond 360 are fine as endpoints.
- *
- * **  (350,370) covers the same unit angles as (-10,10).
- * **  (370,350) covers the same unit angles as (10,-10).
+ *   *  (350,370) covers the same unit angles as (-10,10).
+ *   *  (370,350) covers the same unit angles as (10,-10).
+ * @public
  */
 export class AngleSweep implements BeJSONFunctions {
     private _radians0: number;

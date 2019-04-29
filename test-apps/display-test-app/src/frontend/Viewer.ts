@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
-import { imageBufferToPngDataUrl, IModelApp, IModelConnection, PluginAdmin, ScreenViewport, Viewport, ViewState } from "@bentley/imodeljs-frontend";
+import { imageBufferToPngDataUrl, IModelApp, IModelConnection, PluginAdmin, ScreenViewport, Viewport, ViewState, ViewClipDecorationProvider } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AnimationPanel } from "./AnimationPanel";
 import { CategoryPicker } from "./CategoryPicker";
@@ -51,6 +51,28 @@ class DebugTools extends ToolBarDropDown {
     this._element.className = "toolMenu";
     this._element.style.display = "flex";
     this._element.style.cssFloat = "left";
+    this._element.style.width = "440px";
+
+    const wantClipTools = true;
+    if (wantClipTools) {
+      this._element.appendChild(createToolButton({
+        className: "bim-icon-viewtop",
+        click: () => IModelApp.tools.run("ViewClip.ByPlane", ViewClipDecorationProvider.create()),
+        tooltip: "View Clip Create",
+      }));
+
+      this._element.appendChild(createToolButton({
+        className: "bim-icon-viewisoleft",
+        click: () => ViewClipDecorationProvider.create().toggleDecoration(IModelApp.viewManager.selectedView!),
+        tooltip: "Toggle View Clip Handles",
+      }));
+
+      this._element.appendChild(createToolButton({
+        className: "bim-icon-cancel",
+        click: () => IModelApp.tools.run("ViewClip.Clear", ViewClipDecorationProvider.create()),
+        tooltip: "View Clip Clear",
+      }));
+    }
 
     this._element.appendChild(createImageButton({
       src: "Warning_sign.svg",
@@ -71,8 +93,8 @@ class DebugTools extends ToolBarDropDown {
     }));
 
     this._element.appendChild(createToolButton({
-      className: "rd-icon-measure-distance",
-      click: () => IModelApp.tools.run("DrawingAidTest.Points", IModelApp.viewManager.selectedView!), // ###TODO Fix the drop-down...
+      className: "bim-icon-measure-tool",
+      click: () => IModelApp.tools.run("DrawingAidTest.Points", IModelApp.viewManager.selectedView!),
       tooltip: "Test drawing aid tools",
     }));
 

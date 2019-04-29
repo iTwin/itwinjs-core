@@ -10,7 +10,10 @@ import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { GrowableBlockedArray } from "../geometry3d/GrowableBlockedArray";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-
+/**
+ * Blocked array with operations to sort and cluster with a tolerance.
+ * @internal
+ */
 export class ClusterableArray extends GrowableBlockedArray {
   private static readonly _vectorFactor = 0.8732;  // use 1.0 to rig easy tests.
   public static sortVectorComponent(index: number): number {
@@ -359,6 +362,7 @@ export class ClusterableArray extends GrowableBlockedArray {
  * Data carrier class for
  * * packedPoints = an array of Point3d
  * * oldToNew = array of indices from some prior Point3d[] to the packed points.
+ * @internal
  */
 export class PackedPointsWithIndex {
   public packedPoints: Point3d[];

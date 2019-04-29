@@ -16,6 +16,7 @@ import { AnyCurve } from "./CurveChain";
  * * A `UnionRegion` is a collection of other planar region types -- `Loop` and `ParityRegion`.
  * * The composite is the union of the contained regions.
  * * A point is "in" the composite if it is "in" one or more of the contained regions.
+ * @public
  */
 export class UnionRegion extends CurveCollection {
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof UnionRegion; }
@@ -29,7 +30,8 @@ export class UnionRegion extends CurveCollection {
     }
     return result;
   }
-  public dgnBoundaryType(): number { return 5; }
+/** Return the boundary type (5) of a corresponding  Microstation CurveVector */
+public dgnBoundaryType(): number { return 5; }
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceUnionRegion(this, indexInParent);
   }

@@ -146,10 +146,12 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   }
 
   private _onEnter = (viewIds: Id64String[]) => {
-    this.setState({ showWaiting: true });
-
-    if (this.props.onOpen)
-      this.props.onOpen(viewIds);
+    this.setState(
+      { showWaiting: true },
+      () => {
+        if (this.props.onOpen)
+          this.props.onOpen(viewIds);
+      });
   }
 
   private _onSetCategory = (category: number) => {

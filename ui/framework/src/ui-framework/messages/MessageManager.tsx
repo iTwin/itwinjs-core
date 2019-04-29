@@ -18,8 +18,8 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { UiEvent, MessageContainer, MessageSeverity } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
-import { ModalDialogManager } from "../ModalDialogManager";
-import { StandardMessageBox } from "./StandardMessageBox";
+import { ModalDialogManager } from "../dialog/ModalDialogManager";
+import { StandardMessageBox } from "../dialog/StandardMessageBox";
 import { ConfigurableUiActionId } from "../configurableui/state";
 
 class MessageBoxCallbacks {
@@ -296,7 +296,7 @@ export class MessageManager {
     return new Promise((onFulfilled: (result: MessageBoxValue) => void, onRejected: (reason: any) => void) => {
       const messageBoxCallbacks = new MessageBoxCallbacks(onFulfilled, onRejected);
       const messageElement = <span dangerouslySetInnerHTML={{ __html: message }} />;
-      ModalDialogManager.openModalDialog(this.standardMessageBox(mbType, icon, title, messageElement, messageBoxCallbacks));
+      ModalDialogManager.openDialog(this.standardMessageBox(mbType, icon, title, messageElement, messageBoxCallbacks));
     });
   }
 
@@ -315,7 +315,7 @@ export class MessageManager {
         }
       </>
     );
-    ModalDialogManager.openModalDialog(this.standardMessageBox(MessageBoxType.Ok, iconType, title, content));
+    ModalDialogManager.openDialog(this.standardMessageBox(MessageBoxType.Ok, iconType, title, content));
   }
 
   private static standardMessageBox(mbType: MessageBoxType, iconType: MessageBoxIconType, title: string, messageElement: React.ReactNode, callbacks?: MessageBoxCallbacks): React.ReactNode {

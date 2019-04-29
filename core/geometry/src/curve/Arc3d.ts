@@ -43,6 +43,7 @@ import { Point4d } from "../geometry4d/Point4d";
  * ** note the constructing the vectors to the extreme points makes them perpendicular.
  * *  The method toScaledMatrix3d () can be called to convert the unrestricted vector0,vector90 to perpendicular form.
  * * The unrestricted form is much easier to work with for common calculations -- stroking, projection to 2d, intersection with plane.
+ * @public
  */
 export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /**

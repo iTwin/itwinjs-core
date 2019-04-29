@@ -4,66 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
+import { assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
 import {
-  assert,
-  BeDuration,
-  BeEvent,
-  BeTimePoint,
-  compareStrings,
-  dispose,
-  Id64,
-  Id64Arg,
-  Id64Set,
-  Id64String,
-  IDisposable,
-  SortedArray,
-  StopWatch,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  AngleSweep,
-  Arc3d,
-  AxisOrder,
-  Constant,
-  Geometry,
-  LowAndHighXY,
-  LowAndHighXYZ,
-  Map4d,
-  Matrix3d,
-  Plane3dByOriginAndUnitNormal,
-  Point2d,
-  Point3d,
-  Point4d,
-  Range3d,
-  Ray3d,
-  Transform,
-  Vector3d,
-  XAndY,
-  XYAndZ,
-  XYZ,
-  SmoothTransformBetweenFrusta,
+  Angle, AngleSweep, Arc3d, AxisOrder, ClipUtilities, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d,
+  Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle,
-  AntiAliasPref,
-  Camera,
-  ColorDef,
-  ElementProps,
-  Frustum,
-  Hilite,
-  ImageBuffer,
-  Npc,
-  NpcCenter,
-  NpcCorners,
-  Placement2d,
-  Placement2dProps,
-  Placement3d,
-  PlacementProps,
-  SubCategoryAppearance,
-  SubCategoryOverride,
-  ViewFlags,
+  AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
+  Placement2d, Placement2dProps, Placement3d, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
+import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
@@ -73,13 +24,12 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget } from "./render/System";
 import { StandardView, StandardViewId } from "./StandardView";
+import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tile } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus } from "./ViewState";
-import { DisplayStyleState } from "./DisplayStyleState";
-import { SubCategoriesCache } from "./SubCategoriesCache";
 
 /** An object which customizes the appearance of Features within a [[Viewport]].
  * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
@@ -652,7 +602,14 @@ export class ViewFrustum {
     if (!view.is3d()) // only necessary for 3d views
       return;
 
-    let extents = view.getViewedExtents() as Range3d;
+    let extents = view.getViewedExtents();
+
+    const clip = (view.viewFlags.clipVolume ? view.getViewClip() : undefined);
+    if (undefined !== clip) {
+      const clipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clip, extents);
+      if (!clipRange.isNull)
+        extents.setFrom(clipRange);
+    }
 
     this.extendRangeForDisplayedPlane(extents);
 
@@ -2583,6 +2540,12 @@ export abstract class Viewport implements IDisposable {
   }
 }
 
+/** @internal */
+export abstract class ViewStateUndo {
+  public undoTime?: BeTimePoint;
+  public abstract equalState(view: ViewState): boolean;
+}
+
 /** An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events.
  * To render the contents of a ScreenViewport, it must be added to the [[ViewManager]] via ViewManager.addViewport().
  * Every frame, the ViewManager will update the Viewport's state and re-render its contents if anything has changed.
@@ -2615,9 +2578,9 @@ export class ScreenViewport extends Viewport {
   private _viewCmdTargetCenter?: Point3d;
   /** The number of entries in the view undo/redo buffer. */
   public maxUndoSteps = 20;
-  private readonly _forwardStack: ViewState[] = [];
-  private readonly _backStack: ViewState[] = [];
-  private _currentBaseline?: ViewState;
+  private readonly _forwardStack: ViewStateUndo[] = [];
+  private readonly _backStack: ViewStateUndo[] = [];
+  private _currentBaseline?: ViewStateUndo;
 
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
@@ -2814,9 +2777,9 @@ export class ScreenViewport extends Viewport {
 
     // the first time we're called we need to establish the baseline
     if (!this._currentBaseline)
-      this._currentBaseline = this.view.clone();
+      this._currentBaseline = this.view.saveForUndo();
 
-    if (this.view.equalState(this._currentBaseline!)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
+    if (this._currentBaseline.equalState(this.view))
       return; // nothing changed, we're done
 
     const backStack = this._backStack;
@@ -2834,31 +2797,30 @@ export class ScreenViewport extends Viewport {
       this._forwardStack.length = 0; // not possible to do redo after this
     }
 
-    this._currentBaseline = this.view.clone();
+    this._currentBaseline = this.view.saveForUndo();
   }
+
   /** Reverses the most recent change to the Viewport from the undo stack. */
   public doUndo(animationTime?: BeDuration) {
-    if (0 === this._backStack.length)
+    if (0 === this._backStack.length || this._currentBaseline === undefined)
       return;
 
-    this._forwardStack.push(this._currentBaseline!);
+    this._forwardStack.push(this._currentBaseline);
     this._currentBaseline = this._backStack.pop()!;
-    const view = this._currentBaseline.clone();
-    view.jsonProperties = this.view.jsonProperties; // undo should not change json properties
-    this.applyViewState(view, animationTime);
+    this.view.setFromUndo(this._currentBaseline);
+    this.applyViewState(this.view, animationTime);
     this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Undo);
   }
 
   /** Re-applies the most recently un-done change to the Viewport from the redo stack. */
   public doRedo(animationTime?: BeDuration) {
-    if (0 === this._forwardStack.length)
+    if (0 === this._forwardStack.length || this._currentBaseline === undefined)
       return;
 
     this._backStack.push(this._currentBaseline!);
     this._currentBaseline = this._forwardStack.pop()!;
-    const view = this._currentBaseline.clone();
-    view.jsonProperties = this.view.jsonProperties; // undo should not change json properties
-    this.applyViewState(view, animationTime);
+    this.view.setFromUndo(this._currentBaseline);
+    this.applyViewState(this.view, animationTime);
     this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Redo);
   }
 

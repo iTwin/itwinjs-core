@@ -7,7 +7,14 @@ import { Angle } from "./Angle";
 import { Ray3d } from "./Ray3d";
 import { XYAndZ, XAndY, HasZ, XYZProps } from "./XYZProps";
 import { Point4d } from "../geometry4d/Point4d";
-/** Minimal object containing x,y,z and operations that are meaningful without change in both point and vector. */
+/**
+ *  * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both point and vector.
+ *  * `XYZ` is not instantiable.
+ *  * The derived (instantiable) classes are
+ *    * `Point3d`
+ *    * `Vector3d`
+ * @public
+ */
 export class XYZ implements XYAndZ {
   public x: number;
   public y: number;
@@ -213,7 +220,9 @@ export class XYZ implements XYAndZ {
   /** Freeze this XYZ */
   public freeze() { Object.freeze(this); }
 }
-/** 3D point with x,y,z properties */
+/** 3D point with `x`,`y`,`z` as properties
+ * @public
+ */
 export class Point3d extends XYZ {
   /** Constructor for Point3d */
   constructor(x: number = 0, y: number = 0, z: number = 0) { super(x, y, z); }
@@ -429,7 +438,9 @@ export class Point3d extends XYZ {
     return startPoint.dotVectorsToTargets(endPoint, this) / denominator;
   }
 }
-/** 3D vector with x,y,z properties */
+/** 3D vector with `x`,`y`,`z` as properties
+ * @public
+ */
 export class Vector3d extends XYZ {
   constructor(x: number = 0, y: number = 0, z: number = 0) { super(x, y, z); }
   /**

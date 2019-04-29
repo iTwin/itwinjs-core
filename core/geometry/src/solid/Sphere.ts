@@ -29,6 +29,7 @@ import { Vector2d } from "../geometry3d/Point2dVector2d";
  * * A unit sphere (but read on ....)
  * * mapped by an arbitrary (possibly skewed, non-uniform scaled) transform
  * * hence possibly the final geometry is ellipsoidal
+ * @public
  */
 export class Sphere extends SolidPrimitive implements UVSurface {
   private _localToWorld: Transform;  // unit sphere maps to world through the transform0 part of this map.

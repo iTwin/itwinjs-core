@@ -6,13 +6,15 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, ProgressInfo, request, RequestOptions, ResponseError } from "@bentley/imodeljs-clients";
-import * as fs from "fs";
-import * as https from "https";
-import * as path from "path";
 import { Transform, TransformCallback, PassThrough } from "stream";
 import { LoggerCategory } from "../LoggerCategory";
 import WriteStreamAtomic = require("fs-write-stream-atomic");
 import { AzCopy, ProgressEventArgs, StringEventArgs, InitEventArgs } from "../util/AzCopy";
+import * as fs from "fs";
+import * as https from "https";
+import * as path from "path";
+import * as os from "os";
+
 const loggerCategory: string = LoggerCategory.IModelHub;
 
 /**
@@ -140,7 +142,13 @@ export class AzureFileHandler implements FileHandler {
     progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Using AzCopy with verison ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
-    const azcopy = new AzCopy();
+
+    // setup log dir so we can delete it. It seem there is no way of disable it.
+    const azLogDir = path.join(os.tmpdir(), "bentley", "log", "azcopy");
+    if (!fs.existsSync(azLogDir)) {
+      AzureFileHandler.makeDirectoryRecursive(azLogDir);
+    }
+    const azcopy = new AzCopy({ logLocation: azLogDir });
     if (progressCallback) {
       const cb = (args: ProgressEventArgs) => {
         progressCallback({ total: args.TotalBytesEnumerated, loaded: args.BytesOverWire, percent: args.BytesOverWire ? (args.BytesOverWire / args.TotalBytesEnumerated) : 0 });

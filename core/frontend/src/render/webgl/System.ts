@@ -294,8 +294,6 @@ export class IdMap implements IDisposable {
   public readonly textures: Map<string, RenderTexture>;
   /** Mapping of textures using gradient symbology. */
   public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
-  /** Mapping of ClipVectors to corresponding clipping volumes. */
-  public readonly clipVolumes: Map<ClipVector, RenderClipVolume>;
   /** Mapping of (planar) classification model ID to textures */
   public readonly classifiers: Map<Id64String, RenderClassifierModel>;
 
@@ -303,23 +301,20 @@ export class IdMap implements IDisposable {
     this.materials = new Map<string, RenderMaterial>();
     this.textures = new Map<string, RenderTexture>();
     this.gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
-    this.clipVolumes = new Map<ClipVector, RenderClipVolume>();
     this.classifiers = new Map<Id64String, RenderClassifierModel>();
   }
 
   public dispose() {
     const textureArr = Array.from(this.textures.values());
     const gradientArr = this.gradients.extractArrays().values;
-    const clipVolumeArr = Array.from(this.clipVolumes.values());
     for (const texture of textureArr)
       dispose(texture);
+
     for (const gradient of gradientArr)
       dispose(gradient);
-    for (const clipVolume of clipVolumeArr)
-      dispose(clipVolume);
+
     this.textures.clear();
     this.gradients.clear();
-    this.clipVolumes.clear();
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
@@ -419,19 +414,6 @@ export class IdMap implements IDisposable {
     return texture;
   }
 
-  /** Find or cache a new clipping volume using the given clip vector. */
-  public getClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
-    const existingClipVolume = this.clipVolumes.get(clipVector);
-    if (existingClipVolume)
-      return existingClipVolume;
-
-    let clipVolume: RenderClipVolume | undefined = ClipMaskVolume.create(clipVector);
-    if (clipVolume === undefined)
-      clipVolume = ClipPlanesVolume.create(clipVector);
-    if (clipVolume !== undefined)
-      this.clipVolumes.set(clipVector, clipVolume);
-    return clipVolume;
-  }
   /** Get a classifier model */
   public getSpatialClassificationModel(modelId: Id64String): RenderClassifierModel | undefined { return this.classifiers.get(modelId); }
 
@@ -508,6 +490,9 @@ export class System extends RenderSystem {
     const capabilities = Capabilities.create(context, undefined !== options ? options.disabledExtensions : undefined);
     if (undefined === capabilities)
       throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
+
+    // set actual gl state to match desired state defaults
+    context.depthFunc(GL.DepthFunc.Default);  // LessOrEqual
 
     return new System(canvas, context, capabilities);
   }
@@ -656,10 +641,12 @@ export class System extends RenderSystem {
     return idMap.findTexture(key);
   }
 
-  /** Attempt to create a clipping volume for the given iModel using a clip vector. */
-  public getClipVolume(clipVector: ClipVector, imodel: IModelConnection): RenderClipVolume | undefined {
-    const idMap = this.getIdMap(imodel);
-    return idMap.getClipVolume(clipVector);
+  public createClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
+    let clipVolume: RenderClipVolume | undefined = ClipMaskVolume.create(clipVector);
+    if (undefined === clipVolume)
+      clipVolume = ClipPlanesVolume.create(clipVector);
+
+    return clipVolume;
   }
   public getSpatialClassificationModel(modelId: Id64String, iModel: IModelConnection): RenderClassifierModel | undefined { return this.getIdMap(iModel).classifiers.get(modelId); }
   public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel, iModel: IModelConnection) { this.getIdMap(iModel).classifiers.set(modelId, classifier); }

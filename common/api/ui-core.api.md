@@ -441,9 +441,11 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     minHeight?: number;
     minWidth?: number;
     modal?: boolean;
+    modelessId?: string;
     movable?: boolean;
     onClose?: () => void;
     onEscape?: () => void;
+    onModelessPointerDown?: (event: React.PointerEvent, id: string) => void;
     onOutsideClick?: (event: MouseEvent) => any;
     opened: boolean;
     resizable?: boolean;

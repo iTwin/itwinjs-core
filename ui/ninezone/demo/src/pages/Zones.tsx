@@ -34,11 +34,9 @@ import { TitleBarButton } from "@src/footer/dialog/Button";
 import { Toast } from "@src/footer/message/Toast";
 import { FooterPopup, FooterPopupContentType } from "@src/footer/Popup";
 import { FooterSeparator } from "@src/footer/Separator";
-import { Nested } from "@src/widget/tool-settings/Nested";
-import { ScrollableArea } from "@src/widget/tool-settings/ScrollableArea";
-import { Toggle } from "@src/widget/tool-settings/Toggle";
-import { ToolSettingsContent } from "@src/widget/tool-settings/Content";
-import { ToolSettingsTooltip } from "@src/widget/tool-settings/Tooltip";
+import { NestedToolSettings } from "@src/widget/tool-settings/Nested";
+import { ToolSettingsPopup } from "@src/widget/tool-settings/Popup";
+import { ScrollableToolSettings } from "@src/widget/tool-settings/Scrollable";
 import { ToolSettingsTab } from "@src/widget/tool-settings/Tab";
 import { ToolSettings } from "@src/widget/ToolSettings";
 import { ExpandableItem } from "@src/toolbar/item/expandable/Expandable";
@@ -70,21 +68,17 @@ import { DefaultStateManager } from "@src/zones/state/Manager";
 import { WidgetProps, DraggingWidgetProps, Widget } from "@src/zones/state/Widget";
 import { TargetType, TargetZoneProps } from "@src/zones/state/Target";
 import { ZonePropsBase, DropTarget, StatusZoneManager, WidgetZone } from "@src/zones/state/Zone";
-import { Container } from "@src/zones/target/Container";
-import { Merge } from "@src/zones/target/Merge";
-import { Back } from "@src/zones/target/Back";
+import { MergeTarget } from "@src/zones/target/Merge";
+import { BackTarget } from "@src/zones/target/Back";
 import { Zone } from "@src/zones/Zone";
-import { StatusZone } from "@src/zones/Status";
-import { ToolSettingsZone } from "@src/zones/ToolSettings";
 import { Zones } from "@src/zones/Zones";
-import { GhostOutline } from "@src/zones/GhostOutline";
-import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
+import { Outline } from "@src/zones/Outline";
+import { Tooltip, offsetAndContainInContainer } from "@src/popup/Tooltip";
 import { withContainIn } from "@src/base/WithContainIn";
 import "./Zones.scss";
 
-const adjustTooltipPosition = offsetAndContainInContainer();
 // tslint:disable-next-line:variable-name
-const TooltipWithTimeout = withTimeout(ToolSettingsTooltip);
+const TooltipWithTimeout = withTimeout(Tooltip);
 // tslint:disable-next-line:variable-name
 const ToolGroupContained = withContainIn(withOnOutsideClick(Group, undefined, false));
 // tslint:disable-next-line:variable-name
@@ -355,7 +349,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
   public render() {
     return (
       <>
-        <StatusZone
+        <Zone
           isInFooterMode={this.props.isInFooterMode}
           bounds={this.props.bounds}
         >
@@ -483,16 +477,15 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
               </SnapMode>
             </div>
           </Footer>
-        </StatusZone>
+        </Zone>
         <ZoneTargetExample
           bounds={this.props.targetBounds}
           zoneIndex={StatusZoneManager.id}
           dropTarget={this.props.dropTarget}
           onTargetChanged={this.props.onTargetChanged}
         />
-        {
-          !this.props.outlineBounds ? undefined :
-            <GhostOutline bounds={this.props.outlineBounds} />
+        {this.props.outlineBounds &&
+          <Outline bounds={this.props.outlineBounds} />
         }
         <FooterPopup
           isOpen={this.props.openWidget === FooterWidget.ToolAssistance}
@@ -647,7 +640,7 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
           }
           verticalAnchor={this.props.verticalAnchor}
         />
-      </Zone>
+      </Zone >
     );
   }
 
@@ -859,19 +852,17 @@ class ZoneTargetExample extends React.PureComponent<TargetExampleProps> {
       <Zone
         bounds={this.props.bounds}
       >
-        <Container>
-          {this.props.dropTarget === DropTarget.Merge &&
-            <Merge
-              onTargetChanged={this._handleMergeTargetChanged}
-            />
-          }
-          {this.props.dropTarget === DropTarget.Back &&
-            <Back
-              onTargetChanged={this._handleBackTargetChanged}
-              zoneIndex={this.props.zoneIndex}
-            />
-          }
-        </Container>
+        {this.props.dropTarget === DropTarget.Merge &&
+          <MergeTarget
+            onTargetChanged={this._handleMergeTargetChanged}
+          />
+        }
+        {this.props.dropTarget === DropTarget.Back &&
+          <BackTarget
+            onTargetChanged={this._handleBackTargetChanged}
+            zoneIndex={this.props.zoneIndex}
+          />
+        }
       </Zone>
     );
   }
@@ -891,6 +882,141 @@ class ZoneTargetExample extends React.PureComponent<TargetExampleProps> {
         type,
       }) :
       this.props.onTargetChanged(undefined);
+  }
+}
+
+interface ToolSettingsWidgetProps {
+  mode: ToolSettingsMode;
+  onTabClick: () => void;
+}
+
+interface ToolSettingsWidgetState {
+  isNestedPopupOpen: boolean;
+  isPopupOpen: boolean;
+}
+
+class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps, ToolSettingsWidgetState> {
+  private _toggle = React.createRef<HTMLButtonElement>();
+  private _nestedToggle = React.createRef<HTMLButtonElement>();
+
+  public readonly state: ToolSettingsWidgetState = {
+    isNestedPopupOpen: false,
+    isPopupOpen: false,
+  };
+
+  public render() {
+    if (this.props.mode === ToolSettingsMode.Minimized)
+      return (
+        <ToolSettingsTab
+          onClick={this.props.onTabClick}
+        >
+          {placeholderIcon}
+        </ToolSettingsTab>
+      );
+
+    return (
+      <ToolSettings
+        buttons={
+          <TitleBarButton
+            onClick={this.props.onTabClick}
+            title="Minimize"
+          >
+            <i className={"icon icon-chevron-up"} />
+          </TitleBarButton>
+        }
+        title="Tool Settings"
+      >
+        <button
+          onClick={this._handleToggleClick}
+          ref={this._toggle}
+        >
+          Toggle
+        </button>
+        <ToolSettingsPopup
+          isOpen={this.state.isPopupOpen}
+          onClose={this._handleCloseTogglePopup}
+          target={this._toggle}
+        >
+          <button
+            onClick={this._handleNestedToggleClick}
+            ref={this._nestedToggle}
+          >
+            Nested Toggle
+          </button>
+        </ToolSettingsPopup>
+        <ToolSettingsPopup
+          isOpen={this.state.isNestedPopupOpen}
+          onClose={this._handleCloseNestedTogglePopup}
+          target={this._nestedToggle}
+        >
+          <NestedToolSettings
+            title="Nested"
+            backButton={
+              <HollowButton
+                onClick={this._handleBackClick}
+                style={{ padding: "5px", lineHeight: "0", margin: "0" }}
+              >
+                <i className="icon icon-progress-backward-2" />
+              </HollowButton>
+            }
+          >
+            <ScrollableToolSettings>
+              1. Settings<br />
+              2. Settings<br />
+              3. Settings<br />
+              4. Settings<br />
+              5. Settings<br />
+              6. Settings<br />
+              7. Settings<br />
+              8. Settings<br />
+              9. Settings<br />
+              10. Settings<br />
+              11. Settings<br />
+              12. Settings<br />
+              13. Settings<br />
+              14. Settings<br />
+              15. Settings<br />
+              16. Settings<br />
+              17. Settings<br />
+              18. Settings<br />
+              19. Settings
+            </ScrollableToolSettings>
+          </NestedToolSettings>
+        </ToolSettingsPopup>
+      </ToolSettings>
+    );
+  }
+
+  private _handleToggleClick = () => {
+    this.setState((prevState) => ({
+      isNestedPopupOpen: false,
+      isPopupOpen: !prevState.isPopupOpen,
+    }));
+  }
+
+  private _handleCloseTogglePopup = () => {
+    this.setState(() => ({
+      isNestedPopupOpen: false,
+      isPopupOpen: false,
+    }));
+  }
+
+  private _handleNestedToggleClick = () => {
+    this.setState((prevState) => ({
+      isNestedPopupOpen: !prevState.isNestedPopupOpen,
+    }));
+  }
+
+  private _handleCloseNestedTogglePopup = () => {
+    this.setState(() => ({
+      isNestedPopupOpen: false,
+    }));
+  }
+
+  private _handleBackClick = () => {
+    this.setState(() => ({
+      isNestedPopupOpen: false,
+    }));
   }
 }
 
@@ -929,13 +1055,13 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
         {
           this.props.isTooltipVisible && (
             <TooltipWithTimeout
-              stepString="Start Point"
-              timeout={3000}
+              icon={placeholderIcon}
               onTimeout={this.props.onTooltipTimeout}
-              position={this.state.tooltipPosition}
               onSizeChanged={this._handleTooltipSizeChange}
+              position={this.state.tooltipPosition}
+              timeout={3000}
             >
-              {placeholderIcon}
+              Start Point
             </TooltipWithTimeout>
           )
         }
@@ -956,7 +1082,7 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
   private updateTooltipPosition() {
     this.setState((prevState) => {
       const tooltipBounds = Rectangle.createFromSize(this._tooltipSize).offset(this._mousePosition);
-      const tooltipPosition = adjustTooltipPosition(tooltipBounds, this.props.containerSize);
+      const tooltipPosition = offsetAndContainInContainer(tooltipBounds, this.props.containerSize);
       if (tooltipPosition.equals(prevState.tooltipPosition))
         return null;
       return {
@@ -1622,7 +1748,7 @@ interface ToolZoneToolbarProps {
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public static readonly defaultProps = {
     // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
-    children: function (this: ToolZoneToolbarProps, items: React.ReactNode) {
+    children: function(this: ToolZoneToolbarProps, items: React.ReactNode) {
       return (
         <Toolbar
           expandsTo={this.expandsTo}
@@ -1842,6 +1968,7 @@ const hiddenZoneTools: HiddenZoneTools = {
       },
       toolSettings: {
         id: "toolSettings",
+        isActive: true,
       },
     },
     vertical: {
@@ -2082,8 +2209,6 @@ const initialTheme: Theme = "light";
 interface State {
   contentBounds: { [id in WidgetZoneIndex]?: RectangleProps };
   isBackstageOpen: boolean;
-  isNestedPopoverOpen: boolean;
-  isPopoverOpen: boolean;
   isTooltipVisible: boolean;
   message: VisibleMessage;
   nineZone: NineZoneProps;
@@ -2102,8 +2227,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   public readonly state: State = {
     contentBounds: {},
     isBackstageOpen: false,
-    isNestedPopoverOpen: false,
-    isPopoverOpen: false,
     isTooltipVisible: false,
     message: VisibleMessage.None,
     nineZone: DefaultStateManager.mergeZone(9, 6,
@@ -2197,87 +2320,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     );
   }
 
-  private getToolSettings() {
-    if (this.state.toolSettingsMode === ToolSettingsMode.Minimized)
-      return (
-        <ToolSettingsTab
-          onClick={this._handleToolSettingsTabClick}
-        >
-          {placeholderIcon}
-        </ToolSettingsTab>
-      );
-
-    return (
-      <ToolSettings
-        buttons={
-          <TitleBarButton
-            onClick={this._handleToolSettingsTabClick}
-            title="Minimize"
-          >
-            <i className={"icon icon-chevron-up"} />
-          </TitleBarButton>
-        }
-        title="Tool Settings"
-      >
-        <ToolSettingsContent>
-          <Toggle
-            content={"Toggle"}
-            onClick={this._handlePopoverToggleClick}
-            popupContent={
-              !this.state.isPopoverOpen ? undefined : (
-                <ToolSettingsContent>
-                  <Toggle
-                    content={"Toggle for nested popover"}
-                    onClick={this._handleNestedPopoverToggleClick}
-                    popupContent={
-                      !this.state.isNestedPopoverOpen ? undefined : (
-                        <Nested
-                          label="Nested"
-                          backButton={
-                            <HollowButton
-                              onClick={this._handleNestedToolSettingsBackClick}
-                              style={{ padding: "5px", lineHeight: "0", margin: "0" }}
-                            >
-                              <i className="icon icon-progress-backward-2" />
-                            </HollowButton>
-                          }
-                        >
-                          <ScrollableArea>
-                            <ToolSettingsContent>
-                              1. Settings<br />
-                              2. Settings<br />
-                              3. Settings<br />
-                              4. Settings<br />
-                              5. Settings<br />
-                              6. Settings<br />
-                              7. Settings<br />
-                              8. Settings<br />
-                              9. Settings<br />
-                              10. Settings<br />
-                              11. Settings<br />
-                              12. Settings<br />
-                              13. Settings<br />
-                              14. Settings<br />
-                              15. Settings<br />
-                              16. Settings<br />
-                              17. Settings<br />
-                              18. Settings<br />
-                              19. Settings
-                            </ToolSettingsContent>
-                          </ScrollableArea>
-                        </Nested>
-                      )
-                    }
-                  />
-                </ToolSettingsContent>
-              )
-            }
-          />
-        </ToolSettingsContent>
-      </ToolSettings>
-    );
-  }
-
   private getZone(zoneId: WidgetZoneIndex, nineZone: NineZone) {
     switch (zoneId) {
       case 1:
@@ -2316,12 +2358,17 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   private getZone2() {
     const zoneId = 2;
     return (
-      <ToolSettingsZone
+      <Zone
         bounds={this.state.nineZone.zones[zoneId].bounds}
         key={zoneId}
       >
-        {this.state.tools[1].horizontal.toolSettings.isActive && this.getToolSettings()}
-      </ToolSettingsZone>
+        {this.state.tools[1].horizontal.toolSettings.isActive ?
+          <ToolSettingsWidget
+            onTabClick={this._handleToolSettingsTabClick}
+            mode={this.state.toolSettingsMode}
+          />
+          : null}
+      </Zone>
     );
   }
 
@@ -2404,7 +2451,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           zoneIndex={zone.id}
           onTargetChanged={this._handleTargetChanged}
         />
-        {outlineBounds && <GhostOutline bounds={outlineBounds} />}
+        {outlineBounds && <Outline bounds={outlineBounds} />}
       </span>
     );
   }
@@ -2861,25 +2908,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         }, newZoneTools),
       };
     });
-  }
-
-  private _handlePopoverToggleClick = () => {
-    this.setState((prevState) => ({
-      isNestedPopoverOpen: false,
-      isPopoverOpen: !prevState.isPopoverOpen,
-    }));
-  }
-
-  private _handleNestedPopoverToggleClick = () => {
-    this.setState((prevState) => ({
-      isNestedPopoverOpen: !prevState.isNestedPopoverOpen,
-    }));
-  }
-
-  private _handleNestedToolSettingsBackClick = () => {
-    this.setState(() => ({
-      isNestedPopoverOpen: false,
-    }));
   }
 
   private _handleWindowResize = () => {

@@ -15,7 +15,9 @@ import { IndexedXYCollection } from "./IndexedXYCollection";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Point3d } from "./Point3dVector3d";
 
-/** Use a Float64Array to pack xyz coordinates. */
+/** `GrowableXYArray` manages a (possibly growing) Float64Array to pack xy coordinates.
+ * @public
+ */
 export class GrowableXYArray extends IndexedXYCollection {
   /**
    * array of packed xyzxyzxyz components

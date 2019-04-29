@@ -10,10 +10,15 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
+/** @internal */
 export type NodeFunction = (node: HalfEdge) => any;
+/** @internal */
 export type NodeToNumberFunction = (node: HalfEdge) => number;
+/** @internal */
 export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
+/** @internal */
 export type HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean;
+/** @internal */
 export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
 /**
  *
@@ -29,6 +34,7 @@ export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolea
  * * In properly connected planar graph, interior face loops are counterclockwise.  But that property (along with
  *      expected masking) is a result of extensive validation of inputs, and is not true in intermediate phases
  *      of graph manipulation.
+ * @internal
  */
 export class HalfEdge {
   /** Vertex index in some parent object's numbering. */
@@ -640,6 +646,7 @@ export class HalfEdge {
 /**
  * A HalfEdgeGraph has:
  * * An array of (pointers to ) HalfEdge objects.
+ * @internal
  */
 export class HalfEdgeGraph {
   public allHalfEdges: HalfEdge[];
@@ -832,7 +839,7 @@ export class HalfEdgeGraph {
   /** @returns Return the number of nodes in the graph */
   public countNodes(): number { return this.allHalfEdges.length; }
 }
-
+/** @internal */
 export const enum HalfEdgeMask {
   EXTERIOR = 0x00000001,
   BOUNDARY = 0x00000002,

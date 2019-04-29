@@ -440,8 +440,6 @@ export class Camera implements CameraProps {
     // (undocumented)
     clone(): Camera;
     // (undocumented)
-    copyFrom(rhs: Camera): void;
-    // (undocumented)
     equals(other: Camera): boolean;
     // (undocumented)
     readonly eye: Point3d;
@@ -469,6 +467,8 @@ export class Camera implements CameraProps {
     setEyePoint(pt: XYAndZ): void;
     // (undocumented)
     setFocusDistance(dist: number): void;
+    // (undocumented)
+    setFrom(rhs: Camera): void;
     // (undocumented)
     setLensAngle(angle: Angle): void;
     // (undocumented)

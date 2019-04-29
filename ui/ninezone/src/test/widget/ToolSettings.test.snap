@@ -4,6 +4,11 @@ exports[`<ToolSettings /> renders correctly 1`] = `
 <div
   className="nz-widget-toolSettings"
 >
-  <TitleBar />
+  <TitleBar
+    className="nz-title"
+  />
+  <div
+    className="nz-content"
+  />
 </div>
 `;

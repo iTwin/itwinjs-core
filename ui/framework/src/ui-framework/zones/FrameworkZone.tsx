@@ -14,7 +14,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 import {
   ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, Zone as NZ_Zone, RectangleProps,
-  GhostOutline, HorizontalAnchor, VerticalAnchor, PointProps,
+  Outline, HorizontalAnchor, VerticalAnchor, PointProps,
 } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
 
@@ -101,11 +101,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
             targetChangeHandler={this.props.targetChangeHandler}
           />
         </NZ_Zone>
-        {
-          this.props.targetedBounds && (
-            <GhostOutline bounds={this.props.targetedBounds} />
-          )
-        }
+        {this.props.targetedBounds && <Outline bounds={this.props.targetedBounds} />}
       </span>
     );
   }

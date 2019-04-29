@@ -16,7 +16,9 @@ import { IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
 
-/** Use a Float64Array to pack xyz coordinates. */
+/** `GrowableXYArray` manages a (possibly growing) Float64Array to pack xy coordinates.
+ * @public
+ */
 export class GrowableXYZArray extends IndexedXYZCollection {
   /**
    * array of packed xyzxyzxyz components

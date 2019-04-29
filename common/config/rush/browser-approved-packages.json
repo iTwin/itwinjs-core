@@ -535,6 +535,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "node-report",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "node-sass",
       "allowedCategories": [ "tools" ]
     },

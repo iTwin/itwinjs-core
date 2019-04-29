@@ -23,6 +23,7 @@ export interface IModelOpenProps {
 interface IModelOpenState {
   isLoadingProjects: boolean;
   isLoadingiModels: boolean;
+  isLoadingiModel: boolean;
   recentProjects?: ProjectInfo[];
   iModels?: IModelInfo[];
   currentProject?: ProjectInfo;
@@ -41,6 +42,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     this.state = {
       isLoadingProjects: true,
       isLoadingiModels: false,
+      isLoadingiModel: false,
       isNavigationExpanded: false,
       prompt: "Fetching project information...",
     };
@@ -51,6 +53,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       this.setState(Object.assign({}, this.state, {
         isLoadingProjects: false,
         isLoadingiModels: false,
+        isLoadingiModel: false,
         currentProject: this.props.initialIModels[0].projectInfo,
         iModels: this.props.initialIModels,
       }));
@@ -93,6 +96,16 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     this.startRetrieveIModels(project); // tslint:disable-line:no-floating-promises
   }
 
+  private _handleIModelSelected = (iModelInfo: IModelInfo): void => {
+    this.setState({
+      prompt: "Opening '" + iModelInfo.name + "'...",
+      isLoadingiModel: true,
+    }, () => {
+      if (this.props.onIModelSelected)
+        this.props.onIModelSelected(iModelInfo);
+    });
+  }
+
   private renderIModels() {
     if (this.state.isLoadingProjects || this.state.isLoadingiModels) {
       return (
@@ -100,9 +113,14 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       );
     } else {
       return (
-        <IModelList iModels={this.state.iModels}
-          accessToken={this.props.accessToken}
-          onIModelSelected={this.props.onIModelSelected} />
+        <>
+          <IModelList iModels={this.state.iModels}
+            accessToken={this.props.accessToken}
+            onIModelSelected={this._handleIModelSelected} />
+          {this.state.isLoadingiModel &&
+            <BlockingPrompt prompt={this.state.prompt} />
+          }
+        </>
       );
     }
   }

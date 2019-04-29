@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "missing dependency on node-report",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Sam.Wilson@Bentley.com"
+}

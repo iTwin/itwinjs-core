@@ -24,6 +24,7 @@ import { Range3d } from "../geometry3d/Range";
 /** 3d Bezier curve class.
  * * Use BezierCurve3dH if the curve has weights.
  * * The control points (xyz) are managed as the _packedData buffer in the _polygon member of BezierCurveBase.
+ * @public
  */
 export class BezierCurve3d extends BezierCurveBase {
   public isSameGeometryClass(other: any): boolean { return other instanceof BezierCurve3d; }

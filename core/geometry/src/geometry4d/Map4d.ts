@@ -8,6 +8,7 @@ import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "./Matrix4d";
 /** Map4 carries two Matrix4d which are inverses of each other.
+ * @public
  */
 export class Map4d implements BeJSONFunctions {
   private _matrix0: Matrix4d;

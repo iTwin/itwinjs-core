@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Set initial GL state to match default",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "David.Stradley@bentley.com"
+}

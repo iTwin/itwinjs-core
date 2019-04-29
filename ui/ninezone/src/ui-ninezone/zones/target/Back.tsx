@@ -6,36 +6,36 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { MergeTarget, MergeTargetProps } from "./Target";
-import { Arrow } from "./Arrow";
 import { WidgetZoneIndex } from "../state/NineZone";
-import "./Back.scss";
+import { Arrow } from "./Arrow";
+import { MergeTargetProps } from "./Merge";
+import { ZoneTarget } from "./Target";
 
-/** Properties of [[Back]] component.
- * @alpha
+/** Properties of [[BackTarget]] component.
+ * @beta
  */
-export interface BackProps extends MergeTargetProps {
-  /** Rotation of back arrow depends on specified zone index. */
+export interface BackTargetProps extends MergeTargetProps {
+  /** Describes back target arrow rotation. */
   zoneIndex: WidgetZoneIndex;
 }
 
-/** Back home target.
- * @alpha
+/** Zone target used to merge widget back to initial zone.
+ * @beta
  */
-export class Back extends React.PureComponent<BackProps> {
+export class BackTarget extends React.PureComponent<BackTargetProps> {
   public render() {
-    const mergeClassName = classnames(
+    const { className, ...props } = this.props;
+    const targetClassName = classnames(
       "nz-zones-target-back",
-      `nz-zone-${this.props.zoneIndex}`,
       this.props.className);
 
     return (
-      <MergeTarget
-        className={mergeClassName}
-        {...this.props}
+      <ZoneTarget
+        className={targetClassName}
+        {...props}
       >
-        <Arrow className="nz-arrow" />
-      </MergeTarget>
+        <Arrow zoneIndex={this.props.zoneIndex} />
+      </ZoneTarget>
     );
   }
 }

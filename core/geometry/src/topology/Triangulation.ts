@@ -11,7 +11,10 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-
+/**
+ * (static) mehods for triangulating polygons
+ * * @internal
+ */
 export class Triangulator {
 
   /** Given the six nodes that make up two bordering triangles, "pinch" and relocate the nodes to flip them

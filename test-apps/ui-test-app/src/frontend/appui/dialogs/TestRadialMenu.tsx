@@ -60,7 +60,7 @@ export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRad
 
   private _close = () => {
     this.setState({ opened: false }, () => {
-      ModalDialogManager.closeModalDialog();
+      ModalDialogManager.closeDialog();
     });
   }
 

@@ -199,26 +199,26 @@ export class AzCopy extends EventEmitter {
     }
 
     // Set config env
-    const env = { ...process.env };
+    const azenv = { ...process.env };
     if (this.config.concurrencyValue) {
-      Object.defineProperty(env, "AZCOPY_CONCURRENCY_VALUE", { value: String(this.config.concurrencyValue) });
+      Object.defineProperty(azenv, "AZCOPY_CONCURRENCY_VALUE", { value: this.config.concurrencyValue.toString(), enumerable: true });
     }
     if (this.config.logLocation) {
-      Object.defineProperty(env, "AZCOPY_LOG_LOCATION", { value: String(this.config.logLocation) });
+      Object.defineProperty(azenv, "AZCOPY_LOG_LOCATION", { value: this.config.logLocation, enumerable: true });
     }
     if (this.config.showPerfStates) {
-      Object.defineProperty(env, "AZCOPY_SHOW_PERF_STATES", { value: String(this.config.showPerfStates) });
+      Object.defineProperty(azenv, "AZCOPY_SHOW_PERF_STATES", { value: this.config.showPerfStates, enumerable: true });
     }
     if (this.config.pacePageBlobs) {
-      Object.defineProperty(env, "AZCOPY_PACE_PAGE_BLOBS", { value: String(this.config.pacePageBlobs) });
+      Object.defineProperty(azenv, "AZCOPY_PACE_PAGE_BLOBS", { value: this.config.pacePageBlobs.toString(), enumerable: true });
     }
     if (this.config.defaultServiceApiVersion) {
-      Object.defineProperty(env, "AZCOPY_DEFAULT_SERVICE_API_VERSION", { value: String(this.config.defaultServiceApiVersion) });
+      Object.defineProperty(azenv, "AZCOPY_DEFAULT_SERVICE_API_VERSION", { value: this.config.defaultServiceApiVersion, enumerable: true });
     }
 
     const enableEvents = this.listenerCount("azinit") || this.listenerCount("azinfo") || this.listenerCount("azprogress") || this.listenerCount("azexit") || this.listenerCount("azerror");
     return new Promise<number>((resolve, reject) => {
-      const cmd = spawn(AzCopy.execPath, args, { cwd: process.cwd(), env: process.env, stdio: "pipe" });
+      const cmd = spawn(AzCopy.execPath, args, { cwd: process.cwd(), env: azenv, stdio: "pipe" });
       cmd.stdout.setEncoding("utf8");
       cmd.stderr.setEncoding("utf8");
       if (enableEvents) {
@@ -229,6 +229,8 @@ export class AzCopy extends EventEmitter {
             const msg = JSON.parse(m);
             const eventId = `az${(msg.MessageType as string).toLowerCase()}`;
             if (msg.MessageType === "Progress" || msg.MessageType === "Exit") {
+              this.emit(eventId, { TimeStamp: msg.TimeStamp, MessageType: msg.MessageType, ...JSON.parse(msg.MessageContent) });
+            } else if (msg.MessageType === "Init") {
               this.emit(eventId, { TimeStamp: msg.TimeStamp, MessageType: msg.MessageType, ...JSON.parse(msg.MessageContent) });
             } else {
               this.emit(eventId, { TimeStamp: msg.TimeStamp, MessageType: msg.MessageType, MessageContent: msg.MessageContent });

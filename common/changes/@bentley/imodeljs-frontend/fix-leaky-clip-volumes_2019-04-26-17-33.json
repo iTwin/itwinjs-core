@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Ensure webgl resources allocated by clip volumes are properly released.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

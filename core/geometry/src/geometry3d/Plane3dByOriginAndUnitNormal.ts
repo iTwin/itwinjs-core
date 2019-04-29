@@ -13,6 +13,7 @@ import { Point4d } from "../geometry4d/Point4d";
  *
  * * Any point on the plane.
  * * a unit normal.
+ * @public
  */
 export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   private _origin: Point3d;

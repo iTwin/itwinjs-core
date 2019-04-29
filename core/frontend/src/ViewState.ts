@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert, BeTimePoint, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
   Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
@@ -28,7 +28,7 @@ import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { Viewport } from "./Viewport";
+import { Viewport, ViewStateUndo } from "./Viewport";
 import { SpatialClassification } from "./SpatialClassification";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
@@ -94,6 +94,51 @@ export interface ExtentLimits {
   max: number;
 }
 
+/** @internal */
+export class ViewState3dUndo extends ViewStateUndo {
+  public readonly cameraOn: boolean;
+  public readonly origin: Point3d;
+  public readonly extents: Vector3d;
+  public readonly rotation: Matrix3d;
+  public readonly camera: Camera;
+
+  public constructor(view: ViewState3d) {
+    super();
+    this.cameraOn = view.isCameraOn;
+    this.origin = view.origin.clone();
+    this.extents = view.extents.clone();
+    this.rotation = view.rotation.clone();
+    this.camera = view.camera.clone();
+  }
+
+  public equalState(view: ViewState3d): boolean {
+    return this.cameraOn === view.isCameraOn &&
+      this.origin.isAlmostEqual(view.origin) &&
+      this.extents.isAlmostEqual(view.extents) &&
+      this.rotation.isAlmostEqual(view.rotation) &&
+      (!this.cameraOn || this.camera.equals(view.camera)); // ###TODO: should this be less precise equality?
+  }
+}
+
+/** @internal */
+export class ViewState2dUndo extends ViewStateUndo {
+  public readonly origin: Point2d;
+  public readonly delta: Point2d;
+  public readonly angle: Angle;
+  public constructor(view: ViewState2d) {
+    super();
+    this.origin = view.origin.clone();
+    this.delta = view.delta.clone();
+    this.angle = view.angle.clone();
+  }
+
+  public equalState(view: ViewState2d): boolean {
+    return this.origin.isAlmostEqual(view.origin) &&
+      this.delta.isAlmostEqual(view.delta) &&
+      this.angle.isAlmostEqualNoPeriodShift(view.angle);
+  }
+}
+
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen.
  * * @see [Views]($docs/learning/frontend/Views.md)
@@ -102,14 +147,13 @@ export interface ExtentLimits {
 export abstract class ViewState extends ElementState {
   private _auxCoordSystem?: AuxCoordSystemState;
   private _extentLimits?: ExtentLimits;
+  private _clipVector?: ClipVector;
   public description?: string;
   public isPrivate?: boolean;
   /** Selects the categories that are display by this ViewState. */
   public categorySelector: CategorySelectorState;
   /** Selects the styling parameters for this this ViewState. */
   public displayStyle: DisplayStyleState;
-  /** Time this ViewState was saved in view undo. */
-  public undoTime?: BeTimePoint;
   public static get className() { return "ViewDefinition"; }
 
   /** @internal */
@@ -124,22 +168,12 @@ export abstract class ViewState extends ElementState {
 
     // from clone, 3rd argument is source ViewState
     const source = categoryOrClone as ViewState;
-    this.categorySelector = source.categorySelector;
-    this.displayStyle = source.displayStyle;
+    this.categorySelector = source.categorySelector.clone();
+    this.displayStyle = source.displayStyle.clone();
     this._extentLimits = source._extentLimits;
     this._auxCoordSystem = source._auxCoordSystem;
+    this._clipVector = source._clipVector;
   }
-
-  /** Make an independent copy of this ViewState.
-   * @note This will ONLY clone the contents of the ViewState - the clone will point to the same DisplayStyle, CategorySelector, ModelSelector, etc.
-   * If you *really* wish to clone those too, first clone the ViewState and then clone them individually, e.g.:
-   *  ```ts
-   * const view2 = view1.clone();
-   * view2.displayStyle = view2.displayStyle.clone();
-   * view2.categorySelector = view2.categorySelector.clone();
-   *  ```
-   */
-  public clone(iModel?: IModelConnection): this { return super.clone(iModel); } // this method exists only to supply documentation above.
 
   /** Create a new ViewState object from a set of properties. Generally this is called internally by [[IModelConnection.Views.load]] after the properties
    * have been read from an iModel. But, it can also be used to create a ViewState in memory, from scratch or from properties stored elsewhere.
@@ -162,20 +196,8 @@ export abstract class ViewState extends ElementState {
   /** Get the RenderSchedule.Script from the displayStyle of this viewState */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this.displayStyle.scheduleScript; }
 
-  /** Determine whether this ViewState exactly matches another.
-   * @see [[ViewState.equalState]] for determining broader equivalence of two ViewStates.
-   */
+  /** Determine whether this ViewState exactly matches another. */
   public equals(other: this): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
-
-  /** Determine whether this ViewState is equivalent to another for the purposes of display.
-   * @note this ONLY compares the contents of this ViewState - it does NOT compare DisplayStyle, CategorySelector, or ModelSelector
-   * @see [[ViewState.equals]] for determining exact equality.
-   */
-  public equalState(other: ViewState): boolean {
-    if (this.isPrivate !== other.isPrivate || this.name !== other.name || this.id !== other.id)
-      return false;
-    return JSON.stringify(this.getDetails()) === JSON.stringify(other.getDetails());
-  }
 
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
@@ -290,6 +312,12 @@ export abstract class ViewState extends ElementState {
 
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
+
+  /** @internal */
+  public abstract saveForUndo(): ViewStateUndo;
+
+  /** @internal */
+  public abstract setFromUndo(props: ViewStateUndo): void;
 
   /** Execute a function on each viewed model */
   public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void { this.forEachModel((model: GeometricModelState) => func(model)); }
@@ -675,21 +703,25 @@ export abstract class ViewState extends ElementState {
 
   /** Set or clear the clipping volume for this view.
    * @param clip the new clipping volume. If undefined, clipping is removed from view.
+   * @note The ViewState takes ownership of the supplied ClipVector - it should not be modified after passing it to this function.
    */
   public setViewClip(clip?: ClipVector) {
+    this._clipVector = clip;
     if (clip && clip.isValid)
       this.setDetail("clip", clip.toJSON());
     else
       this.removeDetail("clip");
   }
 
-  /** Get the clipping volume for this view, if defined */
+  /** Get the clipping volume for this view, if defined
+   * @note Do *not* modify the returned ClipVector. If you wish to change the ClipVector, clone the returned ClipVector, modify it as desired, and pass the clone to [[setViewClip]].
+   */
   public getViewClip(): ClipVector | undefined {
-    const clip = this.peekDetail("clip");
-    if (clip === undefined)
-      return undefined;
-    const clipVector = ClipVector.fromJSON(clip);
-    return clipVector.isValid ? clipVector : undefined;
+    if (undefined === this._clipVector) {
+      const clip = this.peekDetail("clip");
+      this._clipVector = (undefined !== clip ? ClipVector.fromJSON(clip) : ClipVector.createEmpty());
+    }
+    return this._clipVector.isValid ? this._clipVector : undefined;
   }
 
   /** Set the grid settings for this view */
@@ -928,6 +960,19 @@ export abstract class ViewState3d extends ViewState {
         this.lookAt(this.getEyePoint(), this.getTargetPoint(), this.getYVector(), this.extents, this.getFrontDistance(), this.getBackDistance());
     }
   }
+
+  /** @internal */
+  public saveForUndo(): ViewStateUndo { return new ViewState3dUndo(this); }
+
+  /** @internal */
+  public setFromUndo(val: ViewState3dUndo) {
+    this._cameraOn = val.cameraOn;
+    this.origin.setFrom(val.origin);
+    this.extents.setFrom(val.extents);
+    this.rotation.setFrom(val.rotation);
+    this.camera.setFrom(val.camera);
+  }
+
   public toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this._cameraOn;
@@ -936,19 +981,6 @@ export abstract class ViewState3d extends ViewState {
     val.angles = YawPitchRollAngles.createFromMatrix3d(this.rotation)!.toJSON();
     val.camera = this.camera;
     return val;
-  }
-
-  public equalState(other: ViewState3d): boolean {
-    if (!this.origin.isAlmostEqual(other.origin) || !this.extents.isAlmostEqual(other.extents) || !this.rotation.isAlmostEqual(other.rotation))
-      return false;
-
-    if (this.isCameraOn !== other.isCameraOn)
-      return false;
-
-    if (this.isCameraOn && this.camera.equals(other.camera)) // ###TODO: should this be less precise equality?
-      return false;
-
-    return super.equalState(other);
   }
 
   public get isCameraOn(): boolean { return this._cameraOn; }
@@ -1444,7 +1476,7 @@ export class SpatialViewState extends ViewState3d {
     super(props, iModel, arg3, displayStyle);
     this.modelSelector = modelSelector;
     if (arg3 instanceof SpatialViewState) { // from clone
-      this.modelSelector = arg3.modelSelector;
+      this.modelSelector = arg3.modelSelector.clone();
     }
   }
 
@@ -1457,7 +1489,7 @@ export class SpatialViewState extends ViewState3d {
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new Range3d();
-    this.forEachTileTreeModel((model: TileTreeModelState) => {   // ...if we don't want to fit context reality mdoels this should cal forEachSpatialTileTreeModel...
+    this.forEachTileTreeModel((model: TileTreeModelState) => {   // ...if we don't want to fit context reality models this should cal forEachSpatialTileTreeModel...
       const tileTree = model.tileTree;
       if (tileTree !== undefined && tileTree.rootTile !== undefined) {
         const contentRange = tileTree.rootTile.computeWorldContentRange();
@@ -1553,20 +1585,22 @@ export abstract class ViewState2d extends ViewState {
     return val;
   }
 
+  /** @internal */
+  public saveForUndo(): ViewStateUndo { return new ViewState2dUndo(this); }
+
+  /** @internal */
+  public setFromUndo(val: ViewState2dUndo) {
+    this.origin.setFrom(val.origin);
+    this.delta.setFrom(val.delta);
+    this.angle.setFrom(val.angle);
+  }
+
   /** Return the model for this 2d view. */
   public getViewedModel(): GeometricModel2dState | undefined {
     const model = this.iModel.models.getLoaded(this.baseModelId);
     if (model && !(model instanceof GeometricModel2dState))
       return undefined;
     return model;
-  }
-
-  public equalState(other: ViewState2d): boolean {
-    return this.baseModelId === other.baseModelId &&
-      this.origin.isAlmostEqual(other.origin) &&
-      this.delta.isAlmostEqual(other.delta) &&
-      this.angle.isAlmostEqualNoPeriodShift(other.angle) &&
-      super.equalState(other);
   }
 
   public computeFitRange(): Range3d { return this.getViewedExtents(); }

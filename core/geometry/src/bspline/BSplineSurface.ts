@@ -21,11 +21,22 @@ import { GeometryQuery } from "../curve/GeometryQuery";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 /**
  * UVSelect is an integer indicating uDirection (0) or vDirection (1) in a bspline surface parameterization.
+ * @public
  */
 export enum UVSelect {
   uDirection = 0,
   VDirection = 1,
+
 }
+/**
+ * Enumeration of how weights are carried
+ * * UnWeighted (0) -- there are no weights
+ * * WeightsAlreadyAppliedToCoordinates (1) -- for real point (x,y,z) the homogeneous point has weight applied throughout as (wx,wy,wz,w)
+ * * WeightsSeparateFromCoordinates (2) -- for real point (x,y,z) the honmogeneous point is (x,y,z,w)
+ *   * Note that "internal" compuatations never use WeightsSepraateFromCoordinates.
+ *   * WeightsSeparateFromCoordinates is only useful as input or output state in serializers.
+ * @public
+ */
 export enum WeightStyle {
   /** There are no weights. */
   UnWeighted = 0,
@@ -42,6 +53,7 @@ export enum WeightStyle {
 }
 /**
  * interface for points returned from getPointGrid, with annotation of physical and weighting dimensions.
+ * @public
  */
 export interface PackedPointGrid {
   /**
@@ -60,7 +72,9 @@ export interface PackedPointGrid {
    */
   numCartesianDimensions: number;
 }
-/** Interface for methods supported by both regular (xyz) and weighted (xyzw) bspline surfaces. */
+/** Interface for methods supported by both regular (xyz) and weighted (xyzw) bspline surfaces.
+ * @public
+ */
 export interface BSplineSurface3dQuery {
   fractionToPoint(uFractioin: number, vFraction: number): Point3d;
   fractionToRigidFrame(uFraction: number, vFraction: number): Transform | undefined;
@@ -124,6 +138,7 @@ export interface BSplineSurface3dQuery {
 }
 /** Bspline knots and poles for 2d-to-Nd.
  * * This abstract class in not independently instantiable -- GeometryQuery methods must be implemented by derived classes.
+ * @public
  */
 export abstract class BSpline2dNd extends GeometryQuery {
   public knots: KnotVector[];
@@ -436,6 +451,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
  * | Method | control point array | counts |
  * | create | flat array of [x,y,z] | arguments numPolesU, numPolesV |
  * | createGrid | array of array of [x,y,z ] | There are no `numPolesU` or `numPolesV` args. The counts are conveyed by the deep arrays |
+ * @public
  */
 export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQuery {
   public isSameGeometryClass(other: any): boolean { return other instanceof BSplineSurface3d; }
@@ -665,7 +681,9 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
 
 }
 
-/**  BsplinceCurve in xyzw homogeneous space */
+/**  BsplinceCurve in xyzw homogeneous space
+ * @public
+ */
 export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQuery {
   public isSameGeometryClass(other: any): boolean { return other instanceof BSplineSurface3dH; }
   public tryTransformInPlace(transform: Transform): boolean {

@@ -17,7 +17,7 @@ import { Vector2d } from "./Point2dVector2d";
  * * an origin point.
  * * a direction vector.  The vector is NOT required to be normalized.
  *  * an optional weight (number).
- *
+ * @public
  */
 export class Ray3d implements BeJSONFunctions {
   public origin: Point3d;

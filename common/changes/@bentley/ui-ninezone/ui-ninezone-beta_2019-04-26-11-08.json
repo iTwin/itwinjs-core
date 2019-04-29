@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "comment": "Move tool settings components to @beta.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    },
+    {
+      "comment": "Remove popover components.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

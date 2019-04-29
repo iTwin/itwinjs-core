@@ -22,6 +22,7 @@ import { Point4d } from "./Point4d";
  *         * e.g. entry [0,1] is summed product xy
  *      * axis 3 is "w", which is 1 in sums.
  *         * e.g. entry 03 is summed x
+ * @public
  */
 export class MomentData {
   public origin: Point3d;
@@ -40,13 +41,17 @@ export class MomentData {
     this.localToWorldMap = Transform.createIdentity();
     this.radiusOfGyration = Vector3d.create();
   }
+  /**
+   * Return the formal tensor of integrated values `[yy+zz,xy,xz][yx,xx+zz,yz][zx,xy,xx+yy]`
+   * @param products matrix of (integrated) `[xx,xy,xz][yx,yy,yz][zx,xy,zz]`
+   */
   public static momentTensorFromInertiaProducts(products: Matrix3d): Matrix3d {
     const rr = products.sumDiagonal();
     const result = Matrix3d.createScale(rr, rr, rr);
     result.addScaledInPlace(products, -1.0);
     return result;
   }
-
+/** Sort the colomns of the matrix for increasing moments. */
   public static sortColumnsForIncreasingMoments(axes: Matrix3d, moments: Vector3d) {
     const points = [
       axes.indexedColumnWithWeight(0, moments.x),
@@ -60,6 +65,10 @@ export class MomentData {
     axes.setColumnsPoint4dXYZ(points[0], points[1], points[2]);
     moments.set(points[0].w, points[1].w, points[2].w);
   }
+  /**
+   * Return the principal moment data for an array of points.
+   * @param points array of points
+   */
   public static pointsToPrincipalAxes(points: Point3d[]): MomentData {
     const moments = new MomentData();
     if (points.length === 0)
@@ -103,6 +112,7 @@ export class MomentData {
     moments.radiusOfGyration.scaleInPlace(1.0 / Math.sqrt(moments.sums.weight()));
     return moments;
   }
+  /** Clear the MomentData sums to zero, and establish a new origin. */
   public clearSums(origin?: Point3d) {
     this.sums.setZero();
     if (origin)
@@ -110,6 +120,7 @@ export class MomentData {
     else
       this.origin.setZero();
   }
+  /** Accumulate products-of-components for given points. */
   public accumulatePointMomentsFromOrigin(points: Point3d[]) {
     for (const p of points) {
       this.sums.addMomentsInPlace(
@@ -119,6 +130,7 @@ export class MomentData {
         1.0);
     }
   }
+  /** revise the accumulated sums to be "around the centroid" */
   public shiftSumsToCentroid(): boolean {
     const xyz = this.sums.columnW().realPoint();
     if (xyz) {

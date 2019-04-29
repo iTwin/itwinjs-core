@@ -23,18 +23,6 @@ export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoCh
 }
 
 // @alpha
-export class Arrow extends React.PureComponent<CommonProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
-export class Back extends React.PureComponent<BackProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
 export class BackArrow extends React.PureComponent<BackArrowProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -54,11 +42,6 @@ export class BackButton extends React.PureComponent<BackButtonProps> {
 // 
 // @alpha
 export interface BackButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
-}
-
-// @alpha
-export interface BackProps extends MergeTargetProps {
-    zoneIndex: WidgetZoneIndex;
 }
 
 // @beta
@@ -106,6 +89,18 @@ export interface BackstageProps extends CommonProps {
 export class BackstageSeparator extends React.PureComponent<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
+}
+
+// @beta
+export class BackTarget extends React.PureComponent<BackTargetProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface BackTargetProps extends MergeTargetProps {
+    // Warning: (ae-incompatible-release-tags) The symbol "zoneIndex" is marked as @beta, but its signature references "WidgetZoneIndex" which is marked as @alpha
+    zoneIndex: WidgetZoneIndex;
 }
 
 // @internal
@@ -167,17 +162,6 @@ export interface ColumnsProps extends CommonProps {
 
 // @alpha
 export const contain: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
-
-// @alpha
-export class Container extends React.PureComponent<ContainerProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
-export interface ContainerProps extends CommonProps {
-    children?: React.ReactNode;
-}
 
 // @alpha
 export const containHorizontally: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
@@ -451,17 +435,6 @@ export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
 
 // @alpha
 export const getToolbarItemProps: <TProps extends {}>(props: TProps) => ToolbarItemProps<ToolbarItem>;
-
-// @alpha
-export class GhostOutline extends React.PureComponent<GhostOutlineProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
-export interface GhostOutlineProps extends CommonProps {
-    bounds?: RectangleProps;
-}
 
 // @alpha
 export class Group extends React.PureComponent<GroupProps> {
@@ -925,21 +898,13 @@ export interface LayoutProps {
     readonly root: Root;
 }
 
-// @alpha
-export class Merge extends React.PureComponent<MergeTargetProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
+// @beta
 export class MergeTarget extends React.PureComponent<MergeTargetProps> {
     // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @beta
 export interface MergeTargetProps extends CommonProps {
     onTargetChanged?: (isTargeted: boolean) => void;
 }
@@ -1050,12 +1015,6 @@ export class MessageProgress extends React.PureComponent<ProgressProps> {
 }
 
 // @alpha
-export class Nested extends React.PureComponent<NestedProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
 export class NestedGroup extends React.PureComponent<NestedGroupProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -1066,10 +1025,17 @@ export interface NestedGroupProps extends GroupProps {
     onBack?: () => void;
 }
 
-// @alpha
-export interface NestedProps extends CommonProps {
+// @beta
+export class NestedToolSettings extends React.PureComponent<NestedToolSettingsProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface NestedToolSettingsProps extends CommonProps {
     backButton?: React.ReactNode;
-    label?: string;
+    children?: React.ReactNode;
+    title?: string;
 }
 
 // @alpha (undocumented)
@@ -1131,10 +1097,8 @@ export interface NoChildrenProps {
     children?: undefined;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "offsetAndContainInContainer" is marked as @alpha, but its signature references "Point" which is marked as @internal
-// 
-// @alpha
-export const offsetAndContainInContainer: (offset?: PointProps) => (tooltipBounds: RectangleProps, containerSize: SizeProps) => Point;
+// @internal
+export const offsetAndContainInContainer: (tooltipBounds: RectangleProps, containerSize: SizeProps, offset?: PointProps) => Point;
 
 // @internal
 export type OmitChildrenProp<T extends {
@@ -1157,6 +1121,17 @@ export class OrthogonalDirectionHelpers {
     // (undocumented)
     static inverse(direction: OrthogonalDirection): OrthogonalDirection;
     static readonly VERTICAL_CLASS_NAME = "nz-vertical";
+}
+
+// @beta
+export class Outline extends React.PureComponent<OutlineProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface OutlineProps extends CommonProps {
+    bounds: RectangleProps;
 }
 
 // @beta
@@ -1229,18 +1204,6 @@ export interface PointProps {
     readonly x: number;
     // (undocumented)
     readonly y: number;
-}
-
-// @alpha
-export class Popover extends React.PureComponent<PopoverProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
-export interface PopoverProps extends CommonProps {
-    children?: React.ReactNode;
-    direction: Direction;
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "ProgressProps" is marked as @beta, but its signature references "NoChildrenProps" which is marked as @alpha
@@ -1410,25 +1373,6 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
     readonly state: Readonly<ScrollableState>;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ScrollableAreaState" needs to be exported by the entry point ui-ninezone.d.ts
-// 
-// @alpha
-export class ScrollableArea extends React.PureComponent<ScrollableAreaProps, ScrollableAreaState> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    static readonly INDICATOR_HEIGHT = 20;
-    // (undocumented)
-    render(): JSX.Element;
-    // (undocumented)
-    readonly state: ScrollableAreaState;
-    }
-
-// @alpha
-export interface ScrollableAreaProps extends CommonProps {
-    content?: React.ReactNode;
-}
-
 // @alpha
 export type ScrollableDefaultProps = Pick<ScrollableProps, "visibleItemThreshold">;
 
@@ -1436,6 +1380,25 @@ export type ScrollableDefaultProps = Pick<ScrollableProps, "visibleItemThreshold
 export interface ScrollableProps extends ToolbarProps {
     onScroll?: () => void;
     visibleItemThreshold: number;
+}
+
+// Warning: (ae-forgotten-export) The symbol "ScrollableToolSettingsState" needs to be exported by the entry point ui-ninezone.d.ts
+// 
+// @beta
+export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSettingsProps, ScrollableToolSettingsState> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    static readonly INDICATOR_HEIGHT = 20;
+    // (undocumented)
+    render(): JSX.Element;
+    // (undocumented)
+    readonly state: ScrollableToolSettingsState;
+    }
+
+// @beta
+export interface ScrollableToolSettingsProps extends CommonProps {
+    children?: React.ReactNode;
 }
 
 // @alpha
@@ -1700,12 +1663,6 @@ export interface StatusMessageProps extends CommonProps {
     status: Status;
 }
 
-// @alpha
-export class StatusZone extends React.PureComponent<StatusZoneProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
 // @alpha (undocumented)
 export type StatusZoneIndex = 8;
 
@@ -1728,11 +1685,6 @@ export interface StatusZoneManagerProps extends ZonePropsBase {
     readonly id: StatusZoneIndex;
     // (undocumented)
     readonly isInFooterMode: boolean;
-}
-
-// @alpha
-export interface StatusZoneProps extends ZoneProps {
-    isInFooterMode?: boolean;
 }
 
 // @alpha
@@ -1892,19 +1844,6 @@ export interface ToastProps extends CommonProps, NoChildrenProps {
 // @alpha
 export type ToastStyle = Pick<React.CSSProperties, "width" | "height">;
 
-// @alpha
-export class Toggle extends React.PureComponent<ToggleProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
-export interface ToggleProps extends CommonProps, NoChildrenProps {
-    content?: React.ReactNode;
-    onClick?: () => void;
-    popupContent?: React.ReactChild;
-}
-
 // @beta
 export class ToolAssistance extends React.PureComponent<ToolAssistanceProps> {
     // (undocumented)
@@ -2032,49 +1971,53 @@ export class Tools extends React.PureComponent<ToolsProps> {
     render(): JSX.Element;
 }
 
-// @alpha
+// @beta
 export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
-export class ToolSettingsContent extends React.PureComponent<CommonProps> {
+// Warning: (ae-forgotten-export) The symbol "ToolSettingsPopupState" needs to be exported by the entry point ui-ninezone.d.ts
+// 
+// @beta
+export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps, ToolSettingsPopupState> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(): void;
     // (undocumented)
     render(): JSX.Element;
+    // (undocumented)
+    readonly state: ToolSettingsPopupState;
 }
 
-// @alpha
+// @beta
+export interface ToolSettingsPopupProps extends CommonProps {
+    children?: React.ReactNode;
+    isOpen?: boolean;
+    onClose?: () => void;
+    target?: React.RefObject<HTMLElement>;
+}
+
+// @beta
 export interface ToolSettingsProps extends CommonProps {
     buttons?: React.ReactNode;
     children?: React.ReactNode;
     title?: string;
 }
 
-// @alpha
+// @beta
 export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @beta
 export interface ToolSettingsTabProps extends CommonProps {
     children?: React.ReactNode;
     onClick?: () => void;
     onKeyDown?: (e: React.KeyboardEvent) => void;
     title?: string;
-}
-
-// @alpha
-export class ToolSettingsTooltip extends React.PureComponent<ToolSettingsTooltipProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha
-export interface ToolSettingsTooltipProps extends TooltipProps {
-    children?: React.ReactNode;
-    stepString?: string;
 }
 
 // @alpha
@@ -2086,7 +2029,7 @@ export interface ToolsProps extends CommonProps, NoChildrenProps {
     verticalToolbar?: React.ReactNode;
 }
 
-// @alpha
+// @beta
 export class Tooltip extends React.PureComponent<TooltipProps> {
     // (undocumented)
     componentDidMount(): void;
@@ -2098,28 +2041,15 @@ export class Tooltip extends React.PureComponent<TooltipProps> {
     render(): JSX.Element;
     }
 
-// @alpha
+// @beta
 export type TooltipDefaultProps = Pick<TooltipProps, "position">;
 
-// @alpha
+// @beta
 export interface TooltipProps extends CommonProps {
     children?: React.ReactNode;
+    icon?: React.ReactNode;
     onSizeChanged?: (size: SizeProps) => void;
     position: PointProps;
-}
-
-// @alpha
-export class TrianglePopover extends React.PureComponent<TrianglePopoverProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// Warning: (ae-incompatible-release-tags) The symbol "TrianglePopoverProps" is marked as @alpha, but its signature references "OmitChildrenProp" which is marked as @internal
-// 
-// @alpha
-export interface TrianglePopoverProps extends OmitChildrenProp<PopoverProps>, NoChildrenProps {
-    // (undocumented)
-    content?: React.ReactNode;
 }
 
 // @beta
@@ -2436,7 +2366,7 @@ export interface WithContainInProps {
     containFn?: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
 }
 
-// @alpha
+// @beta
 export class Zone extends React.PureComponent<ZoneProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -2452,8 +2382,7 @@ export interface ZoneIdToWidget {
 
 // @alpha (undocumented)
 export namespace ZoneIdToWidget {
-    const // (undocumented)
-    sortAscending: (a: ZoneIdToWidget, b: ZoneIdToWidget) => number;
+    const sortAscending: (a: ZoneIdToWidget, b: ZoneIdToWidget) => number;
 }
 
 // @alpha (undocumented)
@@ -2488,10 +2417,11 @@ export class ZoneManager {
     protected _widgets: Widget[] | undefined;
 }
 
-// @alpha
+// @beta
 export interface ZoneProps extends CommonProps {
     bounds: RectangleProps;
     children?: React.ReactNode;
+    isInFooterMode?: boolean;
 }
 
 // @alpha (undocumented)
@@ -2512,13 +2442,13 @@ export interface ZonePropsBase {
     readonly widgets: ReadonlyArray<WidgetProps>;
 }
 
-// @alpha
+// @beta
 export class Zones extends React.PureComponent<ZonesProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @beta
 export interface ZonesProps extends CommonProps {
     children?: React.ReactNode;
     isHidden?: boolean;
@@ -2531,13 +2461,6 @@ export type ZonesType = {
     [id in StatusZoneIndex]: StatusZoneManagerProps;
 };
 
-
-// Warnings were encountered during analysis:
-// 
-// src/ui-ninezone/base/WithContainIn.tsx:17:107 - (ae-incompatible-release-tags) The symbol "getContainerBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-// src/ui-ninezone/base/WithContainIn.tsx:17:107 - (ae-incompatible-release-tags) The symbol "getComponentBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-// src/ui-ninezone/base/WithContainIn.tsx:40:7 - (ae-incompatible-release-tags) The symbol "getComponentBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-// src/ui-ninezone/base/WithContainIn.tsx:57:7 - (ae-incompatible-release-tags) The symbol "getContainerBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
 
 // (No @packageDocumentation comment for this package)
 

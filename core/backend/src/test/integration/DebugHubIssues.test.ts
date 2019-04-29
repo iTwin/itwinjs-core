@@ -25,7 +25,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     IModelTestUtils.setupLogging();
     await RequestHost.initialize();
     // IModelTestUtils.setupDebugLogLevels();
-
+    // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; Only needed for DEV
     requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.super);
   });
 
@@ -96,15 +96,15 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to download and backup required test files from the Hub", async () => {
-    const projectName = "DesignReviewTestDatasets";
-    const iModelName = "PenChemOSBL5";
+    const projectName = "PenChemOSBL2";
+    const iModelName = "PenChemOSBL7";
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {
     const projectName = "DesignReviewTestDatasets";
-    const iModelName = "PenChemOSBL5";
+    const iModelName = "PenChemOSBL7";
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
   });

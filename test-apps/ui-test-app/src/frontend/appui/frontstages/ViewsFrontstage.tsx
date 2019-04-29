@@ -46,6 +46,7 @@ import {
   StagePanel,
   FrontstageManager,
   CommandItemDef,
+  ModelessDialogManager,
 } from "@bentley/ui-framework";
 
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
@@ -342,7 +343,7 @@ class FrontstageToolWidget extends React.Component {
 
   private get _radialMenuItem() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openRadial", execute: () => { ModalDialogManager.openModalDialog(this.radialMenu()); },
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openRadial", execute: () => { ModalDialogManager.openDialog(this.radialMenu()); },
     });
   }
 
@@ -354,14 +355,19 @@ class FrontstageToolWidget extends React.Component {
 
   private get _viewportDialogItem() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.viewportDialog", execute: () => { ModalDialogManager.openModalDialog(this.viewportDialog()); },
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.viewportDialog", execute: () => { this.openViewportDialog(); },
     });
   }
 
-  private viewportDialog(): React.ReactNode {
-    return (
-      <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="86_Hospital" />
-    );
+  private _viewportDialogCnt: number = 0;
+
+  private openViewportDialog(): void {
+    this._viewportDialogCnt++;
+    const id = "ViewportDialog_" + this._viewportDialogCnt.toString();
+
+    const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="86_Hospital" dialogId={id} />;
+
+    ModelessDialogManager.openDialog(dialog, id);
   }
 
   /** example that hides the button if active content is not a 3d View */

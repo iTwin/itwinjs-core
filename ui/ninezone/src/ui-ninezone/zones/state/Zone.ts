@@ -99,6 +99,7 @@ export interface ZoneIdToWidget {
 
 /** @alpha */
 export namespace ZoneIdToWidget {
+  /** Sort function to sort ZoneIdToWidget array in ascending order.  */
   export const sortAscending = (a: ZoneIdToWidget, b: ZoneIdToWidget): number => {
     return a.zoneId - b.zoneId;
   };

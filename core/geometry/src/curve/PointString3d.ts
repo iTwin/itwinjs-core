@@ -17,8 +17,9 @@ import { GeometryQuery } from "./GeometryQuery";
 
 /**
  * A PointString3d is an array of points.
- * * PointString3D is first class (displayable) geometry derived from the GeometryQuery base class.
+ * * PointString3D is first class (persistible, displayable) geometry derived from the GeometryQuery base class.
  * * The varous points in the PointString3d are NOT connected by line segments for display or other calculations.
+ * @public
  */
 export class PointString3d extends GeometryQuery implements BeJSONFunctions {
 

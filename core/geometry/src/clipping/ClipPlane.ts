@@ -30,6 +30,7 @@ import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
  * * ZERO value of the halfspace function is "on"
  * * NEGATIVE value of the halfspace function is "outside"
  * * A representative point on the plane is (signedDistance*u, signedDistance * v, signedDistance *w)
+ * @public
  */
 export class ClipPlane implements Clipper {
   // Static variable from original native c++ function ConvexPolygonClipInPlace

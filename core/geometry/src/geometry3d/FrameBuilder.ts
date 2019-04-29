@@ -23,25 +23,24 @@ import { Point3dArray } from "./PointHelpers";
  * Helper class to accumulate points and vectors until there is enough data to define a coordinate system.
  *
  * * For the common case of building a right handed frame:
- *
- * ** create the FrameBuilder and make calls to announcePoint and announceVector.
- * ** the frame will be fully determined by an origin and two vectors.
- * ** the first call to announcePoint will set the origin.
- * **  additional calls to announcePoint will produce announceVector call with the vector from the origin.
- * ** After each announcement, call getValidatedFrame(false)
- * ** getValidatedFrame will succeed when it has two independent vectors.
+ *   * create the FrameBuilder and make calls to announcePoint and announceVector.
+ *   * the frame will be fully determined by an origin and two vectors.
+ *   * the first call to announcePoint will set the origin.
+ *   *  additional calls to announcePoint will produce announceVector call with the vector from the origin.
+ *   * After each announcement, call getValidatedFrame(false)
+ *   * getValidatedFrame will succeed when it has two independent vectors.
  * *  to build a left handed frame,
- *
- * **  an origin and 3 independent vectors are required.
- * **  annouce as above, but query wtih getValidatedFrame (true).
- * **  this will use the third vector to select right or left handed frame.
+ *   *  an origin and 3 independent vectors are required.
+ *   *  annouce as above, but query wtih getValidatedFrame (true).
+ *   *  this will use the third vector to select right or left handed frame.
+ * @public
  */
 export class FrameBuilder {
   private _origin: undefined | Point3d;
   private _vector0: undefined | Vector3d;
   private _vector1: undefined | Vector3d;
   private _vector2: undefined | Vector3d;
-
+/** clear all accumulated point and vector data */
   public clear() { this._origin = undefined; this._vector0 = undefined; this._vector1 = undefined; this._vector2 = undefined; }
   constructor() { this.clear(); }
   /** Try to assemble the data into a nonsingular transform.
@@ -72,12 +71,13 @@ export class FrameBuilder {
     }
     return undefined;
   }
-  // If vector0 is known but vector1 is not, make vector1 the cross of the upvector and vector0
+  /**If vector0 is known but vector1 is not, make vector1 the cross of the upvector and vector0 */
   public applyDefaultUpVector(vector?: Vector3d) {
     if (vector && this._vector0 && !this._vector1 && !vector.isParallelTo(this._vector0)) {
       this._vector1 = vector.crossProduct(this._vector0);
     }
   }
+  /** Ask if there is a defined origin for the evolving frame */
   public get hasOrigin(): boolean { return this._origin !== undefined; }
   /** Return the number of vectors saved.   Because the save process checkes numerics, this should be the rank of the system.
    */
@@ -90,7 +90,7 @@ export class FrameBuilder {
       return 2;
     return 3;
   }
-  /** announce a new point.  If this point is different from the origin, also announce the vector from the origin.*/
+  /** announce a new point.  If this point is different from the origin, also compute and announce the vector from the origin.*/
   public announcePoint(point: Point3d): number {
     if (!this._origin) {
       this._origin = point.clone();
@@ -101,6 +101,7 @@ export class FrameBuilder {
       return this.savedVectorCount();
     return this.announceVector(this._origin.vectorTo(point));
   }
+  /** announce a new vector. */
   public announceVector(vector: Vector3d): number {
     if (vector.isAlmostZero)
       return this.savedVectorCount();

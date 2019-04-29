@@ -16,21 +16,27 @@ import { LineString3d } from "../curve/LineString3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { ClipVector } from "./ClipVector";
 
-/** Enumerated type for describing where geometry lies with respect to clipping planes. */
+/** Enumerated type for describing where geometry lies with respect to clipping planes.
+ * @public
+ */
 export const enum ClipPlaneContainment {
   StronglyInside = 1,
   Ambiguous = 2,
   StronglyOutside = 3,
 }
 
-/** Enumerated type for describing what must yet be done to clip a piece of geometry. */
+/** Enumerated type for describing what must yet be done to clip a piece of geometry.
+ * @public
+ */
 export const enum ClipStatus {
   ClipRequired,
   TrivialReject,
   TrivialAccept,
 }
 
-/** An object containing clipping planes that can be used to clip geometry. */
+/** An object containing clipping planes that can be used to clip geometry.
+ * @public
+ */
 export interface Clipper {
   isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
   /** Find the parts of the line segment  (if any) that is within the convex clip volume.
@@ -49,7 +55,9 @@ export interface Clipper {
   announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
 }
 
-/** Static class whose various methods are functions for clipping geometry. */
+/** Static class whose various methods are functions for clipping geometry
+ * @public
+ */
 export class ClipUtilities {
   private static _selectIntervals01TestPoint = Point3d.create();
   public static selectIntervals01(curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {

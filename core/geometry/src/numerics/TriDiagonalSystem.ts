@@ -14,7 +14,10 @@ enum DataState {
   FactorOK,
   FactorFailed,
 }
-
+/**
+ * Linear system operations on a matrix with data only on the diagonal and its immediate left and right neighbors
+ * @internal
+ */
 export class TriDiagonalSystem {
 
   // Lower diagonal, indexed by rows

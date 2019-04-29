@@ -6,7 +6,7 @@
 import { GL } from "./GL";
 import { dispose, BeTimePoint, assert } from "@bentley/bentleyjs-core";
 import { FrameBuffer } from "./FrameBuffer";
-import { RenderMemory, RenderGraphic, RenderPlanarClassifier } from "../System";
+import { RenderClipVolume, RenderMemory, RenderGraphic, RenderPlanarClassifier } from "../System";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { ShaderProgramExecutor } from "./ShaderProgram";
@@ -16,7 +16,7 @@ import { TileTreeModelState } from "../../ModelState";
 import { TileTree, Tile } from "../../tile/TileTree";
 import { Frustum, Npc, FrustumPlanes, RenderTexture, RenderMode, ColorDef, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry } from "./CachedGeometry";
-import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Range3d, Transform, Matrix3d, ClipVector, Matrix4d, Ray3d, Point4d } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d, Point4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { TechniqueId } from "./TechniqueId";
 import { getDrawParams } from "./SceneCompositor";
@@ -29,7 +29,7 @@ import { FloatRgba } from "./FloatRGBA";
 import { ViewState3d } from "../../ViewState";
 
 class PlanarClassifierDrawArgs extends Tile.DrawArgs {
-  constructor(private _classifierPlanes: FrustumPlanes, private _classifier: PlanarClassifier, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector) {
+  constructor(private _classifierPlanes: FrustumPlanes, private _classifier: PlanarClassifier, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
     super(context, location, root, now, purgeOlderThan, clip);
   }
   public get frustumPlanes(): FrustumPlanes { return this._classifierPlanes; }
@@ -42,7 +42,7 @@ class PlanarClassifierDrawArgs extends Tile.DrawArgs {
   public static create(context: SceneContext, classifier: PlanarClassifier, tileTree: TileTree, planes: FrustumPlanes) {
     const now = BeTimePoint.now();
     const purgeOlderThan = now.minus(tileTree.expirationTime);
-    return new PlanarClassifierDrawArgs(planes, classifier, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVector);
+    return new PlanarClassifierDrawArgs(planes, classifier, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
   }
 }
 

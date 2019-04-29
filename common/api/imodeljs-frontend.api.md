@@ -162,7 +162,6 @@ import { TileProps } from '@bentley/imodeljs-common';
 import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
-import { UnionOfConvexClipPlaneSets } from '@bentley/geometry-core';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
@@ -958,7 +957,9 @@ export namespace Attachments {
     export abstract class Tree extends TileTree {
         constructor(loader: AttachmentTileLoader, iModel: IModelConnection, modelId: Id64String);
         // (undocumented)
-        graphicsClip?: ClipVector;
+        dispose(): void;
+        // (undocumented)
+        graphicsClip?: RenderClipVolume;
     }
     // (undocumented)
     export class Tree2d extends Tree {
@@ -2060,7 +2061,7 @@ export class EntityState implements EntityProps {
     // (undocumented)
     readonly iModel: IModelConnection;
     // (undocumented)
-    jsonProperties: {
+    readonly jsonProperties: {
         [key: string]: any;
     };
     // (undocumented)
@@ -4332,9 +4333,14 @@ export class RenderClassifierModel {
     readonly type: ClassifierType;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "RenderClipVolume" is marked as @beta, but its signature references "RenderMemory" which is marked as @internal
+// 
 // @beta
-export abstract class RenderClipVolume implements IDisposable {
-    // (undocumented)
+export abstract class RenderClipVolume implements IDisposable, RenderMemory.Consumer {
+    protected constructor(clipVector: ClipVector);
+    readonly clipVector: ClipVector;
+    // @internal (undocumented)
+    abstract collectStatistics(stats: RenderMemory.Statistics): void;
     abstract dispose(): void;
     abstract readonly type: ClippingType;
 }
@@ -4522,7 +4528,7 @@ export class RenderPlan {
     // (undocumented)
     readonly aaText: AntiAliasPref;
     // (undocumented)
-    readonly activeVolume?: RenderClipVolume;
+    readonly activeVolume?: ClipVector;
     // (undocumented)
     readonly analysisStyle?: AnalysisStyle;
     // (undocumented)
@@ -4533,8 +4539,6 @@ export class RenderPlan {
     readonly bgColor: ColorDef;
     // (undocumented)
     classificationTextures?: Map<Id64String, RenderTexture>;
-    // (undocumented)
-    static create(options: any, vp: Viewport): RenderPlan;
     // (undocumented)
     static createFromViewport(vp: Viewport): RenderPlan;
     // (undocumented)
@@ -4580,6 +4584,8 @@ export abstract class RenderSystem implements IDisposable {
     // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderClipVolume" which is marked as @beta
     // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderPlanarClassifier" which is marked as @beta
     abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
+    // @internal (undocumented)
+    createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
     // Warning: (ae-forgotten-export) The symbol "PolylineArgs" needs to be exported by the entry point imodeljs-frontend.d.ts
@@ -4623,8 +4629,6 @@ export abstract class RenderSystem implements IDisposable {
     enableDiagnostics(_enable: RenderDiagnostics): void;
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
-    // @internal (undocumented)
-    getClipVolume(_clipVector: ClipVector, _imodel: IModelConnection): RenderClipVolume | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
     // @internal (undocumented)
     getSpatialClassificationModel(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined;
@@ -5563,10 +5567,12 @@ export abstract class Target extends RenderTarget {
     clipMask: TextureHandle | undefined;
     // (undocumented)
     readonly clips: Clips;
+    // (undocumented)
+    readonly compositor: SceneCompositor;
     // Warning: (ae-forgotten-export) The symbol "SceneCompositor" needs to be exported by the entry point imodeljs-frontend.d.ts
     // 
     // (undocumented)
-    readonly compositor: SceneCompositor;
+    protected _compositor: SceneCompositor;
     // (undocumented)
     readonly currentBatchId: number;
     // (undocumented)
@@ -5965,9 +5971,11 @@ export namespace Tile {
         Volume = 1
     }
     export class DrawArgs {
-        constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: ClipVector);
+        constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume);
         // (undocumented)
-        clip?: ClipVector;
+        readonly clip: ClipVector | undefined;
+        // (undocumented)
+        clipVolume?: RenderClipVolume;
         // (undocumented)
         readonly context: SceneContext;
         // (undocumented)
@@ -6163,7 +6171,9 @@ export abstract class TileLoader {
 export class TileTree implements IDisposable, RenderMemory.Consumer {
     constructor(props: TileTree.Params);
     // (undocumented)
-    clipVector?: ClipVector;
+    readonly clipVector: ClipVector | undefined;
+    // (undocumented)
+    clipVolume?: RenderClipVolume;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
@@ -7591,7 +7601,6 @@ export abstract class ViewState extends ElementState {
     categorySelector: CategorySelectorState;
     // (undocumented)
     static readonly className: string;
-    clone(iModel?: IModelConnection): this;
     abstract computeFitRange(): Range3d;
     // @internal (undocumented)
     computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d): {
@@ -7616,7 +7625,6 @@ export abstract class ViewState extends ElementState {
     // @internal (undocumented)
     drawGrid(context: DecorateContext): void;
     equals(other: this): boolean;
-    equalState(other: ViewState): boolean;
     extentLimits: ExtentLimits;
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
     // Warning: (ae-incompatible-release-tags) The symbol "forEachTileTreeModel" is marked as @public, but its signature references "TileTreeModelState" which is marked as @beta
@@ -7665,6 +7673,8 @@ export abstract class ViewState extends ElementState {
     // @internal
     removeDetail(name: string): void;
     resetExtentLimits(): void;
+    // @internal (undocumented)
+    abstract saveForUndo(): ViewStateUndo;
     readonly scheduleScript: RenderScheduleState.Script | undefined;
     setAspectRatioSkew(val: number): void;
     setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState): void;
@@ -7674,6 +7684,8 @@ export abstract class ViewState extends ElementState {
     // (undocumented)
     setDisplayStyle(style: DisplayStyleState): void;
     abstract setExtents(viewDelta: Vector3d): void;
+    // @internal (undocumented)
+    abstract setFromUndo(props: ViewStateUndo): void;
     setGridSettings(orientation: GridOrientationType, spacing: Point2d, gridsPerRef: number): void;
     abstract setOrigin(viewOrg: Point3d): void;
     abstract setRotation(viewRot: Matrix3d): void;
@@ -7685,7 +7697,6 @@ export abstract class ViewState extends ElementState {
     showFrustumErrorMessage(status: ViewStatus): void;
     // (undocumented)
     toJSON(): ViewDefinitionProps;
-    undoTime?: BeTimePoint;
     // @internal (undocumented)
     validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus;
     readonly viewFlags: ViewFlags;
@@ -7711,8 +7722,6 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     readonly delta: Point2d;
     // (undocumented)
-    equalState(other: ViewState2d): boolean;
-    // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
     // (undocumented)
     getExtents(): Vector3d;
@@ -7729,8 +7738,12 @@ export abstract class ViewState2d extends ViewState {
     onRenderFrame(_viewport: Viewport): void;
     // (undocumented)
     readonly origin: Point2d;
+    // @internal (undocumented)
+    saveForUndo(): ViewStateUndo;
     // (undocumented)
     setExtents(delta: Vector3d): void;
+    // @internal (undocumented)
+    setFromUndo(val: ViewState2dUndo): void;
     // (undocumented)
     setOrigin(origin: Point3d): void;
     // (undocumented)
@@ -7739,6 +7752,19 @@ export abstract class ViewState2d extends ViewState {
     toJSON(): ViewDefinition2dProps;
     // (undocumented)
     viewsModel(modelId: Id64String): boolean;
+}
+
+// @internal (undocumented)
+export class ViewState2dUndo extends ViewStateUndo {
+    constructor(view: ViewState2d);
+    // (undocumented)
+    readonly angle: Angle;
+    // (undocumented)
+    readonly delta: Point2d;
+    // (undocumented)
+    equalState(view: ViewState2d): boolean;
+    // (undocumented)
+    readonly origin: Point2d;
 }
 
 // @public
@@ -7765,8 +7791,6 @@ export abstract class ViewState3d extends ViewState {
     protected drawSkyBox(context: DecorateContext): void;
     // @internal (undocumented)
     protected enableCamera(): void;
-    // (undocumented)
-    equalState(other: ViewState3d): boolean;
     readonly extents: Vector3d;
     forceMinFrontDist: number;
     getBackDistance(): number;
@@ -7802,10 +7826,14 @@ export abstract class ViewState3d extends ViewState {
     rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     readonly rotation: Matrix3d;
+    // @internal (undocumented)
+    saveForUndo(): ViewStateUndo;
     // (undocumented)
     setExtents(extents: XYAndZ): void;
     setEyePoint(pt: XYAndZ): void;
     setFocusDistance(dist: number): void;
+    // @internal (undocumented)
+    setFromUndo(val: ViewState3dUndo): void;
     setLensAngle(angle: Angle): void;
     // (undocumented)
     setOrigin(origin: XYAndZ): void;
@@ -7819,6 +7847,31 @@ export abstract class ViewState3d extends ViewState {
     toJSON(): ViewDefinition3dProps;
     turnCameraOff(): void;
     verifyFocusPlane(): void;
+}
+
+// @internal (undocumented)
+export class ViewState3dUndo extends ViewStateUndo {
+    constructor(view: ViewState3d);
+    // (undocumented)
+    readonly camera: Camera;
+    // (undocumented)
+    readonly cameraOn: boolean;
+    // (undocumented)
+    equalState(view: ViewState3d): boolean;
+    // (undocumented)
+    readonly extents: Vector3d;
+    // (undocumented)
+    readonly origin: Point3d;
+    // (undocumented)
+    readonly rotation: Matrix3d;
+}
+
+// @internal (undocumented)
+export abstract class ViewStateUndo {
+    // (undocumented)
+    abstract equalState(view: ViewState): boolean;
+    // (undocumented)
+    undoTime?: BeTimePoint;
 }
 
 // @public

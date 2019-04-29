@@ -12,9 +12,10 @@ import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BezierCoffs, UnivariateBezier } from "../numerics/BezierPolynomials";
 import { KnotVector } from "./KnotVector";
 /**
- * Implements a multidimensional bezier curve of fixed order.
- * BezierCurve3d implements with blockSize 3.
- * BezierCurve3dH implements with blockSize 4.
+ * Shared implmentation details for derived bezier curve classes
+ * * BezierCurve3d implements with blockSize 3.
+ * * BezierCurve3dH implements with blockSize 4.
+ * @public
  */
 export class Bezier1dNd {
   private _packedData: Float64Array;

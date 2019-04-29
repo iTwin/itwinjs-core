@@ -21,6 +21,7 @@ import { Geometry } from "../Geometry";
  * A collection of ConvexClipPlaneSets.
  * * A point is "in" the clip plane set if it is "in" one or more of  the ConvexClipPlaneSet
  * * Hence the boolean logic is that the ClipPlaneSet is a UNION of its constituents.
+ * @public
  */
 export class UnionOfConvexClipPlaneSets implements Clipper {
   private _convexSets: ConvexClipPlaneSet[];

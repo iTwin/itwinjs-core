@@ -15,6 +15,15 @@
 
   background-color: $nz-widget-background-color;
   height: fit-content;
-  // overflow: hidden;
+  width: fit-content;
   pointer-events: auto;
+  margin: 0 auto;
+
+  > .nz-title {
+    min-height: $nz-tool-settings-title-bar-min-height;
+  }
+
+  > .nz-content {
+    padding: $nz-tool-settings-content-padding;
+  }
 }

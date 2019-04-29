@@ -6,30 +6,31 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { RectangleProps } from "../utilities/Rectangle";
 import { CssProperties } from "../utilities/Css";
+import { RectangleProps } from "../utilities/Rectangle";
+import { CommonProps } from "@bentley/ui-core";
 import "./Zone.scss";
 
 /** Properties of [[Zone]] component.
- * @alpha
+ * @beta
  */
 export interface ZoneProps extends CommonProps {
-  /** Actual bounds of this [[Zone]]. */
+  /** Zone bounds. */
   bounds: RectangleProps;
-  /** Zone content. Available widgets: [[Stacked]], [[Tools]] */
+  /** Zone content. I.e. [[Stacked]], [[Footer]], [[ToolSettings]], [[ToolSettingsTab]], [[GhostOutline]] */
   children?: React.ReactNode;
+  /** Describes if the zone is in footer mode. */
+  isInFooterMode?: boolean;
 }
 
-/** A zone that may contain widgets.
- * @note For zone 2 use [[ToolSettingsZone]] component.
- * @note For zone 8 use [[StatusZone]] component.
- * @alpha
+/** Zone component of 9-Zone UI app.
+ * @beta
  */
 export class Zone extends React.PureComponent<ZoneProps> {
   public render() {
     const className = classnames(
       "nz-zones-zone",
+      this.props.isInFooterMode && "nz-footer-mode",
       this.props.className);
 
     const style: React.CSSProperties = {

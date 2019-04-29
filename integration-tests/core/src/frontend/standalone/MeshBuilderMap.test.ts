@@ -114,7 +114,7 @@ describe("MeshBuilderMap Tests", () => {
     geomList.push(loopGeom);
     geomList.push(arcGeom);
     const map = MeshBuilderMap.createFromGeometries(geomList, tolerance, range, is2d, false, false);
-    expect(map.length).to.equal(3);
+    expect(map.size).to.equal(3);
   });
 
   it("toMeshes", () => {
@@ -165,7 +165,7 @@ describe("MeshBuilderMap Tests", () => {
     geomList.push(loopGeom);
     geomList.push(arcGeom);
     const map = MeshBuilderMap.createFromGeometries(geomList, tolerance, range, is2d, false, false);
-    expect(map.length).to.equal(3);
+    expect(map.size).to.equal(3);
 
     const meshes = map.toMeshes();
     expect(meshes.length).to.equal(3);
@@ -203,19 +203,19 @@ describe("MeshBuilderMap Tests", () => {
     const tolerance = 0.22;
     const map = new MeshBuilderMap(tolerance, range, is2d);
 
-    expect(map.length).to.equal(0);
+    expect(map.size).to.equal(0);
     map.loadGeometry(arcGeom, false);
-    expect(map.length).to.equal(1);
+    expect(map.size).to.equal(1);
     const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
     const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
-    expect(map.length).to.equal(1);
+    expect(map.size).to.equal(1);
     // EDL Why is this a hard coded count?
     expect(builder.vertexMap.length).to.lte(25);
     expect(builder.mesh.polylines!.length).to.equal(strokesPrimList[0].strokes.length);
     const map2 = new MeshBuilderMap(tolerance, range, is2d);
-    expect(map2.length).to.equal(0);
+    expect(map2.size).to.equal(0);
     map2.loadGeometry(arcGeom, true);
-    expect(map2.length).to.equal(0);
+    expect(map2.size).to.equal(0);
   });
 
   it("loadPolyfacePrimitiveList", () => {
@@ -254,10 +254,10 @@ describe("MeshBuilderMap Tests", () => {
     const map = new MeshBuilderMap(tolerance, range, is2d);
 
     expect(pfPrim.indexedPolyface.pointCount).to.be.greaterThan(0);
-    expect(map.length).to.equal(0);
+    expect(map.size).to.equal(0);
     map.loadPolyfacePrimitiveList(loopGeom);
 
-    expect(map.length).to.equal(1);
+    expect(map.size).to.equal(1);
     const builder = map.getBuilder(pfPrim.displayParams, Mesh.PrimitiveType.Mesh, pfPrim.indexedPolyface.normalCount > 0, pfPrim.isPlanar);
     expect(builder.triangleSet.length).to.equal(2);
   });
@@ -309,19 +309,19 @@ describe("MeshBuilderMap Tests", () => {
     let map = new MeshBuilderMap(tolerance, range, is2d);
 
     expect(pfPrim.indexedPolyface.pointCount).to.be.greaterThan(0);
-    expect(map.length).to.equal(0);
+    expect(map.size).to.equal(0);
     map.loadIndexedPolyface(pfPrim);
 
-    expect(map.length).to.equal(1);
+    expect(map.size).to.equal(1);
     const builder = map.getBuilder(pfPrim.displayParams, Mesh.PrimitiveType.Mesh, pfPrim.indexedPolyface.normalCount > 0, pfPrim.isPlanar);
     expect(builder.triangleSet.length).to.equal(2);
 
     // test case: when polyface has no points, no builder is created
     map = new MeshBuilderMap(tolerance, range, is2d);
     expect(emptyPfPrim.indexedPolyface.pointCount).to.equal(0);
-    expect(map.length).to.equal(0);
+    expect(map.size).to.equal(0);
     map.loadIndexedPolyface(emptyPfPrim);
-    expect(map.length).to.equal(0);
+    expect(map.size).to.equal(0);
   });
 
   it("loadStrokePrimitiveList", () => {
@@ -356,12 +356,12 @@ describe("MeshBuilderMap Tests", () => {
     const tolerance = 0.22;
     const map = new MeshBuilderMap(tolerance, range, is2d);
 
-    expect(map.length).to.equal(0);
+    expect(map.size).to.equal(0);
     map.loadStrokePrimitiveList(arcGeom);
-    expect(map.length).to.equal(1);
+    expect(map.size).to.equal(1);
     const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
     const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
-    expect(map.length).to.equal(1);
+    expect(map.size).to.equal(1);
     expect(builder.vertexMap.length).to.equal(25);
     expect(builder.mesh.polylines!.length).to.equal(strokesPrimList[0].strokes.length);
   });
@@ -398,12 +398,12 @@ describe("MeshBuilderMap Tests", () => {
     const tolerance = 0.22;
     const map = new MeshBuilderMap(tolerance, range, is2d);
 
-    expect(map.length).to.equal(0);
+    expect(map.size).to.equal(0);
     map.loadStrokesPrimitive(strokesPrimList[0]);
-    expect(map.length).to.equal(1);
+    expect(map.size).to.equal(1);
     const type = strokesPrimList[0].isDisjoint ? Mesh.PrimitiveType.Point : Mesh.PrimitiveType.Polyline;
     const builder = map.getBuilder(arcGeom.displayParams, type, false, strokesPrimList[0].isPlanar);
-    expect(map.length).to.equal(1);
+    expect(map.size).to.equal(1);
     expect(builder.vertexMap.length).to.equal(25);
     expect(builder.mesh.polylines!.length).to.equal(strokesPrimList[0].strokes.length);
   });
@@ -418,14 +418,14 @@ describe("MeshBuilderMap Tests", () => {
     const hasNormals = false;
     const map = new MeshBuilderMap(tolerance, range, is2d);
 
-    expect(map.length).to.equal(0);
+    expect(map.size).to.equal(0);
     const builder = map.getBuilder(displayParams, type, hasNormals, isPlanar);
-    expect(map.length).to.equal(1);
+    expect(map.size).to.equal(1);
     const builder2 = map.getBuilder(displayParams, type, hasNormals, isPlanar);
 
     // expect only one instance of builder to be created, so both should have same reference
     expect(builder).to.equal(builder2);
-    expect(map.length).to.equal(1);
+    expect(map.size).to.equal(1);
   });
 
   it("getKey", () => {

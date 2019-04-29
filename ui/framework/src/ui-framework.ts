@@ -15,6 +15,8 @@ export * from "./ui-framework/clientservices/ProjectServices";
 export * from "./ui-framework/feedback/ValidationTextbox";
 export * from "./ui-framework/feedback/ElementTooltip";
 
+export * from "./ui-framework/messages/AppNotificationManager";
+export * from "./ui-framework/messages/MessageManager";
 export * from "./ui-framework/messages/InputField";
 export * from "./ui-framework/messages/Pointer";
 
@@ -27,23 +29,34 @@ export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
-export * from "./ui-framework/messages/AppNotificationManager";
 export * from "./ui-framework/configurableui/ConfigurableUiContent";
 export * from "./ui-framework/configurableui/ConfigurableUiControl";
 export * from "./ui-framework/configurableui/ConfigurableUiManager";
 export * from "./ui-framework/configurableui/state";
+
 export * from "./ui-framework/content/ContentControl";
 export * from "./ui-framework/content/ContentGroup";
 export * from "./ui-framework/content/ContentLayout";
 export * from "./ui-framework/content/ContentViewManager";
+export * from "./ui-framework/content/ViewportContentControl";
+
+export * from "./ui-framework/dialog/DialogManagerBase";
+export * from "./ui-framework/dialog/ModalDialogManager";
+export * from "./ui-framework/dialog/ModelessDialog";
+export * from "./ui-framework/dialog/ModelessDialogManager";
+export * from "./ui-framework/dialog/StandardMessageBox";
+
 export * from "./ui-framework/dragdrop/DragDropLayerManager";
 export * from "./ui-framework/dragdrop/ZoneTargets";
+
 export * from "./ui-framework/frontstage/Frontstage";
 export * from "./ui-framework/frontstage/FrontstageComposer";
 export * from "./ui-framework/frontstage/FrontstageDef";
 export * from "./ui-framework/frontstage/FrontstageManager";
 export * from "./ui-framework/frontstage/FrontstageProvider";
 export * from "./ui-framework/frontstage/NestedFrontstage";
+export * from "./ui-framework/frontstage/ModalFrontstage";
+
 export * from "./ui-framework/shared/IconComponent";
 export * from "./ui-framework/shared/ItemDefBase";
 export * from "./ui-framework/shared/ItemMap";
@@ -51,29 +64,27 @@ export * from "./ui-framework/shared/ItemProps";
 export * from "./ui-framework/shared/ActionButtonItemDef";
 export * from "./ui-framework/shared/CommandItemDef";
 export * from "./ui-framework/shared/ToolItemDef";
+
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
-export * from "./ui-framework/messages/MessageManager";
-export * from "./ui-framework/ModalDialogManager";
-export * from "./ui-framework/frontstage/ModalFrontstage";
-export * from "./ui-framework/navigationaids/NavigationAidControl";
+
 export * from "./ui-framework/widgets/NavigationWidget";
 export * from "./ui-framework/widgets/StackedWidget";
-export * from "./ui-framework/messages/StandardMessageBox";
 export * from "./ui-framework/widgets/StatusBar";
 export * from "./ui-framework/widgets/StatusBarWidgetControl";
-export * from "./ui-framework/zones/StatusBarZone";
-export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";
 export * from "./ui-framework/widgets/ToolWidget";
-export * from "./ui-framework/content/ViewportContentControl";
 export * from "./ui-framework/widgets/Widget";
 export * from "./ui-framework/widgets/WidgetControl";
 export * from "./ui-framework/widgets/WidgetDef";
 export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetFactory";
+
+export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
+
 export * from "./ui-framework/zones/FrameworkZone";
+export * from "./ui-framework/zones/StatusBarZone";
 export * from "./ui-framework/zones/toolsettings/ToolSettingsZone";
 export * from "./ui-framework/zones/toolsettings/ToolInformation";
 export * from "./ui-framework/zones/toolsettings/ToolUiManager";
@@ -100,6 +111,7 @@ export * from "./ui-framework/backstage/CommandLaunch";
 export * from "./ui-framework/backstage/TaskLaunch";
 export * from "./ui-framework/backstage/Separator";
 
+export * from "./ui-framework/navigationaids/NavigationAidControl";
 export * from "./ui-framework/navigationaids/CubeNavigationAid";
 export * from "./ui-framework/navigationaids/SheetNavigationAid";
 export * from "./ui-framework/navigationaids/DrawingNavigationAid";
@@ -156,7 +168,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Dialog
- * Classes for working with a modal dialog
+ * Classes for working with a dialog
  */
 /**
  * @docs-group-description DragDrop
@@ -191,16 +203,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for working with the OpenID Connect (OIDC) protocol
  */
 /**
- * @docs-group-description OpenIModel
- * Classes for working with the UI for opening an iModel
- */
-/**
  * @docs-group-description Picker
  * Classes for working with various pickers
- */
-/**
- * @docs-group-description Settings
- * Classes for Settings page
  */
 /**
  * @docs-group-description State

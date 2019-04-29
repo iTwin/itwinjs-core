@@ -14,6 +14,10 @@ import { IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Point3dArrayCarrier, Point3dArray } from "./PointHelpers";
 import { XYParitySearchContext } from "../topology/XYParitySearchContext";
 /** Static class for operations that treat an array of points as a polygon (with area!) */
+/**
+ * Various (static method) computations for arrays of points interpreted as a polygon.
+ * @public
+ */
 export class PolygonOps {
   /** Sum areas of triangles from points[0] to each far edge.
    * * Consider triangles from points[0] to each edge.
