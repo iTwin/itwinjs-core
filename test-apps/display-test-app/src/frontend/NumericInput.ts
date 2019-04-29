@@ -16,9 +16,11 @@ export interface NumericInputProps {
   max?: number;
   step?: number;
   tooltip?: string;
+  parseAsFloat?: true;
 }
 
-export function createNumericInput(props: NumericInputProps, useFloat: boolean = false): HTMLInputElement {
+export function createNumericInput(props: NumericInputProps): HTMLInputElement {
+  const useFloat = true === props.parseAsFloat;
   const input = document.createElement("input");
   input.type = "number";
   input.value = props.value.toString();

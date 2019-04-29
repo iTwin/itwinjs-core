@@ -92,7 +92,8 @@ export class ToolSettingsTracker {
       step: 0.01,
       value: ToolSettings.viewToolPickRadiusInches,
       handler: (value, _input) => { ToolSettings.viewToolPickRadiusInches = value; IModelApp.toolAdmin.exitViewTool(); },
-    }, true);
+      parseAsFloat: true,
+    });
     div.style.display = "block";
     div.style.textAlign = "left";
     settingsDiv.appendChild(div);
@@ -123,7 +124,8 @@ export class ToolSettingsTracker {
       step: 0.1,
       value: ToolSettings.walkCameraAngle.degrees,
       handler: (value, _input) => { ToolSettings.walkCameraAngle.setDegrees(value); IModelApp.toolAdmin.exitViewTool(); },
-    }, true);
+      parseAsFloat: true,
+    });
     div.style.display = "block";
     div.style.textAlign = "left";
     settingsDiv.appendChild(div);
@@ -142,7 +144,8 @@ export class ToolSettingsTracker {
       step: 0.1,
       value: ToolSettings.walkVelocity,
       handler: (value, _input) => { ToolSettings.walkVelocity = value; IModelApp.toolAdmin.exitViewTool(); },
-    }, true);
+      parseAsFloat: true,
+    });
     div.style.display = "block";
     div.style.textAlign = "left";
     settingsDiv.appendChild(div);
@@ -161,7 +164,8 @@ export class ToolSettingsTracker {
       step: 0.025,
       value: ToolSettings.wheelZoomBumpDistance,
       handler: (value, _input) => { ToolSettings.wheelZoomBumpDistance = value; IModelApp.toolAdmin.exitViewTool(); },
-    }, true);
+      parseAsFloat: true,
+    });
     div.style.display = "block";
     div.style.textAlign = "left";
     settingsDiv.appendChild(div);
@@ -180,7 +184,8 @@ export class ToolSettingsTracker {
       step: 0.025,
       value: ToolSettings.wheelZoomRatio,
       handler: (value, _input) => { ToolSettings.wheelZoomRatio = value; IModelApp.toolAdmin.exitViewTool(); },
-    }, true);
+      parseAsFloat: true,
+    });
     div.style.display = "block";
     div.style.textAlign = "left";
     settingsDiv.appendChild(div);
