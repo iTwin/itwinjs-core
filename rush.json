@@ -69,14 +69,14 @@
     {
       "packageName": "@bentley/imodeljs-clients-backend",
       "projectFolder": "core/clients-backend",
-      "reviewCategory": "common",
+      "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/imodeljs-webserver",
       "projectFolder": "core/webserver",
-      "reviewCategory": "common",
+      "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
