@@ -8,12 +8,11 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../index";
 import {
   ConfigurableUiManager, ConfigurableCreateInfo, StatusBarWidgetControl, ActivityCenterField,
   MessageCenterField, SnapModeField, PromptField, BooleanSyncUiListener, SelectionInfoField,
-  StatusBarWidgetControlArgs,
+  StatusBarWidgetControlArgs, SelectionScopeField,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
 
 import { ToolAssistanceField } from "../statusfields/ToolAssistance";
-import { SelectionScopeField } from "../statusfields/SelectionScope";
 
 import "./AppStatusBar.scss";
 

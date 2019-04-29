@@ -56,7 +56,7 @@
     "bisector": "Bisector",
     "multi": "Multiple"
   },
-  "selecionScopeField": {
+  "selectionScopeField": {
     "label": "Scope",
     "toolTip": "Selection Scope"
   },

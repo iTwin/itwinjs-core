@@ -8,13 +8,16 @@ import * as React from "react";
 import { connect } from "react-redux";
 import classnames from "classnames";
 import { FooterIndicator } from "@bentley/ui-ninezone";
-import { UiFramework, StatusFieldProps, PresentationSelectionScope } from "@bentley/ui-framework";
+import { UiFramework, PresentationSelectionScope } from "../UiFramework";
+import { StatusFieldProps } from "./StatusFieldProps";
 
 import "./SelectionScope.scss";
 
 /** Defines properties supported by the SelectionScopeField Component.
+ * @public
  */
 interface SelectionScopeFieldProps extends StatusFieldProps {
+
   activeSelectionScope: string;
   availableSelectionScopes: PresentationSelectionScope[];
 }
@@ -22,10 +25,11 @@ interface SelectionScopeFieldProps extends StatusFieldProps {
 /**
  * Status Field React component. This component is designed to be specified in a status bar definition.
  * It is used to display the number of selected items based on the Presentation Rules Selection Manager.
+ * @public
  */
 class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldProps> {
-  private _label = UiFramework.i18n.translate("UiFramework:selecionScopeField.label");
-  private _toolTip = UiFramework.i18n.translate("UiFramework:selecionScopeField.toolTip");
+  private _label = UiFramework.i18n.translate("UiFramework:selectionScopeField.label");
+  private _toolTip = UiFramework.i18n.translate("UiFramework:selectionScopeField.toolTip");
 
   constructor(props: SelectionScopeFieldProps) {
     super(props);

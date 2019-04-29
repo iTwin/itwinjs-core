@@ -2498,6 +2498,9 @@ export const RULESET: Ruleset;
 export const SelectionInfoField: any;
 
 // @public
+export const SelectionScopeField: any;
+
+// @public
 export class SeparatorBackstageItem extends React_2.PureComponent<BackstageItemProps> {
     constructor(separatorBackstageItemDef: BackstageItemProps);
     // (undocumented)

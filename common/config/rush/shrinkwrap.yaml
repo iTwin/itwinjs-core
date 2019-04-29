@@ -1,6 +1,6 @@
 dependencies:
   '@bentley/dev-cors-proxy-server': npm.bentley.com/@bentley/dev-cors-proxy-server/0.0.9
-  '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.14
+  '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
   '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.119.1
   '@microsoft/api-extractor': 7.0.35
   '@openid/appauth': 1.2.3
@@ -6720,7 +6720,7 @@ packages:
       escodegen: 1.11.1
       html-encoding-sniffer: 1.0.2
       left-pad: 1.3.0
-      nwsapi: 2.1.3
+      nwsapi: 2.1.4
       parse5: 4.0.0
       pn: 1.1.0
       request: 2.88.0
@@ -8347,10 +8347,10 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-CXtgK1NCKlIsGvuHkDGDNpQaAR0=
-  /nwsapi/2.1.3:
+  /nwsapi/2.1.4:
     dev: false
     resolution:
-      integrity: sha512-RowAaJGEgYXEZfQ7tvvdtAQUKPyTR6T6wNu0fwlNsGQYr/h3yQc6oI8WnVZh3Y/Sylwc+dtAlvPqfFZjhTyk3A==
+      integrity: sha512-iGfd9Y6SFdTNldEy2L0GUhcarIutFmk+MPWIn9dmj8NMIup03G08uUF2KGbbmv/Ux4RT0VZJoP/sVbWA6d/VIw==
   /nyc/14.0.0:
     dependencies:
       archy: 1.0.0
@@ -14726,7 +14726,7 @@ packages:
     version: 0.0.0
   'file:projects/presentation-test-app.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.14
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
       '@types/bunyan': 1.8.6
       '@types/react': 16.8.15
       '@types/react-dom': 16.8.4
@@ -14746,7 +14746,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-test-app'
     resolution:
-      integrity: sha512-AYZrOYFcJ/9yaffvJtTiiDjKxM7AvHXtTYf9iYY+Iof5f1lW2SP44mlI0Cs7EFZ2ziddnmMkpas8Z+NQl1KyuQ==
+      integrity: sha512-s3ty96eX624MwnY4jBPMaQ+MHlktMCgmpYPFgRQDhnNhKu/cX9G/OT/pMJuT9BcXAylMB6F9zkjtF6sDkwdE4Q==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
   'file:projects/presentation-testing.tgz':
@@ -14845,7 +14845,7 @@ packages:
     version: 0.0.0
   'file:projects/ui-components.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.14
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
       '@types/chai': 4.1.7
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.4
@@ -14910,12 +14910,12 @@ packages:
     dev: false
     name: '@rush-temp/ui-components'
     resolution:
-      integrity: sha512-sOI3+KOIRiwq/xVtNxrQHSt1aH+a4eMLVeNCA9O+6ZCrikRoV6ZIiMKfKe8HD1JAuRaNfo+InMWZAGcJayBqmw==
+      integrity: sha512-oGTPhweCc37bMtcdMDJs5U0lve2FmN8d6duWfC85OoxxF+oLF1e5Hwe2ccNroCVSj3141bi1Bfo8ompjFxs6iA==
       tarball: 'file:projects/ui-components.tgz'
     version: 0.0.0
   'file:projects/ui-core.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.14
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
       '@types/chai': 4.1.7
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.4
@@ -14959,12 +14959,12 @@ packages:
     dev: false
     name: '@rush-temp/ui-core'
     resolution:
-      integrity: sha512-0GXPNmeqncB8/zZRvIQnwSoOgqSpbm2M/rc34Hl3Bl+LpQf8iMT+iyqaE6YTehEdft//X56gPfwVo2qr6lUKOQ==
+      integrity: sha512-FR3mEGW7XU4Cwdl+GTmXlRlF4bWQm5fNW/TOMlzv1MwlXQ+uMee7heK5i8I696CY06DXLMnwAZXmBJ6e4Ph4rg==
       tarball: 'file:projects/ui-core.tgz'
     version: 0.0.0
   'file:projects/ui-framework.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.14
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
       '@types/chai': 4.1.7
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.4
@@ -15020,12 +15020,12 @@ packages:
     dev: false
     name: '@rush-temp/ui-framework'
     resolution:
-      integrity: sha512-SaR22T2XHkKuGWRjji/KgkoD2aIUkbKxd5BK7UXDEpNnuHY8PQsruduxEGAElbGWZNjw3E0m/8iRMII7mIWP6Q==
+      integrity: sha512-VYHLZ0qdHnFZwKirKbzRZyF87GIsZDRr8irWg1ywtv+B267y2CJccQd97s3uHnuixaUuS/BAXODDAx6YZuzs1A==
       tarball: 'file:projects/ui-framework.tgz'
     version: 0.0.0
   'file:projects/ui-ninezone.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.14
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
       '@types/chai': 4.1.7
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.4
@@ -15086,12 +15086,12 @@ packages:
     dev: false
     name: '@rush-temp/ui-ninezone'
     resolution:
-      integrity: sha512-Xqv7tD8chMQOK6YF6hXNXogd/rFAbYTPo/G0ul4MEqN1C4MeKRG0cnTZLIUGzxYllD9b/8g3YgqpfhoMUI0XLw==
+      integrity: sha512-FVAWEViw0/LUk2yBpS27DzkdipAtkDhMLZpXCAcgZrBO/QYYze9crizqkQnGeFRcZQEdKI26E2NeQeJDzAXg/g==
       tarball: 'file:projects/ui-ninezone.tgz'
     version: 0.0.0
   'file:projects/ui-test-app.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.14
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
       '@types/classnames': 2.2.7
       '@types/node': 10.14.1
       '@types/react': 16.8.15
@@ -15129,7 +15129,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-test-app'
     resolution:
-      integrity: sha512-kW+fcb+VnxPy5LmYFLI9VfdCuGjEKA0We88X2u0UXs2QPIpwCMlIMXOqiQttXN15tPjBZRCn9OQyRrkNpI9jAg==
+      integrity: sha512-vEVc2ZLgbQph3vPWuS3Jq6Oo/omEu0WRXf16S9N/B5PpdNrnTZ4r628FJVBv5erNOWPC7oyuFrWzxXb8oEeNNQ==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/webpack-tools.tgz':
@@ -15250,14 +15250,14 @@ packages:
       registry: 'https://npm.bentley.com/npm/npm/'
       tarball: 'https://npm.bentley.com/npm/npm/@bentley/dev-cors-proxy-server/-/dev-cors-proxy-server-0.0.9.tgz'
     version: 0.0.9
-  npm.bentley.com/@bentley/icons-generic-webfont/0.0.14:
+  npm.bentley.com/@bentley/icons-generic-webfont/0.0.21:
     dev: false
     name: '@bentley/icons-generic-webfont'
     resolution:
-      integrity: sha1-IKUD+Ub563rzNA0F113BYuS32hQ=
+      integrity: sha1-yZjJY7tOd3Jn62V+EpdIDNhxXq8=
       registry: 'https://npm.bentley.com/npm/npm/'
-      tarball: 'https://npm.bentley.com/npm/npm/@bentley/icons-generic-webfont/-/icons-generic-webfont-0.0.14.tgz'
-    version: 0.0.14
+      tarball: 'https://npm.bentley.com/npm/npm/@bentley/icons-generic-webfont/-/icons-generic-webfont-0.0.21.tgz'
+    version: 0.0.21
   npm.bentley.com/@bentley/imodeljs-native/0.119.1:
     dev: false
     name: '@bentley/imodeljs-native'
@@ -15272,7 +15272,7 @@ shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   '@bentley/dev-cors-proxy-server': 0.0.9
-  '@bentley/icons-generic-webfont': ^0.0.14
+  '@bentley/icons-generic-webfont': ^0.0.21
   '@bentley/imodeljs-native': ~0.119.1
   '@microsoft/api-extractor': 7.0.35
   '@openid/appauth': ^1.1.1

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update icons-generic-webfont version to latest available.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "bill.steinbock@bentley.com"
+}

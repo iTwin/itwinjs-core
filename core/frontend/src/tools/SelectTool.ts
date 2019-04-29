@@ -129,7 +129,7 @@ export class SelectionTool extends PrimitiveTool {
           {
             type: PropertyEditorParamTypes.ButtonGroupData,
             buttons: [
-              { iconClass: "icon icon-cursor-click" },
+              { iconClass: "icon icon-replace" },
               { iconClass: "icon icon-select-plus" },
               {
                 iconClass: "icon icon-select-minus",

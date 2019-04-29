@@ -124,6 +124,7 @@ export * from "./ui-framework/statusfields/SnapMode";
 export * from "./ui-framework/statusfields/PromptField";
 export * from "./ui-framework/statusfields/SelectionInfo";
 export * from "./ui-framework/statusfields/StatusFieldProps";
+export * from "./ui-framework/statusfields/SelectionScope";
 
 export * from "./ui-framework/theme/ThemeManager";
 
