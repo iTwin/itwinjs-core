@@ -872,6 +872,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   protected _clipPlanesLoopsNoncontributing?: GeometryQuery[];
   protected _controlIds: string[] = [];
   protected _controls: ViewClipControlArrow[] = [];
+  protected _suspendDecorator = false;
   protected _removeViewCloseListener?: () => void;
 
   public constructor(protected _clipView: Viewport, protected _clipEventHandler?: ViewClipEventHandler) {
@@ -1073,16 +1074,16 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 
   protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean {
-    if (undefined === this._clip)
+    if (undefined === this._clip || hit.sourceId === this._clipId)
       return false;
     if (undefined !== this._clipShape) {
       const clipShapeModifyTool = new ViewClipShapeModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
-      return clipShapeModifyTool.run();
+      this._suspendDecorator = clipShapeModifyTool.run();
     } else if (undefined !== this._clipPlanes) {
       const clipPlanesModifyTool = new ViewClipPlanesModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
-      return clipPlanesModifyTool.run();
+      this._suspendDecorator = clipPlanesModifyTool.run();
     }
-    return false;
+    return this._suspendDecorator;
   }
 
   public doClipPlaneNegate(index: number): boolean {
@@ -1160,13 +1161,75 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     return true;
   }
 
+  public get isClipShapeAlignedWithWorldUp(): Range1d | undefined {
+    if (undefined === this._clipShape)
+      return undefined;
+
+    const transform = (undefined !== this._clipShape.transformFromClip ? this._clipShape.transformFromClip : Transform.createIdentity());
+    const normal = transform.multiplyVector(Vector3d.unitZ());
+    const matrix = AccuDraw.getStandardRotation(StandardViewId.Top, this._clipView, this._clipView.isContextRotationRequired).inverse();
+    if (undefined === matrix || !matrix.getColumn(2).isParallelTo(normal, false))
+      return undefined;
+
+    const planePt = (this._clipView.isContextRotationRequired ? this._clipView.getAuxCoordOrigin() : (this._clipView.view.isSpatialView ? this._clipView.view.iModel.globalOrigin : Point3d.createZero()));
+    const plane = Plane3dByOriginAndUnitNormal.create(planePt, normal);
+    if (undefined === plane)
+      return undefined;
+
+    const origin = transform.multiplyPoint3d(Point3d.createZero());
+    const projPt = plane.projectPointToPlane(origin);
+    const vec = Vector3d.createStartEnd(origin, projPt);
+    const offset = Transform.createTranslation(undefined !== this._clipShape.transformToClip ? this._clipShape.transformToClip.multiplyVector(vec) : vec);
+    const zLow = offset.multiplyPoint3d(Point3d.create(0, 0, this._clipShapeExtents!.low));
+    const zHigh = offset.multiplyPoint3d(Point3d.create(0, 0, this._clipShapeExtents!.high));
+
+    return Range1d.createXX(zLow.z, zHigh.z);
+  }
+
+  public doClipShapeSetZExtents(extents: Range1d): boolean {
+    if (extents.low > extents.high)
+      return false;
+
+    if (undefined === this._clipShape || undefined === this.isClipShapeAlignedWithWorldUp)
+      return false;
+
+    const transform = (undefined !== this._clipShape.transformFromClip ? this._clipShape.transformFromClip : Transform.createIdentity());
+    const origin = transform.multiplyPoint3d(Point3d.createZero());
+    const normal = transform.multiplyVector(Vector3d.unitZ());
+    const planePt = (this._clipView.isContextRotationRequired ? this._clipView.getAuxCoordOrigin() : (this._clipView.view.isSpatialView ? this._clipView.view.iModel.globalOrigin : Point3d.createZero()));
+    const plane = Plane3dByOriginAndUnitNormal.create(planePt, normal);
+
+    if (undefined === plane)
+      return false;
+
+    const projPt = plane.projectPointToPlane(origin);
+    const vec = Vector3d.createStartEnd(origin, projPt);
+    const offset = Transform.createTranslation(vec);
+    const transformFromClip = offset.multiplyTransformTransform(transform);
+
+    const shape = ClipShape.createFrom(this._clipShape);
+    shape.initSecondaryProps(shape.isMask, extents.low, extents.high, transformFromClip);
+
+    const clip = ClipVector.createEmpty();
+    clip.appendReference(shape);
+
+    if (!ViewClipTool.setViewClip(this._clipView, clip))
+      return false;
+
+    this.onManipulatorEvent(EditManipulator.EventType.Accept);
+    return true;
+  }
+
   protected async onRightClick(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === this._clipEventHandler)
       return EventHandled.No;
     return (this._clipEventHandler.onRightClick(hit, ev) ? EventHandled.Yes : EventHandled.No);
   }
 
+  protected async onTouchTap(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> { return (hit.sourceId === this._clipId ? EventHandled.No : super.onTouchTap(hit, ev)); }
+
   public onManipulatorEvent(eventType: EditManipulator.EventType): void {
+    this._suspendDecorator = false;
     super.onManipulatorEvent(eventType);
     if (EditManipulator.EventType.Accept === eventType && undefined !== this._clipEventHandler)
       this._clipEventHandler.onModifyClip(this._clipView);
@@ -1174,10 +1237,12 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
   public testDecorationHit(id: string): boolean { return (id === this._clipId || this._controlIds.includes(id)); }
   public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> { return (hit.sourceId === this._clipId ? "View Clip" : "Modify View Clip"); }
-  public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> { return (hit.sourceId === this._clipId ? EventHandled.No : super.onDecorationButtonEvent(hit, ev)); }
   protected updateDecorationListener(_add: boolean): void { super.updateDecorationListener(undefined !== this._clipId); } // Decorator isn't just for resize controls...
 
   public decorate(context: DecorateContext): void {
+    if (this._suspendDecorator)
+      return;
+
     if (undefined === this._clipId || undefined === this._clip)
       return;
 

@@ -1811,6 +1811,8 @@ export namespace EditManipulator {
         // (undocumented)
         onSelectionChanged(iModel: IModelConnection, _eventType: SelectEventType, _ids?: Set<string>): void;
         // (undocumented)
+        protected onTouchTap(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled>;
+        // (undocumented)
         protected _removeDecorationListener?: () => void;
         // (undocumented)
         protected _removeManipulatorToolListener?: () => void;
@@ -6809,25 +6811,31 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     doClipPlaneOrientView(index: number): boolean;
     // (undocumented)
+    doClipShapeSetZExtents(extents: Range1d): boolean;
+    // (undocumented)
     static get(vp: Viewport): ViewClipDecoration | undefined;
     // (undocumented)
     getControlIndex(id: string): number;
     // (undocumented)
     getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     // (undocumented)
-    protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean;
+    readonly isClipShapeAlignedWithWorldUp: Range1d | undefined;
     // (undocumented)
-    onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean;
     // (undocumented)
     onManipulatorEvent(eventType: EditManipulator.EventType): void;
     // (undocumented)
     protected onRightClick(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    protected onTouchTap(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onViewClose(vp: ScreenViewport): void;
     // (undocumented)
     protected _removeViewCloseListener?: () => void;
     // (undocumented)
     protected stop(): void;
+    // (undocumented)
+    protected _suspendDecorator: boolean;
     // (undocumented)
     testDecorationHit(id: string): boolean;
     // (undocumented)

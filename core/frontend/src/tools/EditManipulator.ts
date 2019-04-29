@@ -127,6 +127,7 @@ export namespace EditManipulator {
     public onManipulatorEvent(_eventType: EventType): void { this.updateControls(); } // tslint:disable-line:no-floating-promises
     protected async onDoubleClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
     protected async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+    protected async onTouchTap(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.Yes; }
 
     public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
       if (!this._isActive)
@@ -145,7 +146,7 @@ export namespace EditManipulator {
         return EventHandled.No; // Support ctrl+click to select multiple controls (ex. linestring vertices)...
 
       if (InputSource.Touch === ev.inputSource && !ev.isDragging)
-        return EventHandled.Yes; // Select controls on touch drag only, ignore tap on control...
+        return this.onTouchTap(hit, ev); // Default is to select controls on touch drag only, ignore tap on control...
 
       if (ev.isDown && !ev.isDragging)
         return EventHandled.No; // Select controls on up event or down event only after drag started...

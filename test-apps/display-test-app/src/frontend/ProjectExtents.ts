@@ -220,6 +220,8 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   }
 
   protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean {
+    if (hit.sourceId === this._boxId)
+      return false;
     const manipTool = new ProjectExtentsResizeTool(this, hit.sourceId, this._controlIds, this._controlPoint, this._controlAxis);
     return manipTool.run();
   }
@@ -234,7 +236,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     }
     return "Resize Project Extents";
   }
-  public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> { return (hit.sourceId === this._boxId ? EventHandled.No : super.onDecorationButtonEvent(hit, ev)); }
+  protected async onTouchTap(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> { return (hit.sourceId === this._boxId ? EventHandled.No : super.onTouchTap(hit, ev)); }
 
   protected updateDecorationListener(_add: boolean) {
     super.updateDecorationListener(undefined !== this._boxId); // Decorator isn't just for resize controls...
