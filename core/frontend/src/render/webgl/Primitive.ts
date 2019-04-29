@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { FeatureIndexType } from "@bentley/imodeljs-common";
-import { Target } from "./Target";
+import { Target, PrimitiveVisibility } from "./Target";
 import { Graphic, Batch } from "./Graphic";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
@@ -56,6 +56,18 @@ export class Primitive extends Graphic {
   public getRenderPass(target: Target) {
     if (this.isPixelMode)
       return RenderPass.ViewOverlay;
+
+    switch (target.primitiveVisibility) {
+      case PrimitiveVisibility.Uninstanced:
+        if (this.cachedGeometry.isInstanced)
+          return RenderPass.None;
+        break;
+      case PrimitiveVisibility.Instanced:
+        if (!this.cachedGeometry.isInstanced)
+          return RenderPass.None;
+        break;
+    }
+
     return this.cachedGeometry.getRenderPass(target);
   }
 

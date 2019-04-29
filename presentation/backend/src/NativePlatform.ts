@@ -39,11 +39,11 @@ export interface NativePlatformDefinition extends IDisposable {
 }
 
 /** @hidden */
-export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition; } => {
+export const createDefaultNativePlatform = (id?: string): { new(): NativePlatformDefinition; } => {
   // note the implementation is constructed here to make PresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NativePlatformDefinition {
-    private _nativeAddon = new IModelHost.platform.ECPresentationManager();
+    private _nativeAddon = new IModelHost.platform.ECPresentationManager(id);
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
         case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
@@ -91,7 +91,7 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
     public clearRulesets(): void {
       this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
-    public handleRequest(requestContext: ClientRequestContext, db: any, options: string): Promise<string> {
+    public async handleRequest(requestContext: ClientRequestContext, db: any, options: string): Promise<string> {
       requestContext.enter();
       return new Promise((resolve, reject) => {
         this._nativeAddon.handleRequest(db, options, (response) => {

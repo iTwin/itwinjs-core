@@ -189,6 +189,7 @@ export declare namespace IModelJsNative {
     public updateLinkTableRelationship(props: string): DbResult;
     public updateModel(modelProps: string): IModelStatus;
     public updateProjectExtents(newExtentsJson: string): void;
+    public static vacuum(dbName: string, pageSize?: number): DbResult;
   }
 
   export class ECDb implements IDisposable {
@@ -325,7 +326,7 @@ export declare namespace IModelJsNative {
   }
 
   export class ECPresentationManager implements IDisposable {
-    constructor();
+    constructor(id?: string);
     public setupRulesetDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
     public setupLocaleDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
     public setRulesetVariableValue(rulesetId: string, variableId: string, type: string, value: any): ErrorStatusOrResult<ECPresentationStatus, void>;

@@ -6,6 +6,7 @@
 import * as path from "path";
 import * as rimraf from "rimraf";
 // common includes
+import { Guid } from "@bentley/bentleyjs-core";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 // backend includes
 import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
@@ -48,8 +49,10 @@ export const initialize = (backendProps?: PresentationBackendProps, frontendProp
   if (isInitialized)
     return;
 
-  // clean up temp directory to make sure we start from scratch
-  rimraf.sync(path.join(KnownLocations.tmpdir, "ecpresentation"));
+  // make sure backend gets assigned an id which puts its resources into a unique directory
+  backendProps = backendProps || {};
+  if (!backendProps.id)
+    backendProps.id = `test-${Guid.createValue()}`;
 
   // init backend
   IModelHost.startup();
@@ -73,9 +76,15 @@ export const terminate = (frontendApp = NoRenderApp) => {
   if (!isInitialized)
     return;
 
+  // store directory that needs to be cleaned-up
+  const tempDirectory = (PresentationBackend.initProps && PresentationBackend.initProps.id)
+    ? path.join(KnownLocations.tmpdir, "ecpresentation", PresentationBackend.initProps.id) : undefined;
+
   // terminate backend
   PresentationBackend.terminate();
   IModelHost.shutdown();
+  if (tempDirectory)
+    rimraf.sync(tempDirectory);
 
   // terminate frontend
   PresentationFrontend.terminate();

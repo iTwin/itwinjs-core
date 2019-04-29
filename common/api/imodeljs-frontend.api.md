@@ -4153,6 +4153,13 @@ export interface PrimitiveValue extends BasePropertyValue {
     valueFormat: PropertyValueFormat.Primitive;
 }
 
+// @internal
+export const enum PrimitiveVisibility {
+    All = 0,
+    Instanced = 1,
+    Uninstanced = 2
+}
+
 // @public
 export interface PropertyDescription {
     dataController?: string;
@@ -5699,6 +5706,8 @@ export abstract class Target extends RenderTarget {
     popBatch(): void;
     // (undocumented)
     popBranch(): void;
+    // (undocumented)
+    primitiveVisibility: PrimitiveVisibility;
     // (undocumented)
     readonly projectionMatrix: Matrix4d;
     // (undocumented)

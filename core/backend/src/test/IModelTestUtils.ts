@@ -278,6 +278,9 @@ export class IModelTestUtils {
       Logger.configureLevels(require(loggingConfigFile));
     }
   }
+  public static init() {
+    // dummy method to get this script included
+  }
 
   // Setup typical programmatic log level overrides here
   // Convenience method used to debug specific tests/fixtures

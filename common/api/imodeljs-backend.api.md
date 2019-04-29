@@ -2002,6 +2002,8 @@ export namespace IModelJsNative {
         updateModel(modelProps: string): IModelStatus;
         // (undocumented)
         updateProjectExtents(newExtentsJson: string): void;
+        // (undocumented)
+        static vacuum(dbName: string, pageSize?: number): DbResult;
     }
     // (undocumented)
     export class DisableNativeAssertions implements IDisposable {
@@ -2033,7 +2035,7 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export class ECPresentationManager implements IDisposable {
-        constructor();
+        constructor(id?: string);
         // (undocumented)
         addRuleset(serializedRuleset: string): ErrorStatusOrResult<ECPresentationStatus, string>;
         // (undocumented)
