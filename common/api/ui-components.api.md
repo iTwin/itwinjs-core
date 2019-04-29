@@ -16,6 +16,7 @@ import { ContextComponent } from 'react-dnd';
 import { CSSProperties } from 'react';
 import { default } from 'react-data-grid';
 import { DndComponentClass } from 'react-dnd';
+import { Face } from '@bentley/ui-core';
 import { GlobalContextMenuProps } from '@bentley/ui-core';
 import { GlobalDialogProps } from '@bentley/ui-core';
 import { HSVColor } from '@bentley/imodeljs-common';
@@ -744,6 +745,8 @@ export class CubeRotationChangeEvent extends UiEvent<CubeRotationChangeEventArgs
 export interface CubeRotationChangeEventArgs {
     // (undocumented)
     animationTime?: number;
+    // (undocumented)
+    face: Face;
     // (undocumented)
     rotMatrix: Matrix3d;
 }
@@ -2563,6 +2566,8 @@ export class ViewportComponentEvents {
     // (undocumented)
     static readonly extents: Vector3d;
     // (undocumented)
+    static face: Face;
+    // (undocumented)
     static initialize(): void;
     // (undocumented)
     static readonly onCubeRotationChangeEvent: CubeRotationChangeEvent;
@@ -2581,7 +2586,7 @@ export class ViewportComponentEvents {
     // (undocumented)
     static readonly rotationMatrix: Matrix3d;
     // (undocumented)
-    static setCubeMatrix(rotMatrix: Matrix3d, animationTime?: number): void;
+    static setCubeMatrix(rotMatrix: Matrix3d, face?: Face, animationTime?: number): void;
     // (undocumented)
     static setDrawingViewportState(origin: Point3d, rotation: Matrix3d, complete?: boolean): void;
     // (undocumented)
