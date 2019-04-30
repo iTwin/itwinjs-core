@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "VSTS#114189 Reality data shown as Model and picker",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Alain.Robert@Bentley.com"
+}

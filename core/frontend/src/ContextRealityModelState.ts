@@ -130,13 +130,16 @@ export class ContextRealityModelState implements TileTreeModelState {
         requestContext.enter();
 
         // Get set of URLs that are directly attached to the model.
-        const modelUrls = new Set<string>();
+        const modelRealityDataIds = new Set<string>();
         if (iModel) {
             const query = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
             const props = await iModel.models.queryProps(query);
             for (const prop of props)
-                if (prop.jsonProperties !== undefined && prop.jsonProperties.tilesetUrl)
-                    modelUrls.add(prop.jsonProperties.tilesetUrl);
+                if (prop.jsonProperties !== undefined && prop.jsonProperties.tilesetUrl) {
+                    const realityDataId = client.getRealityDataIdFromUrl(prop.jsonProperties.tilesetUrl);
+                    if (realityDataId)
+                        modelRealityDataIds.add(realityDataId);
+                }
         }
 
         // We obtain the reality data name, and RDS URL for each RD retuned.
@@ -158,7 +161,7 @@ export class ContextRealityModelState implements TileTreeModelState {
             if (currentRealityData.id && validRd === true) {
                 const url = await client.getRealityDataUrl(requestContext, projectid, currentRealityData.id as string);
                 requestContext.enter();
-                if (!modelUrls.has(url))
+                if (!modelRealityDataIds.has(currentRealityData.id as string))
                     availableRealityModels.push({ tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : "") });
             }
         }

@@ -1276,6 +1276,7 @@ export class RealityDataServicesClient extends WsgClient {
     static readonly configRelyingPartyUri = "imjs_reality_data_service_relying_party_uri";
     getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<FileAccessKey[]>;
     getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<RealityData>;
+    getRealityDataIdFromUrl(url: string): string | undefined;
     getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<RealityData[]>;
     getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, range: Range2d): Promise<RealityData[]>;
     getRealityDataUrl(requestContext: ClientRequestContext, projectId: string, tilesId: string): Promise<string>;

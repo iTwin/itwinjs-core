@@ -103,6 +103,34 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(modelData);
   });
 
+  it("should be able to parse a RDS URL and extract Reality Data Id", async function (this: Mocha.ITestCallbackContext) {
+    const url1: string = "https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--Server/S3MX/RealityData/d629a312-1f8a-4c84-845f-87d0a27d6b9b";
+    const url2: string = "https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--d629a312-1f8a-4c84-845f-87d0a27d6b9b/S3MX/Folder/09b676d1-f0ed-4eba-b47a-7991b05f280d~2FGraz~2F";
+    const url3: string = "https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--caa80cb6-b3bd-44be-9178-a3d7cacaad51/S3MX/Document/a8136337-c563-424a-b3c3-17c41a984a94~2FGraz~2FScene~2FGraz.3mx";
+
+    const realityDataId1 = realityDataServiceClient.getRealityDataIdFromUrl(url1);
+    chai.assert(realityDataId1 === "d629a312-1f8a-4c84-845f-87d0a27d6b9b");
+
+    const realityDataId2 = realityDataServiceClient.getRealityDataIdFromUrl(url2);
+    chai.assert(realityDataId2 === "09b676d1-f0ed-4eba-b47a-7991b05f280d");
+
+    const realityDataId3 = realityDataServiceClient.getRealityDataIdFromUrl(url3);
+    chai.assert(realityDataId3 === "a8136337-c563-424a-b3c3-17c41a984a94");
+
+    const invalidUrl1 = "http://myserver.com/v2.4/Reposi---es/S3MXECPlugin--Server/S3MX/RealityData/d629a312-1f8a-4c84-845f-87d0a27d6b9b";
+    const invalidUrl2 = "https://myserver.com/path1/path2/path3/v2.4/Repositories/S3MXECPlugin--d629a312-1f8a-4c84-845f-87d0a27d6b9b/S3MX/Folder/09b676d1-f0ed-4eba-b47a-7991b05f280d~2FGraz~2F";
+    const invalidUrl3 = "https://myserver.com/path1/path2/path3/v2.4/Repositories/--d629a312-1f8a-4c84-845f-87d0a27d6b9b/S3MX/Apple/09b676d1-f0ed-4eba-b47a-7991b05f280d~2FGraz~2F";
+
+    const invalidRealityDataId1 = realityDataServiceClient.getRealityDataIdFromUrl(invalidUrl1);
+    chai.assert(invalidRealityDataId1 === undefined);
+
+    const invalidRealityDataId2 = realityDataServiceClient.getRealityDataIdFromUrl(invalidUrl2);
+    chai.assert(invalidRealityDataId2 === undefined);
+
+    const invalidRealityDataId3 = realityDataServiceClient.getRealityDataIdFromUrl(invalidUrl3);
+    chai.assert(invalidRealityDataId3 === undefined);
+  });
+
   it("should be able to get model data content with root doc not at blob root (root doc path) (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesIdWithRootDocPath);
 

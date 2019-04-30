@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module OtherServices */
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { WsgClient } from "./WsgClient";
 import { URL } from "url";
@@ -382,4 +382,32 @@ export class RealityDataServicesClient extends WsgClient {
     return this.getInstances<FileAccessKey>(requestContext, FileAccessKey, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Read%27`);
   }
 
+  // ###TODO temporary means of extracting the tileId and projectId from the given url
+  // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
+  /**
+   * This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
+   * @param url A fully formed URL to a reality data or a reality data folder or document of the form:
+   *              https://{Host}/{version}/Repositories/S3MXECPlugin--{ProjectId}/S3MX/RealityData/{RealityDataId}
+   *              https://{Host}/{version}/Repositories/S3MXECPlugin--{ProjectId}/S3MX/Folder/{RealityDataId}~2F{Folder}
+   *              https://{Host}/{version}/Repositories/S3MXECPlugin--{ProjectId}/S3MX/Document/{RealityDataId}~2F{Full Document Path and name}'
+   *            Where {Host} represents the Reality Data Service server (ex: connect-realitydataservices.bentley.com). This value is ignored since the
+   *            actual host server name depends on the environment or can be changed in the future.
+   *            Where {version} is the Bentley Web Service Gateway protocol version. This value is ignored but the version must be supported by Reality Data Service.
+   *            Where {Folder} and {Document} are the full folder or document path relative to the Reality Data root.
+   *            {RealityDataId} is extracted after validation of the URL and returned.
+   *            {ProjectId} is ignored.
+   * @returns A string containing the Reality Data Identifier (otherwise named tile id). If the URL is not a reality data service URL then undefined is returned.
+   */
+  public getRealityDataIdFromUrl(url: string): string | undefined {
+    let realityDataId: string | undefined;
+
+    const formattedUrl = url.replace(/~2F/g, "/");
+    const urlParts = formattedUrl.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
+
+    if ((urlParts[4] === "Repositories") && urlParts[5].match("S3MXECPlugin--*") && (urlParts[6] === "S3MX")) {
+      // URL appears tpo be a correctly formed URL to Reality Data Service ... obtain the first GUID
+      realityDataId = urlParts.find(Guid.isGuid);
+    }
+    return realityDataId;
+  }
 }
