@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Prefer the IModelToken values in the url (if different from values in JSON body -- should never happen except in a malicious request).",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}

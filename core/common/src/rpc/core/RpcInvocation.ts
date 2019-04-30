@@ -15,6 +15,7 @@ import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
+import { IModelToken } from "../../IModel";
 
 /** Notification callback for an RPC invocation.
  * @public
@@ -116,11 +117,43 @@ export class RpcInvocation {
     this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
     const parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
+    this.applyPolicies(parameters);
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
     const op = this.lookupOperationFunction(impl);
 
     return Promise.resolve(op.call(impl, ...parameters));
+  }
+
+  private applyPolicies(parameters: any) {
+    if (!parameters || !Array.isArray(parameters)) {
+      return;
+    }
+
+    for (let i = 0; i !== parameters.length; ++i) {
+      const parameter = parameters[i];
+      const isToken = typeof (parameter) === "object" && parameter !== null && parameter.hasOwnProperty("iModelId") && parameter.hasOwnProperty("contextId");
+      if (isToken && this.protocol.checkToken && !this.operation.policy.allowTokenMismatch) {
+        const inflated = this.protocol.inflateToken(parameter, this.request);
+        parameters[i] = inflated;
+
+        if (!RpcInvocation.compareTokens(parameter as IModelToken, inflated)) {
+          if (RpcConfiguration.throwOnTokenMismatch) {
+            throw new IModelError(BentleyStatus.ERROR, "IModelToken mismatch detected for this request.");
+          } else {
+            Logger.logWarning(LoggerCategory.RpcInterfaceBackend, "IModelToken mismatch detected for this request.");
+          }
+        }
+      }
+    }
+  }
+
+  private static compareTokens(a: IModelToken, b: IModelToken): boolean {
+    return a.key === b.key &&
+      a.contextId === b.contextId &&
+      a.iModelId === b.iModelId &&
+      a.changeSetId === b.changeSetId &&
+      a.openMode === b.openMode;
   }
 
   private async reject(error: any): Promise<any> {

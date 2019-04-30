@@ -31,6 +31,13 @@ export abstract class RpcConfiguration {
    */
   public static strictMode: boolean = false;
 
+  /**
+   * Whether to throw an error when the IModelToken in the operation parameter list differs from the token in the URL.
+   * @note By default, a warning is loggged and the operation is allowed to proceed.
+   * @note The parameter token is always replaced by the url token (unless RpcOperationPolicy.allowTokenMismatch is set).
+   */
+  public static throwOnTokenMismatch = false;
+
   /** Sets the configuration supplier for an RPC interface class. */
   public static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void {
     definition.prototype.configurationSupplier = supplier;

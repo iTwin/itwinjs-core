@@ -48,6 +48,9 @@ export abstract class ZeroMajorRpcInterface extends RpcInterface {
   }
 }
 
+// tslint:disable-next-line:no-empty-interface
+export interface TokenValues extends IModelToken { }
+
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly OP8_INITIALIZER = 5;
   public static readonly OP8_PENDING_MESSAGE = "Initializing op8";
@@ -133,6 +136,10 @@ export abstract class TestRpcInterface extends RpcInterface {
   }
 
   public async op15(): Promise<void> {
+    return this.forward(arguments);
+  }
+
+  public async op16(_token: IModelToken, _values: TokenValues): Promise<boolean> {
     return this.forward(arguments);
   }
 }

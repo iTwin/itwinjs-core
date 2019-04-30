@@ -2,8 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { TestRpcInterface, ZeroMajorRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, TestNotFoundResponse, TestNotFoundResponseCode, RpcTransportTestImpl } from "../common/TestRpcInterface";
-import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, RpcInvocation } from "@bentley/imodeljs-common";
+import { TestRpcInterface, ZeroMajorRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, TestNotFoundResponse, TestNotFoundResponseCode, RpcTransportTestImpl, TokenValues } from "../common/TestRpcInterface";
+import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, RpcInvocation, IModelToken } from "@bentley/imodeljs-common";
 import { BentleyError, BentleyStatus, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
 
 export async function testInterfaceResource() {
@@ -143,6 +143,13 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return;
   }
 
+  public async op16(token: IModelToken, values: TokenValues): Promise<boolean> {
+    return token.key === values.key &&
+      token.contextId === values.contextId &&
+      token.iModelId === values.iModelId &&
+      token.changeSetId === values.changeSetId &&
+      token.openMode === values.openMode;
+  }
 }
 
 export class TestRpcImpl2 extends RpcInterface implements TestRpcInterface2 {

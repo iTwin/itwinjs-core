@@ -57,6 +57,7 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
         const container = await this.getContainer(id);
         if (!container.url) {
           resolve(undefined);
+          return;
         }
 
         const response = await this.requestResource(container, id);
@@ -92,7 +93,7 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
     const name = this.formContainerName(id);
 
     let container = this._containers.get(name);
-    if (container && (container.valid > now || container.expires < now)) {
+    if (container && container.url && (container.valid > now || container.expires < now)) {
       container = undefined;
       this._containers.delete(name);
     }

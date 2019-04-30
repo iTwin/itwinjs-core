@@ -40,6 +40,9 @@ export class RpcOperationPolicy {
 
   /** Forces RpcConfiguration.strictMode for this operation. */
   public forceStrictMode: boolean = false;
+
+  /** Whether the IModelToken in the operation parameter list is allowed to differ from the token in the request URL. */
+  public allowTokenMismatch: boolean = false;
 }
 
 /** An RPC operation descriptor.

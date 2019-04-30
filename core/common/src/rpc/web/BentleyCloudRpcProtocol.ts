@@ -9,10 +9,11 @@ import { URL } from "url";
 import { IModelError } from "../../IModelError";
 import { LoggerCategory } from "../../LoggerCategory";
 import { RpcOperation } from "../core/RpcOperation";
-import { SerializedRpcOperation } from "../core/RpcProtocol";
+import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import { IModelToken } from "../../IModel";
 
 enum AppMode {
   MilestoneReview = "1",
@@ -21,6 +22,7 @@ enum AppMode {
 
 /** An http protocol for Bentley cloud RPC interface deployments. */
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
+  public checkToken = true;
 
   /** The name of various HTTP request headers based on client's request context */
   public serializedClientRequestContextHeaderNames: SerializedClientRequestContext = {
@@ -100,6 +102,40 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     }
 
     return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${contextId}/imodel/${iModelId}${!!routeChangeSetId ? "/changeset/" + routeChangeSetId : ""}/${operationId}`;
+  }
+
+  /**
+   * Inflates the IModelToken from the URL path for each request on the backend.
+   * @note This function updates the IModelToken value supplied in the request body.
+   */
+  public inflateToken(tokenFromBody: IModelToken, request: SerializedRpcRequest): IModelToken {
+    const urlPathComponents = request.path.split("/");
+
+    const iModelKey = tokenFromBody.key;
+    let openMode = tokenFromBody.openMode;
+    let iModelId = tokenFromBody.iModelId;
+    let contextId = tokenFromBody.contextId;
+    let changeSetId = tokenFromBody.changeSetId;
+
+    for (let i = 0; i <= urlPathComponents.length; ++i) {
+      const key = urlPathComponents[i];
+      const value = urlPathComponents[i + 1];
+      if (key === "mode") {
+        openMode = (value === AppMode.WorkGroupEdit) ? OpenMode.ReadWrite : OpenMode.Readonly;
+        ++i;
+      } else if (key === "context") {
+        contextId = value;
+        ++i;
+      } else if (key === "imodel") {
+        iModelId = value;
+        ++i;
+      } else if (key === "changeset") {
+        changeSetId = (value === "0") ? "" : value;
+        ++i;
+      }
+    }
+
+    return new IModelToken(iModelKey, contextId, iModelId, changeSetId, openMode);
   }
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation. */

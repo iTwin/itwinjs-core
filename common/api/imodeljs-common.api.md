@@ -3750,6 +3750,7 @@ export abstract class RpcConfiguration {
     static strictMode: boolean;
     // @internal (undocumented)
     static supply(definition: RpcInterface): RpcConfiguration;
+    static throwOnTokenMismatch: boolean;
 }
 
 // @public (undocumented)
@@ -3983,6 +3984,7 @@ export namespace RpcOperation {
 // @public
 export class RpcOperationPolicy {
     allowResponseCaching: RpcResponseCachingCallback_T;
+    allowTokenMismatch: boolean;
     forceStrictMode: boolean;
     invocationCallback: RpcInvocationCallback_T;
     requestCallback: RpcRequestCallback_T;
@@ -4019,18 +4021,18 @@ export class RpcPendingResponse extends RpcControlResponse {
 // @public
 export abstract class RpcProtocol {
     constructor(configuration: RpcConfiguration);
+    checkToken: boolean;
     readonly configuration: RpcConfiguration;
     static readonly events: BeEvent<RpcProtocolEventHandler>;
     readonly events: BeEvent<RpcProtocolEventHandler>;
-    // Warning: (ae-incompatible-release-tags) The symbol "fulfill" is marked as @public, but its signature references "SerializedRpcRequest" which is marked as @internal
     // Warning: (ae-incompatible-release-tags) The symbol "fulfill" is marked as @public, but its signature references "RpcRequestFulfillment" which is marked as @internal
     fulfill(request: SerializedRpcRequest): Promise<RpcRequestFulfillment>;
     // Warning: (ae-incompatible-release-tags) The symbol "getCode" is marked as @public, but its signature references "RpcRequestStatus" which is marked as @internal
     getCode(status: RpcRequestStatus): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getOperationFromPath" is marked as @public, but its signature references "SerializedRpcOperation" which is marked as @internal
     getOperationFromPath(path: string): SerializedRpcOperation;
     // Warning: (ae-incompatible-release-tags) The symbol "getStatus" is marked as @public, but its signature references "RpcRequestStatus" which is marked as @internal
     getStatus(code: number): RpcRequestStatus;
+    inflateToken(tokenFromBody: IModelToken, _request: SerializedRpcRequest): IModelToken;
     // Warning: (ae-incompatible-release-tags) The symbol "invocationType" is marked as @public, but its signature references "RpcInvocation" which is marked as @internal
     readonly invocationType: typeof RpcInvocation;
     // @internal (undocumented)
@@ -4043,7 +4045,6 @@ export abstract class RpcProtocol {
     onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
     preserveStreams: boolean;
     abstract readonly requestType: typeof RpcRequest;
-    // Warning: (ae-incompatible-release-tags) The symbol "serialize" is marked as @public, but its signature references "SerializedRpcRequest" which is marked as @internal
     serialize(request: RpcRequest): Promise<SerializedRpcRequest>;
     // (undocumented)
     serializedClientRequestContextHeaderNames: SerializedClientRequestContext;
@@ -4147,7 +4148,6 @@ export abstract class RpcRequest<TResponse = any> {
     readonly id: string;
     readonly lastSubmitted: number;
     readonly lastUpdated: number;
-    // Warning: (ae-incompatible-release-tags) The symbol "load" is marked as @public, but its signature references "RpcSerializedValue" which is marked as @internal
     protected abstract load(): Promise<RpcSerializedValue>;
     method: string;
     static readonly notFoundHandlers: BeEvent<RpcRequestNotFoundHandler>;
@@ -4247,7 +4247,7 @@ export enum RpcResponseCacheControl {
 // @public
 export type RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl;
 
-// @internal (undocumented)
+// @public (undocumented)
 export interface RpcSerializedValue {
     // (undocumented)
     chunks?: number;
@@ -4259,7 +4259,7 @@ export interface RpcSerializedValue {
     stream?: Readable;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace RpcSerializedValue {
     // (undocumented)
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
@@ -4286,7 +4286,7 @@ export class SceneLights {
     readonly isEmpty: boolean;
     }
 
-// @internal
+// @public
 export interface SerializedRpcOperation {
     // (undocumented)
     encodedRequest?: string;
@@ -4298,7 +4298,7 @@ export interface SerializedRpcOperation {
     operationName: string;
 }
 
-// @internal
+// @public
 export interface SerializedRpcRequest extends SerializedClientRequestContext {
     // (undocumented)
     caching: RpcResponseCacheControl;
@@ -5138,13 +5138,10 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
 // @public
 export class WebAppRpcRequest extends RpcRequest {
     constructor(client: RpcInterface, operation: string, parameters: any[]);
-    // Warning: (ae-incompatible-release-tags) The symbol "computeTransportType" is marked as @public, but its signature references "RpcSerializedValue" which is marked as @internal
     // Warning: (ae-incompatible-release-tags) The symbol "computeTransportType" is marked as @public, but its signature references "RpcContentType" which is marked as @internal
     protected static computeTransportType(value: RpcSerializedValue, source: any): RpcContentType;
     // (undocumented)
     protected handleUnknownResponse(code: number): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "load" is marked as @public, but its signature references "RpcSerializedValue" which is marked as @internal
-    // 
     // (undocumented)
     protected load(): Promise<RpcSerializedValue>;
     static maxUrlComponentSize: number;
@@ -5153,11 +5150,9 @@ export class WebAppRpcRequest extends RpcRequest {
         message: string;
     };
     method: HttpMethod_T;
-    // Warning: (ae-incompatible-release-tags) The symbol "parseRequest" is marked as @public, but its signature references "SerializedRpcRequest" which is marked as @internal
     static parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest>;
     readonly protocol: WebAppRpcProtocol;
     protected send(): Promise<number>;
-    // Warning: (ae-incompatible-release-tags) The symbol "sendResponse" is marked as @public, but its signature references "SerializedRpcRequest" which is marked as @internal
     // Warning: (ae-incompatible-release-tags) The symbol "sendResponse" is marked as @public, but its signature references "RpcRequestFulfillment" which is marked as @internal
     static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse): void;
     protected setHeader(name: string, value: string): void;
