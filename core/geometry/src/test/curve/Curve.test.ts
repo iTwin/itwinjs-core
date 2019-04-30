@@ -941,3 +941,20 @@ describe("CylindricalRange", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+describe("GeometryQuery", () => {
+  it("Obscure Coverage.", () => {
+    const ck = new Checker();
+    const sg = LineSegment3d.createXYXY(1, 2, 5, 4);
+    const ls = LineString3d.create(Point3d.create(1, 1, 2), Point3d.create(4, 2, 1));
+    ck.testUndefined(ls.children, "linestring has no children -- expected undefined from base class");
+    const pathA = Path.create(sg);
+    const pathB = Path.create(ls, sg);
+    const pathC = Path.create();   // empty !!!
+    ck.testFalse(pathA.isAlmostEqual(pathB));
+    ck.testFalse(pathA.isAlmostEqual(ls));
+    ck.testFalse(pathA.isAlmostEqual(pathC));
+    ck.testTrue(pathC.isAlmostEqual(pathC));
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+});

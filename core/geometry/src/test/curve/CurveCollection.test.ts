@@ -9,6 +9,7 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { expect } from "chai";
+import { Range3d } from "../../geometry3d/Range";
 // import { prettyPrint } from "./testFunctions";
 // import { CurveLocationDetail } from "../curve/CurvePrimitive";
 /* tslint:disable:no-console */
@@ -19,6 +20,10 @@ function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
   const length0 = collection.sumLengths();
   const gap0 = collection.maxGap();
   const range0 = collection.range();
+  const range2 = Range3d.createNull();
+  const range2A = collection.range(undefined, range2);
+  ck.testTrue(range2 === range2A, "reuse result range");
+  ck.testTrue(range2.isAlmostEqual(range0));
 
   const path2 = collection.clone();
   if (ck.testPointer(path2, "clone!!") && path2) {

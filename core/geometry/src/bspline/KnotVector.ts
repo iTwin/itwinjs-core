@@ -76,7 +76,7 @@ export class KnotVector {
     this._knot0 = 0.0;
     this._knot1 = 1.0;
     // satisfy the initialize checker ..
-    if (Array.isArray(knots)) {
+    if (Array.isArray(knots)) { // remark:  This ctor is private.  The callers (as of April 2019) do not use this path.
       this.knots = new Float64Array(knots.length);
       this.setKnots(knots);
       this.setupFixedValues();
@@ -124,9 +124,9 @@ export class KnotVector {
       const leftKnot = this.knots[leftKnotIndex];
       const rightKnot = this.knots[rightKnotIndex];
       for (let i = 0; i < numRepeated; i++) {
-        if (!Geometry.isSameCoordinate(leftKnot, this.knots[leftKnotIndex - i]))
+        if (!Geometry.isSameCoordinate(leftKnot, this.knots[leftKnotIndex - i - 1]))
           return false;
-        if (!Geometry.isSameCoordinate(rightKnot, this.knots[rightKnotIndex + i]))
+        if (!Geometry.isSameCoordinate(rightKnot, this.knots[rightKnotIndex + i + 1]))
           return false;
       }
       return true;
