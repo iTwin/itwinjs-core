@@ -800,7 +800,7 @@ export interface AppearanceOverrideProps {
     overrideType?: FeatureOverrideType;
 }
 
-// @public
+// @beta
 export interface ArrayValue extends BasePropertyValue {
     // (undocumented)
     items: PropertyRecord[];
@@ -1077,13 +1077,13 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     type: number;
 }
 
-// @public
+// @alpha
 export interface BasePropertyEditorParams {
     // (undocumented)
     type: PropertyEditorParamTypes;
 }
 
-// @public
+// @beta
 export interface BasePropertyValue {
     // (undocumented)
     valueFormat: PropertyValueFormat;
@@ -1217,7 +1217,7 @@ export class BeWheelEvent extends BeButtonEvent {
     wheelDelta: number;
 }
 
-// @public
+// @alpha
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     buttons: IconDefinition[];
@@ -1397,7 +1397,7 @@ export class Cluster<T extends Marker> {
     readonly rect: ViewRect;
 }
 
-// @public
+// @alpha
 export interface ColorEditorParams extends BasePropertyEditorParams {
     colorValues: number[];
     numColumns?: number;
@@ -1865,7 +1865,7 @@ export namespace EditManipulator {
     }
 }
 
-// @public
+// @beta
 export interface EditorPosition {
     columnIndex: number;
     columnSpan?: number;
@@ -2074,7 +2074,7 @@ export class EntityState implements EntityProps {
     toJSON(): EntityProps;
 }
 
-// @public
+// @beta
 export interface EnumerationChoice {
     // (undocumented)
     label: string;
@@ -2082,7 +2082,7 @@ export interface EnumerationChoice {
     value: string | number;
 }
 
-// @public
+// @beta
 export interface EnumerationChoicesInfo {
     // (undocumented)
     choices: EnumerationChoice[];
@@ -2747,7 +2747,7 @@ export const enum HitSource {
     TentativeSnap = 4
 }
 
-// @public
+// @alpha
 export interface IconDefinition {
     iconClass: string;
     // (undocumented)
@@ -2967,7 +2967,7 @@ export abstract class InputCollector extends InteractiveTool {
     run(): boolean;
 }
 
-// @public
+// @alpha
 export interface InputEditorSizeParams extends BasePropertyEditorParams {
     maxLength?: number;
     size?: number;
@@ -2993,6 +2993,7 @@ export interface InstancedGraphicParams {
 
 // @public
 export abstract class InteractiveTool extends Tool {
+    // Warning: (ae-incompatible-release-tags) The symbol "applyToolSettingPropertyChange" is marked as @public, but its signature references "ToolSettingsPropertySyncItem" which is marked as @beta
     applyToolSettingPropertyChange(_updatedValue: ToolSettingsPropertySyncItem): boolean;
     beginDynamics(): void;
     changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
@@ -3041,7 +3042,9 @@ export abstract class InteractiveTool extends Tool {
     onTouchTap(_ev: BeTouchEvent): Promise<EventHandled>;
     onUnsuspend(): void;
     receivedDownEvent: boolean;
+    // Warning: (ae-incompatible-release-tags) The symbol "supplyToolSettingsProperties" is marked as @public, but its signature references "ToolSettingsPropertyRecord" which is marked as @beta
     supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
+    // Warning: (ae-incompatible-release-tags) The symbol "syncToolSettingsProperties" is marked as @public, but its signature references "ToolSettingsPropertySyncItem" which is marked as @beta
     syncToolSettingsProperties(syncData: ToolSettingsPropertySyncItem[]): void;
     testDecorationHit(_id: string): boolean;
 }
@@ -3092,7 +3095,7 @@ export enum KeyinStatus {
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
-// @public
+// @beta
 export interface LinkElementsInfo {
     matcher?: (displayValue: string) => Array<{
         start: number;
@@ -4084,7 +4087,7 @@ export class PluginAdmin {
     static register(plugin: Plugin): string[] | undefined;
     }
 
-// @public
+// @beta
 export namespace Primitives {
     // (undocumented)
     export type Boolean = boolean | string | {} | [];
@@ -4143,7 +4146,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     undoPreviousStep(): Promise<boolean>;
 }
 
-// @public
+// @beta
 export interface PrimitiveValue extends BasePropertyValue {
     // (undocumented)
     displayValue?: string;
@@ -4160,7 +4163,7 @@ export const enum PrimitiveVisibility {
     Uninstanced = 2
 }
 
-// @public
+// @beta
 export interface PropertyDescription {
     dataController?: string;
     // (undocumented)
@@ -4171,24 +4174,26 @@ export interface PropertyDescription {
     enum?: EnumerationChoicesInfo;
     // (undocumented)
     name: string;
-    // Warning: (ae-incompatible-release-tags) The symbol "quantityType" is marked as @public, but its signature references "QuantityType" which is marked as @alpha
+    // Warning: (ae-incompatible-release-tags) The symbol "quantityType" is marked as @beta, but its signature references "QuantityType" which is marked as @alpha
     quantityType?: QuantityType | string;
     // (undocumented)
     typename: string;
 }
 
-// @public
+// @beta
 export interface PropertyEditorInfo {
     // (undocumented)
     name?: string;
+    // Warning: (ae-incompatible-release-tags) The symbol "params" is marked as @beta, but its signature references "PropertyEditorParams" which is marked as @alpha
+    // 
     // (undocumented)
     params?: PropertyEditorParams[];
 }
 
-// @public
+// @alpha
 export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams;
 
-// @public
+// @alpha
 export enum PropertyEditorParamTypes {
     // (undocumented)
     ButtonGroupData = 0,
@@ -4214,7 +4219,7 @@ export enum PropertyEditorParamTypes {
     SuppressUnitLabel = 8
 }
 
-// @public
+// @beta
 export class PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
     copyWithNewValue(newValue: PropertyValue): PropertyRecord;
@@ -4233,10 +4238,10 @@ export class PropertyRecord {
     readonly value: PropertyValue;
 }
 
-// @public
+// @beta
 export type PropertyValue = PrimitiveValue | StructValue | ArrayValue;
 
-// @public
+// @beta
 export enum PropertyValueFormat {
     // (undocumented)
     Array = 1,
@@ -4931,6 +4936,7 @@ export class SelectionSet {
 
 // @public
 export class SelectionTool extends PrimitiveTool {
+    // Warning: (ae-incompatible-release-tags) The symbol "applyToolSettingPropertyChange" is marked as @public, but its signature references "ToolSettingsPropertySyncItem" which is marked as @beta
     applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
     // (undocumented)
     autoLockTarget(): void;
@@ -4998,6 +5004,7 @@ export class SelectionTool extends PrimitiveTool {
     protected showPrompt(mode: SelectionMode, method: SelectionMethod): void;
     // (undocumented)
     static startTool(): boolean;
+    // Warning: (ae-incompatible-release-tags) The symbol "supplyToolSettingsProperties" is marked as @public, but its signature references "ToolSettingsPropertyRecord" which is marked as @beta
     supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
     // (undocumented)
     static toolId: string;
@@ -5373,7 +5380,7 @@ export const enum StartOrResume {
     Start = 1
 }
 
-// @public
+// @beta
 export interface StructValue extends BasePropertyValue {
     // (undocumented)
     members: {
@@ -5453,7 +5460,7 @@ export interface SubCategoriesRequest {
     readonly promise: Promise<boolean>;
 }
 
-// @public
+// @alpha
 export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
     suppressLabelPlaceholder?: boolean;
     // (undocumented)
@@ -6433,6 +6440,7 @@ export class ToolAdmin {
     startPrimitiveTool(newTool?: PrimitiveTool): void;
     // @internal (undocumented)
     startViewTool(newTool: ViewTool): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "syncToolSettingsProperties" is marked as @public, but its signature references "ToolSettingsPropertySyncItem" which is marked as @beta
     syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void;
     // @internal (undocumented)
     testDecorationHit(id: string): boolean;
@@ -6487,7 +6495,7 @@ export class ToolSettings {
     static wheelZoomRatio: number;
 }
 
-// @public
+// @beta
 export class ToolSettingsPropertyRecord extends PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly?: boolean);
     // (undocumented)
@@ -6496,7 +6504,7 @@ export class ToolSettingsPropertyRecord extends PropertyRecord {
     editorPosition: EditorPosition;
 }
 
-// @public
+// @beta
 export class ToolSettingsPropertySyncItem {
     constructor(value: ToolSettingsValue, propertyName: string, isDisabled?: boolean);
     isDisabled?: boolean;
@@ -6506,7 +6514,7 @@ export class ToolSettingsPropertySyncItem {
     value: ToolSettingsValue;
 }
 
-// @public
+// @beta
 export class ToolSettingsValue implements PrimitiveValue {
     constructor(value?: number | string | boolean | Date, displayValue?: string);
     // (undocumented)

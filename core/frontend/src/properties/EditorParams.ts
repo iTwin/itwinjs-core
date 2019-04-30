@@ -6,7 +6,7 @@
 
 /**
  * Enumeration for Property Editor Param Types
- * @public
+ * @alpha
  */
 export enum PropertyEditorParamTypes {
   ButtonGroupData,
@@ -24,7 +24,7 @@ export enum PropertyEditorParamTypes {
 
 /**
  * Base interface for Property Editor Params
- * @public
+ * @alpha
  */
 export interface BasePropertyEditorParams {
   type: PropertyEditorParamTypes;
@@ -32,7 +32,7 @@ export interface BasePropertyEditorParams {
 
 /**
  * Parameters used by PropertyEditors that use HTML <input> element.
- * @public
+ * @alpha
  */
 export interface InputEditorSizeParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.InputEditorSize;
@@ -45,7 +45,7 @@ export interface InputEditorSizeParams extends BasePropertyEditorParams {
 /**
  * Parameters used to populate color type editor with a specific set of colors. If not specified the Color
  * Editor will show a default palette of 16 colors.
- * @public
+ * @alpha
  */
 export interface ColorEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.ColorData;
@@ -57,7 +57,7 @@ export interface ColorEditorParams extends BasePropertyEditorParams {
 
 /**
  * Information about an icon displayed next to a property editor.
- * @public
+ * @alpha
  */
 export interface IconDefinition {
   /** icon class name. */
@@ -67,7 +67,7 @@ export interface IconDefinition {
 
 /**
  * Parameters used by EnumButtonGroupEditor to define icons in button group.
- * @public
+ * @alpha
  */
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.ButtonGroupData;
@@ -76,7 +76,7 @@ export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
 
 /**
  * Parameters used to suppress the label for a type editor in the ToolSettings widget.
- * @public
+ * @alpha
  */
 export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.SuppressEditorLabel;
@@ -165,7 +165,7 @@ export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams 
 
 /**
  * Type definition for all Property Editor params
- * @public
+ * @alpha
  */
 export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams;
 /*  Not yet supported

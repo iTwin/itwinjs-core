@@ -10,7 +10,7 @@ import { PrimitiveValue, PropertyValue, PropertyValueFormat } from "./Value";
 import { PropertyRecord } from "./Record";
 
 /** Primitive ToolSettings Value.
- * @public
+ * @beta
  */
 export class ToolSettingsValue implements PrimitiveValue {
   public readonly valueFormat = PropertyValueFormat.Primitive;
@@ -48,7 +48,7 @@ export class ToolSettingsValue implements PrimitiveValue {
 }
 
 /** Interface used to identify the location of the UI control to manipulate a ToolSettings property value.
- * @public
+ * @beta
  */
 export interface EditorPosition {
   /** Determine the order the row is shown in UI */
@@ -60,7 +60,7 @@ export interface EditorPosition {
 }
 
 /** Class used to identify a specific ToolSettings property value.
- * @public
+ * @beta
  */
 export class ToolSettingsPropertySyncItem {
   public value: ToolSettingsValue;
@@ -76,7 +76,7 @@ export class ToolSettingsPropertySyncItem {
 }
 
 /** Property Record to specify an editor in Tool Settings zone.
- * @public
+ * @beta
  */
 export class ToolSettingsPropertyRecord extends PropertyRecord {
   public editorPosition: EditorPosition;

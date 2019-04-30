@@ -7,7 +7,7 @@ import { PropertyDescription } from "./Description";
 import { PropertyValue } from "./Value";
 
 /** Properties for the [[PropertyRecord]] with link info supplied
- * @public
+ * @beta
  */
 export interface LinkElementsInfo {
   /** Callback to link click event */
@@ -24,7 +24,7 @@ export interface LinkElementsInfo {
 /**
  * PropertyRecord contains instance information about a Property, including a
  * value that can be edited using a PropertyEditor and converted using a TypeConverter.
- * @public
+ * @beta
  */
 export class PropertyRecord {
   public readonly value: PropertyValue;

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Interfaces used by PropertyRecord are set to either beta or alpha as modules that use them to implement UI are not finalized.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "bill.steinbock@bentley.com"
+}
