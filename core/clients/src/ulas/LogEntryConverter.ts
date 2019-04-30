@@ -5,9 +5,9 @@
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { UsageLogEntry, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, ProductVersion, UsageType, UsageUserInfo } from "./UlasClient";
 
-/** @hidden */
 /** Specifies the JSON format for a UsageLogEntry as expected by the ULAS REST API
- *  (see https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * (see https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * @internal
  */
 export interface UsageLogEntryJson {
   /** Ultimate ID, i.e. company ID in SAP */
@@ -52,13 +52,15 @@ export interface UsageLogEntryJson {
   uType: string;
 }
 
+/** @internal */
 export interface FeatureLogEntryAttributeJson {
   name: string;
   value: string;
 }
 
 /** Specifies the JSON format for a FeatureLogEntry as expected by the ULAS REST API
- *  (see https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * (see https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * @internal
  */
 export interface FeatureLogEntryJson extends UsageLogEntryJson {
   /** Gets the ID of the feature used (from the Global Feature Registry) */
@@ -71,10 +73,11 @@ export interface FeatureLogEntryJson extends UsageLogEntryJson {
   uData: FeatureLogEntryAttributeJson[];
 }
 
+/** @internal */
 export class LogEntryConverter {
   // for now this is always 1
   private static readonly _logEntryVersion: number = 1;
-  // this is a realtime client, i.e. it sends the requests right away without caching or aggregating.
+  // this is a real-time client, i.e. it sends the requests right away without caching or aggregating.
   private static readonly _logPostingSource: string = "RealTime";
   // fStr argument is empty for now
   private static readonly _featureString: string = "";

@@ -19,6 +19,7 @@ import { CustomRequestOptions } from "./imodelhub/CustomRequestOptions";
 
 /**
  * Base class that allows access to different iModel related Class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
+ * @public
  */
 export abstract class IModelClient {
   protected _handler: IModelBaseHandler;

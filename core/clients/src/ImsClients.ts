@@ -18,13 +18,18 @@ const loggerCategory: string = LoggerCategory.ImsClients;
 
 /** Interface for user credentials for programmatic login to IMS
  * Note: This can only be used in test environments. In a real application, the password cannot be explicitly used in any API.
+ * @internal
+ * @deprecated
  */
 export interface ImsUserCredentials {
   email: string;
   password: string;
 }
 
-/** Client API for the IMS Federated Authentication Service. */
+/** Client API for the IMS Federated Authentication Service.
+ * @internal
+ * @deprecated
+ */
 export class ImsFederatedAuthenticationClient extends Client {
   public static readonly searchKey: string = "IMS.FederatedAuth.Url";
   /** Creates an instance of ImsFederatedAuthenticationClient. */
@@ -55,7 +60,10 @@ export class ImsFederatedAuthenticationClient extends Client {
   }
 }
 
-/** Client API for the IMS Active Secure Token Service. */
+/** Client API for the IMS Active Secure Token Service.
+ * @internal
+ * @deprecated
+ */
 export class ImsActiveSecureTokenClient extends Client {
   public static readonly searchKey: string = "Mobile.ImsStsAuth";
   /**
@@ -115,7 +123,10 @@ export class ImsActiveSecureTokenClient extends Client {
   }
 }
 
-/** Client API for the IMS Delegation Secure Token Service. */
+/** Client API for the IMS Delegation Secure Token Service.
+ * @internal
+ * @deprecated
+ */
 export class ImsDelegationSecureTokenClient extends Client {
   public static readonly searchKey: string = "ActiveSTSDelegationServiceUrl";
   /**
@@ -187,7 +198,10 @@ export class ImsDelegationSecureTokenClient extends Client {
   }
 }
 
-/** Implementation of IAuthorizationClient using IMS - this is only used in test environments */
+/** Implementation of IAuthorizationClient using IMS - this is only used in test environments
+ * @internal
+ * @deprecated
+ */
 export class ImsTestAuthorizationClient implements IAuthorizationClient {
   private _accessToken?: AccessToken;
   private _userCredentials?: ImsUserCredentials;

@@ -12,13 +12,13 @@ import { request, RequestOptions, Response, ResponseError } from "./Request";
 
 const loggerCategory: string = LoggerCategory.Clients;
 
-/** Provider for default RequestOptions, used by Client to set defaults.
+/**
+ * Provider for default RequestOptions, used by Client to set defaults.
+ * @internal
  */
 export class DefaultRequestOptionsProvider {
   protected _defaultOptions: RequestOptions;
-  /**
-   * Creates an instance of DefaultRequestOptionsProvider and sets up the default options.
-   */
+  /** Creates an instance of DefaultRequestOptionsProvider and sets up the default options. */
   constructor() {
     this._defaultOptions = {
       method: "GET",
@@ -42,14 +42,13 @@ export class DefaultRequestOptionsProvider {
 // @todo Setup a logging framework.
 /**
  * Base class for all Client implementations
+ * @public
  */
 export abstract class Client {
   private static _defaultRequestOptionsProvider: DefaultRequestOptionsProvider;
   protected _url?: string;
 
-  /**
-   * Creates an instance of Client.
-   */
+  /**  Creates an instance of Client. */
   protected constructor() {
   }
 
@@ -113,13 +112,14 @@ export abstract class Client {
 
 /**
  * Error for issues with authentication.
+ * @public
  */
 export class AuthenticationError extends ResponseError {
 }
 
 /**
- * Client API to discover URLs from the URL Discovery service
- * (a.k.a. Buddi service)
+ * Client API to discover URLs from the URL Discovery service (a.k.a. Buddi service)
+ * @internal
  */
 export class UrlDiscoveryClient extends Client {
   public static readonly configURL = "imjs_buddi_url";

@@ -19,6 +19,7 @@ const loggerCategory: string = LoggerCategory.UlasClient;
  *  - [[UsageLogEntry]], [[FeatureLogEntry]]
  *  - *UsageType* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
+ * @internal
  */
 export enum UsageType {
   Production, Trial, Beta, HomeUse, PreActivation,
@@ -26,6 +27,7 @@ export enum UsageType {
 
 /** Represents the version of the product logging usage or features.
  * See also [[UsageLogEntry]], [[FeatureLogEntry]].
+ * @internal
  */
 export interface ProductVersion {
   major: number;
@@ -38,6 +40,7 @@ export interface ProductVersion {
  * See [[UsageLogEntry]] and [[FeatureLogEntry]] for how to use it.
  * > You do not have to pass this to [[UlasClient]], if you have an OIDC access token from
  * > a client registration that includes the ULAS scope in its audiences.
+ * @internal
  */
 export interface UsageUserInfo {
   /** IMS User ID */
@@ -58,6 +61,7 @@ export interface UsageUserInfo {
  *  - [[UlasClient]]
  *  - *UsageLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
+ * @internal
  */
 export class UsageLogEntry {
   /** The GUID of the project that the usage should be associated with. */
@@ -106,6 +110,7 @@ export class UsageLogEntry {
 /**
  * Represents arbitrary metadata that can be attached to a
  * [[FeatureLogEntry]] when collecting information about feature usage.
+ * @internal
  */
 export interface FeatureLogEntryAttribute {
   name: string;
@@ -118,6 +123,7 @@ export interface FeatureLogEntryAttribute {
  *  - [[UlasClient]]
  *  - *FeatureLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
+ * @internal
  */
 export class FeatureLogEntry {
   /** The GUID of the project that the usage should be associated with. */
@@ -179,6 +185,7 @@ export class FeatureLogEntry {
  *  - [[FeatureLogEntry]]
  *  - *FeatureLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
+ * @internal
  */
 export class FeatureStartedLogEntry extends FeatureLogEntry {
   /** ID of this entry which must be passed to the respective [[FeatureEndedLogEntry]] to
@@ -204,6 +211,7 @@ export class FeatureStartedLogEntry extends FeatureLogEntry {
  *  - [[FeatureStartedLogEntry]]
  *  - *FeatureLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
+ * @internal
  */
 export class FeatureEndedLogEntry extends FeatureLogEntry {
   /* ID of the corresponding [[FeatureStartedLogEntry]].
@@ -244,6 +252,7 @@ export class FeatureEndedLogEntry extends FeatureLogEntry {
  * Response from posting a [[UsageLogEntry]] or [[FeatureLogEntry]] with the [[UlasClient]].
  * See also *LogPostingResponse* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  * site (section *Models*)
+ * @internal
  */
 export interface LogPostingResponse {
   /* The overall status of the request. */
@@ -259,15 +268,14 @@ export interface LogPostingResponse {
 /**
  * Client for the Bentley Usage Logging & Analysis Services (ULAS).
  * See also the two `POST` requests on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * @internal
  */
 export class UlasClient extends Client {
   private static readonly _buddiSearchKey: string = "UsageLoggingServices.RealtimeLogging.Url";
   private static readonly _configRelyingPartyUri = "imjs_ulas_relying_party_uri";
   private static readonly _configDefaultRelyingPartyUri = "imjs_default_relying_party_uri";
 
-  /**
-   * Creates an instance of UlasClient.
-   */
+  /** Creates an instance of UlasClient. */
   constructor() { super(); }
 
   /**

@@ -10,6 +10,7 @@ import { UserInfo } from "./UserInfo";
 import { Base64 } from "js-base64";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 
+/** @beta */
 export enum IncludePrefix {
   Yes = 0,
   No = 1,

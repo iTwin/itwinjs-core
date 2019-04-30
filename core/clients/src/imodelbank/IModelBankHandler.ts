@@ -7,13 +7,14 @@ import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelBaseHandler } from "../imodelhub/BaseHandler";
 import { FileHandler } from "../imodeljs-clients";
 
-/*
+/**
  * This class acts as the WsgClient for other iModelBank Handlers.
+ * @internal
  */
 export class IModelBankHandler extends IModelBaseHandler {
   private _baseUrl: string;
 
-  /*
+  /**
    * Creates an instance of IModelBankWsgClient.
    * @param handler The upload/download handler to use -- backends only.
    * @param keepAliveDuration TBD

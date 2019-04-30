@@ -16,6 +16,7 @@ import { AccessToken, AuthorizationToken } from "./Token";
 const loggerCategory: string = LoggerCategory.Clients;
 
 /** Error that was returned by a WSG based service.
+ * @internal
  */
 export class WsgError extends ResponseError {
   public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
@@ -170,6 +171,7 @@ export class WsgError extends ResponseError {
 
 /**
  * Provider for wsg RequestOptions, used by WsgClient to set defaults.
+ * @internal
  */
 export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvider {
   /**
@@ -184,6 +186,7 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
 
 /**
  * Options for WSG requests sent to the service
+ * @internal
  */
 export interface WsgRequestOptions {
   ResponseContent?: "FullInstance" | "Empty" | "InstanceId";
@@ -193,6 +196,7 @@ export interface WsgRequestOptions {
 
 /**
  * Base class for Client implementations of services that are based on WSG
+ * @internal
  */
 export abstract class WsgClient extends Client {
   public static readonly configHostRelyingPartyUri = "imjs_default_relying_party_uri";

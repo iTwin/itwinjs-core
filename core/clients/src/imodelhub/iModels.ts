@@ -21,6 +21,7 @@ const iModelTemplateEmpty = "Empty";
  * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as iModelId argument to those methods.
  *
  * For iModel representation in iModel.js, see [IModel]($common). For the file that is used for that iModel, see [IModelDb]($backend).
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "ProjectScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubIModel extends WsgInstance {
@@ -48,12 +49,16 @@ export class HubIModel extends WsgInstance {
     @ECJsonTypeMap.propertyToJson("wsg", "properties.Initialized")
     public initialized?: boolean;
 
-    /** @hidden - internal property, set when creating iModel from empty seed file */
+    /** Set when creating iModel from empty seed file
+     * @internal
+     */
     @ECJsonTypeMap.propertyToJson("wsg", "properties.iModelTemplate")
     public iModelTemplate?: string;
 }
 
-/** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md). */
+/** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+ * @internal
+ */
 export enum InitializationState {
     /** Initialization was successful. */
     Successful = 0,
@@ -67,15 +72,12 @@ export enum InitializationState {
     OutdatedFile = 4,
     /** Initialization failed due to file having [[Code]] values that are too long. */
     CodeTooLong = 5,
-    /**
-     * Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($backend).
-     */
+    /** Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($backend). */
     SeedFileIsBriefcase = 6,
 }
 
-/**
- * SeedFile
- * @hidden
+/** SeedFile
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.SeedFile", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class SeedFile extends WsgInstance {
@@ -218,6 +220,7 @@ class SeedFileHandler {
 
 /**
  * Query object for getting [[HubIModel]] instances. You can use this to modify the [[IModelsHandler.get]] results.
+ * @public
  */
 export class IModelQuery extends InstanceIdQuery {
     /**
@@ -236,6 +239,7 @@ export class IModelQuery extends InstanceIdQuery {
 /**
  * Handler for managing [[HubIModel]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
  * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[Project]] workflow.
+ * @public
  */
 export class IModelsHandler {
     private _handler: IModelBaseHandler;
@@ -521,6 +525,7 @@ export class IModelsHandler {
 /**
  * Handler for managing [[HubIModel]] instance. Use [[IModelHubClient.IModel]] to get an instance of this handler.
  * @note Use [[IModelHubClient.IModels]] if multiple iModels per [[Project]] are supported.
+ * @public
  */
 export class IModelHandler {
     private _handler: IModelsHandler;
@@ -529,7 +534,7 @@ export class IModelHandler {
      * Constructor for IModelHandler. Should use @see IModelClient instead of directly constructing this.
      * @param handler Handler for managing [[HubIModel]] instances.
      * @note Use [[IModelHubClient.IModels]] if multiple iModels per [[Project]] are supported.
-     * @hidden
+     * @internal
      */
     constructor(handler: IModelsHandler) {
         this._handler = handler;

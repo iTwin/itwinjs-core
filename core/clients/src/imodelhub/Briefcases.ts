@@ -16,7 +16,9 @@ import { addSelectFileAccessKey, Query } from "./Query";
 
 const loggerCategory: string = LoggerCategory.IModelHub;
 
-/** Controls whether the user has exclusive or shared access to a local briefcase */
+/** Controls whether the user has exclusive or shared access to a local briefcase
+ * @internal
+ */
 export enum BriefcaseAccessMode {
   Shared = 0,
   Exclusive = 1,
@@ -28,6 +30,7 @@ export enum BriefcaseAccessMode {
  * File properties describe the file that would be downloaded through downloadUrl. It is the most recently updated copy of master file that is stored on iModelHub. These copies do not necessarily have the latest [[ChangeSet]] applied to them.
  *
  * briefcaseId is the id that user needs to write into the local copy of master file and use for other iModelHub requests. briefcaseId ranges from 2 to 16777215, see [BriefcaseId]($backend).
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Briefcase", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 @ECJsonTypeMap.classToJson("ecdb", "ServiceStore.Briefcase", { classKeyPropertyName: "className" })
@@ -90,6 +93,7 @@ export class Briefcase extends WsgInstance {
 
 /**
  * Query object for getting [[Briefcase]]s. You can use this to modify the [[BriefcaseHandler.get]] results.
+ * @internal
  */
 export class BriefcaseQuery extends Query {
   private _byId?: number;
@@ -125,6 +129,7 @@ export class BriefcaseQuery extends Query {
 /**
  * Handler for managing [[Briefcase]]s. Use [[IModelClient.Briefcases]] to get an instance of this class.
  * In most cases, you should use [IModelDb]($backend) methods instead.
+ * @internal
  */
 export class BriefcaseHandler {
   private _handler: IModelBaseHandler;

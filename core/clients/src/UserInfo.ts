@@ -5,7 +5,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Authentication */
 
-/** Information on the authenticated user. */
+/** Information on the authenticated user.
+ * @beta
+ */
 export class UserInfo {
   constructor(
     /** Id of the user */

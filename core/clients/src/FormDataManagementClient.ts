@@ -9,7 +9,9 @@ import { WsgClient } from "./WsgClient";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { Config } from "./Config";
 
-/** FormDefinition */
+/** FormDefinition
+ * @internal
+ */
 @ECJsonTypeMap.classToJson("wsg", "Forms_EC_Mapping.FormDefinition", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class FormDefinition extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Status")
@@ -61,7 +63,9 @@ export class FormDefinition extends WsgInstance {
   public errorStatus?: string;
 }
 
-/** FormData */
+/** FormData
+ * @internal
+ */
 @ECJsonTypeMap.classToJson("wsg", "DynamicSchema.Issue", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class FormInstanceData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties")
@@ -86,18 +90,11 @@ export class FormInstanceData extends WsgInstance {
   public formDisplayLabel?: string;
 }
 
-/**
- * Client wrapper to Reality Data Service
- */
+/** @internal */
 export class FormDataManagementClient extends WsgClient {
   public static readonly searchKey: string = "Forms.WSGService";
   public static readonly configRelyingPartyUri = "imjs_form_data_management_relying_party_uri";
-  /**
-   * Creates an instance of RealityDataServicesClient.
-   */
-  public constructor() {
-    super("v2.5");
-  }
+  public constructor() { super("v2.5"); }
 
   /**
    * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")

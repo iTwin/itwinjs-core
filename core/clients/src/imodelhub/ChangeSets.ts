@@ -16,7 +16,10 @@ import { addSelectFileAccessKey, StringIdQuery } from "./Query";
 
 const loggerCategory: string = LoggerCategory.IModelHub;
 
-/** Specifies types of changes in a [[ChangeSet]]. */
+/**
+ * Specifies types of changes in a [[ChangeSet]].
+ * @public
+ */
 export const enum ChangesType {
   /** [[ChangeSet]] contains regular file changes (e.g. changes to elements or models). */
   Regular,
@@ -26,6 +29,7 @@ export const enum ChangesType {
 
 /**
  * [ChangeSet]($docs/learning/Glossary.md#changeset) represents a file containing changes to the iModel. A single ChangeSet contains changes made on a single [[Briefcase]] file and pushed as a single file. ChangeSets form a linear change history of the iModel. If a user wants to push their changes to iModelHub, they first have to merge all ChangeSet they do not have yet. Only a single briefcase is allowed to push their changes at a time.
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.ChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class ChangeSet extends WsgInstance {
@@ -91,6 +95,7 @@ export class ChangeSet extends WsgInstance {
 
 /**
  * Query object for getting [[ChangeSet]]s. You can use this to modify the query. See [[ChangeSetHandler.get]].
+ * @public
  */
 export class ChangeSetQuery extends StringIdQuery {
 
@@ -103,7 +108,7 @@ export class ChangeSetQuery extends StringIdQuery {
     return this;
   }
 
-  /** @hidden */
+  /** @internal */
   protected checkValue(id: string) {
     ArgumentCheck.validChangeSetId("id", id);
   }
@@ -213,9 +218,9 @@ export class ChangeSetQuery extends StringIdQuery {
 
   /**
    * Query changeSets by the seed file id. Should be obsolete, because seed file replacement is deprecated.
-   * @hidden
    * @param seedFileId Id of the seed file.
    * @returns This query.
+   * @internal
    */
   public bySeedFileId(seedFileId: GuidString) {
     ArgumentCheck.validGuid("seedFileId", seedFileId);
@@ -224,10 +229,7 @@ export class ChangeSetQuery extends StringIdQuery {
   }
 }
 
-/**
- * Queue for limiting number of promises executed in parallel.
- * @hidden
- */
+/** Queue for limiting number of promises executed in parallel. */
 class ParallelQueue {
   private _queue: Array<() => Promise<void>> = [];
   private _parallelDownloads = 10;
@@ -266,6 +268,7 @@ class ParallelQueue {
 
 /**
  * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [IModelDb]($backend) methods instead.
+ * @public
  */
 export class ChangeSetHandler {
   private _handler: IModelBaseHandler;
@@ -273,9 +276,9 @@ export class ChangeSetHandler {
 
   /**
    * Constructor for ChangeSetHandler. Should use [[IModelClient]] instead of directly constructing this.
-   * @hidden
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
+   * @internal
    */
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = handler;

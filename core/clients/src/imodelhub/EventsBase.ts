@@ -23,7 +23,9 @@ export abstract class BaseEventSAS extends WsgInstance {
   public sasToken?: string;
 }
 
-/** Base type for all iModelHub global events */
+/** Base type for all iModelHub global events
+ * @public
+ */
 export abstract class IModelHubBaseEvent {
   /** Topic of this event. For [[IModelHubEvent]]s this is iModelId. */
   public eventTopic?: string;
@@ -31,18 +33,18 @@ export abstract class IModelHubBaseEvent {
   public fromEventSubscriptionId?: string;
   /** User that is intended recipient of this event. iModelHub events always have this value empty. */
   public toEventSubscriptionId?: string;
-  /** @hidden */
+  /** @internal */
   protected _handler?: IModelBaseHandler;
-  /** @hidden */
+  /** @internal */
   protected _sasToken?: string;
-  /** @hidden */
+  /** @internal */
   protected _lockUrl?: string;
 
   /**
    * Constructor for an event to pass members required for non-destructive reads.
-   * @hidden
    * @param handler Base handler for WSG requests.
    * @param sasToken Token for authenticating for event requests.
+   * @internal
    */
   constructor(handler?: IModelBaseHandler, sasToken?: string) {
     this._handler = handler;
@@ -51,8 +53,8 @@ export abstract class IModelHubBaseEvent {
 
   /**
    * Construct this event from object instance.
-   * @hidden
    * @param obj Object instance.
+   * @internal
    */
   public fromJson(obj: any) {
     this.eventTopic = obj.EventTopic;
@@ -77,13 +79,13 @@ export abstract class IModelHubBaseEvent {
   }
 }
 
-/** @hidden */
+/** @internal */
 export enum ModifyEventOperationToRequestType {
   /** Deleted event from queue */
   Delete = "DELETE",
 }
 
-/** @hidden */
+/** @internal */
 export enum GetEventOperationToRequestType {
   /** Get event request options, destructive get. */
   GetDestructive = "DELETE",
@@ -93,11 +95,11 @@ export enum GetEventOperationToRequestType {
 
 /**
  * Get base request options for event operations.
- * @hidden
  * @param method Method for request.
  * @param sasToken Service Bus SAS Token.
  * @param requestTimeout Timeout for the request.
  * @return Event if it exists.
+ * @internal
  */
 export async function getEventBaseOperationRequestOptions(handler: IModelBaseHandler, method: string, sasToken: string, requestTimeout?: number): Promise<RequestOptions> {
   const options: RequestOptions = {
@@ -116,14 +118,10 @@ export async function getEventBaseOperationRequestOptions(handler: IModelBaseHan
   return options;
 }
 
-/** @hidden */
+/** @internal */
 export abstract class EventBaseHandler {
-  /** @hidden */
   protected _handler: IModelBaseHandler;
-  /**
-   * Get service bus parser depending on the environment.
-   * @hidden
-   */
+  /** Get service bus parser depending on the environment. */
   protected setServiceBusOptions(options: RequestOptions) {
     const parse: (str: string) => any = (message: string) => {
       if (!message)
@@ -159,7 +157,6 @@ export abstract class EventBaseHandler {
    * @param sasToken Service Bus SAS Token.
    * @param requestTimeout Timeout for the request.
    * @return Event if it exists.
-   * @hidden
    */
   protected async getEventRequestOptions(operation: GetEventOperationToRequestType, sasToken: string, requestTimeout?: number): Promise<RequestOptions> {
     const options = await getEventBaseOperationRequestOptions(this._handler, operation, sasToken, requestTimeout);
@@ -170,7 +167,7 @@ export abstract class EventBaseHandler {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class ListenerSubscription {
   public listeners: BeEvent<(event: IModelHubBaseEvent) => void>;
   public authenticationCallback: () => Promise<AccessToken>;
@@ -179,11 +176,11 @@ export class ListenerSubscription {
   public id: string;
 }
 
-/** @hidden */
+/** @internal */
 export class EventListener {
   private static _subscriptions: Map<string, ListenerSubscription>;
 
-  /** @hidden */
+  /** @internal */
   public static create(subscription: ListenerSubscription, listener: (event: IModelHubBaseEvent) => void): () => void {
     if (!this._subscriptions) {
       this._subscriptions = new Map<string, ListenerSubscription>();
@@ -211,7 +208,6 @@ export class EventListener {
     };
   }
 
-  /** @hidden */
   private static async getEvents(subscription: ListenerSubscription) {
     let accessToken: AccessToken = await subscription.authenticationCallback();
     let eventSAS: BaseEventSAS | undefined;

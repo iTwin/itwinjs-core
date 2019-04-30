@@ -21,6 +21,7 @@ import { Angle, Range2d } from "@bentley/geometry-core";
  * In addition to the reality data properties, and Azure blob URL and internal states, a reality data also contains
  * the identification of the CONNECT project to identify the context(used for access permissions resolution) and
  * may contain a RealityDataClient to obtain the WSG client specialization to communicate with ProjectWise Context Share (to obtain the Azure blob URL).
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "S3MX.RealityData", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class RealityData extends WsgInstance {
@@ -245,6 +246,7 @@ export class RealityData extends WsgInstance {
 
 /** File Access Key
  * This class is used by the RealityDataServicesClient to extract an Azure blob URL
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "FileAccess.FileAccessKey", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class FileAccessKey extends WsgInstance {
@@ -267,6 +269,7 @@ export class FileAccessKey extends WsgInstance {
  * Most important methods enable to obtain a specific reality data, fetch all reality data associated to a project and
  * all reality data of a project within a provided spatial extent.
  * This class also implements extraction of the Azure blob address.
+ * @internal
  */
 export class RealityDataServicesClient extends WsgClient {
   public static readonly searchKey: string = "RealityDataServices";

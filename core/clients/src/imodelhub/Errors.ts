@@ -14,6 +14,7 @@ const loggerCategory: string = LoggerCategory.IModelHub;
 
 /**
  * Error returned from iModelHub service.
+ * @public
  */
 export class IModelHubError extends WsgError {
   /** Extended data of the error. */
@@ -66,10 +67,10 @@ export class IModelHubError extends WsgError {
 
   /**
    * Create IModelHubError from id.
-   * @hidden
    * @param id Id of the error.
    * @param message Message for the error.
    * @returns Created error.
+   * @internal
    */
   public static fromId(id: IModelHubStatus, message: string): IModelHubError {
     const error = new IModelHubError(id);
@@ -80,9 +81,9 @@ export class IModelHubError extends WsgError {
 
   /**
    * Attempt to parse IModelHubError from server response.
-   * @hidden
    * @param response Response from the server.
    * @returns Parsed error.
+   * @internal
    */
   public static parse(response: any, log = true): ResponseError {
     const wsgError = super.parse(response, false);
@@ -107,9 +108,9 @@ export class IModelHubError extends WsgError {
 
   /**
    * Decides whether request should be retried or not.
-   * @hidden
    * @param error Error returned by request
    * @param response Response returned by request
+   * @internal
    */
   public static shouldRetry(error: any, response: any): boolean {
     if (response === undefined || response === null) {
@@ -139,7 +140,7 @@ export class IModelHubError extends WsgError {
 
   /**
    * Get log function.
-   * @hidden
+   * @internal
    */
   public getLogLevel(): LogFunction {
     switch (this.errorNumber) {
@@ -156,7 +157,7 @@ export class IModelHubError extends WsgError {
 
   /**
    * Logs this error.
-   * @hidden
+   * @internal
    */
   public log(): void {
     (this.getLogLevel())(loggerCategory, this.logMessage(), this.getMetaData());
@@ -165,6 +166,7 @@ export class IModelHubError extends WsgError {
 
 /**
  * Errors for incorrect iModelHub requests.
+ * @public
  */
 export class IModelHubClientError extends IModelHubError {
   /** Creates IModelHubClientError from id.
@@ -285,7 +287,9 @@ export class ArgumentCheck {
   }
 }
 
-/** Class for aggregating errors from multiple requests. Only thrown when more than 1 error has occurred. */
+/** Class for aggregating errors from multiple requests. Only thrown when more than 1 error has occurred.
+ * @internal
+ */
 export class AggregateResponseError extends Error {
   /** Errors that happened over multiple requests. */
   public errors: ResponseError[] = [];

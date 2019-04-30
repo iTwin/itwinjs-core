@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { AccessToken, AuthorizationToken } from "../Token";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelClient } from "../IModelClient";
 import { FileHandler } from "../imodeljs-clients";
+import { AccessToken, AuthorizationToken } from "../Token";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
 /**
  * Class that allows access to different iModelHub class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
+ * @public
  */
 export class IModelHubClient extends IModelClient {
   /**

@@ -17,7 +17,10 @@ import { Query } from "./Query";
 
 const loggerCategory: string = LoggerCategory.IModelHub;
 
-/** [[Lock]] type describes the kind of object that is locked. */
+/**
+ * [[Lock]] type describes the kind of object that is locked.
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
+ */
 export enum LockType {
   /** Lock for the entire file. This is a global Lock that can only be taken with objectId 1. */
   Db,
@@ -31,25 +34,24 @@ export enum LockType {
   CodeSpecs,
 }
 
-/** [[Lock]] level describes how restrictive the Lock is. */
+/**
+ * [[Lock]] level describes how restrictive the Lock is.
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
+ */
 export enum LockLevel {
   /** Lock is not owned. */
   None,
-  /**
-   * Lock can be owned by multiple [[Briefcase]]s. Shared Lock is usually acquired together with Locks for lower level objects that depend on this object.
-   */
+  /** Lock can be owned by multiple [[Briefcase]]s. Shared Lock is usually acquired together with Locks for lower level objects that depend on this object. */
   Shared,
-  /**
-   * Lock can only be owned by a single briefcase. Exclusive Lock is required to modify model or element when using pessimistic concurrency.
-   */
+  /** Lock can only be owned by a single briefcase. Exclusive Lock is required to modify model or element when using pessimistic concurrency. */
   Exclusive,
 }
 
 /**
  * Gets encoded instance id for a lock to be used in an URI.
- * @hidden
  * @param lock Lock to get instance id for.
  * @returns Encoded lock instance id.
+ * @internal
  */
 function getLockInstanceId(lock: Lock): string | undefined {
   if (!lock || lock.briefcaseId === undefined || lock.lockType === undefined || !lock.objectId)
@@ -60,6 +62,7 @@ function getLockInstanceId(lock: Lock): string | undefined {
 
 /**
  * Object for specifying options when sending [[Lock]]s update requests. See [[LockHandler.update]].
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
 export interface LockUpdateOptions {
   /** Return [[Lock]]s that could not be acquired. Conflicting Locks will be set to [[ConflictingLocksError.conflictingLocks]]. If unlimitedReporting is enabled and locksPerRequest value is high, some conflicting Locks could be missed. */
@@ -98,6 +101,7 @@ export class DefaultLockUpdateOptionsProvider {
 
 /**
  * Error for conflicting [[Lock]]s. It contains an array of Locks that failed to acquire. This is returned when calling [[LockHandler.update]] with [[LockUpdateOptions.deniedLocks]] set to true.
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
 export class ConflictingLocksError extends IModelHubError {
   /** Locks that couldn't be updated due to other users owning them. */
@@ -121,8 +125,8 @@ export class ConflictingLocksError extends IModelHubError {
 
   /**
    * Amends this error instance with conflicting locks from another IModelHubError.
-   * @hidden
    * @param error Error to get additional conflicting locks from.
+   * @internal
    */
   public addLocks(error: IModelHubError) {
     if (!error.data || !error.data.ConflictingLocks) {
@@ -143,6 +147,7 @@ export class ConflictingLocksError extends IModelHubError {
 
 /**
  * Base class for [[Lock]]s.
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
 export class LockBase extends WsgInstance {
   /** Type of the Lock. It describes what kind of object is locked. */
@@ -172,6 +177,7 @@ export class LockBase extends WsgInstance {
 
 /**
  * Lock instance. When using pessimistic concurrency, locks ensure that only a single user can modify an object at a time.
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Lock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Lock extends LockBase {
@@ -181,9 +187,8 @@ export class Lock extends LockBase {
 }
 
 /**
- * MultiLock
- * Data about locks grouped by BriefcaseId, LockLevel and LockType.
- * @hidden
+ * MultiLock: data about locks grouped by BriefcaseId, LockLevel and LockType.
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.MultiLock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class MultiLock extends LockBase {
@@ -193,13 +198,14 @@ export class MultiLock extends LockBase {
 
 /**
  * Query object for getting [[Lock]]s. You can use this to modify the [[LockHandler.get]] results.
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
 export class LockQuery extends Query {
   private _isMultiLockQuery = true;
 
   /**
-   * Used by the hanlder to check whether locks in query can be grouped.
-   * @hidden
+   * Used by the handler to check whether locks in query can be grouped.
+   * @internal
    */
   public get isMultiLockQuery() {
     return this._isMultiLockQuery;
@@ -331,8 +337,8 @@ export class LockQuery extends Query {
 
 /**
  * Handler for managing [[Lock]]s. Use [[IModelClient.Locks]] to get an instance of this class.
- *
  * In most cases, you should use [ConcurrencyControl]($backend) methods instead. You can read more about concurrency control [here]($docs/learning/backend/concurrencycontrol).
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
 export class LockHandler {
   private _handler: IModelBaseHandler;
@@ -340,8 +346,8 @@ export class LockHandler {
 
   /**
    * Constructor for LockHandler.
-   * @hidden
    * @param handler Handler for WSG requests.
+   * @internal
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;

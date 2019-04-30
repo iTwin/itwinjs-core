@@ -159,11 +159,13 @@
 import { assert, Logger } from "@bentley/bentleyjs-core";
 import { LoggerCategory } from "./LoggerCategory";
 
+/** @internal */
 export type ConstructorType = new () => any;
 
 const loggerCategory: string = LoggerCategory.ECJson;
 const className = "className";
 
+/** @internal */
 export interface ClassKeyMapInfo {
   /** The key of the JSON property that stores the schema name - e.g., set to"schemaName" in the case of JSON consumed/supplied by WSG */
   schemaPropertyName?: string;
@@ -238,7 +240,9 @@ class ClassEntry {
 
 type ClassesByTypedName = Map<ConstructorType, ClassEntry>;
 
-/** Manages the mapping between TypeScript and EC Classes/Properties */
+/** Manages the mapping between TypeScript and EC Classes/Properties
+ * @internal
+ */
 export class ECJsonTypeMap {
   private static _classesByTypedName: ClassesByTypedName = new Map<ConstructorType, ClassEntry>();
 
@@ -562,7 +566,9 @@ export class ECJsonTypeMap {
   }
 }
 
-/** Base class for all typed instances mapped to ECInstance-s in an ECDb */
+/** Base class for all typed instances mapped to ECInstance-s in an ECDb
+ * @internal
+ */
 export abstract class ECInstance {
   @ECJsonTypeMap.propertyToJson("ecdb", "id")
   public ecId: string;
@@ -570,9 +576,12 @@ export abstract class ECInstance {
   [index: string]: any;
 }
 
+/** @internal */
 export type ChangeState = "new" | "modified" | "deleted";
 
-/** Base class for all typed instances mapped to ECInstance-s in both an ECDb, and the WSG repository */
+/** Base class for all typed instances mapped to ECInstance-s in both an ECDb, and the WSG repository
+ * @internal
+ */
 export abstract class WsgInstance extends ECInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
   @ECJsonTypeMap.propertyToJson("ecdb", "wsgId")

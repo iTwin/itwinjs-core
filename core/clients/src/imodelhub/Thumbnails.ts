@@ -15,23 +15,34 @@ import { InstanceIdQuery } from "./Query";
 
 const loggerCategory: string = LoggerCategory.IModelHub;
 
-/** Thumbnail size. 'Small' is 400x250 PNG image and 'Large' is a 800x500 PNG image. */
+/** Thumbnail size. 'Small' is 400x250 PNG image and 'Large' is a 800x500 PNG image.
+ * @alpha
+ */
 export type ThumbnailSize = "Small" | "Large";
 
-/** Base class for Thumbnails. */
+/** Base class for Thumbnails.
+ * @alpha
+ */
 export abstract class Thumbnail extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
   public id?: GuidString;
 }
 
-/** Small [[Thumbnail]] class. Small Thumbnail is a 400x250 PNG image. */
+/** Small [[Thumbnail]] class. Small Thumbnail is a 400x250 PNG image.
+ * @alpha
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.SmallThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class SmallThumbnail extends Thumbnail { }
-/** Large [[Thumbnail]] class. Large Thumbnail is a 800x500 PNG image. */
+
+/** Large [[Thumbnail]] class. Large Thumbnail is a 800x500 PNG image.
+ * @alpha
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.LargeThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class LargeThumbnail extends Thumbnail { }
 
-/** Tip [[Thumbnail]] download parameters. See [[ThumbnailHandler.download]]. Tip Thumbnail is generated for the periodically updated master file copy on iModelHub. */
+/** Tip [[Thumbnail]] download parameters. See [[ThumbnailHandler.download]]. Tip Thumbnail is generated for the periodically updated master file copy on iModelHub.
+ * @alpha
+ */
 export interface TipThumbnail {
   /** Id of the iModel's [[Project]]. */
   projectId: string;
@@ -41,6 +52,7 @@ export interface TipThumbnail {
 
 /**
  * Query object for getting [[Thumbnail]]s. You can use this to modify the [[ThumbnailHandler.get]] results.
+ * @alpha
  */
 export class ThumbnailQuery extends InstanceIdQuery {
   /**
@@ -58,14 +70,15 @@ export class ThumbnailQuery extends InstanceIdQuery {
 
 /**
  * Handler for retrieving [[Thumbnail]]s. Use [[IModelClient.Thumbnails]] to get an instance of this class.
+ * @alpha
  */
 export class ThumbnailHandler {
   private _handler: IModelBaseHandler;
 
   /**
    * Constructor for ThumbnailHandler.
-   * @hidden
    * @param handler Handler for WSG requests.
+   * @internal
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;

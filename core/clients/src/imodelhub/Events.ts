@@ -17,36 +17,49 @@ import { LockLevel, LockType } from "./Locks";
 
 const loggerCategory: string = LoggerCategory.IModelHub;
 
-/** Type of [[IModelHubEvent]]. Event type is used to define which events you wish to receive from your [[EventSubscription]]. See [[EventSubscriptionHandler.create]] and [[EventSubscriptionHandler.update]]. */
+/** Type of [[IModelHubEvent]]. Event type is used to define which events you wish to receive from your [[EventSubscription]]. See [[EventSubscriptionHandler.create]] and [[EventSubscriptionHandler.update]].
+ * @public
+ */
 export type EventType =
-  /** Sent when one or more [[Lock]]s are updated. See [[LockEvent]]. */
+  /** Sent when one or more [[Lock]]s are updated. See [[LockEvent]].
+   * @alpha Hide Lock API while focused on readonly viewing scenarios
+   */
   "LockEvent" |
-  /** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. See [[AllLocksDeletedEvent]]. */
+  /** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. See [[AllLocksDeletedEvent]].
+   * @alpha Hide Lock API while focused on readonly viewing scenarios
+   */
   "AllLocksDeletedEvent" |
   /** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetPostPushEvent]]. */
   "ChangeSetPostPushEvent" |
   /** Sent when a [[ChangeSet]] push has started. See [[ChangeSetPrePushEvent]]. */
   "ChangeSetPrePushEvent" |
-  /** Sent when one or more [Code]($common)s are updated. See [[CodeEvent]]. */
+  /** Sent when one or more [Code]($common)s are updated. See [[CodeEvent]].
+   * @alpha Hide Code API while focused on readonly viewing scenarios
+   */
   "CodeEvent" |
-  /** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]]. */
+  /** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]].
+   * @alpha Hide Code API while focused on readonly viewing scenarios
+   */
   "AllCodesDeletedEvent" |
-  /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]]. */
+  /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]].
+   * @internal
+   */
   "BriefcaseDeletedEvent" |
   /** Sent when an iModel is deleted. See [[iModelDeletedEvent]]. */
   "iModelDeletedEvent" |
   /** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
   "VersionEvent";
 
-/** Base type for all iModelHub events. */
+/** Base type for all iModelHub events.
+ * @public
+ */
 export abstract class IModelHubEvent extends IModelHubBaseEvent {
   /** Id of the iModel where the event occured. */
   public iModelId?: GuidString;
 
-  /**
-   * Construct this event from object instance.
-   * @hidden
+  /** Construct this event from object instance.
    * @param obj Object instance.
+   * @internal
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
@@ -54,15 +67,16 @@ export abstract class IModelHubEvent extends IModelHubBaseEvent {
   }
 }
 
-/** Base type for iModelHub events that have BriefcaseId. */
+/** Base type for iModelHub events that have BriefcaseId.
+ * @public
+ */
 export abstract class BriefcaseEvent extends IModelHubEvent {
   /** Id of the [[Briefcase]] involved in this event. */
   public briefcaseId?: number;
 
-  /**
-   * Construct this event from object instance.
-   * @hidden
+  /** Construct this event from object instance.
    * @param obj Object instance.
+   * @internal
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
@@ -70,8 +84,8 @@ export abstract class BriefcaseEvent extends IModelHubEvent {
   }
 }
 
-/**
- * Sent when one or more [[Lock]]s are updated. Lock updates can be very frequent, so it's recommended to not to subscribe to LockEvents, if it's not necessary.
+/** Sent when one or more [[Lock]]s are updated. Lock updates can be very frequent, so it's recommended to not to subscribe to LockEvents, if it's not necessary.
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
 export class LockEvent extends BriefcaseEvent {
   /** [[LockType]] of the updated Locks. */
@@ -83,10 +97,9 @@ export class LockEvent extends BriefcaseEvent {
   /** Id of the [[ChangeSet]] Locks were released with. */
   public releasedWithChangeSet?: string;
 
-  /**
-   * Construct this event from object instance.
-   * @hidden
+  /** Construct this event from object instance.
    * @param obj Object instance.
+   * @internal
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
@@ -97,21 +110,24 @@ export class LockEvent extends BriefcaseEvent {
   }
 }
 
-/** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. Can occur when calling [[LockHandler.deleteAll]] or [[BriefcaseHandler.delete]]. */
+/** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. Can occur when calling [[LockHandler.deleteAll]] or [[BriefcaseHandler.delete]].
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
+ */
 export class AllLocksDeletedEvent extends BriefcaseEvent {
 }
 
-/** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetHandler.create]]. It's sent when a new [[ChangeSet]] is successfully pushed to an iModel. See [[ChangeSetPrePushEvent]] for the event indicating the start of a ChangeSet push.  */
+/** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetHandler.create]]. It's sent when a new [[ChangeSet]] is successfully pushed to an iModel. See [[ChangeSetPrePushEvent]] for the event indicating the start of a ChangeSet push.
+ * @public
+ */
 export class ChangeSetPostPushEvent extends BriefcaseEvent {
   /** Id of the ChangeSet that was pushed. */
   public changeSetId?: string;
   /** Index of the ChangeSet that was pushed. */
   public changeSetIndex?: string;
 
-  /**
-   * Construct this event from object instance.
-   * @hidden
+  /** Construct this event from object instance.
    * @param obj Object instance.
+   * @internal
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
@@ -120,14 +136,14 @@ export class ChangeSetPostPushEvent extends BriefcaseEvent {
   }
 }
 
-/**
- * Sent when a [[ChangeSet]] push has started. See [[ChangeSetHandler.create]]. ChangeSetPrePushEvent indicates that iModelHub allowed one of the [[Briefcase]]s to push a ChangeSet and all other push attempts will fail, until this push times out or succeeds. See [[ChangeSetPostPushEvent]] for an event indicating a successful push.
+/** Sent when a [[ChangeSet]] push has started. See [[ChangeSetHandler.create]]. ChangeSetPrePushEvent indicates that iModelHub allowed one of the [[Briefcase]]s to push a ChangeSet and all other push attempts will fail, until this push times out or succeeds. See [[ChangeSetPostPushEvent]] for an event indicating a successful push.
+ * @public
  */
 export class ChangeSetPrePushEvent extends IModelHubEvent {
 }
 
-/**
- * Sent when one or more [Code]($common)s are updated. See [[CodeHandler.update]]. Code updates can be very frequent, so it's recommended to not to subscribe to CodeEvents, if it's not necessary.
+/** Sent when one or more [Code]($common)s are updated. See [[CodeHandler.update]]. Code updates can be very frequent, so it's recommended to not to subscribe to CodeEvents, if it's not necessary.
+ * @alpha Hide Code API while focused on readonly viewing scenarios
  */
 export class CodeEvent extends BriefcaseEvent {
   /** Id of the [CodeSpec]($common) for the updated Codes. */
@@ -139,10 +155,9 @@ export class CodeEvent extends BriefcaseEvent {
   /** State Codes were updated to. */
   public state?: CodeState = CodeState.Reserved;
 
-  /**
-   * Construct this event from object instance.
-   * @hidden
+  /** Construct this event from object instance.
    * @param obj Object instance.
+   * @internal
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
@@ -153,26 +168,26 @@ export class CodeEvent extends BriefcaseEvent {
   }
 }
 
-/**
- * Sent when all [Code]($common)s for a [[Briefcase]] are deleted. Can occur when calling [[CodeHandler.deleteAll]] or [[BriefcaseHandler.delete]].
+/** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. Can occur when calling [[CodeHandler.deleteAll]] or [[BriefcaseHandler.delete]].
+ * @alpha Hide Code API while focused on readonly viewing scenarios
  */
 export class AllCodesDeletedEvent extends BriefcaseEvent {
 }
 
-/**
- * Sent when a [[Briefcase]] is deleted. See [[BriefcaseHandler.delete]].
+/** Sent when a [[Briefcase]] is deleted. See [[BriefcaseHandler.delete]].
+ * @internal
  */
 export class BriefcaseDeletedEvent extends BriefcaseEvent {
 }
 
-/**
- * Sent when an iModel is deleted. See [[IModelHandler.delete]]. [[EventSubscription]] will be deleted 5 minutes after iModel is deleted, removing all events from subscription queues, making it possible for this event to be missed if not retrieved immediately.
+/** Sent when an iModel is deleted. See [[IModelHandler.delete]]. [[EventSubscription]] will be deleted 5 minutes after iModel is deleted, removing all events from subscription queues, making it possible for this event to be missed if not retrieved immediately.
+ * @public
  */
 export class IModelDeletedEvent extends IModelHubEvent {
 }
 
-/**
- * Sent when a new named [[Version]] is created. See [[VersionHandler.create]].
+/** Sent when a new named [[Version]] is created. See [[VersionHandler.create]].
+ * @public
  */
 export class VersionEvent extends IModelHubEvent {
   /** Id of the created Version. */
@@ -182,10 +197,9 @@ export class VersionEvent extends IModelHubEvent {
   /** Id of the [[ChangeSet]] that this Version was created for.  */
   public changeSetId?: string;
 
-  /**
-   * Construct this event from object instance.
-   * @hidden
+  /** Construct this event from object instance.
    * @param obj Object instance.
+   * @internal
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
@@ -220,11 +234,10 @@ function ConstructorFromEventType(type: EventType): EventConstructor {
   }
 }
 
-/**
- * Parse [[IModelHubEvent]] from response object.
- * @hidden
+/** Parse [[IModelHubEvent]] from response object.
  * @param response Response object to parse.
  * @returns Appropriate event object.
+ * @internal
  */
 export function ParseEvent(response: Response) {
   const constructor: EventConstructor = ConstructorFromEventType(response.header["content-type"]);
@@ -233,8 +246,8 @@ export function ParseEvent(response: Response) {
   return event;
 }
 
-/**
- * Subscription to receive [[IModelHubEvent]]s. Each subscription has a separate queue for events that it hasn't read yet. Subscriptions are deleted, if they are inactive for an hour. Use wsgId of this instance for the methods that require subscriptionId. See [[EventSubscriptionHandler]].
+/** Subscription to receive [[IModelHubEvent]]s. Each subscription has a separate queue for events that it hasn't read yet. Subscriptions are deleted, if they are inactive for an hour. Use wsgId of this instance for the methods that require subscriptionId. See [[EventSubscriptionHandler]].
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSubscription", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class EventSubscription extends WsgInstance {
@@ -243,15 +256,15 @@ export class EventSubscription extends WsgInstance {
   public eventTypes?: EventType[];
 }
 
-/**
- * Shared access signature token for getting [[IModelHubEvent]]s. It's used to authenticate for [[EventHandler.getEvent]]. To receive an instance call [[EventHandler.getSASToken]].
+/** Shared access signature token for getting [[IModelHubEvent]]s. It's used to authenticate for [[EventHandler.getEvent]]. To receive an instance call [[EventHandler.getSASToken]].
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSAS", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class EventSAS extends BaseEventSAS {
 }
 
-/**
- * Handler for managing [[EventSubscription]]s. Use [[EventHandler.Subscriptions]] to get an instance of this class.
+/** Handler for managing [[EventSubscription]]s. Use [[EventHandler.Subscriptions]] to get an instance of this class.
+ * @public
  */
 export class EventSubscriptionHandler {
   private _handler: IModelBaseHandler;
@@ -294,8 +307,7 @@ export class EventSubscriptionHandler {
     return subscription;
   }
 
-  /**
-   * Update an [[EventSubscription]]. Can change the [[EventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[EventSubscriptionHandler.create]] that hasn't expired.
+  /** Update an [[EventSubscription]]. Can change the [[EventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[EventSubscriptionHandler.create]] that hasn't expired.
    * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param subscription Updated EventSubscription.
@@ -339,16 +351,15 @@ export class EventSubscriptionHandler {
   }
 }
 
-/**
- * Handler for receiving [[IModelHubEvent]]s. Use [[IModelClient.Events]] to get an instance of this class.
+/** Handler for receiving [[IModelHubEvent]]s. Use [[IModelClient.Events]] to get an instance of this class.
+ * @public
  */
 export class EventHandler extends EventBaseHandler {
   private _subscriptionHandler: EventSubscriptionHandler | undefined;
 
-  /**
-   * Constructor for EventHandler.
-   * @hidden
+  /** Constructor for EventHandler.
    * @param handler Handler for WSG requests.
+   * @internal
    */
   constructor(handler: IModelBaseHandler) {
     super();

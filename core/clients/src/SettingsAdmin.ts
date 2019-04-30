@@ -6,7 +6,9 @@
 
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 
-/** Possible values for SettingsResults.status  */
+/** Possible values for SettingsResults.status
+ * @alpha
+ */
 export const enum SettingsStatus {
   SETTINGS_ERROR_BASE = 0x1b000,
   /** The specified setting was successfully saved, deleted, or retrieved. */
@@ -28,7 +30,8 @@ export const enum SettingsStatus {
 }
 
 /** The result of the SettingsAdmin methods to save, retrieve, and delete settings.
- *  These are constructed by the SettingsAdmin methods and examined by applications.
+ * These are constructed by the SettingsAdmin methods and examined by applications.
+ * @alpha
  */
 export class SettingsResult {
   /** Construct a new SettingsResult. SettingsResult objects are created by the SettingsAdmin methods.
@@ -41,7 +44,9 @@ export class SettingsResult {
   }
 }
 
-/** Methods available to save and get Settings objects on behalf of combinations of the Application, Project, iModel, and User */
+/** Methods available to save and get Settings objects on behalf of combinations of the Application, Project, iModel, and User
+ * @alpha
+ */
 export interface SettingsAdmin {
 
   /** Saves a user-specific settings object to the settings service.

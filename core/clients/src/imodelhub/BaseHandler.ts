@@ -28,7 +28,7 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
 
 /**
  * This class acts as the WsgClient for other iModelHub Handlers.
- * @hidden
+ * @internal
  */
 export class IModelBaseHandler extends WsgClient {
   protected _url?: string;
@@ -41,7 +41,7 @@ export class IModelBaseHandler extends WsgClient {
 
   /**
    * Create an instance of IModelBaseHandler.
-   * @hidden
+   * @internal
    */
   public constructor(keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super("sv1.1");

@@ -17,6 +17,7 @@ const loggerCategory: string = LoggerCategory.IModelHub;
 
 /**
  * Named Version is a specific [[ChangeSet]] given a name to differentiate it from others. It can be used to represent some significant milestone for the iModel (e.g. a review version).
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Version", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Version extends WsgInstance {
@@ -54,6 +55,7 @@ export class Version extends WsgInstance {
 
 /**
  * Query object for getting [[Version]]s. You can use this to modify the [[VersionHandler.get]] results.
+ * @public
  */
 export class VersionQuery extends InstanceIdQuery {
   /**
@@ -100,13 +102,14 @@ export class VersionQuery extends InstanceIdQuery {
 
 /**
  * Handler for managing [[Version]]s. Use [[IModelClient.Versions]] to get an instance of this class.
+ * @public
  */
 export class VersionHandler {
   private _handler: IModelBaseHandler;
   /**
    * Constructor for VersionHandler.
-   * @hidden
    * @param handler Handler for WSG requests.
+   * @internal
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;

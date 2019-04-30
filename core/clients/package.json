@@ -14,7 +14,7 @@
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "npm run copy:test-assets && nyc npm test",
     "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients --ignoreMissingTags",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=imodeljs-clients.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "pretest": "rimraf \"./lib/test/*.log\" && npm run copy:test-assets",

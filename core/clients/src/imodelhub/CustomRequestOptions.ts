@@ -6,6 +6,7 @@
 
 /**
  * Class that provides custom request options for all future requests
+ * @internal
  */
 export class CustomRequestOptions {
   private _customOptions?: { [index: string]: string };

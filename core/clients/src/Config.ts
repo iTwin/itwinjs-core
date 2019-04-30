@@ -6,7 +6,9 @@
 
 type ValueType = string | boolean | number;
 
-/** Option to specify the version of the iModel to be acquired and used */
+/** Option to specify the version of the iModel to be acquired and used
+ * @public
+ */
 export class Config {
   private static _appConfig: Config;
   private _container: any = {};

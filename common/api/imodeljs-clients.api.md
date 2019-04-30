@@ -34,19 +34,19 @@ export class AccessToken extends Token {
     toTokenString(includePrefix?: IncludePrefix): string;
 }
 
-// @public
+// @internal
 export function addSelectFileAccessKey(query: RequestQueryOptions): void;
 
-// @public
+// @internal
 export class AggregateResponseError extends Error {
     errors: ResponseError[];
 }
 
-// @public
+// @alpha
 export class AllCodesDeletedEvent extends BriefcaseEvent {
 }
 
-// @public
+// @alpha
 export class AllLocksDeletedEvent extends BriefcaseEvent {
 }
 
@@ -77,15 +77,13 @@ export class AuthorizationToken extends Token {
     toTokenString(includePrefix?: IncludePrefix): string;
 }
 
-// @public
+// @beta
 export class AuthorizedClientRequestContext extends ClientRequestContext {
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     constructor(accessToken: AccessToken, activityId?: string, applicationId?: string, applicationVersion?: string, sessionId?: string);
-    // Warning: (ae-incompatible-release-tags) The symbol "accessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     accessToken: AccessToken;
 }
 
-// @public
+// @internal
 export class Briefcase extends WsgInstance {
     // (undocumented)
     accessMode?: BriefcaseAccessMode;
@@ -107,7 +105,7 @@ export class Briefcase extends WsgInstance {
     userId?: string;
 }
 
-// @public
+// @internal
 export enum BriefcaseAccessMode {
     // (undocumented)
     Exclusive = 1,
@@ -115,19 +113,19 @@ export enum BriefcaseAccessMode {
     Shared = 0
 }
 
-// @public
+// @internal
 export class BriefcaseDeletedEvent extends BriefcaseEvent {
 }
 
 // @public
 export abstract class BriefcaseEvent extends IModelHubEvent {
     briefcaseId?: number;
+    // @internal
     fromJson(obj: any): void;
 }
 
-// @public
+// @internal
 export class BriefcaseHandler {
-    // @internal
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<Briefcase>;
     delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void>;
@@ -135,14 +133,15 @@ export class BriefcaseHandler {
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: BriefcaseQuery): Promise<Briefcase[]>;
     }
 
-// @public
+// @internal
 export class BriefcaseQuery extends Query {
     byId(id: number): this;
-    // @internal
     getId(): number | undefined;
     selectDownloadUrl(): this;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "ChangeSet" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
+// 
 // @public
 export class ChangeSet extends WsgInstance {
     briefcaseId?: number;
@@ -175,9 +174,13 @@ export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
 
 // @public
 export class ChangeSetHandler {
+    // @internal
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
+    // Warning: (ae-incompatible-release-tags) The symbol "create" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet>;
+    // Warning: (ae-incompatible-release-tags) The symbol "download" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     download(requestContext: AuthorizedClientRequestContext, changeSets: ChangeSet[], path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "get" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: ChangeSetQuery): Promise<ChangeSet[]>;
     }
 
@@ -185,6 +188,7 @@ export class ChangeSetHandler {
 export class ChangeSetPostPushEvent extends BriefcaseEvent {
     changeSetId?: string;
     changeSetIndex?: string;
+    // @internal
     fromJson(obj: any): void;
 }
 
@@ -192,14 +196,17 @@ export class ChangeSetPostPushEvent extends BriefcaseEvent {
 export class ChangeSetPrePushEvent extends IModelHubEvent {
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "ChangeSetQuery" is marked as @public, but its signature references "StringIdQuery" which is marked as @internal
+// 
 // @public
 export class ChangeSetQuery extends StringIdQuery {
     afterVersion(versionId: GuidString): this;
     betweenChangeSets(firstChangeSetId: string, secondChangeSetId?: string): this;
     betweenVersionAndChangeSet(versionId: GuidString, changeSetId: string): this;
     betweenVersions(sourceVersionId: GuidString, destinationVersionId: GuidString): this;
+    // @internal
     bySeedFileId(seedFileId: GuidString): this;
-    // (undocumented)
+    // @internal (undocumented)
     protected checkValue(id: string): void;
     fromId(id: string): this;
     getVersionChangeSets(versionId: GuidString): this;
@@ -207,7 +214,7 @@ export class ChangeSetQuery extends StringIdQuery {
     selectDownloadUrl(): this;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export type ChangeState = "new" | "modified" | "deleted";
 
 // @public
@@ -216,7 +223,7 @@ export const enum ChangesType {
     Schema = 1
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface ClassKeyMapInfo {
     classKeyPropertyName?: string;
     classPropertyName?: string;
@@ -226,15 +233,19 @@ export interface ClassKeyMapInfo {
 // @public
 export abstract class Client {
     protected constructor();
+    // Warning: (ae-incompatible-release-tags) The symbol "delete" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void>;
     getUrl(requestContext: ClientRequestContext): Promise<string>;
     protected abstract getUrlSearchKey(): string;
+    // Warning: (ae-incompatible-release-tags) The symbol "setupOptionDefaults" is marked as @public, but its signature references "RequestOptions" which is marked as @alpha
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
     protected _url?: string;
 }
 
-// @public
+// Warning: (ae-incompatible-release-tags) The symbol "CodeBase" is marked as @alpha, but its signature references "WsgInstance" which is marked as @internal
+// 
+// @alpha
 export class CodeBase extends WsgInstance {
     briefcaseId?: number;
     codeScope?: string;
@@ -244,17 +255,19 @@ export class CodeBase extends WsgInstance {
     state?: CodeState;
 }
 
-// @public
+// @alpha
 export class CodeEvent extends BriefcaseEvent {
     codeScope?: string;
     codeSpecId?: Id64String;
+    // @internal
     fromJson(obj: any): void;
     state?: CodeState;
     values?: string[];
 }
 
-// @public
+// @alpha
 export class CodeHandler {
+    // @internal
     constructor(handler: IModelBaseHandler);
     deleteAll(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: CodeQuery): Promise<HubCode[]>;
@@ -262,18 +275,23 @@ export class CodeHandler {
     update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]>;
     }
 
-// @public
+// Warning: (ae-incompatible-release-tags) The symbol "CodeQuery" is marked as @alpha, but its signature references "Query" which is marked as @internal
+// 
+// @alpha
 export class CodeQuery extends Query {
     byBriefcaseId(briefcaseId: number): this;
     byCodes(codes: HubCode[]): this;
     byCodeScope(codeScope: string): this;
     byCodeSpecId(codeSpecId: Id64String): this;
+    // @internal
     readonly isMultiCodeQuery: boolean;
     top(n: number): this;
     unavailableCodes(briefcaseId: number): this;
 }
 
-// @public
+// Warning: (ae-incompatible-release-tags) The symbol "CodeSequence" is marked as @alpha, but its signature references "WsgInstance" which is marked as @internal
+// 
+// @alpha
 export class CodeSequence extends WsgInstance {
     codeScope?: string;
     codeSpecId?: Id64String;
@@ -284,19 +302,20 @@ export class CodeSequence extends WsgInstance {
     valuePattern?: string;
 }
 
-// @public
+// @alpha
 export class CodeSequenceHandler {
+    // @internal
     constructor(handler: IModelBaseHandler);
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, sequence: CodeSequence): Promise<string>;
     }
 
-// @public
+// @alpha
 export enum CodeSequenceType {
     LargestUsed = 0,
     NextAvailable = 1
 }
 
-// @public
+// @alpha
 export enum CodeState {
     Available = 0,
     Reserved = 1,
@@ -304,7 +323,7 @@ export enum CodeState {
     Used = 2
 }
 
-// @public
+// @alpha
 export interface CodeUpdateOptions {
     codesPerRequest?: number;
     continueOnConflict?: boolean;
@@ -329,38 +348,51 @@ export class Config {
     set(varName: string, value: ValueType): void;
     }
 
-// @public
+// @alpha
 export class ConflictingCodesError extends IModelHubError {
+    // @internal
     addCodes(error: IModelHubError): void;
     conflictingCodes?: HubCode[];
+    // @internal
     static fromError(error: IModelHubError): ConflictingCodesError | undefined;
 }
 
-// @public
+// @alpha
 export class ConflictingLocksError extends IModelHubError {
+    // @internal
     addLocks(error: IModelHubError): void;
     conflictingLocks?: Lock[];
     // @internal
     static fromError(error: IModelHubError): ConflictingLocksError | undefined;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "ConnectClient" is marked as @public, but its signature references "WsgClient" which is marked as @internal
+// 
 // @public
 export class ConnectClient extends WsgClient {
     constructor();
     // (undocumented)
     static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
+    // Warning: (ae-incompatible-release-tags) The symbol "getInvitedProjects" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getInvitedProjects" is marked as @public, but its signature references "ConnectRequestQueryOptions" which is marked as @internal
     getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]>;
+    // Warning: (ae-incompatible-release-tags) The symbol "getProject" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getProject" is marked as @public, but its signature references "ConnectRequestQueryOptions" which is marked as @internal
     getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project>;
+    // Warning: (ae-incompatible-release-tags) The symbol "getProjects" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getProjects" is marked as @public, but its signature references "ConnectRequestQueryOptions" which is marked as @internal
     getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]>;
     protected getRelyingPartyUrl(): string;
     protected getUrlSearchKey(): string;
     // (undocumented)
     static readonly searchKey: string;
+    // Warning: (ae-incompatible-release-tags) The symbol "setupOptionDefaults" is marked as @public, but its signature references "RequestOptions" which is marked as @alpha
+    // 
     // (undocumented)
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }
 
-// @public
+// @internal
 export interface ConnectRequestQueryOptions extends RequestQueryOptions {
     isFavorite?: boolean;
     isMRU?: boolean;
@@ -390,10 +422,10 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     static readonly searchKey: string;
 }
 
-// @public
+// @internal (undocumented)
 export type ConstructorType = new () => any;
 
-// @public
+// @internal
 export class DefaultCodeUpdateOptionsProvider {
     constructor();
     assignOptions(options: CodeUpdateOptions): Promise<void>;
@@ -409,7 +441,7 @@ export class DefaultLockUpdateOptionsProvider {
     protected _defaultOptions: LockUpdateOptions;
 }
 
-// @public
+// @internal
 export class DefaultRequestOptionsProvider {
     constructor();
     assignOptions(options: RequestOptions): Promise<void>;
@@ -417,12 +449,12 @@ export class DefaultRequestOptionsProvider {
     protected _defaultOptions: RequestOptions;
 }
 
-// @public
+// @internal
 export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvider {
     constructor();
 }
 
-// @public
+// @internal
 export abstract class ECInstance {
     // (undocumented)
     [index: string]: any;
@@ -430,7 +462,7 @@ export abstract class ECInstance {
     ecId: string;
 }
 
-// @public
+// @internal
 export class ECJsonTypeMap {
     static classToJson(applicationKey: string, classKey: string, classKeyMapInfo: ClassKeyMapInfo): (typedConstructor: ConstructorType) => void;
     static fromJson<T extends ECInstance>(typedConstructor: new () => T, applicationKey: string, ecJsonInstance: any): T | undefined;
@@ -442,10 +474,12 @@ export class ECJsonTypeMap {
 // 
 // @public
 export class EventHandler extends EventBaseHandler {
+    // @internal
     constructor(handler: IModelBaseHandler);
     // Warning: (ae-incompatible-release-tags) The symbol "createListener" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     createListener(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: IModelHubEvent) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined>;
+    // Warning: (ae-incompatible-release-tags) The symbol "getSASToken" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     getSASToken(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<EventSAS>;
     readonly subscriptions: EventSubscriptionHandler;
 }
@@ -456,6 +490,8 @@ export class EventHandler extends EventBaseHandler {
 export class EventSAS extends BaseEventSAS {
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "EventSubscription" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
+// 
 // @public
 export class EventSubscription extends WsgInstance {
     eventTypes?: EventType[];
@@ -463,34 +499,48 @@ export class EventSubscription extends WsgInstance {
 
 // @public
 export class EventSubscriptionHandler {
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelBaseHandler" which is marked as @internal
     constructor(handler: IModelBaseHandler);
+    // Warning: (ae-incompatible-release-tags) The symbol "create" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]): Promise<EventSubscription>;
+    // Warning: (ae-incompatible-release-tags) The symbol "delete" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, eventSubscriptionId: string): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "update" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, subscription: EventSubscription): Promise<EventSubscription>;
 }
 
 // @public
 export type EventType = 
-/** Sent when one or more [[Lock]]s are updated. See [[LockEvent]]. */
+/** Sent when one or more [[Lock]]s are updated. See [[LockEvent]].
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
+ */
 "LockEvent" | 
-/** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. See [[AllLocksDeletedEvent]]. */
+/** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. See [[AllLocksDeletedEvent]].
+ * @alpha Hide Lock API while focused on readonly viewing scenarios
+ */
 "AllLocksDeletedEvent" | 
 /** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetPostPushEvent]]. */
 "ChangeSetPostPushEvent" | 
 /** Sent when a [[ChangeSet]] push has started. See [[ChangeSetPrePushEvent]]. */
 "ChangeSetPrePushEvent" | 
-/** Sent when one or more [Code]($common)s are updated. See [[CodeEvent]]. */
+/** Sent when one or more [Code]($common)s are updated. See [[CodeEvent]].
+ * @alpha Hide Code API while focused on readonly viewing scenarios
+ */
 "CodeEvent" | 
-/** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]]. */
+/** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]].
+ * @alpha Hide Code API while focused on readonly viewing scenarios
+ */
 "AllCodesDeletedEvent" | 
-/** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]]. */
+/** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]].
+ * @internal
+ */
 "BriefcaseDeletedEvent" | 
 /** Sent when an iModel is deleted. See [[iModelDeletedEvent]]. */
 "iModelDeletedEvent" | 
 /** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
 "VersionEvent";
 
-// @public
+// @internal
 export class FeatureEndedLogEntry extends FeatureLogEntry {
     constructor(featureId: GuidString, startEntryId: GuidString, hostName: string, usageType: UsageType);
     static fromStartEntry(startEntry: FeatureStartedLogEntry): FeatureEndedLogEntry;
@@ -498,7 +548,7 @@ export class FeatureEndedLogEntry extends FeatureLogEntry {
     readonly startEntryId: GuidString;
 }
 
-// @public
+// @internal
 export class FeatureLogEntry {
     constructor(featureId: GuidString, hostName: string, usageType: UsageType);
     readonly featureId: GuidString;
@@ -512,7 +562,7 @@ export class FeatureLogEntry {
     userInfo?: UsageUserInfo;
 }
 
-// @public
+// @internal
 export interface FeatureLogEntryAttribute {
     // (undocumented)
     name: string;
@@ -520,7 +570,7 @@ export interface FeatureLogEntryAttribute {
     value: any;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface FeatureLogEntryAttributeJson {
     // (undocumented)
     name: string;
@@ -528,7 +578,7 @@ export interface FeatureLogEntryAttributeJson {
     value: string;
 }
 
-// @public
+// @internal
 export interface FeatureLogEntryJson extends UsageLogEntryJson {
     eDateZ: string;
     ftrID: GuidString;
@@ -536,13 +586,13 @@ export interface FeatureLogEntryJson extends UsageLogEntryJson {
     uData: FeatureLogEntryAttributeJson[];
 }
 
-// @public
+// @internal
 export class FeatureStartedLogEntry extends FeatureLogEntry {
     constructor(featureId: GuidString, hostName: string, usageType: UsageType);
     readonly entryId: GuidString;
 }
 
-// @public
+// @internal
 export class FileAccessKey extends WsgInstance {
     // (undocumented)
     permissions?: string;
@@ -554,7 +604,7 @@ export class FileAccessKey extends WsgInstance {
     url?: string;
 }
 
-// @public
+// @internal
 export interface FileHandler {
     // (undocumented)
     agent: https.Agent;
@@ -581,10 +631,13 @@ export function getJson(requestContext: ClientRequestContext, url: string): Prom
 
 // @public
 export class GlobalEventHandler extends EventBaseHandler {
+    // @internal
     constructor(handler: IModelBaseHandler);
+    // Warning: (ae-incompatible-release-tags) The symbol "createListener" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     // Warning: (ae-incompatible-release-tags) The symbol "createListener" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number, getOperation?: GetEventOperationType): Promise<IModelHubGlobalEvent | undefined>;
+    // Warning: (ae-incompatible-release-tags) The symbol "getSASToken" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     getSASToken(requestContext: AuthorizedClientRequestContext): Promise<GlobalEventSAS>;
     readonly subscriptions: GlobalEventSubscriptionHandler;
 }
@@ -593,6 +646,8 @@ export class GlobalEventHandler extends EventBaseHandler {
 export class GlobalEventSAS extends BaseEventSAS {
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "GlobalEventSubscription" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
+// 
 // @public
 export class GlobalEventSubscription extends WsgInstance {
     // (undocumented)
@@ -603,46 +658,61 @@ export class GlobalEventSubscription extends WsgInstance {
 
 // @public
 export class GlobalEventSubscriptionHandler {
+    // @internal
     constructor(handler: IModelBaseHandler);
+    // Warning: (ae-incompatible-release-tags) The symbol "create" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     create(requestContext: AuthorizedClientRequestContext, subscriptionId: GuidString, globalEvents: GlobalEventType[]): Promise<GlobalEventSubscription>;
+    // Warning: (ae-incompatible-release-tags) The symbol "delete" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     delete(requestContext: AuthorizedClientRequestContext, subscriptionId: string): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "update" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     update(requestContext: AuthorizedClientRequestContext, subscription: GlobalEventSubscription): Promise<GlobalEventSubscription>;
 }
 
 // @public
 export type GlobalEventType = 
-/** Sent when an iModel is put into the archive. See [[SoftiModelDeleteEvent]]. */
+/** Sent when an iModel is put into the archive. See [[SoftiModelDeleteEvent]].
+ * @beta Rename to SoftIModelDeleteEvent
+ */
 "SoftiModelDeleteEvent" | 
-/** Sent when an archived iModel is completely deleted from the storage. See [[HardiModelDeleteEvent]]. */
+/** Sent when an archived iModel is completely deleted from the storage. See [[HardiModelDeleteEvent]].
+ * @beta Rename to HardIModelDeleteEvent
+ */
 "HardiModelDeleteEvent" | 
-/** Sent when an iModel is created. See [[IModelCreatedEvent]]. */
+/** Sent when an iModel is created. See [[IModelCreatedEvent]].
+ * @beta Rename to IModelCreatedEvent
+ */
 "iModelCreatedEvent" | 
 /** Sent when a [[ChangeSet]] is pushed. See [[ChangeSetCreatedEvent]]. */
 "ChangeSetCreatedEvent" | 
 /** Sent when a named [[Version]] is created. See [[NamedVersionCreatedEvent]]. */
 "NamedVersionCreatedEvent";
 
-// @public
+// @beta
 export class HardiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
-// @public
+// @alpha
 export class HubCode extends CodeBase {
     value?: string;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "HubIModel" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
+// 
 // @public
 export class HubIModel extends WsgInstance {
     createdDate?: string;
     description?: string;
     id?: GuidString;
+    // @internal
     iModelTemplate?: string;
     initialized?: boolean;
     name?: string;
     userCreated?: string;
 }
 
-// @public
+// Warning: (ae-incompatible-release-tags) The symbol "HubUserInfo" is marked as @alpha, but its signature references "WsgInstance" which is marked as @internal
+// 
+// @alpha
 export class HubUserInfo extends WsgInstance {
     email?: string;
     firstName?: string;
@@ -650,31 +720,28 @@ export class HubUserInfo extends WsgInstance {
     lastName?: string;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "IAngularOidcFrontendClient" is marked as @public, but its signature references "IOidcFrontendClient" which is marked as @beta
-// 
-// @public
+// @beta
 export interface IAngularOidcFrontendClient extends IOidcFrontendClient {
     // (undocumented)
     handleRedirectCallback(): Promise<boolean>;
 }
 
-// @public
+// @beta
 export interface IAuthorizationClient {
-    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     hasExpired: boolean;
     hasSignedIn: boolean;
     isAuthorized: boolean;
 }
 
-// @public (undocumented)
+// @internal
 export class IModelBankClient extends IModelClient {
     constructor(url: string, handler: FileHandler | undefined);
 }
 
 // Warning: (ae-forgotten-export) The symbol "ContextManagerClient" needs to be exported by the entry point imodeljs-clients.d.ts
 // 
-// @public (undocumented)
+// @internal (undocumented)
 export class IModelBankFileSystemContextClient implements ContextManagerClient {
     constructor(baseUri: string);
     // (undocumented)
@@ -687,7 +754,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     queryContextByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project>;
 }
 
-// @public (undocumented)
+// @internal
 export class IModelBankHandler extends IModelBaseHandler {
     constructor(url: string, handler: FileHandler | undefined, keepAliveDuration?: number);
     // (undocumented)
@@ -696,7 +763,7 @@ export class IModelBankHandler extends IModelBaseHandler {
     protected getUrlSearchKey(): string;
 }
 
-// @public
+// @internal
 export class IModelBaseHandler extends WsgClient {
     constructor(keepAliveDuration?: number, fileHandler?: FileHandler);
     // (undocumented)
@@ -709,8 +776,6 @@ export class IModelBaseHandler extends WsgClient {
     protected _fileHandler: FileHandler | undefined;
     // (undocumented)
     formatProjectIdForUrl(projectId: string): string;
-    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     getAgent(): any;
     // Warning: (ae-forgotten-export) The symbol "CustomRequestOptions" needs to be exported by the entry point imodeljs-clients.d.ts
@@ -733,20 +798,30 @@ export class IModelBaseHandler extends WsgClient {
 
 // @public
 export abstract class IModelClient {
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelBaseHandler" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "FileHandler" which is marked as @internal
     constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler);
+    // Warning: (ae-incompatible-release-tags) The symbol "briefcases" is marked as @public, but its signature references "BriefcaseHandler" which is marked as @internal
     readonly briefcases: BriefcaseHandler;
     readonly changeSets: ChangeSetHandler;
+    // Warning: (ae-incompatible-release-tags) The symbol "codes" is marked as @public, but its signature references "CodeHandler" which is marked as @alpha
     readonly codes: CodeHandler;
     readonly events: EventHandler;
     readonly globalEvents: GlobalEventHandler;
+    // Warning: (ae-incompatible-release-tags) The symbol "_handler" is marked as @public, but its signature references "IModelBaseHandler" which is marked as @internal
+    // 
     // (undocumented)
     protected _handler: IModelBaseHandler;
     readonly iModel: IModelHandler;
     readonly iModels: IModelsHandler;
+    // Warning: (ae-incompatible-release-tags) The symbol "locks" is marked as @public, but its signature references "LockHandler" which is marked as @alpha
     readonly locks: LockHandler;
     readonly requestOptions: CustomRequestOptions;
+    // Warning: (ae-incompatible-release-tags) The symbol "setFileHandler" is marked as @public, but its signature references "FileHandler" which is marked as @internal
     setFileHandler(fileHandler: FileHandler): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "thumbnails" is marked as @public, but its signature references "ThumbnailHandler" which is marked as @alpha
     readonly thumbnails: ThumbnailHandler;
+    // Warning: (ae-incompatible-release-tags) The symbol "users" is marked as @public, but its signature references "UserInfoHandler" which is marked as @alpha
     readonly users: UserInfoHandler;
     readonly versions: VersionHandler;
 }
@@ -759,7 +834,7 @@ export class IModelCreatedEvent extends IModelHubGlobalEvent {
 export class IModelDeletedEvent extends IModelHubEvent {
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface IModelFileSystemContextProps {
     // (undocumented)
     description: string;
@@ -771,17 +846,27 @@ export interface IModelFileSystemContextProps {
 
 // @public
 export class IModelHandler {
+    // @internal
     constructor(handler: IModelsHandler);
+    // Warning: (ae-incompatible-release-tags) The symbol "create" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, path?: string, description?: string, progressCallback?: (progress: ProgressInfo) => void, timeOutInMilliseconds?: number): Promise<HubIModel>;
+    // Warning: (ae-incompatible-release-tags) The symbol "delete" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     delete(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "download" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "get" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     get(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<HubIModel>;
+    // Warning: (ae-incompatible-release-tags) The symbol "getInitializationState" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getInitializationState" is marked as @public, but its signature references "InitializationState" which is marked as @internal
     getInitializationState(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<InitializationState>;
+    // Warning: (ae-incompatible-release-tags) The symbol "update" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
 }
 
 // @public
 export class IModelHubClient extends IModelClient {
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "FileHandler" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelBaseHandler" which is marked as @internal
     constructor(fileHandler?: FileHandler, iModelBaseHandler?: IModelBaseHandler);
     // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
     // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
@@ -806,15 +891,22 @@ export class IModelHubClientError extends IModelHubError {
     static undefinedArgument(argumentName: string): IModelHubClientError;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "IModelHubError" is marked as @public, but its signature references "WsgError" which is marked as @internal
+// 
 // @public
 export class IModelHubError extends WsgError {
     // @internal
     constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
     data: any;
+    // @internal
     static fromId(id: IModelHubStatus, message: string): IModelHubError;
+    // @internal
     getLogLevel(): LogFunction;
+    // @internal
     log(): void;
+    // @internal
     static parse(response: any, log?: boolean): ResponseError;
+    // @internal
     static shouldRetry(error: any, response: any): boolean;
 }
 
@@ -822,6 +914,7 @@ export class IModelHubError extends WsgError {
 // 
 // @public
 export abstract class IModelHubEvent extends IModelHubBaseEvent {
+    // @internal
     fromJson(obj: any): void;
     iModelId?: GuidString;
 }
@@ -834,6 +927,8 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     projectId?: string;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "IModelQuery" is marked as @public, but its signature references "InstanceIdQuery" which is marked as @internal
+// 
 // @public
 export class IModelQuery extends InstanceIdQuery {
     byName(name: string): this;
@@ -843,18 +938,24 @@ export class IModelQuery extends InstanceIdQuery {
 export class IModelsHandler {
     // @internal
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
+    // Warning: (ae-incompatible-release-tags) The symbol "create" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, path?: string, description?: string, progressCallback?: (progress: ProgressInfo) => void, timeOutInMilliseconds?: number): Promise<HubIModel>;
+    // Warning: (ae-incompatible-release-tags) The symbol "delete" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "download" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "get" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     get(requestContext: AuthorizedClientRequestContext, contextId: string, query?: IModelQuery): Promise<HubIModel[]>;
+    // Warning: (ae-incompatible-release-tags) The symbol "getInitializationState" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getInitializationState" is marked as @public, but its signature references "InitializationState" which is marked as @internal
     getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState>;
+    // Warning: (ae-incompatible-release-tags) The symbol "update" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
 }
 
-// @public
+// @internal @deprecated
 export class ImsActiveSecureTokenClient extends Client {
     constructor();
-    // Warning: (ae-incompatible-release-tags) The symbol "getToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
     getToken(requestContext: ClientRequestContext, userCredentials: ImsUserCredentials, appId?: string): Promise<AuthorizationToken>;
     protected getUrlSearchKey(): string;
     // (undocumented)
@@ -863,11 +964,9 @@ export class ImsActiveSecureTokenClient extends Client {
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }
 
-// @public
+// @internal @deprecated
 export class ImsDelegationSecureTokenClient extends Client {
     constructor();
-    // Warning: (ae-incompatible-release-tags) The symbol "getToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "getToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken, relyingPartyUri?: string, appId?: string): Promise<AccessToken>;
     protected getUrlSearchKey(): string;
     // (undocumented)
@@ -875,30 +974,26 @@ export class ImsDelegationSecureTokenClient extends Client {
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }
 
-// @public
+// @internal @deprecated
 export class ImsFederatedAuthenticationClient extends Client {
     constructor();
     protected getUrlSearchKey(): string;
-    // Warning: (ae-incompatible-release-tags) The symbol "parseTokenResponse" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
     static parseTokenResponse(authTokenResponse: string): AuthorizationToken | undefined;
     // (undocumented)
     static readonly searchKey: string;
 }
 
-// @public
+// @internal @deprecated
 export class ImsTestAuthorizationClient implements IAuthorizationClient {
-    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     readonly hasExpired: boolean;
     readonly hasSignedIn: boolean;
     readonly isAuthorized: boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "signIn" is marked as @public, but its signature references "AccessToken" which is marked as @beta
-    // 
     // (undocumented)
     signIn(requestContext: ClientRequestContext, userCredentials: ImsUserCredentials, relyingPartyUri?: string): Promise<AccessToken>;
     }
 
-// @public
+// @internal @deprecated
 export interface ImsUserCredentials {
     // (undocumented)
     email: string;
@@ -906,7 +1001,7 @@ export interface ImsUserCredentials {
     password: string;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export enum IncludePrefix {
     // (undocumented)
     No = 1,
@@ -914,7 +1009,7 @@ export enum IncludePrefix {
     Yes = 0
 }
 
-// @public
+// @internal
 export enum InitializationState {
     CodeTooLong = 5,
     Failed = 3,
@@ -925,7 +1020,7 @@ export enum InitializationState {
     Successful = 0
 }
 
-// @public
+// @internal
 export class InstanceIdQuery extends Query {
     byId(id: GuidString): this;
     // (undocumented)
@@ -945,16 +1040,18 @@ export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
     signOut(requestContext: ClientRequestContext): Promise<void>;
 }
 
-// @public
+// @alpha
 export class LargeThumbnail extends Thumbnail {
 }
 
-// @public
+// @alpha
 export class Lock extends LockBase {
     objectId?: Id64String;
 }
 
-// @public
+// Warning: (ae-incompatible-release-tags) The symbol "LockBase" is marked as @alpha, but its signature references "WsgInstance" which is marked as @internal
+// 
+// @alpha
 export class LockBase extends WsgInstance {
     briefcaseId?: number;
     lockLevel?: LockLevel;
@@ -964,8 +1061,9 @@ export class LockBase extends WsgInstance {
     seedFileId?: GuidString;
 }
 
-// @public
+// @alpha
 export class LockEvent extends BriefcaseEvent {
+    // @internal
     fromJson(obj: any): void;
     lockLevel?: LockLevel;
     lockType?: LockType;
@@ -973,22 +1071,25 @@ export class LockEvent extends BriefcaseEvent {
     releasedWithChangeSet?: string;
 }
 
-// @public
+// @alpha
 export class LockHandler {
+    // @internal
     constructor(handler: IModelBaseHandler);
     deleteAll(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: LockQuery): Promise<Lock[]>;
     update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]>;
     }
 
-// @public
+// @alpha
 export enum LockLevel {
     Exclusive = 2,
     None = 0,
     Shared = 1
 }
 
-// @public
+// Warning: (ae-incompatible-release-tags) The symbol "LockQuery" is marked as @alpha, but its signature references "Query" which is marked as @internal
+// 
+// @alpha
 export class LockQuery extends Query {
     byBriefcaseId(briefcaseId: number): this;
     byLockLevel(lockLevel: LockLevel): this;
@@ -997,12 +1098,13 @@ export class LockQuery extends Query {
     byObjectId(objectId: Id64String): this;
     byReleasedWithChangeSet(changeSetId: string): this;
     byReleasedWithChangeSetIndex(changeSetIndex: number): this;
+    // @internal
     readonly isMultiLockQuery: boolean;
     top(n: number): this;
     unavailableLocks(briefcaseId: number, lastChangeSetIndex: string): this;
 }
 
-// @public
+// @alpha
 export enum LockType {
     CodeSpecs = 4,
     Db = 0,
@@ -1011,7 +1113,7 @@ export enum LockType {
     Schemas = 3
 }
 
-// @public
+// @alpha
 export interface LockUpdateOptions {
     continueOnConflict?: boolean;
     deniedLocks?: boolean;
@@ -1019,7 +1121,7 @@ export interface LockUpdateOptions {
     unlimitedReporting?: boolean;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class LogEntryConverter {
     // (undocumented)
     static toFeatureLogJson(entries: FeatureLogEntry[]): FeatureLogEntryJson[];
@@ -1042,7 +1144,7 @@ export const enum LoggerCategory {
     UlasClient = "ulasclient"
 }
 
-// @public
+// @internal
 export interface LogPostingResponse {
     // (undocumented)
     message: string;
@@ -1054,13 +1156,13 @@ export interface LogPostingResponse {
     time: number;
 }
 
-// @public
+// @internal
 export class MultiCode extends CodeBase {
     // (undocumented)
     values?: string[];
 }
 
-// @public
+// @alpha
 export class MultiLock extends LockBase {
     // (undocumented)
     objectIds?: Id64String[];
@@ -1077,7 +1179,7 @@ export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
     versionName?: string;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export abstract class OidcClient extends Client {
     constructor();
     protected getUrlSearchKey(): string;
@@ -1093,13 +1195,13 @@ export interface OidcFrontendClientConfiguration {
     scope: string;
 }
 
-// @public
+// @internal
 export function ParseEvent(response: Response): IModelHubEvent;
 
-// @public
+// @internal
 export function ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent;
 
-// @public
+// @internal
 export class Permission extends WsgInstance {
     // (undocumented)
     categoryId?: number;
@@ -1111,7 +1213,7 @@ export class Permission extends WsgInstance {
     serviceGprId?: number;
 }
 
-// @public
+// @internal
 export interface ProductVersion {
     // (undocumented)
     major: number;
@@ -1133,6 +1235,8 @@ export interface ProgressInfo {
     total?: number;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "Project" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
+// 
 // @public
 export class Project extends WsgInstance {
     // (undocumented)
@@ -1171,7 +1275,7 @@ export class Project extends WsgInstance {
     ultimateRefId?: string;
 }
 
-// @public
+// @internal
 export class Query {
     protected addFilter(filter: string, operator?: "and" | "or"): void;
     protected addSelect(select: string): this;
@@ -1186,21 +1290,21 @@ export class Query {
     top(n: number): this;
 }
 
-// @public
+// @internal
 export class RbacProject extends WsgInstance {
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface RbacRequestQueryOptions extends RequestQueryOptions {
     // (undocumented)
     rbacOnly?: boolean;
 }
 
-// @public
+// @internal
 export class RbacUser extends WsgInstance {
 }
 
-// @public
+// @internal
 export class RealityData extends WsgInstance {
     // (undocumented)
     accuracyInMeters?: string;
@@ -1269,7 +1373,7 @@ export class RealityData extends WsgInstance {
     visibility?: string;
 }
 
-// @public
+// @internal
 export class RealityDataServicesClient extends WsgClient {
     constructor();
     // (undocumented)
@@ -1286,10 +1390,12 @@ export class RealityDataServicesClient extends WsgClient {
     static readonly searchKey: string;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "request" is marked as @public, but its signature references "RequestOptions" which is marked as @alpha
+// 
 // @public
 export function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response>;
 
-// @public (undocumented)
+// @alpha (undocumented)
 export interface RequestBasicCredentials {
     // (undocumented)
     password: string;
@@ -1297,16 +1403,16 @@ export interface RequestBasicCredentials {
     user: string;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class RequestGlobalOptions {
     // (undocumented)
     static HTTPS_PROXY?: https.Agent;
 }
 
-// @public (undocumented)
+// @alpha (undocumented)
 export const requestIdHeaderName = "X-Correlation-Id";
 
-// @public (undocumented)
+// @alpha (undocumented)
 export interface RequestOptions {
     // (undocumented)
     accept?: string;
@@ -1351,7 +1457,7 @@ export interface RequestOptions {
     useCorsProxy?: boolean;
 }
 
-// @public
+// @alpha
 export interface RequestQueryOptions {
     $filter?: string;
     $orderby?: string;
@@ -1360,7 +1466,7 @@ export interface RequestQueryOptions {
     $top?: number;
 }
 
-// @public (undocumented)
+// @alpha (undocumented)
 export interface RequestQueryStringifyOptions {
     // (undocumented)
     delimiter?: string;
@@ -1396,7 +1502,7 @@ export class ResponseError extends BentleyError {
     status?: number;
 }
 
-// @public
+// @internal
 export class SeedFile extends WsgInstance {
     // (undocumented)
     downloadUrl?: string;
@@ -1427,7 +1533,7 @@ export class SeedFile extends WsgInstance {
     userUploaded?: string;
 }
 
-// @public
+// @alpha
 export interface SettingsAdmin {
     deleteSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     deleteUserSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
@@ -1437,7 +1543,7 @@ export interface SettingsAdmin {
     saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 }
 
-// @public
+// @alpha
 export class SettingsResult {
     // @internal
     constructor(status: SettingsStatus, errorMessage?: string | undefined, setting?: any);
@@ -1449,7 +1555,7 @@ export class SettingsResult {
     status: SettingsStatus;
 }
 
-// @public
+// @alpha
 export const enum SettingsStatus {
     AuthorizationError = 110593,
     IModelInvalid = 110596,
@@ -1463,15 +1569,15 @@ export const enum SettingsStatus {
     UrlError = 110594
 }
 
-// @public
+// @alpha
 export class SmallThumbnail extends Thumbnail {
 }
 
-// @public
+// @beta
 export class SoftiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
-// @public
+// @internal
 export class StringIdQuery extends Query {
     byId(id: string): this;
     // (undocumented)
@@ -1481,28 +1587,33 @@ export class StringIdQuery extends Query {
     getId(): string | undefined;
 }
 
-// @public
+// Warning: (ae-incompatible-release-tags) The symbol "Thumbnail" is marked as @alpha, but its signature references "WsgInstance" which is marked as @internal
+// 
+// @alpha
 export abstract class Thumbnail extends WsgInstance {
     // (undocumented)
     id?: GuidString;
 }
 
-// @public
+// @alpha
 export class ThumbnailHandler {
+    // @internal
     constructor(handler: IModelBaseHandler);
     download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, thumbnail: Thumbnail | TipThumbnail): Promise<string>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, size: ThumbnailSize, query?: ThumbnailQuery): Promise<Thumbnail[]>;
     }
 
-// @public
+// Warning: (ae-incompatible-release-tags) The symbol "ThumbnailQuery" is marked as @alpha, but its signature references "InstanceIdQuery" which is marked as @internal
+// 
+// @alpha
 export class ThumbnailQuery extends InstanceIdQuery {
     byVersionId(versionId: GuidString): this;
 }
 
-// @public
+// @alpha
 export type ThumbnailSize = "Small" | "Large";
 
-// @public
+// @alpha
 export interface TipThumbnail {
     projectId: string;
     size: ThumbnailSize;
@@ -1541,11 +1652,9 @@ export abstract class Token {
     protected _x509Certificate?: string;
 }
 
-// @public
+// @internal
 export class UlasClient extends Client {
     constructor();
-    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     protected getUrlSearchKey(): string;
     logFeature(requestContext: AuthorizedClientRequestContext, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse>;
@@ -1554,7 +1663,7 @@ export class UlasClient extends Client {
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }
 
-// @public
+// @internal
 export class UrlDiscoveryClient extends Client {
     constructor();
     // (undocumented)
@@ -1566,7 +1675,7 @@ export class UrlDiscoveryClient extends Client {
     protected getUrlSearchKey(): string;
 }
 
-// @public
+// @internal
 export class UsageLogEntry {
     constructor(hostName: string, usageType: UsageType);
     readonly hostName: string;
@@ -1578,7 +1687,7 @@ export class UsageLogEntry {
     userInfo?: UsageUserInfo;
 }
 
-// @public
+// @internal
 export interface UsageLogEntryJson {
     corID: GuidString;
     country: string | undefined;
@@ -1599,7 +1708,7 @@ export interface UsageLogEntryJson {
     ver: number | undefined;
 }
 
-// @public
+// @internal
 export enum UsageType {
     // (undocumented)
     Beta = 2,
@@ -1613,7 +1722,7 @@ export enum UsageType {
     Trial = 1
 }
 
-// @public
+// @internal
 export interface UsageUserInfo {
     // (undocumented)
     hostUserName?: string;
@@ -1622,7 +1731,7 @@ export interface UsageUserInfo {
     usageCountryIso: string;
 }
 
-// @public
+// @beta
 export class UserInfo {
     constructor(
     id: string, 
@@ -1667,7 +1776,7 @@ export class UserInfo {
     } | undefined;
 }
 
-// @public
+// @alpha
 export class UserInfoHandler {
     // @internal
     constructor(handler: IModelBaseHandler);
@@ -1675,7 +1784,9 @@ export class UserInfoHandler {
     readonly statistics: UserStatisticsHandler;
 }
 
-// @public
+// Warning: (ae-incompatible-release-tags) The symbol "UserInfoQuery" is marked as @alpha, but its signature references "Query" which is marked as @internal
+// 
+// @alpha
 export class UserInfoQuery extends Query {
     byId(id: string): this;
     // @internal (undocumented)
@@ -1687,7 +1798,7 @@ export class UserInfoQuery extends Query {
     readonly isQueriedByIds: boolean;
     }
 
-// @public
+// @alpha
 export class UserStatistics extends HubUserInfo {
     briefcasesCount?: number;
     lastChangeSetPushDate?: string;
@@ -1695,20 +1806,26 @@ export class UserStatistics extends HubUserInfo {
     pushedChangeSetsCount?: number;
 }
 
-// @public
+// @alpha
 export class UserStatisticsHandler {
+    // @internal
     constructor(handler: IModelBaseHandler);
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: UserStatisticsQuery): Promise<UserStatistics[]>;
     }
 
-// @public
+// Warning: (ae-incompatible-release-tags) The symbol "UserStatisticsQuery" is marked as @alpha, but its signature references "Query" which is marked as @internal
+// 
+// @alpha
 export class UserStatisticsQuery extends Query {
+    // @internal
     constructor();
     byId(id: string): this;
-    // (undocumented)
+    // @internal (undocumented)
     protected _byId?: string;
     byIds(ids: string[]): this;
+    // @internal
     getId(): string | undefined;
+    // @internal
     readonly isQueriedByIds: boolean;
     selectAll(): this;
     selectBriefcasesCount(): this;
@@ -1717,6 +1834,8 @@ export class UserStatisticsQuery extends Query {
     selectPushedChangeSetsCount(): this;
     }
 
+// Warning: (ae-incompatible-release-tags) The symbol "Version" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
+// 
 // @public
 export class Version extends WsgInstance {
     changeSetId?: string;
@@ -1733,6 +1852,7 @@ export class Version extends WsgInstance {
 // @public
 export class VersionEvent extends IModelHubEvent {
     changeSetId?: string;
+    // @internal
     fromJson(obj: any): void;
     versionId?: GuidString;
     versionName?: string;
@@ -1740,20 +1860,27 @@ export class VersionEvent extends IModelHubEvent {
 
 // @public
 export class VersionHandler {
+    // @internal
     constructor(handler: IModelBaseHandler);
+    // Warning: (ae-incompatible-release-tags) The symbol "create" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, name: string, description?: string): Promise<Version>;
+    // Warning: (ae-incompatible-release-tags) The symbol "get" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: VersionQuery): Promise<Version[]>;
+    // Warning: (ae-incompatible-release-tags) The symbol "update" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, version: Version): Promise<Version>;
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "VersionQuery" is marked as @public, but its signature references "InstanceIdQuery" which is marked as @internal
+// 
 // @public
 export class VersionQuery extends InstanceIdQuery {
     byChangeSet(changesetId: string): this;
     byName(name: string): this;
+    // Warning: (ae-incompatible-release-tags) The symbol "selectThumbnailId" is marked as @public, but its signature references "ThumbnailSize" which is marked as @alpha
     selectThumbnailId(...sizes: ThumbnailSize[]): this;
 }
 
-// @public
+// @internal
 export abstract class WsgClient extends Client {
     protected constructor(apiVersion: string);
     // (undocumented)
@@ -1763,8 +1890,6 @@ export abstract class WsgClient extends Client {
     // (undocumented)
     static readonly configUseHostRelyingPartyUriAsFallback = "imjs_use_default_relying_party_uri_as_fallback";
     protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
     protected abstract getRelyingPartyUrl(): string;
@@ -1777,7 +1902,7 @@ export abstract class WsgClient extends Client {
     protected _url?: string;
 }
 
-// @public
+// @internal
 export class WsgError extends ResponseError {
     constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
     static getErrorStatus(errorId: number, httpStatusType: number): number;
@@ -1787,7 +1912,7 @@ export class WsgError extends ResponseError {
     static shouldRetry(error: any, response: any): boolean;
 }
 
-// @public
+// @internal
 export abstract class WsgInstance extends ECInstance {
     // (undocumented)
     changeState?: ChangeState;
@@ -1797,7 +1922,7 @@ export abstract class WsgInstance extends ECInstance {
     wsgId: string;
 }
 
-// @public
+// @internal
 export interface WsgRequestOptions {
     // (undocumented)
     CustomOptions?: any;

@@ -15,12 +15,14 @@ const loggerCategory: string = LoggerCategory.IModelBank;
 
 // Format of the imodelContext.json file found in the root directory of an iModel file system context master directory.
 // TODO: Remove this when we
+/** @internal */
 export interface IModelFileSystemContextProps {
   name: string;
   id: string;
   description: string;
 }
 
+/** @internal */
 export class IModelBankFileSystemContextClient implements ContextManagerClient {
   constructor(public baseUri: string) {
   }

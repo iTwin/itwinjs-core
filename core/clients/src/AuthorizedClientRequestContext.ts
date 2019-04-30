@@ -12,6 +12,7 @@ import { Guid, ClientRequestContext } from "@bentley/bentleyjs-core";
  * it's sufficient to pass an instance of the base class [[ClientRequestContext]].
  * @see [ClientRequestContext rules]($docs/learning/backend/managingclientrequestcontext.md).
  * @see [[ClientRequestContext]]
+ * @beta
  */
 export class AuthorizedClientRequestContext extends ClientRequestContext {
   /** The access token value of the client application. */
@@ -22,5 +23,4 @@ export class AuthorizedClientRequestContext extends ClientRequestContext {
     super(activityId, applicationId, applicationVersion, sessionId);
     this.accessToken = accessToken;
   }
-
 }

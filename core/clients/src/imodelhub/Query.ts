@@ -8,12 +8,14 @@ import { RequestQueryOptions } from "./../Request";
 import { ArgumentCheck } from "./Errors";
 import { GuidString } from "@bentley/bentleyjs-core";
 
-/** Base class for iModelHub Query objects. Query objects are used to modify the results when getting instances from iModelHub. */
+/** Base class for iModelHub Query objects. Query objects are used to modify the results when getting instances from iModelHub.
+ * @internal
+ */
 export class Query {
   protected _query: RequestQueryOptions = {};
   /**
    * Translate this object into QueryOptions.
-   * @hidden
+   * @internal
    */
   public getQueryOptions() {
     return this._query;
@@ -21,7 +23,7 @@ export class Query {
 
   /**
    * Reset QueryOptions.
-   * @hidden
+   * @internal
    */
   public resetQueryOptions() {
     this._query = {};
@@ -29,7 +31,7 @@ export class Query {
 
   /**
    * Append a part of the filter.
-   * @hidden
+   * @internal
    */
   protected addFilter(filter: string, operator: "and" | "or" = "and") {
     if (!this._query.$filter) {
@@ -52,7 +54,7 @@ export class Query {
 
   /**
    * Append a part of the select.
-   * @hidden
+   * @internal
    */
   protected addSelect(select: string) {
     if (this._query.$select) {
@@ -103,9 +105,11 @@ export class Query {
   }
 }
 
-/** Query for instances with string based instance ids. */
+/** Query for instances with string based instance ids.
+ * @internal
+ */
 export class StringIdQuery extends Query {
-  /** @hidden */
+  /** @internal */
   protected _byId?: string;
 
   /**
@@ -120,23 +124,25 @@ export class StringIdQuery extends Query {
     return this;
   }
 
-  /** @hidden */
+  /** @internal */
   protected checkValue(id: string) {
     ArgumentCheck.valid("id", id);
   }
 
   /**
    * Used by iModelHub handlers to get the id that is queried.
-   * @hidden
+   * @internal
    */
   public getId() {
     return this._byId;
   }
 }
 
-/** Query for instances with Guid based instance ids. */
+/** Query for instances with Guid based instance ids.
+ * @internal
+ */
 export class InstanceIdQuery extends Query {
-  /** @hidden */
+  /** @internal */
   protected _byId?: GuidString;
 
   /**
@@ -153,7 +159,7 @@ export class InstanceIdQuery extends Query {
 
   /**
    * Used by iModelHub handlers to get the id that is queried.
-   * @hidden
+   * @internal
    */
   public getId() {
     return this._byId;
@@ -162,7 +168,7 @@ export class InstanceIdQuery extends Query {
 
 /**
  * Add select for the download URL to the query.
- * @hidden
+ * @internal
  */
 export function addSelectFileAccessKey(query: RequestQueryOptions) {
   if (!query.$select)

@@ -13,8 +13,10 @@ import { LoggerCategory } from "./LoggerCategory";
 
 const loggerCategory: string = LoggerCategory.Request;
 
+/** @alpha */
 export const requestIdHeaderName = "X-Correlation-Id";
 
+/** @alpha */
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
@@ -23,6 +25,7 @@ export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
 
 /** Typical option to query REST API. Note that services may not quite support these fields,
  * and the interface is only provided as a hint.
+ * @alpha
  */
 export interface RequestQueryOptions {
   /**
@@ -50,12 +53,14 @@ export interface RequestQueryOptions {
   $orderby?: string;
 }
 
+/** @alpha */
 export interface RequestQueryStringifyOptions {
   delimiter?: string;
   encode?: boolean;
   // sep -> delimiter, eq deprecated, encode -> encode
 }
 
+/** @alpha */
 export interface RequestOptions {
   method: string;
   headers?: any; // {Mas-App-Guid, Mas-UUid, User-Agent}
@@ -78,8 +83,8 @@ export interface RequestOptions {
   useCorsProxy?: boolean;
 }
 
-/** Response object if the request was successful. Note that the status within the range of 200-299
- * are considered as a success.
+/** Response object if the request was successful. Note that the status within the range of 200-299 are considered as a success.
+ * @public
  */
 export interface Response {
   body: any; // Parsed body of response
@@ -87,18 +92,20 @@ export interface Response {
   status: number; // Status code of response
 }
 
+/** @public */
 export interface ProgressInfo {
   percent?: number;
   total?: number;
   loaded: number;
 }
 
+/** @internal */
 export class RequestGlobalOptions {
   public static HTTPS_PROXY?: https.Agent = undefined;
 }
 
-/** Error object that's thrown/rejected if the Request fails due to a network error, or
- * if the status is *not* in the range of 200-299 (inclusive)
+/** Error object that's thrown/rejected if the Request fails due to a network error, or if the status is *not* in the range of 200-299 (inclusive)
+ * @public
  */
 export class ResponseError extends BentleyError {
   protected _data?: any;
@@ -210,6 +217,7 @@ const logRequest = (req: sarequest.SuperAgentRequest) => {
  * @param options Options to pass to the request
  * @returns Resolves to the response from the server
  * @throws ResponseError if the request fails due to network issues, or if the returned status is *outside* the range of 200-299 (inclusive)
+ * @public
  */
 export async function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response> {
   requestContext.enter();
@@ -386,6 +394,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
 /**
  * fetch array buffer from HTTP request
  * @param url server URL to address the request
+ * @public
  */
 export async function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any> {
   const options: RequestOptions = {
@@ -399,6 +408,7 @@ export async function getArrayBuffer(requestContext: ClientRequestContext, url: 
 /**
  * fetch json from HTTP request
  * @param url server URL to address the request
+ * @public
  */
 export async function getJson(requestContext: ClientRequestContext, url: string): Promise<any> {
   const options: RequestOptions = {

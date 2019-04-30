@@ -14,7 +14,9 @@ import { Query } from "./Query";
 
 const loggerCategory: string = LoggerCategory.IModelHub;
 
-/** Information about the user, allowing to identify them based on their id. */
+/** Information about the user, allowing to identify them based on their id.
+ * @alpha
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.UserInfo", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubUserInfo extends WsgInstance {
   /** Id of the user. */
@@ -34,7 +36,9 @@ export class HubUserInfo extends WsgInstance {
   public email?: string;
 }
 
-/** Statistics of user created and owned instances on the iModel. */
+/** Statistics of user created and owned instances on the iModel.
+ * @alpha
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.UserInfo", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class UserStatistics extends HubUserInfo {
   /** Number of [[Briefcase]]s the user currently owns. */
@@ -56,16 +60,17 @@ export class UserStatistics extends HubUserInfo {
 
 /**
  * Query object for getting User Statistics. You can use this to modify the [[UserStatisticsHandler.get]] results.
+ * @alpha
  */
 export class UserStatisticsQuery extends Query {
-  /** @hidden */
+  /** @internal */
   protected _byId?: string;
 
   private _statisticsPrefix = "HasStatistics-forward-Statistics";
   private _queriedByIds = false;
   /**
    * Constructor for UserStatisticsQuery.
-   * @hidden
+   * @internal
    */
   constructor() {
     super();
@@ -86,7 +91,7 @@ export class UserStatisticsQuery extends Query {
 
   /**
    * Used by iModelHub handlers to get the id that is queried.
-   * @hidden
+   * @internal
    */
   public getId() {
     return this._byId;
@@ -142,7 +147,7 @@ export class UserStatisticsQuery extends Query {
 
   /**
    * Returns whether was object queried by ids or no
-   * @hidden
+   * @internal
    */
   public get isQueriedByIds() {
     return this._queriedByIds;
@@ -151,13 +156,14 @@ export class UserStatisticsQuery extends Query {
 
 /**
  * Handler for querying [[UserStatistics]]. Use [[UserInfoHandler.Statistics]] to get an instance of this class.
+ * @alpha
  */
 export class UserStatisticsHandler {
   private _handler: IModelBaseHandler;
   /**
    * Constructor for UserStatistics. Should use @see IModelClient instead of directly constructing this.
-   * @hidden
    * @param handler Handler for WSG requests.
+   * @internal
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;
@@ -205,6 +211,7 @@ export class UserStatisticsHandler {
 }
 
 /** Query object for getting [[HubUserInfo]]. You can use this to modify the [[UserInfoHandler.get]] results.
+ * @alpha
  */
 export class UserInfoQuery extends Query {
   private _queriedByIds = false;
@@ -259,6 +266,7 @@ export class UserInfoQuery extends Query {
 }
 
 /** Handler for querying [[HubUserInfo]]. Use [[IModelClient.Users]] to get an instance of this class.
+ * @alpha
  */
 export class UserInfoHandler {
   private _handler: IModelBaseHandler;

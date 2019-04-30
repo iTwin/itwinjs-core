@@ -19,6 +19,7 @@ const loggerCategory: string = LoggerCategory.IModelHub;
 
 /**
  * [Code]($common) state describes whether the code is currently in use or owned by a [[Briefcase]].
+ * @alpha Hide Code API while focused on readonly viewing scenarios
  */
 export enum CodeState {
   /** Code with this state is not persisted in iModelHub. Code that is updated to 'Available' state is deleted from the iModelHub. */
@@ -31,7 +32,9 @@ export enum CodeState {
   Retired = 3,
 }
 
-/** Base class for [Code]($common)s. */
+/** Base class for [Code]($common)s.
+ * @alpha Hide Code API while focused on readonly viewing scenarios
+ */
 export class CodeBase extends WsgInstance {
   /** Code specification Id. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeSpecId")
@@ -60,6 +63,7 @@ export class CodeBase extends WsgInstance {
 
 /**
  * Code instance. Codes ensure uniqueness of names in the file.
+ * @alpha Hide Code API while focused on readonly viewing scenarios
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Code", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubCode extends CodeBase {
@@ -69,9 +73,8 @@ export class HubCode extends CodeBase {
 }
 
 /**
- * MultiCode
- * Data about codes grouped by CodeSpecId, State and Briefcase
- * @hidden
+ * MultiCode: Data about codes grouped by CodeSpecId, State and Briefcase
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.MultiCode", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class MultiCode extends CodeBase {
@@ -81,7 +84,6 @@ export class MultiCode extends CodeBase {
 
 /**
  * Encodes part of the code to be used in URI
- * @hidden
  * @param str Part of the code.
  * @returns Encoded part of a code.
  */
@@ -94,7 +96,6 @@ function encodeForCodeId(str: string): string {
 
 /**
  * Gets encoded instance id for a code to be used in an URI.
- * @hidden
  * @param code Code to get instance id for.
  * @returns Encoded code instance id.
  */
@@ -107,6 +108,7 @@ function getCodeInstanceId(code: HubCode): string | undefined {
 
 /**
  * Object for specifying options when sending [Code]($common) update requests. See [[CodeHandler.update]].
+ * @alpha Hide Code API while focused on readonly viewing scenarios
  */
 export interface CodeUpdateOptions {
   /** Return [Code]($common)s that could not be acquired. Conflicting Codes will be set to [[ConflictingCodesError.conflictingCodes]]. If unlimitedReporting is enabled and CodesPerRequest value is high, some conflicting Codes could be missed.  */
@@ -121,13 +123,11 @@ export interface CodeUpdateOptions {
 
 /**
  * Provider for default CodeUpdateOptions, used by CodeHandler to set defaults.
- * @hidden
+ * @internal
  */
 export class DefaultCodeUpdateOptionsProvider {
   protected _defaultOptions: CodeUpdateOptions;
-  /**
-   * Creates an instance of DefaultRequestOptionsProvider and sets up the default options.
-   */
+  /**  Creates an instance of DefaultRequestOptionsProvider and sets up the default options. */
   constructor() {
     this._defaultOptions = {
       codesPerRequest: 2000,
@@ -148,18 +148,17 @@ export class DefaultCodeUpdateOptionsProvider {
 
 /**
  * Error for conflicting [Code]($common)s. It contains an array of Codes that failed to acquire. This is returned when calling [[CodeHandler.update]] with [[CodeUpdateOptions.deniedCodes]] set to true.
+ * @alpha Hide Code API while focused on readonly viewing scenarios
  */
 export class ConflictingCodesError extends IModelHubError {
-  /**
-   * Codes that couldn't be updated due to other users owning them or setting them to [[CodeState.Retired]].
-   */
+  /** Codes that couldn't be updated due to other users owning them or setting them to [[CodeState.Retired]]. */
   public conflictingCodes?: HubCode[];
 
   /**
    * Create ConflictingCodesError from IModelHubError instance.
-   * @hidden
    * @param error IModelHubError to get error data from.
    * @returns Undefined if the error is not for a code conflict, otherwise newly created error instance.
+   * @internal
    */
   public static fromError(error: IModelHubError): ConflictingCodesError | undefined {
     if (error.errorNumber !== IModelHubStatus.CodeReservedByAnotherBriefcase &&
@@ -174,8 +173,8 @@ export class ConflictingCodesError extends IModelHubError {
 
   /**
    * Amend this error instance with conflicting codes from another IModelHubError.
-   * @hidden
    * @param error Error to get additional conflicting codes from.
+   * @internal
    */
   public addCodes(error: IModelHubError) {
     if (!error.data || !error.data.ConflictingCodes) {
@@ -196,13 +195,14 @@ export class ConflictingCodesError extends IModelHubError {
 
 /**
  * Query object for getting [Code]($common)s. You can use this to modify the query. See [[CodeHandler.get]].
+ * @alpha Hide Code API while focused on readonly viewing scenarios
  */
 export class CodeQuery extends Query {
   private _isMultiCodeQuery = true;
 
   /**
    * Used by the handler to check whether codes in query can be grouped.
-   * @hidden
+   * @internal
    */
   public get isMultiCodeQuery() {
     return this._isMultiCodeQuery;
@@ -299,7 +299,9 @@ export class CodeQuery extends Query {
   }
 }
 
-/** Type of [[CodeSequence]] results. */
+/** Type of [[CodeSequence]] results.
+ * @alpha Hide Code API while focused on readonly viewing scenarios
+ */
 export enum CodeSequenceType {
   /** Return largest already used value. */
   LargestUsed = 0,
@@ -307,7 +309,9 @@ export enum CodeSequenceType {
   NextAvailable = 1,
 }
 
-/** Sequence of [Code]($common)s matching a pattern. This class allows getting next available index based [Code]($common) */
+/** Sequence of [Code]($common)s matching a pattern. This class allows getting next available index based [Code]($common)
+ * @alpha Hide Code API while focused on readonly viewing scenarios
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.CodeSequence", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class CodeSequence extends WsgInstance {
   /** Code specification Id (hexadecimal ("0XA") or decimal ("10") string)). */
@@ -341,14 +345,15 @@ export class CodeSequence extends WsgInstance {
 
 /**
  * Handler for querying [[CodeSequence]]s. Use [[CodeHandler.Sequences]] to get an instance of this class.
+ * @alpha Hide Code API while focused on readonly viewing scenarios
  */
 export class CodeSequenceHandler {
   private _handler: IModelBaseHandler;
 
   /**
    * Constructor for CodeHandler.
-   * @hidden
    * @param handler Handler for WSG requests.
+   * @internal
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;
@@ -384,6 +389,7 @@ export class CodeSequenceHandler {
 
 /**
  * Handler for managing [Code]($common)s. Use [[IModelClient.Codes]] to get an instance of this class. In most cases, you should use [ConcurrencyControl]($backend) methods instead. You can read more about concurrency control [here]($docs/learning/backend/concurrencycontrol).
+ * @alpha Hide Code API while focused on readonly viewing scenarios
  */
 export class CodeHandler {
   private _handler: IModelBaseHandler;
@@ -391,8 +397,8 @@ export class CodeHandler {
 
   /**
    * Constructor for CodeHandler.
-   * @hidden
    * @param handler Handler for WSG requests.
+   * @internal
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;
