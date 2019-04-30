@@ -56,7 +56,10 @@ import { KnotVector, BSplineWrapMode } from "../bspline/KnotVector";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 
 /* tslint:disable:no-console */
-
+/**
+ * `Sample` has static methods to create a variety of geometry samples useful in testing.
+ * @alpha
+ */
 export class Sample {
   public static readonly point2d: Point2d[] = [
     Point2d.create(0, 0),

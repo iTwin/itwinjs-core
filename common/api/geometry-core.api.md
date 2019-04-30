@@ -4765,6 +4765,162 @@ export class RuledSweep extends SolidPrimitive {
     tryTransformInPlace(transform: Transform): boolean;
 }
 
+// @alpha
+export class Sample {
+    // (undocumented)
+    static readonly angle: Angle[];
+    // (undocumented)
+    static readonly angleSweep: AngleSweep[];
+    static appendPhases(linestring: LineString3d, numPhase: number, ...vectors: Vector3d[]): void;
+    static appendSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number): void;
+    static appendSplits(points: Point3d[], target: Point3d, numSplit: number, includeTarget: boolean): void;
+    static convertPointsToSegments(points: Point3d[], forceClosure?: boolean): LineSegment3d[];
+    static createArcs(radiusRatio?: number, sweep?: AngleSweep): Arc3d[];
+    // (undocumented)
+    static createBagOfCurves(): BagOfCurves[];
+    static createBidirectionalSawtooth(origin: Point3d, dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhaseOutbound: number, dyFinal: number, dxLowReturn: number, riseXReturn: number, riseYReturn: number, dxHighReturn: number): Point3d[];
+    // (undocumented)
+    static createBoxes(capped?: boolean): Box[];
+    static createBspline3dHArcs(): BSplineCurve3dH[];
+    static createBspline3dHCurves(): BSplineCurve3dH[];
+    static createBsplineArc90SectionToXYZWArrays(center: Point3d, axes: Matrix3d, radius0: number, radius90: number, applyWeightsToXYZ: boolean): number[][];
+    static createBsplineCurves(includeMultipleKnots?: boolean): BSplineCurve3d[];
+    static createCappedArcLoop(radius: number, startDegrees: number, endDegrees: number): Loop;
+    static createCappedArcPath(radius: number, startDegrees: number, endDegrees: number): Path;
+    static createCappedArcPrimitives(radius: number, startDegrees: number, endDegrees: number): CurvePrimitive[];
+    // (undocumented)
+    static createCenteredBoxEdges(ax?: number, ay?: number, az?: number, cx?: number, cy?: number, cz?: number, geometry?: GeometryQuery[]): GeometryQuery[];
+    // (undocumented)
+    static createClipPlanes(): ClipPlane[];
+    static createClipPlaneSets(): UnionOfConvexClipPlaneSets[];
+    static createClosedSolidSampler(capped: boolean): SolidPrimitive[];
+    // (undocumented)
+    static createConeBsplineSurface(centerA: Point3d, centerB: Point3d, radiusA: number, radiusB: number, numSection: number): BSplineSurface3dH | undefined;
+    // (undocumented)
+    static createCones(): Cone[];
+    static createCurveChainWithDistanceIndex(): CurveChainWithDistanceIndex[];
+    static createCutPie(x0: number, y0: number, radius: number, sweep: AngleSweep, numRadialEdges: number, numArcEdges: number, addClosure?: boolean): Point3d[];
+    // (undocumented)
+    static createEllipsoids(): Sphere[];
+    static createFractalDiamonConvexPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
+    // (undocumented)
+    static createFractalHatReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
+    static createFractalLMildConcavePatter(numRecursion: number, perpendicularFactor: number): Point3d[];
+    // (undocumented)
+    static createFractalLReversingPatterh(numRecursion: number, perpendicularFactor: number): Point3d[];
+    // (undocumented)
+    static createFractalSquareReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
+    // (undocumented)
+    static createGrowableArrayCirclePoints(radius: number, numEdge: number, closed?: boolean, centerX?: number, centerY?: number, data?: GrowableXYZArray): GrowableXYZArray;
+    // (undocumented)
+    static createGrowableArrayCountedSteps(a0: number, delta: number, n: number): GrowableFloat64Array;
+    // (undocumented)
+    static createInvertibleTransforms(): Transform[];
+    // (undocumented)
+    static createLineStrings(): LineString3d[];
+    // (undocumented)
+    static createLShapedPolygon(x0: number, y0: number, ax: number, ay: number, bx: number, by: number, z?: number): Point3d[];
+    static createManyArcs(skewFactors?: number[]): Arc3d[];
+    static createMap4ds(): Map4d[];
+    // (undocumented)
+    static createMatrix3dArray(): Matrix3d[];
+    static createMatrix4ds(includeIrregular?: boolean): Matrix4d[];
+    static createMessyRigidTransform(fixedPoint?: Point3d): Transform;
+    static createMixedBsplineCurves(): BSplineCurve3dBase[];
+    // (undocumented)
+    static createNonZeroVectors(): Vector3d[];
+    // (undocumented)
+    static createPlane(x: number, y: number, z: number, u: number, v: number, w: number): Plane3dByOriginAndUnitNormal;
+    static createPoint2dLattice(low: number, step: number, high: number): Point2d[];
+    static createPoint3dLattice(low: number, step: number, high: number): Point3d[];
+    // (undocumented)
+    static createPseudoTorusBsplineSurface(radiusU: number, radiusV: number, numU: number, numV: number, orderU: number, orderV: number): BSplineSurface3d | undefined;
+    // (undocumented)
+    static createRange3ds(): Range3d[];
+    static createRangeEdges(range: Range3d): BagOfCurves | undefined;
+    // (undocumented)
+    static createRay(x: number, y: number, z: number, u: number, v: number, w: number): Ray3d;
+    static createRectangle(x0: number, y0: number, x1: number, y1: number, z?: number, closed?: boolean): Point3d[];
+    // (undocumented)
+    static createRectangleXY(x0: number, y0: number, ax: number, ay: number, z?: number): Point3d[];
+    static createRecursvieFractalPolygon(poles: Point3d[], pattern: Point2d[], numRecursion: number, perpendicularFactor: number): Point3d[];
+    static createRigidAxes(): Matrix3d[];
+    static createRigidTransforms(): Transform[];
+    static createRotationalSweepLineSegment3dArc3dLineString3d(capped: boolean): SolidPrimitive[];
+    // (undocumented)
+    static createRuledSweeps(includeParityRegion?: boolean, includeBagOfCurves?: boolean): RuledSweep[];
+    static createScaleSkewMatrix3d(): Matrix3d[];
+    // (undocumented)
+    static createSimpleIndexedPolyfaces(gridMultiplier: number): IndexedPolyface[];
+    // (undocumented)
+    static createSimpleLinearSweeps(): LinearSweep[];
+    // (undocumented)
+    static createSimpleLoops(): Loop[];
+    // (undocumented)
+    static createSimpleParityRegions(): ParityRegion[];
+    // (undocumented)
+    static createSimplePaths(withGaps?: boolean): Path[];
+    // (undocumented)
+    static createSimplePointStrings(): PointString3d[];
+    // (undocumented)
+    static createSimpleRotationalSweeps(): RotationalSweep[];
+    // (undocumented)
+    static createSimpleTransitionSpirals(): TransitionSpiral3d[];
+    // (undocumented)
+    static createSimpleUnions(): UnionRegion[];
+    // (undocumented)
+    static createSimpleXYPointLoops(): Point3d[][];
+    static createSingularMatrix3d(): Matrix3d[];
+    // (undocumented)
+    static createSmoothCurvePrimitives(size?: number): CurvePrimitive[];
+    // (undocumented)
+    static createSpheres(includeEllipsoidal?: boolean): Sphere[];
+    // (undocumented)
+    static createSquareWave(origin: Point3d, dx0: number, dy: number, dx1: number, numPhase: number, dyReturn: number): Point3d[];
+    static createSquareWavePath(numTooth: number, dxA: number, dxB: number, yA: number, yB: number, structure: number): Path;
+    static createStar(cx: number, cy: number, cz: number, r0: number, r1: number, numPoint: number, close: boolean): Point3d[];
+    static createStarsInStars(rA0: number, rA1: number, numAPoint: number, rB0: number, rB1: number, numBPoint: number, rC: number, numC: number, close: boolean): Point3d[][];
+    // (undocumented)
+    static createTorusPipes(): TorusPipe[];
+    // (undocumented)
+    static createTriangleWithSplitEdges(numSplitAB: number, numSplitBC: number, numSplitCA: number, wrap?: boolean, xyzA?: Point3d, xyzB?: Point3d, xyzC?: Point3d): Point3d[];
+    static createTriangularUnitGridPolyface(origin: Point3d, vectorX: Vector3d, vectorY: Vector3d, numXVertices: number, numYVertices: number, createParams?: boolean, createNormals?: boolean, createColors?: boolean): IndexedPolyface;
+    // (undocumented)
+    static createTwistingBezier(order: number, x0: number, y0: number, r: number, thetaStepper: AngleSweep, phiStepper: AngleSweep, weightInterval?: Segment1d): CurvePrimitive | undefined;
+    // (undocumented)
+    static createUnitCircle(numPoints: number): Point3d[];
+    // (undocumented)
+    static createWeightedXYGridBsplineSurface(numU: number, numV: number, orderU: number, orderV: number, weight00?: number, weight10?: number, weight01?: number, weight11?: number): BSplineSurface3dH | undefined;
+    // (undocumented)
+    static createXYGrid(numU: number, numV: number, dX?: number, dY?: number): Point3d[];
+    // (undocumented)
+    static createXYGridBsplineSurface(numU: number, numV: number, orderU: number, orderV: number): BSplineSurface3d | undefined;
+    static creatVerticalStaggerPolygon(dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number): Point3d[];
+    // (undocumented)
+    static readonly lineSegment3d: LineSegment3d[];
+    static nonConvexQuadSimpleFractal(numRecursion: number, perpendicularFactor: number): Point3d[];
+    // (undocumented)
+    static readonly plane3dByOriginAndUnitNormal: Plane3dByOriginAndUnitNormal[];
+    // (undocumented)
+    static readonly point2d: Point2d[];
+    // (undocumented)
+    static readonly point3d: Point3d[];
+    // (undocumented)
+    static readonly point4d: Point4d[];
+    static pushClosure(data: Point3d[]): void;
+    static pushMove(data: Point3d[], dx: number, dy: number, dz?: number): void;
+    // (undocumented)
+    static readonly range1d: Range1d[];
+    // (undocumented)
+    static readonly range2d: Range2d[];
+    // (undocumented)
+    static readonly range3d: Range3d[];
+    // (undocumented)
+    static readonly ray3d: Ray3d[];
+    // (undocumented)
+    static readonly vector2d: Vector2d[];
+}
+
 // @public
 export class Segment1d {
     clone(): Segment1d;
