@@ -223,6 +223,31 @@ export const enum ChangesType {
     Schema = 1
 }
 
+// @internal
+export class Checkpoint extends WsgInstance {
+    createdDate?: string;
+    downloadUrl?: string;
+    fileDescription?: string;
+    fileId?: GuidString;
+    fileName?: string;
+    fileSize?: string;
+    mergedChangeSetId?: string;
+}
+
+// @internal
+export class CheckpointHandler {
+    constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
+    download(requestContext: AuthorizedClientRequestContext, checkpoint: Checkpoint, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: CheckpointQuery): Promise<Checkpoint[]>;
+    }
+
+// @internal
+export class CheckpointQuery extends Query {
+    nearestCheckpoint(targetChangeSetId: string): this;
+    precedingCheckpoint(targetChangeSetId: string): this;
+    selectDownloadUrl(): this;
+}
+
 // @internal (undocumented)
 export interface ClassKeyMapInfo {
     classKeyPropertyName?: string;
@@ -804,6 +829,8 @@ export abstract class IModelClient {
     // Warning: (ae-incompatible-release-tags) The symbol "briefcases" is marked as @public, but its signature references "BriefcaseHandler" which is marked as @internal
     readonly briefcases: BriefcaseHandler;
     readonly changeSets: ChangeSetHandler;
+    // Warning: (ae-incompatible-release-tags) The symbol "checkpoints" is marked as @public, but its signature references "CheckpointHandler" which is marked as @internal
+    readonly checkpoints: CheckpointHandler;
     // Warning: (ae-incompatible-release-tags) The symbol "codes" is marked as @public, but its signature references "CodeHandler" which is marked as @alpha
     readonly codes: CodeHandler;
     readonly events: EventHandler;

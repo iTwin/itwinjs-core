@@ -7,7 +7,10 @@ import * as fs from "fs";
 import * as path from "path";
 import * as deepAssign from "deep-assign";
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken, IModelClient, IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubClientError, Version, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import {
+  AccessToken, IModelClient, IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, CheckpointQuery,
+  IModelHubClientError, Version, AuthorizedClientRequestContext,
+} from "@bentley/imodeljs-clients";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
@@ -154,6 +157,16 @@ describe("iModelHub ChangeSetHandler", () => {
     }
     const followingChangeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().fromId(lastButOneId));
     chai.expect(followingChangeSets.length).to.be.equal(1);
+  });
+
+  it.skip("should download Checkpoint", async () => {
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
+    const id: string = changeSets[1].id!;
+    const checkpoints1 = await iModelClient.checkpoints.get(requestContext, imodelId, new CheckpointQuery().precedingCheckpoint(id));
+    chai.assert(checkpoints1);
+    const checkpoints2 = await iModelClient.checkpoints.get(requestContext, imodelId, new CheckpointQuery().nearestCheckpoint(id).selectDownloadUrl());
+    chai.assert(checkpoints2);
+    await iModelClient.checkpoints.download(requestContext, checkpoints2[0], path.join(utils.workDir, checkpoints2[0].fileName!));
   });
 
   it("should download ChangeSets", async () => {
