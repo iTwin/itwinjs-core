@@ -6672,6 +6672,8 @@ export class ViewClipByElementTool extends ViewClipTool {
     // (undocumented)
     protected doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange?: boolean): Promise<boolean>;
     // (undocumented)
+    doClipToSelectedElements(viewport: Viewport): Promise<boolean>;
+    // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onPostInstall(): void;
@@ -6839,6 +6841,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
+    protected _distanceFormatterSpec?: FormatterSpec;
+    // (undocumented)
     doClipPlaneClear(index: number): boolean;
     // (undocumented)
     doClipPlaneNegate(index: number): boolean;
@@ -6853,7 +6857,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     // (undocumented)
-    readonly isClipShapeAlignedWithWorldUp: Range1d | undefined;
+    isClipShapeAlignedWithWorldUp(extents?: Range1d): boolean;
     // (undocumented)
     protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean;
     // (undocumented)
@@ -6926,11 +6930,13 @@ export interface ViewClipEventHandler {
 
 // @internal
 export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
-    constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[]);
+    constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[], distanceFormatterSpec?: FormatterSpec);
     // (undocumented)
     protected accept(ev: BeButtonEvent): boolean;
     // (undocumented)
     protected _anchorIndex: number;
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
     // (undocumented)
     protected _clip: ClipVector;
     // (undocumented)
@@ -6940,7 +6946,15 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
+    distance: number;
+    // (undocumented)
+    protected _distanceFormatterSpec?: FormatterSpec;
+    // (undocumented)
+    protected drawAnchorOffset(context: DecorateContext, color: ColorDef, weight: number, transformFromClip?: Transform): void;
+    // (undocumented)
     protected abstract drawViewClip(context: DecorateContext): void;
+    // (undocumented)
+    protected getOffsetValue(ev: BeButtonEvent, transformFromClip?: Transform): number | undefined;
     // (undocumented)
     protected _ids: string[];
     // (undocumented)
@@ -6952,7 +6966,13 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     // (undocumented)
     protected _restoreClip: boolean;
     // (undocumented)
+    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
+    // (undocumented)
+    protected syncDistanceState(): void;
+    // (undocumented)
     protected abstract updateViewClip(ev: BeButtonEvent, isAccept: boolean): boolean;
+    // (undocumented)
+    useDistance: boolean;
     // (undocumented)
     protected _viewRange: Range3d;
 }
@@ -6993,15 +7013,21 @@ export class ViewClipTool extends PrimitiveTool {
     // (undocumented)
     static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void;
     // (undocumented)
+    static enableClipVolume(viewport: Viewport): boolean;
+    // (undocumented)
     protected static enumAsOrientationMessage(str: string): any;
     // (undocumented)
     static getClipOrientation(orientation: ClipOrientation, viewport: Viewport): Matrix3d | undefined;
+    // (undocumented)
+    static getClipRayTransformed(origin: Point3d, direction: Vector3d, transform?: Transform): Ray3d;
     // (undocumented)
     static getClipShapeExtents(shape: ClipShape, viewRange: Range3d): Range1d;
     // (undocumented)
     static getClipShapePoints(shape: ClipShape, z: number): Point3d[];
     // (undocumented)
     protected static _getEnumAsOrientationDescription: () => PropertyDescription;
+    // (undocumented)
+    static getOffsetValueTransformed(offset: number, transform?: Transform): number;
     // (undocumented)
     static getPlaneInwardNormal(orientation: ClipOrientation, viewport: Viewport): Vector3d | undefined;
     // (undocumented)
