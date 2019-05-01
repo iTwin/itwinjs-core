@@ -19,26 +19,25 @@ const isPresentation = argv.isPresentation;
 const ignoreMissingTags = argv.ignoreMissingTags;
 
 const config = {
+  $schema: "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+  projectFolder: isPresentation ? "../src" : "../",
   compiler: {
-    configType: "tsconfig",
-    rootFolder: isPresentation ? "./src" : "."
+    tsconfigFilePath: "<projectFolder>/tsconfig.json"
   },
-  project: {
-    entryPointSourceFile: isPresentation ? `../lib/${entryPointFileName}.d.ts` : `lib/${entryPointFileName}.d.ts`
+  mainEntryPointFilePath: `${entryPointFileName}.d.ts`,
+  apiReport: {
+    enabled: true,
+    reportFolder: "../../../common/api",
+    reportTempFolder: "../../../common/temp/api"
   },
-  policies: {
-    namespaceSupport: "permissive"
-  },
-  validationRules: {
-    missingReleaseTags: ignoreMissingTags ? "allow" : "error"
-  },
-  apiJsonFile: {
+  docModel: {
     enabled: false
   },
-  apiReviewFile: {
-    enabled: true,
-    apiReviewFolder: isPresentation ? "../../../common/api" : "../../common/api",
-    tempFolder: isPresentation ? "../../../common/temp/api" : "../../common/temp/api"
+  dtsRollup: {
+    enabled: false
+  },
+  tsdocMetadata: {
+    enabled: false
   },
   messages: {
     tsdocMessageReporting: {
@@ -47,8 +46,12 @@ const config = {
       }
     },
     extractorMessageReporting: {
+      "ae-missing-release-tag": {
+        logLevel: ignoreMissingTags ? "none" : "error",
+        addToApiReportFile: true
+      },
       "ae-internal-missing-underscore": {
-        addToApiReviewFile: false,
+        addToApiReportFile: false,
         logLevel: "none"
       }
     }
