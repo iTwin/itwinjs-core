@@ -20,7 +20,6 @@ export interface NumericInputProps {
 }
 
 export function createNumericInput(props: NumericInputProps, useFloat: boolean = false): HTMLInputElement {
-  const useFloat = true === props.parseAsFloat;
   const input = document.createElement("input");
   input.type = "number";
   input.value = props.value.toString();
