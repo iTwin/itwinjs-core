@@ -966,6 +966,19 @@ export abstract class ViewState3d extends ViewState {
     this.rotation.setFrom(val.rotation);
     this.camera.setFrom(val.camera);
   }
+
+  /** @internal */
+  public saveForUndo(): ViewStateUndo { return new ViewState3dUndo(this); }
+
+  /** @internal */
+  public setFromUndo(val: ViewState3dUndo) {
+    this._cameraOn = val.cameraOn;
+    this.origin.setFrom(val.origin);
+    this.extents.setFrom(val.extents);
+    this.rotation.setFrom(val.rotation);
+    this.camera.setFrom(val.camera);
+  }
+
   public toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this._cameraOn;
