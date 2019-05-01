@@ -4662,6 +4662,8 @@ export namespace RenderSystem {
     // @alpha
     export interface Options {
         // @internal
+        backfaceCulling?: boolean;
+        // @internal
         cullAgainstActiveVolume?: boolean;
         // @internal
         disabledExtensions?: WebGLExtensionName[];

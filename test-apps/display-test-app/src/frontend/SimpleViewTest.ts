@@ -116,6 +116,7 @@ async function main() {
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   const renderSystemOptions: RenderSystem.Options = {
     disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
+    backfaceCulling: configuration.enableBackfaceCulling,
     cullAgainstActiveVolume: !configuration.disableActiveVolumeCulling,
   };
 

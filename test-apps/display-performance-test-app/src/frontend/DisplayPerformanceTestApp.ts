@@ -170,40 +170,41 @@ function getRenderMode(): string {
 }
 
 function getRenderOpts(): string {
-  let extString = "";
+  let optString = "";
   if (curRenderOpts.disabledExtensions) curRenderOpts.disabledExtensions.forEach((ext) => {
     switch (ext) {
       case "WEBGL_draw_buffers":
-        extString += "-drawBuf";
+        optString += "-drawBuf";
         break;
       case "OES_element_index_uint":
-        extString += "-unsignedInt";
+        optString += "-unsignedInt";
         break;
       case "OES_texture_float":
-        extString += "-texFloat";
+        optString += "-texFloat";
         break;
       case "OES_texture_half_float":
-        extString += "-texHalfFloat";
+        optString += "-texHalfFloat";
         break;
       case "WEBGL_depth_texture":
-        extString += "-depthTex";
+        optString += "-depthTex";
         break;
       case "EXT_color_buffer_float":
-        extString += "-floats";
+        optString += "-floats";
         break;
       case "EXT_shader_texture_lod":
-        extString += "-texLod";
+        optString += "-texLod";
         break;
       case "ANGLE_instanced_arrays":
-        extString += "-instArrays";
+        optString += "-instArrays";
         break;
       default:
-        extString += "-" + ext;
+        optString += "-" + ext;
         break;
     }
   });
-  // if (curRenderOpts.enableOptimizedSurfaceShaders) extString += "+optSurf";
-  return extString;
+  if (curRenderOpts.backfaceCulling) optString += "+bfCull";
+  // if (curRenderOpts.enableOptimizedSurfaceShaders) optString += "+optSurf";
+  return optString;
 }
 
 function getTileProps(): string {

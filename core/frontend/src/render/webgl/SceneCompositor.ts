@@ -468,7 +468,7 @@ abstract class Compositor extends SceneCompositor {
     this._geom = geometry;
 
     this._opaqueRenderState.flags.depthTest = true;
-    // this._opaqueRenderState.flags.cull = true; ###TODO: Want backface culling but breaks edge display (presumably incorrect winding order)
+    this._opaqueRenderState.flags.cull = System.instance.enableBackfaceCulling;
 
     this._translucentRenderState.flags.depthMask = false;
     this._translucentRenderState.flags.blend = this._translucentRenderState.flags.depthTest = true;
@@ -1234,9 +1234,11 @@ class MPCompositor extends Compositor {
 
     this._opaqueRenderStateWithEqualDepthFunc.flags.depthTest = true;
     this._opaqueRenderStateWithEqualDepthFunc.depthFunc = GL.DepthFunc.LessOrEqual;
+    this._opaqueRenderStateWithEqualDepthFunc.flags.cull = System.instance.enableBackfaceCulling;
     this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.depthTest = true;
     this._opaqueRenderStateWithEqualDepthFuncNoZWt.depthFunc = GL.DepthFunc.LessOrEqual;
     this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.depthMask = false;
+    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.cull = System.instance.enableBackfaceCulling;
   }
 
   protected getRenderState(pass: RenderPass): RenderState {

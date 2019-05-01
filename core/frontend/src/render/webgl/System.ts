@@ -438,6 +438,7 @@ export class System extends RenderSystem {
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
+  public readonly enableBackfaceCulling: boolean;
   public readonly cullAgainstActiveVolume: boolean;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _instancingExtension?: ANGLE_instanced_arrays;
@@ -476,7 +477,7 @@ export class System extends RenderSystem {
   }
 
   public static create(optionsIn?: RenderSystem.Options): System {
-    const options: RenderSystem.Options = undefined !== optionsIn ? optionsIn : { };
+    const options: RenderSystem.Options = undefined !== optionsIn ? optionsIn : {};
     const canvas = document.createElement("canvas") as HTMLCanvasElement;
     if (null === canvas)
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
@@ -663,6 +664,7 @@ export class System extends RenderSystem {
     this._instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
     this.resourceCache = new Map<IModelConnection, IdMap>();
 
+    this.enableBackfaceCulling = true === options.backfaceCulling;
     this.cullAgainstActiveVolume = true === options.cullAgainstActiveVolume;
 
     // Make this System a subscriber to the the IModelConnection onClose event

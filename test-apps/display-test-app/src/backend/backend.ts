@@ -35,6 +35,7 @@ function setupStandaloneConfiguration() {
       configuration.signInForStandalone = true;
 
     configuration.disableInstancing = undefined !== process.env.SVT_DISABLE_INSTANCING;
+    configuration.enableBackfaceCulling = undefined !== process.env.SVT_ENABLE_BACKFACE_CULLING;
     configuration.disableActiveVolumeCulling = undefined !== process.env.SVT_DISABLE_ACTIVE_VOLUME_CULLING;
 
     const extensions = process.env.SVT_DISABLED_EXTENSIONS;
