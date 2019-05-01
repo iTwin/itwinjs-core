@@ -438,6 +438,7 @@ export class System extends RenderSystem {
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
+  public readonly cullAgainstActiveVolume: boolean;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _instancingExtension?: ANGLE_instanced_arrays;
   private readonly _textureBindings: TextureBinding[] = [];
@@ -474,7 +475,8 @@ export class System extends RenderSystem {
       this._drawBuffersExtension.drawBuffersWEBGL(attachments);
   }
 
-  public static create(options?: RenderSystem.Options): System {
+  public static create(optionsIn?: RenderSystem.Options): System {
+    const options: RenderSystem.Options = undefined !== optionsIn ? optionsIn : { };
     const canvas = document.createElement("canvas") as HTMLCanvasElement;
     if (null === canvas)
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
@@ -487,14 +489,14 @@ export class System extends RenderSystem {
       }
     }
 
-    const capabilities = Capabilities.create(context, undefined !== options ? options.disabledExtensions : undefined);
+    const capabilities = Capabilities.create(context, options.disabledExtensions);
     if (undefined === capabilities)
       throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
 
     // set actual gl state to match desired state defaults
     context.depthFunc(GL.DepthFunc.Default);  // LessOrEqual
 
-    return new System(canvas, context, capabilities);
+    return new System(canvas, context, capabilities, options);
   }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
@@ -652,7 +654,7 @@ export class System extends RenderSystem {
   public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel, iModel: IModelConnection) { this.getIdMap(iModel).classifiers.set(modelId, classifier); }
   public createPlanarClassifier(properties: SpatialClassificationProps.Properties, tileTree: TileTree, classifiedModel: TileTreeModelState, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedModel, sceneContext); }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities) {
+  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super();
     this.canvas = canvas;
     this.context = context;
@@ -660,6 +662,8 @@ export class System extends RenderSystem {
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this._instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
     this.resourceCache = new Map<IModelConnection, IdMap>();
+
+    this.cullAgainstActiveVolume = true === options.cullAgainstActiveVolume;
 
     // Make this System a subscriber to the the IModelConnection onClose event
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));

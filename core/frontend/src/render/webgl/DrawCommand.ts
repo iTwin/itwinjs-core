@@ -217,7 +217,10 @@ class PrimitiveCommand extends DrawCommand {
 
   public get primitive(): Primitive { return this._primitive; }
 
-  public execute(exec: ShaderProgramExecutor): void { this._primitive.draw(exec); }
+  public execute(exec: ShaderProgramExecutor): void {
+    if (!System.instance.cullAgainstActiveVolume || !exec.target.isGeometryOutsideActiveVolume(this._primitive.cachedGeometry))
+      this._primitive.draw(exec);
+  }
 }
 
 /** Draw a batch primitive, possibly with symbology overridden per-feature
@@ -597,19 +600,15 @@ export class RenderCommands {
   }
 
   public addPrimitive(prim: Primitive): void {
+    // ###TODO Would be nice if we could detect outside active volume here, but active volume only applies to specific render passes
+    // if (this.target.isGeometryOutsideActiveVolume(prim.cachedGeometry))
+    //   return;
+
     if (undefined !== this._frustumPlanes) { // See if we can cull this primitive.
       if (RenderPass.Classification === prim.getRenderPass(this.target)) {
-        const geom = prim.cachedGeometry.asSurface;
+        const geom = prim.cachedGeometry.asLUT;
         if (undefined !== geom) {
-          this._scratchRange.setNull();
-          const lowX = geom.qOrigin[0];
-          const lowY = geom.qOrigin[1];
-          const lowZ = geom.qOrigin[2];
-          const hiX = 0xffff * geom.qScale[0] + lowX;
-          const hiY = 0xffff * geom.qScale[1] + lowY;
-          const hiZ = 0xffff * geom.qScale[2] + lowZ;
-          this._scratchRange.setXYZ(lowX, lowY, lowZ);
-          this._scratchRange.extendXYZ(hiX, hiY, hiZ);
+          geom.computeRange(this._scratchRange);
           let frustum = Frustum.fromRange(this._scratchRange, this._scratchFrustum);
           frustum = frustum.transformBy(this.target.currentTransform, frustum);
           if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
@@ -665,11 +664,17 @@ export class RenderCommands {
     if (overrides.allHidden)
       return;
 
-    if (undefined !== this._frustumPlanes && !batch.range.isNull) {
-      let frustum = Frustum.fromRange(batch.range, this._scratchFrustum);
-      frustum = frustum.transformBy(this.target.currentTransform, frustum);
-      if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
-        return;
+    if (!batch.range.isNull) {
+      // ###TODO Would be nice if we could detect outside active volume here, but active volume only applies to specific render passes
+      // if (this.target.isRangeOutsideActiveVolume(batch.range))
+      //   return;
+
+      if (undefined !== this._frustumPlanes) {
+        let frustum = Frustum.fromRange(batch.range, this._scratchFrustum);
+        frustum = frustum.transformBy(this.target.currentTransform, frustum);
+        if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
+          return;
+        }
       }
     }
 

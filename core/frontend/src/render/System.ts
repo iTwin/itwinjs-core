@@ -1058,6 +1058,10 @@ export namespace RenderSystem {
      * @internal
      */
     disabledExtensions?: WebGLExtensionName[];
+    /** If true, when a clip volume is applied to the view, geometry will be tested against the clip volume on the CPU and not drawn if it is entirely clipped, improving performance.
+     * @internal
+     */
+    cullAgainstActiveVolume?: boolean;
   }
 }
 

@@ -82,3 +82,5 @@ Debugging display-test-app can be accomplished using the following procedures, d
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
 * SVT_DISABLE_INSTANCING
   * If defined, instanced geometry will not be generated for tiles.
+* SVT_DISABLE_ACTIVE_VOLUME_CULLING
+  * If defined, geometry will not be culled against the active volume before drawing. Useful only for testing the feature gate and the performance differences.

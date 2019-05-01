@@ -4662,6 +4662,8 @@ export namespace RenderSystem {
     // @alpha
     export interface Options {
         // @internal
+        cullAgainstActiveVolume?: boolean;
+        // @internal
         disabledExtensions?: WebGLExtensionName[];
     }
 }
@@ -5685,6 +5687,12 @@ export abstract class Target extends RenderTarget {
     readonly isEdgeWeightOverridden: boolean;
     // (undocumented)
     isFadeOutActive: boolean;
+    // Warning: (ae-forgotten-export) The symbol "CachedGeometry" needs to be exported by the entry point imodeljs-frontend.d.ts
+    // 
+    // (undocumented)
+    isGeometryOutsideActiveVolume(geom: CachedGeometry): boolean;
+    // (undocumented)
+    isRangeOutsideActiveVolume(range: Range3d): boolean;
     // (undocumented)
     readonly isReadPixelsInProgress: boolean;
     // (undocumented)

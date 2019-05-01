@@ -15,6 +15,7 @@ export interface SVTConfiguration {
   enableDiagnostics?: boolean; // If true, all RenderDiagnostics will be enabled (assertions, debug output, GL state checks).
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
   disableInstancing?: boolean;
+  disableActiveVolumeCulling?: boolean;
 }
 
 export interface ConnectProjectConfiguration {

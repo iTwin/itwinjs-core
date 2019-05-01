@@ -34,8 +34,8 @@ function setupStandaloneConfiguration() {
     if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
       configuration.signInForStandalone = true;
 
-    if (undefined !== process.env.SVT_DISABLE_INSTANCING)
-      configuration.disableInstancing = true;
+    configuration.disableInstancing = undefined !== process.env.SVT_DISABLE_INSTANCING;
+    configuration.disableActiveVolumeCulling = undefined !== process.env.SVT_DISABLE_ACTIVE_VOLUME_CULLING;
 
     const extensions = process.env.SVT_DISABLED_EXTENSIONS;
     if (undefined !== extensions)

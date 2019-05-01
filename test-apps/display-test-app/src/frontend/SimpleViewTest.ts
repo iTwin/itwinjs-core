@@ -22,6 +22,7 @@ import {
   IModelConnection,
   OidcClientWrapper,
   RenderDiagnostics,
+  RenderSystem,
   FrontendRequestContext,
   WebGLExtensionName,
 } from "@bentley/imodeljs-frontend";
@@ -111,8 +112,13 @@ async function main() {
   // retrieve, set, and output the global configuration variable
   await retrieveConfiguration(); // (does a fetch)
   console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line:no-console
+
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
-  const renderSystemOptions = { disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[] };
+  const renderSystemOptions: RenderSystem.Options = {
+    disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
+    cullAgainstActiveVolume: !configuration.disableActiveVolumeCulling,
+  };
+
   if (configuration.disableInstancing)
     DisplayTestApp.tileAdminProps.enableInstancing = false;
 

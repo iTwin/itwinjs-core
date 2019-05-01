@@ -125,8 +125,9 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   addEyeSpace(prog);
   prog.addUniform("u_numClips", VariableType.Int, (program) => {
     program.addGraphicUniform("u_numClips", (uniform, params) => {
-      const numClips = params.target.hasClipVolume ? params.target.clips.count : 0;
-      assert(numClips > 0);
+      const doClipping = true; // set to false to visualize pre-shader culling of geometry...
+      const numClips = (doClipping && params.target.hasClipVolume) ? params.target.clips.count : 0;
+      assert(numClips > 0 || !doClipping);
       uniform.setUniform1i(numClips);
     });
   });

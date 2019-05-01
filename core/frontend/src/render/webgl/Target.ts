@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { ClipVector, Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
+import { ClipUtilities, ClipVector, Transform, Vector3d, Point3d, Matrix4d, Point2d, Range3d, XAndY } from "@bentley/geometry-core";
 import { assert, BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates, PlanarClassifierMap } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
@@ -26,7 +26,7 @@ import { SceneCompositor } from "./SceneCompositor";
 import { FrameBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { PlanarClassifier } from "./PlanarClassifier";
-import { SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
+import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ShaderLights } from "./Lighting";
 import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
@@ -410,6 +410,32 @@ export abstract class Target extends RenderTarget {
       this._activeClipVolume = dispose(this._activeClipVolume);
       this._activeClipVolume = System.instance.createClipVolume(clip) as ClipVolume;
     }
+  }
+
+  /** @internal */
+  public isRangeOutsideActiveVolume(range: Range3d): boolean {
+    if (undefined === this._activeClipVolume || !this._stack.top.showClipVolume || !this.clips.isValid)
+      return false;
+
+    range = this.currentTransform.multiplyRange(range, range);
+
+    // ###TODO: Avoid allocation of Range3d inside called function...
+    const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(this._activeClipVolume.clipVector, range);
+    return clippedRange.isNull;
+  }
+
+  private readonly _scratchRange = new Range3d();
+  /** @internal */
+  public isGeometryOutsideActiveVolume(geom: CachedGeometry): boolean {
+    if (undefined === this._activeClipVolume || !this._stack.top.showClipVolume || !this.clips.isValid)
+      return false;
+
+    const lut = geom.asLUT;
+    if (undefined === lut)
+      return false;
+
+    const range = lut.computeRange(this._scratchRange);
+    return this.isRangeOutsideActiveVolume(range);
   }
 
   public get batchState(): BatchState { return this._batchState; }

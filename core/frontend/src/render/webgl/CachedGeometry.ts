@@ -7,7 +7,7 @@
 import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { Point3d, Vector2d } from "@bentley/geometry-core";
+import { Point3d, Range3d, Vector2d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
@@ -144,6 +144,24 @@ export abstract class LUTGeometry extends CachedGeometry {
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
   public get hasAnimation() { return this.lut.hasAnimation; }
+
+  public computeRange(output?: Range3d): Range3d {
+    const range = undefined !== output ? output : new Range3d();
+    range.setNull();
+
+    const lowX = this.qOrigin[0];
+    const lowY = this.qOrigin[1];
+    const lowZ = this.qOrigin[2];
+
+    const hiX = 0xffff * this.qScale[0] + lowX;
+    const hiY = 0xffff * this.qScale[1] + lowY;
+    const hiZ = 0xffff * this.qScale[2] + lowZ;
+
+    range.setXYZ(lowX, lowY, lowZ);
+    range.extendXYZ(hiX, hiY, hiZ);
+
+    return range;
+  }
 
   protected constructor() { super(); }
 }
