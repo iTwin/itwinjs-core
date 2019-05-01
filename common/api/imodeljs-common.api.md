@@ -4883,6 +4883,7 @@ export namespace ViewFlag {
         apply(base: ViewFlags): ViewFlags;
         // (undocumented)
         clear(): void;
+        readonly clipVolumeOverride: boolean | undefined;
         // (undocumented)
         clone(out?: Overrides): Overrides;
         // (undocumented)

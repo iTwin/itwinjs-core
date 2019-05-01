@@ -3517,6 +3517,7 @@ export namespace MockRender {
     }
     // (undocumented)
     export class System extends RenderSystem {
+        constructor();
         // (undocumented)
         createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): Batch;
         // (undocumented)
@@ -4591,6 +4592,8 @@ export abstract class RenderPlanarClassifier implements IDisposable {
 
 // @public
 export abstract class RenderSystem implements IDisposable {
+    // @internal
+    protected constructor(options?: RenderSystem.Options);
     // @internal (undocumented)
     addSpatialClassificationModel(_modelId: Id64String, _classificationModel: RenderClassifierModel, _iModel: IModelConnection): void;
     // @internal
@@ -4655,6 +4658,8 @@ export abstract class RenderSystem implements IDisposable {
     readonly maxTextureSize: number;
     // @internal (undocumented)
     onInitialized(): void;
+    // @internal
+    readonly options: RenderSystem.Options;
 }
 
 // @public
@@ -6034,6 +6039,8 @@ export namespace Tile {
         readonly root: TileTree;
         // (undocumented)
         readonly tileSizeModifier: number;
+        // (undocumented)
+        readonly viewClip?: ClipVector;
         // (undocumented)
         viewFrustum?: ViewFrustum;
     }

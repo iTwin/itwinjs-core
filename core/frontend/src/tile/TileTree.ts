@@ -486,10 +486,20 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     const box = Frustum.fromRange(range, Tile._scratchRootFrustum);
     const worldBox = box.transformBy(args.location, Tile._scratchWorldFrustum);
     const worldSphere = sphere ? sphere.transformBy(args.location, Tile._scratchWorldSphere) : undefined;
-    const isOutside = FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox, worldSphere);
-    const isClipped = !isOutside && undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points);
-    const isCulled = isOutside || isClipped;
-    return isCulled;
+
+    // Test against frustum.
+    if (FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox, worldSphere))
+      return true;
+
+    // Test against TileTree's own clip volume, if any.
+    if (undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points))
+      return true;
+
+    // Test against view clip, if any (will be undefined if TileTree does not want view clip applied to it).
+    if (undefined !== args.viewClip && ClipPlaneContainment.StronglyOutside === args.viewClip.classifyPointContainment(worldBox.points))
+      return true;
+
+    return false;
   }
 
   private loadChildren(): TileTree.LoadStatus {
@@ -644,6 +654,7 @@ export namespace Tile {
     public readonly purgeOlderThan: BeTimePoint;
     private readonly _frustumPlanes?: FrustumPlanes;
     public planarClassifier?: RenderPlanarClassifier;
+    public readonly viewClip?: ClipVector;
 
     public getPixelSizeAtPoint(inPoint?: Point3d): number {
       return this.viewFrustum !== undefined ? this.viewFrustum.getPixelSizeAtPoint(inPoint) : this.context.getPixelSizeAtPoint();
@@ -664,7 +675,12 @@ export namespace Tile {
       this.viewFrustum = (undefined !== context.backgroundMap) ? ViewFrustum.createFromViewportAndPlane(context.viewport, context.backgroundMap.getPlane()) : context.viewport.viewFrustum;
       if (this.viewFrustum !== undefined)
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
+
       this.planarClassifier = context.getPlanarClassifierForModel(root.modelId);
+
+      // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
+      if (IModelApp.renderSystem.options.cullAgainstActiveVolume && context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
+        this.viewClip = context.viewport.view.getViewClip();
     }
 
     public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc

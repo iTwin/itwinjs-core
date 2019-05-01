@@ -6,7 +6,7 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
 import {
-  Angle, AngleSweep, Arc3d, AxisOrder, ClipUtilities, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d,
+  Angle, AngleSweep, Arc3d, AxisOrder, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d,
   Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
@@ -603,13 +603,6 @@ export class ViewFrustum {
       return;
 
     let extents = view.getViewedExtents();
-
-    const clip = (view.viewFlags.clipVolume ? view.getViewClip() : undefined);
-    if (undefined !== clip) {
-      const clipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clip, extents);
-      if (!clipRange.isNull)
-        extents.setFrom(clipRange);
-    }
 
     this.extendRangeForDisplayedPlane(extents);
 

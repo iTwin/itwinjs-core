@@ -438,8 +438,6 @@ export class System extends RenderSystem {
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
-  public readonly enableBackfaceCulling: boolean;
-  public readonly cullAgainstActiveVolume: boolean;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _instancingExtension?: ANGLE_instanced_arrays;
   private readonly _textureBindings: TextureBinding[] = [];
@@ -656,16 +654,13 @@ export class System extends RenderSystem {
   public createPlanarClassifier(properties: SpatialClassificationProps.Properties, tileTree: TileTree, classifiedModel: TileTreeModelState, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedModel, sceneContext); }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
-    super();
+    super(options);
     this.canvas = canvas;
     this.context = context;
     this.capabilities = capabilities;
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this._instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
     this.resourceCache = new Map<IModelConnection, IdMap>();
-
-    this.enableBackfaceCulling = true === options.backfaceCulling;
-    this.cullAgainstActiveVolume = true === options.cullAgainstActiveVolume;
 
     // Make this System a subscriber to the the IModelConnection onClose event
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
