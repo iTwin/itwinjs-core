@@ -966,6 +966,7 @@ export abstract class ViewState3d extends ViewState {
     this.rotation.setFrom(val.rotation);
     this.camera.setFrom(val.camera);
   }
+
   public toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this._cameraOn;
