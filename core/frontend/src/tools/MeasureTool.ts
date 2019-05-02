@@ -16,6 +16,8 @@ import { GeometryStreamProps, ColorDef } from "@bentley/imodeljs-common";
 import { QuantityType } from "../QuantityFormatter";
 import { BeButtonEvent, EventHandled } from "./Tool";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
+import { AccuDrawShortcuts } from "./AccuDrawTool";
+import { AccuDrawHintBuilder } from "../AccuDraw";
 
 /** @internal */
 class MeasureLabel implements CanvasDecoration {
@@ -103,7 +105,10 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
   protected setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
-    IModelApp.accuDraw.deactivate(); // Don't enable AccuDraw automatically when starting dynamics.
+    const hints = new AccuDrawHintBuilder();
+    hints.enableSmartRotation = true;
+    hints.setModeRectangular();
+    hints.sendHints(false);
     IModelApp.toolAdmin.setCursor(0 === this._locationData.length ? IModelApp.viewManager.crossHairCursor : IModelApp.viewManager.dynamicsCursor);
     this.showPrompt();
   }
@@ -484,6 +489,12 @@ export class MeasureDistanceTool extends PrimitiveTool {
     return true;
   }
 
+  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
+      return EventHandled.Yes;
+    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
+  }
+
   public onRestartTool(): void {
     const tool = new MeasureDistanceTool();
     if (!tool.run())
@@ -505,7 +516,6 @@ export class MeasureLocationTool extends PrimitiveTool {
 
   protected setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
-    IModelApp.accuDraw.deactivate(); // Don't enable AccuDraw automatically when starting dynamics.
     this.showPrompt();
   }
 

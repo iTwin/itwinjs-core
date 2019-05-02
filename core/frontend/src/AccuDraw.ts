@@ -3051,8 +3051,11 @@ export class AccuDraw {
       return;
     }
     const setFocus: boolean = !!(this.published.flags & AccuDrawFlags.SetFocus);
+    const smartRotation: boolean = !!(this.published.flags & AccuDrawFlags.SmartRotation);
     this.doProcessHints();
     this.published.zero();
+    if (smartRotation && this.isInactive) // Preserve smart rotation hint until when/if AccuDraw is enabled for the current tool...
+      this.published.flags = AccuDrawFlags.SmartRotation;
     if (this.isEnabled || setFocus)
       this.grabInputFocus();
   }

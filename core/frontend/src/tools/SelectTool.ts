@@ -412,7 +412,8 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await this.selectDecoration(ev, IModelApp.accuSnap.currHit))
+    IModelApp.accuSnap.clear(); // Need to test hit at start drag location, not current AccuSnap...
+    if (EventHandled.Yes === await this.selectDecoration(ev))
       return EventHandled.Yes;
     if (InputSource.Touch === ev.inputSource && SelectionMethod.Pick === this.selectionMethod)
       return EventHandled.No; // Require method change for line/box selection...allow IdleTool to handle touch move...

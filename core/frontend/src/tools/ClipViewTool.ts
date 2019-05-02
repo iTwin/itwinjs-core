@@ -23,8 +23,7 @@ import { CoordinateLockOverrides } from "./ToolAdmin";
 import { PropertyDescription } from "../properties/Description";
 import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 import { PrimitiveValue } from "../properties/Value";
-import { FormatterSpec } from "@bentley/imodeljs-quantity";
-import { PropertyEditorParamTypes } from "../properties/EditorParams";
+import { AccuDrawShortcuts } from "./AccuDrawTool";
 
 /** @internal The orientation to use to define the view clip volume */
 export const enum ClipOrientation {
@@ -216,7 +215,7 @@ export class ViewClipTool extends PrimitiveTool {
   public static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void {
     const shapePtsLo = ViewClipTool.getClipShapePoints(shape, extents.low);
     const shapePtsHi = ViewClipTool.getClipShapePoints(shape, extents.high);
-    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay, shape.transformFromClip, id);
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, shape.transformFromClip, id); // Use WorldDecoration not WorldOverlay to make sure handles have priority...
     builder.setSymbology(color, ColorDef.black, weight);
     for (let i: number = 0; i < shapePtsLo.length; i++)
       builder.addLineString([shapePtsLo[i].clone(), shapePtsHi[i].clone()]);
@@ -267,7 +266,7 @@ export class ViewClipTool extends PrimitiveTool {
   public static drawClipPlanesLoops(context: DecorateContext, loops: GeometryQuery[], color: ColorDef, weight: number, dashed?: boolean, fill?: ColorDef, id?: string): void {
     if (loops.length < 1)
       return;
-    const builderEdge = context.createGraphicBuilder(GraphicType.WorldOverlay, undefined, id);
+    const builderEdge = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, id); // Use WorldDecoration not WorldOverlay to make sure handles have priority...
     builderEdge.setSymbology(color, ColorDef.black, weight, dashed ? LinePixels.Code2 : undefined);
     for (const geom of loops) {
       if (!(geom instanceof Loop))
@@ -432,6 +431,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
     const hints = new AccuDrawHintBuilder();
     hints.setOrigin(this._points[this._points.length - 1]);
     hints.setRotation(this._matrix!.inverse()!);
+    hints.setModeRectangular();
     hints.setLockZ = true;
     hints.sendHints();
   }
@@ -545,6 +545,12 @@ export class ViewClipByShapeTool extends ViewClipTool {
     else
       this.setupAndPromptForNextAction();
     return true;
+  }
+
+  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
+      return EventHandled.Yes;
+    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 }
 
@@ -707,11 +713,9 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
   protected _clip: ClipVector;
   protected _viewRange: Range3d;
   protected _restoreClip: boolean = true;
-  protected _distanceFormatterSpec?: FormatterSpec;
-  private _useDistanceValue = new ToolSettingsValue(false);
-  private _distanceValue = new ToolSettingsValue(0.0, this._distanceFormatterSpec ? IModelApp.quantityFormatter.formatQuantity(0.0, this._distanceFormatterSpec) : undefined);
+  protected _currentDistance: number = 0.0;
 
-  public constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[], distanceFormatterSpec?: FormatterSpec) {
+  public constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[]) {
     super(manipulator);
     this._anchorIndex = ids.indexOf(hitId);
     this._ids = ids;
@@ -719,84 +723,6 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     this._clipView = vp;
     this._clip = clip;
     this._viewRange = vp.computeViewRange();
-    this._distanceFormatterSpec = distanceFormatterSpec;
-  }
-
-  private static _useDistanceName = "useDistance";
-  private static _getUseDistanceDescription = (): PropertyDescription => {
-    return {
-      name: ViewClipModifyTool._useDistanceName,
-      displayLabel: "",
-      typename: "boolean",
-      editor: {
-        params: [
-          {
-            type: PropertyEditorParamTypes.SuppressEditorLabel,
-            suppressLabelPlaceholder: true,
-          },
-        ],
-      },
-    };
-  }
-
-  private static _distanceName = "distance";
-  private static _getDistanceDescription = (): PropertyDescription => {
-    return {
-      name: ViewClipModifyTool._distanceName,
-      displayLabel: IModelApp.i18n.translate("CoreTools:tools.ViewClip.Settings.Distance"),
-      typename: "number",
-    };
-  }
-
-  public get useDistance(): boolean {
-    return this._useDistanceValue.value as boolean;
-  }
-
-  public set useDistance(value: boolean) {
-    this._useDistanceValue.value = value;
-  }
-
-  public get distance(): number {
-    return this._distanceValue.value as number;
-  }
-
-  public set distance(value: number) {
-    this._distanceValue.value = value;
-    this._distanceValue.displayValue = this._distanceFormatterSpec ? IModelApp.quantityFormatter.formatQuantity(value, this._distanceFormatterSpec) : undefined;
-  }
-
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
-    if (undefined === this._distanceFormatterSpec)
-      return undefined;
-    const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._useDistanceValue.clone() as PrimitiveValue, ViewClipModifyTool._getUseDistanceDescription(), { rowPriority: 20, columnIndex: 0 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._distanceValue.clone() as PrimitiveValue, ViewClipModifyTool._getDistanceDescription(), { rowPriority: 20, columnIndex: 2 }));
-    return toolSettings;
-  }
-
-  protected syncDistanceState(): void {
-    if (undefined === this._distanceFormatterSpec)
-      return;
-    const distanceValue = this._distanceValue.clone();
-    const syncItem: ToolSettingsPropertySyncItem = { value: distanceValue, propertyName: ViewClipModifyTool._distanceName, isDisabled: !this.useDistance };
-    this.syncToolSettingsProperties([syncItem]);
-  }
-
-  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
-    if (undefined === this._distanceFormatterSpec)
-      return false;
-    if (updatedValue.propertyName === ViewClipModifyTool._useDistanceName) {
-      if (!this._useDistanceValue.update(updatedValue.value))
-        return false;
-      this.syncDistanceState();
-      return true;
-    } else if (updatedValue.propertyName === ViewClipModifyTool._distanceName) {
-      if (!this._distanceValue.update(updatedValue.value))
-        return false;
-      this.distance = this.distance; // ###TODO - Update displayValue...
-      return true;
-    }
-    return false;
   }
 
   protected init(): void {
@@ -812,9 +738,6 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     if (-1 === this._anchorIndex || undefined === ev.viewport || ev.viewport !== this._clipView)
       return undefined;
 
-    if (this.useDistance)
-      return (Math.abs(this.distance) < Geometry.smallMetricDistance ? undefined : this.distance);
-
     // NOTE: Use AccuDraw z instead of view z if AccuDraw is explicitly enabled...
     const anchorRay = ViewClipTool.getClipRayTransformed(this._controls[this._anchorIndex].origin, this._controls[this._anchorIndex].direction, transformFromClip);
     const projectedPt = EditManipulator.HandleUtils.projectPointToLineInView(ev.point, anchorRay.origin, anchorRay.direction, ev.viewport, true);
@@ -828,18 +751,16 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     if (offsetVec.dotProduct(anchorRay.direction) < 0.0)
       offset *= -1.0;
 
-    this.distance = offset;
-    this.syncDistanceState();
-
+    this._currentDistance = offset;
     return offset;
   }
 
   protected drawAnchorOffset(context: DecorateContext, color: ColorDef, weight: number, transformFromClip?: Transform): void {
-    if (-1 === this._anchorIndex || Math.abs(this.distance) < Geometry.smallMetricDistance)
+    if (-1 === this._anchorIndex || Math.abs(this._currentDistance) < Geometry.smallMetricDistance)
       return;
 
     const anchorRay = ViewClipTool.getClipRayTransformed(this._controls[this._anchorIndex].origin, this._controls[this._anchorIndex].direction, transformFromClip);
-    anchorRay.direction.scaleToLength(this.distance, anchorRay.direction);
+    anchorRay.direction.scaleToLength(this._currentDistance, anchorRay.direction);
     const pt1 = anchorRay.fractionToPoint(0.0);
     const pt2 = anchorRay.fractionToPoint(1.0);
     const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
@@ -891,14 +812,15 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     if (undefined === offset)
       return false;
 
+    const offsetAll = ev.isShiftKey;
     const localOffset = ViewClipTool.getOffsetValueTransformed(offset, clipShape.transformToClip);
     const shapePts = ViewClipTool.getClipShapePoints(clipShape, 0.0);
     const adjustedPts: Point3d[] = [];
     for (let i = 0; i < shapePts.length; i++) {
       const prevFace = (0 === i ? shapePts.length - 2 : i - 1);
       const nextFace = (shapePts.length - 1 === i ? 0 : i);
-      const prevSelected = (prevFace === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[prevFace]));
-      const nextSelected = (nextFace === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[nextFace]));
+      const prevSelected = offsetAll || (prevFace === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[prevFace]));
+      const nextSelected = offsetAll || (nextFace === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[nextFace]));
       if (prevSelected && nextSelected) {
         const prevPt = shapePts[i].plusScaled(this._controls[prevFace].direction, localOffset);
         const nextPt = shapePts[i].plusScaled(this._controls[nextFace].direction, localOffset);
@@ -920,8 +842,8 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     let zHigh = clipShape.zHigh;
     const zLowIndex = this._controls.length - 2;
     const zHighIndex = this._controls.length - 1;
-    const zLowSelected = (zLowIndex === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[zLowIndex]));
-    const zHighSelected = (zHighIndex === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[zHighIndex]));
+    const zLowSelected = offsetAll || (zLowIndex === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[zLowIndex]));
+    const zHighSelected = offsetAll || (zHighIndex === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[zHighIndex]));
 
     if (zLowSelected || zHighSelected) {
       const clipExtents = ViewClipTool.getClipShapeExtents(clipShape, this._viewRange);
@@ -958,9 +880,10 @@ export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
     if (undefined === offset)
       return false;
 
+    const offsetAll = ev.isShiftKey;
     const planeSet = ConvexClipPlaneSet.createEmpty();
     for (let i: number = 0; i < this._controls.length; i++) {
-      const selected = (i === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[i]));
+      const selected = offsetAll || (i === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[i]));
       const origin = this._controls[i].origin.clone();
       const direction = this._controls[i].direction;
       if (selected)
@@ -1019,7 +942,6 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   protected _controlIds: string[] = [];
   protected _controls: ViewClipControlArrow[] = [];
   protected _suspendDecorator = false;
-  protected _distanceFormatterSpec?: FormatterSpec;
   protected _removeViewCloseListener?: () => void;
 
   public constructor(protected _clipView: Viewport, protected _clipEventHandler?: ViewClipEventHandler) {
@@ -1207,10 +1129,6 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       return false;
     }
 
-    // ### TODO - Support moving clip plane by specified distance...
-    // if (undefined === this._distanceFormatterSpec)
-    //  this._distanceFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
-
     if (undefined !== this._clipShape)
       return this.createClipShapeControls();
     else if (undefined !== this._clipPlanes)
@@ -1228,10 +1146,10 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     if (undefined === this._clip || hit.sourceId === this._clipId)
       return false;
     if (undefined !== this._clipShape) {
-      const clipShapeModifyTool = new ViewClipShapeModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls, this._distanceFormatterSpec);
+      const clipShapeModifyTool = new ViewClipShapeModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
       this._suspendDecorator = clipShapeModifyTool.run();
     } else if (undefined !== this._clipPlanes) {
-      const clipPlanesModifyTool = new ViewClipPlanesModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls, this._distanceFormatterSpec);
+      const clipPlanesModifyTool = new ViewClipPlanesModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
       this._suspendDecorator = clipPlanesModifyTool.run();
     }
     return this._suspendDecorator;

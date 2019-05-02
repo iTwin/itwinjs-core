@@ -20,7 +20,6 @@ import {
   HitDetail,
   IModelApp,
   PrimitiveTool,
-  RotationMode,
   SnapStatus,
 } from "@bentley/imodeljs-frontend";
 import {
@@ -122,61 +121,9 @@ export class DrawingAidTestTool extends PrimitiveTool {
   }
 
   public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    // TESTING ONLY - TBD Keyboard shortcuts...
-    if (wentDown) {
-      switch (keyEvent.key.toLowerCase()) {
-        case " ":
-          AccuDrawShortcuts.changeCompassMode();
-          break;
-        case "enter":
-          AccuDrawShortcuts.lockSmart();
-          break;
-        case "x":
-          AccuDrawShortcuts.lockX();
-          break;
-        case "y":
-          AccuDrawShortcuts.lockY();
-          break;
-        case "z":
-          AccuDrawShortcuts.lockZ();
-          break;
-        case "a":
-          AccuDrawShortcuts.lockAngle();
-          break;
-        case "d":
-          AccuDrawShortcuts.lockDistance();
-          break;
-        case "t":
-          AccuDrawShortcuts.setStandardRotation(RotationMode.Top);
-          break;
-        case "f":
-          AccuDrawShortcuts.setStandardRotation(RotationMode.Front);
-          break;
-        case "s":
-          AccuDrawShortcuts.setStandardRotation(RotationMode.Side);
-          break;
-        case "v":
-          AccuDrawShortcuts.setStandardRotation(RotationMode.View);
-          break;
-        case "o":
-          AccuDrawShortcuts.setOrigin();
-          break;
-        case "c":
-          AccuDrawShortcuts.rotateCycle(false);
-          break;
-        case "q":
-          AccuDrawShortcuts.rotateAxes(true);
-          break;
-        case "e":
-          AccuDrawShortcuts.rotateToElement(false);
-          break;
-        case "r":
-          AccuDrawShortcuts.defineACSByPoints();
-          break;
-      }
-    }
-
-    return EventHandled.No;
+    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
+      return EventHandled.Yes;
+    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 
   public onRestartTool(): void {

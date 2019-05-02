@@ -558,6 +558,8 @@ export class AccuDrawShortcuts {
     static lockZ(): void;
     // (undocumented)
     static processPendingHints(): void;
+    // @internal
+    static processShortcutKey(keyEvent: KeyboardEvent): boolean;
     // (undocumented)
     static requestInputFocus(): void;
     // (undocumented)
@@ -3318,6 +3320,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     }[];
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -6754,6 +6758,8 @@ export class ViewClipByShapeTool extends ViewClipTool {
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
+    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
+    // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
@@ -6850,8 +6856,6 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
-    protected _distanceFormatterSpec?: FormatterSpec;
-    // (undocumented)
     doClipPlaneClear(index: number): boolean;
     // (undocumented)
     doClipPlaneNegate(index: number): boolean;
@@ -6939,13 +6943,11 @@ export interface ViewClipEventHandler {
 
 // @internal
 export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
-    constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[], distanceFormatterSpec?: FormatterSpec);
+    constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[]);
     // (undocumented)
     protected accept(ev: BeButtonEvent): boolean;
     // (undocumented)
     protected _anchorIndex: number;
-    // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
     // (undocumented)
     protected _clip: ClipVector;
     // (undocumented)
@@ -6953,11 +6955,9 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     // (undocumented)
     protected _controls: ViewClipControlArrow[];
     // (undocumented)
+    protected _currentDistance: number;
+    // (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
-    distance: number;
-    // (undocumented)
-    protected _distanceFormatterSpec?: FormatterSpec;
     // (undocumented)
     protected drawAnchorOffset(context: DecorateContext, color: ColorDef, weight: number, transformFromClip?: Transform): void;
     // (undocumented)
@@ -6975,13 +6975,7 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     // (undocumented)
     protected _restoreClip: boolean;
     // (undocumented)
-    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
-    // (undocumented)
-    protected syncDistanceState(): void;
-    // (undocumented)
     protected abstract updateViewClip(ev: BeButtonEvent, isAccept: boolean): boolean;
-    // (undocumented)
-    useDistance: boolean;
     // (undocumented)
     protected _viewRange: Range3d;
 }
@@ -8098,7 +8092,7 @@ export class ZoomViewTool extends ViewManip {
 
 // Warnings were encountered during analysis:
 // 
-// src/tools/MeasureTool.ts:99:7 - (ae-forgotten-export) The symbol "MeasureMarker" needs to be exported by the entry point imodeljs-frontend.d.ts
+// src/tools/MeasureTool.ts:101:7 - (ae-forgotten-export) The symbol "MeasureMarker" needs to be exported by the entry point imodeljs-frontend.d.ts
 
 // (No @packageDocumentation comment for this package)
 
