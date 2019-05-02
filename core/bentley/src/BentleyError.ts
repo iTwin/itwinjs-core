@@ -13,7 +13,7 @@ import { LogFunction, Logger } from "./Logger";
  * If a status code is to be returned, prefer to return a more specific error status type such as IModelStatus or DbResult.
  * @public
  */
-export const enum BentleyStatus {
+export enum BentleyStatus {
   SUCCESS = 0x0000,
   ERROR = 0x8000,
 }
@@ -22,7 +22,7 @@ export const enum BentleyStatus {
  * Error status codes are divided into separate ranges for different kinds of errors. All known ranges at least should be defined here, to avoid collisions.
  * @public
  */
-export const enum IModelStatus {
+export enum IModelStatus {
   IMODEL_ERROR_BASE = 0x10000,
   Success = 0,
   AlreadyLoaded = IMODEL_ERROR_BASE + 1,
@@ -96,7 +96,7 @@ export const enum IModelStatus {
 /** Error status from various briefcase operations
  * @beta Should these be internal?
  */
-export const enum BriefcaseStatus {
+export enum BriefcaseStatus {
   CannotAcquire = 0x20000,
   CannotDownload = 0x20001,
   CannotUpload = 0x20002,
@@ -119,7 +119,7 @@ export enum RpcInterfaceStatus {
 /** Error status from various ChangeSet operations
  * @beta Should these be internal?
  */
-export const enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSetStatus in DgnPlatform
+export enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSetStatus in DgnPlatform
   Success = 0,
   CHANGESET_ERROR_BASE = 0x16000,
   /** Error applying a change set when reversing or reinstating it */
@@ -177,7 +177,7 @@ export const enum ChangeSetStatus { // Note: Values must be kept in sync with Ch
 /** Return codes for methods which perform repository management operations
  * @beta Should these be internal?
  */
-export const enum RepositoryStatus {
+export enum RepositoryStatus {
   Success = 0,
   /** The repository server did not respond to a request */
   ServerUnavailable = 0x15001,
@@ -212,7 +212,7 @@ export const enum RepositoryStatus {
 /** Status from returned HTTP status code
  * @beta Should these be internal?
  */
-export const enum HttpStatus {
+export enum HttpStatus {
   /** 2xx Success */
   Success = 0,
   /** 1xx Informational responses */
@@ -228,7 +228,7 @@ export const enum HttpStatus {
 /** Server returned WSG errors
  * @beta Right name? Right package?
  */
-export const enum WSStatus {
+export enum WSStatus {
   Success = 0,
   WSERROR_BASE = 0x18000,
   Unknown = WSERROR_BASE + 1,

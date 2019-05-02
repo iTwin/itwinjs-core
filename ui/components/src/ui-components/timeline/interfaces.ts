@@ -37,7 +37,7 @@ export interface Milestone {
 /** The amount of detail to be displayed in timeline.
  * @alpha
  */
-export const enum TimelineDetail {
+export enum TimelineDetail {
   /** Show duration and milestones if available. */
   Minimal = 0,
   /** Show start/end Date and playback dates only. */
@@ -49,7 +49,7 @@ export const enum TimelineDetail {
 /** The timeline scale to be displayed if TimelineDetail in NOT set to 'Minimal'.
  * @alpha
  */
-export const enum TimelineScale {
+export enum TimelineScale {
   /** Show years */
   Years,
   /** Show quarters */
@@ -65,7 +65,7 @@ export const enum TimelineScale {
 /** Determines if data displayed to use is the actual date or the amount of time elapsed since project start.
  * @alpha
  */
-export const enum TimelineDateDisplay {
+export enum TimelineDateDisplay {
   /** Display time axis using actual start/end dates */
   ActualTime,
   /** Display time axis using time relative to actual start/end dates */

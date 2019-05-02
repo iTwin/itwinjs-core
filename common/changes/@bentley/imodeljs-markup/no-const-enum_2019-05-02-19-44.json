@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "eliminate exported const enums",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "keith.bentley@bentley.com"
+}

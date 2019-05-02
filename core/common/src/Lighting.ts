@@ -11,7 +11,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 /** The type of a [[Light]]
  * @internal
  */
-export const enum LightType {
+export enum LightType {
   Invalid = 0,
   Solar = 1,     // Sunlight
   Ambient = 2,   // ambient light

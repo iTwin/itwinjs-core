@@ -960,7 +960,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 export namespace TreeTest {
 
   /** @internal */
-  export const enum TestId {
+  export enum TestId {
     Node = "tree-node",
     NodeContents = "tree-node-contents",
     NodeExpansionToggle = "tree-node-expansion-toggle",

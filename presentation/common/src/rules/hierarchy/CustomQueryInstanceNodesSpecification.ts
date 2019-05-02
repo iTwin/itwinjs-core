@@ -29,7 +29,7 @@ export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecific
 export declare type QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification;
 
 /** Used for serializing array of [[QuerySpecification]] to JSON. */
-export const enum QuerySpecificationTypes {
+export enum QuerySpecificationTypes {
   String = "String",
   ECPropertyValue = "ECPropertyValue",
 }

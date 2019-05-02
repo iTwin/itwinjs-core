@@ -71,7 +71,7 @@ export class BentleyError extends Error {
 }
 
 // @public
-export const enum BentleyStatus {
+export enum BentleyStatus {
     // (undocumented)
     ERROR = 32768,
     // (undocumented)
@@ -98,7 +98,7 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
 }
 
 // @beta
-export const enum BriefcaseStatus {
+export enum BriefcaseStatus {
     // (undocumented)
     CannotAcquire = 131072,
     // (undocumented)
@@ -124,7 +124,7 @@ export enum ChangeSetApplyOption {
 }
 
 // @beta
-export const enum ChangeSetStatus {
+export enum ChangeSetStatus {
     ApplyError = 90113,
     CannotMergeIntoMaster = 90136,
     CannotMergeIntoReadonly = 90135,
@@ -199,14 +199,14 @@ export function compareWithTolerance(a: number, b: number, tolerance?: number): 
 export type ComputePriorityFunction<T> = (value: T) => number;
 
 // @public
-export const enum DbOpcode {
+export enum DbOpcode {
     Delete = 9,
     Insert = 18,
     Update = 23
 }
 
 // @public
-export const enum DbResult {
+export enum DbResult {
     BE_SQLITE_ABORT = 4,
     // (undocumented)
     BE_SQLITE_ABORT_ROLLBACK = 516,
@@ -453,7 +453,7 @@ export namespace Guid {
 export type GuidString = string;
 
 // @beta
-export const enum HttpStatus {
+export enum HttpStatus {
     ClientError = 94211,
     Info = 94209,
     Redirection = 94210,
@@ -646,7 +646,7 @@ export enum IModelHubStatus {
 }
 
 // @public
-export const enum IModelStatus {
+export enum IModelStatus {
     // (undocumented)
     AlreadyLoaded = 65537,
     // (undocumented)
@@ -866,7 +866,7 @@ export class Logger {
 }
 
 // @public
-export const enum LoggerCategory {
+export enum LoggerCategory {
     Performance = "Performance"
 }
 
@@ -938,7 +938,7 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
 }
 
 // @public
-export const enum OpenMode {
+export enum OpenMode {
     // (undocumented)
     Readonly = 1,
     // (undocumented)
@@ -981,7 +981,7 @@ export class PriorityQueue<T> implements Iterable<T> {
 }
 
 // @beta
-export const enum RepositoryStatus {
+export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
     ChangeSetRequired = 86025,
     CodeNotReserved = 86027,
@@ -1094,7 +1094,7 @@ export function utf8ToString(utf8: Uint8Array): string | undefined;
 export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
 
 // @beta
-export const enum WSStatus {
+export enum WSStatus {
     // (undocumented)
     ClassNotFound = 98311,
     // (undocumented)

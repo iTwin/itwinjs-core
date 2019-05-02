@@ -1,7 +1,8 @@
 {
   "defaultSeverity": "error",
   "extends": [
-    "tslint:recommended"
+    "tslint:recommended",
+    "tslint-etc"
   ],
   "jsRules": {},
   "rules": {
@@ -113,6 +114,15 @@
         "format": "camelCase"
       }
     ],
+    // Rules from tslint-etc ===============================================
+    "no-const-enum": {
+      "options": [
+        {
+          "allowLocal": true
+        }
+      ],
+      "severity": "error"
+    },
     // Custom rules ========================================================
     "prefer-get": true,
     "no-direct-imports": true

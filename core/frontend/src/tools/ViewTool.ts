@@ -12,13 +12,12 @@ import { GraphicType } from "../rendering";
 import { DecorateContext } from "../ViewContext";
 import { CoordSystem, DepthRangeNpc, ScreenViewport, Viewport, ViewRect } from "../Viewport";
 import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
-import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool } from "./Tool";
-import { ToolSettings } from "./ToolAdmin";
+import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool, ToolSettings } from "./Tool";
 import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
 
-/** @public */
-export const enum ViewHandleWeight {
+/** @internal */
+const enum ViewHandleWeight {
   Thin = 1,
   Normal = 2,
   Bold = 3,
@@ -26,8 +25,9 @@ export const enum ViewHandleWeight {
   FatDot = 8,
 }
 
-/** @public */
-export const enum ViewHandleType {
+/** @internal */
+export const enum ViewHandleType {  // tslint:disable-line:no-const-enum
+  EXTERIOR = 0x00000001,
   None = 0,
   Rotate = 1,
   TargetCenter = 1 << 1,
@@ -39,15 +39,15 @@ export const enum ViewHandleType {
   Look = 1 << 7,
 }
 
-/** @public */
-export const enum ViewManipPriority {
+/** @internal */
+const enum ViewManipPriority {
   Low = 1,
   Normal = 10,
   Medium = 100,
   High = 1000,
 }
 
-/** @public */
+/** @internal */
 const enum OrientationResult {
   Success = 0,
   NoEvent = 1,

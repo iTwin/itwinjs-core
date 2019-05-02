@@ -15,7 +15,7 @@ import { ScreenViewport, Viewport, ViewRect } from "./Viewport";
 /** The possible actions for which a locate filter can be called.
  * @public
  */
-export const enum LocateAction {
+export enum LocateAction {
   Identify = 0,
   AutoLocate = 1,
 }
@@ -24,13 +24,13 @@ export const enum LocateAction {
  * Return `Reject` to indicate the element is unacceptable.
  * @public
  */
-export const enum LocateFilterStatus {
+export enum LocateFilterStatus {
   Accept = 0,
   Reject = 1,
 }
 
 /** @public */
-export const enum SnapStatus {
+export enum SnapStatus {
   Success = 0,
   Aborted = 1,
   NoElements = 2,

@@ -7,7 +7,7 @@
 import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d } from "@bentley/geometry-core";
 import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
-import { BeButtonEvent, EventHandled } from "./Tool";
+import { BeButtonEvent, EventHandled, CoordinateLockOverrides } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
 import { Id64Arg } from "@bentley/bentleyjs-core";
 import { Viewport, ScreenViewport } from "../Viewport";
@@ -19,14 +19,13 @@ import { AccuDrawHintBuilder, AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
 import { GraphicType } from "../rendering";
 import { HitDetail } from "../HitDetail";
-import { CoordinateLockOverrides } from "./ToolAdmin";
 import { PropertyDescription } from "../properties/Description";
 import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 import { PrimitiveValue } from "../properties/Value";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 
 /** @internal The orientation to use to define the view clip volume */
-export const enum ClipOrientation {
+export const enum ClipOrientation { // tslint:disable-line:no-const-enum
   Top,
   Front,
   Left,

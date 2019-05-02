@@ -48,6 +48,8 @@ import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Range2d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 
+// tslint:disable:no-const-enum
+
 /** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
@@ -89,7 +91,7 @@ export namespace IModelTileIO {
     public readonly headerLength: number;
     /** Flags describing the geometry contained within the tile */
     public readonly flags: Flags;
-    /** A bounding box no larger than the tile's range, tightly enclosing the tile's geometry; or a null range if the tile is emtpy */
+    /** A bounding box no larger than the tile's range, tightly enclosing the tile's geometry; or a null range if the tile is empty */
     public readonly contentRange: ElementAlignedBox3d;
     /** The chord tolerance in meters at which the tile's geometry was faceted */
     public readonly tolerance: number;

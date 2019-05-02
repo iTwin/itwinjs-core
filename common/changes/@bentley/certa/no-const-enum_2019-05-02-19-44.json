@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "eliminate exported const enums",
+      "packageName": "@bentley/certa",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/certa",
+  "email": "keith.bentley@bentley.com"
+}

@@ -556,7 +556,7 @@ export type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstan
 // Warning: (ae-missing-release-tag) "GroupingSpecificationTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
-export const enum GroupingSpecificationTypes {
+export enum GroupingSpecificationTypes {
     // (undocumented)
     Class = "Class",
     // (undocumented)
@@ -811,7 +811,7 @@ export type LabelRpcRequestOptions = RpcRequestOptions & Omit<LabelRequestOption
 // Warning: (ae-missing-release-tag) "LoggingNamespaces" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
-export const enum LoggingNamespaces {
+export enum LoggingNamespaces {
     // (undocumented)
     ECObjects = "ECObjects",
     // (undocumented)
@@ -1179,7 +1179,7 @@ export interface PropertyEditorMultilineParameters extends PropertyEditorParamet
 // Warning: (ae-missing-release-tag) "PropertyEditorParameterTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
-export const enum PropertyEditorParameterTypes {
+export enum PropertyEditorParameterTypes {
     // (undocumented)
     Json = "Json",
     // (undocumented)
@@ -1237,7 +1237,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
 // Warning: (ae-missing-release-tag) "PropertyGroupingValue" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
-export const enum PropertyGroupingValue {
+export enum PropertyGroupingValue {
     DisplayLabel = "DisplayLabel",
     PropertyValue = "PropertyValue"
 }
@@ -1314,7 +1314,7 @@ export enum PropertyValueFormat {
 // Warning: (ae-missing-release-tag) "QuerySpecificationTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
-export const enum QuerySpecificationTypes {
+export enum QuerySpecificationTypes {
     // (undocumented)
     ECPropertyValue = "ECPropertyValue",
     // (undocumented)
@@ -1417,7 +1417,7 @@ export interface RelatedPropertiesSpecification {
 // Warning: (ae-missing-release-tag) "RelationshipDirection" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
-export const enum RelationshipDirection {
+export enum RelationshipDirection {
     Backward = "Backward",
     Both = "Both",
     Forward = "Forward"
@@ -1426,7 +1426,7 @@ export const enum RelationshipDirection {
 // Warning: (ae-missing-release-tag) "RelationshipMeaning" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
-export const enum RelationshipMeaning {
+export enum RelationshipMeaning {
     RelatedInstance = "RelatedInstance",
     SameInstance = "SameInstance"
 }
@@ -1590,7 +1590,7 @@ export namespace RulesetVariablesState {
 // Warning: (ae-missing-release-tag) "RuleSpecificationTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
-export const enum RuleSpecificationTypes {
+export enum RuleSpecificationTypes {
     // (undocumented)
     AllInstanceNodes = "AllInstanceNodes",
     // (undocumented)
@@ -1614,7 +1614,7 @@ export const enum RuleSpecificationTypes {
 // Warning: (ae-missing-release-tag) "RuleTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
-export const enum RuleTypes {
+export enum RuleTypes {
     // (undocumented)
     CheckBox = "CheckBox",
     // (undocumented)
@@ -1905,7 +1905,7 @@ export type VariableValue = boolean | string | number | number[] | Id64String[];
 // Warning: (ae-missing-release-tag) "VariableValueType" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
-export const enum VariableValueType {
+export enum VariableValueType {
     Int = "IntValue",
     ShowHide = "ShowHide",
     String = "StringValue",
@@ -1915,7 +1915,7 @@ export const enum VariableValueType {
 // Warning: (ae-missing-release-tag) "VariableValueTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
-export const enum VariableValueTypes {
+export enum VariableValueTypes {
     Bool = "bool",
     Id64 = "id64",
     Id64Array = "id64[]",

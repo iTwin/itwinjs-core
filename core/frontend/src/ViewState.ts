@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, JsonUtils, BeTimePoint } from "@bentley/bentleyjs-core";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
   Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
@@ -28,13 +28,13 @@ import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { Viewport, ViewStateUndo } from "./Viewport";
+import { Viewport } from "./Viewport";
 import { SpatialClassification } from "./SpatialClassification";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
  * @public
  */
-export const enum GridOrientationType {
+export enum GridOrientationType {
   /** Oriented with the view. */
   View = 0,
   /** Top */
@@ -50,7 +50,7 @@ export const enum GridOrientationType {
 /** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
  * @public
  */
-export const enum ViewStatus {
+export enum ViewStatus {
   Success = 0,
   ViewNotInitialized,
   AlreadyAttached,
@@ -95,7 +95,13 @@ export interface ExtentLimits {
 }
 
 /** @internal */
-export class ViewState3dUndo extends ViewStateUndo {
+export abstract class ViewStateUndo {
+  public undoTime?: BeTimePoint;
+  public abstract equalState(view: ViewState): boolean;
+}
+
+/** @internal */
+class ViewState3dUndo extends ViewStateUndo {
   public readonly cameraOn: boolean;
   public readonly origin: Point3d;
   public readonly extents: Vector3d;
@@ -121,7 +127,7 @@ export class ViewState3dUndo extends ViewStateUndo {
 }
 
 /** @internal */
-export class ViewState2dUndo extends ViewStateUndo {
+class ViewState2dUndo extends ViewStateUndo {
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;

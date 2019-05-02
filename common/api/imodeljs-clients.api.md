@@ -218,7 +218,7 @@ export class ChangeSetQuery extends StringIdQuery {
 export type ChangeState = "new" | "modified" | "deleted";
 
 // @public
-export const enum ChangesType {
+export enum ChangesType {
     Regular = 0,
     Schema = 1
 }
@@ -1157,7 +1157,7 @@ export class LogEntryConverter {
     }
 
 // @public
-export const enum LoggerCategory {
+export enum LoggerCategory {
     Clients = "imodeljs-clients.Clients",
     ECJson = "ECJson",
     // @internal (undocumented)
@@ -1583,7 +1583,7 @@ export class SettingsResult {
 }
 
 // @alpha
-export const enum SettingsStatus {
+export enum SettingsStatus {
     AuthorizationError = 110593,
     IModelInvalid = 110596,
     ProjectInvalid = 110595,

@@ -2518,7 +2518,7 @@ export interface SessionState {
 }
 
 // @beta
-export const enum SessionStateActionId {
+export enum SessionStateActionId {
     // (undocumented)
     SetAvailableSelectionScopes = "sessionstate:set-available-selection-scopes",
     // (undocumented)
@@ -2920,7 +2920,7 @@ export class SyncUiEventDispatcher {
     }
 
 // @public
-export const enum SyncUiEventId {
+export enum SyncUiEventId {
     ActiveContentChanged = "activecontentchanged",
     ActiveViewportChanged = "activeviewportchanged",
     BackstageCloseEvent = "backstagecloseevent",

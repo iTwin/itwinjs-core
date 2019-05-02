@@ -13,7 +13,7 @@ import { IModelNotFoundResponse } from "./IModelReadRpcInterface";
 /** Options to get the backend statistics
  * @internal
  */
-export const enum DevToolsStatsOptions {
+export enum DevToolsStatsOptions {
   None = 0,
 
   /** All unitized values are setup as formatted strings with the appropriate units */

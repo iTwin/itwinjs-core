@@ -22,7 +22,7 @@ import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
  * StandardTypeConverterTypeNames.
  * @beta
  */
-export const enum StandardTypeConverterTypeNames {
+export enum StandardTypeConverterTypeNames {
   Text = "text",
   String = "string",
   ShortDate = "shortdate",

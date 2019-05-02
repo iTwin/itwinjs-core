@@ -9,7 +9,7 @@
  * @see [Logger]($bentley)
  * @public
  */
-export const enum LoggerCategory {
+export enum LoggerCategory {
   /** The logger category used by the following classes:
    * - [[CodeSpecs]]
    */

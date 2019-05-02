@@ -76,7 +76,7 @@ export interface MaterialProps {
 /** @beta */
 export namespace BRepEntity {
   /** Enum for type of solid kernel entity this represents */
-  export const enum Type {
+  export enum Type {
     /** Body consisting of at least one solid region */
     Solid = 0,
     /** Body consisting of connected sets of faces having edges that are shared by a maximum of two faces */

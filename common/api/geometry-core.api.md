@@ -320,7 +320,7 @@ export enum AuxChannelDataType {
 }
 
 // @public
-export const enum AxisIndex {
+export enum AxisIndex {
     // (undocumented)
     X = 0,
     // (undocumented)
@@ -330,7 +330,7 @@ export const enum AxisIndex {
 }
 
 // @public
-export const enum AxisOrder {
+export enum AxisOrder {
     XYZ = 0,
     XZY = 4,
     YXZ = 5,
@@ -340,7 +340,7 @@ export const enum AxisOrder {
 }
 
 // @public
-export const enum AxisScaleSelect {
+export enum AxisScaleSelect {
     LongestRangeDirection = 1,
     NonUniformRangeContainment = 2,
     Unit = 0
@@ -971,7 +971,7 @@ export enum BSplineWrapMode {
 }
 
 // @public
-export const enum ClipMaskXYZRangePlanes {
+export enum ClipMaskXYZRangePlanes {
     All = 63,
     None = 0,
     XAndY = 15,
@@ -1047,7 +1047,7 @@ export class ClipPlane implements Clipper {
 }
 
 // @public
-export const enum ClipPlaneContainment {
+export enum ClipPlaneContainment {
     // (undocumented)
     Ambiguous = 2,
     // (undocumented)
@@ -1134,7 +1134,7 @@ export class ClipShape extends ClipPrimitive {
 }
 
 // @public
-export const enum ClipStatus {
+export enum ClipStatus {
     // (undocumented)
     ClipRequired = 0,
     // (undocumented)
@@ -5046,7 +5046,7 @@ export class SphereImplicit {
 }
 
 // @public
-export const enum StandardViewIndex {
+export enum StandardViewIndex {
     // (undocumented)
     Back = 6,
     // (undocumented)

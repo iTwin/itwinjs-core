@@ -131,7 +131,7 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
  * @see [[DisplayStyleSettingsProps]]
  * @public
  */
-export const enum BackgroundMapType {
+export enum BackgroundMapType {
   Street = 1,
   Aerial = 2,
   Hybrid = 3,
@@ -167,7 +167,7 @@ export interface GroundPlaneProps {
 /** Enumerates the supported types of [SkyBox]($frontend) images.
  * @public
  */
-export const enum SkyBoxImageType {
+export enum SkyBoxImageType {
   None,
   /** A single image mapped to the surface of a sphere. @see [[SkySphere]] */
   Spherical,

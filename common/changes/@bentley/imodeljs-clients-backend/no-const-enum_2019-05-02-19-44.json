@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "eliminate exported const enums",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "keith.bentley@bentley.com"
+}

@@ -14,12 +14,12 @@ export namespace SpatialClassificationProps {
   /** Classification Type
    * @beta
    */
-  export const enum Type { Planar = 0, Volume = 1 }
+  export enum Type { Planar = 0, Volume = 1 }
 
   /** Display modes
    * @beta
    */
-  export const enum Display {
+  export enum Display {
     /** If off, geometry is omitted (invisible) */
     Off = 0,
     /** If on geometry is displayed without alteration */

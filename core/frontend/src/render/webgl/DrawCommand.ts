@@ -22,6 +22,8 @@ import { SurfaceType } from "../primitives/VertexTable";
 import { MeshGraphic } from "./Mesh";
 import { ClipPlanesVolume } from "./ClipVolume";
 
+// tslint:disable:no-const-enum
+
 /** @internal */
 export class ShaderProgramParams {
   private _target?: Target;

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "eliminate exported const enums",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "keith.bentley@bentley.com"
+}

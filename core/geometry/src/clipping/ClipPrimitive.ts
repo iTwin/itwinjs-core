@@ -23,7 +23,7 @@ import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../topology/Graph";
  * Bit mask type for referencing subsets of 6 planes of range box.
  * @public
  */
-export const enum ClipMaskXYZRangePlanes {
+export enum ClipMaskXYZRangePlanes {
   /** no planes */
   None = 0x00,
   /** low x plane */

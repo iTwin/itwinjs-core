@@ -8,7 +8,7 @@ import { Matrix3d } from "@bentley/geometry-core";
 /** Describes a set of commonly-used view rotations.
  * @public
  */
-export const enum StandardViewId {
+export enum StandardViewId {
   /** Any rotation which does not match one of the standard rotations.
    * Invalid as an argument to StandardView.getStandardRotation() - used as a return value only.
    */

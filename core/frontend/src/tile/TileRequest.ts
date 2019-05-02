@@ -130,6 +130,7 @@ export class TileRequest {
     return Promise.resolve();
   }
 }
+// tslint:disable:no-const-enum
 
 /** @internal */
 export namespace TileRequest {

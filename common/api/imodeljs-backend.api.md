@@ -142,7 +142,7 @@ import { XYAndZ } from '@bentley/geometry-core';
 import { YawPitchRollAngles } from '@bentley/geometry-core';
 
 // @public
-export const enum AccessMode {
+export enum AccessMode {
     // (undocumented)
     Exclusive = 2,
     // (undocumented)
@@ -629,7 +629,7 @@ export namespace ConcurrencyControl {
         updateVsDelete: OnConflict;
         updateVsUpdate: OnConflict;
     }
-    export const enum OnConflict {
+    export enum OnConflict {
         AcceptIncomingChange = 1,
         RejectIncomingChange = 0
     }
@@ -1223,7 +1223,7 @@ export class Entity implements EntityProps {
 }
 
 // @internal
-export const enum ExclusiveAccessOption {
+export enum ExclusiveAccessOption {
     CreateNewBriefcase = 1,
     TryReuseOpenBriefcase = 2
 }
@@ -1589,7 +1589,7 @@ export namespace IModelDb {
         updateModel(props: ModelProps): void;
     }
     // @internal
-    export const enum TileContentState {
+    export enum TileContentState {
         // (undocumented)
         Loading = 2,
         // (undocumented)
@@ -2298,6 +2298,8 @@ export namespace IModelJsNative {
         // (undocumented)
         ECObjectsNative = "ECObjectsNative",
         // (undocumented)
+        Success = 0,
+        // (undocumented)
         UnitsNative = "UnitsNative"
     }
     // (undocumented)
@@ -2452,7 +2454,7 @@ export interface InstanceChange {
 }
 
 // @internal
-export const enum KeepBriefcase {
+export enum KeepBriefcase {
     // (undocumented)
     No = 0,
     // (undocumented)
@@ -2649,7 +2651,7 @@ export class LinkPartition extends InformationPartitionElement {
 }
 
 // @public
-export const enum LoggerCategory {
+export enum LoggerCategory {
     CodeSpecs = "imodeljs-backend.CodeSpecs",
     ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
     // @internal
@@ -3198,7 +3200,7 @@ export class SubjectOwnsSubjects extends ElementOwnsChildElements {
 }
 
 // @public
-export const enum SyncMode {
+export enum SyncMode {
     // (undocumented)
     FixedVersion = 1,
     // (undocumented)
@@ -3266,7 +3268,7 @@ export class TitleText extends DetailingSymbol {
 }
 
 // @public (undocumented)
-export const enum TxnAction {
+export enum TxnAction {
     // (undocumented)
     Abandon = 2,
     // (undocumented)

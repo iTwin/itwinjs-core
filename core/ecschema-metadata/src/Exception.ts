@@ -6,7 +6,7 @@
 import { assert, BentleyError } from "@bentley/bentleyjs-core";
 
 /** @internal */
-export const enum ECObjectsStatus {
+export enum ECObjectsStatus {
   ECOBJECTS_ERROR_BASE = 0x88EC,
   Success = 0,
   DuplicateItem = ECOBJECTS_ERROR_BASE + 1,

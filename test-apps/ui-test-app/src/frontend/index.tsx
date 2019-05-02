@@ -53,7 +53,7 @@ for (const definition of rpcConfiguration.interfaces())
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
  */
-export const enum SampleAppUiActionId {
+export enum SampleAppUiActionId {
   setIModelConnection = "sampleapp:setimodelconnection",
   setAccessToken = "sampleapp:setaccesstoken",
   setTestProperty = "sampleapp:settestproperty",

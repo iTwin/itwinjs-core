@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add devDependency on tslint-etc to get no-const-enum rule",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "shaun.sewall@bentley.com"
+}

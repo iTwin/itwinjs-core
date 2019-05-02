@@ -27,6 +27,9 @@ import {
 import { AuxChannelTable } from "./AuxChannelTable";
 import { PolylineArgs, MeshArgs } from "./mesh/MeshPrimitives";
 import { IModelApp } from "../../IModelApp";
+
+// tslint:disable:no-const-enum
+
 /**
  * Holds an array of indices into a VertexTable. Each index is a 24-bit unsigned integer.
  * The order of the indices specifies the order in which vertices are drawn.

@@ -7,6 +7,8 @@
 import { CompositeFlags } from "./RenderFlags";
 import { assert } from "@bentley/bentleyjs-core";
 
+// tslint:disable:no-const-enum
+
 /** Technique enumeration
  * @internal
  */

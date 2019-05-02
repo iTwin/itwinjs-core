@@ -13,6 +13,8 @@ export namespace ToleranceRatio {
   export const facetArea = 0.1;
 }
 
+// tslint:disable:no-const-enum
+
 /** Specifies under what circumstances a GeometryAccumulator should generate normals.
  * @internal
  */

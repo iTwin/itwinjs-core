@@ -10,7 +10,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
  * Possible variable value types
  * @hidden
  */
-export const enum VariableValueTypes {
+export enum VariableValueTypes {
   /** Integer value */
   Int = "int",
 

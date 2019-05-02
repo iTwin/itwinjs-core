@@ -48,7 +48,7 @@ export interface GroupingRule extends RuleBase, ConditionContainer {
 export declare type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup;
 
 /** Available types of [[GroupingSpecification]] */
-export const enum GroupingSpecificationTypes {
+export enum GroupingSpecificationTypes {
   Class = "Class",
   Property = "Property",
   SameLabelInstance = "SameLabelInstance",
@@ -144,7 +144,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
  * Used in [[PropertyGroup]] to specify the type of value to use
  * for grouping and sorting
  */
-export const enum PropertyGroupingValue {
+export enum PropertyGroupingValue {
   /** By property value */
   PropertyValue = "PropertyValue",
 

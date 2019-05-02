@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, InputCollector, BeButton, EventHandled, BeTouchEvent, InputSource, Tool } from "./Tool";
+import { BeButtonEvent, InputCollector, BeButton, EventHandled, BeTouchEvent, InputSource, Tool, CoordinateLockOverrides } from "./Tool";
 import { DecorateContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
-import { CoordinateLockOverrides, ManipulatorToolEvent } from "./ToolAdmin";
+import { ManipulatorToolEvent } from "./ToolAdmin";
 import { IModelConnection } from "../IModelConnection";
 import { SelectEventType } from "../SelectionSet";
 import { HitDetail } from "../HitDetail";
@@ -19,7 +19,7 @@ import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry, Ray3d, Pla
  * @public
  */
 export namespace EditManipulator {
-  export const enum EventType { Synch, Cancel, Accept }
+  export enum EventType { Synch, Cancel, Accept }
 
   export abstract class HandleTool extends InputCollector {
     public static toolId = "Select.Manipulator";

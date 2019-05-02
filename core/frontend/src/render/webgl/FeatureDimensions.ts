@@ -8,6 +8,8 @@ import { FeatureIndexType } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { assert } from "@bentley/bentleyjs-core";
 
+// tslint:disable:no-const-enum
+
 /** Describes the dimensionality of a texture used as a look-up table.
  * @internal
  */

@@ -13,14 +13,14 @@ if (!(Symbol as any).asyncIterator) {
 }
 
 /** @beta */
-export const enum ECClassModifier {
+export enum ECClassModifier {
   None,
   Abstract,
   Sealed,
 }
 
 /** @beta */
-export const enum SchemaItemType {
+export enum SchemaItemType {
   EntityClass,
   Mixin,
   StructClass,
@@ -41,7 +41,7 @@ export const enum SchemaItemType {
  * Primitive data types for ECProperties.
  * @beta
  */
-export const enum PrimitiveType {
+export enum PrimitiveType {
   Uninitialized = 0x00,
   Binary = 0x101,
   Boolean = 0x201,
@@ -59,7 +59,7 @@ export const enum PrimitiveType {
  * Defines the valid CustomAttribute container types.
  * @beta
  */
-export const enum CustomAttributeContainerType {
+export enum CustomAttributeContainerType {
   Schema = (0x0001 << 0),
   EntityClass = (0x0001 << 1),
   CustomAttributeClass = (0x0001 << 2),
@@ -82,7 +82,7 @@ export const enum CustomAttributeContainerType {
  * Defines what sort of match should be used when locating a schema.
  * @beta
  */
-export const enum SchemaMatchType {
+export enum SchemaMatchType {
   // Find exact VersionRead, VersionWrite, VersionMinor match as well as Data
   Identical,
   // Find exact VersionRead, VersionWrite, VersionMinor match.
@@ -99,20 +99,20 @@ export const enum SchemaMatchType {
  * Identifer for an ECRelationshipConstraint. Used to determine the side of the relationship the constraint is representing.
  * @beta
  */
-export const enum RelationshipEnd {
+export enum RelationshipEnd {
   Source = 0,
   Target = 1,
 }
 
 /** @beta */
-export const enum StrengthType {
+export enum StrengthType {
   Referencing,
   Holding,
   Embedding,
 }
 
 /** @beta */
-export const enum StrengthDirection {
+export enum StrengthDirection {
   Forward = 1,
   Backward = 2,
 }

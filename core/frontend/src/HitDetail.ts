@@ -13,7 +13,7 @@ import { GraphicType } from "./render/GraphicBuilder";
 import { LinePixels, GeometryClass } from "@bentley/imodeljs-common";
 
 /** @public */
-export const enum SnapMode {
+export enum SnapMode {
   Nearest = 1,
   NearestKeypoint = 1 << 1,
   MidPoint = 1 << 2,
@@ -24,7 +24,7 @@ export const enum SnapMode {
 }
 
 /** @public */
-export const enum SnapHeat {
+export enum SnapHeat {
   None = 0,
   NotInRange = 1,   // "of interest", but out of range
   InRange = 2,
@@ -33,7 +33,7 @@ export const enum SnapHeat {
 /** The procedure that generated this Hit.
  * @public
  */
-export const enum HitSource {
+export enum HitSource {
   None = 0,
   FromUser = 1,
   MotionLocate = 2,
@@ -49,7 +49,7 @@ export const enum HitSource {
  * GeometricPrimitive that generated the Hit, it is an indication of whether it is an edge or interior hit.
  * @public
  */
-export const enum HitGeomType {
+export enum HitGeomType {
   None = 0,
   Point = 1,
   Segment = 2,
@@ -61,7 +61,7 @@ export const enum HitGeomType {
 /** Classification of GeometricPrimitive that generated the Hit.
  * @public
  */
-export const enum HitParentGeomType {
+export enum HitParentGeomType {
   None = 0,
   Wire = 1,
   Sheet = 2,
@@ -71,7 +71,7 @@ export const enum HitParentGeomType {
 }
 
 /** @public */
-export const enum HitPriority {
+export enum HitPriority {
   WireEdge = 0,
   PlanarEdge = 1,
   NonPlanarEdge = 2,
@@ -82,7 +82,7 @@ export const enum HitPriority {
 }
 
 /** @public */
-export const enum HitDetailType {
+export enum HitDetailType {
   Hit = 1,
   Snap = 2,
   Intersection = 3,

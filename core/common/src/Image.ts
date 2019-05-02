@@ -9,7 +9,7 @@
  * @see [[ImageBuffer.getNumBytesPerPixel]]
  * @public
  */
-export const enum ImageBufferFormat {
+export enum ImageBufferFormat {
   /** RGBA format - 4 bytes per pixel. */
   Rgba = 0,
   /** RGB format - 3 bytes per pixel. */
@@ -95,7 +95,7 @@ export function nextHighestPowerOfTwo(num: number): number {
 /** The format of an ImageSource.
  * @public
  */
-export const enum ImageSourceFormat {
+export enum ImageSourceFormat {
   /** Image data is stored with JPEG compression. */
   Jpeg = 0,
   /** Image data is stored with PNG compression. */

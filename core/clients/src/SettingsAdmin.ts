@@ -9,7 +9,7 @@ import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext
 /** Possible values for SettingsResults.status
  * @alpha
  */
-export const enum SettingsStatus {
+export enum SettingsStatus {
   SETTINGS_ERROR_BASE = 0x1b000,
   /** The specified setting was successfully saved, deleted, or retrieved. */
   Success = 0,

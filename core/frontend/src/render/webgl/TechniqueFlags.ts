@@ -8,6 +8,8 @@ import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
 import { ClippingType } from "../System";
 
+// tslint:disable:no-const-enum
+
 /** Specifies how a TechniqueFlags handles feature table/overrides.
  * @internal
  */

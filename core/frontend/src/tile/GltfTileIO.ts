@@ -32,6 +32,9 @@ import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from 
 import { InstancedGraphicParams, RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { imageElementFromImageSource, getImageSourceFormatForMimeType } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
+
+// tslint:disable:no-const-enum
+
 /* -----------------------------------
  * To restore the use of web workers to decode jpeg, locate and uncomment the three sections by searching for "webworker".
   import { WorkerOperation, WebWorkerManager } from "../WebWorkerManager";

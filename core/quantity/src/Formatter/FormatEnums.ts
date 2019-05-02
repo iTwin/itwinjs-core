@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @alpha */
-export const enum FormatTraits {
+export enum FormatTraits {
   TrailZeroes = 0x1,
   KeepSingleZero = 0x2,
   ZeroEmpty = 0x4,
@@ -17,7 +17,7 @@ export const enum FormatTraits {
 }
 
 /** @alpha */
-export const enum FractionalPrecision {
+export enum FractionalPrecision {
   One = 1,
   Two = 2,
   Four = 4,
@@ -30,7 +30,7 @@ export const enum FractionalPrecision {
 }
 
 /** @alpha */
-export const enum DecimalPrecision {
+export enum DecimalPrecision {
   Zero = 0,
   One = 1,
   Two = 2,
@@ -47,7 +47,7 @@ export const enum DecimalPrecision {
 }
 
 /** @alpha */
-export const enum FormatType {
+export enum FormatType {
   Decimal,
   Fractional,
   Scientific,
@@ -55,13 +55,13 @@ export const enum FormatType {
 }
 
 /** @alpha */
-export const enum ScientificType {
+export enum ScientificType {
   Normalized,
   ZeroNormalized,
 }
 
 /** @alpha */
-export const enum ShowSignOption {
+export enum ShowSignOption {
   NoSign,
   OnlyNegative,
   SignAlways,

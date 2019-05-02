@@ -251,7 +251,7 @@ export abstract class RenderTexture implements IDisposable {
  */
 export namespace RenderTexture {
   /** Enumerates the types of [[RenderTexture]]s. */
-  export const enum Type {
+  export const enum Type { // tslint:disable-line:no-const-enum
     /** An image applied to a surface, with support for mip-mapping and repeating. */
     Normal,
     /** An image containing any number of text glyphs, used for efficiently rendering readable small text. */
@@ -408,7 +408,7 @@ export class GraphicParams {
 }
 
 /** @internal */
-export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
+export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 } // tslint:disable-line:no-const-enum
 
 /** Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
  * Generally speaking,
@@ -422,7 +422,7 @@ export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
  * [[HiddenLine.Settings]] allow aspects of edge and surface symbology to be overridden within a view.
  * @public
  */
-export const enum RenderMode {
+export enum RenderMode {
   /** Render only edges, no surfaces, with exceptions for planar regions with [[FillFlags]] set up to render the surface in wireframe mode. */
   Wireframe = 0,
   /** Render only surfaces, no edges, with lighting. */
@@ -708,7 +708,7 @@ export class ViewFlags {
 /** @internal */
 export namespace ViewFlag {
   /** @internal */
-  export const enum PresenceFlag {
+  export const enum PresenceFlag { // tslint:disable-line:no-const-enum
     kRenderMode,
     kText,
     kDimensions,
@@ -837,7 +837,7 @@ export namespace ViewFlag {
  * Each is a 32-bit pattern in which each bit specifies the on- or off-state of a pixel along the line. The pattern repeats along the length of the entire line.
  * @public
  */
-export const enum LinePixels {
+export enum LinePixels {
   /** A solid line. */
   Solid = 0,
   /** A solid line. */
@@ -978,7 +978,7 @@ export class FrustumPlanes {
 /** @internal */
 export namespace FrustumPlanes {
   /** @internal */
-  export const enum Containment {
+  export const enum Containment { // tslint:disable-line:no-const-enum
     Outside = 0,
     Partial = 1,
     Inside = 2,
@@ -1245,7 +1245,7 @@ export namespace HiddenLine {
 /** @beta */
 export namespace Gradient {
   /** Flags applied to a [[Gradient.Symb]]. */
-  export const enum Flags {
+  export enum Flags {
     /** No flags. */
     None = 0,
     /** Reverse the order of the gradient keys. */
@@ -1255,7 +1255,7 @@ export namespace Gradient {
   }
 
   /** Enumerates the modes by which a [[Gradient.Symb]]'s keys are applied to create an image. */
-  export const enum Mode {
+  export enum Mode {
     None = 0,
     Linear = 1,
     Curved = 2,
@@ -1267,7 +1267,7 @@ export namespace Gradient {
   }
 
   /** @internal */
-  export const enum ThematicMode {
+  export enum ThematicMode {
     Smooth = 0,
     Stepped = 1,
     SteppedWithDelimiter = 2,
@@ -1275,7 +1275,7 @@ export namespace Gradient {
   }
 
   /** @internal */
-  export const enum ThematicColorScheme {
+  export enum ThematicColorScheme {
     BlueRed = 0,
     RedBlue = 1,
     Monochrome = 2,
@@ -1719,7 +1719,7 @@ export namespace Gradient {
 /** Whether a closed region should be drawn for wireframe display with its internal area filled or not.
  * @public
  */
-export const enum FillDisplay {
+export enum FillDisplay {
   /** don't fill, even if fill attribute is on for the viewport */
   Never = 0,
   /** fill if the fill attribute is on for the viewport */
@@ -1733,7 +1733,7 @@ export const enum FillDisplay {
 /** Describes how a view's background color affects the interior area of a closed region.
  * @public
  */
-export const enum BackgroundFill {
+export enum BackgroundFill {
   /** single color fill uses the fill color and line color to draw either a solid or outline fill */
   None = 0,
   /** single color fill uses the view's background color to draw a solid fill */
@@ -1748,7 +1748,7 @@ export const enum BackgroundFill {
  * @see [[Feature]].
  * @alpha Confusion with ECClass?
  */
-export const enum GeometryClass {
+export enum GeometryClass {
   /** Used to classify the "real" geometry within a model. Most geometry falls within this class. */
   Primary = 0,
   /** Used to classify geometry used as a drawing aid in constructing the Primary geometry. For example, grid lines. */
@@ -1962,7 +1962,7 @@ export namespace Hilite {
   /**  Describes the width of the outline applied to hilited geometry. The outline is drawn around the union of all hilited geometry and is visible behind non-hilited geometry.
    * @see [[Hilite.Settings]]
    */
-  export const enum Silhouette {
+  export enum Silhouette {
     /** No outline. */
     None,
     /** 1-pixel-wide outline. */
@@ -2057,7 +2057,7 @@ export class Feature {
  * Classifier type.
  * @beta
  */
-export const enum BatchType {
+export enum BatchType {
   /** This batch contains graphics derived from a model's visible geometry. */
   Primary,
   /**
@@ -2152,7 +2152,7 @@ export class TextureMapping {
 /** @beta */
 export namespace TextureMapping {
   /** Enumerates the possible texture mapping modes. */
-  export const enum Mode {
+  export enum Mode {
     None = -1,
     Parametric = 0,
     ElevationDrape = 1,

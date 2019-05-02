@@ -9,7 +9,7 @@
  * @see [Logger]($bentley)
  * @public
  */
-export const enum LoggerCategory {
+export enum LoggerCategory {
   /** The logger category used for interactions with iModelHub.
    * @note Should match LoggerCategory.IModelHub from @bentley/imodeljs-clients.
    */

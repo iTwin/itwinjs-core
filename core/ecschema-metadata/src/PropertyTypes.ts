@@ -18,7 +18,7 @@ const enum PropertyFlags {
 /**
  * @beta
  */
-export const enum PropertyType {
+export enum PropertyType {
   Struct = 0x02, // PropertyFlags.Struct
   Struct_Array = 0x06, // PropertyFlags.Struct | PropertyFlags.Array
   Navigation = 0x08, // PropertyFlags.Navigation

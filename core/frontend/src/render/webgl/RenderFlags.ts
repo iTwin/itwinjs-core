@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
+// tslint:disable:no-const-enum
 
 /** Ordered list of render passes which produce a rendered frame.
  * @internal
@@ -22,7 +23,7 @@ export const enum RenderPass {
   SkyBox,
   Terrain,
   HiliteClassification,  // Secondary hilite pass for stencil volumes to process hilited classifiers for reality data
-  ClassificationByIndex, // Stencil volumes for processing classification one cliassifier at a time (used for generating pick data Ids and flashing a single classifier).
+  ClassificationByIndex, // Stencil volumes for processing classification one classifier at a time (used for generating pick data Ids and flashing a single classifier).
   HilitePlanarClassification,
   PlanarClassification,
   COUNT,

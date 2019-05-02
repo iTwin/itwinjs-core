@@ -14,7 +14,7 @@ import { SchemaItem } from "../Metadata/SchemaItem";
  * Defines the possible diagnostic types.
  * @beta
  */
-export const enum DiagnosticType {
+export enum DiagnosticType {
   None,
   Schema,
   SchemaItem,
@@ -27,7 +27,7 @@ export const enum DiagnosticType {
  * Defines the possible diagnostic categories.
  * @beta
  */
-export const enum DiagnosticCategory {
+export enum DiagnosticCategory {
   Warning,
   Error,
   Suggestion,
@@ -105,7 +105,7 @@ export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnosti
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public get schema(): Schema { return this.ecDefinition; }
+  public get schema(): Schema { return this.ecDefinition; }
 
   /** Gets the DiagnosticType. */
   public get diagnosticType(): DiagnosticType { return DiagnosticType.Schema; }
@@ -123,7 +123,7 @@ export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public get schema(): Schema { return this.ecDefinition.schema; }
+  public get schema(): Schema { return this.ecDefinition.schema; }
 
   /** Gets the DiagnosticType. */
   public get diagnosticType(): DiagnosticType { return DiagnosticType.SchemaItem; }
@@ -139,7 +139,7 @@ export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiag
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public get schema(): Schema { return this.ecDefinition.schema; }
+  public get schema(): Schema { return this.ecDefinition.schema; }
 }
 
 /**
@@ -152,7 +152,7 @@ export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnos
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public get schema(): Schema { return this.ecDefinition.schema; }
+  public get schema(): Schema { return this.ecDefinition.schema; }
 
   /** Gets the DiagnosticType. */
   public get diagnosticType(): DiagnosticType { return DiagnosticType.Property; }
@@ -168,7 +168,7 @@ export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> exten
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public get schema(): Schema { return this.ecDefinition.schema; }
+  public get schema(): Schema { return this.ecDefinition.schema; }
 
   /** Gets the DiagnosticType. */
   public get diagnosticType(): DiagnosticType { return DiagnosticType.RelationshipConstraint; }
@@ -184,7 +184,7 @@ export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> ext
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public get schema(): Schema { return this.ecDefinition.schema; }
+  public get schema(): Schema { return this.ecDefinition.schema; }
 
   /** Gets the DiagnosticType. */
   public get diagnosticType(): DiagnosticType { return DiagnosticType.CustomAttributeContainer; }

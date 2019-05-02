@@ -197,7 +197,7 @@ export namespace Attachments {
    * Describes the location of a tile within the range of a quad subdivided in four parts.
    * @internal
    */
-  export const enum Tile3dPlacement {
+  export const enum Tile3dPlacement { // tslint:disable-line:no-const-enum
     UpperLeft,
     UpperRight,
     LowerLeft,
@@ -209,7 +209,7 @@ export namespace Attachments {
    * Describes the state of the scene for a given level of the tile tree. All tiles on a given level use the same scene to generate their graphics.
    * @internal
    */
-  export const enum State {
+  export const enum State { // tslint:disable-line:no-const-enum
     NotLoaded,  // We haven't tried to create the scene for this level of the tree
     Empty,      // This level of the tree has an empty scene
     Loading,    // All of the roots for this level of the tree have been created and we are loading their tiles

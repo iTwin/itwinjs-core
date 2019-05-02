@@ -335,7 +335,7 @@ export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, Comm
 }
 
 // @public
-export const enum DateFormat {
+export enum DateFormat {
     // (undocumented)
     Long = 3,
     // (undocumented)
@@ -587,7 +587,7 @@ export class Headline extends React.PureComponent<TextProps> {
 }
 
 // @public
-export const enum HorizontalAlignment {
+export enum HorizontalAlignment {
     // (undocumented)
     Center = 2,
     // (undocumented)
@@ -882,7 +882,7 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange"> & {
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
 // @public
-export const enum Orientation {
+export enum Orientation {
     // (undocumented)
     Horizontal = 0,
     // (undocumented)
@@ -1192,7 +1192,7 @@ export class TildeFinder {
 }
 
 // @public
-export const enum TimeFormat {
+export enum TimeFormat {
     // (undocumented)
     Long = 2,
     // (undocumented)
@@ -1406,7 +1406,7 @@ export interface UnderlinedButtonProps {
 }
 
 // @public
-export const enum VerticalAlignment {
+export enum VerticalAlignment {
     // (undocumented)
     Bottom = 3,
     // (undocumented)

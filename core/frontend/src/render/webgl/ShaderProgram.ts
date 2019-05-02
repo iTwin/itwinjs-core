@@ -14,6 +14,8 @@ import { TechniqueFlags } from "./TechniqueFlags";
 import { System } from "./System";
 import { Branch, Batch } from "./Graphic";
 
+// tslint:disable:no-const-enum
+
 /** Flags which control some conditional branches in shader code
  * @internal
  */

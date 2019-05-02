@@ -180,7 +180,7 @@ import { XYAndZ } from '@bentley/geometry-core';
 import { XYZ } from '@bentley/geometry-core';
 import { XYZProps } from '@bentley/geometry-core';
 
-// @beta
+// @internal
 export class AccuDraw {
     // (undocumented)
     accountForAuxRotationPlane(rot: ThreeAxes, plane: RotationMode): void;
@@ -240,7 +240,7 @@ export class AccuDraw {
     doLockAngle(isSnapped: boolean): void;
     // (undocumented)
     dontMoveFocus: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     downgradeInactiveState(): boolean;
     // (undocumented)
     enableForSession(): void;
@@ -349,7 +349,7 @@ export class AccuDraw {
     processHints(): void;
     // (undocumented)
     readonly published: AccudrawData;
-    // @internal (undocumented)
+    // (undocumented)
     refreshDecorationsAndDynamics(): void;
     // (undocumented)
     restoreState(stateBuffer: SavedState): void;
@@ -401,7 +401,7 @@ export class AccuDraw {
     updateFieldLock(index: ItemField, locked: boolean): void;
     // (undocumented)
     updateRotation(animate?: boolean, newRotationIn?: Matrix3d): void;
-    // @internal (undocumented)
+    // (undocumented)
     upgradeToActiveState(): boolean;
     // (undocumented)
     readonly vector: Vector3d;
@@ -411,7 +411,7 @@ export class AccuDraw {
     protected readonly _yColor: ColorDef;
     }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class AccudrawData {
     // (undocumented)
     angle: number;
@@ -431,8 +431,8 @@ export class AccudrawData {
     zero(): void;
 }
 
-// @beta (undocumented)
-export const enum AccuDrawFlags {
+// @internal (undocumented)
+export enum AccuDrawFlags {
     // (undocumented)
     AlwaysSetOrigin = 2097156,
     // (undocumented)
@@ -479,7 +479,7 @@ export const enum AccuDrawFlags {
     UpdateRotation = 8388608
 }
 
-// @beta
+// @internal
 export class AccuDrawHintBuilder {
     // (undocumented)
     enableSmartRotation: boolean;
@@ -530,16 +530,26 @@ export class AccuDrawShortcuts {
     static defineACSByPoints(): void;
     // (undocumented)
     static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldAcceptInput" is marked as @beta, but its signature references "ItemField" which is marked as @internal
+    // 
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldLockToggle" is marked as @beta, but its signature references "ItemField" which is marked as @internal
+    // 
     // (undocumented)
     static itemFieldLockToggle(index: ItemField): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNavigate" is marked as @beta, but its signature references "ItemField" which is marked as @internal
+    // 
     // (undocumented)
     static itemFieldNavigate(index: ItemField, str: string, forward: boolean): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNewInput" is marked as @beta, but its signature references "ItemField" which is marked as @internal
+    // 
     // (undocumented)
     static itemFieldNewInput(index: ItemField): void;
     // (undocumented)
     static itemFieldUnlockAll(): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemRotationModeChange" is marked as @beta, but its signature references "RotationMode" which is marked as @internal
+    // 
     // (undocumented)
     static itemRotationModeChange(rotation: RotationMode): void;
     // (undocumented)
@@ -578,6 +588,8 @@ export class AccuDrawShortcuts {
     static rotateToElement(updateCurrentACS: boolean): void;
     // (undocumented)
     static setOrigin(explicitOrigin?: Point3d): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "setStandardRotation" is marked as @beta, but its signature references "RotationMode" which is marked as @internal
+    // 
     // (undocumented)
     static setStandardRotation(rotation: RotationMode): void;
     // (undocumented)
@@ -600,13 +612,15 @@ export abstract class AccuDrawTool {
     static installTool(shortcut: AccuDrawTool): boolean;
     // (undocumented)
     onDecorate(_context: DecorateContext): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "onManipulationComplete" is marked as @beta, but its signature references "AccuDrawFlags" which is marked as @internal
+    // 
     // (undocumented)
     onManipulationComplete(): AccuDrawFlags;
     // (undocumented)
     static outputPrompt(messageKey: string): void;
 }
 
-// @public
+// @internal
 export class AccuSnap implements Decorator {
     // (undocumented)
     adjustPointIfHot(pt: Point3d, view: Viewport): void;
@@ -621,7 +635,7 @@ export class AccuSnap implements Decorator {
     currHit?: HitDetail;
     // (undocumented)
     decorate(context: DecorateContext): void;
-    // @internal (undocumented)
+    // (undocumented)
     destroy(): void;
     // (undocumented)
     displayToolTip(viewPt: XAndY, vp: ScreenViewport, uorPt?: Point3d): void;
@@ -649,7 +663,7 @@ export class AccuSnap implements Decorator {
     readonly keypointDivisor: number;
     readonly needFlash: Set<Viewport>;
     onEnabledStateChange(_isEnabled: boolean, _wasEnabled: boolean): void;
-    // @internal (undocumented)
+    // (undocumented)
     onInitialized(): void;
     onMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -677,7 +691,7 @@ export class AccuSnap implements Decorator {
     resetButton(): Promise<SnapStatus>;
     // (undocumented)
     setCurrHit(newHit?: HitDetail): void;
-    // @internal (undocumented)
+    // (undocumented)
     protected _settings: AccuSnap.Settings;
     // (undocumented)
     showElemInfo(viewPt: XAndY, vp: ScreenViewport, hit: HitDetail): void;
@@ -686,13 +700,13 @@ export class AccuSnap implements Decorator {
     // (undocumented)
     suspend(doSuspend: boolean): void;
     synchSnapMode(): void;
-    // @internal (undocumented)
+    // (undocumented)
     readonly toolState: AccuSnap.ToolState;
-    // @internal (undocumented)
+    // (undocumented)
     touchCursor?: TouchCursor;
     }
 
-// @public (undocumented)
+// @internal (undocumented)
 export namespace AccuSnap {
     // (undocumented)
     export class Settings {
@@ -727,7 +741,7 @@ export namespace AccuSnap {
 }
 
 // @public (undocumented)
-export const enum ACSDisplayOptions {
+export enum ACSDisplayOptions {
     // (undocumented)
     Active = 1,
     // (undocumented)
@@ -743,7 +757,7 @@ export const enum ACSDisplayOptions {
 }
 
 // @public (undocumented)
-export const enum ACSType {
+export enum ACSType {
     // (undocumented)
     Cylindrical = 2,
     // (undocumented)
@@ -772,7 +786,7 @@ export class ActivityMessageDetails {
 }
 
 // @public
-export const enum ActivityMessageEndReason {
+export enum ActivityMessageEndReason {
     // (undocumented)
     Cancelled = 1,
     // (undocumented)
@@ -1093,7 +1107,7 @@ export interface BasePropertyValue {
 }
 
 // @public (undocumented)
-export const enum BeButton {
+export enum BeButton {
     // (undocumented)
     Data = 0,
     // (undocumented)
@@ -1167,7 +1181,7 @@ export class BeButtonState {
 }
 
 // @public
-export const enum BeModifierKeys {
+export enum BeModifierKeys {
     // (undocumented)
     Alt = 4,
     // (undocumented)
@@ -1220,6 +1234,12 @@ export class BeWheelEvent extends BeButtonEvent {
     wheelDelta: number;
 }
 
+// @internal (undocumented)
+export function bisectRange2d(range: Range3d, takeUpper: boolean): void;
+
+// @internal (undocumented)
+export function bisectRange3d(range: Range3d, takeUpper: boolean): void;
+
 // @alpha
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
     // (undocumented)
@@ -1267,7 +1287,7 @@ export class CategorySelectorState extends ElementState {
 }
 
 // @beta
-export const enum ChangeFlag {
+export enum ChangeFlag {
     // (undocumented)
     All = 268435455,
     // (undocumented)
@@ -1373,7 +1393,7 @@ export const enum ClippingType {
 }
 
 // @beta
-export const enum ClipResult {
+export enum ClipResult {
     NewElements = 1,
     NotSupported = 0,
     OriginalElements = 2
@@ -1414,16 +1434,16 @@ export interface ColorEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.ColorData;
 }
 
-// @beta (undocumented)
-export const enum CompassMode {
+// @internal (undocumented)
+export enum CompassMode {
     // (undocumented)
     Polar = 0,
     // (undocumented)
     Rectangular = 1
 }
 
-// @beta (undocumented)
-export const enum ContextMode {
+// @internal (undocumented)
+export enum ContextMode {
     // (undocumented)
     Locked = 0,
     // (undocumented)
@@ -1488,7 +1508,7 @@ export class ConversionData implements UnitConversion {
 }
 
 // @public (undocumented)
-export const enum CoordinateLockOverrides {
+export enum CoordinateLockOverrides {
     // (undocumented)
     ACS = 2,
     // (undocumented)
@@ -1500,7 +1520,7 @@ export const enum CoordinateLockOverrides {
 }
 
 // @public
-export const enum CoordSource {
+export enum CoordSource {
     ElemSnap = 3,
     Precision = 1,
     TentativePoint = 2,
@@ -1508,7 +1528,7 @@ export const enum CoordSource {
 }
 
 // @public
-export const enum CoordSystem {
+export enum CoordSystem {
     Npc = 1,
     View = 0,
     World = 2
@@ -1590,8 +1610,8 @@ export class CurrentInputState {
     readonly wasMotion: boolean;
 }
 
-// @beta (undocumented)
-export const enum CurrentState {
+// @internal (undocumented)
+export enum CurrentState {
     // (undocumented)
     Active = 3,
     // (undocumented)
@@ -1786,7 +1806,7 @@ export class DynamicsContext extends RenderContext {
 // @public
 export namespace EditManipulator {
     // (undocumented)
-    export const enum EventType {
+    export enum EventType {
         // (undocumented)
         Accept = 2,
         // (undocumented)
@@ -1988,13 +2008,13 @@ export class ElementState extends EntityState implements ElementProps {
 }
 
 // @beta
-export const enum ElemMethod {
+export enum ElemMethod {
     Add = 0,
     Invert = 1
 }
 
 // @beta
-export const enum ElemSource {
+export enum ElemSource {
     Fence = 1,
     Pick = 0,
     SelectionSet = 2
@@ -2113,7 +2133,7 @@ export class Environment implements EnvironmentProps {
 }
 
 // @beta
-export const enum ErrorNums {
+export enum ErrorNums {
     NoFence = 0,
     NoFenceElems = 1,
     NoFenceElemsOutside = 2,
@@ -2301,7 +2321,7 @@ export class FitViewTool extends ViewTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class Flags {
     // (undocumented)
     animateRotation: boolean;
@@ -2561,7 +2581,7 @@ export abstract class GraphicBuilder {
 export type GraphicList = RenderGraphic[];
 
 // @public
-export const enum GraphicType {
+export enum GraphicType {
     Scene = 1,
     ViewBackground = 0,
     ViewOverlay = 4,
@@ -2570,7 +2590,7 @@ export const enum GraphicType {
 }
 
 // @public
-export const enum GridOrientationType {
+export enum GridOrientationType {
     AuxCoord = 4,
     View = 0,
     WorldXY = 1,
@@ -2600,7 +2620,7 @@ export class HilitedSet {
 }
 
 // @beta (undocumented)
-export const enum HilitedState {
+export enum HilitedState {
     No = 2,
     Unknown = 0,
     Yes = 1
@@ -2641,7 +2661,7 @@ export class HitDetail {
 }
 
 // @public (undocumented)
-export const enum HitDetailType {
+export enum HitDetailType {
     // (undocumented)
     Hit = 1,
     // (undocumented)
@@ -2651,7 +2671,7 @@ export const enum HitDetailType {
 }
 
 // @public
-export const enum HitGeomType {
+export enum HitGeomType {
     // (undocumented)
     Arc = 4,
     // (undocumented)
@@ -2703,7 +2723,7 @@ export interface HitListHolder {
 }
 
 // @public
-export const enum HitParentGeomType {
+export enum HitParentGeomType {
     // (undocumented)
     Mesh = 4,
     // (undocumented)
@@ -2719,7 +2739,7 @@ export const enum HitParentGeomType {
 }
 
 // @public (undocumented)
-export const enum HitPriority {
+export enum HitPriority {
     // (undocumented)
     NonPlanarEdge = 2,
     // (undocumented)
@@ -2737,7 +2757,7 @@ export const enum HitPriority {
 }
 
 // @public
-export const enum HitSource {
+export enum HitSource {
     // (undocumented)
     AccuSnap = 3,
     // (undocumented)
@@ -2815,8 +2835,11 @@ export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 
 // @public
 export class IModelApp {
+    // Warning: (ae-incompatible-release-tags) The symbol "accuDraw" is marked as @beta, but its signature references "AccuDraw" which is marked as @internal
+    // 
     // @beta
     static accuDraw: AccuDraw;
+    // Warning: (ae-incompatible-release-tags) The symbol "accuSnap" is marked as @public, but its signature references "AccuSnap" which is marked as @internal
     static accuSnap: AccuSnap;
     static applicationId: string;
     static applicationVersion: string;
@@ -2987,7 +3010,7 @@ export interface InputEditorSizeParams extends BasePropertyEditorParams {
 }
 
 // @public
-export const enum InputSource {
+export enum InputSource {
     Mouse = 1,
     Touch = 2,
     Unknown = 0
@@ -3071,8 +3094,8 @@ export class IntersectDetail extends SnapDetail {
     readonly otherPrimitive: CurvePrimitive;
 }
 
-// @beta (undocumented)
-export const enum ItemField {
+// @internal (undocumented)
+export enum ItemField {
     // (undocumented)
     ANGLE_Item = 1,
     // (undocumented)
@@ -3093,7 +3116,7 @@ export interface JsonEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.JSON;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export enum KeyinStatus {
     // (undocumented)
     DontUpdate = 2,
@@ -3116,7 +3139,7 @@ export interface LinkElementsInfo {
 }
 
 // @public
-export const enum LocateAction {
+export enum LocateAction {
     // (undocumented)
     AutoLocate = 1,
     // (undocumented)
@@ -3124,7 +3147,7 @@ export const enum LocateAction {
 }
 
 // @public
-export const enum LocateFilterStatus {
+export enum LocateFilterStatus {
     // (undocumented)
     Accept = 0,
     // (undocumented)
@@ -3154,8 +3177,8 @@ export class LocateResponse {
     snapStatus: SnapStatus;
 }
 
-// @beta (undocumented)
-export const enum LockedStates {
+// @internal (undocumented)
+export enum LockedStates {
     // (undocumented)
     ANGLE_BM = 7,
     // (undocumented)
@@ -3173,7 +3196,7 @@ export const enum LockedStates {
 }
 
 // @public
-export const enum LoggerCategory {
+export enum LoggerCategory {
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
     OidcBrowserClient = "imodeljs-frontend.OidcBrowserClient",
@@ -3190,7 +3213,7 @@ export class LookViewTool extends ViewManip {
 }
 
 // @public (undocumented)
-export const enum ManipulatorToolEvent {
+export enum ManipulatorToolEvent {
     // (undocumented)
     Start = 1,
     // (undocumented)
@@ -3397,7 +3420,7 @@ export class MeasureLocationTool extends PrimitiveTool {
 }
 
 // @public
-export const enum MessageBoxIconType {
+export enum MessageBoxIconType {
     // (undocumented)
     Critical = 4,
     // (undocumented)
@@ -3411,7 +3434,7 @@ export const enum MessageBoxIconType {
 }
 
 // @public
-export const enum MessageBoxType {
+export enum MessageBoxType {
     // (undocumented)
     LargeOk = 2,
     // (undocumented)
@@ -3427,7 +3450,7 @@ export const enum MessageBoxType {
 }
 
 // @public
-export const enum MessageBoxValue {
+export enum MessageBoxValue {
     // (undocumented)
     Apply = 1,
     // (undocumented)
@@ -3636,7 +3659,7 @@ export class ModelState extends EntityState implements ModelProps {
 }
 
 // @public (undocumented)
-export const enum ModifyElementSource {
+export enum ModifyElementSource {
     DragSelect = 5,
     Fence = 3,
     Group = 4,
@@ -3865,7 +3888,7 @@ export class OrthographicViewState extends SpatialViewState {
 }
 
 // @public
-export const enum OutputMessageAlert {
+export enum OutputMessageAlert {
     // (undocumented)
     Balloon = 2,
     // (undocumented)
@@ -3875,7 +3898,7 @@ export const enum OutputMessageAlert {
 }
 
 // @public
-export const enum OutputMessagePriority {
+export enum OutputMessagePriority {
     // (undocumented)
     Debug = 13,
     // (undocumented)
@@ -3891,7 +3914,7 @@ export const enum OutputMessagePriority {
 }
 
 // @public
-export const enum OutputMessageType {
+export enum OutputMessageType {
     Alert = 4,
     // (undocumented)
     InputField = 3,
@@ -3996,7 +4019,7 @@ export class PerformanceMetrics {
 
 // @alpha
 export namespace PerModelCategoryVisibility {
-    export const enum Override {
+    export enum Override {
         Hide = 2,
         None = 0,
         Show = 1
@@ -4327,7 +4350,7 @@ export interface RangeEditorParams extends BasePropertyEditorParams {
 }
 
 // @public
-export const enum RelativePosition {
+export enum RelativePosition {
     // (undocumented)
     Bottom = 3,
     // (undocumented)
@@ -4347,7 +4370,7 @@ export const enum RelativePosition {
 }
 
 // @public
-export const enum RemoveMe {
+export enum RemoveMe {
     // (undocumented)
     No = 0,
     // (undocumented)
@@ -4760,8 +4783,8 @@ export class RotateViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @beta (undocumented)
-export const enum RotationMode {
+// @internal (undocumented)
+export enum RotationMode {
     // (undocumented)
     ACS = 5,
     // (undocumented)
@@ -4776,7 +4799,7 @@ export const enum RotationMode {
     View = 4
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class RoundOff {
     // (undocumented)
     active: boolean;
@@ -4784,7 +4807,7 @@ export class RoundOff {
     units: Set<number>;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class SavedState {
     // (undocumented)
     auxRotationPlane: number;
@@ -4906,7 +4929,7 @@ export interface SelectedViewportChangedArgs {
 }
 
 // @public
-export const enum SelectEventType {
+export enum SelectEventType {
     // (undocumented)
     Add = 0,
     // (undocumented)
@@ -4918,21 +4941,21 @@ export const enum SelectEventType {
 }
 
 // @public
-export const enum SelectionMethod {
+export enum SelectionMethod {
     Box = 2,
     Line = 1,
     Pick = 0
 }
 
 // @public
-export const enum SelectionMode {
+export enum SelectionMode {
     Add = 1,
     Remove = 2,
     Replace = 0
 }
 
 // @public
-export const enum SelectionProcessing {
+export enum SelectionProcessing {
     AddElementToSelection = 0,
     InvertElementInSelection = 2,
     RemoveElementFromSelection = 1,
@@ -5211,7 +5234,7 @@ export class SnapDetail extends HitDetail {
 }
 
 // @public (undocumented)
-export const enum SnapHeat {
+export enum SnapHeat {
     // (undocumented)
     InRange = 2,
     // (undocumented)
@@ -5221,7 +5244,7 @@ export const enum SnapHeat {
 }
 
 // @public (undocumented)
-export const enum SnapMode {
+export enum SnapMode {
     // (undocumented)
     Bisector = 32,
     // (undocumented)
@@ -5239,7 +5262,7 @@ export const enum SnapMode {
 }
 
 // @public (undocumented)
-export const enum SnapStatus {
+export enum SnapStatus {
     // (undocumented)
     Aborted = 1,
     // (undocumented)
@@ -5367,7 +5390,7 @@ export class StandardView {
 }
 
 // @public
-export const enum StandardViewId {
+export enum StandardViewId {
     // (undocumented)
     Back = 5,
     // (undocumented)
@@ -5397,7 +5420,7 @@ export class StandardViewTool extends ViewTool {
 }
 
 // @public (undocumented)
-export const enum StartOrResume {
+export enum StartOrResume {
     // (undocumented)
     Resume = 2,
     // (undocumented)
@@ -5857,7 +5880,7 @@ export interface TextureImage {
     image: HTMLImageElement | undefined;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class ThreeAxes {
     // (undocumented)
     clone(): ThreeAxes;
@@ -6187,7 +6210,7 @@ export namespace TileAdmin {
 // @internal
 export abstract class TileLoader {
     // (undocumented)
-    adjustContentIdSizeMultiplier(contentId: string, _sizeMultipler: number): string;
+    adjustContentIdSizeMultiplier(contentId: string, _sizeMultiplier: number): string;
     // (undocumented)
     protected readonly _batchType: BatchType;
     compareTilePriorities(lhs: Tile, rhs: Tile): number;
@@ -6651,21 +6674,21 @@ export class Unit implements UnitProps {
 }
 
 // @beta
-export const enum UsesDragSelect {
+export enum UsesDragSelect {
     Box = 0,
     Line = 1,
     None = 2
 }
 
 // @beta
-export const enum UsesFence {
+export enum UsesFence {
     Check = 0,
     None = 2,
     Required = 1
 }
 
 // @beta
-export const enum UsesSelection {
+export enum UsesSelection {
     Check = 0,
     None = 2,
     Required = 1
@@ -7158,8 +7181,10 @@ export class ViewHandleArray {
     viewTool: ViewManip;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export const enum ViewHandleType {
+    // (undocumented)
+    EXTERIOR = 1,
     // (undocumented)
     Fly = 64,
     // (undocumented)
@@ -7178,20 +7203,6 @@ export const enum ViewHandleType {
     Walk = 32,
     // (undocumented)
     Zoom = 16
-}
-
-// @public (undocumented)
-export const enum ViewHandleWeight {
-    // (undocumented)
-    Bold = 3,
-    // (undocumented)
-    FatDot = 8,
-    // (undocumented)
-    Normal = 2,
-    // (undocumented)
-    Thin = 1,
-    // (undocumented)
-    VeryBold = 4
 }
 
 // @internal (undocumented)
@@ -7307,6 +7318,8 @@ export abstract class ViewManip extends ViewTool {
     enforceZUp(pivotPoint: Point3d): boolean;
     // (undocumented)
     static fitView(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "_forcedHandle" is marked as @public, but its signature references "ViewHandleType" which is marked as @internal
+    // 
     // (undocumented)
     protected _forcedHandle: ViewHandleType;
     // (undocumented)
@@ -7369,6 +7382,8 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     setCameraLensAngle(lensAngle: Angle, retainEyePoint: boolean): ViewStatus;
     setTargetCenterWorld(pt: Point3d, lockTarget: boolean, saveTarget: boolean): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "startHandleDrag" is marked as @public, but its signature references "ViewHandleType" which is marked as @internal
+    // 
     // (undocumented)
     startHandleDrag(ev: BeButtonEvent, forcedHandle?: ViewHandleType): Promise<EventHandled>;
     // (undocumented)
@@ -7389,18 +7404,6 @@ export abstract class ViewManip extends ViewTool {
     viewHandles: ViewHandleArray;
     // (undocumented)
     static zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): Promise<boolean>;
-}
-
-// @public (undocumented)
-export const enum ViewManipPriority {
-    // (undocumented)
-    High = 1000,
-    // (undocumented)
-    Low = 1,
-    // (undocumented)
-    Medium = 100,
-    // (undocumented)
-    Normal = 10
 }
 
 // @public
@@ -7815,6 +7818,8 @@ export abstract class ViewState2d extends ViewState {
     saveForUndo(): ViewStateUndo;
     // (undocumented)
     setExtents(delta: Vector3d): void;
+    // Warning: (ae-forgotten-export) The symbol "ViewState2dUndo" needs to be exported by the entry point imodeljs-frontend.d.ts
+    // 
     // @internal (undocumented)
     setFromUndo(val: ViewState2dUndo): void;
     // (undocumented)
@@ -7825,19 +7830,6 @@ export abstract class ViewState2d extends ViewState {
     toJSON(): ViewDefinition2dProps;
     // (undocumented)
     viewsModel(modelId: Id64String): boolean;
-}
-
-// @internal (undocumented)
-export class ViewState2dUndo extends ViewStateUndo {
-    constructor(view: ViewState2d);
-    // (undocumented)
-    readonly angle: Angle;
-    // (undocumented)
-    readonly delta: Point2d;
-    // (undocumented)
-    equalState(view: ViewState2d): boolean;
-    // (undocumented)
-    readonly origin: Point2d;
 }
 
 // @public
@@ -7905,6 +7897,8 @@ export abstract class ViewState3d extends ViewState {
     setExtents(extents: XYAndZ): void;
     setEyePoint(pt: XYAndZ): void;
     setFocusDistance(dist: number): void;
+    // Warning: (ae-forgotten-export) The symbol "ViewState3dUndo" needs to be exported by the entry point imodeljs-frontend.d.ts
+    // 
     // @internal (undocumented)
     setFromUndo(val: ViewState3dUndo): void;
     setLensAngle(angle: Angle): void;
@@ -7923,23 +7917,6 @@ export abstract class ViewState3d extends ViewState {
 }
 
 // @internal (undocumented)
-export class ViewState3dUndo extends ViewStateUndo {
-    constructor(view: ViewState3d);
-    // (undocumented)
-    readonly camera: Camera;
-    // (undocumented)
-    readonly cameraOn: boolean;
-    // (undocumented)
-    equalState(view: ViewState3d): boolean;
-    // (undocumented)
-    readonly extents: Vector3d;
-    // (undocumented)
-    readonly origin: Point3d;
-    // (undocumented)
-    readonly rotation: Matrix3d;
-}
-
-// @internal (undocumented)
 export abstract class ViewStateUndo {
     // (undocumented)
     abstract equalState(view: ViewState): boolean;
@@ -7948,7 +7925,7 @@ export abstract class ViewStateUndo {
 }
 
 // @public
-export const enum ViewStatus {
+export enum ViewStatus {
     // (undocumented)
     AlreadyAttached = 2,
     // (undocumented)
@@ -8014,7 +7991,7 @@ export abstract class ViewTool extends InteractiveTool {
 }
 
 // @beta
-export const enum ViewUndoEvent {
+export enum ViewUndoEvent {
     // (undocumented)
     Redo = 1,
     // (undocumented)
@@ -8095,6 +8072,7 @@ export class ZoomViewTool extends ViewManip {
 // Warnings were encountered during analysis:
 // 
 // src/tools/MeasureTool.ts:101:7 - (ae-forgotten-export) The symbol "MeasureMarker" needs to be exported by the entry point imodeljs-frontend.d.ts
+// src/tools/ViewTool.ts:102:80 - (ae-forgotten-export) The symbol "ViewManipPriority" needs to be exported by the entry point imodeljs-frontend.d.ts
 
 // (No @packageDocumentation comment for this package)
 

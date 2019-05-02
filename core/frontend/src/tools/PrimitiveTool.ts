@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { CoordinateLockOverrides } from "./ToolAdmin";
-import { BeButtonEvent, InteractiveTool, BeButton } from "./Tool";
+import { BeButtonEvent, InteractiveTool, BeButton, CoordinateLockOverrides } from "./Tool";
 import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -13,7 +12,7 @@ import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 
 /** @public */
-export const enum ModifyElementSource {
+export enum ModifyElementSource {
   /** The source for the element is unknown - not caused by a modification command. */
   Unknown = 0,
   /** The element is selected by the user. */

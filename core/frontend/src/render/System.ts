@@ -26,6 +26,8 @@ import { TileTreeModelState } from "../ModelState";
 import { TileTree } from "../tile/TileTree";
 import { SceneContext } from "../ViewContext";
 
+// tslint:disable:no-const-enum
+
 /** Contains metadata about memory consumed by the render system or aspect thereof.
  * @internal
  */

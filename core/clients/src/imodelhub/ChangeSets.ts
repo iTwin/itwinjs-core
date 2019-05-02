@@ -20,7 +20,7 @@ const loggerCategory: string = LoggerCategory.IModelHub;
  * Specifies types of changes in a [[ChangeSet]].
  * @public
  */
-export const enum ChangesType {
+export enum ChangesType {
   /** [[ChangeSet]] contains regular file changes (e.g. changes to elements or models). */
   Regular,
   /** [[ChangeSet]] only contains schema changes. */

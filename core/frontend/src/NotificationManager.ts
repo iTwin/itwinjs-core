@@ -10,7 +10,7 @@ import { BeDuration } from "@bentley/bentleyjs-core";
 /** Describes the type and behavior of a [[NotifyMessageDetails]].
  * @public
  */
-export const enum OutputMessageType {
+export enum OutputMessageType {
   /** Temporary message box that displays at the bottom of the screen. */
   Toast = 0,
   Pointer = 1,
@@ -23,7 +23,7 @@ export const enum OutputMessageType {
 /** Classifies a [[NotifyMessageDetails]] by its level of importance.
  * @public
  */
-export const enum OutputMessagePriority {
+export enum OutputMessagePriority {
   None = 0,
   Error = 10,
   Warning = 11,
@@ -35,7 +35,7 @@ export const enum OutputMessagePriority {
 /** Describes the alert behavior of a [[NotifyMessageDetails]].
  * @public
  */
-export const enum OutputMessageAlert {
+export enum OutputMessageAlert {
   None = 0,
   Dialog = 1,
   Balloon = 2,
@@ -44,7 +44,7 @@ export const enum OutputMessageAlert {
 /** Relative Position for setPointerTypeDetails
  * @public
  */
-export const enum RelativePosition {
+export enum RelativePosition {
   Left = 0,
   Top = 1,
   Right = 2,
@@ -58,7 +58,7 @@ export const enum RelativePosition {
 /** Reason for ending the activity message via endActivityMessage
  * @public
  */
-export const enum ActivityMessageEndReason {
+export enum ActivityMessageEndReason {
   Completed = 0,
   Cancelled = 1,
 }
@@ -66,7 +66,7 @@ export const enum ActivityMessageEndReason {
 /** Describes the set of buttons displayed in a message box opened using [[NotificationManager.openMessageBox]].
  * @public
  */
-export const enum MessageBoxType {
+export enum MessageBoxType {
   OkCancel,
   Ok,
   LargeOk,
@@ -78,7 +78,7 @@ export const enum MessageBoxType {
 /** Describes the icon displayed in a messagebox opened using [[NotificationManager.openMessageBox]].
  * @public
  */
-export const enum MessageBoxIconType {
+export enum MessageBoxIconType {
   NoSymbol = 0,   // Means Don't draw Symbol
   Information = 1,   // Lower Case i
   Question = 2,   // Question Mark
@@ -89,7 +89,7 @@ export const enum MessageBoxIconType {
 /** Describes the possible return values produced when the user clicks a button in a messagebox opened using [[NotificationManager.openMessageBox]].
  * @public
  */
-export const enum MessageBoxValue {
+export enum MessageBoxValue {
   Apply = 1,
   Reset = 2,
   Ok = 3,

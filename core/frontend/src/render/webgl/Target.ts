@@ -32,6 +32,8 @@ import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
 import { FloatRgba } from "./FloatRGBA";
 
+// tslint:disable:no-const-enum
+
 /** @internal */
 export const enum FrustumUniformType {
   TwoDee,

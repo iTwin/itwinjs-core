@@ -12,7 +12,7 @@ import { FeatureSymbology } from "./rendering";
 /** Whether override includes both color and alpha, only color, or only alpha.
  * @internal
  */
-export const enum FeatureOverrideType { ColorOnly, AlphaOnly, ColorAndAlpha }
+export const enum FeatureOverrideType { ColorOnly, AlphaOnly, ColorAndAlpha }  // tslint:disable-line:no-const-enum
 
 /** @internal */
 export interface AppearanceOverrideProps {

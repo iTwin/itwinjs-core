@@ -233,7 +233,7 @@ export class SubCategoryOverride {
 /** The *rank* for a Category
  * @public
  */
-export const enum Rank {
+export enum Rank {
   /** This category is predefined by the system */
   System = 0,
   /** This category is defined by a schema. Elements in this category are not recognized by system classes. */

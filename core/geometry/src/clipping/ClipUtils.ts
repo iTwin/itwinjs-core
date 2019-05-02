@@ -19,7 +19,7 @@ import { ClipVector } from "./ClipVector";
 /** Enumerated type for describing where geometry lies with respect to clipping planes.
  * @public
  */
-export const enum ClipPlaneContainment {
+export enum ClipPlaneContainment {
   StronglyInside = 1,
   Ambiguous = 2,
   StronglyOutside = 3,
@@ -28,7 +28,7 @@ export const enum ClipPlaneContainment {
 /** Enumerated type for describing what must yet be done to clip a piece of geometry.
  * @public
  */
-export const enum ClipStatus {
+export enum ClipStatus {
   ClipRequired,
   TrivialReject,
   TrivialAccept,
@@ -272,7 +272,7 @@ export class ClipUtilities {
       const rangeIntersection = range.clone();
       for (const c of clipper.clips) {
         if (observeInvisibleFlag && c.invisible) {
-        // trivial range tests do not expose the effects.   Assume the hole allows everything.
+          // trivial range tests do not expose the effects.   Assume the hole allows everything.
         } else {
           const rangeC = this.rangeOfClipperIntersectionWithRange(c, range, observeInvisibleFlag);
           rangeIntersection.intersect(rangeC, rangeIntersection);

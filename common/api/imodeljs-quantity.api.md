@@ -19,7 +19,7 @@ export class BadUnit implements UnitProps {
 }
 
 // @alpha (undocumented)
-export const enum DecimalPrecision {
+export enum DecimalPrecision {
     // (undocumented)
     Eight = 8,
     // (undocumented)
@@ -187,7 +187,7 @@ export class FormatterSpec {
 }
 
 // @alpha (undocumented)
-export const enum FormatTraits {
+export enum FormatTraits {
     // (undocumented)
     ApplyRounding = 16,
     // (undocumented)
@@ -211,7 +211,7 @@ export const enum FormatTraits {
 }
 
 // @alpha (undocumented)
-export const enum FormatType {
+export enum FormatType {
     // (undocumented)
     Decimal = 0,
     // (undocumented)
@@ -223,7 +223,7 @@ export const enum FormatType {
 }
 
 // @alpha (undocumented)
-export const enum FractionalPrecision {
+export enum FractionalPrecision {
     // (undocumented)
     Eight = 8,
     // (undocumented)
@@ -325,7 +325,7 @@ export interface QuantityProps {
 }
 
 // @alpha
-export const enum QuantityStatus {
+export enum QuantityStatus {
     // (undocumented)
     InvalidCompositeFormat = 35041,
     // (undocumented)
@@ -337,7 +337,7 @@ export const enum QuantityStatus {
 }
 
 // @alpha (undocumented)
-export const enum ScientificType {
+export enum ScientificType {
     // (undocumented)
     Normalized = 0,
     // (undocumented)
@@ -345,7 +345,7 @@ export const enum ScientificType {
 }
 
 // @alpha (undocumented)
-export const enum ShowSignOption {
+export enum ShowSignOption {
     // (undocumented)
     NegativeParentheses = 3,
     // (undocumented)

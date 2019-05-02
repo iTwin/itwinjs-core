@@ -16,7 +16,7 @@ import { AngleSweep } from "./geometry3d/AngleSweep";
 /** Enumeration of the 6 possible orderings of XYZ axis order
  * @public
  */
-export const enum AxisOrder {
+export  enum AxisOrder {
   /** Right handed system, X then Y then Z */
   XYZ = 0,
   /** Right handed system, Y then Z then X */
@@ -33,7 +33,7 @@ export const enum AxisOrder {
 /** Enumeration of the 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z
  * @public
  */
-export const enum AxisIndex {
+export  enum AxisIndex {
   X = 0,
   Y = 1,
   Z = 2,
@@ -42,7 +42,7 @@ export const enum AxisIndex {
 /** Standard views.   Used in `Matrix3d.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
  * @public
  */
-export const enum StandardViewIndex {
+export  enum StandardViewIndex {
   Top = 1,
   Bottom = 2,
   Left = 3,
@@ -56,7 +56,7 @@ export const enum StandardViewIndex {
 /** Enumeration among choice for how a coordinate transformation should incorporate scaling.
  * @public
  */
-export const enum AxisScaleSelect {
+export  enum AxisScaleSelect {
   /** All axes of unit length. */
   Unit = 0,
   /** On each axis, the vector length matches the longest side of the range of the data. */

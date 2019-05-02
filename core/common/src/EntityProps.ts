@@ -41,7 +41,7 @@ export interface EntityQueryParams {
 /** The primitive types of an Entity property.
  * @beta
  */
-export const enum PrimitiveTypeCode {
+export enum PrimitiveTypeCode {
   Uninitialized = 0x00,
   Binary = 0x101,
   Boolean = 0x201,

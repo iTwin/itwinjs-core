@@ -9,7 +9,7 @@ import { BentleyError } from "@bentley/bentleyjs-core";
  * Status codes used during Quantity parsing and formatting processing.
  * @alpha
  */
-export const enum QuantityStatus {
+export enum QuantityStatus {
   QUANTITY_ERROR_BASE = 0x88DF,
   Success = 0,
   InvalidJson = QUANTITY_ERROR_BASE + 1,

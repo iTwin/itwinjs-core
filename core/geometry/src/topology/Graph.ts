@@ -840,8 +840,8 @@ export class HalfEdgeGraph {
   public countNodes(): number { return this.allHalfEdges.length; }
 }
 /** @internal */
-export const enum HalfEdgeMask {
-  EXTERIOR = 0x00000001,
+export const enum HalfEdgeMask { // tslint:disable-line:no-const-enum
+EXTERIOR = 0x00000001,
   BOUNDARY = 0x00000002,
   CONSTU_MASK = 0x00000004,
   CONSTV_MASK = 0x00000008,

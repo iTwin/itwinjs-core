@@ -46,6 +46,7 @@
     "rimraf": "^2.6.2",
     "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
     "typescript": "~3.2.2",
     "nyc": "^14.0.0",
     "webpack": "^4.20.2"

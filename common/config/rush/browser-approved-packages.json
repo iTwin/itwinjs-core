@@ -735,6 +735,10 @@
       "allowedCategories": [ "common", "tools" ]
     },
     {
+      "name": "tslint-etc",
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+    },
+    {
       "name": "tslint-loader",
       "allowedCategories": [ "frontend", "tools" ]
     },

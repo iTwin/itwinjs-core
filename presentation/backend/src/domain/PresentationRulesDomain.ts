@@ -27,7 +27,7 @@ export class PresentationRules extends Schema {
 /** @hidden */
 /* istanbul ignore next */
 export namespace PresentationRules {
-  export const enum CodeSpec {
+  export enum CodeSpec {
     Ruleset = "PresentationRules:Ruleset",
   }
 }

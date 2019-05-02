@@ -1990,7 +1990,7 @@ export interface StandardRotationChangeEventArgs {
 }
 
 // @beta
-export const enum StandardTypeConverterTypeNames {
+export enum StandardTypeConverterTypeNames {
     // (undocumented)
     Boolean = "boolean",
     // (undocumented)
@@ -2287,20 +2287,20 @@ export interface TimelineDataProvider {
 }
 
 // @alpha
-export const enum TimelineDateDisplay {
+export enum TimelineDateDisplay {
     ActualTime = 0,
     ProjectTime = 1
 }
 
 // @alpha
-export const enum TimelineDetail {
+export enum TimelineDetail {
     Full = 2,
     Medium = 1,
     Minimal = 0
 }
 
 // @alpha
-export const enum TimelineScale {
+export enum TimelineScale {
     Days = 3,
     Hours = 4,
     Months = 2,

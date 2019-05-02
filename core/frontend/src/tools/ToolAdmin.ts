@@ -5,7 +5,7 @@
 /** @module Tools */
 
 import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
-import { Angle, Constant, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
+import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { LocateOptions } from "../ElementLocateManager";
@@ -19,66 +19,16 @@ import { linePlaneIntersect, ScreenViewport, Viewport } from "../Viewport";
 import { ViewState3d, ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
+import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool, CoordinateLockOverrides, ToolSettings } from "./Tool";
 import { ViewTool } from "./ViewTool";
 
 /** @public */
-export const enum CoordinateLockOverrides {
-  None = 0,
-  ACS = 1 << 1,
-  Grid = 1 << 2,     // also overrides unit lock
-  All = 0xffff,
-}
+export enum StartOrResume { Start = 1, Resume = 2 }
 
 /** @public */
-export const enum StartOrResume { Start = 1, Resume = 2 }
-
-/** @public */
-export const enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
+export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
-
-/** Settings that control the behavior of built-in tools. Applications may modify these values.
- * @public
- */
-export class ToolSettings {
-  /** Duration of animations of viewing operations. */
-  public static animationTime = BeDuration.fromMilliseconds(260);
-  /** Two tap must be within this period to be a double tap. */
-  public static doubleTapTimeout = BeDuration.fromMilliseconds(250);
-  /** Two clicks must be within this period to be a double click. */
-  public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
-  /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
-  public static doubleClickToleranceInches = 0.05;
-  /** Duration without movement before a no-motion event is generated. */
-  public static noMotionTimeout = BeDuration.fromMilliseconds(10);
-  /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
-  public static preserveWorldUp = true;
-  /** Delay with a touch on the surface before a move operation begins. */
-  public static touchMoveDelay = BeDuration.fromMilliseconds(50);
-  /** Delay with the mouse down before a drag operation begins. */
-  public static startDragDelay = BeDuration.fromMilliseconds(110);
-  /** Distance in screen inches a touch point must move before being considered motion. */
-  public static touchMoveDistanceInches = 0.15;
-  /** Distance in screen inches the cursor must move before a drag operation begins. */
-  public static startDragDistanceInches = 0.15;
-  /** Radius in screen inches to search for elements that anchor viewing operations. */
-  public static viewToolPickRadiusInches = 0.20;
-  /** Camera angle enforced for walk tool. */
-  public static walkCameraAngle = Angle.createDegrees(75.6);
-  /** Whether the walk tool enforces worldZ be aligned with screenY */
-  public static walkEnforceZUp = false;
-  /** Speed, in meters per second, for the walk tool. */
-  public static walkVelocity = 3.5;
-  /** Scale factor applied for wheel events with "per-line" modifier. */
-  public static wheelLineFactor = 40;
-  /** Scale factor applied for wheel events with "per-page" modifier. */
-  public static wheelPageFactor = 120;
-  /** When the zoom-with-wheel tool (with camera enabled) gets closer than this distance to an obstacle, it "bumps" through. */
-  public static wheelZoomBumpDistance = Constant.oneCentimeter;
-  /** Scale factor for zooming with mouse wheel. */
-  public static wheelZoomRatio = 1.75;
-}
 
 /** @internal */
 export class ToolState {

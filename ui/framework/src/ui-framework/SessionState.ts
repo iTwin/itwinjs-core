@@ -12,7 +12,7 @@ import { PresentationSelectionScope } from "./UiFramework";
  *  Since these are also used as sync ids they should be in lowercase.
  * @beta
  */
-export const enum SessionStateActionId {
+export  enum SessionStateActionId {
   SetNumItemsSelected = "sessionstate:set-num-items-selected",
   SetAvailableSelectionScopes = "sessionstate:set-available-selection-scopes",
   SetSelectionScope = "sessionstate:set-selection-scope",

@@ -7,7 +7,7 @@
 /** Enumeration of time formats.
  * @public
  */
-export const enum TimeFormat {
+export enum TimeFormat {
   None = 0,
   Short,
   Long,

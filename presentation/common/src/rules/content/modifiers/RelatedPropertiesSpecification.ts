@@ -8,7 +8,7 @@ import { RelationshipDirection } from "../../RelationshipDirection";
 import { MultiSchemaClassesSpecification } from "../../ClassSpecifications";
 
 /** Meaning of the relationship */
-export const enum RelationshipMeaning {
+export enum RelationshipMeaning {
   /**
    * Related instance is part of the primary instance. Related properties
    * with this meaning are displayed in UI as if they belonged to the
@@ -25,7 +25,7 @@ export const enum RelationshipMeaning {
 }
 
 /** Special values that can be used in [[RelatedPropertiesSpecification.propertyNames]] */
-export const enum RelatedPropertiesSpecialValues {
+export enum RelatedPropertiesSpecialValues {
   /**
    * Used to specify that no properties should be included. Usually
    * used together with [[RelatedPropertiesSpecification.nestedRelatedProperties]]

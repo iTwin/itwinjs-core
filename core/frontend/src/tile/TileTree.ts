@@ -48,7 +48,6 @@ import { CompositeTileIO } from "./CompositeTileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { I3dmTileIO } from "./I3dmTileIO";
 import { IModelTileIO } from "./IModelTileIO";
-import { computeChildRanges } from "./IModelTile";
 import { PntsTileIO } from "./PntsTileIO";
 import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
@@ -564,6 +563,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   }
 }
 
+// tslint:disable:no-const-enum
+
 /** @internal */
 export namespace Tile {
   /**
@@ -931,7 +932,7 @@ export abstract class TileLoader {
   }
 
   public get viewFlagOverrides(): ViewFlag.Overrides { return defaultViewFlagOverrides; }
-  public adjustContentIdSizeMultiplier(contentId: string, _sizeMultipler: number): string { return contentId; }
+  public adjustContentIdSizeMultiplier(contentId: string, _sizeMultiplier: number): string { return contentId; }
 }
 
 /** A hierarchical level-of-detail tree of 3d [[Tile]]s to be rendered in a [[Viewport]].
@@ -996,4 +997,56 @@ export class TileTreeState {
     this.tileTree = dispose(this.tileTree);
     this.loadStatus = TileTree.LoadStatus.NotLoaded;
   }
+}
+
+/** @internal */
+export function bisectRange3d(range: Range3d, takeUpper: boolean): void {
+  const diag = range.diagonal();
+  const pt = takeUpper ? range.high : range.low;
+  if (diag.x > diag.y && diag.x > diag.z)
+    pt.x = (range.low.x + range.high.x) / 2.0;
+  else if (diag.y > diag.z)
+    pt.y = (range.low.y + range.high.y) / 2.0;
+  else
+    pt.z = (range.low.z + range.high.z) / 2.0;
+}
+
+/** @internal */
+export function bisectRange2d(range: Range3d, takeUpper: boolean): void {
+  const diag = range.diagonal();
+  const pt = takeUpper ? range.high : range.low;
+  if (diag.x > diag.y)
+    pt.x = (range.low.x + range.high.x) / 2.0;
+  else
+    pt.y = (range.low.y + range.high.y) / 2.0;
+}
+
+/**
+ * Given a Tile, compute the ranges which would result from sub-dividing its range a la IModelTile.getChildrenProps().
+ * This function exists strictly for debugging purposes.
+ */
+function computeChildRanges(tile: Tile): Array<{ range: Range3d, isEmpty: boolean }> {
+  const emptyMask = tile.emptySubRangeMask;
+  const is2d = tile.root.is2d;
+  const bisectRange = is2d ? bisectRange2d : bisectRange3d;
+
+  const ranges: Array<{ range: Range3d, isEmpty: boolean }> = [];
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < 2; j++) {
+      for (let k = 0; k < (is2d ? 1 : 2); k++) {
+        const emptyBit = 1 << (i + j * 2 + k * 4);
+        const isEmpty = 0 !== (emptyMask & emptyBit);
+
+        const range = tile.range.clone();
+        bisectRange(range, 0 === i);
+        bisectRange(range, 0 === j);
+        if (!is2d)
+          bisectRange(range, 0 === k);
+
+        ranges.push({ range, isEmpty });
+      }
+    }
+  }
+
+  return ranges;
 }

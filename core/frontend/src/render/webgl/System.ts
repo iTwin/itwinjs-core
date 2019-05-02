@@ -58,6 +58,8 @@ import { TileTreeModelState } from "../../ModelState";
 import { TileTree } from "../../tile/TileTree";
 import { SceneContext } from "../../ViewContext";
 
+// tslint:disable:no-const-enum
+
 /** @internal */
 export const enum ContextState {
   Uninitialized,

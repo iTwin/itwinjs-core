@@ -8,7 +8,7 @@
  * Enumeration for horizontal alignment.
  * @public
  */
-export const enum HorizontalAlignment {
+export enum HorizontalAlignment {
   Left = 1,
   Center = 2,
   Right = 3,
@@ -19,7 +19,7 @@ export const enum HorizontalAlignment {
  * Enumeration for vertical alignment.
  * @public
  */
-export const enum VerticalAlignment {
+export enum VerticalAlignment {
   Top = 1,
   Middle = 2,
   Bottom = 3,

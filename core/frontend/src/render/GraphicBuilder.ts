@@ -34,7 +34,7 @@ import { RenderGraphic } from "./System";
  *  - Within a single [[RenderGraphic]], each geometric primitive is rendered in the ordered in which it was added to the GraphicBuilder.
  * @public
  */
-export const enum GraphicType {
+export enum GraphicType {
   /**
    * Renders behind all other graphics. For example, the border of a [[SheetViewState]] is of this type.
    * Coordinates: [[CoordSystem.View]].

@@ -15,7 +15,7 @@ import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { Viewport, CoordSystem } from "./Viewport";
 
 /** @public */
-export const enum ACSType {
+export enum ACSType {
   None = 0,
   Rectangular = 1,
   Cylindrical = 2,
@@ -23,7 +23,7 @@ export const enum ACSType {
 }
 
 /** @public */
-export const enum ACSDisplayOptions {
+export enum ACSDisplayOptions {
   None = 0, // used for testing individual bits.
   Active = (1 << 0),
   Deemphasized = (1 << 1),

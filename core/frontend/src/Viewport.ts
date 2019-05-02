@@ -27,9 +27,9 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tile } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
-import { ToolSettings } from "./tools/ToolAdmin";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { GridOrientationType, MarginPercent, ViewState, ViewStatus } from "./ViewState";
+import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo } from "./ViewState";
+import { ToolSettings } from "./tools/Tool";
 
 /** An object which customizes the appearance of Features within a [[Viewport]].
  * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
@@ -81,7 +81,7 @@ export class SyncFlags {
 /** @see [[ChangeFlags]]
  * @beta
  */
-export const enum ChangeFlag {
+export enum ChangeFlag {
   None = 0,
   AlwaysDrawn = 1 << 0,
   NeverDrawn = 1 << 1,
@@ -306,7 +306,7 @@ export class DepthRangeNpc {
 /** Coordinate system types
  * @public
  */
-export const enum CoordSystem {
+export enum CoordSystem {
   /** Coordinates are relative to the origin of the viewing rectangle.
    * x and y values correspond to pixels within that rectangle, with (x=0,y=0) corresponding to the top-left corner.
    */
@@ -391,7 +391,7 @@ class Animator {
 /** Status for [[ViewportAnimator.animate]].
  * @public
  */
-export const enum RemoveMe { No = 0, Yes = 1 }
+export enum RemoveMe { No = 0, Yes = 1 }
 
 /** An object to animate a transition of a [[Viewport]].
  * Only one animator may be associated with a viewport at a time. Registering a new
@@ -940,7 +940,7 @@ export class ViewFrustum {
 }
 
 /** @beta Event type for Viewport.onViewUndoRedo */
-export const enum ViewUndoEvent { Undo = 0, Redo = 1 }
+export enum ViewUndoEvent { Undo = 0, Redo = 1 }
 
 /** Allows the visibility of categories within a [[Viewport]] to be controlled on a per-[[ModelState]] basis.
  * If a category's visibility is overridden for a given model, then elements belonging to that category within that model will be displayed or hidden regardless of the category's inclusion in the Viewport's [[CategorySelectorState]].
@@ -953,7 +953,7 @@ export namespace PerModelCategoryVisibility {
   /** Describes whether and how a category's visibility is overridden.
    * @alpha
    */
-  export const enum Override {
+  export enum Override {
     /** The category's visibility is not overridden; its visibility is wholly controlled by the [[Viewport]]'s [[CategorySelectorState]]. */
     None,
     /** The category is overridden to be visible. */
@@ -2531,12 +2531,6 @@ export abstract class Viewport implements IDisposable {
 
     return npc;
   }
-}
-
-/** @internal */
-export abstract class ViewStateUndo {
-  public undoTime?: BeTimePoint;
-  public abstract equalState(view: ViewState): boolean;
 }
 
 /** An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events.

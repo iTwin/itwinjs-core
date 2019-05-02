@@ -458,7 +458,7 @@ export namespace ConcurrencyControl {
 
   /* Keep this consistent with DgnPlatform/RepositoryManager.h. */
   /** How to handle a conflict. */
-  export const enum OnConflict {
+  export enum OnConflict {
     /** Reject the incoming change */
     RejectIncomingChange = 0,
     /** Accept the incoming change */

@@ -12,6 +12,7 @@ import { System } from "./System";
 
 /** @internal */
 export type DepthBuffer = RenderBuffer | TextureHandle;
+// tslint:disable:no-const-enum
 
 /** @internal */
 export const enum FrameBufferBindState {

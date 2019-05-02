@@ -24,7 +24,7 @@ import { SelectionScope, getInstancesCount } from "@bentley/presentation-common"
 /** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control.
  * @public
  */
-export const enum SyncUiEventId {
+export enum SyncUiEventId {
   /** The active content as maintained by the ContentViewManager has changed. */
   ActiveContentChanged = "activecontentchanged",
   /** The active view maintained by the ViewManager has changed. */

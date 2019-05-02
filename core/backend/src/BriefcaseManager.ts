@@ -39,7 +39,7 @@ export class BriefcaseId {
 /** Option to keep briefcase when the imodel is closed
  * @internal
  */
-export const enum KeepBriefcase {
+export enum KeepBriefcase {
   No = 0,
   Yes = 1,
 }

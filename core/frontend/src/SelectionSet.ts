@@ -10,7 +10,7 @@ import { IModelApp } from "./IModelApp";
 /** event types for SelectionSet.onChanged
  * @public
  */
-export const enum SelectEventType { Add, Remove, Replace, Clear }
+export enum SelectEventType { Add, Remove, Replace, Clear }
 
 /** A set of *hilited* elements for an [[IModelConnection]], by element id.
  * Hilited elements are displayed with a customizable hilite effect within a [[Viewport]].

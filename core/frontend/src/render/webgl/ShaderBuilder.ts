@@ -13,6 +13,8 @@ import { GLSLVertex, addPosition } from "./glsl/Vertex";
 import { addInstancedModelMatrix } from "./glsl/Instancing";
 import { addClipping } from "./glsl/Clipping";
 
+// tslint:disable:no-const-enum
+
 /** Describes the data type of a shader program variable.
  * @internal
  */

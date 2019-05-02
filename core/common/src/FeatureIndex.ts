@@ -41,7 +41,7 @@ export class ColorIndex {
 }
 
 /** @internal */
-export const enum FeatureIndexType {
+export enum FeatureIndexType {
   Empty,
   Uniform,
   NonUniform,

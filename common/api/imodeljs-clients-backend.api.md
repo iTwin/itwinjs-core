@@ -57,7 +57,7 @@ export class IOSAzureFileHandler implements FileHandler {
 }
 
 // @public
-export const enum LoggerCategory {
+export enum LoggerCategory {
     IModelHub = "imodeljs-clients.imodelhub",
     OidcDeviceClient = "imodeljs-clients-device.OidcDeviceClient"
 }

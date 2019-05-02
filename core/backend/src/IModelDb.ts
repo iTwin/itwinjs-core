@@ -42,17 +42,17 @@ export type ChangeSetDescriber = (endTxnId: IModelJsNative.TxnIdString) => strin
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub
  * @public
  */
-export const enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
+export enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
 
 /** Mode to access the IModelDb
  * @public
  */
-export const enum AccessMode { Shared = 1, Exclusive = 2 }
+export enum AccessMode { Shared = 1, Exclusive = 2 }
 
 /** Additional options for exclusive access to IModelDb
  * @internal
  */
-export const enum ExclusiveAccessOption {
+export enum ExclusiveAccessOption {
   /** Create or acquire a new briefcase every time the open call is made */
   CreateNewBriefcase = 1,
 
@@ -1702,7 +1702,7 @@ export namespace IModelDb {
    * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
    * @internal
    */
-  export const enum TileContentState {
+  export enum TileContentState {
     New, // Request was just created and enqueued.
     Pending, // Request is enqueued but not yet being processed.
     Loading, // Request is being actively processed.
@@ -1774,7 +1774,7 @@ export namespace IModelDb {
 }
 
 /** @public */
-export const enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
+export enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
 
 /** An error generated during dependency validation.
  * @internal

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "eliminate exported const enums",
+      "packageName": "@bentley/logger-config",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/logger-config",
+  "email": "keith.bentley@bentley.com"
+}

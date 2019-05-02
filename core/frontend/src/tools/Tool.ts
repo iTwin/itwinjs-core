@@ -4,17 +4,59 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Point3d, Point2d, PolygonOps } from "@bentley/geometry-core";
-import { Viewport, ScreenViewport } from "../Viewport";
-import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { HitDetail } from "../HitDetail";
+import { BeDuration } from "@bentley/bentleyjs-core";
+import { Point2d, Point3d, PolygonOps, Angle, Constant } from "@bentley/geometry-core";
+import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { IModelApp } from "../IModelApp";
-import { IModelError, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
-import { CoordinateLockOverrides } from "./ToolAdmin";
-import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
-import { ToolSettingsPropertySyncItem, ToolSettingsPropertyRecord } from "../properties/ToolSettingsValue";
+import { HitDetail } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
+import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
+import { DecorateContext, DynamicsContext } from "../ViewContext";
+import { ScreenViewport, Viewport } from "../Viewport";
+
+/** Settings that control the behavior of built-in tools. Applications may modify these values.
+ * @public
+ */
+export class ToolSettings {
+  /** Duration of animations of viewing operations. */
+  public static animationTime = BeDuration.fromMilliseconds(260);
+  /** Two tap must be within this period to be a double tap. */
+  public static doubleTapTimeout = BeDuration.fromMilliseconds(250);
+  /** Two clicks must be within this period to be a double click. */
+  public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
+  /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
+  public static doubleClickToleranceInches = 0.05;
+  /** Duration without movement before a no-motion event is generated. */
+  public static noMotionTimeout = BeDuration.fromMilliseconds(10);
+  /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
+  public static preserveWorldUp = true;
+  /** Delay with a touch on the surface before a move operation begins. */
+  public static touchMoveDelay = BeDuration.fromMilliseconds(50);
+  /** Delay with the mouse down before a drag operation begins. */
+  public static startDragDelay = BeDuration.fromMilliseconds(110);
+  /** Distance in screen inches a touch point must move before being considered motion. */
+  public static touchMoveDistanceInches = 0.15;
+  /** Distance in screen inches the cursor must move before a drag operation begins. */
+  public static startDragDistanceInches = 0.15;
+  /** Radius in screen inches to search for elements that anchor viewing operations. */
+  public static viewToolPickRadiusInches = 0.20;
+  /** Camera angle enforced for walk tool. */
+  public static walkCameraAngle = Angle.createDegrees(75.6);
+  /** Whether the walk tool enforces worldZ be aligned with screenY */
+  public static walkEnforceZUp = false;
+  /** Speed, in meters per second, for the walk tool. */
+  public static walkVelocity = 3.5;
+  /** Scale factor applied for wheel events with "per-line" modifier. */
+  public static wheelLineFactor = 40;
+  /** Scale factor applied for wheel events with "per-page" modifier. */
+  public static wheelPageFactor = 120;
+  /** When the zoom-with-wheel tool (with camera enabled) gets closer than this distance to an obstacle, it "bumps" through. */
+  public static wheelZoomBumpDistance = Constant.oneCentimeter;
+  /** Scale factor for zooming with mouse wheel. */
+  public static wheelZoomRatio = 1.75;
+}
 
 /** @public */
 export type ToolType = typeof Tool;
@@ -23,12 +65,20 @@ export type ToolType = typeof Tool;
 export type ToolList = ToolType[];
 
 /** @public */
-export const enum BeButton { Data = 0, Reset = 1, Middle = 2 }
+export enum BeButton { Data = 0, Reset = 1, Middle = 2 }
+
+/** @public */
+export enum CoordinateLockOverrides {
+  None = 0,
+  ACS = 1 << 1,
+  Grid = 1 << 2,     // also overrides unit lock
+  All = 0xffff,
+}
 
 /** The *source* that generated an event.
  * @public
  */
-export const enum InputSource {
+export enum InputSource {
   /** Source not defined */
   Unknown = 0,
   /** From a mouse or other pointing device */
@@ -40,7 +90,7 @@ export const enum InputSource {
 /** The *source* that generated a coordinate.
  * @public
  */
-export const enum CoordSource {
+export enum CoordSource {
   /** Event was created by an action from the user */
   User = 0,
   /** Event was created by a program or by a precision keyin */
@@ -54,7 +104,7 @@ export const enum CoordSource {
 /** Numeric mask for a set of modifier keys (control, shift, and alt).
  * @public
  */
-export const enum BeModifierKeys { None = 0, Control = 1 << 0, Shift = 1 << 1, Alt = 1 << 2 }
+export enum BeModifierKeys { None = 0, Control = 1 << 0, Shift = 1 << 1, Alt = 1 << 2 }
 
 /** @public */
 export class BeButtonState {

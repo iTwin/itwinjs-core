@@ -29,6 +29,8 @@ import { DrawParams } from "../DrawCommand";
 import { assert } from "@bentley/bentleyjs-core";
 import { MutableFloatRgba } from "../FloatRGBA";
 
+// tslint:disable:no-const-enum
+
 /** @internal */
 export const enum FeatureSymbologyOptions {
   None = 0,

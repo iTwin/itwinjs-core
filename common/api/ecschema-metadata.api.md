@@ -222,7 +222,7 @@ export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> ext
 }
 
 // @beta
-export const enum CustomAttributeContainerType {
+export enum CustomAttributeContainerType {
     // (undocumented)
     Any = 4095,
     // (undocumented)
@@ -258,7 +258,7 @@ export const enum CustomAttributeContainerType {
 }
 
 // @internal
-export const enum DecimalPrecision {
+export enum DecimalPrecision {
     // (undocumented)
     Eight = 8,
     // (undocumented)
@@ -313,7 +313,7 @@ export interface DelayedPromiseWithPropsConstructor {
 }
 
 // @beta
-export const enum DiagnosticCategory {
+export enum DiagnosticCategory {
     // (undocumented)
     Error = 1,
     // (undocumented)
@@ -499,7 +499,7 @@ export const Diagnostics: {
 };
 
 // @beta
-export const enum DiagnosticType {
+export enum DiagnosticType {
     // (undocumented)
     CustomAttributeContainer = 4,
     // (undocumented)
@@ -603,7 +603,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 }
 
 // @beta (undocumented)
-export const enum ECClassModifier {
+export enum ECClassModifier {
     // (undocumented)
     Abstract = 1,
     // (undocumented)
@@ -631,7 +631,7 @@ export class ECObjectsError extends BentleyError {
 }
 
 // @internal (undocumented)
-export const enum ECObjectsStatus {
+export enum ECObjectsStatus {
     // (undocumented)
     ClassNotFound = 35074,
     // (undocumented)
@@ -976,7 +976,7 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
 export const formatStringRgx: RegExp;
 
 // @internal
-export const enum FormatTraits {
+export enum FormatTraits {
     // (undocumented)
     ApplyRounding = 16,
     // (undocumented)
@@ -1003,7 +1003,7 @@ export const enum FormatTraits {
 export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
 
 // @internal
-export const enum FormatType {
+export enum FormatType {
     // (undocumented)
     Decimal = 0,
     // (undocumented)
@@ -1018,7 +1018,7 @@ export const enum FormatType {
 export function formatTypeToString(type: FormatType): string;
 
 // @internal
-export const enum FractionalPrecision {
+export enum FractionalPrecision {
     // (undocumented)
     Eight = 8,
     // (undocumented)
@@ -1499,7 +1499,7 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
 }
 
 // @beta
-export const enum PrimitiveType {
+export enum PrimitiveType {
     // (undocumented)
     Binary = 257,
     // (undocumented)
@@ -1623,7 +1623,7 @@ export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnos
 }
 
 // @beta (undocumented)
-export const enum PropertyType {
+export enum PropertyType {
     // (undocumented)
     Binary = 257,
     // (undocumented)
@@ -1803,7 +1803,7 @@ export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> exten
 }
 
 // @beta
-export const enum RelationshipEnd {
+export enum RelationshipEnd {
     // (undocumented)
     Source = 0,
     // (undocumented)
@@ -2081,7 +2081,7 @@ export class SchemaItemKey {
 }
 
 // @beta (undocumented)
-export const enum SchemaItemType {
+export enum SchemaItemType {
     // (undocumented)
     Constant = 10,
     // (undocumented)
@@ -2153,7 +2153,7 @@ export class SchemaMap extends Array<Schema> {
 }
 
 // @beta
-export const enum SchemaMatchType {
+export enum SchemaMatchType {
     // (undocumented)
     Exact = 1,
     // (undocumented)
@@ -2264,7 +2264,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
 }
 
 // @internal
-export const enum ScientificType {
+export enum ScientificType {
     // (undocumented)
     Normalized = 0,
     // (undocumented)
@@ -2275,7 +2275,7 @@ export const enum ScientificType {
 export function scientificTypeToString(scientificType: ScientificType): string;
 
 // @internal
-export const enum ShowSignOption {
+export enum ShowSignOption {
     // (undocumented)
     NegativeParentheses = 3,
     // (undocumented)
@@ -2290,7 +2290,7 @@ export const enum ShowSignOption {
 export function showSignOptionToString(showSign: ShowSignOption): string;
 
 // @beta (undocumented)
-export const enum StrengthDirection {
+export enum StrengthDirection {
     // (undocumented)
     Backward = 2,
     // (undocumented)
@@ -2304,7 +2304,7 @@ export function strengthDirectionToString(direction: StrengthDirection): string;
 export function strengthToString(strength: StrengthType): string;
 
 // @beta (undocumented)
-export const enum StrengthType {
+export enum StrengthType {
     // (undocumented)
     Embedding = 2,
     // (undocumented)

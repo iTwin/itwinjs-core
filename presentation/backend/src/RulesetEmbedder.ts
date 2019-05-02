@@ -14,7 +14,8 @@ import * as path from "path";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
 
 /** @hidden */
-export const enum DuplicateHandlingStrategy {
+export const enum DuplicateHandlingStrategy {  // tslint:disable-line:no-const-enum
+    EXTERIOR = 0x00000001,
     Skip,
     Replace,
 }

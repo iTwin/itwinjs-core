@@ -268,7 +268,7 @@ export interface AuxCoordSystemProps extends ElementProps {
 export type AxisAlignedBox3d = Range3d;
 
 // @public
-export const enum BackgroundFill {
+export enum BackgroundFill {
     None = 0,
     Outline = 2,
     Solid = 1
@@ -286,7 +286,7 @@ export interface BackgroundMapProps {
 }
 
 // @public
-export const enum BackgroundMapType {
+export enum BackgroundMapType {
     // (undocumented)
     Aerial = 2,
     // (undocumented)
@@ -296,7 +296,7 @@ export const enum BackgroundMapType {
 }
 
 // @beta
-export const enum BatchType {
+export enum BatchType {
     PlanarClassifier = 2,
     Primary = 0,
     VolumeClassifier = 1
@@ -328,7 +328,7 @@ export { BentleyError }
 export { BentleyStatus }
 
 // @public
-export const enum BisCodeSpec {
+export enum BisCodeSpec {
     // (undocumented)
     annotationFrameStyle = "bis:AnnotationFrameStyle",
     // (undocumented)
@@ -419,7 +419,7 @@ export namespace BRepEntity {
         materialId?: Id64String;
         transparency?: number;
     }
-    export const enum Type {
+    export enum Type {
         Sheet = 1,
         Solid = 0,
         Wire = 2
@@ -670,11 +670,11 @@ export type CodeScopeProps = Id64String | GuidString;
 
 // @public
 export namespace CodeScopeSpec {
-    export const enum ScopeRequirement {
+    export enum ScopeRequirement {
         ElementId = 1,
         FederationGuid = 2
     }
-    export const enum Type {
+    export enum Type {
         Model = 2,
         ParentElement = 3,
         RelatedElement = 4,
@@ -1138,7 +1138,7 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
 }
 
 // @internal
-export const enum DevToolsStatsOptions {
+export enum DevToolsStatsOptions {
     FormatUnits = 1,
     // (undocumented)
     None = 0
@@ -1486,7 +1486,7 @@ export class FeatureIndex {
 }
 
 // @internal (undocumented)
-export const enum FeatureIndexType {
+export enum FeatureIndexType {
     // (undocumented)
     Empty = 0,
     // (undocumented)
@@ -1529,7 +1529,7 @@ export interface FilePropertyProps {
 }
 
 // @public
-export const enum FillDisplay {
+export enum FillDisplay {
     Always = 2,
     Blanking = 3,
     ByView = 1,
@@ -1573,7 +1573,7 @@ export interface FontProps {
 }
 
 // @public
-export const enum FontType {
+export enum FontType {
     // (undocumented)
     Rsc = 2,
     // (undocumented)
@@ -1675,7 +1675,7 @@ export interface GeoCoordinatesResponseProps {
 }
 
 // @public (undocumented)
-export const enum GeoCoordStatus {
+export enum GeoCoordStatus {
     // (undocumented)
     CSMapError = 4096,
     // (undocumented)
@@ -1736,7 +1736,7 @@ export interface GeometryAppearanceProps {
 }
 
 // @alpha
-export const enum GeometryClass {
+export enum GeometryClass {
     Construction = 1,
     Dimension = 2,
     Pattern = 3,
@@ -1868,7 +1868,7 @@ export { GetMetaDataFunction }
 
 // @beta (undocumented)
 export namespace Gradient {
-    export const enum Flags {
+    export enum Flags {
         Invert = 1,
         None = 0,
         Outline = 2
@@ -1884,7 +1884,7 @@ export namespace Gradient {
         color: ColorDefProps;
         value: number;
     }
-    export const enum Mode {
+    export enum Mode {
         // (undocumented)
         Curved = 2,
         // (undocumented)
@@ -1941,7 +1941,7 @@ export namespace Gradient {
         tint?: number;
     }
     // @internal (undocumented)
-    export const enum ThematicColorScheme {
+    export enum ThematicColorScheme {
         // (undocumented)
         BlueRed = 0,
         // (undocumented)
@@ -1956,7 +1956,7 @@ export namespace Gradient {
         Topographic = 3
     }
     // @internal (undocumented)
-    export const enum ThematicMode {
+    export enum ThematicMode {
         // (undocumented)
         IsoLines = 3,
         // (undocumented)
@@ -2123,7 +2123,7 @@ export namespace Hilite {
         silhouette: Silhouette;
         readonly visibleRatio: number;
     }
-    export const enum Silhouette {
+    export enum Silhouette {
         None = 0,
         Thick = 2,
         Thin = 1
@@ -2233,7 +2233,7 @@ export class ImageBuffer {
 }
 
 // @public
-export const enum ImageBufferFormat {
+export enum ImageBufferFormat {
     Alpha = 5,
     Rgb = 2,
     Rgba = 0
@@ -2261,7 +2261,7 @@ export class ImageSource {
 }
 
 // @public
-export const enum ImageSourceFormat {
+export enum ImageSourceFormat {
     Jpeg = 0,
     Png = 2,
     Svg = 3
@@ -2553,7 +2553,7 @@ export interface LightProps {
 }
 
 // @internal
-export const enum LightType {
+export enum LightType {
     // (undocumented)
     Ambient = 2,
     // (undocumented)
@@ -2577,7 +2577,7 @@ export const enum LightType {
 }
 
 // @public
-export const enum LinePixels {
+export enum LinePixels {
     Code0 = 0,
     Code1 = 2155905152,
     Code2 = 4177066232,
@@ -2665,7 +2665,7 @@ export type LocalAlignedBox3d = Range3d;
 export { LogFunction }
 
 // @public
-export const enum LoggerCategory {
+export enum LoggerCategory {
     ElementProps = "imodeljs-common.ElementProps",
     RpcInterfaceBackend = "imodeljs-backend.RpcInterface",
     RpcInterfaceFrontend = "imodeljs-frontend.RpcInterface"
@@ -2815,7 +2815,7 @@ export class NonUniformColor {
 }
 
 // @public
-export const enum Npc {
+export enum Npc {
     _000 = 0,
     _001 = 4,
     _010 = 2,
@@ -3186,7 +3186,7 @@ export enum PolylineTypeFlags {
 }
 
 // @beta
-export const enum PrimitiveTypeCode {
+export enum PrimitiveTypeCode {
     // (undocumented)
     Binary = 257,
     // (undocumented)
@@ -3426,7 +3426,7 @@ export namespace Quantization {
 }
 
 // @public
-export const enum Rank {
+export enum Rank {
     Application = 2,
     Domain = 1,
     System = 0,
@@ -3538,7 +3538,7 @@ export interface RenderMaterialProps extends DefinitionElementProps {
 }
 
 // @public
-export const enum RenderMode {
+export enum RenderMode {
     HiddenLine = 3,
     SmoothShade = 6,
     SolidFill = 4,
@@ -4372,7 +4372,7 @@ export interface SkyBoxImageProps {
 }
 
 // @public
-export const enum SkyBoxImageType {
+export enum SkyBoxImageType {
     Cube = 2,
     // @internal
     Cylindrical = 3,
@@ -4473,7 +4473,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 
 // @beta
 export namespace SpatialClassificationProps {
-    export const enum Display {
+    export enum Display {
         Dimmed = 2,
         ElementColor = 4,
         Hilite = 3,
@@ -4524,7 +4524,7 @@ export namespace SpatialClassificationProps {
         // (undocumented)
         name: string;
     }
-    export const enum Type {
+    export enum Type {
         // (undocumented)
         Planar = 0,
         // (undocumented)
@@ -4692,7 +4692,7 @@ export class TextureMapping {
 
 // @beta (undocumented)
 export namespace TextureMapping {
-    export const enum Mode {
+    export enum Mode {
         // @internal (undocumented)
         Cubic = 4,
         // @internal (undocumented)

@@ -9,7 +9,7 @@ import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geo
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
  * @public
  */
-export const enum Npc {
+export enum Npc {
   /** Left bottom rear */
   _000 = 0,
   /** Right bottom rear */

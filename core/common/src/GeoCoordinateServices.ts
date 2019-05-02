@@ -7,7 +7,7 @@
 import { XYZProps } from "@bentley/geometry-core";
 
 /** @public */
-export const enum GeoCoordStatus {
+export enum GeoCoordStatus {
   Success = 0,
   NoGCSDefined = 100,
   OutOfUsefulRange = 1,

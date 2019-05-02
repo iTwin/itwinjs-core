@@ -48,7 +48,8 @@ export declare namespace IModelJsNative {
   export type TxnIdString = string;
 
   /** Logger categories used by the native addon */
-  export const enum LoggerCategory {
+  export const enum LoggerCategory {  // tslint:disable-line:no-const-enum
+    Success = 0,
     BeSQLite = "BeSQLite",
     Changeset = "Changeset",
     DgnCore = "DgnCore",
@@ -319,7 +320,7 @@ export declare namespace IModelJsNative {
     public getValueGuid(columnIndex: number): GuidString;
   }
 
-  export const enum ECPresentationStatus {
+  export const enum ECPresentationStatus { // tslint:disable-line:no-const-enum
     Success = 0,
     Error = 1,
     InvalidArgument = Error + 1,

@@ -5,9 +5,8 @@
 /** @module Tools */
 
 import { AccuDraw, AccuDrawFlags, RotationMode, ContextMode, LockedStates, ThreeAxes, ItemField, KeyinStatus, CompassMode } from "../AccuDraw";
-import { CoordinateLockOverrides } from "./ToolAdmin";
 import { TentativeOrAccuSnap, AccuSnap } from "../AccuSnap";
-import { BeButtonEvent, InputCollector, EventHandled } from "./Tool";
+import { BeButtonEvent, InputCollector, EventHandled, CoordinateLockOverrides } from "./Tool";
 import { DecorateContext } from "../ViewContext";
 import { Vector3d, Point3d, Matrix3d, Geometry, Transform } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";

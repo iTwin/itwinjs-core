@@ -11,7 +11,7 @@ import { IModelConnection } from "../IModelConnection";
 /** The requested source for the elements to modify.
  * @beta Do we really want to propagate the *Elem* abbreviation?
  */
-export const enum ElemSource {
+export enum ElemSource {
   /** Populate ElementAgenda from a locate */
   Pick,
   /**  Populate ElementAgenda from active fence */
@@ -23,7 +23,7 @@ export const enum ElemSource {
 /** The method that will be used to update the tool's ElementAgenda.
  * @beta Do we really want to propagate the *Elem* abbreviation?
  */
-export const enum ElemMethod {
+export enum ElemMethod {
   /** Entries will be added to ElementAgenda */
   Add,
   /** Entries currently in the ElementAgenda are removed, entries not currently in the ElementAgenda are added. */
@@ -33,7 +33,7 @@ export const enum ElemMethod {
 /** Should the active fence be used, required, or ignored as a possible ElemSource.
  * @beta
  */
-export const enum UsesFence {
+export enum UsesFence {
   /** Active Fence is allowed as ElemSource */
   Check,
   /** Active Fence is required as ElemSource */
@@ -45,7 +45,7 @@ export const enum UsesFence {
 /** Should the active selection set be used, required, or ignored as a possible ElemSource.
  * @beta
  */
-export const enum UsesSelection {
+export enum UsesSelection {
   /** Active Selection Set is allowed as ElemSource */
   Check,
   /** Active Selection Set is required as ElemSource */
@@ -57,7 +57,7 @@ export const enum UsesSelection {
 /** Should ElemSource::Pick allow a drag select to identify elements.
  * @beta
  */
-export const enum UsesDragSelect {
+export enum UsesDragSelect {
   /** Drag selection using shape inside/overlap */
   Box,
   /** Drag selection using crossing line */
@@ -69,7 +69,7 @@ export const enum UsesDragSelect {
 /** Helps determine the action ModifyAgenda will take on the agenda elements after calling doFenceClip.
  * @beta
  */
-export const enum ClipResult {
+export enum ClipResult {
   /** Tool does not support fence clip */
   NotSupported,
   /** Valid entries in ElementAgenda are new elements, no elemRef but correct modelRef. */
@@ -81,7 +81,7 @@ export const enum ClipResult {
 /** ElemSource specific failures.
  * @beta
  */
-export const enum ErrorNums {
+export enum ErrorNums {
   /** No fence is currently active */
   NoFence,
   /** No acceptable element(s) inside fence */
@@ -95,7 +95,7 @@ export const enum ErrorNums {
 }
 
 /** @beta */
-export const enum HilitedState {
+export enum HilitedState {
   /**  this agenda is in an indeterminate state wrt hilite */
   Unknown = 0,
   /**  all of the entries in this agenda were hilited by a call to ElementAgenda.hilite */

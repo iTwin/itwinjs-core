@@ -18,13 +18,13 @@ import { Pixel } from "../rendering";
 import { DecorateContext } from "../ViewContext";
 import { ViewRect } from "../Viewport";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, EventHandled, InputSource } from "./Tool";
-import { CoordinateLockOverrides, ManipulatorToolEvent } from "./ToolAdmin";
+import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, EventHandled, InputSource, CoordinateLockOverrides } from "./Tool";
+import { ManipulatorToolEvent } from "./ToolAdmin";
 
 /** The method for choosing elements with the [[SelectionTool]]
  * @public
  */
-export const enum SelectionMethod {
+export enum SelectionMethod {
   /** Identify element(s) by picking for drag selection (inside/overlap for drag box selection determined by point direction and shift key) */
   Pick,
   /** Identify elements by overlap with crossing line */
@@ -36,7 +36,7 @@ export const enum SelectionMethod {
 /** The mode for choosing elements with the [[SelectionTool]]
  * @public
  */
-export const enum SelectionMode {
+export enum SelectionMode {
   /** Identified elements replace the current selection set (use control key to add or remove) */
   Replace,
   /** Identified elements are added to the current selection set */
@@ -48,7 +48,7 @@ export const enum SelectionMode {
 /** The processing method to use to update the current selection.
  * @public
  */
-export const enum SelectionProcessing {
+export enum SelectionProcessing {
   /** Add element to selection. */
   AddElementToSelection,
   /** Remove element from selection. */
