@@ -2,7 +2,7 @@
 |  $Copyright: (c) 2019 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { ExportGraphicsInfo, IModelHost, IModelDb, ECSqlStatement, Texture } from "@bentley/imodeljs-backend";
-import { DbResult, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as Yargs from "yargs";
@@ -10,6 +10,8 @@ import * as path from "path";
 
 function doExport(iModelName: string, objName: string, mtlName: string) {
   IModelHost.startup();
+  Logger.initializeToConsole();
+  Logger.setLevelDefault(LogLevel.Error);
 
   const iModel: IModelDb = IModelDb.openSnapshot(iModelName);
   process.stdout.write(`Opened ${iModelName} successfully.\n`);
@@ -77,7 +79,8 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
   };
 
   fs.appendFileSync(objFile, `mtllib ${mtlName}\n`);
-  iModel.exportGraphics(({ onGraphics, elementIdArray, chordTol: 0.01 }));
+  // Set angleTol to arbitrary large value so chordTol is deciding factor.
+  iModel.exportGraphics(({ onGraphics, elementIdArray, chordTol: 0.01, angleTol: 10 }));
   process.stdout.write(`Wrote ${pointOffset - 1} vertices.\n`);
   fs.closeSync(objFile);
 
