@@ -181,6 +181,9 @@ export function compareBooleans(a: boolean, b: boolean): number;
 export function compareNumbers(a: number, b: number): number;
 
 // @public (undocumented)
+export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number;
+
+// @public (undocumented)
 export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number;
 
 // @public (undocumented)

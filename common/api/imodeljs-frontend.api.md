@@ -120,6 +120,7 @@ import { Plane3dByOriginAndUnitNormal } from '@bentley/geometry-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { Point4d } from '@bentley/geometry-core';
+import { PointWithStatus } from '@bentley/imodeljs-common';
 import { Polyface } from '@bentley/geometry-core';
 import { PolyfaceVisitor } from '@bentley/geometry-core';
 import { PolylineData } from '@bentley/imodeljs-common';
@@ -1223,6 +1224,12 @@ export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
     buttons: IconDefinition[];
     // (undocumented)
     type: PropertyEditorParamTypes.ButtonGroupData;
+}
+
+// @internal
+export interface CachedIModelCoordinatesResponseProps {
+    missing?: XYZProps[];
+    result: Array<PointWithStatus | undefined>;
 }
 
 // @public
@@ -2409,6 +2416,8 @@ export class FuzzySearchResults<T> implements Iterable<T> {
 // @internal
 export class GeoConverter {
     constructor(iModel: IModelConnection, datum: string);
+    // (undocumented)
+    getCachedIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): CachedIModelCoordinatesResponseProps;
     // (undocumented)
     getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps>;
     // (undocumented)

@@ -9,6 +9,16 @@ import {
 } from "@bentley/imodeljs-common";
 import { XYZProps } from "@bentley/geometry-core";
 
+/** Response to a request to obtain imodel coordinates from cache.
+ * @internal
+ */
+export interface CachedIModelCoordinatesResponseProps {
+  /** An array of the same length as the input array, with undefined entries at indices corresponding to points not found in cache. */
+  result: Array<PointWithStatus | undefined>;
+  /** An array of points in the input array which were not found in the cache, or undefined if all points were found in the cache. */
+  missing?: XYZProps[];
+}
+
 // this class is used to cache results from conversion of geoCoordinates to IModelCoordinates.
 class GCtoIMCResultCache {
   // see fast-memoize npm package where the author demonstrated that an object is the fastest
@@ -23,11 +33,31 @@ class GCtoIMCResultCache {
     this._sourceDatum = sourceDatum;
   }
 
+  /** @internal */
+  public findInCache(geoPoints: XYZProps[]): CachedIModelCoordinatesResponseProps {
+    const result: Array<PointWithStatus | undefined> = [];
+    let missing: XYZProps[] | undefined;
+    for (const geoPoint of geoPoints) {
+      const key = JSON.stringify(geoPoint);
+      const imodelCoord = this._cache[key];
+      result.push(imodelCoord);
+      if (undefined === imodelCoord) {
+        if (undefined === missing)
+          missing = [];
+
+        missing.push(geoPoint);
+      }
+    }
+
+    return { result, missing };
+  }
+
   public async findInCacheOrRequest(request: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
-    let missing: boolean = false;
     const response: IModelCoordinatesResponseProps = { iModelCoords: [], fromCache: 0 };
-    let remainingRequest: IModelCoordinatesRequestProps | undefined;
-    const originalPositions: number[] = [];
+    let missing: XYZProps[] | undefined;
+
+    // Index by cache key to obtain index in input array.
+    const originalPositions: any = { };
 
     for (let iPoint: number = 0; iPoint < request.geoCoords.length; ++iPoint) {
       const thisGeoCoord: XYZProps = request.geoCoords[iPoint];
@@ -39,44 +69,55 @@ class GCtoIMCResultCache {
       if (this._cache[thisCacheKey]) {
         response.iModelCoords.push(this._cache[thisCacheKey]);
       } else {
-        if (!remainingRequest)
-          remainingRequest = { sourceDatum: this._sourceDatum, geoCoords: [] };
+        if (undefined === missing)
+          missing = [];
 
         // add this geoCoord to the request we are going to send.
-        remainingRequest.geoCoords.push(thisGeoCoord);
+        missing.push(thisGeoCoord);
+
         // keep track of the original position of this point.
-        originalPositions.push(iPoint);
+        originalPositions[thisCacheKey] = iPoint;
 
         // mark the response as pending.
         response.iModelCoords.push({ p: [0, 0, 0], s: GeoCoordStatus.Pending });
-
-        missing = true;
       }
     }
 
     // if none are missing from the cache, resolve the promise immediately
-    if (!missing) {
+    if (undefined === missing) {
       response.fromCache = request.geoCoords.length;
-      return Promise.resolve(response);
     } else {
       // keep track of how many came from the cache (mostly for tests).
-      response.fromCache = request.geoCoords.length - originalPositions.length;
-      const remainingResponse = await IModelReadRpcInterface.getClient().getIModelCoordinatesFromGeoCoordinates(this._iModel.iModelToken, JSON.stringify(remainingRequest));
-      // put the responses into the cache, and fill in the output response for each
-      for (let iResponse: number = 0; iResponse < remainingResponse.iModelCoords.length; ++iResponse) {
-        const thisPoint: PointWithStatus = remainingResponse.iModelCoords[iResponse];
+      response.fromCache = request.geoCoords.length - missing.length;
 
-        // transfer the answer stored in remainingResponse to the correct position in the overall response.
-        const responseIndex = originalPositions[iResponse];
-        response.iModelCoords[responseIndex] = thisPoint;
+      // Avoiding requesting too many points at once, exceeding max request length (this definition of "too many" should be safely conservative)
+      const maxPointsPerRequest = 200;
+      const promises: Array<Promise<void>> = [];
+      for (let i = 0; i < missing.length; i += maxPointsPerRequest) {
+        const remainingRequest = { sourceDatum: this._sourceDatum, geoCoords: missing.slice(i, i + maxPointsPerRequest) };
+        const promise = IModelReadRpcInterface.getClient().getIModelCoordinatesFromGeoCoordinates(this._iModel.iModelToken, JSON.stringify(remainingRequest)).then((remainingResponse) => {
+          // put the responses into the cache, and fill in the output response for each
+          for (let iResponse: number = 0; iResponse < remainingResponse.iModelCoords.length; ++iResponse) {
+            const thisPoint: PointWithStatus = remainingResponse.iModelCoords[iResponse];
 
-        // put the answer in the cache.
-        const thisGeoCoord: XYZProps = remainingRequest!.geoCoords[iResponse];
-        const thisCacheKey: string = JSON.stringify(thisGeoCoord);
-        this._cache[thisCacheKey] = thisPoint;
+            // put the answer in the cache.
+            const thisGeoCoord: XYZProps = remainingRequest!.geoCoords[iResponse];
+            const thisCacheKey: string = JSON.stringify(thisGeoCoord);
+            this._cache[thisCacheKey] = thisPoint;
+
+            // transfer the answer stored in remainingResponse to the correct position in the overall response.
+            const responseIndex = originalPositions[thisCacheKey];
+            response.iModelCoords[responseIndex] = thisPoint;
+          }
+        });
+
+        promises.push(promise);
       }
-      return Promise.resolve(response);
+
+      await Promise.all(promises);
     }
+
+    return Promise.resolve(response);
   }
 }
 
@@ -167,6 +208,10 @@ export class GeoConverter {
   public async getIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): Promise<IModelCoordinatesResponseProps> {
     const requestProps: IModelCoordinatesRequestProps = { sourceDatum: this._datum, geoCoords: geoPoints };
     return this._gCtoIMCResultCache.findInCacheOrRequest(requestProps);
+  }
+
+  public getCachedIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): CachedIModelCoordinatesResponseProps {
+    return this._gCtoIMCResultCache.findInCache(geoPoints);
   }
 
   public async getGeoCoordinatesFromIModelCoordinates(iModelPoints: XYZProps[]): Promise<GeoCoordinatesResponseProps> {
