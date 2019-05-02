@@ -82,9 +82,13 @@ A mixin property cannot override an Entity property inherited from a base Entity
 
 If any aspect (ECClass which derives from **ElementMultiAspect**) exists, there must be a relationship that derives from the **ElementOwnsMultiAspects** relationship with this class supported as a target constraint.
 
+- Treated as warning if the schema has the **CoreCA:DynamicSchema** CA applied.
+
 #### BIS-605 <a name="BIS-605"></a>
 
 If any aspect (ECClass which derives from **ElementUniqueAspect**) exists, there must be a relationship that derives from the **ElementOwnsUniqueAspect** relationship with this class supported as a target constraint.
+
+- Treated as warning if the schema has the **CoreCA:DynamicSchema** CA applied.
 
 #### BIS-606 <a name="BIS-606"></a>
 
