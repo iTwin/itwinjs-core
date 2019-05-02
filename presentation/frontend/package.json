@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-frontend",
-  "version": "0.191.0-dev.64",
+  "version": "0.191.0-dev.65",
   "description": "Frontend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -47,20 +47,20 @@
     }
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^0.191.0-dev.64",
-    "@bentley/imodeljs-i18n": "^0.191.0-dev.64",
-    "@bentley/imodeljs-common": "^0.191.0-dev.64",
-    "@bentley/imodeljs-frontend": "^0.191.0-dev.64",
-    "@bentley/presentation-common": "^0.191.0-dev.64"
+    "@bentley/bentleyjs-core": "^0.191.0-dev.65",
+    "@bentley/imodeljs-i18n": "^0.191.0-dev.65",
+    "@bentley/imodeljs-common": "^0.191.0-dev.65",
+    "@bentley/imodeljs-frontend": "^0.191.0-dev.65",
+    "@bentley/presentation-common": "^0.191.0-dev.65"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.64",
-    "@bentley/build-tools": "0.191.0-dev.64",
-    "@bentley/imodeljs-i18n": "0.191.0-dev.64",
-    "@bentley/imodeljs-common": "0.191.0-dev.64",
-    "@bentley/imodeljs-frontend": "0.191.0-dev.64",
-    "@bentley/presentation-common": "0.191.0-dev.64",
-    "@bentley/webpack-tools": "0.191.0-dev.64",
+    "@bentley/bentleyjs-core": "0.191.0-dev.65",
+    "@bentley/build-tools": "0.191.0-dev.65",
+    "@bentley/imodeljs-i18n": "0.191.0-dev.65",
+    "@bentley/imodeljs-common": "0.191.0-dev.65",
+    "@bentley/imodeljs-frontend": "0.191.0-dev.65",
+    "@bentley/presentation-common": "0.191.0-dev.65",
+    "@bentley/webpack-tools": "0.191.0-dev.65",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
