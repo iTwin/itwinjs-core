@@ -124,6 +124,126 @@
         {
           "viewName": "V0",
           "viewFlags": {
+            "renderMode": "SmoothShade",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          },
+          "renderOptions": {
+            "backfaceCulling": true
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "Wireframe",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          },
+          "renderOptions": {
+            "backfaceCulling": true
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "HiddenLine",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          },
+          "renderOptions": {
+            "backfaceCulling": true
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
+            "renderMode": "SolidFill",
+            "dimensions": true,
+            "patterns": true,
+            "weights": true,
+            "styles": true,
+            "transparency": true,
+            "fill": true,
+            "textures": true,
+            "materials": true,
+            "visibleEdges": false,
+            "hiddenEdges": false,
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLights": false,
+            "shadows": false,
+            "clipVolume": true,
+            "constructions": false,
+            "monochrome": false,
+            "noGeometryMap": false,
+            "backgroundMap": false,
+            "hLineMaterialColors": false,
+            "edgeMask": 0
+          },
+          "renderOptions": {
+            "backfaceCulling": true
+          }
+        },
+        {
+          "viewName": "V0",
+          "viewFlags": {
             "renderMode": "Wireframe"
           }
         },

@@ -108,6 +108,7 @@
     },
     "ViewClip": {
       "Settings": {
+        "Distance": "Distance",
         "Orientation": {
           "Label": "Orientation",
           "Top": "Top",

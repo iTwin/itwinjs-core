@@ -793,6 +793,13 @@ export namespace ViewFlag {
     public anyOverridden() { return 0 !== this._present; }
     public clear() { this._present = 0; }
 
+    /** If ViewFlags.clipVolume is overridden, return the override value; else return undefined.
+     * @internal
+     */
+    public get clipVolumeOverride(): boolean | undefined {
+      return this.isPresent(PresenceFlag.kClipVolume) ? this._values.clipVolume : undefined;
+    }
+
     /** Apply these overrides to the supplied ViewFlags */
     public apply(base: ViewFlags): ViewFlags {
       if (!this.anyOverridden())

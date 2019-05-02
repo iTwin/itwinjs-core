@@ -123,6 +123,8 @@ export namespace MockRender {
     public dispose(): void { }
     public get maxTextureSize() { return 4096; }
 
+    public constructor() { super(); }
+
     public createTarget(canvas: HTMLCanvasElement) { return new OnScreenTarget(this, canvas); }
     public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
 

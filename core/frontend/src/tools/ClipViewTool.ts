@@ -23,6 +23,8 @@ import { CoordinateLockOverrides } from "./ToolAdmin";
 import { PropertyDescription } from "../properties/Description";
 import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 import { PrimitiveValue } from "../properties/Value";
+import { FormatterSpec } from "@bentley/imodeljs-quantity";
+import { PropertyEditorParamTypes } from "../properties/EditorParams";
 
 /** @internal The orientation to use to define the view clip volume */
 export const enum ClipOrientation {
@@ -124,6 +126,15 @@ export class ViewClipTool extends PrimitiveTool {
     return undefined;
   }
 
+  public static enableClipVolume(viewport: Viewport): boolean {
+    if (viewport.viewFlags.clipVolume)
+      return false;
+    const viewFlags = viewport.viewFlags.clone();
+    viewFlags.clipVolume = true;
+    viewport.viewFlags = viewFlags;
+    return true;
+  }
+
   public static setViewClip(viewport: Viewport, clip?: ClipVector): boolean {
     viewport.view.setViewClip(clip);
     viewport.setupFromView();
@@ -178,6 +189,28 @@ export class ViewClipTool extends PrimitiveTool {
     if (!ViewClipTool.hasClip(viewport))
       return false;
     return this.setViewClip(viewport);
+  }
+
+  public static getClipRayTransformed(origin: Point3d, direction: Vector3d, transform?: Transform): Ray3d {
+    const facePt = origin.clone();
+    const faceDir = direction.clone();
+
+    if (undefined !== transform) {
+      transform.multiplyPoint3d(facePt, facePt);
+      transform.multiplyVector(faceDir, faceDir);
+      faceDir.normalizeInPlace();
+    }
+
+    return Ray3d.createCapture(facePt, faceDir);
+  }
+
+  public static getOffsetValueTransformed(offset: number, transform?: Transform) {
+    if (undefined === transform)
+      return offset;
+    const lengthVec = Vector3d.create(offset);
+    transform.multiplyVector(lengthVec, lengthVec);
+    const localOffset = lengthVec.magnitude();
+    return (offset < 0 ? -localOffset : localOffset);
   }
 
   public static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void {
@@ -332,6 +365,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
     const normal = ViewClipTool.getPlaneInwardNormal(this.orientation, this.targetView);
     if (undefined === normal)
       return EventHandled.No;
+    ViewClipTool.enableClipVolume(this.targetView);
     if (!ViewClipTool.doClipToPlane(this.targetView, ev.point, normal, this._clearExistingPlanes))
       return EventHandled.No;
     if (undefined !== this._clipEventHandler)
@@ -477,6 +511,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
 
       const transform = Transform.createOriginAndMatrix(points[0], this._matrix);
       transform.multiplyInversePoint3dArrayInPlace(points);
+      ViewClipTool.enableClipVolume(this.targetView);
       if (!ViewClipTool.doClipToShape(this.targetView, points, transform, this._zLow, this._zHigh))
         return EventHandled.No;
       if (undefined !== this._clipEventHandler)
@@ -577,6 +612,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
       const transform = Transform.createIdentity();
       if (!this.getClipRange(range, transform, ev))
         return EventHandled.No;
+      ViewClipTool.enableClipVolume(this.targetView);
       if (!ViewClipTool.doClipToRange(this.targetView, range, transform))
         return EventHandled.No;
       if (undefined !== this._clipEventHandler)
@@ -608,36 +644,48 @@ export class ViewClipByElementTool extends ViewClipTool {
   public onPostInstall(): void {
     super.onPostInstall();
     if (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive) {
-      this.doClipToElements(this.targetView, this.targetView.iModel.selectionSet.elements, this._alwaysUseRange); // tslint:disable-line:no-floating-promises
+      this.doClipToSelectedElements(this.targetView); // tslint:disable-line:no-floating-promises
       return;
     }
-    IModelApp.accuSnap.enableLocate(true);
+    this.initLocateElements(true, false, "default", CoordinateLockOverrides.All);
+  }
+
+  public async doClipToSelectedElements(viewport: Viewport): Promise<boolean> {
+    if (await this.doClipToElements(viewport, viewport.iModel.selectionSet.elements, this._alwaysUseRange))
+      return true;
+    this.exitTool();
+    return false;
   }
 
   protected async doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange: boolean = false): Promise<boolean> {
-    const elementProps = await viewport.iModel.elements.getProps(ids);
-    if (0 === elementProps.length)
-      return false;
-    const range = new Range3d();
-    const transform = Transform.createIdentity();
-    for (const props of elementProps) {
-      if (undefined === props.placement)
-        continue;
-      const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
-      const placement = hasAngle(props.placement) ? Placement2d.fromJSON(props.placement) : Placement3d.fromJSON(props.placement);
-      if (!alwaysUseRange && 1 === elementProps.length) {
-        range.setFrom(placement instanceof Placement2d ? Range3d.createRange2d(placement.bbox, 0) : placement.bbox);
-        transform.setFrom(placement.transform); // Use ElementAlignedBox for single selection...
-      } else {
-        range.extendRange(placement.calculateRange());
+    try {
+      const elementProps = await viewport.iModel.elements.getProps(ids);
+      if (0 === elementProps.length)
+        return false;
+      const range = new Range3d();
+      const transform = Transform.createIdentity();
+      for (const props of elementProps) {
+        if (undefined === props.placement)
+          continue;
+        const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
+        const placement = hasAngle(props.placement) ? Placement2d.fromJSON(props.placement) : Placement3d.fromJSON(props.placement);
+        if (!alwaysUseRange && 1 === elementProps.length) {
+          range.setFrom(placement instanceof Placement2d ? Range3d.createRange2d(placement.bbox, 0) : placement.bbox);
+          transform.setFrom(placement.transform); // Use ElementAlignedBox for single selection...
+        } else {
+          range.extendRange(placement.calculateRange());
+        }
       }
-    }
-    if (!ViewClipTool.doClipToRange(viewport, range, transform))
+      ViewClipTool.enableClipVolume(viewport);
+      if (!ViewClipTool.doClipToRange(viewport, range, transform))
+        return false;
+      if (undefined !== this._clipEventHandler)
+        this._clipEventHandler.onNewClip(viewport);
+      this.onReinitialize();
+      return true;
+    } catch {
       return false;
-    if (undefined !== this._clipEventHandler)
-      this._clipEventHandler.onNewClip(viewport);
-    this.onReinitialize();
-    return true;
+    }
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -659,8 +707,11 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
   protected _clip: ClipVector;
   protected _viewRange: Range3d;
   protected _restoreClip: boolean = true;
+  protected _distanceFormatterSpec?: FormatterSpec;
+  private _useDistanceValue = new ToolSettingsValue(false);
+  private _distanceValue = new ToolSettingsValue(0.0, this._distanceFormatterSpec ? IModelApp.quantityFormatter.formatQuantity(0.0, this._distanceFormatterSpec) : undefined);
 
-  public constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[]) {
+  public constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[], distanceFormatterSpec?: FormatterSpec) {
     super(manipulator);
     this._anchorIndex = ids.indexOf(hitId);
     this._ids = ids;
@@ -668,6 +719,84 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     this._clipView = vp;
     this._clip = clip;
     this._viewRange = vp.computeViewRange();
+    this._distanceFormatterSpec = distanceFormatterSpec;
+  }
+
+  private static _useDistanceName = "useDistance";
+  private static _getUseDistanceDescription = (): PropertyDescription => {
+    return {
+      name: ViewClipModifyTool._useDistanceName,
+      displayLabel: "",
+      typename: "boolean",
+      editor: {
+        params: [
+          {
+            type: PropertyEditorParamTypes.SuppressEditorLabel,
+            suppressLabelPlaceholder: true,
+          },
+        ],
+      },
+    };
+  }
+
+  private static _distanceName = "distance";
+  private static _getDistanceDescription = (): PropertyDescription => {
+    return {
+      name: ViewClipModifyTool._distanceName,
+      displayLabel: IModelApp.i18n.translate("CoreTools:tools.ViewClip.Settings.Distance"),
+      typename: "number",
+    };
+  }
+
+  public get useDistance(): boolean {
+    return this._useDistanceValue.value as boolean;
+  }
+
+  public set useDistance(value: boolean) {
+    this._useDistanceValue.value = value;
+  }
+
+  public get distance(): number {
+    return this._distanceValue.value as number;
+  }
+
+  public set distance(value: number) {
+    this._distanceValue.value = value;
+    this._distanceValue.displayValue = this._distanceFormatterSpec ? IModelApp.quantityFormatter.formatQuantity(value, this._distanceFormatterSpec) : undefined;
+  }
+
+  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+    if (undefined === this._distanceFormatterSpec)
+      return undefined;
+    const toolSettings = new Array<ToolSettingsPropertyRecord>();
+    toolSettings.push(new ToolSettingsPropertyRecord(this._useDistanceValue.clone() as PrimitiveValue, ViewClipModifyTool._getUseDistanceDescription(), { rowPriority: 20, columnIndex: 0 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._distanceValue.clone() as PrimitiveValue, ViewClipModifyTool._getDistanceDescription(), { rowPriority: 20, columnIndex: 2 }));
+    return toolSettings;
+  }
+
+  protected syncDistanceState(): void {
+    if (undefined === this._distanceFormatterSpec)
+      return;
+    const distanceValue = this._distanceValue.clone();
+    const syncItem: ToolSettingsPropertySyncItem = { value: distanceValue, propertyName: ViewClipModifyTool._distanceName, isDisabled: !this.useDistance };
+    this.syncToolSettingsProperties([syncItem]);
+  }
+
+  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+    if (undefined === this._distanceFormatterSpec)
+      return false;
+    if (updatedValue.propertyName === ViewClipModifyTool._useDistanceName) {
+      if (!this._useDistanceValue.update(updatedValue.value))
+        return false;
+      this.syncDistanceState();
+      return true;
+    } else if (updatedValue.propertyName === ViewClipModifyTool._distanceName) {
+      if (!this._distanceValue.update(updatedValue.value))
+        return false;
+      this.distance = this.distance; // ###TODO - Update displayValue...
+      return true;
+    }
+    return false;
   }
 
   protected init(): void {
@@ -678,6 +807,53 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
 
   protected abstract updateViewClip(ev: BeButtonEvent, isAccept: boolean): boolean;
   protected abstract drawViewClip(context: DecorateContext): void;
+
+  protected getOffsetValue(ev: BeButtonEvent, transformFromClip?: Transform): number | undefined {
+    if (-1 === this._anchorIndex || undefined === ev.viewport || ev.viewport !== this._clipView)
+      return undefined;
+
+    if (this.useDistance)
+      return (Math.abs(this.distance) < Geometry.smallMetricDistance ? undefined : this.distance);
+
+    // NOTE: Use AccuDraw z instead of view z if AccuDraw is explicitly enabled...
+    const anchorRay = ViewClipTool.getClipRayTransformed(this._controls[this._anchorIndex].origin, this._controls[this._anchorIndex].direction, transformFromClip);
+    const projectedPt = EditManipulator.HandleUtils.projectPointToLineInView(ev.point, anchorRay.origin, anchorRay.direction, ev.viewport, true);
+    if (undefined === projectedPt)
+      return undefined;
+
+    const offsetVec = Vector3d.createStartEnd(anchorRay.origin, projectedPt);
+    let offset = offsetVec.normalizeWithLength(offsetVec).mag;
+    if (offset < Geometry.smallMetricDistance)
+      return undefined;
+    if (offsetVec.dotProduct(anchorRay.direction) < 0.0)
+      offset *= -1.0;
+
+    this.distance = offset;
+    this.syncDistanceState();
+
+    return offset;
+  }
+
+  protected drawAnchorOffset(context: DecorateContext, color: ColorDef, weight: number, transformFromClip?: Transform): void {
+    if (-1 === this._anchorIndex || Math.abs(this.distance) < Geometry.smallMetricDistance)
+      return;
+
+    const anchorRay = ViewClipTool.getClipRayTransformed(this._controls[this._anchorIndex].origin, this._controls[this._anchorIndex].direction, transformFromClip);
+    anchorRay.direction.scaleToLength(this.distance, anchorRay.direction);
+    const pt1 = anchorRay.fractionToPoint(0.0);
+    const pt2 = anchorRay.fractionToPoint(1.0);
+    const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
+
+    context.viewport.worldToView(pt1, pt1); pt1.z = 0.0;
+    context.viewport.worldToView(pt2, pt2); pt2.z = 0.0;
+
+    builder.setSymbology(color, ColorDef.black, weight, LinePixels.Code5);
+    builder.addLineString([pt1, pt2]);
+    builder.setSymbology(color, ColorDef.black, weight + 7);
+    builder.addPointString([pt1, pt2]);
+
+    context.addDecorationFromBuilder(builder);
+  }
 
   public decorate(context: DecorateContext): void {
     if (-1 === this._anchorIndex || context.viewport !== this._clipView)
@@ -707,37 +883,15 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
 /** @internal Interactive tool to modify a view's clip defined by a ClipShape */
 export class ViewClipShapeModifyTool extends ViewClipModifyTool {
   protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean {
-    if (-1 === this._anchorIndex || undefined === ev.viewport || ev.viewport !== this._clipView)
-      return false;
-
     const clipShape = ViewClipTool.isSingleClipShape(this._clip);
     if (undefined === clipShape)
       return false;
 
-    let facePt = this._controls[this._anchorIndex].origin;
-    let faceDir = this._controls[this._anchorIndex].direction;
-
-    if (undefined !== clipShape.transformFromClip) {
-      facePt = clipShape.transformFromClip.multiplyPoint3d(facePt);
-      faceDir = clipShape.transformFromClip.multiplyVector(faceDir); faceDir.normalizeInPlace();
-    }
-
-    // NOTE: Use AccuDraw z instead of view z if AccuDraw is explicitly enabled...
-    const projectedPt = EditManipulator.HandleUtils.projectPointToLineInView(ev.point, facePt, faceDir, ev.viewport, true);
-    if (undefined === projectedPt)
+    const offset = this.getOffsetValue(ev, clipShape.transformFromClip);
+    if (undefined === offset)
       return false;
 
-    if (undefined !== clipShape.transformToClip)
-      clipShape.transformToClip.multiplyPoint3d(projectedPt, projectedPt);
-
-    const anchorPt = this._controls[this._anchorIndex].origin;
-    const offsetVec = Vector3d.createStartEnd(anchorPt, projectedPt);
-    let offset = offsetVec.normalizeWithLength(offsetVec).mag;
-    if (offset < Geometry.smallMetricDistance)
-      return false;
-    if (offsetVec.dotProduct(this._controls[this._anchorIndex].direction) < 0.0)
-      offset *= -1.0;
-
+    const localOffset = ViewClipTool.getOffsetValueTransformed(offset, clipShape.transformToClip);
     const shapePts = ViewClipTool.getClipShapePoints(clipShape, 0.0);
     const adjustedPts: Point3d[] = [];
     for (let i = 0; i < shapePts.length; i++) {
@@ -746,17 +900,17 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
       const prevSelected = (prevFace === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[prevFace]));
       const nextSelected = (nextFace === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[nextFace]));
       if (prevSelected && nextSelected) {
-        const prevPt = shapePts[i].plusScaled(this._controls[prevFace].direction, offset);
-        const nextPt = shapePts[i].plusScaled(this._controls[nextFace].direction, offset);
+        const prevPt = shapePts[i].plusScaled(this._controls[prevFace].direction, localOffset);
+        const nextPt = shapePts[i].plusScaled(this._controls[nextFace].direction, localOffset);
         const prevRay = Ray3d.create(prevPt, Vector3d.createStartEnd(shapePts[i === 0 ? shapePts.length - 2 : i - 1], shapePts[i]));
         const nextPlane = Plane3dByOriginAndUnitNormal.create(nextPt, this._controls[nextFace].direction);
         if (undefined === nextPlane || undefined === prevRay.intersectionWithPlane(nextPlane, prevPt))
           return false;
         adjustedPts[i] = prevPt;
       } else if (prevSelected) {
-        adjustedPts[i] = shapePts[i].plusScaled(this._controls[prevFace].direction, offset);
+        adjustedPts[i] = shapePts[i].plusScaled(this._controls[prevFace].direction, localOffset);
       } else if (nextSelected) {
-        adjustedPts[i] = shapePts[i].plusScaled(this._controls[nextFace].direction, offset);
+        adjustedPts[i] = shapePts[i].plusScaled(this._controls[nextFace].direction, localOffset);
       } else {
         adjustedPts[i] = shapePts[i];
       }
@@ -772,9 +926,9 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     if (zLowSelected || zHighSelected) {
       const clipExtents = ViewClipTool.getClipShapeExtents(clipShape, this._viewRange);
       if (zLowSelected)
-        zLow = clipExtents.low - offset;
+        zLow = clipExtents.low - localOffset;
       if (zHighSelected)
-        zHigh = clipExtents.high + offset;
+        zHigh = clipExtents.high + localOffset;
       const realZLow = (undefined === zLow ? clipExtents.low : zLow);
       const realZHigh = (undefined === zHigh ? clipExtents.high : zHigh);
       if (realZLow > realZHigh) { zLow = realZHigh; zHigh = realZLow; }
@@ -791,28 +945,18 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     if (undefined === clipShape)
       return;
     const clipExtents = ViewClipTool.getClipShapeExtents(clipShape, this._viewRange);
-    ViewClipTool.drawClipShape(context, clipShape, clipExtents, ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor), 1);
+    const color = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
+    ViewClipTool.drawClipShape(context, clipShape, clipExtents, color, 1);
+    this.drawAnchorOffset(context, color, 1, clipShape.transformFromClip);
   }
 }
 
 /** @internal Interactive tool to modify a view's clip defined by a ConvexClipPlaneSet */
 export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
   protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean {
-    if (-1 === this._anchorIndex || undefined === ev.viewport || ev.viewport !== this._clipView)
+    const offset = this.getOffsetValue(ev);
+    if (undefined === offset)
       return false;
-
-    // NOTE: Use AccuDraw z instead of view z if AccuDraw is explicitly enabled...
-    const projectedPt = EditManipulator.HandleUtils.projectPointToLineInView(ev.point, this._controls[this._anchorIndex].origin, this._controls[this._anchorIndex].direction, ev.viewport, true);
-    if (undefined === projectedPt)
-      return false;
-
-    const anchorPt = this._controls[this._anchorIndex].origin;
-    const offsetVec = Vector3d.createStartEnd(anchorPt, projectedPt);
-    let offset = offsetVec.normalizeWithLength(offsetVec).mag;
-    if (offset < Geometry.smallMetricDistance)
-      return false;
-    if (offsetVec.dotProduct(this._controls[this._anchorIndex].direction) < 0.0)
-      offset *= -1.0;
 
     const planeSet = ConvexClipPlaneSet.createEmpty();
     for (let i: number = 0; i < this._controls.length; i++) {
@@ -837,7 +981,9 @@ export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
     const clipPlanesLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipPlanes, this._viewRange, true, false, true);
     if (undefined === clipPlanesLoops)
       return;
-    ViewClipTool.drawClipPlanesLoops(context, clipPlanesLoops, ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor), 1);
+    const color = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
+    ViewClipTool.drawClipPlanesLoops(context, clipPlanesLoops, color, 1);
+    this.drawAnchorOffset(context, color, 1);
   }
 }
 
@@ -873,6 +1019,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   protected _controlIds: string[] = [];
   protected _controls: ViewClipControlArrow[] = [];
   protected _suspendDecorator = false;
+  protected _distanceFormatterSpec?: FormatterSpec;
   protected _removeViewCloseListener?: () => void;
 
   public constructor(protected _clipView: Viewport, protected _clipEventHandler?: ViewClipEventHandler) {
@@ -1060,6 +1207,10 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       return false;
     }
 
+    // ### TODO - Support moving clip plane by specified distance...
+    // if (undefined === this._distanceFormatterSpec)
+    //  this._distanceFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+
     if (undefined !== this._clipShape)
       return this.createClipShapeControls();
     else if (undefined !== this._clipPlanes)
@@ -1077,10 +1228,10 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     if (undefined === this._clip || hit.sourceId === this._clipId)
       return false;
     if (undefined !== this._clipShape) {
-      const clipShapeModifyTool = new ViewClipShapeModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
+      const clipShapeModifyTool = new ViewClipShapeModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls, this._distanceFormatterSpec);
       this._suspendDecorator = clipShapeModifyTool.run();
     } else if (undefined !== this._clipPlanes) {
-      const clipPlanesModifyTool = new ViewClipPlanesModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
+      const clipPlanesModifyTool = new ViewClipPlanesModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls, this._distanceFormatterSpec);
       this._suspendDecorator = clipPlanesModifyTool.run();
     }
     return this._suspendDecorator;
@@ -1141,17 +1292,10 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     if (index < 0 || index >= this._controlIds.length)
       return false;
 
-    let facePt = this._controls[index].origin;
-    let faceDir = this._controls[index].direction;
-
-    if (undefined !== this._clipShape && undefined !== this._clipShape.transformFromClip) {
-      facePt = this._clipShape.transformFromClip.multiplyPoint3d(facePt);
-      faceDir = this._clipShape.transformFromClip.multiplyVector(faceDir); faceDir.normalizeInPlace();
-    }
-
-    const matrix = Matrix3d.createRigidHeadsUp(faceDir);
+    const anchorRay = ViewClipTool.getClipRayTransformed(this._controls[index].origin, this._controls[index].direction, undefined !== this._clipShape ? this._clipShape.transformFromClip : undefined);
+    const matrix = Matrix3d.createRigidHeadsUp(anchorRay.direction);
     const targetMatrix = matrix.multiplyMatrixMatrix(this._clipView.rotation);
-    const rotateTransform = Transform.createFixedPointAndMatrix(facePt, targetMatrix);
+    const rotateTransform = Transform.createFixedPointAndMatrix(anchorRay.origin, targetMatrix);
     const startFrustum = this._clipView.getFrustum();
     const newFrustum = startFrustum.clone();
     newFrustum.multiply(rotateTransform);
@@ -1161,54 +1305,73 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     return true;
   }
 
-  public get isClipShapeAlignedWithWorldUp(): Range1d | undefined {
+  private getWorldUpPlane(viewport: Viewport): Plane3dByOriginAndUnitNormal | undefined {
+    const matrix = AccuDraw.getStandardRotation(StandardViewId.Top, viewport, viewport.isContextRotationRequired).inverse();
+    if (undefined === matrix)
+      return undefined;
+    const worldUp = matrix.getColumn(2);
+    const planePt = (viewport.isContextRotationRequired ? viewport.getAuxCoordOrigin() : (viewport.view.isSpatialView ? viewport.view.iModel.globalOrigin : Point3d.createZero()));
+    return Plane3dByOriginAndUnitNormal.create(planePt, worldUp);
+  }
+
+  private isAlignedToWorldUpPlane(plane: Plane3dByOriginAndUnitNormal, transformFromClip?: Transform): boolean {
+    const normal = (undefined !== transformFromClip ? transformFromClip.multiplyVector(Vector3d.unitZ()) : Vector3d.unitZ());
+    return plane.getNormalRef().isParallelTo(normal, true);
+  }
+
+  public isClipShapeAlignedWithWorldUp(extents?: Range1d): boolean {
     if (undefined === this._clipShape)
-      return undefined;
+      return false;
 
-    const transform = (undefined !== this._clipShape.transformFromClip ? this._clipShape.transformFromClip : Transform.createIdentity());
-    const normal = transform.multiplyVector(Vector3d.unitZ());
-    const matrix = AccuDraw.getStandardRotation(StandardViewId.Top, this._clipView, this._clipView.isContextRotationRequired).inverse();
-    if (undefined === matrix || !matrix.getColumn(2).isParallelTo(normal, false))
-      return undefined;
+    const plane = this.getWorldUpPlane(this._clipView);
+    if (undefined === plane || !this.isAlignedToWorldUpPlane(plane, this._clipShape.transformFromClip))
+      return false;
 
-    const planePt = (this._clipView.isContextRotationRequired ? this._clipView.getAuxCoordOrigin() : (this._clipView.view.isSpatialView ? this._clipView.view.iModel.globalOrigin : Point3d.createZero()));
-    const plane = Plane3dByOriginAndUnitNormal.create(planePt, normal);
-    if (undefined === plane)
-      return undefined;
+    if (undefined === extents)
+      return true;
 
-    const origin = transform.multiplyPoint3d(Point3d.createZero());
-    const projPt = plane.projectPointToPlane(origin);
-    const vec = Vector3d.createStartEnd(origin, projPt);
-    const offset = Transform.createTranslation(undefined !== this._clipShape.transformToClip ? this._clipShape.transformToClip.multiplyVector(vec) : vec);
-    const zLow = offset.multiplyPoint3d(Point3d.create(0, 0, this._clipShapeExtents!.low));
-    const zHigh = offset.multiplyPoint3d(Point3d.create(0, 0, this._clipShapeExtents!.high));
+    const zLow = Point3d.create(0.0, 0.0, this._clipShapeExtents!.low);
+    const zHigh = Point3d.create(0.0, 0.0, this._clipShapeExtents!.high);
 
-    return Range1d.createXX(zLow.z, zHigh.z);
+    if (undefined !== this._clipShape.transformFromClip) {
+      this._clipShape.transformFromClip.multiplyPoint3d(zLow, zLow);
+      this._clipShape.transformFromClip.multiplyPoint3d(zHigh, zHigh);
+    }
+
+    const lowDir = Vector3d.createStartEnd(plane.projectPointToPlane(zLow), zLow);
+    const highDir = Vector3d.createStartEnd(plane.projectPointToPlane(zHigh), zHigh);
+    let zLowWorld = lowDir.magnitude();
+    let zHighWorld = highDir.magnitude();
+
+    if (lowDir.dotProduct(plane.getNormalRef()) < 0.0)
+      zLowWorld = -zLowWorld;
+    if (highDir.dotProduct(plane.getNormalRef()) < 0.0)
+      zHighWorld = -zHighWorld;
+
+    Range1d.createXX(zLowWorld, zHighWorld, extents);
+    return true;
   }
 
   public doClipShapeSetZExtents(extents: Range1d): boolean {
     if (extents.low > extents.high)
       return false;
-
-    if (undefined === this._clipShape || undefined === this.isClipShapeAlignedWithWorldUp)
+    if (undefined === this._clipShape)
+      return false;
+    const plane = this.getWorldUpPlane(this._clipView);
+    if (undefined === plane || !this.isAlignedToWorldUpPlane(plane, this._clipShape.transformFromClip))
       return false;
 
-    const transform = (undefined !== this._clipShape.transformFromClip ? this._clipShape.transformFromClip : Transform.createIdentity());
-    const origin = transform.multiplyPoint3d(Point3d.createZero());
-    const normal = transform.multiplyVector(Vector3d.unitZ());
-    const planePt = (this._clipView.isContextRotationRequired ? this._clipView.getAuxCoordOrigin() : (this._clipView.view.isSpatialView ? this._clipView.view.iModel.globalOrigin : Point3d.createZero()));
-    const plane = Plane3dByOriginAndUnitNormal.create(planePt, normal);
+    const zLow = plane.getOriginRef().plusScaled(plane.getNormalRef(), extents.low);
+    const zHigh = plane.getOriginRef().plusScaled(plane.getNormalRef(), extents.high);
 
-    if (undefined === plane)
-      return false;
+    if (undefined !== this._clipShape.transformToClip) {
+      this._clipShape.transformToClip.multiplyPoint3d(zLow, zLow);
+      this._clipShape.transformToClip.multiplyPoint3d(zHigh, zHigh);
+    }
 
-    const projPt = plane.projectPointToPlane(origin);
-    const vec = Vector3d.createStartEnd(origin, projPt);
-    const offset = Transform.createTranslation(vec);
-    const transformFromClip = offset.multiplyTransformTransform(transform);
-
+    const reversed = (zLow.z > zHigh.z);
     const shape = ClipShape.createFrom(this._clipShape);
-    shape.initSecondaryProps(shape.isMask, extents.low, extents.high, transformFromClip);
+    shape.initSecondaryProps(shape.isMask, reversed ? zHigh.z : zLow.z, reversed ? zLow.z : zHigh.z, this._clipShape.transformFromClip);
 
     const clip = ClipVector.createEmpty();
     clip.appendReference(shape);
@@ -1273,15 +1436,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       if (0.0 === sizeInches)
         continue;
 
-      let facePt = this._controls[iFace].origin;
-      let faceDir = this._controls[iFace].direction;
-
-      if (undefined !== this._clipShape && undefined !== this._clipShape.transformFromClip) {
-        facePt = this._clipShape.transformFromClip.multiplyPoint3d(facePt);
-        faceDir = this._clipShape.transformFromClip.multiplyVector(faceDir); faceDir.normalizeInPlace();
-      }
-
-      const transform = EditManipulator.HandleUtils.getArrowTransform(vp, facePt, faceDir, sizeInches);
+      const anchorRay = ViewClipTool.getClipRayTransformed(this._controls[iFace].origin, this._controls[iFace].direction, undefined !== this._clipShape ? this._clipShape.transformFromClip : undefined);
+      const transform = EditManipulator.HandleUtils.getArrowTransform(vp, anchorRay.origin, anchorRay.direction, sizeInches);
       if (undefined === transform)
         continue;
 
@@ -1364,7 +1520,7 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
   public onNewClip(viewport: Viewport): void { ViewClipDecoration.create(viewport, this); }
   public onNewClipPlane(viewport: Viewport): void { this.onNewClip(viewport); }
   public onModifyClip(_viewport: Viewport): void { }
-  public onClearClip(_viewport: Viewport): void { }
+  public onClearClip(_viewport: Viewport): void { ViewClipDecoration.clear(); }
 
   public onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean {
     if (undefined === ev.viewport)

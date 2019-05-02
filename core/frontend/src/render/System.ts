@@ -820,6 +820,23 @@ export interface InstancedGraphicParams {
  * @public
  */
 export abstract class RenderSystem implements IDisposable {
+  /** Options used to initialize the RenderSystem. These are primarily used for feature-gating.
+   * This object is frozen and cannot be modified after the RenderSystem is created.
+   * @internal
+   */
+  public readonly options: RenderSystem.Options;
+
+  /** Initialize the RenderSystem with the specified options.
+   * @note The RenderSystem takes ownership of the supplied Options and freezes it.
+   * @internal
+   */
+  protected constructor(options?: RenderSystem.Options) {
+    this.options = undefined !== options ? options : { };
+    Object.freeze(this.options);
+    if (undefined !== this.options.disabledExtensions)
+      Object.freeze(this.options.disabledExtensions);
+  }
+
   /** @internal */
   public abstract get isValid(): boolean;
 
@@ -1058,6 +1075,10 @@ export namespace RenderSystem {
      * @internal
      */
     disabledExtensions?: WebGLExtensionName[];
+    /** If true, back-face culling will be enabled when appropriate, which should improve display performance.
+     * @internal
+     */
+    backfaceCulling?: boolean;
     /** If true, when a clip volume is applied to the view, geometry will be tested against the clip volume on the CPU and not drawn if it is entirely clipped, improving performance.
      * @internal
      */
