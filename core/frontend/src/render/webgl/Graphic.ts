@@ -365,7 +365,12 @@ export class Branch extends Graphic {
 
 /** @internal */
 export class WorldDecorations extends Branch {
-  public constructor(viewFlags: ViewFlags) { super(new GraphicBranch(), Transform.identity, undefined, viewFlags); }
+  public constructor(viewFlags: ViewFlags) {
+    super(new GraphicBranch(), Transform.identity, undefined, viewFlags);
+
+    // World decorations ignore all the symbology overrides for the "scene" geometry...
+    this.branch.symbologyOverrides = new FeatureSymbology.Overrides();
+  }
 
   public init(decs: GraphicList): void {
     this.branch.clear();
