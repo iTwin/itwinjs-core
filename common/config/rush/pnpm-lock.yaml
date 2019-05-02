@@ -4,7 +4,6 @@ dependencies:
   '@bentley/imodeljs-native': 0.121.0
   '@microsoft/api-extractor': 7.1.1
   '@openid/appauth': 1.2.3
-  '@rush-temp/backend-for-unity': 'file:projects/backend-for-unity.tgz'
   '@rush-temp/bentleyjs-core': 'file:projects/bentleyjs-core.tgz'
   '@rush-temp/build-tools': 'file:projects/build-tools.tgz'
   '@rush-temp/certa': 'file:projects/certa.tgz'
@@ -107,7 +106,6 @@ dependencies:
   '@types/uuid': 3.4.4
   '@types/webdriverio': 4.13.3
   '@types/webpack': 3.8.18
-  '@types/ws': 6.0.1
   '@types/xmldom': 0.1.29
   '@types/yargs': 12.0.12
   app-root-path: 2.2.1
@@ -288,7 +286,6 @@ dependencies:
   webpack-merge: 4.2.1
   webpack-node-externals: 1.7.2
   whatwg-fetch: 2.0.4
-  ws: 6.2.1
   xmldom: 0.1.27
   xmlhttprequest: 1.8.0
   xpath: 0.0.27
@@ -1066,13 +1063,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-qRk84mxsmMImpDAS7WHwdVSUabNSvdYD9M15U7OXaEo+ZkMW6zmdwmZRWr8SF6ZAA93ppkh5lNky5TiCuqcfAA==
-  /@types/ws/6.0.1:
-    dependencies:
-      '@types/events': 3.0.0
-      '@types/node': 10.14.1
-    dev: false
-    resolution:
-      integrity: sha512-EzH8k1gyZ4xih/MaZTXwT2xOkPiIMSrhQ9b8wrlX88L0T02eYsddatQlwVFlEPyEqV0ChpdpNnE51QPH6NVT4Q==
   /@types/xmldom/0.1.29:
     dev: false
     resolution:
@@ -13764,22 +13754,6 @@ packages:
       node: '>= 0.10.0'
     resolution:
       integrity: sha1-qLxF9MG0lpnGuQGYuqyqzbzUugQ=
-  'file:projects/backend-for-unity.tgz':
-    dependencies:
-      '@types/node': 10.14.1
-      '@types/ws': 6.0.1
-      '@types/yargs': 12.0.12
-      rimraf: 2.6.3
-      tslint: 5.16.0_typescript@3.2.4
-      typescript: 3.2.4
-      ws: 6.2.1
-      yargs: 12.0.5
-    dev: false
-    name: '@rush-temp/backend-for-unity'
-    resolution:
-      integrity: sha512-HjOEg6GcNIS9FIBloe4yv3wt4lfPrMEG0jskYuNuRlDYacSPYQCclC+jDUmIQ4eGVMOjHmmMODQoucjdAlFjkw==
-      tarball: 'file:projects/backend-for-unity.tgz'
-    version: 0.0.0
   'file:projects/bentleyjs-core.tgz':
     dependencies:
       '@types/chai': 4.1.7
@@ -15174,13 +15148,13 @@ packages:
       integrity: sha512-O02So5O9Cn1ihp7i8ahOLsQQPCNyHjUOZBKnv6fGkXCAoCTiObLBPdtAk4s+wnUlI++Wku8/YgN7VoMkk2UQOA==
       tarball: 'file:projects/webworker-test-app.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@bentley/dev-cors-proxy-server': 0.0.9
   '@bentley/icons-generic-webfont': ^0.0.21
   '@bentley/imodeljs-native': ~0.121.0
   '@microsoft/api-extractor': ^7.1.0
   '@openid/appauth': ^1.1.1
-  '@rush-temp/backend-for-unity': 'file:./projects/backend-for-unity.tgz'
   '@rush-temp/bentleyjs-core': 'file:./projects/bentleyjs-core.tgz'
   '@rush-temp/build-tools': 'file:./projects/build-tools.tgz'
   '@rush-temp/certa': 'file:./projects/certa.tgz'
@@ -15283,7 +15257,6 @@ specifiers:
   '@types/uuid': ~3.4.4
   '@types/webdriverio': ^4.8.6
   '@types/webpack': ^3.8.5
-  '@types/ws': ^6.0.1
   '@types/xmldom': ^0.1.29
   '@types/yargs': ^12.0.5
   app-root-path: ^2.0.1
@@ -15464,7 +15437,6 @@ specifiers:
   webpack-merge: ^4.1.4
   webpack-node-externals: ^1.7.2
   whatwg-fetch: 2.0.4
-  ws: ^6.2.0
   xmldom: ^0.1.27
   xmlhttprequest: ^1.8.0
   xpath: 0.0.27
