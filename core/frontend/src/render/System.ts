@@ -831,7 +831,7 @@ export abstract class RenderSystem implements IDisposable {
    * @internal
    */
   protected constructor(options?: RenderSystem.Options) {
-    this.options = undefined !== options ? options : { };
+    this.options = undefined !== options ? options : {};
     Object.freeze(this.options);
     if (undefined !== this.options.disabledExtensions)
       Object.freeze(this.options.disabledExtensions);
@@ -1083,6 +1083,10 @@ export namespace RenderSystem {
      * @internal
      */
     cullAgainstActiveVolume?: boolean;
+    /** If true, preserve the shader source code as internal strings, useful for debugging purposes.
+     * @internal
+     */
+    preserveShaderSourceCode?: boolean;
   }
 }
 

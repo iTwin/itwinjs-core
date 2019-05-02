@@ -17,6 +17,7 @@ export interface SVTConfiguration {
   enableBackfaceCulling?: boolean;
   disableInstancing?: boolean;
   disableActiveVolumeCulling?: boolean;
+  preserveShaderSourceCode?: boolean;
 }
 
 export interface ConnectProjectConfiguration {

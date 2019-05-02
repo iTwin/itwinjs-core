@@ -81,6 +81,10 @@ export abstract class VariedTechnique implements Technique {
       if (!program.compile()) allCompiled = false;
     }
 
+    for (const clipProg of this._clippingPrograms) {
+      if (!clipProg.compileShaders()) allCompiled = false;
+    }
+
     return allCompiled;
   }
 

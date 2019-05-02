@@ -4685,6 +4685,8 @@ export namespace RenderSystem {
         cullAgainstActiveVolume?: boolean;
         // @internal
         disabledExtensions?: WebGLExtensionName[];
+        // @internal
+        preserveShaderSourceCode?: boolean;
     }
 }
 

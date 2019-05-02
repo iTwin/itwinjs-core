@@ -118,6 +118,7 @@ async function main() {
     disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
     backfaceCulling: configuration.enableBackfaceCulling,
     cullAgainstActiveVolume: !configuration.disableActiveVolumeCulling,
+    preserveShaderSourceCode: configuration.preserveShaderSourceCode,
   };
 
   if (configuration.disableInstancing)

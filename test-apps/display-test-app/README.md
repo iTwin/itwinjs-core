@@ -86,3 +86,5 @@ Debugging display-test-app can be accomplished using the following procedures, d
   * If defined, back-facing triangles will be culled.
 * SVT_DISABLE_ACTIVE_VOLUME_CULLING
   * If defined, geometry will not be culled against the active volume before drawing. Useful only for testing the feature gate and the performance differences.
+* SVT_PRESERVE_SHADER_SOURCE_CODE
+  * If defined, shader source code will be preserved as internal strings, useful for debugging purposes.
