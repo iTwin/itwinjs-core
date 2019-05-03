@@ -644,7 +644,7 @@ class IModelJsModuleBuilder {
         return undefined;
     }
     // spawns a webpack process
-    startWebpack(operation, outputPath, entry, bundleName, styleSheets, buildType, isDevelopment, doStats, htmlTemplate) {
+    startWebpack(operation, outputPath, entry, bundleName, styleSheets, buildType, isDevelopment, doStats, moduleNum, htmlTemplate) {
         const webpackFullPath = this.findWebpack();
         if (!webpackFullPath) {
             return Promise.resolve(new Result(operation, 1, undefined, undefined, "Unable to locate webpack"));
@@ -670,7 +670,8 @@ class IModelJsModuleBuilder {
             if (!fs.existsSync(outputPath)) {
                 fs.mkdirSync(outputPath, { recursive: true });
             }
-            const jsonFile = path.resolve(outputPath, "webpackStats.json");
+            const outFileName = `webpackStats${moduleNum}.json`;
+            const jsonFile = path.resolve(outputPath, outFileName);
             args.push("--json");
             args.push(">" + jsonFile);
         }
@@ -703,7 +704,7 @@ class IModelJsModuleBuilder {
         const styleSheets = webpack.styleSheets ? true : false;
         if (this._detail > 0)
             console.log("Starting Webpack Module");
-        return this.startWebpack("Webpack Module", outputPath, webpack.entry, webpack.bundleName, styleSheets, this._moduleDescription.type, this._isDevelopment, this._webpackStats, webpack.htmlTemplate);
+        return this.startWebpack("Webpack Module", outputPath, webpack.entry, webpack.bundleName, styleSheets, this._moduleDescription.type, this._isDevelopment, this._webpackStats, 0, webpack.htmlTemplate);
     }
     // build the array of subModules.
     async buildSubModules() {
@@ -716,6 +717,7 @@ class IModelJsModuleBuilder {
             return Promise.resolve([new Result("Build SubModules", 1, undefined, undefined, "iModelJs.buildModule.subModules must be an array of {dest, entry, bundleName} objects")]);
         }
         const results = [];
+        let moduleNum = 1;
         for (const subModule of this._moduleDescription.subModules) {
             if (!subModule.dest || !subModule.entry || !subModule.bundleName) {
                 results.push(new Result("Build SubModules", 1, undefined, undefined, 'Each subModule must have a "dest", "entry", and "bundleName" property'));
@@ -732,7 +734,7 @@ class IModelJsModuleBuilder {
                 outputPath = path.resolve(outputPath, this._isDevelopment ? "dev" : "prod");
             if (this._detail > 0)
                 console.log("Starting webpack of", subModule.entry);
-            const pluginResult = await this.startWebpack(`Webpack Plugin ${subModule.entry}`, outputPath, subModule.entry, subModule.bundleName, styleSheets, subType, this._isDevelopment, this._webpackStats);
+            const pluginResult = await this.startWebpack(`Webpack Plugin ${subModule.entry}`, outputPath, subModule.entry, subModule.bundleName, styleSheets, subType, this._isDevelopment, this._webpackStats, moduleNum++);
             results.push(pluginResult);
             if (pluginResult.error || pluginResult.stderr) {
                 return Promise.resolve(results);
