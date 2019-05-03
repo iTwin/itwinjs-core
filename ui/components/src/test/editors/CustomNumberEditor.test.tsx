@@ -113,7 +113,12 @@ describe("<CustomNumberEditor />", () => {
   });
 
   it("EditorContainer with readonly CustomNumberPropertyEditor", async () => {
+    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal) as PropertyRecord;
+    propertyRecord.isReadonly = true;
+    propertyRecord.isDisabled = true;
+
     const spyOnCommit = sinon.spy();
+
     function handleCommit(commit: PropertyUpdatedArgs): void {
       const newNumValue = (commit.newValue as PrimitiveValue).value as number;
       const newDisplayValue = (commit.newValue as PrimitiveValue).displayValue;
@@ -121,10 +126,6 @@ describe("<CustomNumberEditor />", () => {
       expect(newDisplayValue).to.be.equal(displayVal);
       spyOnCommit();
     }
-
-    const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal) as PropertyRecord;
-    propertyRecord.isReadonly = true;
-    propertyRecord.isDisabled = true;
 
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
     const inputField = renderedComponent.getByTestId("components-customnumber-editor") as HTMLInputElement;
@@ -135,7 +136,7 @@ describe("<CustomNumberEditor />", () => {
     const container = renderedComponent.getByTestId("editor-container") as HTMLSpanElement;
     fireEvent.keyDown(container, { key: "Enter" });
     await TestUtils.flushAsyncOperations();
-    expect(spyOnCommit).not.to.be.called;
+    expect(spyOnCommit).to.be.calledOnce;
     // renderedComponent.debug();
     expect(inputField.value).to.be.equal(displayVal);
   });

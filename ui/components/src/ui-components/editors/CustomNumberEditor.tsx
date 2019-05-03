@@ -41,7 +41,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     let propertyValue: PropertyValue | undefined;
 
     if (record.isReadonly) {
-      propertyValue = {
+      return {
         valueFormat: PropertyValueFormat.Primitive,
         value: (record.value as PrimitiveValue).value,
         displayValue: (record.value as PrimitiveValue).displayValue,
