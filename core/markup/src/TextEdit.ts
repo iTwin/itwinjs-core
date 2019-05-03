@@ -8,7 +8,7 @@ import { RedlineTool } from "./RedlineTool";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 
-/** Tool to place new text notes on a Markup. */
+/** @beta Tool to place new text notes on a Markup. */
 export class PlaceTextTool extends RedlineTool {
   public static toolId = "Markup.Text.Place";
   protected _nRequiredPoints = 1;
@@ -40,7 +40,7 @@ export class PlaceTextTool extends RedlineTool {
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
 }
 
-/** Tool for editing text. Started automatically by the place text tool and by clicking on text from the SelectTool */
+/** @beta Tool for editing text. Started automatically by the place text tool and by clicking on text from the SelectTool */
 export class EditTextTool extends MarkupTool {
   public static toolId = "Markup.Text.Edit";
   public editor?: HTMLTextAreaElement;

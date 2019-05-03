@@ -7,6 +7,7 @@ export * from "./MarkupTool";
 export * from "./RedlineTool";
 export * from "./SelectTool";
 export * from "./TextEdit";
+export * from "./Undo";
 export * from "./SvgJsExt";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.

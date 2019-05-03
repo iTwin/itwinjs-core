@@ -66,7 +66,7 @@ class ModifyAction extends UndoAction {
   public reverse() { this._newElem.replace(this._oldElement); MarkupApp.markup!.selected.replace(this._newElem, this._oldElement); }
 }
 
-/** Stores the sequence of operations performed on the markup. Facilitates undo/redo of the operations. */
+/** @beta Stores the sequence of operations performed on the markup. Facilitates undo/redo of the operations. */
 export class UndoManager {
   private _currentCmd = 0;
   private _grouped = 0;

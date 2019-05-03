@@ -7,7 +7,7 @@ import { BeButton, BeTouchEvent, CoordinateLockOverrides, EventHandled, IModelAp
 import { Element as MarkupElement, LinkedHTMLElement, G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { Markup, MarkupApp } from "./Markup";
 
-/** Base class for all tools that operate on Markup elements. */
+/** @beta Base class for all tools that operate on Markup elements. */
 export abstract class MarkupTool extends PrimitiveTool {
   public markup!: Markup;
   public static toolKey = "MarkupTools:tools.";

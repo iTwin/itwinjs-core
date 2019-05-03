@@ -11,9 +11,10 @@ import { EditTextTool } from "./TextEdit";
 import { UndoManager } from "./Undo";
 import { BeEvent } from "@bentley/bentleyjs-core";
 
-/** classes added to HTMLElements so they can be customized in CSS by applications */
-/** A "modify handle" is a visible position on the screen that provides UI to modify a MarkupElement. */
-abstract class ModifyHandle {
+/** @beta classes added to HTMLElements so they can be customized in CSS by applications.
+ * A "modify handle" is a visible position on the screen that provides UI to modify a MarkupElement.
+ */
+export abstract class ModifyHandle {
   public vbToStartTrn!: Transform;
 
   constructor(public handles: Handles) { }
@@ -52,7 +53,7 @@ abstract class ModifyHandle {
   }
 }
 
-/** A ModifyHandle that changes the size of the element */
+/** @beta A ModifyHandle that changes the size of the element */
 class StretchHandle extends ModifyHandle {
   private readonly _circle: Circle;
   public posNpc: Point2d;
@@ -111,7 +112,7 @@ class StretchHandle extends ModifyHandle {
   }
 }
 
-/** A ModifyHandle to rotate an element */
+/** @beta A ModifyHandle to rotate an element */
 class RotateHandle extends ModifyHandle {
   private readonly _line: Line;
   private readonly _circle: Circle;
@@ -142,7 +143,7 @@ class RotateHandle extends ModifyHandle {
   }
 }
 
-/** A VertexHandle to move a point on a line */
+/** @beta A VertexHandle to move a point on a line */
 class VertexHandle extends ModifyHandle {
   private readonly _circle: Circle;
   private readonly _x: string;
@@ -172,7 +173,7 @@ class VertexHandle extends ModifyHandle {
   }
 }
 
-/** A handle that moves (translates) an element. */
+/** @beta A handle that moves (translates) an element. */
 class MoveHandle extends ModifyHandle {
   private readonly _shape: MarkupElement;
   private readonly _outline?: Polygon;
@@ -225,8 +226,8 @@ class MoveHandle extends ModifyHandle {
   }
 }
 
-/** The set of ModifyHandles active. Only applies if there is a single element selected. */
-class Handles {
+/** @beta The set of ModifyHandles active. Only applies if there is a single element selected. */
+export class Handles {
   public readonly handles: ModifyHandle[] = [];
   public active?: ModifyHandle;
   public dragging = false;
@@ -331,7 +332,7 @@ class Handles {
   }
 }
 
-/** The set of currently selected SVG elements. When elements are added to the set, they are hilited. */
+/** @beta The set of currently selected SVG elements. When elements are added to the set, they are hilited. */
 export class SelectionSet {
   public readonly elements = new Set<MarkupElement>();
   public handles?: Handles;
@@ -434,7 +435,7 @@ export class SelectionSet {
   }
 }
 
-/** Provides UI for selection, delete, move, copy, bring-to-front, send-to-back, etc. for Markup SVG elements */
+/** @beta Provides UI for selection, delete, move, copy, bring-to-front, send-to-back, etc. for Markup SVG elements */
 export class SelectTool extends MarkupTool {
   public static toolId = "Markup.Select";
   private _flashedElement?: MarkupElement;

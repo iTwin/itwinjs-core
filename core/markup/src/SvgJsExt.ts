@@ -6,6 +6,7 @@ import { Transform } from "@bentley/geometry-core";
 import { Box, Element as MarkupElement, extend, G, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 
+/** @beta */
 export interface MarkupColor {
   fill: any;
   stroke: any;
@@ -210,7 +211,7 @@ extend(Matrix, {
   },
 });
 
-/** Dummy class so a <title> inside a <g> will work. */
+/** @internal Dummy class so a <title> inside a <g> will work. */
 export class Title extends MarkupElement {
   constructor(node: any) { super(nodeOrNew("title", node)); }
   public scale() { return this; }

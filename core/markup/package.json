@@ -8,6 +8,7 @@
     "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
     "clean": "rimraf lib package-deps.json",
     "docs": "",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-markup",
     "lint": "tslint --project . 1>&2",
     "test": "",
     "cover": ""

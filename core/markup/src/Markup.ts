@@ -12,11 +12,13 @@ import { SelectionSet, SelectTool } from "./SelectTool";
 import * as textTool from "./TextEdit";
 import { UndoManager } from "./Undo";
 
+/** @beta */
 export interface WidthAndHeight {
   width: number;
   height: number;
 }
 
+/** @beta */
 export interface MarkupSvgData {
   /** The size of the image, in pixels. This also indicates the aspect ratio of the SVG data. */
   rect: WidthAndHeight;
@@ -24,14 +26,14 @@ export interface MarkupSvgData {
   svg?: string;
 }
 
-/** Markup data returned by [MarkupApp.stop] */
+/** @beta Markup data returned by [MarkupApp.stop] */
 export interface MarkupData extends MarkupSvgData {
   /** a base64 encoded string with the image of the view that was marked up. See [MarkupApp.props.result] for options. */
   image?: string;
 }
 
 /**
- * The main object for the Markup package. It is a singleton that stores the "state" of the Markup application.
+ * @beta The main object for the Markup package. It is a singleton that stores the "state" of the Markup application.
  * It has only static members and methods. Applications may customize and control the behavior of the Markup by
  * setting members of [MarkupApp.props]. When [MarkupApp.start] is first called, it registers a set of "Markup.xxx"
  * tools that may be invoked from UI controls.
@@ -291,7 +293,7 @@ export class MarkupApp {
 const removeSvgNamespace = (svg: Svg) => { svg.node.removeAttribute("xmlns:svgjs"); return svg; };
 const newSvgElement = (name: string) => adopt(create(name));
 /**
- * The current markup being created/edited. Holds the SVG elements, plus the active MarkupTool.
+ * @beta The current markup being created/edited. Holds the SVG elements, plus the active MarkupTool.
  * When starting a Markup, a new Div is added as a child of the ScreenViewport's vpDiv.
  */
 export class Markup {

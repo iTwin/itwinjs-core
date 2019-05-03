@@ -8,7 +8,7 @@ import { Element as MarkupElement, G, Marker, SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 
-/** Base class for tools that place new Markup elements */
+/** @beta Base class for tools that place new Markup elements */
 export abstract class RedlineTool extends MarkupTool {
   protected _minPoints = 1;
   protected _nRequiredPoints = 2;
@@ -70,6 +70,7 @@ export abstract class RedlineTool extends MarkupTool {
   }
 }
 
+/** @beta */
 export class LineTool extends RedlineTool {
   public static toolId = "Markup.Line";
 
@@ -87,6 +88,7 @@ export class LineTool extends RedlineTool {
   }
 }
 
+/** @beta */
 export class RectangleTool extends RedlineTool {
   public static toolId = "Markup.Rectangle";
 
@@ -114,6 +116,7 @@ export class RectangleTool extends RedlineTool {
   }
 }
 
+/** @beta */
 export class PolygonTool extends RedlineTool {
   public static toolId = "Markup.Polygon";
 
@@ -159,6 +162,7 @@ export class PolygonTool extends RedlineTool {
   }
 }
 
+/** @beta */
 export class CloudTool extends RedlineTool {
   public static toolId = "Markup.Cloud";
   protected _cloud?: MarkupElement;
@@ -195,6 +199,7 @@ export class CloudTool extends RedlineTool {
   }
 }
 
+/** @beta */
 export class CircleTool extends RedlineTool {
   public static toolId = "Markup.Circle";
 
@@ -215,6 +220,7 @@ export class CircleTool extends RedlineTool {
   }
 }
 
+/** @beta */
 export class EllipseTool extends RedlineTool {
   public static toolId = "Markup.Ellipse";
 
@@ -238,6 +244,7 @@ export class EllipseTool extends RedlineTool {
   }
 }
 
+/** @beta */
 export class ArrowTool extends RedlineTool {
   public static toolId = "Markup.Arrow";
 
@@ -288,6 +295,7 @@ export class ArrowTool extends RedlineTool {
   }
 }
 
+/** @beta */
 export class DistanceTool extends ArrowTool {
   public static toolId = "Markup.Distance";
   protected readonly _startPointWorld = new Point3d();
@@ -345,6 +353,7 @@ export class DistanceTool extends ArrowTool {
   }
 }
 
+/** @beta */
 export class SketchTool extends RedlineTool {
   public static toolId = "Markup.Sketch";
   protected _minDistSquared = 100;
@@ -373,6 +382,7 @@ export class SketchTool extends RedlineTool {
   }
 }
 
+/** @beta */
 export class SymbolTool extends RedlineTool {
   public static toolId = "Markup.Symbol";
   protected _symbol?: MarkupElement;
