@@ -183,7 +183,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   }
 
   private _animationEnd = () => {
-    ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, this.state.face, -1);
+    ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, this.state.face, true);
     const startRotMatrix = this.state.endRotMatrix.clone();
     // istanbul ignore next
     if (this._mounted) {
@@ -213,7 +213,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     const visible = CubeNavigationAid._isMatrixFace(endRotMatrix) && animation === 1.0;
     const rotMatrix = CubeNavigationAid._interpolateRotMatrix(startRotMatrix, animation, endRotMatrix);
     if (rotMatrix !== startRotMatrix && rotMatrix !== endRotMatrix)
-      ViewportComponentEvents.setCubeMatrix(rotMatrix, Face.None, 0);
+      ViewportComponentEvents.setCubeMatrix(rotMatrix, Face.None);
 
     const labels: { [key: string]: string } = {
       [Face.Right]: UiFramework.i18n.translate("UiFramework:cube.right"),
@@ -360,6 +360,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
 
   private _onMouseStopDrag = () => {
     this.setState({ dragging: false });
+    ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, CubeNavigationAid._getMatrixFace(this.state.endRotMatrix), true);
     // remove so event only triggers after this.onMouseStartDrag
     window.removeEventListener("mousemove", this._onMouseDrag);
     window.removeEventListener("mouseup", this._onMouseStopDrag);
@@ -398,7 +399,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   }
 
   private _setRotation = (endRotMatrix: Matrix3d, face: Face) => {
-    ViewportComponentEvents.setCubeMatrix(endRotMatrix, face, 0);
+    ViewportComponentEvents.setCubeMatrix(endRotMatrix, face);
     // set variables, with animTime at 0 to prevent animation.
     this.setState({
       startRotMatrix: endRotMatrix,

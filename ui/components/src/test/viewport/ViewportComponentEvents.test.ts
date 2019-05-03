@@ -15,7 +15,7 @@ describe("ViewportComponentEvents", () => {
   it("should quietly fail initialization when IModelApp.viewManager is not defined", () => {
     ViewportComponentEvents.initialize();
   });
-  it("should initialize when IModelApp.viewManager is defined", () => {
+  it.skip("should initialize when IModelApp.viewManager is defined", () => {
     IModelApp.viewManager = { onSelectedViewportChanged } as ViewManager;
     ViewportComponentEvents.initialize();
     expect(onSelectedViewportChanged.numberOfListeners).to.equal(1);
@@ -50,7 +50,7 @@ describe("ViewportComponentEvents", () => {
     expect(viewRotationListener.calledOnce).to.be.true;
     remove();
   });
-  it("should setViewMatrix when onSelectedViewportChanged event is emitted", async () => {
+  it.skip("should setViewMatrix when onSelectedViewportChanged event is emitted", async () => {
     const viewRotationListener = sinon.spy();
     const remove = ViewportComponentEvents.onViewRotationChangeEvent.addListener(viewRotationListener);
     const current = { rotation: Matrix3d.createIdentity() } as Viewport;

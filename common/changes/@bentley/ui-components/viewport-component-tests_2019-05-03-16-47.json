@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added test coverage for ViewportComponent",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Simeon.McGraw@bentley.com"
+}

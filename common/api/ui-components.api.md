@@ -42,10 +42,12 @@ import * as React from 'react';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
+import { TentativePoint } from '@bentley/imodeljs-frontend';
 import { TimeFormat } from '@bentley/ui-core';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
+import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 
@@ -744,7 +746,7 @@ export class CubeRotationChangeEvent extends UiEvent<CubeRotationChangeEventArgs
 // @public
 export interface CubeRotationChangeEventArgs {
     // (undocumented)
-    animationTime?: number;
+    complete?: boolean;
     // (undocumented)
     face: Face;
     // (undocumented)
@@ -2610,7 +2612,7 @@ export class ViewportComponentEvents {
     // (undocumented)
     static readonly rotationMatrix: Matrix3d;
     // (undocumented)
-    static setCubeMatrix(rotMatrix: Matrix3d, face?: Face, animationTime?: number): void;
+    static setCubeMatrix(rotMatrix: Matrix3d, face?: Face, complete?: boolean): void;
     // (undocumented)
     static setDrawingViewportState(origin: Point3d, rotation: Matrix3d, complete?: boolean): void;
     // (undocumented)
@@ -2626,7 +2628,13 @@ export interface ViewportProps extends CommonProps {
     imodel: IModelConnection;
     // @internal (undocumented)
     onContextMenu?: (e: React.MouseEvent) => boolean;
+    // @internal
+    screenViewportOverride?: typeof ScreenViewport;
+    // @internal
+    tentativePointOverride?: TentativePoint;
     viewDefinitionId?: Id64String;
+    // @internal
+    viewManagerOverride?: ViewManager;
     viewportRef?: (v: ScreenViewport) => void;
     viewState?: ViewState;
 }

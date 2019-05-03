@@ -28,7 +28,7 @@ export class DrawingViewportChangeEvent extends UiEvent<DrawingViewportChangeEve
 export interface CubeRotationChangeEventArgs {
   rotMatrix: Matrix3d;
   face: Face;
-  animationTime?: number;
+  complete?: boolean;
 }
 
 /** 3d Cube Rotation Change event
@@ -119,10 +119,10 @@ export class ViewportComponentEvents {
       ViewportComponentEvents.setViewMatrix(args.current);
   }
 
-  public static setCubeMatrix(rotMatrix: Matrix3d, face = Face.None, animationTime?: number): void {
+  public static setCubeMatrix(rotMatrix: Matrix3d, face = Face.None, complete: boolean = false): void {
     this.rotationMatrix.setFrom(rotMatrix);
     this.face = face;
-    this.onCubeRotationChangeEvent.emit({ rotMatrix, animationTime, face });
+    this.onCubeRotationChangeEvent.emit({ rotMatrix, complete, face });
   }
 
   public static setDrawingViewportState(origin: Point3d, rotation: Matrix3d, complete: boolean = false): void {

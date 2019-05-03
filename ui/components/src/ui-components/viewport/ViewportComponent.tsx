@@ -5,7 +5,7 @@
 /** @module Viewport */
 
 import * as React from "react";
-import { Id64String, BeDuration } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import {
   IModelApp,
   IModelConnection,
@@ -13,6 +13,8 @@ import {
   ScreenViewport,
   Viewport,
   ToolSettings,
+  ViewManager,
+  TentativePoint,
 } from "@bentley/imodeljs-frontend";
 import { Transform, Point3d } from "@bentley/geometry-core";
 import { CommonProps } from "@bentley/ui-core";
@@ -41,7 +43,14 @@ export interface ViewportProps extends CommonProps {
   /** @internal */
   onContextMenu?: (e: React.MouseEvent) => boolean;
   /** @internal */
+
   getViewOverlay?: (viewState: ViewState) => React.ReactNode;
+  /** @internal used only for testing */
+  viewManagerOverride?: ViewManager;
+  /** @internal used only for testing */
+  screenViewportOverride?: typeof ScreenViewport;
+  /** @internal used only for testing */
+  tentativePointOverride?: TentativePoint;
 }
 
 /** @internal */
@@ -69,6 +78,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   }
 
   public async componentDidMount() {
+    // istanbul ignore next
     if (!this._viewportDiv.current)
       throw new Error("Parent <div> failed to load");
 
@@ -77,14 +87,17 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       viewState = this.props.viewState;
     } else if (this.props.viewDefinitionId) {
       viewState = await this.props.imodel.views.load(this.props.viewDefinitionId);
+      // istanbul ignore next
       if (!viewState)
         throw new Error("View state failed to load");
-    } else {
+    } /* istanbul ignore next */ else {
       throw new Error("Either viewDefinitionId or viewState must be provided as a ViewportComponent Prop");
     }
 
-    this._vp = ScreenViewport.create(this._viewportDiv.current, viewState);
-    IModelApp.viewManager.addViewport(this._vp);
+    const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
+    const screenViewport = this.props.screenViewportOverride ? this.props.screenViewportOverride : /* istanbul ignore next */ ScreenViewport;
+    this._vp = screenViewport.create(this._viewportDiv.current, viewState);
+    viewManager.addViewport(this._vp);
 
     if (this.props.viewportRef)
       this.props.viewportRef(this._vp);
@@ -101,7 +114,8 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
 
   public componentWillUnmount() {
     if (this._vp) {
-      IModelApp.viewManager.dropViewport(this._vp, true);
+      const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
+      viewManager.dropViewport(this._vp, true);
       this._vp.onViewChanged.removeListener(this._handleViewChanged, this);
     }
 
@@ -111,7 +125,8 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   }
 
   private _handleDrawingViewportChangeEvent = (args: DrawingViewportChangeEventArgs) => {
-    if (this._vp && IModelApp.viewManager.selectedView === this._vp) {
+    const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
+    if (this._vp && viewManager.selectedView === this._vp) {
       this._vp.view.setOrigin(args.origin);
       this._vp.view.setRotation(args.rotation);
       this._vp.synchWithView(args.complete === true ? true : false);
@@ -119,9 +134,9 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   }
 
   private _getRotatePoint(vp: ScreenViewport): Point3d {
-    if (IModelApp.tentativePoint.isActive)
-      return IModelApp.tentativePoint.getPoint();
-
+    const tentativePoint = this.props.tentativePointOverride ? this.props.tentativePointOverride : /* istanbul ignore next */ IModelApp.tentativePoint;
+    if (tentativePoint.isActive)
+      return tentativePoint.getPoint();
     if (undefined !== vp.viewCmdTargetCenter) {
       const testPt = vp.worldToView(vp.viewCmdTargetCenter);
       const viewRect = vp.viewRect;
@@ -134,6 +149,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       const testPt = vp.worldToView(this._lastTargetPoint);
       const viewRect = vp.viewRect.clone();
       viewRect.scaleAboutCenter(0.25, 0.25);
+      // istanbul ignore next hard to reach because of mocks
       if (viewRect.containsPoint(testPt))
         return this._lastTargetPoint;
       this._lastTargetPoint = undefined;
@@ -145,32 +161,25 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   }
 
   private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
-    if (this._vp && IModelApp.viewManager.selectedView === this._vp) {
-      if (args.animationTime && args.animationTime < 0) {
-        this._vp.synchWithView(true);
-      }
+    const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
+    if (this._vp && viewManager.selectedView === this._vp) {
       const rotMatrix = args.rotMatrix;
       if (this._vp.rotation !== rotMatrix) {
-        const inverse = rotMatrix.inverse(); // rotation is from current nav cube state...
-        if (undefined === inverse)
-          return;
+        const inverse = rotMatrix.transpose(); // rotation is from current nav cube state...
         const center = this._getRotatePoint(this._vp);
         const targetMatrix = inverse.multiplyMatrixMatrix(this._vp.view.getRotation());
         const worldTransform = Transform.createFixedPointAndMatrix(center, targetMatrix);
         const frustum = this._vp.getWorldFrustum();
         frustum.multiply(worldTransform);
-        if (args.animationTime && args.animationTime > 0) {
-          this._vp.animateFrustumChange(this._vp.getWorldFrustum(), frustum, BeDuration.fromMilliseconds(args.animationTime));
-        } else {
-          this._vp.view.setupFromFrustum(frustum);
-          this._vp.synchWithView(false);
-        }
+        this._vp.view.setupFromFrustum(frustum);
+        this._vp.synchWithView(args.complete ? true : false);
       }
     }
   }
 
   private _handleStandardRotationChangeEvent = (args: StandardRotationChangeEventArgs) => {
-    if (this._vp && IModelApp.viewManager.selectedView === this._vp) {
+    const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
+    if (this._vp && viewManager.selectedView === this._vp) {
       // this._vp.view.setStandardRotation(args.standardRotation);
       this._vp.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(args.standardRotation));
       this._vp.synchWithView(true);
@@ -186,7 +195,6 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
         this._viewClassFullName = vp.view.classFullName;
       });
     }
-
     if (this.state.viewId !== vp.view.id) {
       setTimeout(() => {
         ViewportComponentEvents.onViewIdChangedEvent.emit({ viewport: vp, oldId: this.state.viewId, newId: vp.view.id });
@@ -218,6 +226,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       <div style={parentDivStyle}>
         <div
           ref={this._viewportDiv}
+          data-testid="viewport-component"
           className={this.props.className}
           style={viewportDivStyle}
           onContextMenu={this._handleContextMenu}
