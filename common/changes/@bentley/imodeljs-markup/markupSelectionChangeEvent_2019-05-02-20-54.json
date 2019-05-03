@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add simple changed event for markup selection so UI can show a clear selection button only when not empty, etc.",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "Brien.Bastings@bentley.com"
+}

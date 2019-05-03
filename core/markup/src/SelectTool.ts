@@ -9,6 +9,7 @@ import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 import { EditTextTool } from "./TextEdit";
 import { UndoManager } from "./Undo";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 /** classes added to HTMLElements so they can be customized in CSS by applications */
 /** A "modify handle" is a visible position on the screen that provides UI to modify a MarkupElement. */
@@ -335,13 +336,19 @@ export class SelectionSet {
   public readonly elements = new Set<MarkupElement>();
   public handles?: Handles;
 
+  /** Called whenever elements are added or removed from this SelectionSet */
+  public readonly onChanged = new BeEvent<(selected: SelectionSet) => void>();
+
   public get size() { return this.elements.size; }
   public get isEmpty() { return this.size === 0; }
   public has(el: MarkupElement) { return this.elements.has(el); }
   public emptyAll(): void {
     this.clearEditors();
+    if (this.isEmpty)
+      return; // Don't send onChanged if already empty.
     this.elements.forEach((el) => el.unHilite());
     this.elements.clear();
+    this.onChanged.raiseEvent(this);
   }
   public restart(el?: MarkupElement) {
     this.emptyAll();
@@ -358,6 +365,7 @@ export class SelectionSet {
     this.clearEditors();
     if (this.elements.size === 1)
       this.handles = new Handles(this, this.elements.values().next().value);
+    this.onChanged.raiseEvent(this);
   }
   /** Add a new element to the SS */
   public add(el: MarkupElement) {
