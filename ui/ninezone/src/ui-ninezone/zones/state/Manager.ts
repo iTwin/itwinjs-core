@@ -46,6 +46,9 @@ export class StateManager {
     if (isClosing && zone.isFloating())
       return state;
 
+    if (isClosing && widget.props.tabIndex !== tabIndex)
+      return state;
+
     // Close all widgets
     const widgets = zone.props.widgets.map((w) => ({
       ...w,

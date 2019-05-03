@@ -106,6 +106,7 @@ export class TestFrontstage extends FrontstageProvider {
           <Zone defaultState={ZoneState.Open}
             widgets={[
               <Widget id="widget1" defaultState={WidgetState.Open} element={<div />} />,
+              <Widget id="widget6_2" element={<div />} />,
             ]}
           />
         }

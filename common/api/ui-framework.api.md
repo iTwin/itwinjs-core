@@ -3482,6 +3482,7 @@ export interface WidgetChangeHandler {
 export class WidgetControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getType(): ConfigurableUiControlType;
+    onWidgetStateChanged(): void;
     reactElement: React_2.ReactNode;
     restoreTransientState(): boolean;
     saveTransientState(): void;
@@ -3596,7 +3597,8 @@ export enum WidgetState {
     Closed = 1,
     Floating = 3,
     Hidden = 2,
-    Open = 0
+    Open = 0,
+    Unloaded = 4
 }
 
 // @public

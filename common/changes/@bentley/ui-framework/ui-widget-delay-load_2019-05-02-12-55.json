@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add widget state changed callback to WidgetControl.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "gerardas.butkevicius@bentley.com"
+}

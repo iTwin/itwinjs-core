@@ -156,26 +156,13 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
           if (WidgetState.Open === currentWidgetDef.state) {
             if (!widgetDefToActivate)
               widgetDefToActivate = currentWidgetDef;
-            else
-              currentWidgetDef.state = WidgetState.Closed;
           }
         }
       } else {
         // if there was a state change in this zone then force the WidgetDef state to match that defined by the active tabIndex
         for (let index = 0; index < visibleWidgetDefs.length; index++) {
-          const currentWidgetDef = visibleWidgetDefs[index];
-          if (nzWidgetProps.tabIndex === index) {
+          if (nzWidgetProps.tabIndex === index)
             widgetDefToActivate = visibleWidgetDefs[index];
-            if (!currentWidgetDef.isActive) {
-              // This is needed if stateFun says tab should be closed and then user clicks tab to show tab contents.
-              currentWidgetDef.state = WidgetState.Open;
-            }
-          } else {
-            if (currentWidgetDef.isActive) {
-              // This is needed if stateFun enables tab and then user clicks tab to hide tab contents.
-              currentWidgetDef.state = WidgetState.Closed;
-            }
-          }
         }
       }
 

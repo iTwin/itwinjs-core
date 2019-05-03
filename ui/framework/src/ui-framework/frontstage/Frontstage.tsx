@@ -18,7 +18,8 @@ import { Zone, ZoneProps, ZoneRuntimeProps, ZoneLocation } from "../zones/Zone";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { StagePanelProps, StagePanel, StagePanelLocation, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
-import { WidgetDef } from "../widgets/WidgetDef";
+import { WidgetDef, WidgetStateChangedEventArgs, WidgetState } from "../widgets/WidgetDef";
+import { FrontstageManager } from "./FrontstageManager";
 
 /** Properties for a [[Frontstage]] component.
  * @public
@@ -477,17 +478,25 @@ interface WidgetContentRendererProps {
 }
 
 interface WidgetContentRendererState {
+  isLoaded: boolean;
   widgetKey: number;
 }
 
 class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererProps, WidgetContentRendererState> {
   private _content = document.createElement("span");
 
-  public readonly state: WidgetContentRendererState = {
-    widgetKey: 0,
-  };
+  public constructor(props: WidgetContentRendererProps) {
+    super(props);
+
+    this.state = {
+      isLoaded: props.widget.state !== WidgetState.Unloaded,
+      widgetKey: 0,
+    };
+  }
 
   public componentDidMount() {
+    FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
+
     if (!this.props.renderTo.current)
       return;
     this._content.style.display = this.props.isHidden ? "none" : null;
@@ -510,7 +519,13 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     shouldRemount && this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
   }
 
+  public componentWillUnmount() {
+    FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
+  }
+
   public render() {
+    if (!this.state.isLoaded)
+      return null;
     return ReactDOM.createPortal(
       <React.Fragment
         key={this.state.widgetKey}
@@ -518,5 +533,11 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
         {this.props.widget.reactElement}
       </React.Fragment>, this._content,
     );
+  }
+
+  private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
+    if (this.props.widget !== args.widgetDef)
+      return;
+    this.setState(() => ({ isLoaded: true }));
   }
 }

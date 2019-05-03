@@ -174,4 +174,21 @@ describe("Frontstage", () => {
     expect(widgetElementComponentDidMountSpy.calledOnce).false;
   });
 
+  it("should load widget content when widget is loaded", async () => {
+    const wrapper = mount(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const widgetDef = FrontstageManager.findWidget("widget3")!;
+    const widgetState = WidgetState.Open;
+    FrontstageManager.onWidgetStateChangedEvent.emit({
+      widgetDef,
+      widgetState,
+    });
+
+    const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
+    expect(contentRenderer.state().isLoaded).true;
+  });
 });

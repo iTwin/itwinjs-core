@@ -31,6 +31,8 @@ export enum WidgetState {
   Hidden,
   /** Widget tab is in a 'floating' state and is not docked in zone's tab stack */
   Floating,
+  /** Widget tab is visible but its contents are not loaded */
+  Unloaded,
 }
 
 /** Widget State Changed Event Args interface.
@@ -100,7 +102,7 @@ export class WidgetDef {
   private _widgetReactNode: React.ReactNode;
   private _widgetControl!: WidgetControl;
 
-  public state: WidgetState = WidgetState.Closed;
+  public state: WidgetState = WidgetState.Unloaded;
   public id: string;
   public classId: string | ConfigurableUiControlConstructor | undefined = undefined;
   public priority: number = 0;
@@ -275,8 +277,11 @@ export class WidgetDef {
   }
 
   public setWidgetState(newState: WidgetState): void {
+    if (this.state === newState)
+      return;
     this.state = newState;
     FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: newState });
+    this.widgetControl && this.widgetControl.onWidgetStateChanged();
   }
 
   public canOpen(): boolean {
@@ -284,7 +289,7 @@ export class WidgetDef {
   }
 
   public get isVisible(): boolean {
-    return (WidgetState.Hidden !== this.state);
+    return WidgetState.Hidden !== this.state;
   }
 
   public get activeState(): WidgetState {

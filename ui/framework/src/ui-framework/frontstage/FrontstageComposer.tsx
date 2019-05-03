@@ -16,7 +16,7 @@ import {
   Size, PointProps, DefaultStateManager as NineZoneStateManager, RectangleProps, TargetType, WidgetProps as NZ_WidgetProps,
 } from "@bentley/ui-ninezone";
 
-import { WidgetDef } from "../widgets/WidgetDef";
+import { WidgetDef, WidgetState } from "../widgets/WidgetDef";
 import { CommonProps } from "@bentley/ui-core";
 
 /** Interface defining callbacks for widget changes
@@ -253,7 +253,28 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       return {
         nineZoneProps,
       };
-    });
+    },
+      () => {
+        // TODO: use NineZoneManager notifications once available
+        const nineZone = new NineZone(this.state.nineZoneProps);
+        const widgets = nineZone.getWidget(widgetId).zone.getWidgets();
+        widgets.forEach((w) => {
+          const zoneDef = this.getZoneDef(w.props.id);
+          if (!zoneDef)
+            return;
+
+          for (let i = 0; i < zoneDef.widgetDefs.length; i++) {
+            const widgetDef = zoneDef.widgetDefs[i];
+            let state = widgetDef.state;
+            if (w.props.tabIndex === i)
+              state = WidgetState.Open;
+            else if (state !== WidgetState.Unloaded)
+              state = WidgetState.Closed;
+            widgetDef.setWidgetState(state);
+          }
+        });
+      },
+    );
   }
 
   public handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {

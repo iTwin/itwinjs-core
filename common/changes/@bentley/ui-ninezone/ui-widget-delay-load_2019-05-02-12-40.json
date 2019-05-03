@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Closing already closed tab no longer resets widget tab index.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

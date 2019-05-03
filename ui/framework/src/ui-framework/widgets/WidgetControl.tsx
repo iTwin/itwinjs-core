@@ -37,6 +37,10 @@ export class WidgetControl extends ConfigurableUiControl {
     this.widgetDef.setWidgetState(state);
   }
 
+  /** Called when widget state changes. */
+  public onWidgetStateChanged(): void {
+  }
+
   /** Overwrite to save transient DOM state (i.e. scroll offset). */
   public saveTransientState(): void {
   }

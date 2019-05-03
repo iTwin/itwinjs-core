@@ -42,7 +42,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "priority": 0,
       "renderHorizontalToolbar": [Function],
       "renderVerticalToolbar": [Function],
-      "state": 1,
+      "state": 4,
       "stateChanged": false,
       "syncEventIds": Array [],
       "verticalDirection": 2,
