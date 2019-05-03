@@ -3,7 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, ArrayValue, StructValue, PropertyEditorParamTypes } from "@bentley/imodeljs-frontend";
+import {
+  PropertyRecord, PrimitiveValue, PropertyValueFormat,
+  PropertyDescription, ArrayValue, StructValue, PropertyEditorParamTypes,
+  ParseResults,
+} from "@bentley/imodeljs-frontend";
 import { UiComponents } from "../ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { ColorByName } from "@bentley/imodeljs-common";
@@ -222,6 +226,44 @@ export class TestUtils {
       typename: "number",
       editor: {
         name: "weight-picker",
+      },
+    };
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+    return propertyRecord;
+  }
+
+  private static _formatLength = (numberValue: number): string => numberValue.toFixed(2);
+
+  public static createCustomNumberProperty(propertyName: string, numVal: number, displayVal?: string) {
+
+    const value: PrimitiveValue = {
+      displayValue: displayVal,
+      value: numVal,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      name: propertyName,
+      displayLabel: propertyName,
+      typename: "number",
+      editor: {
+        name: "number-custom",
+        params: [
+          {
+            type: PropertyEditorParamTypes.CustomFormattedNumber,
+            formatFunction: TestUtils._formatLength,
+            parseFunction: (stringValue: string): ParseResults => {
+              const rtnValue = Number.parseFloat(stringValue);
+              if (Number.isNaN(rtnValue)) {
+                return { parseError: `Unable to parse ${stringValue} into a valid length` };
+              } else {
+                return { value: rtnValue };
+              }
+            },
+          },
+        ],
       },
     };
 

@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
+import { QuantityType } from "../QuantityFormatter";
 
 /**
  * Enumeration for Property Editor Param Types
@@ -20,6 +21,7 @@ export enum PropertyEditorParamTypes {
   SuppressUnitLabel,
   SuppressEditorLabel,
   ColorData,
+  CustomFormattedNumber,
 }
 
 /**
@@ -164,10 +166,29 @@ export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams 
 }
 
 /**
+ * defines Results of parsing a string input by a user into its desired value type
+ * @alpha
+ */
+export interface ParseResults {
+  value?: string | number | boolean | {} | string[] | Date | [] | undefined;
+  parseError?: string;
+}
+
+/**
+ * Parameters used with properties that want to control parsing and formatting.
+ * @alpha
+ */
+export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
+  type: PropertyEditorParamTypes.CustomFormattedNumber;
+  formatFunction: (numberValue: number, quantityType?: QuantityType | string) => string;
+  parseFunction: (stringValue: string, quantityType?: QuantityType | string) => ParseResults;
+}
+
+/**
  * Type definition for all Property Editor params
  * @alpha
  */
-export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams;
+export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams;
 /*  Not yet supported
   |  JsonEditorParams | RangeEditorParams | SliderEditorParams |
   | IconEditorParams | CheckBoxIconsEditorParams | SuppressUnitLabelEditorParams

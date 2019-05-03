@@ -46,6 +46,7 @@ export * from "./ui-components/editors/BooleanEditor";
 export * from "./ui-components/editors/ToggleEditor";
 export * from "./ui-components/editors/ColorEditor";
 export * from "./ui-components/editors/WeightEditor";
+export * from "./ui-components/editors/CustomNumberEditor";
 
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";

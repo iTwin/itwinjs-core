@@ -1622,6 +1622,16 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
+// @alpha
+export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
+    // (undocumented)
+    formatFunction: (numberValue: number, quantityType?: QuantityType | string) => string;
+    // (undocumented)
+    parseFunction: (stringValue: string, quantityType?: QuantityType | string) => ParseResults;
+    // (undocumented)
+    type: PropertyEditorParamTypes.CustomFormattedNumber;
+}
+
 // @public
 export class DecorateContext extends RenderContext {
     // @internal
@@ -3982,6 +3992,14 @@ export class PanViewTool extends ViewManip {
     static toolId: string;
 }
 
+// @alpha
+export interface ParseResults {
+    // (undocumented)
+    parseError?: string;
+    // (undocumented)
+    value?: string | number | boolean | {} | string[] | Date | [] | undefined;
+}
+
 // @internal (undocumented)
 export class PerformanceMetrics {
     constructor(gatherGlFinish?: boolean, gatherCurPerformanceMetrics?: boolean);
@@ -4228,7 +4246,7 @@ export interface PropertyEditorInfo {
 }
 
 // @alpha
-export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams;
+export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams;
 
 // @alpha
 export enum PropertyEditorParamTypes {
@@ -4238,6 +4256,8 @@ export enum PropertyEditorParamTypes {
     CheckBoxIcons = 1,
     // (undocumented)
     ColorData = 10,
+    // (undocumented)
+    CustomFormattedNumber = 11,
     // (undocumented)
     Icon = 2,
     // (undocumented)

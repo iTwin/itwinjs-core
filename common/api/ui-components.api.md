@@ -751,6 +751,30 @@ export interface CubeRotationChangeEventArgs {
     rotMatrix: Matrix3d;
 }
 
+// Warning: (ae-forgotten-export) The symbol "CustomNumberEditorState" needs to be exported by the entry point ui-components.d.ts
+// 
+// @alpha
+export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps, CustomNumberEditorState> implements TypeEditor {
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // @internal (undocumented)
+    render(): JSX.Element | null;
+    // @internal (undocumented)
+    readonly state: Readonly<CustomNumberEditorState>;
+    }
+
+// @alpha
+export class CustomNumberPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    readonly reactElement: React.ReactNode;
+}
+
 // @beta
 export interface DataController {
     // (undocumented)

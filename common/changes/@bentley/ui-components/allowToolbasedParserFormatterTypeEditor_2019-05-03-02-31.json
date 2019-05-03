@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add support for CustomNumberPropertyEditor which allows custom number parsing and formatting functions to be specified. ",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "bill.steinbock@bentley.com"
+}
