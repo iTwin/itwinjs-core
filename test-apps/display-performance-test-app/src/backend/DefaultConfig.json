@@ -6,6 +6,9 @@
     "width": 1000,
     "height": 1000
   },
+  "tileProps": {
+    "enableInstancing": true
+  },
   "testSet": [
     {
       "iModelName": "TimingTest_01.bim",
