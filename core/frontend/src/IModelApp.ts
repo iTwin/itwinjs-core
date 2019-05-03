@@ -133,12 +133,12 @@ export class IModelApp {
     IModelApp._initialized = true;
 
     // Initialize basic application details before log messages are sent out
-    this.sessionId = Guid.createValue();
-    if (!this.applicationId) this.applicationId = "2686";  // Default to product id of iModel.js
-    if (!this.applicationVersion) this.applicationVersion = this.getApplicationVersion();
+    IModelApp.sessionId = Guid.createValue();
+    if (!IModelApp.applicationId) IModelApp.applicationId = "2686";  // Default to product id of iModel.js
+    if (!IModelApp.applicationVersion) IModelApp.applicationVersion = IModelApp.getApplicationVersion();
 
     if (imodelClient !== undefined)
-      this._imodelClient = imodelClient;
+      IModelApp._imodelClient = imodelClient;
 
     IModelApp._setupRpcRequestContext();
 
