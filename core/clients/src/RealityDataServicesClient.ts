@@ -34,6 +34,9 @@ export class RealityData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.UltimateId")
   public ultimateId?: string;
 
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.UltimateSite")
+  public ultimateSite?: string;
+
   /** This is typically the iModelId */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ContainerName")
   public containerName?: string;
@@ -44,11 +47,11 @@ export class RealityData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
 
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.DataSet")
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Dataset")
   public dataSet?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Group")
-  public group?: number;
+  public group?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
   public description?: string;
@@ -59,17 +62,23 @@ export class RealityData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Size")
   public size?: string;
 
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.SizeUpToDate")
+  public sizeUpToDate?: boolean;
+
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Classification")
   public classification?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Streamed")
-  public streamed?: string;
+  public streamed?: boolean;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Type")
   public type?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Footprint")
   public footprint?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ApproximateFootprint")
+  public approximateFootprint?: boolean;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ThumbnailDocument")
   public thumbnailDocument?: string;
@@ -93,10 +102,13 @@ export class RealityData extends WsgInstance {
   public visibility?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Listable")
-  public listable?: string;
+  public listable?: boolean;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ModifiedTimestamp")
   public modifiedTimestamp?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.LastAccessedTimeStamp")
+  public lastAccessedTimestamp?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CreatedTimestamp")
   public createdTimestamp?: string;
@@ -104,11 +116,19 @@ export class RealityData extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.OwnedBy")
   public ownedBy?: string;
 
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.OwnerId")
+  public ownerId?: string;
+
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CreatorId")
   public creatorId?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Version")
   public version?: string;
+
+  // Delegate permission is read-only and irrelevant for use so it is omitted.
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Hidden")
+  public hidden?: boolean;
 
   // Cache parameters for reality data access. Contains the blob url, the timestamp to refresh (every 50 minutes) the url and the root document path.
   private _blobUrl: any;
@@ -263,6 +283,31 @@ export class FileAccessKey extends WsgInstance {
   public requiresConfirmation?: string;
 }
 
+/** RealityDataRelationship
+ * This class is used to represent relationships with a Reality Data and CONNECT Context (CONNECT Project or CONNECT Asset)
+ * @internal
+ */
+@ECJsonTypeMap.classToJson("wsg", "S3MX.RealityDataRelationship", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class RealityDataRelationship extends WsgInstance {
+  //  @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
+  //  public id?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.RealityDataId")
+  public realityDataId?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.RelationType")
+  public relationType?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.RelatedId")
+  public relatedId?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ModifiedTimestamp")
+  public modifiedTimestamp?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.CreatedTimestamp")
+  public createdTimestamp?: string;
+}
+
 /**
  * Client wrapper to Reality Data Service.
  * An instance of this class is used to extract reality data from the ProjectWise Context Share (Reality Data Service)
@@ -371,6 +416,93 @@ export class RealityDataServicesClient extends WsgClient {
     const realityDatas: RealityData[] = await this.getInstances<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData?project=${projectId}&polygon=${polygonString}&$filter=Type+eq+'RealityMesh3DTiles'`);
     realityDatas.forEach((realityData) => { realityData.client = this; realityData.projectId = projectId; });
     return realityDatas;
+  }
+
+  /**
+   * Creates a reality data with given properties
+   * @param requestContext The client request context.
+   * @param projectId id of associated connect project
+   * @param realityData The reality data to create. The Id of the reality data is usually left empty indicating for the service to assign
+   * one. If set then the reality id must not exist on the server.
+   * realityDataInstance id, called tilesId when returned from tile generator job
+   * @returns The new reality data with all read-only properties set.
+   */
+  public async createRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityData: RealityData): Promise<RealityData> {
+    const resultRealityData: RealityData = await this.postInstance<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData`, realityData);
+    if (!resultRealityData)
+      return Promise.reject(new Error("Could not create new reality data: " + (realityData.id ? realityData.id : realityData.name)));
+
+    resultRealityData.client = this;
+    resultRealityData.projectId = projectId;
+    return resultRealityData;
+  }
+
+  /**
+   * Updates a reality data with given properties
+   * @param requestContext The client request context.
+   * @param projectId id of associated connect project
+   * @param realityData The reality data to update. The Id must contain the identifier of the reality data to update.
+   * NOTE: As a probable known defect some specific read-only attributes must be undefined prior to passing the reality data.
+   * These are: organizationId, sizeUpToDate, ownedBy, ownerId
+   * @returns The newly modifed reality data.
+   */
+  public async updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityData: RealityData): Promise<RealityData> {
+    const resultRealityData: RealityData = await this.postInstance<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${realityData.id}`, realityData);
+    if (!resultRealityData)
+      return Promise.reject(new Error("Could not update reality data: " + (realityData.id ? realityData.id : realityData.name)));
+
+    resultRealityData.client = this;
+    resultRealityData.projectId = projectId;
+    return resultRealityData;
+  }
+
+  /**
+   * Deletes a reality data.
+   * @param requestContext The client request context.
+   * @param projectId id of associated connect project
+   * @param realityDataId The identifier of the reality data to delete.
+   * @returns a void Promise.
+   */
+  public async deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<void> {
+    return this.deleteInstance<RealityData>(requestContext, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${realityDataId}`);
+  }
+
+  /**
+   * Gets all reality data relationships associated to the given reality id, not only the relatioship for given project.
+   * @param requestContext The client request context.
+   * @param projectId id of associated connect project in which to make to call for permisison reason
+   * @param realityDataId realityDataInstance id to obtain the relationships for.
+   * @returns All relationships associated to reality data. NThe requested reality data.
+   */
+  public async getRealityDataRelationships(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]> {
+    const relationships: RealityDataRelationship[] = await this.getInstances<RealityDataRelationship>(requestContext, RealityDataRelationship, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityDataRelationship?$filter=RealityDataId+eq+'${realityDataId}'`);
+    return relationships;
+  }
+
+  /**
+   * Gets all reality data relationships associated to the given reality id, not only the relatioship for given project.
+   * @param requestContext The client request context.
+   * @param projectId id of associated connect project in which to make to call for permisison reason
+   * @param realityDataId realityDataInstance id to obtain the relationships for.
+   * @returns All relationships associated to reality data. NThe requested reality data.
+   */
+  public async createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship> {
+    const resultRealityDataRelationship: RealityDataRelationship = await this.postInstance<RealityDataRelationship>(requestContext, RealityDataRelationship, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityDataRelationship`, relationship);
+    if (!resultRealityDataRelationship)
+      return Promise.reject(new Error("Could not create new reality data relationship between reality data: " + (relationship.realityDataId ? relationship.realityDataId : "") + " and context: " + (relationship.relatedId ? relationship.relatedId : "")));
+
+    return resultRealityDataRelationship;
+  }
+
+  /**
+   * Gets all reality data relationships associated to the given reality id, not only the relatioship for given project.
+   * @param requestContext The client request context.
+   * @param projectId id of associated connect project in which to make to call for permisison reason
+   * @param realityDataId realityDataInstance id to obtain the relationships for.
+   * @returns All relationships associated to reality data. NThe requested reality data.
+   */
+  public async deleteRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationshipId: string): Promise<void> {
+    return this.deleteInstance<RealityDataRelationship>(requestContext, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityDataRelationship/${relationshipId}`);
   }
 
   /**

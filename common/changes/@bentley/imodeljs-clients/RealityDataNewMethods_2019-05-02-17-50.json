@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "eliminate exported const enums",
+      "comment": "Added Reality Data creation/delete/update and relationship support.",
       "packageName": "@bentley/imodeljs-clients",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-clients",
-  "email": "keith.bentley@bentley.com"
+  "email": "Alain.Robert@Bentley.com"
 }

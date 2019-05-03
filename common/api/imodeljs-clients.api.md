@@ -1336,6 +1336,8 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     accuracyInMeters?: string;
     // (undocumented)
+    approximateFootprint?: boolean;
+    // (undocumented)
     classification?: string;
     // (undocumented)
     client: undefined | RealityDataServicesClient;
@@ -1361,11 +1363,15 @@ export class RealityData extends WsgInstance {
     getTileContent(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
     getTileJson(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
     // (undocumented)
-    group?: number;
+    group?: string;
+    // (undocumented)
+    hidden?: boolean;
     // (undocumented)
     id?: string;
     // (undocumented)
-    listable?: string;
+    lastAccessedTimestamp?: string;
+    // (undocumented)
+    listable?: boolean;
     // (undocumented)
     metadataUrl?: string;
     // (undocumented)
@@ -1377,6 +1383,8 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     ownedBy?: string;
     // (undocumented)
+    ownerId?: string;
+    // (undocumented)
     projectId: undefined | string;
     // (undocumented)
     resolutionInMeters?: string;
@@ -1385,7 +1393,9 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     size?: string;
     // (undocumented)
-    streamed?: string;
+    sizeUpToDate?: boolean;
+    // (undocumented)
+    streamed?: boolean;
     // (undocumented)
     termsOfUse?: string;
     // (undocumented)
@@ -1395,9 +1405,25 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     ultimateId?: string;
     // (undocumented)
+    ultimateSite?: string;
+    // (undocumented)
     version?: string;
     // (undocumented)
     visibility?: string;
+}
+
+// @internal
+export class RealityDataRelationship extends WsgInstance {
+    // (undocumented)
+    createdTimestamp?: string;
+    // (undocumented)
+    modifiedTimestamp?: string;
+    // (undocumented)
+    realityDataId?: string;
+    // (undocumented)
+    relatedId?: string;
+    // (undocumented)
+    relationType?: string;
 }
 
 // @internal
@@ -1405,16 +1431,22 @@ export class RealityDataServicesClient extends WsgClient {
     constructor();
     // (undocumented)
     static readonly configRelyingPartyUri = "imjs_reality_data_service_relying_party_uri";
+    createRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityData: RealityData): Promise<RealityData>;
+    createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
+    deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<void>;
+    deleteRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationshipId: string): Promise<void>;
     getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<FileAccessKey[]>;
     getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<RealityData>;
     getRealityDataIdFromUrl(url: string): string | undefined;
     getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<RealityData[]>;
     getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, range: Range2d): Promise<RealityData[]>;
+    getRealityDataRelationships(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
     getRealityDataUrl(requestContext: ClientRequestContext, projectId: string, tilesId: string): Promise<string>;
     protected getRelyingPartyUrl(): string;
     protected getUrlSearchKey(): string;
     // (undocumented)
     static readonly searchKey: string;
+    updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityData: RealityData): Promise<RealityData>;
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "request" is marked as @public, but its signature references "RequestOptions" which is marked as @alpha
