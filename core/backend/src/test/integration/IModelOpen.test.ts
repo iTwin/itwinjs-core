@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { WSStatus } from "@bentley/bentleyjs-core";
+import { WSStatus, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AccessToken, WsgError } from "@bentley/imodeljs-clients";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -13,19 +13,24 @@ import { HubUtility } from "./HubUtility";
 
 describe("IModelOpen (#integration)", () => {
 
+  let requestContext: AuthorizedBackendRequestContext;
+  let testProjectId: GuidString;
+  let badRequestContext: AuthorizedBackendRequestContext;
+
   before(async () => {
     IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
+
+    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
+    testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+
+    const badToken = AccessToken.fromJsonWebTokenString("ThisIsABadToken");
+    badRequestContext = new AuthorizedBackendRequestContext(badToken);
   });
 
   it("Unauthorized requests should cause an obvious error", async () => {
-    const requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
-    const testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, "ReadOnlyTest");
     const testChangeSetId = await IModelVersion.latest().evaluateChangeSet(requestContext, testIModelId, BriefcaseManager.imodelClient);
-
-    const badToken = AccessToken.fromJsonWebTokenString("ThisIsABadToken");
-    const badRequestContext = new AuthorizedBackendRequestContext(badToken);
 
     let error: any;
     try {
@@ -49,5 +54,4 @@ describe("IModelOpen (#integration)", () => {
     assert.equal(401, error.status);
     assert.equal(WSStatus.LoginFailed, error.errorNumber);
   });
-
 });

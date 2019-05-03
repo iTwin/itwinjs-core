@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 import { ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, ProductVersion, UsageType, LogPostingResponse } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
@@ -282,104 +282,31 @@ export class IModelDb extends IModel implements PageableECSql {
     try {
       briefcaseEntry = await BriefcaseManager.open(requestContext, contextId, iModelId, openParams, version);
       requestContext.enter();
-    } catch (err) {
+    } catch (error) {
+      requestContext.enter();
       Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ token: requestContext.accessToken.toTokenString(), contextId, iModelId, ...openParams }));
-      throw err;
+      throw error;
     }
-    const iModelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
-    await iModelDb.logUsage(requestContext, contextId);
-    requestContext.enter();
-    IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
+    const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
+    try {
+      const client = new UlasClient();
+      const ulasEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
+      await client.logUsage(requestContext, ulasEntry);
+      requestContext.enter();
+    } catch (error) {
+      requestContext.enter();
+      Logger.logError(loggerCategory, "Could not log usage information", () => imodelDb.iModelToken);
+    }
+    IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
 
     // TODO: Included for temporary debugging using SEQ. To be removed!!
-    if (!IModelDb.find(iModelDb.iModelToken))
-      Logger.logError(loggerCategory, "Error with IModelDb.open. Cannot find briefcase!", () => ({ ...iModelDb.iModelToken, ...openParams }));
+    if (!IModelDb.find(imodelDb.iModelToken))
+      Logger.logError(loggerCategory, "Error with IModelDb.open. Cannot find briefcase!", () => ({ ...imodelDb.iModelToken, ...openParams }));
     else
-      Logger.logTrace(loggerCategory, "Finished IModelDb.open", () => ({ ...iModelDb.iModelToken, ...openParams }));
+      Logger.logTrace(loggerCategory, "Finished IModelDb.open", () => ({ ...imodelDb.iModelToken, ...openParams }));
 
     perfLogger.dispose();
-    return iModelDb;
-  }
-
-  private getApplicationVersion(requestContext: AuthorizedClientRequestContext): ProductVersion {
-    const applicationVersion = requestContext.applicationVersion;
-    const defaultVersion = { major: 1, minor: 0 };
-    if (!applicationVersion) {
-      Logger.logWarning(loggerCategory, "ApplicationVersion was not specified. Set up IModelApp.applicationVersion for frontend applications, or IModelHost.applicationVersion for agents", () => ({ applicationVersion }));
-      return defaultVersion;
-    }
-
-    const versionSplit = applicationVersion.split(".");
-    const length = versionSplit.length;
-    if (length < 2) {
-      Logger.logWarning(loggerCategory, "ApplicationVersion is not valid", () => ({ applicationVersion }));
-      return defaultVersion;
-    }
-
-    const major = parseInt(versionSplit[0], 10);
-    if (typeof major === "undefined") {
-      Logger.logWarning(loggerCategory, "ApplicationVersion is not valid", () => ({ applicationVersion }));
-      return defaultVersion;
-    }
-
-    const minor = parseInt(versionSplit[1], 10);
-    if (typeof minor === "undefined") {
-      Logger.logWarning(loggerCategory, "ApplicationVersion is not valid", () => ({ applicationVersion }));
-      return { major, minor: 0 };
-    }
-
-    let sub1: number | undefined;
-    let sub2: number | undefined;
-    if (length > 2) {
-      sub1 = parseInt(versionSplit[2], 10) || undefined;
-      if (length > 3 && sub1) {
-        sub2 = parseInt(versionSplit[3], 10) || undefined;
-      }
-    }
-
-    return { major, minor, sub1, sub2 };
-  }
-
-  private getApplicationId(requestContext: AuthorizedClientRequestContext): number {
-    const defaultId = 2686; // iModel.js
-    if (!requestContext.applicationId) {
-      Logger.logWarning(loggerCategory, "ApplicationId was not specified. Set up IModelApp.applicationId for frontend applications, or IModelHost.applicationId for agents");
-      return defaultId;
-    }
-
-    return parseInt(requestContext.applicationId, 10) || defaultId;
-  }
-
-  private async logUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString): Promise<void> {
-    requestContext.enter();
-    const client = new UlasClient();
-    let status: BentleyStatus;
-    try {
-      const ulasEntry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
-      ulasEntry.projectId = contextId;
-      ulasEntry.productId = this.getApplicationId(requestContext);
-      ulasEntry.productVersion = this.getApplicationVersion(requestContext);
-
-      if (!requestContext.accessToken.isJwt) {
-        const userInfo = requestContext.accessToken.getUserInfo();
-        const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
-        ulasEntry.userInfo = {
-          imsId: !userInfo ? "" : userInfo.id,
-          ultimateSite: !featureTrackingInfo ? 0 : parseInt(featureTrackingInfo.ultimateSite, 10),
-          usageCountryIso: !featureTrackingInfo ? "" : featureTrackingInfo.usageCountryIso,
-        };
-      }
-
-      const resp: LogPostingResponse = await client.logUsage(requestContext, ulasEntry);
-      requestContext.enter();
-      status = resp ? resp.status : BentleyStatus.ERROR;
-    } catch (error) {
-      status = BentleyStatus.ERROR;
-    }
-
-    if (status !== BentleyStatus.SUCCESS) {
-      Logger.logError(loggerCategory, "Could not log usage information", () => this.iModelToken);
-    }
+    return imodelDb;
   }
 
   /** Close this standalone iModel, if it is currently open

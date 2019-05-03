@@ -5,7 +5,6 @@
 import { assert } from "chai";
 import { GuidString, Guid, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "../Token";
-import { UserInfo } from "../UserInfo";
 import { UlasClient, UsageLogEntry, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, LogPostingResponse, UsageType } from "../ulas/UlasClient";
 import { TestConfig } from "./TestConfig";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
@@ -13,34 +12,18 @@ import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContex
 import * as os from "os";
 
 describe("UlasClient - SAML Token (#integration)", () => {
-  let requestContext: AuthorizedClientRequestContext;
   const client: UlasClient = new UlasClient();
+  let accessToken: AccessToken;
 
   before(async function (this: Mocha.IHookCallbackContext) {
     const authToken = await TestConfig.login();
-    const accessToken = await client.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    accessToken = await client.getAccessToken(new ClientRequestContext(), authToken);
   });
 
-  function populateUserInfo(entry: UsageLogEntry | FeatureLogEntry, userInfo?: UserInfo, hostUserName?: string): void {
-    if (!userInfo)
-      return;
-
-    const featureTrackingInfo = userInfo.featureTracking;
-
-    const imsId: GuidString = userInfo.id;
-    const ultimateSite: number = !featureTrackingInfo ? 0 : parseInt(featureTrackingInfo.ultimateSite, 10);
-    const usageCountryIso: string = !featureTrackingInfo ? "" : featureTrackingInfo.usageCountryIso;
-
-    entry.userInfo = { imsId, ultimateSite, usageCountryIso, hostUserName };
-  }
-
   it("Post usage log (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5.99");
     for (const usageType of [UsageType.Beta, UsageType.HomeUse, UsageType.PreActivation, UsageType.Production, UsageType.Trial]) {
       const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), usageType);
-      populateUserInfo(entry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-      entry.productId = 43;
-      entry.productVersion = { major: 3, minor: 4, sub1: 5, sub2: 99 };
 
       const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
       assert(resp);
@@ -52,11 +35,9 @@ describe("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post usage log with project id (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "0.4");
     const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
-    populateUserInfo(entry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
     entry.projectId = Guid.createValue();
-    entry.productId = 43;
-    entry.productVersion = { major: 0, minor: 4 };
 
     const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
     assert(resp);
@@ -67,10 +48,9 @@ describe("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post usage log without product version (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
-    populateUserInfo(entry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
     entry.projectId = Guid.createValue();
-    entry.productId = 43;
 
     const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
     assert(resp);
@@ -81,13 +61,11 @@ describe("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post usage log - hostName and hostUserName special cases (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5");
     for (const host of [{ name: "::1", user: os.userInfo().username }, { name: "127.0.0.1", user: os.userInfo().username }, { name: "localhost", user: os.userInfo().username },
     { name: os.hostname(), user: "BENTLEY\\\\me" }, { name: os.hostname(), user: "BENTLEY/me" }, { name: os.hostname(), user: "Administrator" },
     { name: os.hostname(), user: "system" }, { name: os.hostname(), user: "" }, { name: os.hostname() }]) {
       const entry: UsageLogEntry = new UsageLogEntry(host.name, UsageType.Beta);
-      populateUserInfo(entry, requestContext.accessToken.getUserInfo(), host.user);
-      entry.productId = 43;
-      entry.productVersion = { major: 3, minor: 4, sub1: 5 };
 
       const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
       assert(resp);
@@ -99,10 +77,8 @@ describe("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Invalid usage log entry (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5.101");
     let entry: UsageLogEntry = new UsageLogEntry("", UsageType.HomeUse);
-    populateUserInfo(entry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    entry.productId = 43;
-    entry.productVersion = { major: 3, minor: 4, sub1: 5, sub2: 101 };
 
     let hasThrown: boolean = false;
     try {
@@ -113,9 +89,6 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isTrue(hasThrown, "UlasClient.logUsage is expected to throw if hostName is not specified.");
 
     entry = new UsageLogEntry(os.hostname(), 100 as UsageType);
-    populateUserInfo(entry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    entry.productId = 43;
-    entry.productVersion = { major: 3, minor: 4, sub1: 5, sub2: 101 };
 
     hasThrown = false;
     try {
@@ -158,12 +131,9 @@ describe("UlasClient - SAML Token (#integration)", () => {
 
       }
 
-      const tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken);
+      let tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.5.101");
 
       const uEntry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
-      populateUserInfo(uEntry, tempAccessToken.getUserInfo(), os.userInfo().username);
-      uEntry.productId = 43;
-      uEntry.productVersion = { major: 3, minor: 4, sub1: 5, sub2: 101 };
 
       let hasThrown: boolean = false;
       try {
@@ -174,9 +144,8 @@ describe("UlasClient - SAML Token (#integration)", () => {
       assert.equal(hasThrown, mode !== TokenMode.Valid, "UlasClient.logUsage is expected to throw if access token does not have valid user profile info.");
 
       const fEntry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial);
-      populateUserInfo(fEntry, tempAccessToken.getUserInfo(), os.userInfo().username);
-      fEntry.productId = 43;
-      fEntry.productVersion = { major: 3, minor: 4, sub1: 99 };
+
+      tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.99");
 
       hasThrown = false;
       try {
@@ -189,13 +158,11 @@ describe("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post feature log (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
     const myFeatureId: GuidString = Guid.createValue();
 
     for (const usageType of [UsageType.Beta, UsageType.HomeUse, UsageType.PreActivation, UsageType.Production, UsageType.Trial]) {
       const entry = new FeatureLogEntry(myFeatureId, os.hostname(), usageType);
-      populateUserInfo(entry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-      entry.productId = 43;
-      entry.productVersion = { major: 3, minor: 4, sub1: 99 };
 
       const resp: LogPostingResponse = await client.logFeature(requestContext, entry);
       assert(resp);
@@ -207,10 +174,8 @@ describe("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post feature log with project id (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
     const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial);
-    populateUserInfo(entry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    entry.productId = 43;
-    entry.productVersion = { major: 3, minor: 4, sub1: 99 };
     entry.projectId = Guid.createValue();
     entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
     const resp: LogPostingResponse = await client.logFeature(requestContext, entry);
@@ -222,9 +187,8 @@ describe("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post feature log without product version (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial);
-    populateUserInfo(entry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    entry.productId = 43;
     entry.projectId = Guid.createValue();
     entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
     const resp: LogPostingResponse = await client.logFeature(requestContext, entry);
@@ -236,13 +200,11 @@ describe("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post feature log - hostName and hostUserName special cases (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5.99");
     for (const host of [{ name: "::1", user: os.userInfo().username }, { name: "127.0.0.1", user: os.userInfo().username }, { name: "localhost", user: os.userInfo().username },
     { name: os.hostname(), user: "BENTLEY\\\\me" }, { name: os.hostname(), user: "BENTLEY/me" }, { name: os.hostname(), user: "Administrator" },
     { name: os.hostname(), user: "system" }]) {
       const entry = new FeatureLogEntry(Guid.createValue(), host.name, UsageType.Beta);
-      populateUserInfo(entry, requestContext.accessToken.getUserInfo(), host.user);
-      entry.productId = 43;
-      entry.productVersion = { major: 3, minor: 4, sub1: 5, sub2: 99 };
       entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
       const resp: LogPostingResponse = await client.logFeature(requestContext, entry);
       assert(resp);
@@ -254,18 +216,15 @@ describe("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post multiple feature logs (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    let requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
     const feature1Id: GuidString = Guid.createValue();
     const feature2Id: GuidString = Guid.createValue();
     const entry1 = new FeatureLogEntry(feature1Id, os.hostname(), UsageType.HomeUse);
-    populateUserInfo(entry1, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    entry1.productId = 43;
-    entry1.productVersion = { major: 3, minor: 4, sub1: 99 };
     entry1.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
 
     // omit product version in second entry
+    requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const entry2 = new FeatureLogEntry(feature2Id, os.hostname(), UsageType.Beta);
-    populateUserInfo(entry2, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    entry2.productId = 43;
     entry2.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 400 });
     const resp: LogPostingResponse = await client.logFeature(requestContext, entry1, entry2);
     assert(resp);
@@ -285,11 +244,9 @@ describe("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post duration feature log (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    let requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4");
     const myFeatureId: GuidString = Guid.createValue();
     let startEntry = new FeatureStartedLogEntry(myFeatureId, os.hostname(), UsageType.Beta);
-    populateUserInfo(startEntry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    startEntry.productId = 43;
-    startEntry.productVersion = { major: 3, minor: 4 };
     startEntry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "user", value: "123-123" });
 
     let startResp: LogPostingResponse = await client.logFeature(requestContext, startEntry);
@@ -307,9 +264,6 @@ describe("UlasClient - SAML Token (#integration)", () => {
 
     // once more, now with building end entry from scratch
     startEntry = new FeatureStartedLogEntry(myFeatureId, os.hostname(), UsageType.HomeUse);
-    populateUserInfo(startEntry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    startEntry.productId = 43;
-    startEntry.productVersion = { major: 3, minor: 4 };
     startEntry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "user", value: "123-123" });
     startResp = await client.logFeature(requestContext, startEntry);
     assert(startResp);
@@ -317,10 +271,8 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.equal(startResp.message, "Accepted");
     assert.isAtLeast(startResp.time, 0);
 
+    requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "32", "3.4");
     endEntry = new FeatureEndedLogEntry(myFeatureId, startEntry.entryId, os.hostname(), UsageType.HomeUse);
-    populateUserInfo(endEntry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    endEntry.productId = 32;
-    endEntry.productVersion = { major: 3, minor: 4 };
     endResp = await client.logFeature(requestContext, endEntry);
     assert(endResp);
     assert.equal(endResp.status, BentleyStatus.SUCCESS);
@@ -329,10 +281,9 @@ describe("UlasClient - SAML Token (#integration)", () => {
   });
 
   it("Post duration feature log without product version (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    let requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const myFeatureId: GuidString = Guid.createValue();
     let startEntry = new FeatureStartedLogEntry(myFeatureId, os.hostname(), UsageType.Beta);
-    populateUserInfo(startEntry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    startEntry.productId = 43;
     startEntry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "user", value: "123-123" });
 
     let startResp: LogPostingResponse = await client.logFeature(requestContext, startEntry);
@@ -350,8 +301,6 @@ describe("UlasClient - SAML Token (#integration)", () => {
 
     // once more, now with building end entry from scratch
     startEntry = new FeatureStartedLogEntry(myFeatureId, os.hostname(), UsageType.HomeUse);
-    populateUserInfo(startEntry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    startEntry.productId = 43;
     startEntry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "user", value: "123-123" });
     startResp = await client.logFeature(requestContext, startEntry);
     assert(startResp);
@@ -359,14 +308,12 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.equal(startResp.message, "Accepted");
     assert.isAtLeast(startResp.time, 0);
 
+    requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "32");
     endEntry = new FeatureEndedLogEntry(myFeatureId, startEntry.entryId, os.hostname(), UsageType.HomeUse);
-    populateUserInfo(endEntry, requestContext.accessToken.getUserInfo(), os.userInfo().username);
-    endEntry.productId = 32;
     endResp = await client.logFeature(requestContext, endEntry);
     assert(endResp);
     assert.equal(endResp.status, BentleyStatus.SUCCESS);
     assert.equal(endResp.message, "Accepted");
     assert.isAtLeast(endResp.time, 0);
   });
-
 });

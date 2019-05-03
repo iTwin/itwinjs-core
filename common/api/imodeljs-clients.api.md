@@ -578,13 +578,10 @@ export class FeatureLogEntry {
     constructor(featureId: GuidString, hostName: string, usageType: UsageType);
     readonly featureId: GuidString;
     readonly hostName: string;
-    productId?: number;
-    productVersion?: ProductVersion;
     projectId?: GuidString;
     readonly timestamp: string;
     usageData: FeatureLogEntryAttribute[];
     readonly usageType: UsageType;
-    userInfo?: UsageUserInfo;
 }
 
 // @internal
@@ -1151,9 +1148,9 @@ export interface LockUpdateOptions {
 // @internal (undocumented)
 export class LogEntryConverter {
     // (undocumented)
-    static toFeatureLogJson(entries: FeatureLogEntry[]): FeatureLogEntryJson[];
+    static toFeatureLogJson(requestContext: AuthorizedClientRequestContext, entries: FeatureLogEntry[]): FeatureLogEntryJson[];
     // (undocumented)
-    static toUsageLogJson(entry: UsageLogEntry): UsageLogEntryJson;
+    static toUsageLogJson(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): UsageLogEntryJson;
     }
 
 // @public
@@ -1738,12 +1735,9 @@ export class UrlDiscoveryClient extends Client {
 export class UsageLogEntry {
     constructor(hostName: string, usageType: UsageType);
     readonly hostName: string;
-    productId?: number;
-    productVersion?: ProductVersion;
     projectId?: GuidString;
     readonly timestamp: string;
     readonly usageType: UsageType;
-    userInfo?: UsageUserInfo;
 }
 
 // @internal
@@ -1779,15 +1773,6 @@ export enum UsageType {
     Production = 0,
     // (undocumented)
     Trial = 1
-}
-
-// @internal
-export interface UsageUserInfo {
-    // (undocumented)
-    hostUserName?: string;
-    imsId: GuidString;
-    ultimateSite: number;
-    usageCountryIso: string;
 }
 
 // @beta

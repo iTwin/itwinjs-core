@@ -134,8 +134,8 @@ export class IModelApp {
 
     // Initialize basic application details before log messages are sent out
     this.sessionId = Guid.createValue();
-    if (!IModelApp.applicationId) IModelApp.applicationId = "2686";  // Default to product id of iModel.js
-    if (!IModelApp.applicationVersion) IModelApp.applicationVersion = this.getApplicationVersion();
+    if (!this.applicationId) this.applicationId = "2686";  // Default to product id of iModel.js
+    if (!this.applicationVersion) this.applicationVersion = this.getApplicationVersion();
 
     if (imodelClient !== undefined)
       this._imodelClient = imodelClient;
@@ -157,7 +157,7 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!IModelApp.settings) IModelApp.settings = new ConnectSettingsClient(IModelApp.applicationId);
+    if (!IModelApp.settings) IModelApp.settings = new ConnectSettingsClient(this.applicationId);
     if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem(renderSysOpt);
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.tileAdmin) IModelApp.tileAdmin = TileAdmin.create();
@@ -226,9 +226,9 @@ export class IModelApp {
       }
       return {
         id,
-        applicationId: IModelApp.applicationId,
-        applicationVersion: IModelApp.applicationVersion,
-        sessionId: IModelApp.sessionId,
+        applicationId: this.applicationId,
+        applicationVersion: this.applicationVersion,
+        sessionId: this.sessionId,
         authorization,
         userId,
       };

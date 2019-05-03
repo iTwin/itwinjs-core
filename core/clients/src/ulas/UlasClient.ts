@@ -36,25 +36,6 @@ export interface ProductVersion {
   sub2?: number;
 }
 
-/** Information about the user for who usage is tracked with the ULAS Posting Service.
- * See [[UsageLogEntry]] and [[FeatureLogEntry]] for how to use it.
- * > You do not have to pass this to [[UlasClient]], if you have an OIDC access token from
- * > a client registration that includes the ULAS scope in its audiences.
- * @internal
- */
-export interface UsageUserInfo {
-  /** IMS User ID */
-  imsId: GuidString;
-  /** Ultimate ID, i.e. company ID in SAP */
-  ultimateSite: number;
-  /** Identifies the country where the client reporting the usage belongs to. */
-  usageCountryIso: string;
-  /* The user's login name.
-  * > If omitted, the IMS user id will be used.
-  */
-  hostUserName?: string;
-}
-
 /**
  * Usage log entry data that is submitted to the ULAS Posting Service.
  * See also
@@ -67,23 +48,8 @@ export class UsageLogEntry {
   /** The GUID of the project that the usage should be associated with. */
   public projectId?: GuidString;
 
-  /** Information about the user for which usage is logged.
-   * > This can be omitted if the OIDC access token includes the information already.
-   * > This means the OIDC client registration must include the ULAS scope in its audiences.
-   */
-  public userInfo?: UsageUserInfo;
-
   /** Name of the client machine from which usage is logged */
   public readonly hostName: string;
-
-  /** The product ID from the Global Product Registry (GPR) for which usage is being submitted. It is a 4-digit number.
-   * > It can be omitted if the access token is an OIDC token which includes the client_id. In that case, ULAS will
-   * > determine the GPR product ID from the client_id.
-   */
-  public productId?: number;
-
-  /** Version of the product for which usage is logged. */
-  public productVersion?: ProductVersion;
 
   /** The type of usage that occurred on the client. It is acting as a filter to eliminate records from log processing that
    * should not count towards a customer’s peak processing.
@@ -135,23 +101,8 @@ export class FeatureLogEntry {
   /** Additional user-defined metadata for the feature usage. */
   public usageData: FeatureLogEntryAttribute[];
 
-  /** Information about the user for which usage is logged.
-   * > This can be omitted if the OIDC access token includes the information already.
-   * > This means the OIDC client registration must include the ULAS scope in its audiences.
-   */
-  public userInfo?: UsageUserInfo;
-
   /** Name of the client machine from which usage is logged. */
   public readonly hostName: string;
-
-  /** Version of the product for which the feature is logged. */
-  public productVersion?: ProductVersion;
-
-  /** The product ID from the Global Product Registry (GPR) for which usage is being submitted. It is a 4-digit number.
-   * > It can be omitted if the access token is an OIDC token which includes the client_id. In that case, ULAS will
-   * > determine the GPR product ID from the client_id.
-   */
-  public productId?: number;
 
   /** The type of usage that occurred on the client. It is acting as a filter to eliminate records from log processing that
    * should not count towards a customer’s peak processing.
@@ -240,9 +191,6 @@ export class FeatureEndedLogEntry extends FeatureLogEntry {
 
     endEntry.projectId = startEntry.projectId;
     endEntry.usageData = startEntry.usageData;
-    endEntry.productId = startEntry.productId;
-    endEntry.productVersion = startEntry.productVersion;
-    endEntry.userInfo = startEntry.userInfo;
 
     return endEntry;
   }
@@ -314,12 +262,13 @@ export class UlasClient extends Client {
   /**
    * Logs usage via the ULAS service
    * @param requestContext The client request context.
-   * @param entry Usage log entry.
+   * @param hostName The client host name.
+   * @param usageType The client usage type
    * @returns Response from the service.
    */
   public async logUsage(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): Promise<LogPostingResponse> {
     requestContext.enter();
-    const entryJson: UsageLogEntryJson = LogEntryConverter.toUsageLogJson(entry);
+    const entryJson: UsageLogEntryJson = LogEntryConverter.toUsageLogJson(requestContext, entry);
     return this.logEntry(requestContext, entryJson, false);
   }
 
@@ -334,7 +283,7 @@ export class UlasClient extends Client {
     if (entries.length === 0)
       throw new Error("At least one FeatureLogEntry must be passed to UlasClient.logFeatures.");
 
-    const entriesJson: FeatureLogEntryJson[] = LogEntryConverter.toFeatureLogJson(entries);
+    const entriesJson: FeatureLogEntryJson[] = LogEntryConverter.toFeatureLogJson(requestContext, entries);
     return this.logEntry(requestContext, entriesJson, true);
   }
 
