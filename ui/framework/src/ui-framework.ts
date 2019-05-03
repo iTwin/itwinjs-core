@@ -131,6 +131,7 @@ export * from "./ui-framework/theme/ThemeManager";
 export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/redux-ts";
 export * from "./ui-framework/utils/PropsHelper";
+export * from "./ui-framework/utils/UiShowHideManager";
 
 export * from "./ui-framework/syncui/SyncUiEventDispatcher";
 export * from "./ui-framework/syncui/BooleanListener";

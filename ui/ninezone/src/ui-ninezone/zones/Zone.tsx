@@ -21,6 +21,8 @@ export interface ZoneProps extends CommonProps {
   children?: React.ReactNode;
   /** Describes if the zone is in footer mode. */
   isInFooterMode?: boolean;
+  /** Describes if the zone component is hidden. */
+  isHidden?: boolean;
 }
 
 /** Zone component of 9-Zone UI app.
@@ -31,6 +33,7 @@ export class Zone extends React.PureComponent<ZoneProps> {
     const className = classnames(
       "nz-zones-zone",
       this.props.isInFooterMode && "nz-footer-mode",
+      this.props.isHidden && "nz-hidden",
       this.props.className);
 
     const style: React.CSSProperties = {

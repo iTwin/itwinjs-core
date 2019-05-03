@@ -5,6 +5,7 @@
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "@bentley/ui-core/lib/ui-core/_z-index";
 @import "_variables";
+@import "../widgetopacity";
 
 .nz-footer-footer {
   position: relative;
@@ -40,4 +41,11 @@
       height: 100%;
     }
   }
+
+  &:not(.nz-footer-mode) {
+    > div {
+      @include nz-widget-opacity;
+    }
+  }
+
 }

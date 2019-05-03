@@ -13,6 +13,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentGroup } from "./ContentGroup";
 import { ContentViewManager, ActiveContentChangedEventArgs } from "./ContentViewManager";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 import "./ContentLayout.scss";
 
@@ -96,6 +97,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
     return (
       <div className={classnames("uifw-contentlayout-wrapper", this.props.className)} style={this.props.style}
         onMouseDown={this._handleMouseDown}
+        onMouseMove={UiShowHideManager.handleContentMouseMove}
       >
         {this.state.content}
         <div className={overlayClassName} />
@@ -272,7 +274,9 @@ class SingleContentContainer extends React.Component<SingleContentProps> {
 
   public render(): React.ReactNode {
     return (
-      <div className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style}>
+      <div className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style} data-testid="single-content-container"
+        onMouseMove={UiShowHideManager.handleContentMouseMove}
+      >
         {this.props.content}
       </div>
     );
@@ -613,7 +617,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
   public render(): React.ReactNode {
     if (this.state.contentContainer) {
       const className = classnames(
-        (this.props.isInFooterMode && this.state.isUiVisible) ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode",
+        (this.props.isInFooterMode && (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode",
         this.props.className,
       );
 

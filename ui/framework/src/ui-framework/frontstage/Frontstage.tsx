@@ -18,6 +18,7 @@ import { Zone, ZoneProps, ZoneRuntimeProps, ZoneLocation } from "../zones/Zone";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { StagePanelProps, StagePanel, StagePanelLocation, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { WidgetDef, WidgetStateChangedEventArgs, WidgetState } from "../widgets/WidgetDef";
 import { FrontstageManager } from "./FrontstageManager";
 
@@ -279,7 +280,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   private cloneStagePanelElement(panelDef: StagePanelDef | undefined): React.ReactNode {
-    if (!this.state.isUiVisible)
+    if (!this.state.isUiVisible && UiShowHideManager.showHidePanels)
       return null;
 
     if (panelDef) {
@@ -330,6 +331,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         isDragged,
         lastPosition,
         isUnmergeDrag,
+        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ? false : !this.state.isUiVisible,
       };
       return React.cloneElement(zoneElement, { key: zoneId, runtimeProps: zoneRuntimeProps });
     });
@@ -453,7 +455,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
             <div style={ninezoneStyle} id="uifw-ninezone-area">
               {this.doContentLayoutRender()}
 
-              <NZ_Zones style={zonesStyle} isHidden={!this.state.isUiVisible}>
+              <NZ_Zones style={zonesStyle}>
                 {this.cloneZoneElements(zones, nineZone, runtimeProps)}
                 {this.cloneWidgetContentElements(zones, nineZone, runtimeProps)}
               </NZ_Zones>

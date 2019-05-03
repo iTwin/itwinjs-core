@@ -37,7 +37,7 @@
   "messageCenter": {
     "messages": "Messages",
     "all": "All",
-    "problems": "Problems",
+    "errors": "Errors",
     "prompt": "No messages.",
     "export": "Export"
   },

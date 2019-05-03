@@ -1,0 +1,13 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+
+@mixin nz-widget-opacity {
+  opacity: $buic-widget-opacity;
+
+  &:hover {
+    opacity: 1.00;
+  }
+}

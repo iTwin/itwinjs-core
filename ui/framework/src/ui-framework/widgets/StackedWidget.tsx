@@ -8,6 +8,7 @@ import * as React from "react";
 
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { Icon } from "../shared/IconComponent";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 import {
   Stacked as NZ_StackedWidget, HorizontalAnchor, VerticalAnchor,
@@ -103,6 +104,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
         ref={this._widget}
         tabs={tabs}
         verticalAnchor={this.props.verticalAnchor}
+        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
       />
     );
   }

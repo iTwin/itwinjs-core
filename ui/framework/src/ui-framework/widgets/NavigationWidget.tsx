@@ -21,6 +21,7 @@ import { Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { ContentControlActivatedEventArgs } from "../content/ContentControl";
 import { CommonProps } from "@bentley/ui-core";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 /** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  * @public
@@ -210,6 +211,7 @@ class NavigationWidgetWithDef extends React.Component<Props> {
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
         preserveSpace={true}
+        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
       />
     );
   }

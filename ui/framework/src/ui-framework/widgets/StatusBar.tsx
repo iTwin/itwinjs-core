@@ -20,6 +20,7 @@ import { MessageContainer, MessageSeverity, SmallText, CommonProps } from "@bent
 
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 import "./StatusBar.scss";
 
@@ -107,6 +108,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       <Footer
         messages={this.getFooterMessage()}
         isInFooterMode={this.props.isInFooterMode}
+        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
       >
         {footerSections}
       </Footer>

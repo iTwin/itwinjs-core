@@ -18,6 +18,7 @@ import { FrontstageProvider } from "./FrontstageProvider";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 import { ContentLayoutActivatedEvent } from "../content/ContentLayout";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -243,6 +244,7 @@ export class FrontstageManager {
       FrontstageManager._isLoading = false;
       frontstageDef.onFrontstageReady();
       FrontstageManager.onFrontstageReadyEvent.emit({ frontstageDef });
+      UiShowHideManager.handleFrontstageReady();
 
       frontstageDef.startDefaultTool();
 
@@ -330,6 +332,8 @@ export class FrontstageManager {
   private static popModalFrontstage(): void {
     FrontstageManager._modalFrontstages.pop();
     FrontstageManager.emitModalFrontstageChangedEvent();
+
+    UiShowHideManager.handleFrontstageReady();
   }
 
   private static emitModalFrontstageChangedEvent(): void {

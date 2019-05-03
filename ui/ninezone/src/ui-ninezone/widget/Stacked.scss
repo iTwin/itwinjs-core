@@ -5,6 +5,7 @@
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "@bentley/ui-core/lib/ui-core/_z-index";
 @import "_variables";
+@import "../widgetopacity";
 
 .nz-widget-stacked {
   $min-height: 200px;
@@ -13,6 +14,8 @@
   display: flex;
   max-height: 100%;
   position: relative;
+
+  @include nz-widget-opacity;
 
   > .nz-height-expander {
     display: flex;

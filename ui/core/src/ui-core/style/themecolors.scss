@@ -93,3 +93,6 @@ $buic-accessory-success-tint:             var(--buic-accessory-success-tint);
 $buic-accessory-alert-tint:               var(--buic-accessory-alert-tint);
 $buic-accessory-warning-tint:             var(--buic-accessory-warning-tint);
 $buic-foreground-mediumgray:              var(--buic-foreground-mediumgray);
+
+/** Widget Opacity */
+$buic-widget-opacity:                     var(--buic-widget-opacity, 0.90);

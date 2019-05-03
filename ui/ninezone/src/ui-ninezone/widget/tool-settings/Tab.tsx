@@ -21,6 +21,10 @@ export interface ToolSettingsTabProps extends CommonProps {
   onKeyDown?: (e: React.KeyboardEvent) => void;
   /** Tab title. */
   title?: string;
+  /** Handler for mouse enter */
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  /** Handler for mouse leave */
+  onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
 /** Tool settings widget tab is displayed when the [[ToolSettings]] widget is closed.
@@ -40,6 +44,8 @@ export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
         onKeyDown={this.props.onKeyDown}
         style={this.props.style}
         title={this.props.title}
+        onMouseEnter={this.props.onMouseEnter}
+        onMouseLeave={this.props.onMouseLeave}
       >
         {this.props.children}
       </button>

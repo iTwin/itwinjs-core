@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "./tools/button/_variables";
+@import "../widgetopacity";
 
 .nz-widget-tools {
   display: grid;
@@ -46,15 +47,18 @@
   > .nz-app-button {
     grid-area: button;
     pointer-events: auto;
+    @include nz-widget-opacity;
   }
 
   > .nz-horizontal-toolbar {
     grid-area: htools;
     pointer-events: auto;
+    @include nz-widget-opacity;
   }
 
   > .nz-vertical-toolbar {
     grid-area: vtools;
     pointer-events: auto;
+    @include nz-widget-opacity;
   }
 }

@@ -18,6 +18,7 @@ export enum ConfigurableUiActionId {
   SetSnapMode = "configurableui:set_snapmode",
   SetToolPrompt = "configurableui:set_toolprompt",
   SetTheme = "configurableui:set_theme",
+  SetWidgetOpacity = "configurableui:set_widget_opacity",
 }
 
 /** The portion of state managed by the ConfigurableUiReducer.
@@ -27,6 +28,7 @@ export interface ConfigurableUiState {
   snapMode: number;
   toolPrompt: string;
   theme: string;
+  widgetOpacity: number;
 }
 
 /** used on first call of ConfigurableUiReducer */
@@ -34,6 +36,7 @@ const initialState: ConfigurableUiState = {
   snapMode: SnapMode.NearestKeypoint as number,
   toolPrompt: "",
   theme: COLOR_THEME_DEFAULT,
+  widgetOpacity: 0.90,
 };
 
 /** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer.
@@ -43,6 +46,7 @@ export const ConfigurableUiActions = {   // tslint:disable-line:variable-name
   setSnapMode: (snapMode: number) => createAction(ConfigurableUiActionId.SetSnapMode, snapMode),
   setToolPrompt: (toolPrompt: string) => createAction(ConfigurableUiActionId.SetToolPrompt, toolPrompt),
   setTheme: (theme: string) => createAction(ConfigurableUiActionId.SetTheme, theme),
+  setWidgetOpacity: (opacity: number) => createAction(ConfigurableUiActionId.SetWidgetOpacity, opacity),
 };
 
 /** Union of ConfigurableUi Redux actions
@@ -65,8 +69,16 @@ export function ConfigurableUiReducer(state: ConfigurableUiState = initialState,
         return { ...state, toolPrompt: _action.payload };
       break;
     }
-    case ConfigurableUiActionId.SetTheme:
-      return { ...state, theme: _action.payload };
+    case ConfigurableUiActionId.SetTheme: {
+      if (undefined !== _action.payload)
+        return { ...state, theme: _action.payload };
+      break;
+    }
+    case ConfigurableUiActionId.SetWidgetOpacity: {
+      if (undefined !== _action.payload)
+        return { ...state, widgetOpacity: _action.payload };
+      break;
+    }
   }
 
   return state;

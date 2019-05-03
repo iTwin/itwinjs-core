@@ -70,6 +70,7 @@ export interface ZoneRuntimeProps {
   isDragged: boolean | undefined;
   lastPosition: PointProps | undefined;
   isUnmergeDrag: boolean;
+  isHidden: boolean;
 }
 
 /** Zone React component.
@@ -129,7 +130,8 @@ export class Zone extends React.Component<ZoneProps> {
           <ToolSettingsZone
             className={this.props.className}
             style={this.props.style}
-            bounds={runtimeProps.zoneProps.bounds} />
+            bounds={runtimeProps.zoneProps.bounds}
+            isHidden={runtimeProps.isHidden} />
         );
       } else if (zoneDef.isStatusBar) {
         if (!isStatusZone(runtimeProps.zoneProps))
@@ -152,6 +154,7 @@ export class Zone extends React.Component<ZoneProps> {
             targetChangeHandler={runtimeProps.targetChangeHandler}
             targetedBounds={runtimeProps.ghostOutline}
             dropTarget={runtimeProps.dropTarget}
+            isHidden={runtimeProps.isHidden}
           />
         );
       }
@@ -174,6 +177,7 @@ export class Zone extends React.Component<ZoneProps> {
         lastPosition={runtimeProps.lastPosition}
         isUnmergeDrag={runtimeProps.isUnmergeDrag}
         fillZone={zoneDef.shouldFillZone}
+        isHidden={runtimeProps.isHidden}
       />
     );
   }

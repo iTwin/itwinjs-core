@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "_variables";
+@import "../../widgetopacity";
 
 .nz-widget-toolSettings-tab {
   width: $nz-tab-width;
@@ -18,6 +19,8 @@
   transition: all 500ms ease;
   color: $nz-tab-color;
   margin: 0 auto;
+
+  @include nz-widget-opacity;
 
   border: {
     width: $nz-widget-border-width;

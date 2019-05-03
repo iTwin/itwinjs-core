@@ -17,6 +17,7 @@ import { FrontstageManager, ToolActivatedEventArgs } from "../../frontstage/Fron
 import { ToolUiManager } from "../toolsettings/ToolUiManager";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../../UiFramework";
+import { UiShowHideManager } from "../../utils/UiShowHideManager";
 
 /** State for the ToolSettingsZone content.
  */
@@ -39,6 +40,7 @@ interface ToolSettingsZoneState {
  */
 export interface ToolSettingsZoneProps extends CommonProps {
   bounds: RectangleProps;
+  isHidden: boolean;
 }
 
 /** Tool Settings Zone React component.
@@ -86,6 +88,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
           className={this.props.className}
           style={this.props.style}
           bounds={this.props.bounds}
+          isHidden={this.props.isHidden}
         >
           <div style={divStyle} >
             {this.getToolSettingsWidget()}
@@ -124,6 +127,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
           onClick={this._processClick}
           onKeyDown={this._handleKeyDown}
           title={title}
+          onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
         >
           {this.getToolSettingsButton()}
         </ToolSettingsTab>
@@ -137,6 +141,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
           </TitleBarButton>,
         ]}
         title={ToolUiManager.activeToolLabel}
+        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
       >
         {FrontstageManager.activeToolSettingsNode}
       </ToolSettings>

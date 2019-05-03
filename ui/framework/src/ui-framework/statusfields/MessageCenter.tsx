@@ -107,7 +107,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
                   isActive={this.state.activeTab === MessageCenterActiveTab.Problems}
                   onClick={() => this._changeActiveTab(MessageCenterActiveTab.Problems)}
                 >
-                  {UiFramework.i18n.translate("UiFramework:messageCenter.problems")}
+                  {UiFramework.i18n.translate("UiFramework:messageCenter.errors")}
                 </MessageCenterTab>
               </>
             }

@@ -116,7 +116,7 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
     };
     return (
       <label ref={(el) => { if (el) this._setHeight(el.clientHeight, el.clientWidth); }} style={toggleStyle} className={toggleClassName}>
-        <input checked={this.props.isOn} className="core-toggle-input" disabled={this.props.disabled} type="checkbox" onChange={this._handleChange} onBlur={this._handleBlur} />
+        <input checked={this.state.checked} className="core-toggle-input" disabled={this.props.disabled} type="checkbox" onChange={this._handleChange} onBlur={this._handleBlur} />
         <span className="core-toggle-label" />
         <span className={checkmarkClassName} />
         <span className="core-toggle-handle" style={toggleHandleStyle} />

@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
+
 import { OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
@@ -17,8 +18,9 @@ import { FrameworkState } from "./FrameworkState";
 import { ConfigurableUiActionId } from "./configurableui/state";
 import { SessionStateActionId } from "./SessionState";
 import { UiEvent } from "@bentley/ui-core";
-import { COLOR_THEME_DEFAULT } from "./theme/ThemeManager";
+import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { Presentation } from "@bentley/presentation-frontend";
+import { UiShowHideManager } from "./utils/UiShowHideManager";
 
 /** UiVisibility Event Args interface.
  * @beta
@@ -51,7 +53,6 @@ export class UiFramework {
   private static _store?: Store<any>;
   private static _complaint = "UiFramework not initialized";
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
-  private static _isUiVisible: boolean = true;
 
   /** Get Show Ui event.
    * @beta
@@ -185,13 +186,15 @@ export class UiFramework {
 
   /** @beta */
   public static getIsUiVisible() {
-    return this._isUiVisible;
+    return UiShowHideManager.isUiVisible;
   }
 
   /** @beta */
   public static setIsUiVisible(visible: boolean) {
-    this._isUiVisible = visible;
-    UiFramework.onUiVisibilityChanged.emit({ visible });
+    if (UiShowHideManager.isUiVisible !== visible) {
+      UiShowHideManager.isUiVisible = visible;
+      UiFramework.onUiVisibilityChanged.emit({ visible });
+    }
   }
 
   /** @beta */
@@ -202,5 +205,15 @@ export class UiFramework {
   /** @beta */
   public static getColorTheme(): string {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : COLOR_THEME_DEFAULT;
+  }
+
+  /** @beta */
+  public static setWidgetOpacity(opacity: number) {
+    UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetWidgetOpacity, payload: opacity });
+  }
+
+  /** @beta */
+  public static getWidgetOpacity(): number {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : WIDGET_OPACITY_DEFAULT;
   }
 }

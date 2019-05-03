@@ -20,6 +20,10 @@ export interface ToolSettingsProps extends CommonProps {
   children?: React.ReactNode;
   /** Tool settings title bar title. */
   title?: string;
+  /** Handler for mouse enter */
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  /** Handler for mouse leave */
+  onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
 /** Tool settings widget is used to display Tool Settings and Tool Assistance (in Zone 2 of 9-Zone UI).
@@ -36,6 +40,8 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
       <div
         className={className}
         style={this.props.style}
+        onMouseEnter={this.props.onMouseEnter}
+        onMouseLeave={this.props.onMouseLeave}
       >
         <TitleBar
           title={this.props.title}

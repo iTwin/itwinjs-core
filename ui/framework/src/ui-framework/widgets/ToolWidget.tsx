@@ -11,6 +11,7 @@ import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { Icon } from "../shared/IconComponent";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 import { AppButton, Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
@@ -149,6 +150,7 @@ class ToolWidgetWithDef extends React.Component<Props> {
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
         preserveSpace={true}
+        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
       />
     );
   }

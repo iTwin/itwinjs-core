@@ -401,6 +401,8 @@ export interface FooterProps extends CommonProps {
     children?: React.ReactNode;
     isInFooterMode?: boolean;
     messages?: React.ReactNode;
+    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
 // @beta
@@ -1605,6 +1607,8 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
     isDragged?: boolean;
     isFloating?: boolean;
     isOpen?: boolean;
+    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     onResize?: (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
     tabs?: React.ReactNode;
     verticalAnchor: VerticalAnchor;
@@ -2003,6 +2007,8 @@ export interface ToolSettingsPopupProps extends CommonProps {
 export interface ToolSettingsProps extends CommonProps {
     buttons?: React.ReactNode;
     children?: React.ReactNode;
+    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
     title?: string;
 }
 
@@ -2017,6 +2023,8 @@ export interface ToolSettingsTabProps extends CommonProps {
     children?: React.ReactNode;
     onClick?: () => void;
     onKeyDown?: (e: React.KeyboardEvent) => void;
+    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     title?: string;
 }
 
@@ -2025,6 +2033,8 @@ export interface ToolsProps extends CommonProps, NoChildrenProps {
     button?: React.ReactNode;
     horizontalToolbar?: React.ReactNode;
     isNavigation?: boolean;
+    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     preserveSpace?: boolean;
     verticalToolbar?: React.ReactNode;
 }
@@ -2421,6 +2431,7 @@ export class ZoneManager {
 export interface ZoneProps extends CommonProps {
     bounds: RectangleProps;
     children?: React.ReactNode;
+    isHidden?: boolean;
     isInFooterMode?: boolean;
 }
 

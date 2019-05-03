@@ -47,6 +47,8 @@ import {
   FrontstageManager,
   CommandItemDef,
   ModelessDialogManager,
+  UiFramework,
+  WIDGET_OPACITY_DEFAULT,
 } from "@bentley/ui-framework";
 
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
@@ -370,6 +372,18 @@ class FrontstageToolWidget extends React.Component {
     ModelessDialogManager.openDialog(dialog, id);
   }
 
+  private get _reduceWidgetOpacity() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.reduceWidgetOpacity", execute: () => { UiFramework.setWidgetOpacity(0.50); },
+    });
+  }
+
+  private get _defaultWidgetOpacity() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.defaultWidgetOpacity", execute: () => { UiFramework.setWidgetOpacity(WIDGET_OPACITY_DEFAULT); },
+    });
+  }
+
   /** example that hides the button if active content is not a 3d View */
   private _anotherGroupStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
     const returnState: BaseItemState = { ...currentState };
@@ -448,7 +462,7 @@ class FrontstageToolWidget extends React.Component {
           <GroupButton
             labelKey="SampleApp:buttons.dialogDemos"
             iconSpec="icon-placeholder"
-            items={[this._radialMenuItem, this._viewportDialogItem]}
+            items={[this._radialMenuItem, this._viewportDialogItem, this._reduceWidgetOpacity, this._defaultWidgetOpacity]}
             direction={Direction.Right}
           />
 

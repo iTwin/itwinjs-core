@@ -6,9 +6,15 @@
 
 .nz-zones-zone {
   position: absolute;
+  transition: visibility 0.5s ease, opacity 0.5s ease;
 
   &:not(.nz-footer-mode) {
     padding: $nz-zone-padding;
     box-sizing: border-box;
+  }
+
+  &.nz-hidden {
+    opacity: 0;
+    visibility: hidden;
   }
 }

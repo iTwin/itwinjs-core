@@ -30,6 +30,10 @@ export interface ToolsProps extends CommonProps, NoChildrenProps {
   verticalToolbar?: React.ReactNode;
   /** Pass true to reduce the distance between toolbars when [[ToolsProps.button]] is not provided. */
   preserveSpace?: boolean;
+  /** Handler for mouse enter */
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  /** Handler for mouse leave */
+  onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
 /** Tools widget is used in Tools (Zone 1) and Navigation (Zone 3) zones of 9-Zone UI.
@@ -51,13 +55,22 @@ export class Tools extends React.PureComponent<ToolsProps> {
 
     return (
       <div className={className} style={this.props.style}>
-        <div className="nz-app-button">
+        <div className="nz-app-button"
+          onMouseEnter={this.props.onMouseEnter}
+          onMouseLeave={this.props.onMouseLeave}
+        >
           {this.props.button}
         </div>
-        <div className="nz-horizontal-toolbar">
+        <div className="nz-horizontal-toolbar"
+          onMouseEnter={this.props.onMouseEnter}
+          onMouseLeave={this.props.onMouseLeave}
+        >
           {this.props.horizontalToolbar}
         </div>
-        <div className="nz-vertical-toolbar">
+        <div className="nz-vertical-toolbar"
+          onMouseEnter={this.props.onMouseEnter}
+          onMouseLeave={this.props.onMouseLeave}
+        >
           {this.props.verticalToolbar}
         </div>
       </div>

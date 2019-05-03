@@ -493,7 +493,9 @@ export enum ConfigurableUiActionId {
     // (undocumented)
     SetTheme = "configurableui:set_theme",
     // (undocumented)
-    SetToolPrompt = "configurableui:set_toolprompt"
+    SetToolPrompt = "configurableui:set_toolprompt",
+    // (undocumented)
+    SetWidgetOpacity = "configurableui:set_widget_opacity"
 }
 
 // @public
@@ -501,6 +503,7 @@ export const ConfigurableUiActions: {
     setSnapMode: (snapMode: number) => import("../utils/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetSnapMode, number>;
     setToolPrompt: (toolPrompt: string) => import("../utils/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetToolPrompt, string>;
     setTheme: (theme: string) => import("../utils/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetTheme, string>;
+    setWidgetOpacity: (opacity: number) => import("../utils/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetWidgetOpacity, number>;
 };
 
 // @public
@@ -591,6 +594,8 @@ export interface ConfigurableUiState {
     theme: string;
     // (undocumented)
     toolPrompt: string;
+    // (undocumented)
+    widgetOpacity: number;
 }
 
 // @public
@@ -1218,7 +1223,7 @@ export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement>
 export const FrameworkReducer: (state: import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./UiFramework").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>>) => import("./utils/redux-ts").CombinedReducerState<{
+}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./UiFramework").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>>) => import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -1258,6 +1263,8 @@ export interface FrameworkZoneProps extends CommonProps {
     horizontalAnchor: HorizontalAnchor;
     // (undocumented)
     isDragged: boolean | undefined;
+    // (undocumented)
+    isHidden: boolean;
     // (undocumented)
     isUnmergeDrag: boolean;
     // (undocumented)
@@ -1725,6 +1732,9 @@ export interface IModelUserInfo {
     // (undocumented)
     lastName: string;
 }
+
+// @internal
+export const INACTIVITY_TIME_DEFAULT = 3500;
 
 // @beta
 export class InputFieldMessage extends React_2.PureComponent<InputFieldMessageProps> {
@@ -2859,6 +2869,8 @@ export interface StatusBarZoneProps extends CommonProps {
     // (undocumented)
     dropTarget: DropTarget;
     // (undocumented)
+    isHidden: boolean;
+    // (undocumented)
     targetChangeHandler: TargetChangeHandler;
     // (undocumented)
     targetedBounds: RectangleProps | undefined;
@@ -3151,6 +3163,8 @@ export class ToolSettingsZone extends React_2.Component<ToolSettingsZoneProps, T
 export interface ToolSettingsZoneProps extends CommonProps {
     // (undocumented)
     bounds: RectangleProps;
+    // (undocumented)
+    isHidden: boolean;
 }
 
 // @public
@@ -3268,6 +3282,8 @@ export class UiFramework {
     static getColorTheme(): string;
     // @beta (undocumented)
     static getIsUiVisible(): boolean;
+    // @beta (undocumented)
+    static getWidgetOpacity(): number;
     // (undocumented)
     static readonly i18n: I18N;
     // @internal (undocumented)
@@ -3287,11 +3303,33 @@ export class UiFramework {
     static setColorTheme(theme: string): void;
     // @beta (undocumented)
     static setIsUiVisible(visible: boolean): void;
+    // @beta (undocumented)
+    static setWidgetOpacity(opacity: number): void;
     // (undocumented)
     static readonly store: Store<any>;
     // (undocumented)
     static terminate(): void;
 }
+
+// @alpha
+export class UiShowHideManager {
+    // (undocumented)
+    static autoHideUi: boolean;
+    // (undocumented)
+    static handleContentMouseMove(_event?: React.MouseEvent<HTMLElement, MouseEvent>): void;
+    // (undocumented)
+    static handleFrontstageReady(): void;
+    // (undocumented)
+    static handleWidgetMouseEnter(_event?: React.MouseEvent<HTMLElement, MouseEvent>): void;
+    // (undocumented)
+    static inactivityTime: number;
+    // (undocumented)
+    static isUiVisible: boolean;
+    // (undocumented)
+    static showHideFooter: boolean;
+    // (undocumented)
+    static showHidePanels: boolean;
+    }
 
 // @beta
 export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> {
@@ -3461,6 +3499,9 @@ export class Widget extends React_2.Component<WidgetProps> {
     // (undocumented)
     render(): null;
 }
+
+// @beta
+export const WIDGET_OPACITY_DEFAULT = 0.9;
 
 // @public
 export interface WidgetChangeHandler {
@@ -3778,6 +3819,8 @@ export interface ZoneRuntimeProps {
     horizontalAnchor: HorizontalAnchor;
     // (undocumented)
     isDragged: boolean | undefined;
+    // (undocumented)
+    isHidden: boolean;
     // (undocumented)
     isUnmergeDrag: boolean;
     // (undocumented)

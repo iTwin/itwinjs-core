@@ -67,6 +67,9 @@ export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileL
   }
 
   public componentDidMount() {
+    if (!IModelApp.viewManager)
+      return;
+
     // get selected viewport
     const vp = IModelApp.viewManager.selectedView;
 
@@ -80,6 +83,9 @@ export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileL
   }
 
   public componentWillUnmount() {
+    if (!IModelApp.viewManager)
+      return;
+
     if (onViewOpen)
       IModelApp.viewManager.onViewOpen.removeListener(onViewOpen);
 

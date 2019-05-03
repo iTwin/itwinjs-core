@@ -93,6 +93,10 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
   tabs?: React.ReactNode;
   /** Describes to which side the widget is vertically anchored. */
   verticalAnchor: VerticalAnchor;
+  /** Handler for mouse enter */
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  /** Handler for mouse leave */
+  onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
 /** Stacked widget is used to display multiple tabs and some content.
@@ -124,6 +128,8 @@ export class Stacked extends React.PureComponent<StackedProps> {
         className={className}
         style={this.props.style}
         ref={this._widget}
+        onMouseEnter={this.props.onMouseEnter}
+        onMouseLeave={this.props.onMouseLeave}
       >
         <div className="nz-content-container">
           <div

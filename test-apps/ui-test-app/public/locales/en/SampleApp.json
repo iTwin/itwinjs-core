@@ -27,8 +27,10 @@
     "settings": "Settings",
     "light": "Light",
     "dark": "Dark",
-    "themeTitle": "THEME",
-    "themeDescription": "Toggle the theme between light and dark"
+    "themeTitle": "Theme",
+    "themeDescription": "Toggle the theme between light and dark",
+    "autoHideTitle": "Auto-Hide UI",
+    "autoHideDescription": "Toggle the auto-hide of UI after inactivity"
   },
   "backstage": {
     "command": "Command",
@@ -127,7 +129,9 @@
     "messageDemos": "Message Demos",
     "dialogDemos": "Dialog Demos",
     "viewportDialog": "Viewport Dialog",
-    "openNestedAnimationStage": "Open Stage to Play Animations"
+    "openNestedAnimationStage": "Open Stage to Play Animations",
+    "reduceWidgetOpacity": "Reduce Widget Opacity",
+    "defaultWidgetOpacity": "Default Widget Opacity"
   },
   "tools": {
     "ToolWithSettings": {

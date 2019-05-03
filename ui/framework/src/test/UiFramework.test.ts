@@ -74,6 +74,14 @@ describe("UiFramework", () => {
 
     TestUtils.terminateUiFramework();
   });
+
+  it("WidgetOpacity", async () => {
+    await TestUtils.initializeUiFramework();
+    const testValue = 0.50;
+    UiFramework.setWidgetOpacity(testValue);
+    expect(UiFramework.getWidgetOpacity()).to.eq(testValue);
+    TestUtils.terminateUiFramework();
+  });
 });
 
 // before we can test setting scope to a valid scope id we must make sure Presentation Manager is initialized.

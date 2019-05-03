@@ -35,6 +35,7 @@ export interface FrameworkZoneProps extends CommonProps {
   lastPosition: PointProps | undefined;
   isUnmergeDrag: boolean;
   fillZone?: boolean;
+  isHidden: boolean;
 }
 
 interface FrameworkZoneState {
@@ -91,6 +92,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
           bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}
           className={this.props.className}
           style={this.props.style}
+          isHidden={this.props.isHidden}
         >
           {this._getWidget()}
         </NZ_Zone>

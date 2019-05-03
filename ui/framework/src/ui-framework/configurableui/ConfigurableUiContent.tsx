@@ -9,16 +9,17 @@ import { connect } from "react-redux";
 
 import { CommonProps } from "@bentley/ui-core";
 
+import { UiFramework } from "../UiFramework";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
+import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 import { ElementTooltip } from "../feedback/ElementTooltip";
 import { FrontstageComposer } from "../frontstage/FrontstageComposer";
-import { PointerMessage } from "../messages/Pointer";
-import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
+import { PointerMessage } from "../messages/Pointer";
+import { FrameworkState } from "../FrameworkState";
 
 import "./configurableui.scss";
-import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 
 /** Properties for [[ConfigurableUiContent]]
  * @public
@@ -29,12 +30,12 @@ export interface ConfigurableUiContentProps extends CommonProps {
 }
 
 function mapStateToProps(state: any) {
-  const frameworkState = state[UiFramework.frameworkStateKey];  // since app sets up key, don't hard-code name
+  const frameworkState = state[UiFramework.frameworkStateKey] as FrameworkState;  // since app sets up key, don't hard-code name
   // istanbul ignore if
   if (!frameworkState)
     return undefined;
 
-  return { placeholder: frameworkState.configurableUiState.placeHolder };
+  return {};
 }
 
 const mapDispatch = {
@@ -59,7 +60,9 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
 
   public render(): JSX.Element | undefined {
     return (
-      <div id="uifw-configurableui-wrapper" className={this.props.className} style={this.props.style} onMouseMove={this._handleMouseMove} >
+      <div id="uifw-configurableui-wrapper" className={this.props.className} style={this.props.style}
+        onMouseMove={this._handleMouseMove}
+      >
         {this.props.appBackstage}
         <FrontstageComposer style={{ position: "relative", height: "100%" }} />
         <ModelessDialogRenderer />

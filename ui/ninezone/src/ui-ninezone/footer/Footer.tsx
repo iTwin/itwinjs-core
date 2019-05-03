@@ -22,6 +22,10 @@ export interface FooterProps extends CommonProps {
   isInFooterMode?: boolean;
   /** Footer messages. I.e. [[Message]], [[Toast]] */
   messages?: React.ReactNode;
+  /** Handler for mouse enter */
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  /** Handler for mouse leave */
+  onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
 /** Footer component. Used in [[StatusZone]] component.
@@ -38,6 +42,8 @@ export class Footer extends React.PureComponent<FooterProps> {
       <div
         className={className}
         style={this.props.style}
+        onMouseEnter={this.props.onMouseEnter}
+        onMouseLeave={this.props.onMouseLeave}
       >
         <div>
           <div className="nz-messages">

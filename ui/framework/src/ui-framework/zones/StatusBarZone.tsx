@@ -22,6 +22,7 @@ export interface StatusBarZoneProps extends CommonProps {
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
   dropTarget: DropTarget;
+  isHidden: boolean;
 }
 
 /** Status Bar Zone React component.
@@ -35,6 +36,7 @@ export class StatusBarZone extends React.Component<StatusBarZoneProps> {
           className={this.props.className}
           style={this.props.style}
           isInFooterMode={this.props.zoneProps.isInFooterMode}
+          isHidden={this.props.isHidden}
           bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}
         >
           {

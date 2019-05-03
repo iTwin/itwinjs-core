@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { Toggle } from "@bentley/ui-core";
-import { UiFramework, ColorTheme, ModalFrontstageInfo } from "@bentley/ui-framework";
+import { UiFramework, ColorTheme, ModalFrontstageInfo, UiShowHideManager } from "@bentley/ui-framework";
 import "./Settings.scss";
 
 /** Modal frontstage displaying the active settings.
@@ -21,6 +21,8 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
 class SettingsPage extends React.Component {
   private _themeTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.themeTitle");
   private _themeDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.themeDescription");
+  private _autoHideTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.autoHideTitle");
+  private _autoHideDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.autoHideDescription");
 
   private _onThemeChange = () => {
     const theme = this._isLightTheme() ? ColorTheme.Dark : ColorTheme.Light;
@@ -31,9 +33,14 @@ class SettingsPage extends React.Component {
     return (UiFramework.getColorTheme() === ColorTheme.Light);
   }
 
+  private _onAutoHideChange = () => {
+    UiShowHideManager.autoHideUi = !UiShowHideManager.autoHideUi;
+  }
+
   public render(): React.ReactNode {
     const isLightTheme = this._isLightTheme();
     const _theme: string = UiFramework.i18n.translate((isLightTheme) ? "SampleApp:settingsStage.light" : "SampleApp:settingsStage.dark");
+
     return (
       <div className="uifw-settings">
         <div className="uifw-settings-item">
@@ -44,6 +51,15 @@ class SettingsPage extends React.Component {
           <div className="panel right-panel">
             <Toggle isOn={isLightTheme} showCheckmark={false} onChange={this._onThemeChange} />
             {_theme}
+          </div>
+        </div>
+        <div className="uifw-settings-item">
+          <div className="panel left-panel">
+            <span className="title">{this._autoHideTitle}</span>
+            <span className="description">{this._autoHideDescription}</span>
+          </div>
+          <div className="panel right-panel">
+            <Toggle isOn={UiShowHideManager.autoHideUi} showCheckmark={false} onChange={this._onAutoHideChange} />
           </div>
         </div>
       </div>

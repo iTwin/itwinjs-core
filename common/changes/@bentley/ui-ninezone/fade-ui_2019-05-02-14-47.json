@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Show/Hide UI enhancements. Widget Opacity enhancements.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}
