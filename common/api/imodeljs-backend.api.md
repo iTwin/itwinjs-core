@@ -278,6 +278,24 @@ export class BackendActivityMonitor implements AppActivityMonitor {
 }
 
 // @public
+export enum BackendLoggerCategory {
+    CodeSpecs = "imodeljs-backend.CodeSpecs",
+    ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
+    // @internal
+    DevTools = "imodeljs-backend.DevTools",
+    ECDb = "imodeljs-backend.ECDb",
+    Functional = "imodeljs-backend.Functional",
+    IModelDb = "imodeljs-backend.IModelDb",
+    IModelHost = "imodeljs-backend.IModelHost",
+    // @alpha
+    IModelImporter = "imodeljs-backend.IModelImporter",
+    IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
+    PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
+    Relationship = "imodeljs-backend.Relationship",
+    Schemas = "imodeljs-backend.Schemas"
+}
+
+// @public
 export class BackendRequestContext extends ClientRequestContext {
     constructor(activityId?: string);
 }
@@ -1758,15 +1776,31 @@ export class IModelJsFsStats {
 export namespace IModelJsNative {
     // (undocumented)
     export function addReferenceToObjectInVault(id: string): void;
-    export interface BriefcaseManagerOnConflictPolicy {
-        deleteVsUpdate: number;
-        updateVsDelete: number;
-        updateVsUpdate: number;
+    export const enum BackendLoggerCategory {
+        // (undocumented)
+        BeSQLite = "BeSQLite",
+        // (undocumented)
+        Changeset = "Changeset",
+        // (undocumented)
+        DgnCore = "DgnCore",
+        // (undocumented)
+        ECDb = "ECDb",
+        // (undocumented)
+        ECObjectsNative = "ECObjectsNative",
+        // (undocumented)
+        Success = 0,
+        // (undocumented)
+        UnitsNative = "UnitsNative"
     }
     const // (undocumented)
     version: string;
     let // (undocumented)
     logger: Logger;
+    export interface BriefcaseManagerOnConflictPolicy {
+        deleteVsUpdate: number;
+        updateVsDelete: number;
+        updateVsUpdate: number;
+    }
     // (undocumented)
     export class BriefcaseManagerResourcesRequest {
         // (undocumented)
@@ -2067,6 +2101,16 @@ export namespace IModelJsNative {
         Success = 0
     }
     // (undocumented)
+    export class ECSchemaXmlContext {
+        constructor();
+        // (undocumented)
+        addSchemaPath(path: string): void;
+        // (undocumented)
+        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
+        // (undocumented)
+        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
+    }
+    // (undocumented)
     export namespace ECSchemaXmlContext {
         // (undocumented)
         export interface SchemaKey {
@@ -2094,16 +2138,6 @@ export namespace IModelJsNative {
             // (undocumented)
             LatestWriteCompatible = 2
         }
-    }
-    // (undocumented)
-    export class ECSchemaXmlContext {
-        constructor();
-        // (undocumented)
-        addSchemaPath(path: string): void;
-        // (undocumented)
-        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
-        // (undocumented)
-        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
     }
     // (undocumented)
     export class ECSqlBinder {
@@ -2286,22 +2320,6 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export function initializeRegion(region: number): void;
-    export const enum LoggerCategory {
-        // (undocumented)
-        BeSQLite = "BeSQLite",
-        // (undocumented)
-        Changeset = "Changeset",
-        // (undocumented)
-        DgnCore = "DgnCore",
-        // (undocumented)
-        ECDb = "ECDb",
-        // (undocumented)
-        ECObjectsNative = "ECObjectsNative",
-        // (undocumented)
-        Success = 0,
-        // (undocumented)
-        UnitsNative = "UnitsNative"
-    }
     // (undocumented)
     export interface NativeCrashReportingConfig {
         crashDir: string;
@@ -2648,24 +2666,6 @@ export class LinkModel extends InformationModel {
 
 // @public
 export class LinkPartition extends InformationPartitionElement {
-}
-
-// @public
-export enum LoggerCategory {
-    CodeSpecs = "imodeljs-backend.CodeSpecs",
-    ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
-    // @internal
-    DevTools = "imodeljs-backend.DevTools",
-    ECDb = "imodeljs-backend.ECDb",
-    Functional = "imodeljs-backend.Functional",
-    IModelDb = "imodeljs-backend.IModelDb",
-    IModelHost = "imodeljs-backend.IModelHost",
-    // @alpha
-    IModelImporter = "imodeljs-backend.IModelImporter",
-    IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
-    PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
-    Relationship = "imodeljs-backend.Relationship",
-    Schemas = "imodeljs-backend.Schemas"
 }
 
 // @internal

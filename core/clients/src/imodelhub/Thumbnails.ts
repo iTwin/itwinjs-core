@@ -6,14 +6,14 @@
 
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, RequestOptions } from "./../Request";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { InstanceIdQuery } from "./Query";
 
-const loggerCategory: string = LoggerCategory.IModelHub;
+const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /** Thumbnail size. 'Small' is 400x250 PNG image and 'Large' is a 800x500 PNG image.
  * @alpha

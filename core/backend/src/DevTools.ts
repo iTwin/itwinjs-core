@@ -7,9 +7,9 @@ import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as os from "os";
 import * as process from "process";
 import { IModelHost } from "./IModelHost";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.DevTools;
+const loggerCategory: string = BackendLoggerCategory.DevTools;
 
 interface StringIndexedObject<T> {
   [index: string]: T;

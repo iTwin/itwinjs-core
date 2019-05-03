@@ -13,7 +13,7 @@ export * from "./Id";
 export * from "./IndexMap";
 export * from "./JsonUtils";
 export * from "./Logger";
-export * from "./LoggerCategory";
+export * from "./BentleyLoggerCategory";
 export * from "./ClientRequestContext";
 export * from "./LRUMap";
 export * from "./SortedArray";

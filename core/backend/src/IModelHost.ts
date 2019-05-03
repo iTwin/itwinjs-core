@@ -17,7 +17,7 @@ import { Functional } from "./domains/Functional";
 import { Generic } from "./domains/Generic";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
@@ -27,7 +27,7 @@ import { initializeRpcBackend } from "./RpcBackend";
 import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 
-const loggerCategory: string = LoggerCategory.IModelHost;
+const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
 /** @alpha */
 export interface CrashReportingConfigNameValuePair {

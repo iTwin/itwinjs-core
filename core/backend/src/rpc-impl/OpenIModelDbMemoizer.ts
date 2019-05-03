@@ -7,10 +7,10 @@ import { assert, BeDuration, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModel, IModelToken, IModelVersion, RpcPendingResponse } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, AccessMode } from "../IModelDb";
-import { LoggerCategory } from "../LoggerCategory";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 
-const loggerCategory = LoggerCategory.IModelDb;
+const loggerCategory = BackendLoggerCategory.IModelDb;
 
 /** Utility to cache and retrieve results of long running open IModelDb requests
  * The cache is keyed on the input arguments passed to open

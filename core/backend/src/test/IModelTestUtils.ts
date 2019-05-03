@@ -3,15 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, LoggerCategory as BentleyLoggerCategory } from "@bentley/bentleyjs-core";
-import { AccessToken, Config, ChangeSet, AuthorizedClientRequestContext, ImsUserCredentials, LoggerCategory as ClientsLoggerCategory } from "@bentley/imodeljs-clients";
+import { Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory } from "@bentley/bentleyjs-core";
+import { AccessToken, Config, ChangeSet, AuthorizedClientRequestContext, ImsUserCredentials, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
 import { Code, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
 import { IModelJsNative } from "../IModelJsNative";
-import { LoggerCategory as BackendLoggerCategory } from "../LoggerCategory";
+import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility } from "./integration/HubUtility";
 import * as path from "path";
@@ -291,8 +291,8 @@ export class IModelTestUtils {
     Logger.setLevel(ClientsLoggerCategory.Clients, LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.IModelHub, LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.Request, LogLevel.Trace);
-    Logger.setLevel(IModelJsNative.LoggerCategory.DgnCore, LogLevel.Error);
-    Logger.setLevel(IModelJsNative.LoggerCategory.BeSQLite, LogLevel.Error);
+    Logger.setLevel(IModelJsNative.BackendLoggerCategory.DgnCore, LogLevel.Error);
+    Logger.setLevel(IModelJsNative.BackendLoggerCategory.BeSQLite, LogLevel.Error);
   }
 }
 

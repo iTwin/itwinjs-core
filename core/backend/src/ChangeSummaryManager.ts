@@ -15,9 +15,9 @@ import { IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.ECDb;
+const loggerCategory: string = BackendLoggerCategory.ECDb;
 
 /** Represents an instance of the `ChangeSummary` ECClass from the `ECDbChange` ECSchema
  * combined with the information from the related `ChangeSet` instance (from the `IModelChange` ECSchema) from

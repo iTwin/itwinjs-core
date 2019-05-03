@@ -25,14 +25,14 @@ import { Entity } from "./Entity";
 import { ExportGraphicsProps } from "./ExportGraphics";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
 
-const loggerCategory: string = LoggerCategory.IModelDb;
+const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId.
  * @internal Uses the internal `IModelJsNative` type.

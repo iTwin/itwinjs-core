@@ -8,7 +8,7 @@
  * @see [Logger]($bentley)
  * @public
  */
-export enum LoggerCategory {
+export enum CommonLoggerCategory {
   /** The logger category used by common classes relating to ElementProps. */
   ElementProps = "imodeljs-common.ElementProps",
   /** The logger category used by the portions of the RpcInterface framework that run on the backend. */

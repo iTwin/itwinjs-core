@@ -6,14 +6,14 @@
 
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { InstanceIdQuery } from "./Query";
 import { ThumbnailSize } from "./Thumbnails";
 
-const loggerCategory: string = LoggerCategory.IModelHub;
+const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /**
  * Named Version is a specific [[ChangeSet]] given a name to differentiate it from others. It can be used to represent some significant milestone for the iModel (e.g. a review version).

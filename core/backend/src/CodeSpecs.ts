@@ -8,9 +8,9 @@ import { DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { CodeScopeSpec, CodeSpec, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.CodeSpecs;
+const loggerCategory: string = BackendLoggerCategory.CodeSpecs;
 
 /** Manages [CodeSpecs]($docs/BIS/intro/element-fundamentals.md#codespec) within an [[IModelDb]]
  * @public

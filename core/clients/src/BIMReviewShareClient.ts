@@ -6,11 +6,11 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { Config } from "./Config";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { LoggerCategory } from "./LoggerCategory";
+import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
 import { WsgClient, WsgRequestOptions } from "./WsgClient";
 
-const loggerCategory: string = LoggerCategory.Clients;
+const loggerCategory: string = ClientsLoggerCategory.Clients;
 
 /** Content */
 @ECJsonTypeMap.classToJson("wsg", "ContentSchema.Content", { schemaPropertyName: "schemaName", classPropertyName: "className" })

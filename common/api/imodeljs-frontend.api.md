@@ -531,25 +531,25 @@ export class AccuDrawShortcuts {
     // (undocumented)
     static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
     // Warning: (ae-incompatible-release-tags) The symbol "itemFieldAcceptInput" is marked as @beta, but its signature references "ItemField" which is marked as @internal
-    //
+    // 
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): void;
     // Warning: (ae-incompatible-release-tags) The symbol "itemFieldLockToggle" is marked as @beta, but its signature references "ItemField" which is marked as @internal
-    //
+    // 
     // (undocumented)
     static itemFieldLockToggle(index: ItemField): void;
     // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNavigate" is marked as @beta, but its signature references "ItemField" which is marked as @internal
-    //
+    // 
     // (undocumented)
     static itemFieldNavigate(index: ItemField, str: string, forward: boolean): void;
     // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNewInput" is marked as @beta, but its signature references "ItemField" which is marked as @internal
-    //
+    // 
     // (undocumented)
     static itemFieldNewInput(index: ItemField): void;
     // (undocumented)
     static itemFieldUnlockAll(): void;
     // Warning: (ae-incompatible-release-tags) The symbol "itemRotationModeChange" is marked as @beta, but its signature references "RotationMode" which is marked as @internal
-    //
+    // 
     // (undocumented)
     static itemRotationModeChange(rotation: RotationMode): void;
     // (undocumented)
@@ -589,7 +589,7 @@ export class AccuDrawShortcuts {
     // (undocumented)
     static setOrigin(explicitOrigin?: Point3d): void;
     // Warning: (ae-incompatible-release-tags) The symbol "setStandardRotation" is marked as @beta, but its signature references "RotationMode" which is marked as @internal
-    //
+    // 
     // (undocumented)
     static setStandardRotation(rotation: RotationMode): void;
     // (undocumented)
@@ -613,7 +613,7 @@ export abstract class AccuDrawTool {
     // (undocumented)
     onDecorate(_context: DecorateContext): void;
     // Warning: (ae-incompatible-release-tags) The symbol "onManipulationComplete" is marked as @beta, but its signature references "AccuDrawFlags" which is marked as @internal
-    //
+    // 
     // (undocumented)
     onManipulationComplete(): AccuDrawFlags;
     // (undocumented)
@@ -894,7 +894,7 @@ export namespace Attachments {
         // (undocumented)
         readonly priority: Tile.LoadPriority;
         // Warning: (ae-forgotten-export) The symbol "TileRequest" needs to be exported by the entry point imodeljs-frontend.d.ts
-        //
+        // 
         // (undocumented)
         requestTileContent(_tile: Tile): Promise<TileRequest.Response>;
         // (undocumented)
@@ -1410,7 +1410,7 @@ export class Clips {
     // (undocumented)
     set(numPlanes: number, texture: TextureHandle): void;
     // Warning: (ae-forgotten-export) The symbol "TextureHandle" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly texture: TextureHandle | undefined;
     }
@@ -1758,7 +1758,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     analysisStyle: AnalysisStyle | undefined;
     backgroundColor: ColorDef;
     // Warning: (ae-forgotten-export) The symbol "BackgroundMapState" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // @internal (undocumented)
     readonly backgroundMap: BackgroundMapState;
     // @internal (undocumented)
@@ -1784,7 +1784,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     removeContextRealityModel(index: number): void;
     // Warning: (ae-forgotten-export) The symbol "RenderScheduleState" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // @internal (undocumented)
     readonly scheduleScript: RenderScheduleState.Script | undefined;
     setBackgroundMap(mapProps: BackgroundMapProps): void;
@@ -2382,6 +2382,14 @@ export class FlyViewTool extends ViewManip {
 export function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d): Point3d;
 
 // @public
+export enum FrontendLoggerCategory {
+    FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
+    IModelConnection = "imodeljs-frontend.IModelConnection",
+    OidcBrowserClient = "imodeljs-frontend.OidcBrowserClient",
+    OidcIOSClient = "imodeljs-frontend.OidcIOSClient"
+}
+
+// @public
 export class FrontendRequestContext extends ClientRequestContext {
     constructor(activityId?: string);
 }
@@ -2478,7 +2486,7 @@ export class GeometricModel3dState extends GeometricModelState {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "GeometricModelState" is marked as @public, but its signature references "TileTreeModelState" which is marked as @beta
-//
+// 
 // @public
 export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
     // @internal (undocumented)
@@ -2522,7 +2530,7 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
 
 // Warning: (ae-incompatible-release-tags) The symbol "GraphicBranch" is marked as @public, but its signature references "RenderMemory" which is marked as @internal
-//
+// 
 // @public
 export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
     constructor(ownsEntries?: boolean);
@@ -2846,7 +2854,7 @@ export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 // @public
 export class IModelApp {
     // Warning: (ae-incompatible-release-tags) The symbol "accuDraw" is marked as @beta, but its signature references "AccuDraw" which is marked as @internal
-    //
+    // 
     // @beta
     static accuDraw: AccuDraw;
     // Warning: (ae-incompatible-release-tags) The symbol "accuSnap" is marked as @public, but its signature references "AccuSnap" which is marked as @internal
@@ -3206,14 +3214,6 @@ export enum LockedStates {
 }
 
 // @public
-export enum LoggerCategory {
-    FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
-    IModelConnection = "imodeljs-frontend.IModelConnection",
-    OidcBrowserClient = "imodeljs-frontend.OidcBrowserClient",
-    OidcIOSClient = "imodeljs-frontend.OidcIOSClient"
-}
-
-// @public
 export class LookViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
     // (undocumented)
@@ -3384,7 +3384,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected _totalDistance: number;
     // Warning: (ae-forgotten-export) The symbol "MeasureLabel" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     protected _totalDistanceMarker?: MeasureLabel;
     // (undocumented)
@@ -3524,7 +3524,7 @@ export namespace MockRender {
         readonly transform: Transform;
     }
     // Warning: (ae-forgotten-export) The symbol "PrimitiveBuilder" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     export class Builder extends PrimitiveBuilder {
         constructor(system: System, placement: Transform | undefined, type: GraphicType, viewport: Viewport, pickId?: Id64String);
@@ -3573,21 +3573,21 @@ export namespace MockRender {
         // (undocumented)
         createGraphicList(primitives: RenderGraphic[]): List;
         // Warning: (ae-forgotten-export) The symbol "MeshParams" needs to be exported by the entry point imodeljs-frontend.d.ts
-        //
+        // 
         // (undocumented)
         createMesh(_params: MeshParams): Graphic;
         // (undocumented)
         createOffscreenTarget(rect: ViewRect): RenderTarget;
         // Warning: (ae-forgotten-export) The symbol "PointCloudArgs" needs to be exported by the entry point imodeljs-frontend.d.ts
-        //
+        // 
         // (undocumented)
         createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): Graphic;
         // Warning: (ae-forgotten-export) The symbol "PointStringParams" needs to be exported by the entry point imodeljs-frontend.d.ts
-        //
+        // 
         // (undocumented)
         createPointString(_params: PointStringParams): Graphic;
         // Warning: (ae-forgotten-export) The symbol "PolylineParams" needs to be exported by the entry point imodeljs-frontend.d.ts
-        //
+        // 
         // (undocumented)
         createPolyline(_params: PolylineParams): Graphic;
         // (undocumented)
@@ -4071,7 +4071,7 @@ export namespace Pixel {
         // (undocumented)
         readonly feature?: Feature | undefined;
         // Warning: (ae-incompatible-release-tags) The symbol "featureTable" is marked as @beta, but its signature references "PackedFeatureTable" which is marked as @internal
-        //
+        // 
         // (undocumented)
         readonly featureTable?: PackedFeatureTable | undefined;
         // (undocumented)
@@ -4113,7 +4113,7 @@ export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
 // @internal
 export class PlanarClassifiers {
     // Warning: (ae-forgotten-export) The symbol "PlanarClassifier" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly classifier: PlanarClassifier | undefined;
     // (undocumented)
@@ -4240,7 +4240,7 @@ export interface PropertyEditorInfo {
     // (undocumented)
     name?: string;
     // Warning: (ae-incompatible-release-tags) The symbol "params" is marked as @beta, but its signature references "PropertyEditorParams" which is marked as @alpha
-    //
+    // 
     // (undocumented)
     params?: PropertyEditorParams[];
 }
@@ -4317,7 +4317,7 @@ export class QuantityFormatter implements UnitsProvider {
     findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
     // Warning: (ae-forgotten-export) The symbol "UnitDefinition" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     protected findUnitDefinition(name: string): UnitDefinition | undefined;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
@@ -4405,7 +4405,7 @@ export class RenderClassifierModel {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "RenderClipVolume" is marked as @beta, but its signature references "RenderMemory" which is marked as @internal
-//
+// 
 // @beta
 export abstract class RenderClipVolume implements IDisposable, RenderMemory.Consumer {
     protected constructor(clipVector: ClipVector);
@@ -4443,7 +4443,7 @@ export const enum RenderDiagnostics {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "RenderGraphic" is marked as @public, but its signature references "RenderMemory" which is marked as @internal
-//
+// 
 // @public
 export abstract class RenderGraphic implements IDisposable, RenderMemory.Consumer {
     // @internal (undocumented)
@@ -4662,7 +4662,7 @@ export abstract class RenderSystem implements IDisposable {
     abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
     // Warning: (ae-forgotten-export) The symbol "PolylineArgs" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // @internal (undocumented)
     createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
     createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined;
@@ -4693,7 +4693,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined;
     // Warning: (ae-forgotten-export) The symbol "MeshArgs" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // @internal (undocumented)
     createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -5349,7 +5349,7 @@ export class SpatialViewState extends ViewState3d {
     // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
     // Warning: (ae-incompatible-release-tags) The symbol "forEachTileTreeModel" is marked as @public, but its signature references "TileTreeModelState" which is marked as @beta
-    //
+    // 
     // (undocumented)
     forEachTileTreeModel(func: (model: TileTreeModelState) => void): void;
     // (undocumented)
@@ -5613,17 +5613,17 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     protected abstract _assignDC(): boolean;
     // Warning: (ae-forgotten-export) The symbol "BatchState" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly batchState: BatchState;
     // (undocumented)
     protected abstract _beginPaint(): void;
     // Warning: (ae-forgotten-export) The symbol "FloatRgba" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly bgColor: FloatRgba;
     // Warning: (ae-forgotten-export) The symbol "BranchStack" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly branchStack: BranchStack;
     // (undocumented)
@@ -5643,7 +5643,7 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     changeTerrain(terrain: GraphicList): void;
     // Warning: (ae-forgotten-export) The symbol "ClipDef" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly clipDef: ClipDef;
     // (undocumented)
@@ -5653,7 +5653,7 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     readonly compositor: SceneCompositor;
     // Warning: (ae-forgotten-export) The symbol "SceneCompositor" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     protected _compositor: SceneCompositor;
     // (undocumented)
@@ -5661,11 +5661,11 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     readonly currentFeatureSymbologyOverrides: FeatureSymbology.Overrides;
     // Warning: (ae-forgotten-export) The symbol "FeatureOverrides" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     currentOverrides: FeatureOverrides | undefined;
     // Warning: (ae-forgotten-export) The symbol "ShaderFlags" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly currentShaderFlags: ShaderFlags;
     // (undocumented)
@@ -5679,7 +5679,7 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     protected _decorations?: Decorations;
     // Warning: (ae-forgotten-export) The symbol "BranchState" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly decorationState: BranchState;
     // (undocumented)
@@ -5695,13 +5695,13 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     readonly dynamics: GraphicList | undefined;
     // Warning: (ae-forgotten-export) The symbol "ColorInfo" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly edgeColor: ColorInfo;
     // (undocumented)
     protected abstract _endPaint(): void;
     // Warning: (ae-forgotten-export) The symbol "FrameBuffer" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     protected _fbo?: FrameBuffer;
     // (undocumented)
@@ -5717,15 +5717,15 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     getEdgeLineCode(params: ShaderProgramParams, baseCode: number): number;
     // Warning: (ae-forgotten-export) The symbol "RenderPass" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     getEdgeOverrides(pass: RenderPass): EdgeOverrides | undefined;
     // Warning: (ae-forgotten-export) The symbol "ShaderProgramParams" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     getEdgeWeight(params: ShaderProgramParams, baseWeight: number): number;
     // Warning: (ae-forgotten-export) The symbol "Branch" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     getWorldDecorations(decs: GraphicList): Branch;
     // (undocumented)
@@ -5753,7 +5753,7 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     isFadeOutActive: boolean;
     // Warning: (ae-forgotten-export) The symbol "CachedGeometry" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     isGeometryOutsideActiveVolume(geom: CachedGeometry): boolean;
     // (undocumented)
@@ -5793,11 +5793,11 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     pushActiveVolume(): void;
     // Warning: (ae-forgotten-export) The symbol "Batch" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     pushBatch(batch: Batch): void;
     // Warning: (ae-forgotten-export) The symbol "ShaderProgramExecutor" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     pushBranch(exec: ShaderProgramExecutor, branch: Branch): void;
     // (undocumented)
@@ -5823,11 +5823,11 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     setHiliteSet(hilite: Set<string>): void;
     // Warning: (ae-forgotten-export) The symbol "ShaderLights" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly shaderLights: ShaderLights | undefined;
     // Warning: (ae-forgotten-export) The symbol "Techniques" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly techniques: Techniques;
     // (undocumented)
@@ -5835,7 +5835,7 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     readonly viewMatrix: Transform;
     // Warning: (ae-forgotten-export) The symbol "EdgeOverrides" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     readonly visibleEdgeOverrides: EdgeOverrides | undefined;
     // (undocumented)
@@ -6241,7 +6241,7 @@ export abstract class TileLoader {
     // (undocumented)
     loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
     // Warning: (ae-forgotten-export) The symbol "TileIO" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // (undocumented)
     loadTileContentFromStream(tile: Tile, streamBuffer: TileIO.StreamBuffer, isCanceled?: () => boolean): Promise<Tile.Content>;
     // (undocumented)
@@ -7339,7 +7339,7 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     static fitView(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): void;
     // Warning: (ae-incompatible-release-tags) The symbol "_forcedHandle" is marked as @public, but its signature references "ViewHandleType" which is marked as @internal
-    //
+    // 
     // (undocumented)
     protected _forcedHandle: ViewHandleType;
     // (undocumented)
@@ -7403,7 +7403,7 @@ export abstract class ViewManip extends ViewTool {
     setCameraLensAngle(lensAngle: Angle, retainEyePoint: boolean): ViewStatus;
     setTargetCenterWorld(pt: Point3d, lockTarget: boolean, saveTarget: boolean): void;
     // Warning: (ae-incompatible-release-tags) The symbol "startHandleDrag" is marked as @public, but its signature references "ViewHandleType" which is marked as @internal
-    //
+    // 
     // (undocumented)
     startHandleDrag(ev: BeButtonEvent, forcedHandle?: ViewHandleType): Promise<EventHandled>;
     // (undocumented)
@@ -7419,7 +7419,7 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     protected static _useViewAlignedVolume: boolean;
     // Warning: (ae-incompatible-release-tags) The symbol "viewHandles" is marked as @public, but its signature references "ViewHandleArray" which is marked as @internal
-    //
+    // 
     // (undocumented)
     viewHandles: ViewHandleArray;
     // (undocumented)
@@ -7453,7 +7453,7 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     changeDynamics(dynamics: GraphicList | undefined): void;
     // Warning: (ae-incompatible-release-tags) The symbol "_changeFlags" is marked as @public, but its signature references "ChangeFlags" which is marked as @beta
-    //
+    // 
     // (undocumented)
     protected _changeFlags: ChangeFlags;
     changeModelDisplay(models: Id64Arg, display: boolean): boolean;
@@ -7839,7 +7839,7 @@ export abstract class ViewState2d extends ViewState {
     // (undocumented)
     setExtents(delta: Vector3d): void;
     // Warning: (ae-forgotten-export) The symbol "ViewState2dUndo" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // @internal (undocumented)
     setFromUndo(val: ViewState2dUndo): void;
     // (undocumented)
@@ -7918,7 +7918,7 @@ export abstract class ViewState3d extends ViewState {
     setEyePoint(pt: XYAndZ): void;
     setFocusDistance(dist: number): void;
     // Warning: (ae-forgotten-export) The symbol "ViewState3dUndo" needs to be exported by the entry point imodeljs-frontend.d.ts
-    //
+    // 
     // @internal (undocumented)
     setFromUndo(val: ViewState3dUndo): void;
     setLensAngle(angle: Angle): void;
@@ -8090,7 +8090,7 @@ export class ZoomViewTool extends ViewManip {
 
 
 // Warnings were encountered during analysis:
-//
+// 
 // src/tools/MeasureTool.ts:101:7 - (ae-forgotten-export) The symbol "MeasureMarker" needs to be exported by the entry point imodeljs-frontend.d.ts
 // src/tools/ViewTool.ts:102:80 - (ae-forgotten-export) The symbol "ViewManipPriority" needs to be exported by the entry point imodeljs-frontend.d.ts
 

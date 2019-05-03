@@ -7,9 +7,9 @@
 import { AuthStatus, BentleyError, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelApp } from "./IModelApp";
-import { LoggerCategory } from "./LoggerCategory";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.FrontendRequestContext;
+const loggerCategory: string = FrontendLoggerCategory.FrontendRequestContext;
 
 /**
  * Provides some generic context for downstream server applications to get details of a request that

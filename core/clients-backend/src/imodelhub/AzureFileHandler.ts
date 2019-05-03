@@ -7,7 +7,7 @@
 import { Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, ProgressInfo, request, RequestOptions, ResponseError } from "@bentley/imodeljs-clients";
 import { Transform, TransformCallback, PassThrough } from "stream";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
 import WriteStreamAtomic = require("fs-write-stream-atomic");
 import { AzCopy, ProgressEventArgs, StringEventArgs, InitEventArgs } from "../util/AzCopy";
 import * as fs from "fs";
@@ -15,7 +15,7 @@ import * as https from "https";
 import * as path from "path";
 import * as os from "os";
 
-const loggerCategory: string = LoggerCategory.IModelHub;
+const loggerCategory: string = ClientsBackendLoggerCategory.IModelHub;
 
 /**
  * Stream that buffers writing to file.

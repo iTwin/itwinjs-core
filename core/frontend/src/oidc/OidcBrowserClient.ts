@@ -8,9 +8,9 @@ import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLev
 import { AccessToken, IOidcFrontendClient, OidcClient, OidcFrontendClientConfiguration, UserInfo } from "@bentley/imodeljs-clients";
 import { User, UserManager, UserManagerSettings, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
-import { LoggerCategory } from "../LoggerCategory";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.OidcBrowserClient;
+const loggerCategory: string = FrontendLoggerCategory.OidcBrowserClient;
 
 /** Utility to forward oidc-client logs to the Bentley logger */
 class OidcClientLogger implements IOidcClientLogger {

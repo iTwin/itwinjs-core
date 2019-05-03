@@ -15,12 +15,12 @@ import {
 import { KeepBriefcase } from "../BriefcaseManager";
 import { SpatialCategory } from "../Category";
 import { IModelDb, OpenParams } from "../IModelDb";
-import { LoggerCategory } from "../LoggerCategory";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { DictionaryModel } from "../Model";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 import { QueryPageMemoizer } from "./QueryPageMemoizer";
 
-const loggerCategory: string = LoggerCategory.IModelDb;
+const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal

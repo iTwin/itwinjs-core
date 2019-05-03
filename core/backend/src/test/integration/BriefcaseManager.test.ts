@@ -11,7 +11,7 @@ import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { TestUsers } from "../TestUsers";
 import {
   KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelJsFs,
-  IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry, AuthorizedBackendRequestContext, LoggerCategory,
+  IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry, AuthorizedBackendRequestContext, BackendLoggerCategory,
 } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
 
@@ -271,8 +271,8 @@ describe("BriefcaseManager (#integration)", () => {
     await iModelPullOnly.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(thirdChangeSetId));
     assert.strictEqual<string>(iModelPullOnly.briefcase.currentChangeSetId, thirdChangeSetId);
 
-    const prevLogLevel: LogLevel | undefined = Logger.getLevel(LoggerCategory.IModelDb);
-    Logger.setLevel(LoggerCategory.IModelDb, LogLevel.None);
+    const prevLogLevel: LogLevel | undefined = Logger.getLevel(BackendLoggerCategory.IModelDb);
+    Logger.setLevel(BackendLoggerCategory.IModelDb, LogLevel.None);
     let exceptionThrown = false;
     try {
       await iModelFixed.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(thirdChangeSetId));
@@ -289,7 +289,7 @@ describe("BriefcaseManager (#integration)", () => {
       exceptionThrown = true;
     }
     assert.isTrue(exceptionThrown);
-    Logger.setLevel(LoggerCategory.IModelDb, prevLogLevel || LogLevel.None);
+    Logger.setLevel(BackendLoggerCategory.IModelDb, prevLogLevel || LogLevel.None);
 
     await iModelPullOnly.close(requestContext, KeepBriefcase.No);
     await iModelFixed.close(requestContext, KeepBriefcase.No);
@@ -311,8 +311,8 @@ describe("BriefcaseManager (#integration)", () => {
     iModelPullOnly.elements.updateElement(rootEl);
     iModelPullOnly.saveChanges();
 
-    const prevLogLevel: LogLevel | undefined = Logger.getLevel(LoggerCategory.IModelDb);
-    Logger.setLevel(LoggerCategory.IModelDb, LogLevel.None);
+    const prevLogLevel: LogLevel | undefined = Logger.getLevel(BackendLoggerCategory.IModelDb);
+    Logger.setLevel(BackendLoggerCategory.IModelDb, LogLevel.None);
     let exceptionThrown = false;
     try {
       await iModelPullOnly.pushChanges(requestContext);
@@ -320,7 +320,7 @@ describe("BriefcaseManager (#integration)", () => {
       exceptionThrown = true;
     }
     assert.isTrue(exceptionThrown);
-    Logger.setLevel(LoggerCategory.IModelDb, prevLogLevel || LogLevel.None);
+    Logger.setLevel(BackendLoggerCategory.IModelDb, prevLogLevel || LogLevel.None);
 
     const iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelPullAndPush);

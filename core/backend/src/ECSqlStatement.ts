@@ -11,9 +11,9 @@ import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, Navigat
 import { ECDb } from "./ECDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsNative } from "./IModelJsNative";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.ECDb;
+const loggerCategory: string = BackendLoggerCategory.ECDb;
 
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend).
  *

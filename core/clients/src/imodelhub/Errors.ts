@@ -6,11 +6,11 @@
 
 import { GetMetaDataFunction, Guid, HttpStatus, IModelHubStatus, LogFunction, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ResponseError } from "./../Request";
 import { WsgError } from "./../WsgClient";
 
-const loggerCategory: string = LoggerCategory.IModelHub;
+const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /**
  * Error returned from iModelHub service.

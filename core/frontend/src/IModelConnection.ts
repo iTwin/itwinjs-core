@@ -15,7 +15,7 @@ import {
 import { EntityState } from "./EntityState";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
-import { LoggerCategory } from "./LoggerCategory";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { ModelState } from "./ModelState";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
@@ -23,7 +23,7 @@ import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileTreeState } from "./tile/TileTree";
 
-const loggerCategory: string = LoggerCategory.IModelConnection;
+const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
 /** A connection to an iModel database hosted on the backend.
  * @public

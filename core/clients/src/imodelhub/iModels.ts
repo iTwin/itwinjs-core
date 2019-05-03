@@ -7,14 +7,14 @@
 import { GuidString, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { FileHandler } from "../FileHandler";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ProgressInfo } from "../Request";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
 import { addSelectFileAccessKey, InstanceIdQuery } from "./Query";
 
-const loggerCategory: string = LoggerCategory.IModelHub;
+const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 const iModelTemplateEmpty = "Empty";
 
 /**

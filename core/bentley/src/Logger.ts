@@ -7,7 +7,7 @@
 import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
 import { IDisposable } from "./Disposable";
 import { ClientRequestContext } from "./ClientRequestContext";
-import { LoggerCategory } from "./LoggerCategory";
+import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
 
 /** Defines the *signature* for a log function.
  * @public
@@ -316,21 +316,21 @@ export class PerfLogger implements IDisposable {
     this._operation = operation;
     this._metaData = metaData;
 
-    if (!Logger.isEnabled(LoggerCategory.Performance, PerfLogger._severity)) {
+    if (!Logger.isEnabled(BentleyLoggerCategory.Performance, PerfLogger._severity)) {
       this._startTimeStamp = 0;
       return;
     }
 
-    Logger.logInfo(LoggerCategory.Performance, `${this._operation},START`, this._metaData);
+    Logger.logInfo(BentleyLoggerCategory.Performance, `${this._operation},START`, this._metaData);
     this._startTimeStamp = new Date().getTime(); // take timestamp
   }
 
   private logMessage(): void {
     const endTimeStamp: number = new Date().getTime();
-    if (!Logger.isEnabled(LoggerCategory.Performance, PerfLogger._severity))
+    if (!Logger.isEnabled(BentleyLoggerCategory.Performance, PerfLogger._severity))
       return;
 
-    Logger.logInfo(LoggerCategory.Performance, `${this._operation},END`, () => {
+    Logger.logInfo(BentleyLoggerCategory.Performance, `${this._operation},END`, () => {
       const mdata = this._metaData ? this._metaData() : {};
       return {
         ...mdata, TimeElapsed: endTimeStamp - this._startTimeStamp,

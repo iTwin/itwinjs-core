@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix analyzeWebpackStats to account for npm node_module location difference",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Barry.Bentley@bentley.com"
+}

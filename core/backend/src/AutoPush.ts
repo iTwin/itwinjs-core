@@ -10,9 +10,9 @@ import { IModelError, RpcRequest } from "@bentley/imodeljs-common";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.IModelDb;
+const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** Monitors backend activity.
  * @beta

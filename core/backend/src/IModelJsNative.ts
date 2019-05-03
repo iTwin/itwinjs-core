@@ -48,7 +48,7 @@ export declare namespace IModelJsNative {
   export type TxnIdString = string;
 
   /** Logger categories used by the native addon */
-  export const enum LoggerCategory {  // tslint:disable-line:no-const-enum
+  export const enum BackendLoggerCategory {  // tslint:disable-line:no-const-enum
     Success = 0,
     BeSQLite = "BeSQLite",
     Changeset = "Changeset",

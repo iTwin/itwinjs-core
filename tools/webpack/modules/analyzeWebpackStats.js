@@ -58,7 +58,7 @@ function moduleNameFromId(moduleId) {
   if (typeof moduleId !== "string")
     return undefined;
 
-  const nmLoc = moduleId.indexOf("node_modules");
+  const nmLoc = moduleId.lastIndexOf("node_modules");
   if (-1 == nmLoc)
     return undefined;
   const endName = moduleId.indexOf("/", nmLoc + 13);

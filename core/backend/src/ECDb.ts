@@ -9,10 +9,10 @@ import { IModelError, IModelStatus, kPagingDefaultOptions, PageableECSql, PageOp
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { IModelHost } from "./IModelHost";
 import { IModelJsNative } from "./IModelJsNative";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 
-const loggerCategory: string = LoggerCategory.ECDb;
+const loggerCategory: string = BackendLoggerCategory.ECDb;
 
 /** Modes for how to open [ECDb]($backend) files.
  * @public

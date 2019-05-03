@@ -7,7 +7,7 @@
 import { assert, BentleyStatus, Logger, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { URL } from "url";
 import { IModelError } from "../../IModelError";
-import { LoggerCategory } from "../../LoggerCategory";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcOperation } from "../core/RpcOperation";
 import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
@@ -87,7 +87,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     } else {
       const token = operation.policy.token(request);
       if (!token || !token.contextId || !token.iModelId)
-        throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, LoggerCategory.RpcInterfaceFrontend);
+        throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend);
 
       contextId = encodeURIComponent(token.contextId);
       iModelId = encodeURIComponent(token.iModelId);

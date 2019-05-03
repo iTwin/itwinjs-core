@@ -7,7 +7,7 @@
 import { GuidString, Id64String, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { WsgRequestOptions } from "../WsgClient";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { ResponseError } from "./../Request";
@@ -15,7 +15,7 @@ import { IModelBaseHandler } from "./BaseHandler";
 import { AggregateResponseError, ArgumentCheck, IModelHubError } from "./Errors";
 import { Query } from "./Query";
 
-const loggerCategory: string = LoggerCategory.IModelHub;
+const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /**
  * [[Lock]] type describes the kind of object that is locked.

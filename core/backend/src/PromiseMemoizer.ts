@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@bentley/bentleyjs-core";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 /** Wrapper around a promise that allows synchronous queries of it's state
  * @internal
@@ -60,7 +60,7 @@ export class PromiseMemoizer<T> {
     if (this._cachedPromises.size >= this._maxCacheSize) {
       this._purgeResolvedEntries();
       if (this._cachedPromises.size >= this._maxCacheSize) {
-        Logger.logError(LoggerCategory.PromiseMemoizer, "Cleared too many unresolved entries in memoizer cache");
+        Logger.logError(BackendLoggerCategory.PromiseMemoizer, "Cleared too many unresolved entries in memoizer cache");
         this.clearCache();
       }
     }

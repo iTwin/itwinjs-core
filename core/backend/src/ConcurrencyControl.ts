@@ -12,11 +12,11 @@ import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsNative } from "./IModelJsNative";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { Model } from "./Model";
 import { Relationship } from "./Relationship";
 
-const loggerCategory: string = LoggerCategory.ConcurrencyControl;
+const loggerCategory: string = BackendLoggerCategory.ConcurrencyControl;
 
 /** ConcurrencyControl enables an app to coordinate local changes with changes that are being made by others to an iModel.
  * @beta

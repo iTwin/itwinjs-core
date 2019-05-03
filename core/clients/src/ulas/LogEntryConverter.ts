@@ -6,9 +6,9 @@ import { Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { UsageLogEntry, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, ProductVersion, UsageType } from "./UlasClient";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { UserInfo } from "../UserInfo";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.UlasClient;
+const loggerCategory: string = ClientsLoggerCategory.UlasClient;
 
 /** Specifies the JSON format for a UsageLogEntry as expected by the ULAS REST API
  * (see https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)

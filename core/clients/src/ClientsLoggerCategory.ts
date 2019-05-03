@@ -9,12 +9,24 @@
  * @see [Logger]($bentley)
  * @public
  */
-export enum LoggerCategory {
-  /** The logger category used for interactions with iModelHub.
-   * @note Should match LoggerCategory.IModelHub from @bentley/imodeljs-clients.
-   */
+export enum ClientsLoggerCategory {
+  /** The logger category used by base clients */
+  Clients = "imodeljs-clients.Clients",
+
+  /** The logger category used when converting to/from ECJson. */
+  ECJson = "ECJson",
+
+  /** @internal */
+  IModelBank = "imodeljs-clients.iModelBank",
+
+  /** The logger category used for interactions with iModelHub. */
   IModelHub = "imodeljs-clients.imodelhub",
 
-  /** The logger category used by OidcDeviceClient */
-  OidcDeviceClient = "imodeljs-clients-device.OidcDeviceClient",
+  /** @internal */
+  ImsClients = "imodeljs-clients.ImsClients",
+
+  Request = "imodeljs-clients.Request",
+
+  /** @internal */
+  UlasClient = "ulasclient",
 }

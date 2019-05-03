@@ -20,7 +20,7 @@ export * from "./IModel";
 export * from "./IModelError";
 export * from "./IModelVersion";
 export * from "./Lighting";
-export * from "./LoggerCategory";
+export * from "./CommonLoggerCategory";
 export * from "./MaterialProps";
 export * from "./ModelProps";
 export * from "./OctEncodedNormal";

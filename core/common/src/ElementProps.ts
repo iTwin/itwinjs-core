@@ -10,7 +10,7 @@ import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
-import { LoggerCategory } from "./LoggerCategory";
+import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { Rank, SubCategoryAppearance } from "./SubCategoryAppearance";
 
 /** Properties of a NavigationProperty.
@@ -57,7 +57,7 @@ export class RelatedElement implements RelatedElementProps {
     if ((typeof json === "object") && ("id" in json)) {
       const r = RelatedElement.fromJSON(json);
       if (r === undefined)
-        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json", Logger.logWarning, LoggerCategory.ElementProps);
+        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json", Logger.logWarning, CommonLoggerCategory.ElementProps);
       return r.id;
     }
     return Id64.fromJSON(json);

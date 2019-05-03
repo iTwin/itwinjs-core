@@ -6,7 +6,7 @@
 
 import { BentleyStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
-import { LoggerCategory } from "../../LoggerCategory";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
@@ -141,7 +141,7 @@ export class RpcInvocation {
           if (RpcConfiguration.throwOnTokenMismatch) {
             throw new IModelError(BentleyStatus.ERROR, "IModelToken mismatch detected for this request.");
           } else {
-            Logger.logWarning(LoggerCategory.RpcInterfaceBackend, "IModelToken mismatch detected for this request.");
+            Logger.logWarning(CommonLoggerCategory.RpcInterfaceBackend, "IModelToken mismatch detected for this request.");
           }
         }
       }
@@ -206,7 +206,7 @@ export class RpcInvocation {
   private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => any {
     const func = (implementation as any)[this.operation.operationName];
     if (!func || typeof (func) !== "function") {
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`, Logger.logError, LoggerCategory.RpcInterfaceBackend);
+      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`, Logger.logError, CommonLoggerCategory.RpcInterfaceBackend);
     }
 
     return func;

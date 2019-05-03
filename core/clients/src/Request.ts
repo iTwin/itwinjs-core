@@ -9,9 +9,9 @@ import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
 import { Config } from "./Config";
-import { LoggerCategory } from "./LoggerCategory";
+import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.Request;
+const loggerCategory: string = ClientsLoggerCategory.Request;
 
 /** @alpha */
 export const requestIdHeaderName = "X-Correlation-Id";

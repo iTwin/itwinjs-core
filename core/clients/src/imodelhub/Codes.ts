@@ -7,7 +7,7 @@
 import { GuidString, Id64String, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { ResponseError } from "./../Request";
 import { WsgRequestOptions } from "./../WsgClient";
@@ -15,7 +15,7 @@ import { IModelBaseHandler } from "./BaseHandler";
 import { AggregateResponseError, ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
 import { Query } from "./Query";
 
-const loggerCategory: string = LoggerCategory.IModelHub;
+const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /**
  * [Code]($common) state describes whether the code is currently in use or owned by a [[Briefcase]].

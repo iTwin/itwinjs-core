@@ -5,7 +5,7 @@
 /** @module iModelHubGlobalEvents */
 import { ClientRequestContext, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { AccessToken } from "../Token";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, RequestOptions, Response } from "./../Request";
@@ -13,7 +13,7 @@ import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription } from "./EventsBase";
 
-const loggerCategory: string = LoggerCategory.IModelHub;
+const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /** Type of [[IModelHubGlobalEvent]]. Global Event type is used to define which events you wish to receive from your [[GlobalEventSubscription]]. See [[GlobalEventSubscriptionHandler.create]] and [[GlobalEventSubscriptionHandler.update]].
  * @public

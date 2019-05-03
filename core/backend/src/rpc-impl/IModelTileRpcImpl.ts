@@ -8,7 +8,7 @@ import { assert, BeDuration, ClientRequestContext, Logger } from "@bentley/bentl
 import { IModelTileRpcInterface, IModelToken, RpcInterface, RpcManager, RpcPendingResponse, TileTreeProps, CloudStorageContainerDescriptor, CloudStorageContainerUrl, TileContentIdentifier, CloudStorageTileCache } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
-import { LoggerCategory } from "../LoggerCategory";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { Readable } from "stream";
 
@@ -23,7 +23,7 @@ function generateTileRequestKey(props: TileRequestProps): string {
 }
 
 abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> extends PromiseMemoizer<Result> {
-  private readonly _loggerCategory = LoggerCategory.IModelTileRequestRpc;
+  private readonly _loggerCategory = BackendLoggerCategory.IModelTileRequestRpc;
   protected abstract get _operationName(): string;
   protected abstract addMetadata(metadata: any, props: Props): void;
   protected abstract stringify(props: Props): string;
@@ -206,7 +206,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
         IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), await content); // tslint:disable-line:no-floating-promises
       });
     } catch (err) {
-      Logger.logError(LoggerCategory.IModelTileRequestRpc, err.toString());
+      Logger.logError(BackendLoggerCategory.IModelTileRequestRpc, err.toString());
     }
   }
 }

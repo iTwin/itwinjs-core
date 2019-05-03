@@ -40,8 +40,8 @@ describe("ExcludedElements", () => {
   });
 
   it.skip("dump cs file", () => {
-    Logger.setLevel(IModelJsNative.LoggerCategory.DgnCore, LogLevel.Trace);
-    Logger.setLevel(IModelJsNative.LoggerCategory.Changeset, LogLevel.Trace);
+    Logger.setLevel(IModelJsNative.BackendLoggerCategory.DgnCore, LogLevel.Trace);
+    Logger.setLevel(IModelJsNative.BackendLoggerCategory.Changeset, LogLevel.Trace);
     const db = IModelDb.openStandalone("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
     HubUtility.dumpChangeSetFile(db, "D:\\dgn\\problem\\83927\\EAP_TT_001", "9fd0e30f88e93bec72532f6f1e05688e2c2408cd");
   });

@@ -9,11 +9,11 @@ import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext
 import { AuthenticationError, Client, DefaultRequestOptionsProvider } from "./Client";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
-import { LoggerCategory } from "./LoggerCategory";
+import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
 import { AccessToken, AuthorizationToken } from "./Token";
 
-const loggerCategory: string = LoggerCategory.Clients;
+const loggerCategory: string = ClientsLoggerCategory.Clients;
 
 /** Error that was returned by a WSG based service.
  * @internal

@@ -9,11 +9,11 @@ import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelError } from "@bentley/imodeljs-common";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelDb } from "../IModelDb";
-import { LoggerCategory } from "../LoggerCategory";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./FunctionalElements";
 
-const loggerCategory: string = LoggerCategory.Functional;
+const loggerCategory: string = BackendLoggerCategory.Functional;
 
 /** @public */
 export class Functional extends Schema {

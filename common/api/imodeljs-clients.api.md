@@ -268,6 +268,21 @@ export abstract class Client {
     protected _url?: string;
 }
 
+// @public
+export enum ClientsLoggerCategory {
+    Clients = "imodeljs-clients.Clients",
+    ECJson = "ECJson",
+    // @internal (undocumented)
+    IModelBank = "imodeljs-clients.iModelBank",
+    IModelHub = "imodeljs-clients.imodelhub",
+    // @internal (undocumented)
+    ImsClients = "imodeljs-clients.ImsClients",
+    // (undocumented)
+    Request = "imodeljs-clients.Request",
+    // @internal (undocumented)
+    UlasClient = "ulasclient"
+}
+
 // Warning: (ae-incompatible-release-tags) The symbol "CodeBase" is marked as @alpha, but its signature references "WsgInstance" which is marked as @internal
 // 
 // @alpha
@@ -1152,21 +1167,6 @@ export class LogEntryConverter {
     // (undocumented)
     static toUsageLogJson(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): UsageLogEntryJson;
     }
-
-// @public
-export enum LoggerCategory {
-    Clients = "imodeljs-clients.Clients",
-    ECJson = "ECJson",
-    // @internal (undocumented)
-    IModelBank = "imodeljs-clients.iModelBank",
-    IModelHub = "imodeljs-clients.imodelhub",
-    // @internal (undocumented)
-    ImsClients = "imodeljs-clients.ImsClients",
-    // (undocumented)
-    Request = "imodeljs-clients.Request",
-    // @internal (undocumented)
-    UlasClient = "ulasclient"
-}
 
 // @internal
 export interface LogPostingResponse {

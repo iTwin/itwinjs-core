@@ -9,9 +9,9 @@ import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
-const loggerCategory = LoggerCategory.Relationship;
+const loggerCategory = BackendLoggerCategory.Relationship;
 
 /** Specifies the source and target elements of a [[Relationship]] instance.
  * @public

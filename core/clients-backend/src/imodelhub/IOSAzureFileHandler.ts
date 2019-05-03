@@ -7,9 +7,9 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, request, RequestOptions } from "@bentley/imodeljs-clients";
 import * as fs from "fs";
 import * as path from "path";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.IModelHub;
+const loggerCategory: string = ClientsBackendLoggerCategory.IModelHub;
 
 /**
  * Provides methods to work with the file system and azure storage. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.

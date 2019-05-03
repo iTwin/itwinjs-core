@@ -7,11 +7,11 @@ import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContex
 import { Project } from "../ConnectClients";
 import { ContextManagerClient } from "../IModelCloudEnvironment";
 import { IModelHubClientError } from "../imodelhub/Errors";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { request, RequestOptions, Response } from "../Request";
 import { WsgError } from "../WsgClient";
 
-const loggerCategory: string = LoggerCategory.IModelBank;
+const loggerCategory: string = ClientsLoggerCategory.IModelBank;
 
 // Format of the imodelContext.json file found in the root directory of an iModel file system context master directory.
 // TODO: Remove this when we

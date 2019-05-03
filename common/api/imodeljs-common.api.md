@@ -1068,6 +1068,13 @@ export class ColorIndex {
 }
 
 // @public
+export enum CommonLoggerCategory {
+    ElementProps = "imodeljs-common.ElementProps",
+    RpcInterfaceBackend = "imodeljs-backend.RpcInterface",
+    RpcInterfaceFrontend = "imodeljs-frontend.RpcInterface"
+}
+
+// @public
 export interface ContextRealityModelProps {
     // Warning: (ae-incompatible-release-tags) The symbol "classifiers" is marked as @public, but its signature references "SpatialClassificationProps" which is marked as @beta
     // 
@@ -2663,13 +2670,6 @@ export interface LineStyleProps extends ElementProps {
 export type LocalAlignedBox3d = Range3d;
 
 export { LogFunction }
-
-// @public
-export enum LoggerCategory {
-    ElementProps = "imodeljs-common.ElementProps",
-    RpcInterfaceBackend = "imodeljs-backend.RpcInterface",
-    RpcInterfaceFrontend = "imodeljs-frontend.RpcInterface"
-}
 
 // @internal (undocumented)
 export interface MarshalingBinaryMarker {

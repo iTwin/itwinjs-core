@@ -42,6 +42,12 @@ export class BufferedStream extends Transform {
     _transform(chunk: any, encoding: string, callback: TransformCallback): void;
 }
 
+// @public
+export enum ClientsBackendLoggerCategory {
+    IModelHub = "imodeljs-clients.imodelhub",
+    OidcDeviceClient = "imodeljs-clients-device.OidcDeviceClient"
+}
+
 // @internal
 export class IOSAzureFileHandler implements FileHandler {
     constructor();
@@ -54,12 +60,6 @@ export class IOSAzureFileHandler implements FileHandler {
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string): Promise<void>;
-}
-
-// @public
-export enum LoggerCategory {
-    IModelHub = "imodeljs-clients.imodelhub",
-    OidcDeviceClient = "imodeljs-clients-device.OidcDeviceClient"
 }
 
 // @beta

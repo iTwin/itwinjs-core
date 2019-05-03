@@ -9,7 +9,7 @@
  * @see [Logger]($bentley)
  * @public
  */
-export enum LoggerCategory {
+export enum FrontendLoggerCategory {
   /** The logger category used by the [[FrontendRequestContext]] class and other related classes. */
   FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
 

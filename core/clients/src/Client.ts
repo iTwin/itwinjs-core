@@ -7,10 +7,10 @@ import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { Config } from "./Config";
-import { LoggerCategory } from "./LoggerCategory";
+import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 import { request, RequestOptions, Response, ResponseError } from "./Request";
 
-const loggerCategory: string = LoggerCategory.Clients;
+const loggerCategory: string = ClientsLoggerCategory.Clients;
 
 /**
  * Provider for default RequestOptions, used by Client to set defaults.

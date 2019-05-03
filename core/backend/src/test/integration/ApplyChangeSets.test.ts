@@ -18,8 +18,8 @@ describe("ApplyChangeSets (#integration)", () => {
   before(async () => {
     // Note: Change to LogLevel.Info for useful debug information
     Logger.setLevel(HubUtility.logCategory, LogLevel.Error);
-    Logger.setLevel(IModelJsNative.LoggerCategory.DgnCore, LogLevel.Error);
-    Logger.setLevel(IModelJsNative.LoggerCategory.BeSQLite, LogLevel.Error);
+    Logger.setLevel(IModelJsNative.BackendLoggerCategory.DgnCore, LogLevel.Error);
+    Logger.setLevel(IModelJsNative.BackendLoggerCategory.BeSQLite, LogLevel.Error);
   });
 
   const testAllChangeSetOperations = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString) => {

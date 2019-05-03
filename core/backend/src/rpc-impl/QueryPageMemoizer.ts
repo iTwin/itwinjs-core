@@ -7,10 +7,10 @@ import { assert, BeDuration, ClientRequestContext, Logger } from "@bentley/bentl
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelToken, PageOptions, RpcPendingResponse } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
-import { LoggerCategory } from "../LoggerCategory";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 
-const loggerCategory: string = LoggerCategory.IModelDb;
+const loggerCategory: string = BackendLoggerCategory.IModelDb;
 const kDefaultQueryPageTimeout = 2 * 1000; // 2 seconds
 const kQueryPageTimeOutKey = "imjs_query_page_timeout";
 

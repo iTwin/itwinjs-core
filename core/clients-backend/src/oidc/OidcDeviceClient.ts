@@ -13,9 +13,9 @@ import {
 } from "@openid/appauth";
 import { NodeBasedHandler, NodeRequestor } from "@openid/appauth/built/node_support";
 import { StringMap } from "@openid/appauth/built/types";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.OidcDeviceClient;
+const loggerCategory: string = ClientsBackendLoggerCategory.OidcDeviceClient;
 
 /** @beta */
 export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient {

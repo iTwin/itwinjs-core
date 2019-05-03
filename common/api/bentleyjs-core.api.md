@@ -71,6 +71,11 @@ export class BentleyError extends Error {
 }
 
 // @public
+export enum BentleyLoggerCategory {
+    Performance = "Performance"
+}
+
+// @public
 export enum BentleyStatus {
     // (undocumented)
     ERROR = 32768,
@@ -863,11 +868,6 @@ export class Logger {
     static turnOffCategories(): void;
     static turnOffLevelDefault(): void;
     static validateProps(config: any): void;
-}
-
-// @public
-export enum LoggerCategory {
-    Performance = "Performance"
 }
 
 // @public

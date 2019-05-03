@@ -17,11 +17,11 @@ import { IModelJsNative } from "./IModelJsNative";
 import { IModelDb, OpenParams, SyncMode, AccessMode, ExclusiveAccessOption } from "./IModelDb";
 import { IModelHost, Platform } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import * as path from "path";
 import * as glob from "glob";
 
-const loggerCategory: string = LoggerCategory.IModelDb;
+const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** The Id assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels
  * @internal

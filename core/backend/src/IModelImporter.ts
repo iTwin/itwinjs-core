@@ -9,10 +9,10 @@ import { DefinitionPartition, Drawing, Element, InformationPartitionElement, She
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsNative } from "./IModelJsNative";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ElementRefersToElements, RelationshipProps } from "./Relationship";
 
-const loggerCategory: string = LoggerCategory.IModelImporter;
+const loggerCategory: string = BackendLoggerCategory.IModelImporter;
 
 /** @alpha */
 export class IModelImporter {

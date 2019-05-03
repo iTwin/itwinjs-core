@@ -8,7 +8,7 @@
  * @see [Logger]($bentley)
  * @public
  */
-export enum LoggerCategory {
+export enum BentleyLoggerCategory {
   /** The logger category used by common classes relating to ElementProps. */
   Performance = "Performance",
 }

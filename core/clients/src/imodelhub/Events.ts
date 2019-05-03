@@ -5,7 +5,7 @@
 /** @module iModelHubEvents */
 import { ClientRequestContext, GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { AccessToken } from "../Token";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, Response } from "./../Request";
@@ -15,7 +15,7 @@ import { ArgumentCheck } from "./Errors";
 import { BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription } from "./EventsBase";
 import { LockLevel, LockType } from "./Locks";
 
-const loggerCategory: string = LoggerCategory.IModelHub;
+const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /** Type of [[IModelHubEvent]]. Event type is used to define which events you wish to receive from your [[EventSubscription]]. See [[EventSubscriptionHandler.create]] and [[EventSubscriptionHandler.update]].
  * @public

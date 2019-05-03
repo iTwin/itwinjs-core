@@ -12,7 +12,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcProtocolEvent } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
-import { LoggerCategory } from "../../LoggerCategory";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 
 // tslint:disable-next-line:no-var-requires
 const os = (typeof (process) !== "undefined") ? require("os") : undefined;
@@ -33,16 +33,16 @@ export class WebAppRpcLogging {
   public static logProtocolEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): void {
     if (object instanceof WebAppRpcRequest) {
       switch (event) {
-        case RpcProtocolEvent.RequestCreated: return WebAppRpcLogging.logRequest(LoggerCategory.RpcInterfaceFrontend, "RpcInterface.frontend.request", object);
-        case RpcProtocolEvent.ResponseLoaded: return WebAppRpcLogging.logResponse(LoggerCategory.RpcInterfaceFrontend, "RpcInterface.frontend.response", object, object.metadata.status, object.elapsed);
+        case RpcProtocolEvent.RequestCreated: return WebAppRpcLogging.logRequest(CommonLoggerCategory.RpcInterfaceFrontend, "RpcInterface.frontend.request", object);
+        case RpcProtocolEvent.ResponseLoaded: return WebAppRpcLogging.logResponse(CommonLoggerCategory.RpcInterfaceFrontend, "RpcInterface.frontend.response", object, object.metadata.status, object.elapsed);
         case RpcProtocolEvent.ConnectionErrorReceived: return WebAppRpcLogging.logErrorFrontend("RpcInterface.frontend.connectionError", object);
         case RpcProtocolEvent.ConnectionAborted: return WebAppRpcLogging.logErrorFrontend("RpcInterface.frontend.connectionAborted", object);
       }
     } else if (object instanceof RpcInvocation) {
       switch (event) {
-        case RpcProtocolEvent.RequestReceived: return WebAppRpcLogging.logRequest(LoggerCategory.RpcInterfaceBackend, "RpcInterface.backend.request", object.request);
+        case RpcProtocolEvent.RequestReceived: return WebAppRpcLogging.logRequest(CommonLoggerCategory.RpcInterfaceBackend, "RpcInterface.backend.request", object.request);
         case RpcProtocolEvent.BackendErrorOccurred: return WebAppRpcLogging.logErrorBackend("RpcInterface.backend.error", object);
-        case RpcProtocolEvent.BackendResponseCreated: return WebAppRpcLogging.logResponse(LoggerCategory.RpcInterfaceBackend, "RpcInterface.backend.response", object.request, object.status, object.elapsed);
+        case RpcProtocolEvent.BackendResponseCreated: return WebAppRpcLogging.logResponse(CommonLoggerCategory.RpcInterfaceBackend, "RpcInterface.backend.response", object.request, object.status, object.elapsed);
       }
     }
   }
@@ -114,7 +114,7 @@ export class WebAppRpcLogging {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(request.operation);
     const pathIds = WebAppRpcLogging.findPathIds(request.path);
 
-    Logger.logInfo(LoggerCategory.RpcInterfaceFrontend, `${message}.${operationDescriptor}`, () => ({
+    Logger.logInfo(CommonLoggerCategory.RpcInterfaceFrontend, `${message}.${operationDescriptor}`, () => ({
       method: request.method,
       path: request.path,
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
@@ -128,7 +128,7 @@ export class WebAppRpcLogging {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(invocation.operation);
     const pathIds = WebAppRpcLogging.findPathIds(invocation.request.path);
 
-    Logger.logInfo(LoggerCategory.RpcInterfaceBackend, `${message}.${operationDescriptor}`, () => ({
+    Logger.logInfo(CommonLoggerCategory.RpcInterfaceBackend, `${message}.${operationDescriptor}`, () => ({
       method: invocation.request.method,
       path: invocation.request.path,
       status: invocation.status,

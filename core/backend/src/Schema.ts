@@ -9,9 +9,9 @@ import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { ClassRegistry } from "./ClassRegistry";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { LoggerCategory } from "./LoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
-const loggerCategory: string = LoggerCategory.Schemas;
+const loggerCategory: string = BackendLoggerCategory.Schemas;
 
 /** Base class for all schema classes - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).
  * @public

@@ -7,12 +7,12 @@ import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContex
 import { Client } from "../Client";
 import { Config } from "../Config";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
-import { LoggerCategory } from "../LoggerCategory";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { request, RequestOptions, Response } from "../Request";
 import { AccessToken, AuthorizationToken, IncludePrefix } from "../Token";
 import { FeatureLogEntryJson, LogEntryConverter, UsageLogEntryJson } from "./LogEntryConverter";
 
-const loggerCategory: string = LoggerCategory.UlasClient;
+const loggerCategory: string = ClientsLoggerCategory.UlasClient;
 
 /** Represents one of the potential usage types.
  * See also

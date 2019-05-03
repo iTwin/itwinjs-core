@@ -157,12 +157,12 @@
 // @todo Update example with property type conversions once that's available.
 
 import { assert, Logger } from "@bentley/bentleyjs-core";
-import { LoggerCategory } from "./LoggerCategory";
+import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 
 /** @internal */
 export type ConstructorType = new () => any;
 
-const loggerCategory: string = LoggerCategory.ECJson;
+const loggerCategory: string = ClientsLoggerCategory.ECJson;
 const className = "className";
 
 /** @internal */

@@ -10,11 +10,11 @@ import * as xpath from "xpath";
 import { IAuthorizationClient } from "./AuthorizationClient";
 import { Client } from "./Client";
 import { Config } from "./Config";
-import { LoggerCategory } from "./LoggerCategory";
+import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 import { request, RequestOptions, Response } from "./Request";
 import { AccessToken, AuthorizationToken } from "./Token";
 
-const loggerCategory: string = LoggerCategory.ImsClients;
+const loggerCategory: string = ClientsLoggerCategory.ImsClients;
 
 /** Interface for user credentials for programmatic login to IMS
  * Note: This can only be used in test environments. In a real application, the password cannot be explicitly used in any API.
