@@ -26,6 +26,8 @@ import {
   ViewFlags,
   ColorDef,
   SkyBoxProps,
+  HiddenLine,
+  LinePixels,
 } from "@bentley/imodeljs-common";
 import { CheckBox, createCheckBox } from "./CheckBox";
 import { createComboBox, ComboBox } from "./ComboBox";
@@ -33,7 +35,9 @@ import { createSlider, Slider } from "./Slider";
 import { createButton } from "./Button";
 import { ToolBarDropDown } from "./ToolBar";
 import { createRadioBox, RadioBox } from "./RadioBox";
-import { createColorInput, ColorInput } from "./ColorInput";
+import { createColorInput, ColorInput, ColorInputProps } from "./ColorInput";
+import { createNumericInput } from "./NumericInput";
+import { isString } from "util";
 
 type UpdateAttribute = (view: ViewState) => void;
 
@@ -43,6 +47,7 @@ type SkyboxType = "2colors" | "4colors";
 
 export class ViewAttributes {
   private static _expandViewFlags = false;
+  private static _expandEdgeDisplay = false;
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
   private readonly _updates: UpdateAttribute[] = [];
@@ -120,8 +125,6 @@ export class ViewAttributes {
     this.addViewFlagAttribute(flagsDiv, "Fill", "fill");
     this.addViewFlagAttribute(flagsDiv, "Materials", "materials");
     this.addViewFlagAttribute(flagsDiv, "Textures", "textures");
-    this.addViewFlagAttribute(flagsDiv, "Visible Edges", "visibleEdges", true);
-    this.addViewFlagAttribute(flagsDiv, "Hidden Edges", "hiddenEdges", true);
     this.addViewFlagAttribute(flagsDiv, "Monochrome", "monochrome");
     this.addViewFlagAttribute(flagsDiv, "Constructions", "constructions");
     this.addViewFlagAttribute(flagsDiv, "Transparency", "transparency");
@@ -135,6 +138,8 @@ export class ViewAttributes {
 
     // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
     flagsDiv.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
+
+    this.addEdgeDisplay();
 
     this.addEnvironmentEditor();
 
@@ -150,6 +155,256 @@ export class ViewAttributes {
   public dispose(): void {
     this._removeMe();
     this._parent.removeChild(this._element);
+  }
+
+  private addEdgeDisplay(): void {
+    const edgeDisplayHeader = document.createElement("div");
+    edgeDisplayHeader.style.width = "100%";
+    const edgeDisplayToggle = document.createElement("span");
+    edgeDisplayToggle.innerText = "Edge Display";
+    edgeDisplayHeader.appendChild(edgeDisplayToggle);
+
+    const toggleEDButton = createButton({
+      parent: edgeDisplayHeader,
+      inline: true,
+      handler: () => {
+        ViewAttributes._expandEdgeDisplay = !ViewAttributes._expandEdgeDisplay;
+        edgeDisplayDiv.style.display = ViewAttributes._expandEdgeDisplay ? "block" : "none";
+        toggleEDButton.button.value = ViewAttributes._expandEdgeDisplay ? "-" : "+";
+      },
+      value: ViewAttributes._expandEdgeDisplay ? "-" : "+",
+    });
+    toggleEDButton.div.style.cssFloat = "right";
+
+    edgeDisplayHeader.appendChild(document.createElement("hr"));
+    this._element.appendChild(edgeDisplayHeader);
+    const edgeDisplayDiv = document.createElement("div");
+    this._element.appendChild(edgeDisplayDiv);
+
+    // Create Visible Edges Checkbox
+    const visEdgesCb = this.addCheckbox("Visible Edges", (enabled: boolean) => {
+      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
+      vf.visibleEdges = enabled;
+      this._vp.viewFlags = vf;
+      this.sync();
+    }, edgeDisplayDiv);
+    const visEdgeDiv = this.addHiddenLineEditor(visEdgesCb, edgeDisplayDiv);
+
+    // Create Hidden Edges Checkbox
+    const hidEdgesCb = this.addCheckbox("Hidden Edges", (enabled: boolean) => {
+      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
+      vf.hiddenEdges = enabled;
+      this._vp.viewFlags = vf;
+      this.sync();
+    }, edgeDisplayDiv);
+    hidEdgesCb.checkbox.disabled = true;
+    const hidEdgeDiv = this.addHiddenLineEditor(hidEdgesCb, edgeDisplayDiv, true);
+    this._updates.push((view) => {
+      visEdgeDiv.hidden = !view.viewFlags.visibleEdges;
+      hidEdgeDiv.hidden = !view.viewFlags.hiddenEdges;
+      hidEdgesCb.checkbox.disabled = !view.viewFlags.visibleEdges;
+      const visWeightChecked = (visEdgeDiv.children[2].children[0] as HTMLInputElement).checked;
+      const hidWeightChecked = (hidEdgeDiv.children[2].children[0] as HTMLInputElement).checked;
+      if (visWeightChecked && hidWeightChecked) {
+        const visWeight = (visEdgeDiv.children[2].children[2] as HTMLInputElement).value; // visEdgeDiv.children.item(2) !== null ? visEdgeDiv.children.item(2)!.children.item(2)!.value;
+        const hidWeight = (hidEdgeDiv.children[2].children[2] as HTMLInputElement).value;
+        if (parseInt(hidWeight, 10) > parseInt(visWeight, 10)) {
+          (hidEdgeDiv.children[2].children[2] as HTMLInputElement).value = visWeight;
+        }
+      } else if (!visWeightChecked && hidWeightChecked) {
+        (hidEdgeDiv.children[2].children[2] as HTMLInputElement).value = "1";
+      }
+    });
+
+    // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
+    edgeDisplayDiv.style.display = ViewAttributes._expandEdgeDisplay ? "block" : "none";
+  }
+
+  private addHiddenLineEditor(parentCb: CheckBox, parent: HTMLDivElement, hiddenEdge?: true): HTMLDivElement {
+    const oldHLSettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings;
+    const oldHLEdgeSettings = hiddenEdge ? oldHLSettings.hidden : oldHLSettings.visible;
+    const hlDiv = document.createElement("div");
+    hlDiv.hidden = hiddenEdge ? !this._vp.view.viewFlags.hiddenEdges : !this._vp.view.viewFlags.visibleEdges;
+
+    // Create transparency threshold checkbox and slider
+    const transDiv = document.createElement("div");
+    const transCb = document.createElement("input");
+    transCb.type = "checkbox";
+    transCb.id = "cb_ovrTrans";
+    transDiv.appendChild(transCb);
+    const label4 = document.createElement("label");
+    label4.htmlFor = "cb_ovrTrans";
+    label4.innerText = "Transparency Threshold ";
+    transDiv.appendChild(label4);
+    const slider = document.createElement("input");
+    slider.type = "range";
+    slider.className = "slider";
+    slider.min = "0.0";
+    slider.max = "1.0";
+    slider.step = "0.05";
+    slider.value = oldHLSettings.transparencyThreshold.toString();
+    slider.disabled = true;
+    transDiv.appendChild(slider);
+    slider.addEventListener("input", () => {
+      this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
+        colorCb.checked ? new ColorDef(colorInput.value) : (oldHLEdgeSettings.ovrColor ? oldHLEdgeSettings.color : undefined),
+        parseInt(patternCb.select.value, 10), // oldHLEdgeSettings.pattern,
+        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : oldHLEdgeSettings.width,
+        hiddenEdge);
+    });
+    transCb.addEventListener("click", () => {
+      slider.disabled = !transCb.checked;
+      this.updateEdgeDisplay(hlDiv, transCb.checked ? parseFloat(slider.value) : undefined,
+        colorCb.checked ? new ColorDef(colorInput.value) : (oldHLEdgeSettings.ovrColor ? oldHLEdgeSettings.color : undefined),
+        parseInt(patternCb.select.value, 10), // oldHLEdgeSettings.pattern,
+        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : oldHLEdgeSettings.width,
+        hiddenEdge);
+    });
+    hlDiv.appendChild(transDiv);
+
+    // Create color checkbox and color picker
+    const colorDiv = document.createElement("div");
+    const colorCb = document.createElement("input");
+    colorCb.type = "checkbox";
+    colorCb.id = "cb_ovrColor";
+    colorDiv.appendChild(colorCb);
+    const props: ColorInputProps = {
+      parent: colorDiv,
+      id: "color_ovrColor",
+      label: "Color",
+      value: oldHLEdgeSettings.color ? oldHLEdgeSettings.color.toHexString() : "#ffffff",
+      display: "inline",
+      disabled: true,
+      handler: (value: string) =>
+        this.updateEdgeDisplay(hlDiv, transCb.checked ? parseFloat(slider.value) : oldHLSettings.transparencyThreshold,
+          colorCb.checked ? new ColorDef(value) : (oldHLEdgeSettings.ovrColor ? oldHLEdgeSettings.color : undefined),
+          parseInt(patternCb.select.value, 10),
+          lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : oldHLEdgeSettings.width,
+          hiddenEdge),
+    };
+    const colorInput: HTMLInputElement = createColorInput(props).input;
+    colorCb.addEventListener("click", () => {
+      colorInput.disabled = !colorCb.checked;
+      this.updateEdgeDisplay(hlDiv, transCb.checked ? parseFloat(slider.value) : oldHLSettings.transparencyThreshold,
+        colorCb.checked ? new ColorDef(colorInput.value) : (oldHLEdgeSettings.ovrColor ? oldHLEdgeSettings.color : undefined),
+        parseInt(patternCb.select.value, 10),
+        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : oldHLEdgeSettings.width,
+        hiddenEdge);
+    });
+    hlDiv.appendChild(colorDiv);
+    if (hiddenEdge) {
+      colorDiv.hidden = true;
+      colorCb.hidden = true;
+    }
+
+    // Create weight checkbox and numeric input
+    const lbDiv = document.createElement("div");
+    const lbCb = document.createElement("input");
+    lbCb.type = "checkbox";
+    lbCb.id = "cb_ovrWeight";
+    lbDiv.appendChild(lbCb);
+    const label = document.createElement("label");
+    label.htmlFor = "cb_ovrWeight";
+    label.innerText = "Weight ";
+    lbDiv.appendChild(label);
+    const num = createNumericInput({
+      parent: lbDiv,
+      value: 1,
+      disabled: true,
+      min: 1,
+      max: 31,
+      step: 1,
+      handler: (value) => {
+        this.updateEdgeDisplay(hlDiv, transCb.checked ? parseFloat(slider.value) : oldHLSettings.transparencyThreshold,
+          colorCb.checked ? new ColorDef(colorInput.value) : (oldHLEdgeSettings.ovrColor ? oldHLEdgeSettings.color : undefined),
+          parseInt(patternCb.select.value, 10),
+          lbCb.checked ? value : oldHLEdgeSettings.width,
+          hiddenEdge);
+      },
+    });
+    lbDiv.appendChild(num);
+    lbCb.addEventListener("click", () => {
+      num.disabled = !lbCb.checked;
+      this.updateEdgeDisplay(hlDiv, transCb.checked ? parseFloat(slider.value) : oldHLSettings.transparencyThreshold,
+        colorCb.checked ? new ColorDef(colorInput.value) : (oldHLEdgeSettings.ovrColor ? oldHLEdgeSettings.color : undefined),
+        parseInt(patternCb.select.value, 10),
+        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : oldHLEdgeSettings.width,
+        hiddenEdge);
+    });
+    hlDiv.appendChild(lbDiv);
+
+    // Create style combo box
+    const entries = [
+      { name: "Not Overridden", value: undefined },
+      { name: "Solid", value: LinePixels.Solid },
+      { name: "Hidden Line", value: LinePixels.HiddenLine },
+      { name: "Invisible", value: LinePixels.Invisible },
+      { name: "Invalid", value: LinePixels.Invalid },
+      { name: "Code1", value: LinePixels.Code1 },
+      { name: "Code2", value: LinePixels.Code2 },
+      { name: "Code3", value: LinePixels.Code3 },
+      { name: "Code4", value: LinePixels.Code4 },
+      { name: "Code5", value: LinePixels.Code5 },
+      { name: "Code6", value: LinePixels.Code6 },
+      { name: "Code7", value: LinePixels.Code7 },
+    ];
+    const patternCb = createComboBox({
+      parent: hlDiv,
+      entries,
+      id: "ovr_Style",
+      name: "Style ",
+      value: oldHLEdgeSettings.pattern,
+      handler: (select) => {
+        this.updateEdgeDisplay(hlDiv, transCb.checked ? parseFloat(slider.value) : oldHLSettings.transparencyThreshold,
+          colorCb.checked ? new ColorDef(colorInput.value) : (oldHLEdgeSettings.ovrColor ? oldHLEdgeSettings.color : undefined),
+          parseInt(select.value, 10),
+          lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : oldHLEdgeSettings.width,
+          hiddenEdge);
+      },
+    });
+    parent.appendChild(hlDiv);
+
+    // Add to update list
+    const update = (view: ViewState) => {
+      parentCb.div.style.display = "block";
+      const checked = parentCb.checkbox.checked;
+      parentCb.checkbox.checked = view.viewFlags[hiddenEdge ? "hiddenEdges" : "visibleEdges"];
+      this.updateEdgeDisplay(hlDiv, checked && transCb.checked ? parseFloat(slider.value) : oldHLSettings.transparencyThreshold,
+        checked && colorCb.checked ? new ColorDef(colorInput.value) : (oldHLEdgeSettings.ovrColor ? oldHLEdgeSettings.color : undefined),
+        parseInt(patternCb.select.value, 10), // oldHLEdgeSettings.pattern,
+        checked && lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : oldHLEdgeSettings.width,
+        hiddenEdge);
+    };
+    this._updates.push(update);
+
+    return hlDiv;
+  }
+
+  private updateEdgeDisplay(parent: HTMLDivElement, transThresh?: number, color?: ColorDef, pattern?: LinePixels, width?: number, hiddenEdge?: true): void {
+    const oldHLSettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings;
+    const newHLSettings = HiddenLine.Settings.fromJSON({
+      visible: hiddenEdge ? oldHLSettings.visible : HiddenLine.Style.fromJSON({
+        ovrColor: color ? true : false,
+        color,
+        pattern,
+        width,
+      }),
+      hidden: !hiddenEdge ? HiddenLine.Style.fromJSON({
+        ovrColor: oldHLSettings.hidden.ovrColor,
+        color: oldHLSettings.hidden.color,
+        pattern: oldHLSettings.hidden.pattern,
+        width: (oldHLSettings.hidden.width === undefined || (width !== undefined && oldHLSettings.hidden.width <= width) ? oldHLSettings.hidden.width : width), // verify hidden width <= visible width
+      }) : HiddenLine.Style.fromJSON({
+        ovrColor: color ? true : false,
+        color,
+        pattern,
+        width: (width === undefined || (oldHLSettings.visible.width !== undefined && width <= oldHLSettings.visible.width) ? width : oldHLSettings.visible.width), // verify hidden width <= visible width
+      }, true),
+      transThreshold: transThresh,
+    });
+    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings = newHLSettings;
+    this.sync();
+    parent.hidden = hiddenEdge ? !this._vp.view.viewFlags.hiddenEdges : !this._vp.view.viewFlags.visibleEdges;
   }
 
   private addDisplayStylePicker(): void {
@@ -821,7 +1076,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
     const loadingComboBox = createComboBox({
       name: "Style: ",
       id: "DisplayStyles",
-      entries: [{name: "Now Loading...", value: undefined}],
+      entries: [{ name: "Now Loading...", value: undefined }],
     });
     if (undefined === this._displayStylePickerInput)
       this._attributes.displayStylePickerInput = loadingComboBox;
