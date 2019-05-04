@@ -653,10 +653,12 @@ describe("ClipPrimitive", () => {
 
   it("ClipVectorWithHole", () => {
     const ck = new Checker();
-    const outerClip = ClipPrimitive.createCapture(ConvexClipPlaneSet.createXYBox(-1, -2, 8, 10));
-    ck.testFalse (outerClip.invisible);
+    const convexClip = ConvexClipPlaneSet.createXYBox(-1, -2, 8, 10);
+    const outerClip = ClipPrimitive.createCapture(convexClip.clone());
+    ck.testFalse(outerClip.invisible);
+    const rangeB = Range3d.createXYZXYZ(2000, 2000, 2000, 2001, 2001, 2001);
     const holeClip = ClipPrimitive.createCapture(ConvexClipPlaneSet.createXYBox(1, 1, 4, 5), true);
-    ck.testTrue (holeClip.invisible);
+    ck.testTrue(holeClip.invisible);
     const clipVector0 = ClipVector.create([outerClip, holeClip]);
     const clipVector1 = clipVector0.clone();
     const json0 = clipVector0.toJSON();
@@ -673,15 +675,29 @@ describe("ClipPrimitive", () => {
     }
     const bigQ = 1000.0;
     const outerRange = Range3d.createXYZXYZ(-bigQ, -bigQ, -bigQ, bigQ, bigQ, bigQ);
-    const rangeOfUndefinedClipper = ClipUtilities.rangeOfClipperIntersectionWithRange(undefined, outerRange);
-    ck.testRange3d(rangeOfUndefinedClipper, outerRange);
-    const outerClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(outerClip, outerRange);
-    const holeClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(holeClip, outerRange);
-    const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clipVector1, outerRange);
-    console.log("outerRange", outerRange);
-    console.log("outerClipRange", outerClipRange);
-    console.log("holeClipRange", holeClipRange);
-    console.log("clippedRange", clippedRange);
+
+    for (const range of [outerRange, rangeB]) {
+      const rangeOfUndefinedClipper = ClipUtilities.rangeOfClipperIntersectionWithRange(undefined, range);
+      ck.testRange3d(rangeOfUndefinedClipper, range, "undefined clipper");
+      ck.testBoolean(ClipUtilities.doesClipperIntersectRange(undefined, range), !rangeOfUndefinedClipper.isNull);
+
+      const outerClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(outerClip, range);
+      ck.testBoolean(ClipUtilities.doesClipperIntersectRange(outerClip, range), !outerClipRange.isNull, "outer clipper");
+
+      const holeClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(holeClip, range);
+      ck.testBoolean(ClipUtilities.doesClipperIntersectRange(holeClip, range), !holeClipRange.isNull, "hole clipper");
+
+      const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clipVector1, range);
+      ck.testBoolean(ClipUtilities.doesClipperIntersectRange(clipVector1, range), !clippedRange.isNull, "ClipVector clipper");
+
+      const convexClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(convexClip, range);
+      ck.testBoolean(ClipUtilities.doesClipperIntersectRange(convexClip, range), !convexClipRange.isNull, "convex clipper");
+
+      console.log("outerRange", outerRange);
+      console.log("outerClipRange", outerClipRange);
+      console.log("holeClipRange", holeClipRange);
+      console.log("clippedRange", clippedRange);
+    }
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });

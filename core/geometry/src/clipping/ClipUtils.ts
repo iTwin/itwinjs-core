@@ -283,4 +283,94 @@ export class ClipUtilities {
     }
     return range.clone();
   }
+  /**
+   * Test if various types of clippers have any intersection with a range.
+   * * This follows the same logic as `rangeOfClipperIntersectionWithRange` but attempts to exit at earliest point of confirmed intersection
+   * * `ConvexClipPlaneSet` -- dispatch to `doesConvexClipPlaneSetIntersectRange`
+   * * `UnionOfConvexClipPlaneset` -- union of ranges of member `ConvexClipPlaneSet`
+   * * `ClipPrimitive` -- access its `UnionOfConvexClipPlaneSet`.
+   * * `ClipVector` -- intersection of the ranges of its `ClipPrimitive`.
+   * * `undefined` -- entire input range.
+   * * If `observeInvisibleFlag` is false, the "invisbile" properties are ignored, and holes do not affect the result.
+   * * If `observeInvisibleFlag` is true, the "invisbile" properties are observed, and may affect the result.
+   * @param clipper
+   * @param range non-null range.
+   * @param observeInvisibleFlag indicates how "invisible" bit is applied for ClipPrimitive.
+   */
+  public static doesClipperIntersectRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag: boolean = true): boolean {
+    if (clipper === undefined)
+      return true;
+
+    if (clipper instanceof ConvexClipPlaneSet)
+      return this.doesConvexClipPlaneSetIntersectRange(clipper, range);
+
+    if (clipper instanceof UnionOfConvexClipPlaneSets) {
+      for (const c of clipper.convexSets) {
+        if (this.doesConvexClipPlaneSetIntersectRange(c, range))
+          return true;
+      }
+      return false;
+    }
+
+    if (clipper instanceof ClipPrimitive) {
+      if (observeInvisibleFlag && clipper.invisible)    // um is there an easy way to detect range-completely-inside?
+        return true;
+      return this.doesClipperIntersectRange(clipper.fetchClipPlanesRef(), range);
+    }
+
+    if (clipper instanceof ClipVector) {
+      const rangeIntersection = range.clone();
+      for (const c of clipper.clips) {
+        if (observeInvisibleFlag && c.invisible) {
+          // trivial range tests do not expose the effects.   Assume the hole allows everything.
+        } else {
+          const rangeC = this.rangeOfClipperIntersectionWithRange(c, range, observeInvisibleFlag);
+          rangeIntersection.intersect(rangeC, rangeIntersection);
+        }
+      }
+      return !rangeIntersection.isNull;
+    }
+    /** If the case statement above is complete for the variant inputs, this is unreachable .. */
+    return false;
+  }
+  /**
+   * Emit point loops for intersection of a covnex set with a range.
+   * * return zero length array for (a) null range or (b) no intersectionis
+   * @param range range to intersect
+   * @param includeConvexSetFaces if false, do not compute facets originating as convex set planes.
+   * @param includeRangeFaces if false, do not compute facets originating as range faces
+   * @param ignoreInvisiblePlanes if true, do NOT compute a facet for convex set faces marked invisible.
+   */
+  public static doesConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d,
+    includeConvexSetFaces: boolean = true, includeRangeFaces: boolean = true, ignoreInvisiblePlanes = false): boolean {
+    const work: Point3d[] = [];
+    if (includeConvexSetFaces) {
+      // Clip convexSet planes to the range and to the rest of the convexSet . .
+      for (const plane of convexSet.planes) {
+        if (ignoreInvisiblePlanes && plane.invisible)
+          continue;
+        const pointsClippedToRange = plane.intersectRange(range, true);
+        if (pointsClippedToRange) {
+          const finalPoints: Point3d[] = [];
+          convexSet.polygonClip(pointsClippedToRange, finalPoints, work, plane);
+          if (finalPoints.length > 0)
+            return true;
+        }
+      }
+    }
+
+    if (includeRangeFaces) {
+      // clip range faces to the convex set . . .
+      const corners = range.corners();
+      for (let i = 0; i < 6; i++) {
+        const indices = Range3d.faceCornerIndices(i);
+        const finalPoints: Point3d[] = [];
+        const lineString = LineString3d.createIndexedPoints(corners, indices);
+        convexSet.polygonClip(lineString.points, finalPoints, work);
+        if (finalPoints.length > 0)
+          return true;
+      }
+    }
+    return false;
+  }
 }
