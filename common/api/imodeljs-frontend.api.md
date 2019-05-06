@@ -4720,6 +4720,8 @@ export abstract class RenderSystem implements IDisposable {
     onInitialized(): void;
     // @internal
     readonly options: RenderSystem.Options;
+    // @internal (undocumented)
+    readonly supportsInstancing: boolean;
 }
 
 // @public

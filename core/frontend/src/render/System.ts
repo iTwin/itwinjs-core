@@ -849,6 +849,9 @@ export abstract class RenderSystem implements IDisposable {
   public get maxTextureSize(): number { return 0; }
 
   /** @internal */
+  public get supportsInstancing(): boolean { return true; }
+
+  /** @internal */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
   /** @internal */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;

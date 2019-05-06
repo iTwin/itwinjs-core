@@ -10,6 +10,7 @@ import { Dictionary, SortedArray, PriorityQueue, assert } from "@bentley/bentley
 import { RpcOperation, IModelTileRpcInterface, TileTreeProps } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";
+import { IModelApp } from "../IModelApp";
 
 /** Provides functionality associated with [[Tile]]s, mostly in the area of scheduling requests for tile content.
  * The TileAdmin tracks [[Viewport]]s which have requested tile content, maintaining a priority queue of pending requests and
@@ -348,7 +349,7 @@ class Admin extends TileAdmin {
     super();
 
     if (undefined === options)
-      options = { };
+      options = {};
 
     this._throttle = !options.disableThrottling;
     this._maxActiveRequests = undefined !== options.maxActiveRequests ? options.maxActiveRequests : 10;
@@ -360,7 +361,7 @@ class Admin extends TileAdmin {
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
   }
 
-  public get enableInstancing() { return this._enableInstancing; }
+  public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   public get elideEmptyChildContentRequests() { return this._elideEmptyChildContentRequests; }
   public get requestTilesWithoutEdges() { return this._requestTilesWithoutEdges; }
 
