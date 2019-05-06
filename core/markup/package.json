@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-markup",
-  "version": "0.191.0-dev.66",
+  "version": "0.191.0-dev.67",
   "description": "iModel.js markup package",
   "license": "MIT",
   "main": "lib/imodeljs-markup.js",
@@ -46,20 +46,20 @@
     "@svgdotjs/svg.js": "~3.0.12"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^0.191.0-dev.66",
-    "@bentley/imodeljs-frontend": "^0.191.0-dev.66",
-    "@bentley/imodeljs-common": "^0.191.0-dev.66",
-    "@bentley/geometry-core": "^0.191.0-dev.66",
-    "@bentley/imodeljs-i18n": "^0.191.0-dev.66"
+    "@bentley/bentleyjs-core": "^0.191.0-dev.67",
+    "@bentley/imodeljs-frontend": "^0.191.0-dev.67",
+    "@bentley/imodeljs-common": "^0.191.0-dev.67",
+    "@bentley/geometry-core": "^0.191.0-dev.67",
+    "@bentley/imodeljs-i18n": "^0.191.0-dev.67"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.66",
-    "@bentley/imodeljs-frontend": "0.191.0-dev.66",
-    "@bentley/imodeljs-common": "0.191.0-dev.66",
-    "@bentley/geometry-core": "0.191.0-dev.66",
-    "@bentley/imodeljs-i18n": "0.191.0-dev.66",
-    "@bentley/build-tools": "0.191.0-dev.66",
-    "@bentley/webpack-tools": "0.191.0-dev.66",
+    "@bentley/bentleyjs-core": "0.191.0-dev.67",
+    "@bentley/imodeljs-frontend": "0.191.0-dev.67",
+    "@bentley/imodeljs-common": "0.191.0-dev.67",
+    "@bentley/geometry-core": "0.191.0-dev.67",
+    "@bentley/imodeljs-i18n": "0.191.0-dev.67",
+    "@bentley/build-tools": "0.191.0-dev.67",
+    "@bentley/webpack-tools": "0.191.0-dev.67",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
