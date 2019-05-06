@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "wrap applicationId & applicationVersion in IModelApp",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "evan.preslar@bentley.com"
+}

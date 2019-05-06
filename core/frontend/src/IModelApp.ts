@@ -84,10 +84,31 @@ export class IModelApp {
   public static i18n: I18N;
   /** The [[SettingsAdmin]] for this session. */
   public static settings: SettingsAdmin;
+
+  /** Because static members are inheritable in Typescript, it is valid to access these static members using the 'this' keyword on any derived class.
+   * In such cases, the 'this' keyword is interpreted as the class scope that is making the call.
+   * This feature conflicts, however, with Typescript's arrow functions, which always preserve the meaning of 'this' from the scope in which they were declared.
+   * Because arrow functions break static inheritance, it is thus unreliable to use 'this' within arrow functions defined in a static scope.
+   * In order to grant flexibility to the deriving class when setting inherited static values, we wrap a private field on the base class with inheritable accessors,
+   * so that all derived classes set the field on the base class regardless of the assignment method employed.
+   */
+  private static _applicationId: string;
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
-  public static applicationId: string;
+  public static get applicationId(): string { return IModelApp._applicationId; }
+  public static set applicationId(applicationId: string) { IModelApp._applicationId = applicationId; }
+
+  /** Because static members are inheritable in Typescript, it is valid to access these static members using the 'this' keyword on any derived class.
+   * In such cases, the 'this' keyword is interpreted as the class scope that is making the call.
+   * This feature conflicts, however, with Typescript's arrow functions, which always preserve the meaning of 'this' from the scope in which they were declared.
+   * Because arrow functions break static inheritance, it is thus unreliable to use 'this' within arrow functions defined in a static scope.
+   * In order to grant flexibility to the deriving class when setting inherited static values, we wrap a private field on the base class with inheritable accessors,
+   * so that all derived classes set the field on the base class regardless of the assignment method employed.
+   */
+  private static _applicationVersion: string;
   /** The version of this application. Must be set for usage logging. */
-  public static applicationVersion: string;
+  public static get applicationVersion(): string { return IModelApp._applicationVersion; }
+  public static set applicationVersion(applicationVersion: string) { IModelApp._applicationVersion = applicationVersion; }
+
   /** A uniqueId for this session */
   public static sessionId: GuidString;
   /** @internal */
@@ -159,7 +180,7 @@ export class IModelApp {
     this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!IModelApp.settings) IModelApp.settings = new ConnectSettingsClient(this.applicationId);
+    if (!IModelApp.settings) IModelApp.settings = new ConnectSettingsClient(IModelApp.applicationId);
     if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem(renderSysOpt);
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
     if (!IModelApp.tileAdmin) IModelApp.tileAdmin = TileAdmin.create();
@@ -228,9 +249,9 @@ export class IModelApp {
       }
       return {
         id,
-        applicationId: this.applicationId,
-        applicationVersion: this.applicationVersion,
-        sessionId: this.sessionId,
+        applicationId: IModelApp.applicationId,
+        applicationVersion: IModelApp.applicationVersion,
+        sessionId: IModelApp.sessionId,
         authorization,
         userId,
       };
