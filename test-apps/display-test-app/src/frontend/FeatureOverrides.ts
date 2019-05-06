@@ -24,7 +24,7 @@ import { ToolBarDropDown } from "./ToolBar";
 import { createButton } from "./Button";
 import { createNumericInput } from "./NumericInput";
 import { createCheckBox } from "./CheckBox";
-import { createComboBox } from "./ComboBox";
+import { createComboBox, ComboBoxHandler, ComboBox } from "./ComboBox";
 import { createColorInput, convertHexToRgb, ColorInputProps } from "./ColorInput";
 
 export function emphasizeSelectedElements(vp: Viewport): void {
@@ -109,7 +109,7 @@ export class Settings implements IDisposable {
     this.addColor(this._element);
     this.addTransparency(this._element);
     this.addWeight(this._element);
-    this.addStyle(this._element);
+    Settings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10)));
 
     createCheckBox({
       parent: this._element,
@@ -243,7 +243,7 @@ export class Settings implements IDisposable {
     parent.appendChild(div);
   }
 
-  private addStyle(parent: HTMLElement): void {
+  public static addStyle(parent: HTMLElement, value: LinePixels, handler: ComboBoxHandler): ComboBox {
     const entries = [
       { name: "Not overridden", value: LinePixels.Invalid },
       { name: "Solid", value: LinePixels.Solid },
@@ -258,13 +258,13 @@ export class Settings implements IDisposable {
       { name: "Code7", value: LinePixels.Code7 },
     ];
 
-    createComboBox({
+    return createComboBox({
       parent,
       entries,
       id: "ovr_Style",
       name: "Style ",
-      value: LinePixels.Invalid,
-      handler: (select) => this.updateStyle(parseInt(select.value, 10)),
+      value,
+      handler,
     });
   }
 
