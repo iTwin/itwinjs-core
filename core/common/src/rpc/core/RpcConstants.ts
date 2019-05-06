@@ -30,7 +30,7 @@ export enum RpcMarshalingDirective {
 }
 
 /** RPC protocol event types.
- * @internal
+ * @public
  */
 export enum RpcProtocolEvent {
   RequestCreated,
@@ -48,7 +48,7 @@ export enum RpcProtocolEvent {
 }
 
 /** The status of an RPC operation request.
- * @internal
+ * @public
  */
 export enum RpcRequestStatus {
   Unknown,
@@ -62,7 +62,7 @@ export enum RpcRequestStatus {
 }
 
 /** RPC request event types.
- * @internal
+ * @public
  */
 export enum RpcRequestEvent {
   StatusChanged,
@@ -70,7 +70,7 @@ export enum RpcRequestEvent {
 }
 
 /** RPC content types.
- * @internal
+ * @public
  */
 export enum RpcContentType {
   Unknown,
@@ -81,17 +81,16 @@ export enum RpcContentType {
 }
 
 /** RPC supported mobile platforms.
- * @internal
+ * @beta
  */
 export enum RpcMobilePlatform {
   Unknown,
-  Window, // Window Phone
-  Android, // Android OS
-  iOS, // iOS platform
+  Android,
+  iOS,
 }
 
 /** Endpoints for RPC protocols.
- * @internal
+ * @public
  */
 export enum RpcEndpoint {
   Frontend,

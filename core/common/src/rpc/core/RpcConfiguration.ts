@@ -75,7 +75,9 @@ export abstract class RpcConfiguration {
   /** The target interval (in milliseconds) between connection attempts for pending RPC operation requests. */
   public pendingOperationRetryInterval = 10000;
 
-  /** The control channel for the configuration. */
+  /** The control channel for the configuration.
+   * @internal
+   */
   public readonly controlChannel = RpcControlChannel.obtain(this);
 
   /** Initializes the RPC interfaces managed by the configuration. */

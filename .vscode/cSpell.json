@@ -136,6 +136,7 @@
         "Pickable",
         "Polyface",
         "Polyfaces",
+        "polyline",
         "Polylines",
         "postupdate",
         "prerelease",

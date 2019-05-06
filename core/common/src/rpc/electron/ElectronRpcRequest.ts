@@ -10,6 +10,7 @@ import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { RpcProtocolEvent } from "../core/RpcConstants";
 import { ipcTransport } from "./ElectronIpcTransport";
 
+/** @beta */
 export class ElectronRpcRequest extends RpcRequest {
   private _res: (value: number) => void = () => undefined;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;

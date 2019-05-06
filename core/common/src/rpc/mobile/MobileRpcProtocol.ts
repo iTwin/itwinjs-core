@@ -27,6 +27,7 @@ export const interop = (() => {
   return mobilegateway;
 })();
 
+/** @beta */
 export type MobileRpcChunks = Array<string | Uint8Array>;
 
 interface MobileRpcGateway {
@@ -36,7 +37,9 @@ interface MobileRpcGateway {
   port: number;
 }
 
-/** RPC interface protocol for an Mobile-based application. */
+/** RPC interface protocol for an Mobile-based application.
+ * @beta
+ */
 export class MobileRpcProtocol extends RpcProtocol {
   public socket: WebSocket = (undefined as any);
   public requests: Map<string, MobileRpcRequest> = new Map();

@@ -1262,11 +1262,11 @@ export namespace Gradient {
     Cylindrical = 3,
     Spherical = 4,
     Hemispherical = 5,
-    /** @internal */
+    /** @beta */
     Thematic = 6,
   }
 
-  /** @internal */
+  /** @beta */
   export enum ThematicMode {
     Smooth = 0,
     Stepped = 1,
@@ -1284,7 +1284,7 @@ export namespace Gradient {
     Custom = 5,
   }
 
-  /** @internal */
+  /** @beta */
   export interface ThematicSettingsProps {
     mode: ThematicMode;
     stepCount: number;
@@ -1294,7 +1294,9 @@ export namespace Gradient {
     rangeHigh: number;
   }
 
-  /** @internal Gradient settings specific to thematic mesh display */
+  /** Gradient settings specific to thematic mesh display
+   * @beta
+   */
   export class ThematicSettings implements ThematicSettingsProps {
     public mode: ThematicMode = ThematicMode.Smooth;
     public stepCount: number = 10;
@@ -1369,7 +1371,9 @@ export namespace Gradient {
     shift?: number;
     /** Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum */
     keys: KeyColorProps[];
-    /** @internal Settings applicable to meshes and Gradient.Mode.Thematic only */
+    /** Settings applicable to meshes and Gradient.Mode.Thematic only
+     * @beta
+     */
     thematicSettings?: ThematicSettingsProps;
   }
 
@@ -1383,6 +1387,7 @@ export namespace Gradient {
     public angle?: Angle;
     public tint?: number;
     public shift: number = 0;
+    /** @beta */
     public thematicSettings?: ThematicSettings;
     public keys: KeyColor[] = [];
 
@@ -1402,7 +1407,7 @@ export namespace Gradient {
       return result;
     }
 
-    /** @internal */
+    /** @beta */
     public static createThematic(settings: ThematicSettings) {
       const result = new Symb();
       result.mode = Mode.Thematic;
@@ -1816,6 +1821,7 @@ export class GeometryParams {
   public fillTransparency?: number;
   /** Optional geometry classification that can be toggled off with a [[ViewFlags]] independent of [[SubCategoryAppearance.invisible]].
    * Default is [[GeometryClass.Primary]].
+   * @alpha
    */
   public geometryClass?: GeometryClass;
   /** Optional line style to override [[SubCategoryAppearance.styleId]] plus modifiers to override the line style definition.
@@ -1824,6 +1830,7 @@ export class GeometryParams {
   public styleInfo?: LineStyle.Info;
   /** Optional gradient fill settings for region interiors.
    * Valid when [[fillDisplay]] is not [[FillDisplay.Never]].
+   * @beta
    */
   public gradient?: Gradient.Symb;
   /** Optional area pattern settings for region interiors.
@@ -2024,6 +2031,7 @@ export namespace Hilite {
 export class Feature {
   public readonly elementId: string;
   public readonly subCategoryId: string;
+  /** @alpha */
   public readonly geometryClass: GeometryClass;
 
   public constructor(elementId: Id64String = Id64.invalid, subCategoryId: Id64String = Id64.invalid, geometryClass: GeometryClass = GeometryClass.Primary) {

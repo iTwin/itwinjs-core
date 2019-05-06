@@ -159,7 +159,7 @@ export interface AreaFillProps {
     backgroundFill?: BackgroundFill;
     color?: ColorDefProps;
     display: FillDisplay;
-    // Warning: (ae-incompatible-release-tags) The symbol "gradient" is marked as @public, but its signature references "Gradient" which is marked as @beta
+    // @beta
     gradient?: Gradient.SymbProps;
     transparency?: number;
 }
@@ -304,7 +304,6 @@ export enum BatchType {
 
 // @public
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
-    // Warning: (ae-forgotten-export) The symbol "BentleyCloudRpcProtocol" needs to be exported by the entry point imodeljs-common.d.ts
     abstract readonly protocol: BentleyCloudRpcProtocol;
 }
 
@@ -316,11 +315,22 @@ export class BentleyCloudRpcManager extends RpcManager {
 
 // @public
 export interface BentleyCloudRpcParams {
-    // Warning: (ae-incompatible-release-tags) The symbol "info" is marked as @public, but its signature references "OpenAPIInfo" which is marked as @internal
     info: OpenAPIInfo;
     pendingRequestListener?: RpcRequestEventHandler;
     protocol?: typeof BentleyCloudRpcProtocol;
     uriPrefix?: string;
+}
+
+// @public
+export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
+    // (undocumented)
+    checkToken: boolean;
+    getOperationFromPath(path: string): SerializedRpcOperation;
+    inflateToken(tokenFromBody: IModelToken, request: SerializedRpcRequest): IModelToken;
+    serializedClientRequestContextHeaderNames: SerializedClientRequestContext;
+    supplyPathForOperation(operation: RpcOperation, request: RpcRequest | undefined): string;
+    // @internal
+    supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
 }
 
 export { BentleyError }
@@ -562,6 +572,9 @@ export enum ChangeOpCode {
 }
 
 export { ChangeSetStatus }
+
+// @internal (undocumented)
+export const CHANNEL = "@bentley/imodeljs-mobilegateway";
 
 // @beta (undocumented)
 export abstract class CloudStorageCache<TContentId, TContentType> {
@@ -1076,9 +1089,7 @@ export enum CommonLoggerCategory {
 
 // @public
 export interface ContextRealityModelProps {
-    // Warning: (ae-incompatible-release-tags) The symbol "classifiers" is marked as @public, but its signature references "SpatialClassificationProps" which is marked as @beta
-    // 
-    // (undocumented)
+    // @beta (undocumented)
     classifiers?: SpatialClassificationProps.PropertiesProps[];
     // (undocumented)
     description?: string;
@@ -1092,7 +1103,7 @@ export interface ContextRealityModelProps {
 export interface CreateIModelProps extends IModelProps {
     client?: string;
     guid?: GuidString;
-    // Warning: (ae-incompatible-release-tags) The symbol "thumbnail" is marked as @public, but its signature references "ThumbnailProps" which is marked as @alpha
+    // @alpha
     thumbnail?: ThumbnailProps;
 }
 
@@ -1212,7 +1223,7 @@ export class DisplayStyleSettings {
 
 // @beta
 export interface DisplayStyleSettingsProps {
-    // Warning: (ae-incompatible-release-tags) The symbol "analysisStyle" is marked as @beta, but its signature references "AnalysisStyleProps" which is marked as @alpha
+    // @alpha
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
     backgroundMap?: BackgroundMapProps;
@@ -1330,24 +1341,54 @@ export class EdgeArgs {
     readonly numEdges: number;
 }
 
-// @public
+// @beta
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
     // (undocumented)
     static readonly isElectron: boolean;
-    // Warning: (ae-forgotten-export) The symbol "ElectronRpcProtocol" needs to be exported by the entry point imodeljs-common.d.ts
     abstract protocol: ElectronRpcProtocol;
 }
 
-// @public
+// @beta
 export class ElectronRpcManager extends RpcManager {
     static initializeClient(params: ElectronRpcParams, interfaces: RpcInterfaceDefinition[]): ElectronRpcConfiguration;
     static initializeImpl(params: ElectronRpcParams, interfaces: RpcInterfaceDefinition[]): ElectronRpcConfiguration;
     }
 
-// @public
+// @beta
 export interface ElectronRpcParams {
     // (undocumented)
     protocol?: typeof ElectronRpcProtocol;
+}
+
+// @beta
+export class ElectronRpcProtocol extends RpcProtocol {
+    constructor(configuration: ElectronRpcConfiguration);
+    // (undocumented)
+    static instances: Map<string, ElectronRpcProtocol>;
+    // (undocumented)
+    static obtainInstance(request: SerializedRpcRequest): ElectronRpcProtocol;
+    // @internal (undocumented)
+    onRpcClientInitialized(definition: RpcInterfaceDefinition, _client: RpcInterface): void;
+    // @internal (undocumented)
+    onRpcClientTerminated(definition: RpcInterfaceDefinition, _client: RpcInterface): void;
+    // @internal (undocumented)
+    onRpcImplInitialized(definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
+    // @internal (undocumented)
+    onRpcImplTerminated(definition: RpcInterfaceDefinition, _impl: RpcInterface): void;
+    // @internal (undocumented)
+    requests: Map<string, ElectronRpcRequest>;
+    readonly requestType: typeof ElectronRpcRequest;
+    transferChunkThreshold: number;
+}
+
+// @beta (undocumented)
+export class ElectronRpcRequest extends RpcRequest {
+    protected load(): Promise<import("../core/RpcMarshaling").RpcSerializedValue>;
+    // @internal (undocumented)
+    notifyResponse(fulfillment: RpcRequestFulfillment): void;
+    readonly protocol: ElectronRpcProtocol;
+    protected send(): Promise<number>;
+    protected setHeader(_name: string, _value: string): void;
 }
 
 // @public
@@ -1454,9 +1495,7 @@ export class Feature {
     readonly elementId: string;
     // (undocumented)
     equals(other: Feature): boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "geometryClass" is marked as @beta, but its signature references "GeometryClass" which is marked as @alpha
-    // 
-    // (undocumented)
+    // @alpha (undocumented)
     readonly geometryClass: GeometryClass;
     // (undocumented)
     readonly isDefined: boolean;
@@ -1734,7 +1773,7 @@ export interface GeometricModel2dProps extends ModelProps {
 export interface GeometryAppearanceProps {
     color?: ColorDefProps;
     displayPriority?: number;
-    // Warning: (ae-incompatible-release-tags) The symbol "geometryClass" is marked as @public, but its signature references "GeometryClass" which is marked as @alpha
+    // @alpha
     geometryClass?: GeometryClass;
     style?: Id64String;
     subCategory?: Id64String;
@@ -1763,9 +1802,9 @@ export class GeometryParams {
     fillColor?: ColorDef;
     fillDisplay?: FillDisplay;
     fillTransparency?: number;
-    // Warning: (ae-incompatible-release-tags) The symbol "geometryClass" is marked as @public, but its signature references "GeometryClass" which is marked as @alpha
+    // @alpha
     geometryClass?: GeometryClass;
-    // Warning: (ae-incompatible-release-tags) The symbol "gradient" is marked as @public, but its signature references "Gradient" which is marked as @beta
+    // @beta
     gradient?: Gradient.Symb;
     isEquivalent(other: GeometryParams): boolean;
     lineColor?: ColorDef;
@@ -1798,7 +1837,7 @@ export interface GeometryPartProps extends ElementProps {
 
 // @public
 export class GeometryStreamBuilder {
-    // Warning: (ae-incompatible-release-tags) The symbol "appendBRepData" is marked as @public, but its signature references "BRepEntity" which is marked as @beta
+    // @beta
     appendBRepData(brep: BRepEntity.DataProps): boolean;
     appendGeometry(geometry: GeometryQuery): boolean;
     appendGeometryParamsChange(geomParams: GeometryParams): boolean;
@@ -1817,9 +1856,7 @@ export class GeometryStreamBuilder {
 export interface GeometryStreamEntryProps extends IModelJson.GeometryProps {
     // (undocumented)
     appearance?: GeometryAppearanceProps;
-    // Warning: (ae-incompatible-release-tags) The symbol "brep" is marked as @public, but its signature references "BRepEntity" which is marked as @beta
-    // 
-    // (undocumented)
+    // @beta (undocumented)
     brep?: BRepEntity.DataProps;
     // (undocumented)
     fill?: AreaFillProps;
@@ -1857,7 +1894,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
 // @public
 export class GeometryStreamIteratorEntry {
     constructor(category?: Id64String);
-    // Warning: (ae-incompatible-release-tags) The symbol "brep" is marked as @public, but its signature references "BRepEntity" which is marked as @beta
+    // @beta
     brep?: BRepEntity.DataProps;
     geometryQuery?: GeometryQuery;
     geomParams: GeometryParams;
@@ -1904,7 +1941,7 @@ export namespace Gradient {
         None = 0,
         // (undocumented)
         Spherical = 4,
-        // @internal (undocumented)
+        // (undocumented)
         Thematic = 6
     }
     export class Symb implements SymbProps {
@@ -1914,7 +1951,7 @@ export namespace Gradient {
         clone(): Symb;
         compare(other: Symb): number;
         static compareSymb(lhs: Gradient.Symb, rhs: Gradient.Symb): number;
-        // @internal (undocumented)
+        // (undocumented)
         static createThematic(settings: ThematicSettings): Symb;
         equals(other: Symb): boolean;
         // (undocumented)
@@ -1930,8 +1967,6 @@ export namespace Gradient {
         mode: Mode;
         // (undocumented)
         shift: number;
-        // Warning: (ae-incompatible-release-tags) The symbol "thematicSettings" is marked as @beta, but its signature references "ThematicSettings" which is marked as @internal
-        // 
         // (undocumented)
         thematicSettings?: ThematicSettings;
         // (undocumented)
@@ -1943,7 +1978,6 @@ export namespace Gradient {
         keys: KeyColorProps[];
         mode: Mode;
         shift?: number;
-        // @internal
         thematicSettings?: ThematicSettingsProps;
         tint?: number;
     }
@@ -1962,7 +1996,7 @@ export namespace Gradient {
         // (undocumented)
         Topographic = 3
     }
-    // @internal (undocumented)
+    // (undocumented)
     export enum ThematicMode {
         // (undocumented)
         IsoLines = 3,
@@ -1973,7 +2007,6 @@ export namespace Gradient {
         // (undocumented)
         SteppedWithDelimiter = 2
     }
-    // @internal
     export class ThematicSettings implements ThematicSettingsProps {
         // (undocumented)
         clone(out?: ThematicSettings): ThematicSettings;
@@ -2004,7 +2037,7 @@ export namespace Gradient {
         // (undocumented)
         stepCount: number;
     }
-    // @internal (undocumented)
+    // (undocumented)
     export interface ThematicSettingsProps {
         // (undocumented)
         colorScheme: number;
@@ -2292,7 +2325,6 @@ export abstract class IModel implements IModelProps {
     name: string;
     projectExtents: AxisAlignedBox3d;
     static readonly repositoryModelId: Id64String;
-    // Warning: (ae-incompatible-release-tags) The symbol "rootSubject" is marked as @public, but its signature references "RootSubjectProps" which is marked as @alpha
     rootSubject: RootSubjectProps;
     static readonly rootSubjectId: Id64String;
     setEcefLocation(ecef: EcefLocationProps): void;
@@ -2334,13 +2366,12 @@ export interface IModelProps {
     ecefLocation?: EcefLocationProps;
     globalOrigin?: XYZProps;
     projectExtents?: Range3dProps;
-    // Warning: (ae-incompatible-release-tags) The symbol "rootSubject" is marked as @public, but its signature references "RootSubjectProps" which is marked as @alpha
     rootSubject: RootSubjectProps;
 }
 
 // @public
 export abstract class IModelReadRpcInterface extends RpcInterface {
-    // (undocumented)
+    // @beta (undocumented)
     cancelSnap(_iModelToken: IModelToken, _sessionId: string): Promise<void>;
     // (undocumented)
     close(_iModelToken: IModelToken): Promise<boolean>;
@@ -2353,13 +2384,9 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getDefaultViewId(_iModelToken: IModelToken): Promise<Id64String>;
     // (undocumented)
     getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<ElementProps[]>;
-    // Warning: (ae-incompatible-release-tags) The symbol "getGeoCoordinatesFromIModelCoordinates" is marked as @public, but its signature references "GeoCoordinatesResponseProps" which is marked as @beta
-    // 
-    // (undocumented)
+    // @beta (undocumented)
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelToken, _props: string): Promise<GeoCoordinatesResponseProps>;
-    // Warning: (ae-incompatible-release-tags) The symbol "getIModelCoordinatesFromGeoCoordinates" is marked as @public, but its signature references "IModelCoordinatesResponseProps" which is marked as @beta
-    // 
-    // (undocumented)
+    // @beta (undocumented)
     getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelToken, _props: string): Promise<IModelCoordinatesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<ModelProps[]>;
@@ -2391,10 +2418,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     queryRowCount(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<number>;
     // (undocumented)
     readFontJson(_iModelToken: IModelToken): Promise<any>;
-    // Warning: (ae-incompatible-release-tags) The symbol "requestSnap" is marked as @public, but its signature references "SnapRequestProps" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "requestSnap" is marked as @public, but its signature references "SnapResponseProps" which is marked as @beta
-    // 
-    // (undocumented)
+    // @beta (undocumented)
     requestSnap(_iModelToken: IModelToken, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps>;
     static types: () => (typeof Point3d | typeof Vector3d | typeof Code | typeof Point2d | typeof IModelToken | typeof IModelNotFoundResponse | typeof Vector2d)[];
     static version: string;
@@ -2480,6 +2504,9 @@ export const initializeRpcRequest: () => void;
 
 // @internal (undocumented)
 export const INSTANCE: unique symbol;
+
+// @internal (undocumented)
+export const interop: any;
 
 // @public
 export function isPowerOfTwo(num: number): boolean;
@@ -2738,24 +2765,49 @@ export class MeshPolylineList extends Array<MeshPolyline> {
     constructor(...args: MeshPolyline[]);
 }
 
-// @public
+// @beta (undocumented)
+export type MobileRpcChunks = Array<string | Uint8Array>;
+
+// @beta
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
     static readonly isIOSFrontend: any;
     static readonly isMobileBackend: boolean;
     static readonly isMobileFrontend: boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "platform" is marked as @public, but its signature references "RpcMobilePlatform" which is marked as @internal
     static readonly platform: RpcMobilePlatform;
-    // Warning: (ae-forgotten-export) The symbol "MobileRpcProtocol" needs to be exported by the entry point imodeljs-common.d.ts
-    // 
     // (undocumented)
     abstract protocol: MobileRpcProtocol;
 }
 
-// @public
+// @beta
 export class MobileRpcManager {
     static initializeClient(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
     static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
     }
+
+// @beta
+export class MobileRpcProtocol extends RpcProtocol {
+    constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint);
+    // (undocumented)
+    static encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks>;
+    // (undocumented)
+    requests: Map<string, MobileRpcRequest>;
+    // (undocumented)
+    readonly requestType: typeof MobileRpcRequest;
+    // (undocumented)
+    sendToBackend(message: MobileRpcChunks): void;
+    // (undocumented)
+    socket: WebSocket;
+    }
+
+// @beta (undocumented)
+export class MobileRpcRequest extends RpcRequest {
+    protected load(): Promise<RpcSerializedValue>;
+    // @internal (undocumented)
+    notifyResponse(fulfillment: RpcRequestFulfillment): void;
+    readonly protocol: MobileRpcProtocol;
+    protected send(): Promise<number>;
+    protected setHeader(_name: string, _value: string): void;
+}
 
 // @public
 export interface ModelProps extends EntityProps {
@@ -2897,7 +2949,7 @@ export interface OpenAPIEncoding {
     style?: string;
 }
 
-// @internal
+// @public
 export interface OpenAPIInfo {
     // (undocumented)
     title: string;
@@ -3718,7 +3770,7 @@ export class RgbColor {
 // @beta
 export type RgbFactorProps = number[];
 
-// @alpha
+// @public
 export interface RootSubjectProps {
     description?: string;
     name: string;
@@ -3727,7 +3779,7 @@ export interface RootSubjectProps {
 // @public
 export abstract class RpcConfiguration {
     static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "controlChannel" is marked as @public, but its signature references "RpcControlChannel" which is marked as @internal
+    // @internal
     readonly controlChannel: RpcControlChannel;
     static developmentMode: boolean;
     static initializeInterfaces(configuration: RpcConfiguration): void;
@@ -3745,7 +3797,6 @@ export abstract class RpcConfiguration {
     onRpcImplTerminated(definition: RpcInterfaceDefinition, impl: RpcInterface): void;
     pendingOperationRetryInterval: number;
     abstract readonly protocol: RpcProtocol;
-    // Warning: (ae-forgotten-export) The symbol "RpcRequestContext" needs to be exported by the entry point imodeljs-common.d.ts
     static requestContext: RpcRequestContext;
     static strictMode: boolean;
     // @internal (undocumented)
@@ -3758,7 +3809,7 @@ export type RpcConfigurationSupplier = () => {
     new (): RpcConfiguration;
 };
 
-// @internal
+// @public
 export enum RpcContentType {
     // (undocumented)
     Binary = 2,
@@ -3818,7 +3869,7 @@ export class RpcDirectRequest extends RpcRequest {
     protected setHeader(name: string, value: string): void;
 }
 
-// @internal
+// @public
 export enum RpcEndpoint {
     // (undocumented)
     Backend = 1,
@@ -3864,7 +3915,7 @@ export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = 
 
 export { RpcInterfaceStatus }
 
-// @internal
+// @public
 export class RpcInvocation {
     constructor(protocol: RpcProtocol, request: SerializedRpcRequest);
     static current(rpcImpl: RpcInterface): RpcInvocation;
@@ -3877,8 +3928,6 @@ export class RpcInvocation {
     readonly status: RpcRequestStatus;
     }
 
-// Warning: (ae-incompatible-release-tags) The symbol "RpcInvocationCallback_T" is marked as @public, but its signature references "RpcInvocation" which is marked as @internal
-// 
 // @public
 export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
 
@@ -3925,16 +3974,14 @@ export enum RpcMarshalingDirective {
     Unregistered = "__unregistered__"
 }
 
-// @internal
+// @beta
 export enum RpcMobilePlatform {
     // (undocumented)
-    Android = 2,
+    Android = 1,
     // (undocumented)
-    iOS = 3,
+    iOS = 2,
     // (undocumented)
-    Unknown = 0,
-    // (undocumented)
-    Window = 1
+    Unknown = 0
 }
 
 // @internal
@@ -4025,15 +4072,11 @@ export abstract class RpcProtocol {
     readonly configuration: RpcConfiguration;
     static readonly events: BeEvent<RpcProtocolEventHandler>;
     readonly events: BeEvent<RpcProtocolEventHandler>;
-    // Warning: (ae-incompatible-release-tags) The symbol "fulfill" is marked as @public, but its signature references "RpcRequestFulfillment" which is marked as @internal
     fulfill(request: SerializedRpcRequest): Promise<RpcRequestFulfillment>;
-    // Warning: (ae-incompatible-release-tags) The symbol "getCode" is marked as @public, but its signature references "RpcRequestStatus" which is marked as @internal
     getCode(status: RpcRequestStatus): number;
     getOperationFromPath(path: string): SerializedRpcOperation;
-    // Warning: (ae-incompatible-release-tags) The symbol "getStatus" is marked as @public, but its signature references "RpcRequestStatus" which is marked as @internal
     getStatus(code: number): RpcRequestStatus;
     inflateToken(tokenFromBody: IModelToken, _request: SerializedRpcRequest): IModelToken;
-    // Warning: (ae-incompatible-release-tags) The symbol "invocationType" is marked as @public, but its signature references "RpcInvocation" which is marked as @internal
     readonly invocationType: typeof RpcInvocation;
     // @internal (undocumented)
     onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void;
@@ -4052,7 +4095,7 @@ export abstract class RpcProtocol {
     transferChunkThreshold: number;
 }
 
-// @internal
+// @public
 export enum RpcProtocolEvent {
     // (undocumented)
     BackendErrorOccurred = 11,
@@ -4080,9 +4123,6 @@ export enum RpcProtocolEvent {
     UnknownErrorReceived = 4
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "RpcProtocolEventHandler" is marked as @public, but its signature references "RpcProtocolEvent" which is marked as @internal
-// Warning: (ae-incompatible-release-tags) The symbol "RpcProtocolEventHandler" is marked as @public, but its signature references "RpcInvocation" which is marked as @internal
-// 
 // @public
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation) => void;
 
@@ -4170,7 +4210,6 @@ export abstract class RpcRequest<TResponse = any> {
     protected abstract send(): Promise<number>;
     protected abstract setHeader(name: string, value: string): void;
     protected setLastUpdatedTime(): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "status" is marked as @public, but its signature references "RpcRequestStatus" which is marked as @internal
     readonly status: RpcRequestStatus;
     // (undocumented)
     submit(): Promise<void>;
@@ -4179,7 +4218,14 @@ export abstract class RpcRequest<TResponse = any> {
 // @public
 export type RpcRequestCallback_T = (request: RpcRequest) => void;
 
-// @internal
+// @public
+export interface RpcRequestContext {
+    deserialize: (request: SerializedRpcRequest) => Promise<ClientRequestContext>;
+    getId: (request: RpcRequest) => string;
+    serialize: (request: RpcRequest) => Promise<SerializedClientRequestContext>;
+}
+
+// @public
 export enum RpcRequestEvent {
     // (undocumented)
     PendingUpdateReceived = 1,
@@ -4187,12 +4233,10 @@ export enum RpcRequestEvent {
     StatusChanged = 0
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "RpcRequestEventHandler" is marked as @public, but its signature references "RpcRequestEvent" which is marked as @internal
-// 
 // @public
 export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void;
 
-// @internal
+// @public
 export interface RpcRequestFulfillment {
     id: string;
     interfaceName: string;
@@ -4201,7 +4245,7 @@ export interface RpcRequestFulfillment {
     status: number;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace RpcRequestFulfillment {
     // (undocumented)
     export function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment>;
@@ -4213,7 +4257,7 @@ export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfig
 // @public
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
-// @internal
+// @public
 export enum RpcRequestStatus {
     // (undocumented)
     Created = 1,
@@ -4410,9 +4454,7 @@ export interface SnapRequestProps {
     closePoint: XYZProps;
     // (undocumented)
     decorationGeometry?: DecorationGeometryProps[];
-    // Warning: (ae-incompatible-release-tags) The symbol "geometryClass" is marked as @beta, but its signature references "GeometryClass" which is marked as @alpha
-    // 
-    // (undocumented)
+    // @alpha (undocumented)
     geometryClass?: GeometryClass;
     // (undocumented)
     id: Id64String;
@@ -5086,17 +5128,13 @@ export interface ViewQueryParams extends EntityQueryParams {
 export interface ViewStateProps {
     // (undocumented)
     categorySelectorProps: CategorySelectorProps;
-    // Warning: (ae-incompatible-release-tags) The symbol "displayStyleProps" is marked as @public, but its signature references "DisplayStyleProps" which is marked as @beta
-    // 
-    // (undocumented)
+    // @beta (undocumented)
     displayStyleProps: DisplayStyleProps;
     // (undocumented)
     modelSelectorProps?: ModelSelectorProps;
-    // (undocumented)
+    // @beta (undocumented)
     sheetAttachments?: Id64Array;
-    // Warning: (ae-incompatible-release-tags) The symbol "sheetProps" is marked as @public, but its signature references "SheetProps" which is marked as @beta
-    // 
-    // (undocumented)
+    // @beta (undocumented)
     sheetProps?: SheetProps;
     // (undocumented)
     viewDefinitionProps: ViewDefinitionProps;
@@ -5114,32 +5152,27 @@ export const WEB_RPC_CONSTANTS: {
 // @public
 export abstract class WebAppRpcProtocol extends RpcProtocol {
     constructor(configuration: RpcConfiguration);
-    // Warning: (ae-incompatible-release-tags) The symbol "computeContentType" is marked as @public, but its signature references "RpcContentType" which is marked as @internal
     static computeContentType(httpType: string | null | undefined): RpcContentType;
-    // Warning: (ae-incompatible-release-tags) The symbol "getCode" is marked as @public, but its signature references "RpcRequestStatus" which is marked as @internal
     getCode(status: RpcRequestStatus): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getStatus" is marked as @public, but its signature references "RpcRequestStatus" which is marked as @internal
     getStatus(code: number): RpcRequestStatus;
     handleOpenApiDescriptionRequest(_req: HttpServerRequest, res: HttpServerResponse): void;
     handleOperationGetRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
     handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "info" is marked as @public, but its signature references "OpenAPIInfo" which is marked as @internal
     abstract info: OpenAPIInfo;
     isTimeout(code: number): boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "openAPIDescription" is marked as @public, but its signature references "RpcOpenAPIDescription" which is marked as @internal
+    // @internal
     readonly openAPIDescription: RpcOpenAPIDescription;
     pathPrefix: string;
     // (undocumented)
     preserveStreams: boolean;
     readonly requestType: typeof WebAppRpcRequest;
-    // Warning: (ae-incompatible-release-tags) The symbol "supplyPathParametersForOperation" is marked as @public, but its signature references "OpenAPIParameter" which is marked as @internal
+    // @internal
     abstract supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
 }
 
 // @public
 export class WebAppRpcRequest extends RpcRequest {
     constructor(client: RpcInterface, operation: string, parameters: any[]);
-    // Warning: (ae-incompatible-release-tags) The symbol "computeTransportType" is marked as @public, but its signature references "RpcContentType" which is marked as @internal
     protected static computeTransportType(value: RpcSerializedValue, source: any): RpcContentType;
     // (undocumented)
     protected handleUnknownResponse(code: number): void;
@@ -5154,7 +5187,6 @@ export class WebAppRpcRequest extends RpcRequest {
     static parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest>;
     readonly protocol: WebAppRpcProtocol;
     protected send(): Promise<number>;
-    // Warning: (ae-incompatible-release-tags) The symbol "sendResponse" is marked as @public, but its signature references "RpcRequestFulfillment" which is marked as @internal
     static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse): void;
     protected setHeader(name: string, value: string): void;
     }

@@ -23,7 +23,7 @@ import { IModelToken } from "../../IModel";
 export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
 
 /** An RPC operation invocation in response to a request.
- * @internal
+ * @public
  */
 export class RpcInvocation {
   private _threw: boolean = false;

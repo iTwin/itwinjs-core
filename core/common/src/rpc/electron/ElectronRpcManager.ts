@@ -11,14 +11,14 @@ import { interop } from "./ElectronIpcTransport";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
 /** Initialization parameters for ElectronRpcConfiguration.
- * @public
+ * @beta
  */
 export interface ElectronRpcParams {
   protocol?: typeof ElectronRpcProtocol;
 }
 
 /** RPC interface configuration for an Electron-based application.
- * @public
+ * @beta
  */
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
   public static get isElectron() { return interop !== null; }
@@ -28,7 +28,7 @@ export abstract class ElectronRpcConfiguration extends RpcConfiguration {
 }
 
 /** Coordinates usage of RPC interfaces for an Electron-based application.
- * @public
+ * @beta
  */
 export class ElectronRpcManager extends RpcManager {
   /** Initializes ElectronRpcManager for the frontend of an application. */

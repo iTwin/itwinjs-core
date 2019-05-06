@@ -70,7 +70,7 @@ export class EcefLocation implements EcefLocationProps {
 }
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
- * @alpha Why is this not just SubjectProps?
+ * @public
  */
 export interface RootSubjectProps {
   /** The name of the root subject. */
@@ -101,7 +101,9 @@ export interface CreateIModelProps extends IModelProps {
   guid?: GuidString;
   /** Client name for new iModel */
   client?: string;
-  /** Thumbnail for new iModel */
+  /** Thumbnail for new iModel
+   * @alpha
+   */
   thumbnail?: ThumbnailProps;
 }
 

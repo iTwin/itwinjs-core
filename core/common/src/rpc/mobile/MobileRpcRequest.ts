@@ -7,6 +7,7 @@ import { RpcRequest } from "../core/RpcRequest";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 
+/** @beta */
 export class MobileRpcRequest extends RpcRequest {
   private _res: (value: number) => void = () => undefined;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;

@@ -8,20 +8,17 @@ import { RpcEndpoint, RpcMobilePlatform } from "../core/RpcConstants";
 import { interop, MobileRpcProtocol } from "./MobileRpcProtocol";
 
 /** Holds configuration for the RpcInterfaces used by the application.
- * @public
+ * @beta
  */
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
   public abstract protocol: MobileRpcProtocol;
-  private static getMobilePlaform(): RpcMobilePlatform {
+  private static getMobilePlatform(): RpcMobilePlatform {
     if (typeof window === "undefined") {
       return RpcMobilePlatform.Unknown;
     }
 
     const win: any = window;
     const userAgent = win.navigator.userAgent || win.navigator.vendor || win.opera;
-    if (/windows phone/i.test(userAgent)) {
-      return RpcMobilePlatform.Window;
-    }
 
     if (/android/i.test(userAgent)) {
       return RpcMobilePlatform.Android;
@@ -35,7 +32,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   }
 
   /** Return type of mobile platform using browser userAgent */
-  public static readonly platform: RpcMobilePlatform = MobileRpcConfiguration.getMobilePlaform();
+  public static readonly platform: RpcMobilePlatform = MobileRpcConfiguration.getMobilePlatform();
 
   /** Check if running backend running on mobile */
   public static get isMobileBackend() { return interop !== null; }
@@ -48,7 +45,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
 }
 
 /** Coordinates usage of RPC interfaces for an Mobile-based application.
- * @public
+ * @beta
  */
 export class MobileRpcManager {
   private static performInitialization(interfaces: RpcInterfaceDefinition[], endPoint: RpcEndpoint): MobileRpcConfiguration {

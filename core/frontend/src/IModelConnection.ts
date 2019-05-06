@@ -809,12 +809,8 @@ export namespace IModelConnection {
    * @internal
    */
   export class Tiles {
-    /** @internal */
     private _iModel: IModelConnection;
-
-    /** @internal */
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
-
     public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id); }
     public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId); }
   }

@@ -122,10 +122,14 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     return code === 504;
   }
 
-  /** An OpenAPI-compatible description of this protocol. */
+  /** An OpenAPI-compatible description of this protocol.
+   * @internal
+   */
   public get openAPIDescription() { return new RpcOpenAPIDescription(this); }
 
-  /** Returns the OpenAPI-compatible URI path parameters for an RPC operation. */
+  /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.
+   * @internal
+   */
   public abstract supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
 
   /** Constructs an HTTP protocol. */

@@ -7,7 +7,9 @@ import { ClientRequestContext, SerializedClientRequestContext } from "@bentley/b
 import { RpcRequest } from "./RpcRequest";
 import { SerializedRpcRequest } from "./RpcProtocol";
 
-/** Interface to enable passing application-specific context with each RPC request. */
+/** Interface to enable passing application-specific context with each RPC request.
+ * @public
+ */
 export interface RpcRequestContext {
   /** Used to get the id of the request at the frontend */
   getId: (request: RpcRequest) => string;

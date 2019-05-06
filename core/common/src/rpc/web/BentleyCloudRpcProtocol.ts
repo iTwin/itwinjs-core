@@ -20,7 +20,9 @@ enum AppMode {
   WorkGroupEdit = "2",
 }
 
-/** An http protocol for Bentley cloud RPC interface deployments. */
+/** An http protocol for Bentley cloud RPC interface deployments.
+ * @public
+ */
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public checkToken = true;
 
@@ -138,7 +140,9 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     return new IModelToken(iModelKey, contextId, iModelId, changeSetId, openMode);
   }
 
-  /** Returns the OpenAPI-compatible URI path parameters for an RPC operation. */
+  /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.
+   * @internal
+   */
   public supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[] {
     return [
       { name: "modeId", in: "path", required: true, schema: { type: "string" } },

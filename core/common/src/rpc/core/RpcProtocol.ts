@@ -35,8 +35,8 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
   caching: RpcResponseCacheControl;
 }
 
-/** An RPCD operation request fulfillment.
- * @internal
+/** An RPC operation request fulfillment.
+ * @public
  */
 export interface RpcRequestFulfillment {
   /** The RPC interface for the request. */
@@ -55,7 +55,7 @@ export interface RpcRequestFulfillment {
   status: number;
 }
 
-/** @internal */
+/** @public */
 export namespace RpcRequestFulfillment {
   export async function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment> {
     const result = await RpcMarshaling.serialize(request.operation.interfaceDefinition, undefined, error);

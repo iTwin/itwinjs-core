@@ -17,7 +17,7 @@ export interface OpenAPIDocument {
 }
 
 /** An OpenAPI 3.0 info object.
- * @internal
+ * @public
  */
 export interface OpenAPIInfo {
   title: string;

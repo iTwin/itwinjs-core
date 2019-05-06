@@ -12,7 +12,9 @@ import { RpcRegistry } from "../core/RpcRegistry";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
 
-/** RPC interface protocol for an Electron-based application. */
+/** RPC interface protocol for an Electron-based application.
+ * @beta
+ */
 export class ElectronRpcProtocol extends RpcProtocol {
   public static instances: Map<string, ElectronRpcProtocol> = new Map();
 

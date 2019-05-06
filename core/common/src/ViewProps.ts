@@ -20,9 +20,12 @@ import { SpatialClassificationProps } from "./SpatialClassificationProps";
 export interface ViewStateProps {
   viewDefinitionProps: ViewDefinitionProps;
   categorySelectorProps: CategorySelectorProps;
-  displayStyleProps: DisplayStyleProps;
   modelSelectorProps?: ModelSelectorProps;
+  /** @beta */
+  displayStyleProps: DisplayStyleProps;
+  /** @beta */
   sheetProps?: SheetProps;
+  /** @beta */
   sheetAttachments?: Id64Array;
 }
 
@@ -246,6 +249,7 @@ export interface ContextRealityModelProps {
   tilesetUrl: string;
   name?: string;
   description?: string;
+  /** @beta */
   classifiers?: SpatialClassificationProps.PropertiesProps[];
 }
 
@@ -261,7 +265,9 @@ export interface DisplayStyleSettingsProps {
   backgroundColor?: ColorDefProps;
   /** The color used in monochrome mode. Defaults to white. */
   monochromeColor?: ColorDefProps;
-  /** Settings controlling display of analytical models. */
+  /** Settings controlling display of analytical models.
+   * @alpha
+   */
   analysisStyle?: AnalysisStyleProps;
   /** Schedule script */
   scheduleScript?: RenderSchedule.ElementTimelineProps[];
@@ -269,7 +275,7 @@ export interface DisplayStyleSettingsProps {
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
   /** Settings controlling display of map imagery within views of geolocated models. */
   backgroundMap?: BackgroundMapProps;
-  /** Contexual Reality Models */
+  /** Contextual Reality Models */
   ContextRealityModels?: ContextRealityModelProps[];
   /** List of IDs of excluded elements */
   excludedElements?: Id64String[];
