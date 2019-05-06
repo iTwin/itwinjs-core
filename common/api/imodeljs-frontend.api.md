@@ -1479,7 +1479,7 @@ export class ContextRealityModelState implements TileTreeModelState {
     // (undocumented)
     readonly loadStatus: TileTree.LoadStatus;
     // (undocumented)
-    loadTileTree(_batchType: BatchType, _edgesRequired: boolean, _animationId?: Id64String, _classifierExpansion?: number): TileTree.LoadStatus;
+    loadTree(_edgesRequired: boolean, _animationId?: Id64String): TileTree.LoadStatus;
     matches(other: ContextRealityModelState): boolean;
     // (undocumented)
     protected _modelId: Id64String;
@@ -2485,7 +2485,7 @@ export class GeometricModel3dState extends GeometricModelState {
     readonly is3d: boolean;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "GeometricModelState" is marked as @public, but its signature references "TileTreeModelState" which is marked as @beta
+// Warning: (ae-incompatible-release-tags) The symbol "GeometricModelState" is marked as @public, but its signature references "TileTreeModelState" which is marked as @alpha
 // 
 // @public
 export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
@@ -2495,20 +2495,24 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     readonly classifierTileTree: TileTree | undefined;
     // @internal (undocumented)
     protected _classifierTileTreeState: TileTreeState;
-    // @internal
-    getOrLoadTileTree(batchType: BatchType, edgesRequired: boolean): TileTree | undefined;
     readonly is2d: boolean;
     abstract readonly is3d: boolean;
     // @internal (undocumented)
     readonly isGeometricModel: boolean;
-    // @internal
+    // @internal (undocumented)
+    loadClassifierTileTree(type: BatchType.PlanarClassifier | BatchType.VolumeClassifier, expansion: number): TileTree.LoadStatus;
+    // @internal (undocumented)
     loadStatus: TileTree.LoadStatus;
-    // @internal
-    loadTileTree(batchType: BatchType, edgesRequired: boolean, animationId?: Id64String, classifierExpansion?: number): TileTree.LoadStatus;
+    // Warning: (ae-forgotten-export) The symbol "IModelTile" needs to be exported by the entry point imodeljs-frontend.d.ts
+    // 
+    // @internal (undocumented)
+    loadTileTree(treeId: IModelTile.TreeId): TileTree.LoadStatus;
+    // @internal (undocumented)
+    loadTree(edgesRequired: boolean, animationId?: Id64String): TileTree.LoadStatus;
     // @internal (undocumented)
     onIModelConnectionClose(): void;
     queryModelRange(): Promise<Range3d>;
-    // @internal
+    // @internal (undocumented)
     readonly tileTree: TileTree | undefined;
     // @internal (undocumented)
     protected _tileTreeState: TileTreeState;
@@ -5305,18 +5309,23 @@ export enum SnapStatus {
 export namespace SpatialClassification {
     // @internal (undocumented)
     export function addModelClassifierToScene(classifiedModel: TileTreeModelState, context: SceneContext): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "addSpatialClassifier" is marked as @beta, but its signature references "TileTreeModelState" which is marked as @alpha
     export function addSpatialClassifier(model: TileTreeModelState, classifier: SpatialClassificationProps.PropertiesProps): void;
     // @internal (undocumented)
     export function createClassifier(id: Id64String, iModel: IModelConnection): Promise<RenderClassifierModel | undefined>;
+    // Warning: (ae-incompatible-release-tags) The symbol "getActiveSpatialClassifier" is marked as @beta, but its signature references "TileTreeModelState" which is marked as @alpha
     export function getActiveSpatialClassifier(model: TileTreeModelState): number;
     // @internal (undocumented)
     export function getClassifierProps(model: TileTreeModelState): SpatialClassificationProps.Properties | undefined;
+    // Warning: (ae-incompatible-release-tags) The symbol "getSpatialClassifier" is marked as @beta, but its signature references "TileTreeModelState" which is marked as @alpha
     export function getSpatialClassifier(model: TileTreeModelState, index: number): SpatialClassificationProps.Properties | undefined;
     // @internal (undocumented)
     export function loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
     // @internal (undocumented)
     export function loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "setActiveSpatialClassifier" is marked as @beta, but its signature references "TileTreeModelState" which is marked as @alpha
     export function setActiveSpatialClassifier(model: TileTreeModelState, classifierIndex: number, active: boolean): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "setSpatialClassifier" is marked as @beta, but its signature references "TileTreeModelState" which is marked as @alpha
     export function setSpatialClassifier(model: TileTreeModelState, index: number, classifier: SpatialClassificationProps.Properties): void;
 }
 
@@ -5348,7 +5357,7 @@ export class SpatialViewState extends ViewState3d {
     equals(other: this): boolean;
     // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "forEachTileTreeModel" is marked as @public, but its signature references "TileTreeModelState" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "forEachTileTreeModel" is marked as @public, but its signature references "TileTreeModelState" which is marked as @alpha
     // 
     // (undocumented)
     forEachTileTreeModel(func: (model: TileTreeModelState) => void): void;
@@ -6165,7 +6174,7 @@ export namespace Tile {
 export abstract class TileAdmin {
     // @beta
     static create(props?: TileAdmin.Props): TileAdmin;
-    // (undocumented)
+    // @internal (undocumented)
     abstract readonly elideEmptyChildContentRequests: boolean;
     // @internal (undocumented)
     abstract readonly emptyViewportSet: TileAdmin.ViewportSet;
@@ -6194,6 +6203,8 @@ export abstract class TileAdmin {
     // @internal
     abstract requestTiles(vp: Viewport, tiles: Set<Tile>): void;
     // @internal (undocumented)
+    abstract readonly requestTilesWithoutEdges: boolean;
+    // @internal (undocumented)
     abstract requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
     abstract resetStatistics(): void;
     abstract readonly statistics: TileAdmin.Statistics;
@@ -6206,6 +6217,8 @@ export namespace TileAdmin {
         elideEmptyChildContentRequests?: boolean;
         enableInstancing?: boolean;
         maxActiveRequests?: number;
+        // @internal
+        requestTilesWithoutEdges?: boolean;
         retryInterval?: number;
     }
     export interface Statistics {
@@ -6355,7 +6368,7 @@ export namespace TileTree {
     }
 }
 
-// @beta
+// @alpha
 export interface TileTreeModelState {
     // @internal (undocumented)
     readonly iModel: IModelConnection;
@@ -6365,9 +6378,9 @@ export interface TileTreeModelState {
     };
     // @internal (undocumented)
     readonly loadStatus: TileTree.LoadStatus;
-    // @internal (undocumented)
-    loadTileTree(batchType: BatchType, edgesRequired: boolean, animationId?: Id64String, classifierExpansion?: number): TileTree.LoadStatus;
-    // @internal (undocumented)
+    // @internal
+    loadTree(edgesRequired: boolean, animationId?: Id64String): TileTree.LoadStatus;
+    // @internal
     readonly tileTree: TileTree | undefined;
     // @internal (undocumented)
     readonly treeModelId: Id64String;
@@ -7723,7 +7736,7 @@ export abstract class ViewState extends ElementState {
     equals(other: this): boolean;
     extentLimits: ExtentLimits;
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "forEachTileTreeModel" is marked as @public, but its signature references "TileTreeModelState" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "forEachTileTreeModel" is marked as @public, but its signature references "TileTreeModelState" which is marked as @alpha
     forEachTileTreeModel(func: (model: TileTreeModelState) => void): void;
     getAspectRatio(): number;
     getAspectRatioSkew(): number;

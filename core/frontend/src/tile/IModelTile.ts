@@ -6,6 +6,7 @@
 
 import {
   assert,
+  Id64String,
 } from "@bentley/bentleyjs-core";
 import {
   BatchType,
@@ -150,6 +151,43 @@ export namespace IModelTile {
     protected computeId(depth: number, i: number, j: number, k: number, mult: number): string {
       return this._prefix + this.join(depth, i, j, k, mult);
     }
+  }
+
+  /** @internal */
+  export interface PrimaryTreeId {
+    type: BatchType.Primary;
+    edgesRequired: boolean;
+    animationId?: Id64String;
+  }
+
+  /** @internal */
+  export interface ClassifierTreeId {
+    type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
+    expansion: number;
+  }
+
+  /** Describes the Id of an iModel TileTree.
+   * @internal
+   */
+  export type TreeId = PrimaryTreeId | ClassifierTreeId;
+
+  /** @internal */
+  export function treeIdToString(modelId: Id64String, treeId: TreeId): string {
+    let idStr = "";
+    if (BatchType.Primary === treeId.type) {
+      if (undefined !== treeId.animationId)
+        idStr = "A:" + treeId.animationId + "_";
+
+      if (!treeId.edgesRequired && IModelApp.tileAdmin.requestTilesWithoutEdges) {
+        // Tell backend not to bother generating+returning edges - we would just discard them anyway
+        idStr = idStr + "E:0_";
+      }
+    } else {
+      idStr = BatchType.PlanarClassifier === treeId.type ? "CP" : "C";
+      idStr = idStr + ":" + treeId.expansion + "_";
+    }
+
+    return idStr + modelId;
   }
 
   /** @internal */

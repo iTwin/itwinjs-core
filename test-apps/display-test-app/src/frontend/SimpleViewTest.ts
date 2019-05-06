@@ -124,6 +124,9 @@ async function main() {
   if (configuration.disableInstancing)
     DisplayTestApp.tileAdminProps.enableInstancing = false;
 
+  if (configuration.omitEdges)
+    DisplayTestApp.tileAdminProps.requestTilesWithoutEdges = true;
+
   DisplayTestApp.startup(undefined, renderSystemOptions);
   if (configuration.enableDiagnostics)
     DisplayTestApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);

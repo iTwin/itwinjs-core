@@ -18,6 +18,7 @@ export interface SVTConfiguration {
   disableInstancing?: boolean;
   disableActiveVolumeCulling?: boolean;
   preserveShaderSourceCode?: boolean;
+  omitEdges?: boolean;
 }
 
 export interface ConnectProjectConfiguration {

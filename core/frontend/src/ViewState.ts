@@ -12,7 +12,7 @@ import {
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, ColorDef, Frustum, GraphicParams, Npc, RenderMaterial, SpatialViewDefinitionProps,
   SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
-  ViewFlags, ViewStateProps, BatchType,
+  ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -901,11 +901,10 @@ export abstract class ViewState extends ElementState {
   }
 
   private addModelToScene(model: TileTreeModelState, context: SceneContext): void {
-    model.loadTileTree(BatchType.Primary, context.viewFlags.edgesRequired(), this.scheduleScript ? this.scheduleScript.getModelAnimationId(model.treeModelId) : undefined);
-    const tileTree = model.tileTree;
-    if (undefined !== tileTree) {
-      tileTree.drawScene(context);
-    }
+    const animId = undefined !== this.scheduleScript ? this.scheduleScript.getModelAnimationId(model.treeModelId) : undefined;
+    model.loadTree(context.viewFlags.edgesRequired(), animId);
+    if (undefined !== model.tileTree)
+      model.tileTree.drawScene(context);
   }
 
   /** Set the rotation of this ViewState to the supplied rotation, by rotating it about a point.
@@ -1600,19 +1599,17 @@ export abstract class ViewState2d extends ViewState {
     const model = this.iModel.models.getLoaded(this.baseModelId);
     if (model && !(model instanceof GeometricModel2dState))
       return undefined;
+
     return model;
   }
 
   public computeFitRange(): Range3d { return this.getViewedExtents(); }
   public getViewedExtents(): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
-      const model = this.iModel.models.getLoaded(this.baseModelId);
-      if (undefined !== model && model.isGeometricModel) {
-        const tree = (model as GeometricModelState).getOrLoadTileTree(BatchType.Primary, false);
-        if (undefined !== tree) {
-          this._viewedExtents = Range3d.create(tree.range.low, tree.range.high);
-          tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);
-        }
+      const model = this.iModel.models.getLoaded(this.baseModelId) as GeometricModelState;
+      if (undefined !== model && model.isGeometricModel && undefined !== model.tileTree) {
+        this._viewedExtents = Range3d.create(model.tileTree.range.low, model.tileTree.range.high);
+        model.tileTree.location.multiplyRange(this._viewedExtents, this._viewedExtents);
       }
     }
 

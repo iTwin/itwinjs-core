@@ -78,11 +78,15 @@ export namespace SpatialClassification {
       if (undefined !== classifier) {
         const classifierModel = classifiedModel.iModel.models.getLoaded(classifierProps.modelId) as GeometricModelState;
         if (undefined !== classifierModel) {
-          classifierModel.loadTileTree(classifier.type === ClassifierType.Planar ? BatchType.PlanarClassifier : BatchType.VolumeClassifier, false, undefined, classifierProps.expand);
+          const isPlanar = ClassifierType.Planar === classifier.type;
+          const batchType = isPlanar ? BatchType.PlanarClassifier : BatchType.VolumeClassifier;
+
+          classifierModel.loadClassifierTileTree(batchType, classifierProps.expand);
           if (undefined === classifierModel.classifierTileTree)
             return;
+
           context.modelClassifiers.set(classifiedModel.treeModelId, classifierProps.modelId);
-          if (classifier.type === ClassifierType.Planar) {
+          if (isPlanar) {
             if (!context.getPlanarClassifier(classifierProps.modelId))
               context.setPlanarClassifier(classifierProps.modelId, IModelApp.renderSystem.createPlanarClassifier(classifierProps, classifierModel.classifierTileTree, classifiedModel, context)!);
           } else {
