@@ -1373,7 +1373,7 @@ describe("PresentationManager", () => {
 
       it("returns expected selection scopes", async () => {
         const result = await manager.getSelectionScopes(ClientRequestContext.current, { imodel: imodelMock.object });
-        expect(result.map((s) => s.id)).to.deep.eq(["element", "assembly", "top-assembly", "category", "model"]);
+        expect(result.map((s) => s.id)).to.deep.eq(["element", "assembly", "top-assembly" /*, "category", "model"*/]);
       });
 
     });

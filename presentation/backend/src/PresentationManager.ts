@@ -408,8 +408,9 @@ export default class PresentationManager {
       createSelectionScope("element", "Element", "Select the picked element"),
       createSelectionScope("assembly", "Assembly", "Select parent of the picked element"),
       createSelectionScope("top-assembly", "Top Assembly", "Select the topmost parent of the picked element"),
-      createSelectionScope("category", "Category", "Select all elements in the picked element's category"),
-      createSelectionScope("model", "Model", "Select all elements in the picked element's model"),
+      // WIP: temporarily comment-out "category" and "model" scopes since we can't hilite contents of them fast enough
+      // createSelectionScope("category", "Category", "Select all elements in the picked element's category"),
+      // createSelectionScope("model", "Model", "Select all elements in the picked element's model"),
     ];
   }
 
