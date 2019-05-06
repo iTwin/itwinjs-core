@@ -4,6 +4,7 @@
 import { ExportGraphicsInfo, IModelHost, IModelDb, ECSqlStatement, Texture } from "@bentley/imodeljs-backend";
 import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
+import { Angle } from "@bentley/geometry-core";
 import * as fs from "fs";
 import * as Yargs from "yargs";
 import * as path from "path";
@@ -80,7 +81,7 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
 
   fs.appendFileSync(objFile, `mtllib ${mtlName}\n`);
   // Set angleTol to arbitrary large value so chordTol is deciding factor.
-  iModel.exportGraphics(({ onGraphics, elementIdArray, chordTol: 0.01, angleTol: 10 }));
+  iModel.exportGraphics(({ onGraphics, elementIdArray, chordTol: 0.01, angleTol: Angle.degreesToRadians(45) }));
   process.stdout.write(`Wrote ${pointOffset - 1} vertices.\n`);
   fs.closeSync(objFile);
 
