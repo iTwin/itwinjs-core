@@ -13,7 +13,7 @@ import { BeButtonEvent } from "./tools/Tool";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { ToolTipOptions } from "./NotificationManager";
 
-/** The types that may be used
+/** The types that may be used for Markers
  * @public
  */
 export type MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap;
@@ -248,8 +248,8 @@ export class Cluster<T extends Marker> {
   }
 }
 
-/** A *set* of Markers that are logically related, such that they *cluster* when they overlap. In that case, a *cluster marker*
- * is drawn instead of the overlapping Markers.
+/** A *set* of Markers that are logically related, such that they *cluster* when they overlap one another in screen space.
+ * In that case, a *cluster marker* is drawn instead of the overlapping Markers.
  * @public
  */
 export abstract class MarkerSet<T extends Marker> {
@@ -307,7 +307,7 @@ export abstract class MarkerSet<T extends Marker> {
       }
     }
 
-    // we now have an arry of Markers and Clusters, add them to context
+    // we now have an array of Markers and Clusters, add them to context
     for (const entry of entries) {
       if (entry instanceof Cluster) { // is this entry a Cluster?
         if (entry.markers.length <= this.minimumClusterSize) { // yes, does it have more than the minimum number of entries?

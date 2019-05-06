@@ -62,10 +62,12 @@ export class IModelApp {
   /** The [[ToolAdmin]] for this session. */
   public static toolAdmin: ToolAdmin;
   /** The [[AccuDraw]] for this session.
-   * @beta
+   * @public
    */
   public static accuDraw: AccuDraw;
-  /** The [[AccuSnap]] for this session. */
+  /** The [[AccuSnap]] for this session.
+   * @public
+   */
   public static accuSnap: AccuSnap;
   /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session */
   public static get authorizationClient(): IAuthorizationClient | undefined {

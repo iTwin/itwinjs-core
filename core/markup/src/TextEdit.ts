@@ -2,13 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module MarkupTools */
+
 import { BeButtonEvent, EventHandled, InputSource } from "@bentley/imodeljs-frontend";
 import { G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { RedlineTool } from "./RedlineTool";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 
-/** @beta Tool to place new text notes on a Markup. */
+/** Tool to place new text notes on a Markup.
+ * @beta
+ */
 export class PlaceTextTool extends RedlineTool {
   public static toolId = "Markup.Text.Place";
   protected _nRequiredPoints = 1;
@@ -40,7 +44,9 @@ export class PlaceTextTool extends RedlineTool {
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
 }
 
-/** @beta Tool for editing text. Started automatically by the place text tool and by clicking on text from the SelectTool */
+/** Tool for editing text. Started automatically by the place text tool and by clicking on text from the SelectTool
+ * @beta
+ */
 export class EditTextTool extends MarkupTool {
   public static toolId = "Markup.Text.Edit";
   public editor?: HTMLTextAreaElement;

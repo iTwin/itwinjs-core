@@ -61,4 +61,3 @@ class MeasurePointsPlugin extends Plugin {
 ```
 
 The Plugin subclass' onExecute method is called immediately after the call to `onLoad`. The difference between `onLoad` and `onExecute` is that `onExecute` is called each time [PluginAdmin]($frontend).loadPlugin is called for the same plugin. Therefore, anything that need be done only once (such as registering a Tool), should go into the `onLoad` method and everything that should be done each time the Plugin is loaded (in this case, starting the registered Tool), should be done in the `onExecute` method.
-

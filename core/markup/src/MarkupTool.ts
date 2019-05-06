@@ -2,12 +2,16 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module MarkupTools */
+
 import { XAndY } from "@bentley/geometry-core";
 import { BeButton, BeTouchEvent, CoordinateLockOverrides, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
 import { Element as MarkupElement, LinkedHTMLElement, G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { Markup, MarkupApp } from "./Markup";
 
-/** @beta Base class for all tools that operate on Markup elements. */
+/** Base class for all tools that operate on Markup elements.
+ * @beta
+ */
 export abstract class MarkupTool extends PrimitiveTool {
   public markup!: Markup;
   public static toolKey = "MarkupTools:tools.";
@@ -70,6 +74,7 @@ export abstract class MarkupTool extends PrimitiveTool {
 
   protected setCurrentTextStyle(element: MarkupElement): void { element.css(MarkupApp.props.active.text); }
 
+  /** @internal */
   public createBoxedText(g: G, text: MarkupText) {
     const boxedText = g.group().addClass(MarkupApp.boxedTextClass);
     const outline = text.getOutline(3);

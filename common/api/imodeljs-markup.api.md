@@ -25,7 +25,7 @@ import { Transform } from '@bentley/geometry-core';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { XAndY } from '@bentley/geometry-core';
 
-// @beta (undocumented)
+// @beta
 export class ArrowTool extends RedlineTool {
     constructor(_arrowPos?: string | undefined);
     // (undocumented)
@@ -40,7 +40,7 @@ export class ArrowTool extends RedlineTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class CircleTool extends RedlineTool {
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
@@ -50,7 +50,7 @@ export class CircleTool extends RedlineTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class CloudTool extends RedlineTool {
     // (undocumented)
     protected clearDynamicsMarkup(isDynamics: boolean): void;
@@ -64,7 +64,7 @@ export class CloudTool extends RedlineTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class DistanceTool extends ArrowTool {
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
@@ -107,7 +107,7 @@ export class EditTextTool extends MarkupTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class EllipseTool extends RedlineTool {
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
@@ -119,7 +119,7 @@ export class EllipseTool extends RedlineTool {
 
 // @beta
 export class Handles {
-    constructor(ss: SelectionSet, el: Element);
+    constructor(ss: MarkupSelected, el: Element);
     // (undocumented)
     active?: ModifyHandle;
     cancelDrag(): void;
@@ -147,7 +147,7 @@ export class Handles {
     // (undocumented)
     remove(): void;
     // (undocumented)
-    ss: SelectionSet;
+    ss: MarkupSelected;
     // (undocumented)
     startDrag(ev: BeButtonEvent): EventHandled;
     // (undocumented)
@@ -156,7 +156,7 @@ export class Handles {
     vbToBoxTrn: Transform;
 }
 
-// @beta (undocumented)
+// @beta
 export class LineTool extends RedlineTool {
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
@@ -178,7 +178,7 @@ export class Markup {
     // (undocumented)
     readonly markupDiv: HTMLDivElement;
     // (undocumented)
-    readonly selected: SelectionSet;
+    readonly selected: MarkupSelected;
     sendToBack(): void;
     setCursor(cursor: string): void;
     // (undocumented)
@@ -218,7 +218,7 @@ export class MarkupApp {
     static getVpToScreenMtx(): Matrix;
     // (undocumented)
     static getVpToVbMtx(): Matrix;
-    // (undocumented)
+    // @internal (undocumented)
     protected static init(): Promise<void>;
     static readonly isActive: boolean;
     // (undocumented)
@@ -344,8 +344,9 @@ export class MarkupApp {
             maxWidth: number;
         };
     };
-    // (undocumented)
+    // @internal (undocumented)
     protected static readMarkup(): Promise<MarkupData>;
+    // @internal
     protected static readMarkupSvg(): string | undefined;
     // (undocumented)
     static readonly rotateHandleClass: string;
@@ -378,7 +379,43 @@ export interface MarkupData extends MarkupSvgData {
     image?: string;
 }
 
-// @beta (undocumented)
+// @beta
+export class MarkupSelected {
+    constructor(svg: G);
+    add(el: Element): void;
+    // (undocumented)
+    clearEditors(): void;
+    // (undocumented)
+    deleteAll(undo: UndoManager): void;
+    drop(el: Element): boolean;
+    // (undocumented)
+    readonly elements: Set<Element>;
+    // (undocumented)
+    emptyAll(): void;
+    // (undocumented)
+    groupAll(undo: UndoManager): void;
+    // (undocumented)
+    handles?: Handles;
+    // (undocumented)
+    has(el: Element): boolean;
+    // (undocumented)
+    readonly isEmpty: boolean;
+    readonly onChanged: BeEvent<(selected: MarkupSelected) => void>;
+    replace(oldEl: Element, newEl: Element): void;
+    reposition(undo: UndoManager, fn: (el: Element) => void): void;
+    // (undocumented)
+    restart(el?: Element): void;
+    // (undocumented)
+    readonly size: number;
+    // (undocumented)
+    sizeChanged(): void;
+    // (undocumented)
+    svg: G;
+    // (undocumented)
+    ungroupAll(undo: UndoManager): void;
+}
+
+// @beta
 export interface MarkupSvgData {
     rect: WidthAndHeight;
     svg?: string;
@@ -386,7 +423,7 @@ export interface MarkupSvgData {
 
 // @beta
 export abstract class MarkupTool extends PrimitiveTool {
-    // (undocumented)
+    // @internal (undocumented)
     createBoxedText(g: G, text: Text): G;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
@@ -469,7 +506,7 @@ export class PlaceTextTool extends RedlineTool {
     protected _value: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class PolygonTool extends RedlineTool {
     constructor(_numSides?: number | undefined);
     // (undocumented)
@@ -484,7 +521,7 @@ export class PolygonTool extends RedlineTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class RectangleTool extends RedlineTool {
     constructor(_cornerRadius?: number | undefined);
     // (undocumented)
@@ -532,42 +569,6 @@ export abstract class RedlineTool extends MarkupTool {
 }
 
 // @beta
-export class SelectionSet {
-    constructor(svg: G);
-    add(el: Element): void;
-    // (undocumented)
-    clearEditors(): void;
-    // (undocumented)
-    deleteAll(undo: UndoManager): void;
-    drop(el: Element): boolean;
-    // (undocumented)
-    readonly elements: Set<Element>;
-    // (undocumented)
-    emptyAll(): void;
-    // (undocumented)
-    groupAll(undo: UndoManager): void;
-    // (undocumented)
-    handles?: Handles;
-    // (undocumented)
-    has(el: Element): boolean;
-    // (undocumented)
-    readonly isEmpty: boolean;
-    readonly onChanged: BeEvent<(selected: SelectionSet) => void>;
-    replace(oldEl: Element, newEl: Element): void;
-    reposition(undo: UndoManager, fn: (el: Element) => void): void;
-    // (undocumented)
-    restart(el?: Element): void;
-    // (undocumented)
-    readonly size: number;
-    // (undocumented)
-    sizeChanged(): void;
-    // (undocumented)
-    svg: G;
-    // (undocumented)
-    ungroupAll(undo: UndoManager): void;
-}
-
-// @beta
 export class SelectTool extends MarkupTool {
     // (undocumented)
     flashedElement: Element | undefined;
@@ -591,7 +592,7 @@ export class SelectTool extends MarkupTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class SketchTool extends RedlineTool {
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
@@ -605,7 +606,7 @@ export class SketchTool extends RedlineTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class SymbolTool extends RedlineTool {
     constructor(_symbolData?: string | undefined, _applyCurrentStyle?: boolean | undefined);
     // (undocumented)

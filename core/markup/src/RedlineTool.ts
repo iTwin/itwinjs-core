@@ -2,13 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module MarkupTools */
+
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { BeButtonEvent, CoordinateLockOverrides, EventHandled, IModelApp, QuantityType } from "@bentley/imodeljs-frontend";
 import { Element as MarkupElement, G, Marker, SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 
-/** @beta Base class for tools that place new Markup elements */
+/** Base class for tools that place new Markup elements
+ * @beta
+ */
 export abstract class RedlineTool extends MarkupTool {
   protected _minPoints = 1;
   protected _nRequiredPoints = 2;
@@ -70,7 +74,9 @@ export abstract class RedlineTool extends MarkupTool {
   }
 }
 
-/** @beta */
+/** Tool for placing Markup Lines
+ * @beta
+ */
 export class LineTool extends RedlineTool {
   public static toolId = "Markup.Line";
 
@@ -88,7 +94,9 @@ export class LineTool extends RedlineTool {
   }
 }
 
-/** @beta */
+/** Tool for placing Markup Rectangles
+ * @beta
+ */
 export class RectangleTool extends RedlineTool {
   public static toolId = "Markup.Rectangle";
 
@@ -116,7 +124,9 @@ export class RectangleTool extends RedlineTool {
   }
 }
 
-/** @beta */
+/** Tool for placing Markup Polygons
+ * @beta
+ */
 export class PolygonTool extends RedlineTool {
   public static toolId = "Markup.Polygon";
 
@@ -162,7 +172,9 @@ export class PolygonTool extends RedlineTool {
   }
 }
 
-/** @beta */
+/** Tool for placing Markup Clouds
+ * @beta
+ */
 export class CloudTool extends RedlineTool {
   public static toolId = "Markup.Cloud";
   protected _cloud?: MarkupElement;
@@ -199,7 +211,9 @@ export class CloudTool extends RedlineTool {
   }
 }
 
-/** @beta */
+/** Tool for placing Markup Circles
+ * @beta
+ */
 export class CircleTool extends RedlineTool {
   public static toolId = "Markup.Circle";
 
@@ -220,7 +234,9 @@ export class CircleTool extends RedlineTool {
   }
 }
 
-/** @beta */
+/** Tool for placing Markup Ellipses
+ * @beta
+ */
 export class EllipseTool extends RedlineTool {
   public static toolId = "Markup.Ellipse";
 
@@ -244,7 +260,9 @@ export class EllipseTool extends RedlineTool {
   }
 }
 
-/** @beta */
+/** Tool for placing Markup Arrows
+ * @beta
+ */
 export class ArrowTool extends RedlineTool {
   public static toolId = "Markup.Arrow";
 
@@ -295,7 +313,9 @@ export class ArrowTool extends RedlineTool {
   }
 }
 
-/** @beta */
+/** Tool for measuring distances and placing Markups of them
+ * @beta
+ */
 export class DistanceTool extends ArrowTool {
   public static toolId = "Markup.Distance";
   protected readonly _startPointWorld = new Point3d();
@@ -353,7 +373,9 @@ export class DistanceTool extends ArrowTool {
   }
 }
 
-/** @beta */
+/** Tool for placing Markup freehand sketches
+ * @beta
+ */
 export class SketchTool extends RedlineTool {
   public static toolId = "Markup.Sketch";
   protected _minDistSquared = 100;
@@ -382,7 +404,9 @@ export class SketchTool extends RedlineTool {
   }
 }
 
-/** @beta */
+/** Tool for placing SVG symbols on a Markup
+ * @beta
+ */
 export class SymbolTool extends RedlineTool {
   public static toolId = "Markup.Symbol";
   protected _symbol?: MarkupElement;

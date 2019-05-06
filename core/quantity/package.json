@@ -1,7 +1,7 @@
 {
   "name": "@bentley/imodeljs-quantity",
   "version": "0.191.0-dev.67",
-  "description": "Quantity formatting and parsing concepts in typescript",
+  "description": "Quantity parsing, formatting and conversions for iModel.js",
   "license": "MIT",
   "main": "lib/imodeljs-quantity.js",
   "typings": "lib/imodeljs-quantity",

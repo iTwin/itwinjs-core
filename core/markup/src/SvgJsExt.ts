@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module MarkupApp */
+
 import { Transform } from "@bentley/geometry-core";
 import { Box, Element as MarkupElement, extend, G, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
@@ -12,11 +14,14 @@ export interface MarkupColor {
   stroke: any;
 }
 
-/** add methods and classes to svg.js library for Markup. */
+/** Add methods and classes to svg.js library for Markup.
+ * @public
+ */
 declare module "@svgdotjs/svg.js" {
   function register(subclass: typeof MarkupElement, name?: string): void;
   function nodeOrNew(name: string, node: any): any;
 
+  /** @public */
   interface Element {
     inSelection?: boolean;
     originalEl?: Element;
@@ -42,22 +47,28 @@ declare module "@svgdotjs/svg.js" {
     /** return selectable element or the outermost group containing this element if it's a child of the supplied Svg. */
     getChildOrGroupOf(svg: G): MarkupElement | undefined;
 
+    /** @internal */
     forElementsOfGroup(fn: (child: MarkupElement) => void): void;
+    /** @internal */
     getNpcToVp(): Matrix;
+    /** @internal */
     getOutline(expand?: number): Rect;
   }
+  /** @public */
   interface Text {
     getMarkup(): string;
     createMarkup(val: string, spacing: number): void;
     getFontSize(): number;
   }
 
+  /** @public */
   interface Matrix {
     /** convert this SVG.Matrix into an iModel Transform */
     toIModelTransform(): Transform;
     fromIModelTransform(t: Transform): this;
   }
 
+  /** @internal */
   interface Container {
     foreignObject(width: number, height: number): ForeignObject;
   }
@@ -211,7 +222,9 @@ extend(Matrix, {
   },
 });
 
-/** @internal Dummy class so a <title> inside a <g> will work. */
+/** Dummy class so a <title> inside a <g> will work.
+ * @internal
+ */
 export class Title extends MarkupElement {
   constructor(node: any) { super(nodeOrNew("title", node)); }
   public scale() { return this; }

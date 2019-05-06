@@ -303,7 +303,7 @@ export namespace SkyBox {
   }
 
   /** Parameters used by the [[RenderSystem]] to instantiate a [[SkyBox]].
-   * @internal
+   * @public
    */
   export class CreateParams {
     public readonly gradient?: SkyGradient;

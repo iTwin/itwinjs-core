@@ -2,13 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module MarkupApp */
+
 import { Point3d, XAndY } from "@bentley/geometry-core";
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
-import { SelectionSet, SelectTool } from "./SelectTool";
+import { MarkupSelected, SelectTool } from "./SelectTool";
 import * as textTool from "./TextEdit";
 import { UndoManager } from "./Undo";
 
@@ -18,25 +20,30 @@ export interface WidthAndHeight {
   height: number;
 }
 
-/** @beta */
+/** The size and SVG string for a Markup
+ * @beta
+ */
 export interface MarkupSvgData {
   /** The size of the image, in pixels. This also indicates the aspect ratio of the SVG data. */
   rect: WidthAndHeight;
-  /** a string holding the svg data for the markup. Will be undefined if [MarkupApp.stop] is called without an active Markup */
+  /** a string holding the svg data for the markup. Will be undefined if [[MarkupApp.stop]] is called without an active Markup */
   svg?: string;
 }
 
-/** @beta Markup data returned by [MarkupApp.stop] */
+/** Markup data returned by [[MarkupApp.stop]]
+ * @beta
+ */
 export interface MarkupData extends MarkupSvgData {
   /** a base64 encoded string with the image of the view that was marked up. See [MarkupApp.props.result] for options. */
   image?: string;
 }
 
 /**
- * @beta The main object for the Markup package. It is a singleton that stores the "state" of the Markup application.
+ * The main object for the Markup package. It is a singleton that stores the "state" of the Markup application.
  * It has only static members and methods. Applications may customize and control the behavior of the Markup by
- * setting members of [MarkupApp.props]. When [MarkupApp.start] is first called, it registers a set of "Markup.xxx"
+ * setting members of [[MarkupApp.props]]. When [[MarkupApp.start]] is first called, it registers a set of "Markup.xxx"
  * tools that may be invoked from UI controls.
+ * @beta
  */
 export class MarkupApp {
   /** the current Markup being created */
@@ -222,6 +229,7 @@ export class MarkupApp {
     return data;
   }
 
+  /** @internal */
   protected static async init() {
     if (this.markupNamespace)
       return; // only need to do this once
@@ -233,7 +241,9 @@ export class MarkupApp {
     return this.markupNamespace.readFinished; // make sure our localized messages are ready.
   }
 
-  /** convert the current markup SVG into a string, but don't include decorations or dynamics */
+  /** convert the current markup SVG into a string, but don't include decorations or dynamics
+   * @internal
+   */
   protected static readMarkupSvg() {
     const markup = this.markup;
     if (!markup || !markup.svgContainer)
@@ -244,6 +254,7 @@ export class MarkupApp {
     return markup.svgContainer.svg(); // string-ize the SVG data
   }
 
+  /** @internal */
   protected static async readMarkup(): Promise<MarkupData> {
     const result = this.props.result;
     let canvas = this.markup!.vp.canvas;
@@ -293,13 +304,14 @@ export class MarkupApp {
 const removeSvgNamespace = (svg: Svg) => { svg.node.removeAttribute("xmlns:svgjs"); return svg; };
 const newSvgElement = (name: string) => adopt(create(name));
 /**
- * @beta The current markup being created/edited. Holds the SVG elements, plus the active MarkupTool.
+ * The current markup being created/edited. Holds the SVG elements, plus the active [[MarkupTool]].
  * When starting a Markup, a new Div is added as a child of the ScreenViewport's vpDiv.
+ * @beta
  */
 export class Markup {
   public readonly markupDiv: HTMLDivElement;
   public readonly undo = new UndoManager();
-  public readonly selected!: SelectionSet;
+  public readonly selected!: MarkupSelected;
   public readonly svgContainer?: Svg;
   public readonly svgMarkup?: G;
   public readonly svgDynamics?: G;
@@ -364,7 +376,7 @@ export class Markup {
     this.svgDynamics = this.addNested(MarkupApp.dynamicsClass); // only for tool dynamics of SVG graphics.
     this.svgDecorations = this.addNested(MarkupApp.decorationsClass); // only for temporary decorations of SVG graphics.
     this.addBorder();
-    this.selected = new SelectionSet(this.svgDecorations);
+    this.selected = new MarkupSelected(this.svgDecorations);
     MarkupApp.screenToVbMtx = this.svgMarkup.screenCTM().inverse();
   }
 

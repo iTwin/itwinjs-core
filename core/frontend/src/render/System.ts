@@ -1072,7 +1072,7 @@ export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint"
  */
 export namespace RenderSystem {
   /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup.
-   * @alpha
+   * @beta
    */
   export interface Options {
     /** WebGL extensions to be explicitly disabled, regardless of whether or not the WebGL implementation supports them.

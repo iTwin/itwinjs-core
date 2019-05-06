@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module MarkupTools */
+
 import { assert } from "@bentley/bentleyjs-core";
 import { Element as MarkupElement } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
@@ -12,7 +14,9 @@ abstract class UndoAction {
   public abstract reinstate(): void;
 }
 
-/** created when a new element is added to the markup */
+/** created when a new element is added to the markup
+ * @internal
+ */
 class AddAction extends UndoAction {
   private _parent: MarkupElement;
   private _index: number;
@@ -26,7 +30,9 @@ class AddAction extends UndoAction {
   public reverse() { MarkupApp.markup!.selected.drop(this._elem); this._elem.remove(); }
 }
 
-/** created when an existing element is deleted from the markup */
+/** created when an existing element is deleted from the markup
+ * @internal
+ */
 class DeleteAction extends UndoAction {
   private _parent: MarkupElement;
   private _index: number;
@@ -40,7 +46,9 @@ class DeleteAction extends UndoAction {
   public reinstate() { MarkupApp.markup!.selected.drop(this._elem); this._elem.remove(); }
 }
 
-/** created when an existing element's position is moved in the display order. This can also include re-parenting */
+/** created when an existing element's position is moved in the display order. This can also include re-parenting
+ * @internal
+ */
 class RepositionAction extends UndoAction {
   private _newParent: MarkupElement;
   private _newIndex: number;
@@ -55,7 +63,9 @@ class RepositionAction extends UndoAction {
   public reverse() { this._oldParent.add(this._elem, this._oldIndex); if (this._elem.inSelection) MarkupApp.markup!.selected.drop(this._elem); }
 }
 
-/** created when an existing element's properties are modified. */
+/** created when an existing element's properties are modified.
+ * @internal
+ */
 class ModifyAction extends UndoAction {
   constructor(private _newElem: MarkupElement, private _oldElement: MarkupElement) {
     super();
@@ -66,7 +76,9 @@ class ModifyAction extends UndoAction {
   public reverse() { this._newElem.replace(this._oldElement); MarkupApp.markup!.selected.replace(this._newElem, this._oldElement); }
 }
 
-/** @beta Stores the sequence of operations performed on the markup. Facilitates undo/redo of the operations. */
+/** Stores the sequence of operations performed on a Markup. Facilitates undo/redo of the operations.
+ * @beta
+ */
 export class UndoManager {
   private _currentCmd = 0;
   private _grouped = 0;
@@ -85,20 +97,20 @@ export class UndoManager {
   private startGroup() { this.startCommand(); ++this._grouped; }
   private endGroup() { --this._grouped; }
 
-  /** Perform a series of changes to elements that should all be reversed as a single operation.
+  /** Perform a series of changes to markup elements that should all be reversed as a single operation.
    * @param fn the function that performs the changes to the elements. It must call the onXXX methods of this class to store
    * the operations in the undo buffer.
    * @note all of the onXXX methods of this class should *only* be called from within the callback function of this method.
    */
   public doGroup(fn: VoidFunction) { this.startGroup(); fn(); this.endGroup(); }
 
-  /** call this from within a [doGroup] function *after* an element has been added to a markup */
+  /** call this from within a [[doGroup]] function *after* an element has been added to a markup */
   public onAdded(elem: MarkupElement) { this.addAction(new AddAction(elem)); }
-  /** call this from within a [doGroup] function *before* an element is about to be deleted from a markup */
+  /** call this from within a [[doGroup]] function *before* an element is about to be deleted from a markup */
   public onDelete(elem: MarkupElement) { this.addAction(new DeleteAction(elem)); }
-  /** call this from within a [doGroup] function *after* an element has been moved in display order in a markup */
+  /** call this from within a [[doGroup]] function *after* an element has been moved in display order in a markup */
   public onRepositioned(elem: MarkupElement, oldIndex: number, oldParent: MarkupElement) { this.addAction(new RepositionAction(elem, oldIndex, oldParent)); }
-  /** call this from within a [doGroup] function *after* an element has been modified in a markup */
+  /** call this from within a [[doGroup]] function *after* an element has been modified in a markup */
   public onModified(newElem: MarkupElement, oldElem: MarkupElement) { this.addAction(new ModifyAction(newElem, oldElem)); }
 
   /** reverse the most recent operation, if any */

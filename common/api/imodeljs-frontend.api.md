@@ -180,111 +180,115 @@ import { XYAndZ } from '@bentley/geometry-core';
 import { XYZ } from '@bentley/geometry-core';
 import { XYZProps } from '@bentley/geometry-core';
 
-// @internal
+// @public
 export class AccuDraw {
-    // (undocumented)
+    // @internal (undocumented)
     accountForAuxRotationPlane(rot: ThreeAxes, plane: RotationMode): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _acsPickId?: string;
-    // (undocumented)
+    // @internal (undocumented)
     activate(): void;
-    // (undocumented)
+    // @internal (undocumented)
     adjustPoint(pointActive: Point3d, vp: ScreenViewport, fromSnap: boolean): boolean;
     // (undocumented)
     alwaysShowCompass: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     angleLock(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _animationFrames: number;
     // (undocumented)
     autoFocusFields: boolean;
     // (undocumented)
     autoPointPlacement: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly axes: ThreeAxes;
     // (undocumented)
     axisIndexing: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly baseAxes: ThreeAxes;
-    // (undocumented)
+    // @internal (undocumented)
     changeBaseRotationMode(mode: RotationMode): void;
-    // (undocumented)
+    // @internal (undocumented)
     changeCompassMode(animate?: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     clearTentative(): boolean;
+    // Warning: (ae-incompatible-release-tags) The symbol "compassMode" is marked as @public, but its signature references "CompassMode" which is marked as @internal
+    // 
     // (undocumented)
     compassMode: CompassMode;
-    // (undocumented)
+    // @internal (undocumented)
     protected _compassSizeInches: number;
     // (undocumented)
     contextSensitive: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     currentState: CurrentState;
     // (undocumented)
     currentView?: ScreenViewport;
-    // (undocumented)
+    // @internal (undocumented)
     deactivate(): void;
-    // (undocumented)
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly delta: Vector3d;
-    // (undocumented)
+    // @internal (undocumented)
     disableForSession(): void;
     // (undocumented)
     distanceIndexing: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     distanceLock(synchText: boolean, saveInHistory: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     doAutoPoint(index: ItemField, mode: CompassMode): void;
-    // (undocumented)
+    // @internal (undocumented)
     doLockAngle(isSnapped: boolean): void;
     // (undocumented)
     dontMoveFocus: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     downgradeInactiveState(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     enableForSession(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _fillColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _fillColorNoFocus: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     fixPointPolar(vp: Viewport): void;
-    // (undocumented)
+    // @internal (undocumented)
     fixPointRectangular(vp: Viewport): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly flags: Flags;
     // (undocumented)
     floatingOrigin: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _frameColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _frameColorNoFocus: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: Matrix3d): Matrix3d | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     getFieldLock(index: ItemField): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     getKeyinStatus(index: ItemField): KeyinStatus;
-    // (undocumented)
+    // @internal (undocumented)
     getRotation(rMatrix?: Matrix3d): Matrix3d;
-    // (undocumented)
+    // @internal (undocumented)
     static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: Matrix3d): Matrix3d;
-    // (undocumented)
+    // @internal (undocumented)
     getValueByIndex(index: ItemField): number;
+    // @internal
     grabInputFocus(): void;
+    // @internal (undocumented)
     hardConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly hasInputFocus: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _indexColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     indexed: LockedStates;
-    // (undocumented)
+    // @internal (undocumented)
     protected _indexToleranceInches: number;
     // (undocumented)
     readonly isActive: boolean;
@@ -294,120 +298,123 @@ export class AccuDraw {
     readonly isEnabled: boolean;
     // (undocumented)
     readonly isInactive: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     isZLocked(vp: Viewport): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly lastAxes: ThreeAxes;
-    // (undocumented)
+    // @internal (undocumented)
     locked: LockedStates;
-    // (undocumented)
+    // @internal (undocumented)
     newFocus: ItemField;
-    // (undocumented)
+    // @internal (undocumented)
     onBeginDynamics(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onCompassModeChange(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onEndDynamics(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onFieldLockChange(_index: ItemField): void;
-    // (undocumented)
+    // @internal (undocumented)
     onFieldValueChange(_index: ItemField): void;
-    // (undocumented)
+    // @internal (undocumented)
     onInitialized(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onInputCollectorExit(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onInputCollectorInstall(): boolean;
+    // @internal
     onMotion(_ev: BeButtonEvent): void;
-    // (undocumented)
+    // @internal (undocumented)
     onPostButtonEvent(ev: BeButtonEvent): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPreButtonEvent(ev: BeButtonEvent): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onPrimitiveToolInstall(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onRotationModeChange(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void;
-    // (undocumented)
+    // @internal (undocumented)
     onSnap(snap: SnapDetail): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onTentative(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onViewToolExit(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onViewToolInstall(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly origin: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     readonly planePt: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     readonly point: Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     processFieldInput(index: ItemField, input: string, synchText: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     processHints(): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly published: AccudrawData;
-    // (undocumented)
+    // @internal (undocumented)
     refreshDecorationsAndDynamics(): void;
-    // (undocumented)
+    // @internal (undocumented)
     restoreState(stateBuffer: SavedState): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "rotationMode" is marked as @public, but its signature references "RotationMode" which is marked as @internal
+    // 
     // (undocumented)
     rotationMode: RotationMode;
-    // (undocumented)
+    // @internal (undocumented)
     saveCoordinate(index: ItemField, value: number): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly savedStateInputCollector: SavedState;
-    // (undocumented)
+    // @internal (undocumented)
     readonly savedStateViewTool: SavedState;
-    // (undocumented)
+    // @internal (undocumented)
     saveState(stateBuffer: SavedState): void;
-    // (undocumented)
+    // @internal (undocumented)
     sendDataPoint(pt: Point3d, vp: ScreenViewport): void;
-    // (undocumented)
+    // @internal (undocumented)
     setCompassMode(mode: CompassMode): void;
-    // (undocumented)
+    // @internal (undocumented)
     setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: Matrix3d | Vector3d, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus;
-    // (undocumented)
+    // @internal (undocumented)
     setContextRotation(rMatrix: Matrix3d, locked: boolean, animate: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     setFieldLock(index: ItemField, locked: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     setFocusItem(_index: ItemField): void;
-    // (undocumented)
+    // @internal (undocumented)
     setKeyinStatus(index: ItemField, status: KeyinStatus): void;
-    // (undocumented)
+    // @internal (undocumented)
     setLastPoint(pt: Point3d): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected setNewFocus(index: ItemField): void;
-    // (undocumented)
+    // @internal (undocumented)
     setRotationMode(mode: RotationMode): void;
-    // (undocumented)
+    // @internal (undocumented)
     setValueByIndex(index: ItemField, value: number): void;
     // (undocumented)
     smartKeyin: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
     // (undocumented)
     stickyZLock: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     testDecorationHit(id: string): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     unlockAllFields(): void;
-    // (undocumented)
+    // @internal (undocumented)
     static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews?: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     updateFieldLock(index: ItemField, locked: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     updateRotation(animate?: boolean, newRotationIn?: Matrix3d): void;
-    // (undocumented)
+    // @internal (undocumented)
     upgradeToActiveState(): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     readonly vector: Vector3d;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _xColor: ColorDef;
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _yColor: ColorDef;
     }
 
@@ -620,40 +627,39 @@ export abstract class AccuDrawTool {
     static outputPrompt(messageKey: string): void;
 }
 
-// @internal
+// @public
 export class AccuSnap implements Decorator {
-    // (undocumented)
+    // @internal (undocumented)
     adjustPointIfHot(pt: Point3d, view: Viewport): void;
     readonly areFlashed: Set<Viewport>;
     aSnapHits?: HitList<HitDetail>;
     clear(): void;
-    // (undocumented)
+    // @internal (undocumented)
     clearIfElement(sourceId: string): void;
-    // (undocumented)
+    // @internal (undocumented)
     clearToolTip(ev?: BeButtonEvent): void;
     readonly cross: SpriteLocation;
     currHit?: HitDetail;
-    // (undocumented)
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
+    // @internal (undocumented)
     destroy(): void;
-    // (undocumented)
+    // @internal (undocumented)
     displayToolTip(viewPt: XAndY, vp: ScreenViewport, uorPt?: Point3d): void;
     enableLocate(yesNo: boolean): void;
-    // (undocumented)
     enableSnap(yesNo: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     erase(): void;
     readonly errorIcon: SpriteLocation;
     errorKey?: string;
     explanation?: string;
     getActiveSnapModes(): SnapMode[];
-    // (undocumented)
+    // @internal (undocumented)
     getCurrSnapDetail(): SnapDetail | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     getHitAndList(holder: HitListHolder): HitDetail | undefined;
     readonly icon: SpriteLocation;
-    // (undocumented)
+    // @internal (undocumented)
     intersectXY(tpSnap: SnapDetail, second: SnapDetail): IntersectDetail | undefined;
     readonly isActive: boolean;
     readonly isHot: boolean;
@@ -662,51 +668,57 @@ export class AccuSnap implements Decorator {
     readonly isSnapEnabledByUser: boolean;
     readonly keypointDivisor: number;
     readonly needFlash: Set<Viewport>;
+    // @internal
     onEnabledStateChange(_isEnabled: boolean, _wasEnabled: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     onInitialized(): void;
+    // @internal
     onMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     onMotionStopped(_ev: BeButtonEvent): void;
-    // (undocumented)
+    // @internal (undocumented)
     onNoMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     onPreButtonEvent(ev: BeButtonEvent): boolean;
+    // @internal
     onStartTool(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onTouchCancel(ev: BeTouchEvent): void;
-    // (undocumented)
+    // @internal (undocumented)
     onTouchEnd(ev: BeTouchEvent): void;
-    // (undocumented)
+    // @internal (undocumented)
     onTouchMove(ev: BeTouchEvent): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     onTouchStart(ev: BeTouchEvent): void;
-    // (undocumented)
+    // @internal (undocumented)
     onTouchTap(ev: BeTouchEvent): Promise<boolean>;
+    // @internal
     reEvaluate(): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     static requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined>;
+    // @internal
     resetButton(): Promise<SnapStatus>;
-    // (undocumented)
+    // @internal (undocumented)
     setCurrHit(newHit?: HitDetail): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected _settings: AccuSnap.Settings;
-    // (undocumented)
+    // @internal (undocumented)
     showElemInfo(viewPt: XAndY, vp: ScreenViewport, hit: HitDetail): void;
-    // (undocumented)
+    // @internal (undocumented)
     suppress(doSuppress: boolean): number;
-    // (undocumented)
+    // @internal (undocumented)
     suspend(doSuspend: boolean): void;
+    // @internal
     synchSnapMode(): void;
-    // (undocumented)
+    // @internal (undocumented)
     readonly toolState: AccuSnap.ToolState;
-    // (undocumented)
+    // @internal (undocumented)
     touchCursor?: TouchCursor;
     }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace AccuSnap {
     // (undocumented)
     export class Settings {
@@ -2857,11 +2869,7 @@ export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 
 // @public
 export class IModelApp {
-    // Warning: (ae-incompatible-release-tags) The symbol "accuDraw" is marked as @beta, but its signature references "AccuDraw" which is marked as @internal
-    // 
-    // @beta
     static accuDraw: AccuDraw;
-    // Warning: (ae-incompatible-release-tags) The symbol "accuSnap" is marked as @public, but its signature references "AccuSnap" which is marked as @internal
     static accuSnap: AccuSnap;
     static applicationId: string;
     static applicationVersion: string;
@@ -4041,11 +4049,13 @@ export class PerformanceMetrics {
 
 // @alpha
 export namespace PerModelCategoryVisibility {
+    // @beta
     export enum Override {
         Hide = 2,
         None = 0,
         Show = 1
     }
+    // @beta
     export interface Overrides {
         clearOverrides(modelIds?: Id64Arg): void;
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
@@ -4726,7 +4736,7 @@ export abstract class RenderSystem implements IDisposable {
 
 // @public
 export namespace RenderSystem {
-    // @alpha
+    // @beta
     export interface Options {
         // @internal
         backfaceCulling?: boolean;
@@ -5147,18 +5157,21 @@ export abstract class SkyBox implements SkyBoxProps {
 
 // @public
 export namespace SkyBox {
-    // @internal
     export class CreateParams {
         // (undocumented)
         static createForCube(cube: RenderTexture): CreateParams;
         // (undocumented)
         static createForGradient(gradient: SkyGradient, zOffset: number): CreateParams;
+        // Warning: (ae-incompatible-release-tags) The symbol "createForSphere" is marked as @public, but its signature references "SphereParams" which is marked as @internal
+        // 
         // (undocumented)
         static createForSphere(sphere: SphereParams, zOffset: number): CreateParams;
         // (undocumented)
         readonly cube?: RenderTexture;
         // (undocumented)
         readonly gradient?: SkyGradient;
+        // Warning: (ae-incompatible-release-tags) The symbol "sphere" is marked as @public, but its signature references "SphereParams" which is marked as @internal
+        // 
         // (undocumented)
         readonly sphere?: SphereParams;
         // (undocumented)
@@ -5855,7 +5868,7 @@ export abstract class Target extends RenderTarget {
     readonly wantInvertBlackBackground: boolean;
     }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class TentativeOrAccuSnap {
     // (undocumented)
     static getCurrentPoint(): Point3d;

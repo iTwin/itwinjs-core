@@ -17,3 +17,15 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
     (window as any).iModelJsVersions = new Map<string, string>();
   (window as any).iModelJsVersions.set("imodeljs-markup", BUILD_SEMVER);
 }
+
+/** @docs-package-description
+ * The ($markup) package supplies tools for creating, editing, and saving SVG-based markups of iModel.js Viewports.
+ */
+/**
+ * @docs-group-description MarkupApp
+ * Classes for configuring and administering the markup system.
+ */
+/**
+ * @docs-group-description MarkupTools
+ * Classes for supplying interactive tools for creating and editing markup elements.
+ */

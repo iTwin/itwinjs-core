@@ -951,7 +951,7 @@ export enum ViewUndoEvent { Undo = 0, Redo = 1 }
  */
 export namespace PerModelCategoryVisibility {
   /** Describes whether and how a category's visibility is overridden.
-   * @alpha
+   * @beta
    */
   export enum Override {
     /** The category's visibility is not overridden; its visibility is wholly controlled by the [[Viewport]]'s [[CategorySelectorState]]. */
@@ -964,7 +964,7 @@ export namespace PerModelCategoryVisibility {
 
   /** Describes a set of per-model category visibility overrides. Changes to these overrides invoke the [[Viewport.onViewedCategoriesPerModelChanged]] event.
    * @see [[Viewport.perModelCategoryVisibility]].
-   * @alpha
+   * @beta
    */
   export interface Overrides {
     /** Returns the override state of the specified category within the specified model. */

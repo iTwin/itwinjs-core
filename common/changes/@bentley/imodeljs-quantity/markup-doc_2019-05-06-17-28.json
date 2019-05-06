@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "documentation cleanup",
+      "packageName": "@bentley/imodeljs-quantity",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-quantity",
+  "email": "keith.bentley@bentley.com"
+}

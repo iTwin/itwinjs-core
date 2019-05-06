@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module MarkupTools */
+
 import { Point2d, Point3d, Transform, XAndY } from "@bentley/geometry-core";
 import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource } from "@bentley/imodeljs-frontend";
 import { ArrayXY, Box, Circle, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
@@ -11,8 +13,9 @@ import { EditTextTool } from "./TextEdit";
 import { UndoManager } from "./Undo";
 import { BeEvent } from "@bentley/bentleyjs-core";
 
-/** @beta classes added to HTMLElements so they can be customized in CSS by applications.
+/** Classes added to HTMLElements so they can be customized in CSS by applications.
  * A "modify handle" is a visible position on the screen that provides UI to modify a MarkupElement.
+ * @beta
  */
 export abstract class ModifyHandle {
   public vbToStartTrn!: Transform;
@@ -53,7 +56,9 @@ export abstract class ModifyHandle {
   }
 }
 
-/** @beta A ModifyHandle that changes the size of the element */
+/** A ModifyHandle that changes the size of the element
+ * @beta
+ */
 class StretchHandle extends ModifyHandle {
   private readonly _circle: Circle;
   public posNpc: Point2d;
@@ -112,7 +117,9 @@ class StretchHandle extends ModifyHandle {
   }
 }
 
-/** @beta A ModifyHandle to rotate an element */
+/** A ModifyHandle to rotate an element
+ * @beta
+ */
 class RotateHandle extends ModifyHandle {
   private readonly _line: Line;
   private readonly _circle: Circle;
@@ -143,7 +150,9 @@ class RotateHandle extends ModifyHandle {
   }
 }
 
-/** @beta A VertexHandle to move a point on a line */
+/** A VertexHandle to move a point on a line
+ * @beta
+ */
 class VertexHandle extends ModifyHandle {
   private readonly _circle: Circle;
   private readonly _x: string;
@@ -173,7 +182,9 @@ class VertexHandle extends ModifyHandle {
   }
 }
 
-/** @beta A handle that moves (translates) an element. */
+/** A handle that moves (translates) an element.
+ * @beta
+ */
 class MoveHandle extends ModifyHandle {
   private readonly _shape: MarkupElement;
   private readonly _outline?: Polygon;
@@ -226,7 +237,9 @@ class MoveHandle extends ModifyHandle {
   }
 }
 
-/** @beta The set of ModifyHandles active. Only applies if there is a single element selected. */
+/** The set of ModifyHandles active. Only applies if there is a single element selected.
+ * @beta
+ */
 export class Handles {
   public readonly handles: ModifyHandle[] = [];
   public active?: ModifyHandle;
@@ -235,7 +248,7 @@ export class Handles {
   public npcToVbTrn!: Transform;
   public vbToBoxTrn!: Transform;
 
-  constructor(public ss: SelectionSet, public el: MarkupElement) {
+  constructor(public ss: MarkupSelected, public el: MarkupElement) {
     this.group = ss.svg.group();
 
     if (el instanceof Line) {
@@ -332,13 +345,15 @@ export class Handles {
   }
 }
 
-/** @beta The set of currently selected SVG elements. When elements are added to the set, they are hilited. */
-export class SelectionSet {
+/** The set of currently selected SVG elements. When elements are added to the set, they are hilited.
+ * @beta
+ */
+export class MarkupSelected {
   public readonly elements = new Set<MarkupElement>();
   public handles?: Handles;
 
   /** Called whenever elements are added or removed from this SelectionSet */
-  public readonly onChanged = new BeEvent<(selected: SelectionSet) => void>();
+  public readonly onChanged = new BeEvent<(selected: MarkupSelected) => void>();
 
   public get size() { return this.elements.size; }
   public get isEmpty() { return this.size === 0; }
@@ -435,7 +450,9 @@ export class SelectionSet {
   }
 }
 
-/** @beta Provides UI for selection, delete, move, copy, bring-to-front, send-to-back, etc. for Markup SVG elements */
+/** Provides UI for selection, delete, move, copy, bring-to-front, send-to-back, etc. for Markup SVG elements
+ * @beta
+ */
 export class SelectTool extends MarkupTool {
   public static toolId = "Markup.Select";
   private _flashedElement?: MarkupElement;
