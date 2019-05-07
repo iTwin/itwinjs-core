@@ -60,6 +60,12 @@ export interface Clipper {
  */
 export class ClipUtilities {
   private static _selectIntervals01TestPoint = Point3d.create();
+  /**
+   * * Augment the unsortedFractionsArray with 0 and 1
+   * * sort
+   * * test the midpoint of each interval with `clipper.isPointOnOrInside`
+   * * pass accepted intervals to `announce(f0,f1,curve)`
+   */
   public static selectIntervals01(curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     unsortedFractions.push(0);
     unsortedFractions.push(1);

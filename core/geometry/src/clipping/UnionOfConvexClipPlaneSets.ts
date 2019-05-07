@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module CartesianGeometry */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Segment1d } from "../geometry3d/Segment1d";
-import { Range3d } from "../geometry3d/Range";
+import { Range3d, Range1d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Matrix4d } from "../geometry4d/Matrix4d";
@@ -16,6 +16,7 @@ import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { Geometry } from "../Geometry";
+import { Ray3d } from "../geometry3d/Ray3d";
 
 /**
  * A collection of ConvexClipPlaneSets.
@@ -25,12 +26,13 @@ import { Geometry } from "../Geometry";
  */
 export class UnionOfConvexClipPlaneSets implements Clipper {
   private _convexSets: ConvexClipPlaneSet[];
-
-  public get convexSets() { return this._convexSets; }
+  /** (property accessor)  Return the (reference to the) array of `ConvexClipPlaneSet` */
+  public get convexSets(): ConvexClipPlaneSet[] { return this._convexSets; }
 
   private constructor() {
     this._convexSets = [];
   }
+  /** Return an array with the `toJSON` form of each  `ConvexClipPlaneSet` */
   public toJSON(): any {
     const val: any = [];
     for (const convex of this._convexSets) {
@@ -83,38 +85,36 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
       result._convexSets.push(convexSet.clone());
     return result;
   }
-
+  /** Append `toAdd` to the array of `ConvexClipPlaneSet` */
   public addConvexSet(toAdd: ConvexClipPlaneSet) {
     this._convexSets.push(toAdd);
   }
 
-  public testRayIntersect(point: Point3d, direction: Vector3d): boolean {
-    const tNear = new Float64Array(1);
-    for (const planeSet of this._convexSets) {
-      if (ConvexClipPlaneSet.testRayIntersections(tNear, point, direction, planeSet))
-        return true;
-    }
-    return false;
-  }
-
-  public getRayIntersection(point: Point3d, direction: Vector3d): number | undefined {
-    let nearest = -ConvexClipPlaneSet.hugeVal;
-    for (const planeSet of this._convexSets) {
-      if (planeSet.isPointInside(point)) {
-        return 0.0;
-      } else {
-        const tNear = new Float64Array(1);
-        if (ConvexClipPlaneSet.testRayIntersections(tNear, point, direction, planeSet) && tNear[0] > nearest) {
-          nearest = tNear[0];
-        }
+  /** Test if there is any intersection with a ray defined by origin and direction.
+   * * Optionally record the range (null or otherwise) in caller-allocated result.
+   * * If the ray is unbounded inside the clip, result can contain positive or negative "Geometry.hugeCoordinate" values
+   * * If no result is provide, there are no object allocations.
+   * @param maximalRange optional Range1d to receive parameters along the ray.
+   */
+  public hasIntersectionWithRay(ray: Ray3d, maximalRange?: Range1d): boolean {
+    if (maximalRange === undefined) {
+      // if complete result is not requested, return after any hit.
+      for (const planeSet of this._convexSets) {
+        if (planeSet.hasIntersectionWithRay(ray))
+          return true;
       }
+      return false;
     }
-    if (nearest > - ConvexClipPlaneSet.hugeVal)
-      return nearest;
-    else
-      return undefined;
+    maximalRange.setNull();
+    const rangeA = Range1d.createNull();
+    for (const planeSet of this._convexSets) {
+      if (planeSet.hasIntersectionWithRay(ray, rangeA))
+        maximalRange.extendRange(rangeA);
+    }
+    return !maximalRange.isNull;
   }
 
+  /** Return true if true is returned for any contained convex set returns true for `convexSet.isPointInside (point, tolernace)`  */
   public isPointInside(point: Point3d): boolean {
     for (const convexSet of this._convexSets) {
       if (convexSet.isPointInside(point)) {
@@ -123,7 +123,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     }
     return false;
   }
-
+  /** Return true if true is returned for any contained convex set returns true for `convexSet.isPointOnOrInside (point, tolernace)`  */
   public isPointOnOrInside(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     for (const convexSet of this._convexSets) {
       if (convexSet.isPointOnOrInside(point, tolerance))
@@ -132,6 +132,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     return false;
   }
 
+  /** Return true if true is returned for any contained convex set returns true for `convexSet.isSphereOnOrInside (point, tolernace)`  */
   public isSphereInside(point: Point3d, radius: number) {
     for (const convexSet of this._convexSets) {
       if (convexSet.isSphereInside(point, radius))

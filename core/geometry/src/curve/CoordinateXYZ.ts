@@ -72,7 +72,7 @@ export class CoordinateXYZ extends GeometryQuery {
   public isAlmostEqual(other: GeometryQuery): boolean {
     return (other instanceof CoordinateXYZ) && this._xyz.isAlmostEqual(other._xyz);
   }
-
+/** Second step of double dispatch:  call `handler.handleCoordinateXYZ(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleCoordinateXYZ(this);
   }

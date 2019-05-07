@@ -235,7 +235,7 @@ export class Point2d extends XY implements BeJSONFunctions {
       result);
   }
   /**
-   * @returns dot product of vector from this to targetA and vector from this to targetB
+   * Return the dot product of vector from this to targetA and vector from this to targetB
    * @param targetA target of first vector
    * @param targetB target of second vector
    */

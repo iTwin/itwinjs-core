@@ -53,7 +53,10 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
     if (origin)
       return Plane3dByOriginAndUnitNormal._create(origin.x, origin.y, origin.z, 0, 1, 0);
     return Plane3dByOriginAndUnitNormal._create(0, 0, 0, 0, 1, 0);
-  }
+
+  /** create a new  Plane3dByOriginAndUnitNormal with given origin and normal.
+   * * Returns undefined if the normal vector is all zeros.
+   */}
   public static create(origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
     const normalized = normal.normalize();
     if (!normalized)
@@ -75,9 +78,11 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
       return new Plane3dByOriginAndUnitNormal(pointA, cross);
     return undefined;
   }
+  /** test for (toleranced) equality with `other` */
   public isAlmostEqual(other: Plane3dByOriginAndUnitNormal): boolean {
     return this._origin.isAlmostEqual(other._origin) && this._normal.isAlmostEqual(other._normal);
   }
+  /** Parse a json fragment `{origin: [x,y,z], normal: [ux,uy,uz]}`  */
   public setFromJSON(json?: any) {
     if (!json) {
       this._origin.set(0, 0, 0);
@@ -92,6 +97,9 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
    * @return {*} [origin,normal]
    */
   public toJSON(): any { return { origin: this._origin.toJSON(), normal: this._normal.toJSON() }; }
+  /**  create a new Plane3dByOriginAndUnitNormal from json fragment.
+   * * See `Plane3dByOriginAndUnitNormal.setFromJSON`
+   */
   public static fromJSON(json?: any): Plane3dByOriginAndUnitNormal {
     const result = Plane3dByOriginAndUnitNormal.createXYPlane();
     result.setFromJSON(json);
@@ -106,6 +114,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
     this._origin.setFrom(origin);
     this._normal.setFrom(normal);
   }
+  /** return a deep clone (point and normal cloned) */
   public clone(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal {
     if (result) {
       result.set(this._origin, this._normal);
@@ -137,11 +146,11 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   public altitudeToPoint(altitude: number, result?: Point3d): Point3d {
     return this._origin.plusScaled(this._normal, altitude, result);
   }
-  /** @returns The dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
+  /** Return the dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
    * for a point moving at speed one along the spaceVector.
    */
   public velocityXYZ(x: number, y: number, z: number): number { return this._normal.dotProductXYZ(x, y, z); }
-  /** @returns The dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
+  /** Return the dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
    * for a point moving at speed one along the spaceVector.
    */
   public velocity(spaceVector: Vector3d): number { return this._normal.dotProduct(spaceVector); }

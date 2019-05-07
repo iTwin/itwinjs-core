@@ -16,8 +16,11 @@ import { Point4d } from "../geometry4d/Point4d";
  * @public
  */
 export class XYZ implements XYAndZ {
+  /** x coordinate */
   public x: number;
+  /** y coordinate */
   public y: number;
+  /** z coordinate */
   public z: number;
   /**
    * Set the x,y,z  parts.

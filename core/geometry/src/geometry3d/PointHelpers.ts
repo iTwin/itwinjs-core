@@ -72,13 +72,14 @@ export class NumberArray {
     for (const x of data) { sum += x; }
     return sum;
   }
-
+  /** test if coordinate x appears (to tolerance by `Geometry.isSameCoordinate`) in this array of numbers */
   public static isCoordinateInArray(x: number, data: number[] | undefined): boolean {
     if (data) {
       for (const y of data) { if (Geometry.isSameCoordinate(x, y)) return true; }
     }
     return false;
   }
+  /** Return the max absolute vlaue in a array of numbers. */
   public static maxAbsArray(values: number[]) {
     const arrLen = values.length;
     if (arrLen === 0) {
@@ -93,11 +94,15 @@ export class NumberArray {
     }
     return a;
   }
+  /** return the max abssolute value of a pair of numbers */
   public static maxAbsTwo(a1: number, a2: number) {
     a1 = Math.abs(a1);
     a2 = Math.abs(a2);
     return (a1 > a2) ? a1 : a2;
   }
+  /** Return the max absolute difference between corresponding entries in two arrays of numbers
+   * * If sizes are mismatched, only the smaller length is tested.
+   */
   public static maxAbsDiff(dataA: number[], dataB: number[]): number {
     let a = 0.0;
     const n = Math.min(dataA.length, dataB.length);
@@ -105,6 +110,9 @@ export class NumberArray {
     return a;
   }
 
+  /** Return the max absolute difference between corresponding entries in two Float64Array
+   * * If sizes are mismatched, only the smaller length is tested.
+   */
   public static maxAbsDiffFloat64(dataA: Float64Array, dataB: Float64Array): number {
     let a = 0.0;
     const n = Math.min(dataA.length, dataB.length);
@@ -118,6 +126,7 @@ export class NumberArray {
  * @public
  */
 export class Point2dArray {
+  /** Return true if arrays have same length and matching coordinates. */
   public static isAlmostEqual(dataA: undefined | Point2d[], dataB: undefined | Point2d[]): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
@@ -162,6 +171,7 @@ export class Point2dArray {
  * @public
  */
 export class Vector3dArray {
+  /** Return true if arrays have same length and matching coordinates. */
   public static isAlmostEqual(dataA: undefined | Vector3d[], dataB: undefined | Vector3d[]): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
@@ -200,7 +210,7 @@ export class Point4dArray {
     }
     return result;
   }
-
+  /** pack x,y,z,w in Float64Array. */
   public static packToFloat64Array(data: Point4d[], result?: Float64Array): Float64Array {
     result = result ? result : new Float64Array(4 * data.length);
     let i = 0;
@@ -290,6 +300,7 @@ export class Point4dArray {
  */
 
 export class Point3dArray {
+  /** pack x,y,z to `Float64Array` */
   public static packToFloat64Array(data: Point3d[]): Float64Array {
     const result = new Float64Array(3 * data.length);
     let i = 0;
@@ -406,7 +417,7 @@ export class Point3dArray {
       this.sumWeightedZ(this._weightDU, points), this.sumWeightedZ(this._weightDV, points), this.sumWeightedZ(this._weightDW, points), this.sumWeightedZ(this._weightUVW, points),
       result);
   }
-
+  /** unpack from a number array or Float64Array to an array of `Point3d` */
   public static unpackNumbersToPoint3dArray(data: Float64Array | number[]): Point3d[] {
     const result = [];
     for (let i = 0; i + 2 < data.length; i += 3) {
@@ -467,7 +478,7 @@ export class Point3dArray {
     }
     return result;
   }
-
+  /**  multiply a transform times each x,y,z triple and replace the x,y,z in the packed array */
   public static multiplyInPlace(transform: Transform, xyz: Float64Array): void {
     const xyz1 = Point3d.create();
     const numXYZ = xyz.length;
@@ -478,6 +489,7 @@ export class Point3dArray {
       xyz[i + 2] = xyz1.z;
     }
   }
+  /** Apply Geometry.isAlmostEqual to corresponding coordinates */
   public static isAlmostEqual(dataA: Point3d[] | Float64Array | undefined, dataB: Point3d[] | Float64Array | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
@@ -656,16 +668,19 @@ export class Point3dArray {
  * @public
 */
 export class Point3dArrayCarrier extends IndexedXYZCollection {
+  /** reference to array being queried. */
   public data: Point3d[];
   /** CAPTURE caller supplied array ... */
   public constructor(data: Point3d[]) {
     super();
     this.data = data;
   }
+  /** test if `index` is a valid index into the array. */
   public isValidIndex(index: number): boolean {
     return index >= 0 && index < this.data.length;
   }
   /**
+   * Access by index, returning strongly typed Point3d
    * @param index index of point within the array
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
@@ -678,6 +693,7 @@ export class Point3dArrayCarrier extends IndexedXYZCollection {
     return undefined;
   }
   /**
+   * Access by index, returning strongly typed Vector3d
    * @param index index of point within the array
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
@@ -690,6 +706,7 @@ export class Point3dArrayCarrier extends IndexedXYZCollection {
     return undefined;
   }
   /**
+   * Return a vector from the point at indexA to the point at indexB
    * @param indexA index of point within the array
    * @param indexB index of point within the array
    * @param result caller-allocated vector.
@@ -701,6 +718,7 @@ export class Point3dArrayCarrier extends IndexedXYZCollection {
     return undefined;
   }
   /**
+   * Return a vector from given origin to point at indexB
    * @param origin origin for vector
    * @param indexB index of point within the array
    * @param result caller-allocated vector.
@@ -713,6 +731,7 @@ export class Point3dArrayCarrier extends IndexedXYZCollection {
   }
 
   /**
+   * Return the cross product of vectors from origin to points at indexA and indexB
    * @param origin origin for vector
    * @param indexA index of first target within the array
    * @param indexB index of second target within the array
@@ -725,18 +744,20 @@ export class Point3dArrayCarrier extends IndexedXYZCollection {
     return undefined;
   }
   /**
- * @param originIndex index of origin
- * @param indexA index of first target within the array
- * @param indexB index of second target within the array
- * @param result caller-allocated vector.
- * @returns return true if indexA, indexB both valid
- */
+   * Return the cross product of vectors from point at originIndex to points at indexA and indexB
+   * @param originIndex index of origin
+   * @param indexA index of first target within the array
+   * @param indexB index of second target within the array
+   * @param result caller-allocated vector.
+   * @returns return true if indexA, indexB both valid
+   */
   public crossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined {
     if (this.isValidIndex(originIndex) && this.isValidIndex(indexA) && this.isValidIndex(indexB))
       return Vector3d.createCrossProductToPoints(this.data[originIndex], this.data[indexA], this.data[indexB], result);
     return undefined;
   }
   /**
+   * Compute the cross product of vectors from point at originIndex to points at indexA and indexB, and accumulate it to the result.
    * @param origin index of origin
    * @param indexA index of first target within the array
    * @param indexB index of second target within the array

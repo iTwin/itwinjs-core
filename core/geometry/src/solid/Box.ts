@@ -22,8 +22,8 @@ import { LineString3d } from "../curve/LineString3d";
  *   * (0,0,0) is left lower rear corner of box (considering "left" to reference x, "lower" to reference y, "rear and front" to reference z=0 and z=1)
  *   * (0,0,1) is left lower front corner.
  *   * (baseX,baseY,z) is right upper corner at z
- *   * note that the frame x and y columns are unit vectors in local space, but z is full rear to front vector
- * * The separate values for base and top x and y allow the box to be a "viewfrustum" with paralel back and front planes but independent x and y bellows effects.
+ *   * note that the frame x and y columns are usally unit vectors in local space, but z is full rear to front vector
+ * * The separate values for base and top x and y allow the box to be a "view frustum" with paralel back and front planes but independent x and y bellows effects.
  * @public
  */
 export class Box extends SolidPrimitive {
@@ -42,6 +42,7 @@ export class Box extends SolidPrimitive {
     this._topX = topX;
     this._topY = topY;
   }
+  /** Return a clone */
   public clone(): Box {
     return new Box(this._localToWorld.clone(), this._baseX, this._baseY, this._topX, this._topY, this.capped);
   }
@@ -55,13 +56,16 @@ export class Box extends SolidPrimitive {
   public getConstructiveFrame(): Transform | undefined {
     return this._localToWorld.cloneRigid();
   }
+  /** Apply the transform to the box's `localToWorld` frame.
+   * * Note that this may make the frame nonrigid.
+   */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
-
+/** Clone the box and immediately appy `transform` to the local frame of the clone. */
   public cloneTransformed(transform: Transform): Box | undefined {
     const result = this.clone();
     transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
@@ -69,6 +73,7 @@ export class Box extends SolidPrimitive {
   }
 
   /**
+   * Create a new box from vector and size daa.
    * @param baseOrigin Origin of base rectangle
    * @param vectorX  Direction for base rectangle
    * @param vectorY Direction for base rectangle
@@ -89,9 +94,9 @@ export class Box extends SolidPrimitive {
   }
 
   /**
+   * Create a new box with xy directions taken from columns of the `axes` matrix.
    * @param baseOrigin Origin of base rectangle
-   * @param vectorX  Direction for base rectangle
-   * @param vectorY Direction for base rectangle
+   * @param axes  Direction for base rectangle
    * @param topOrigin origin of top rectangle
    * @param baseX size factor for base rectangle (multiplies vectorX)
    * @param baseY size factor for base rectangle (multiplies vectorY)
@@ -126,17 +131,27 @@ export class Box extends SolidPrimitive {
     }
     return undefined;
   }
+  /** (property accessor) return the x length at z = 0 */
   public getBaseX(): number { return this._baseX; }
+  /** (property accessor) return the y length at z = 0 */
   public getBaseY(): number { return this._baseY; }
+  /** (property accessor) return the x length at z = 1 */
   public getTopX(): number { return this._topX; }
+  /** (property accessor) return the x length at z = 1 */
   public getTopY(): number { return this._topY; }
+  /** (property accessor) return the local coordinates point (0,0,0) to world */
   public getBaseOrigin(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 0); }
+  /** (property accessor) return the local coordinates point (0,0,1) to world */
   public getTopOrigin(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 1); }
+  /** (property accessor) return the local coordinate frame x vector */
   public getVectorX(): Vector3d { return this._localToWorld.matrix.columnX(); }
+  /** (property accessor) return the local coordinate frame y vector */
   public getVectorY(): Vector3d { return this._localToWorld.matrix.columnY(); }
+  /** (property accessor) return the local coordinate frame z vector */
   public getVectorZ(): Vector3d { return this._localToWorld.matrix.columnZ(); }
+  /** Test of `other` is also of class `Box` */
   public isSameGeometryClass(other: any): boolean { return other instanceof Box; }
-
+/** test for near equality */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof Box) {
       if (this.capped !== other.capped) return false;
@@ -148,9 +163,11 @@ export class Box extends SolidPrimitive {
     }
     return false;
   }
+  /** Second step of double dispatch:  call `handler.handleBox(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBox(this);
   }
+  /** Return strokes of the cross-section rectangle at local z coordinate */
   public strokeConstantVSection(zFraction: number): LineString3d {
     const ax = Geometry.interpolate(this._baseX, zFraction, this._topX);
     const ay = Geometry.interpolate(this._baseY, zFraction, this._topY);
@@ -170,7 +187,7 @@ export class Box extends SolidPrimitive {
     return result;
   }
   /**
-   * @returns the 8 corners in x fastest, then y, finally z lexical order.
+   * Returns the 8 corners in x fastest, then y, finally z lexical order.
    */
   public getCorners(): Point3d[] {
     const transform = this._localToWorld;
@@ -188,34 +205,41 @@ export class Box extends SolidPrimitive {
     transform.multiplyXYZ(bx, by, 1)];
   }
 
+  /**
+   * Consider the box sides (not top and bottom) as a (u,v) surface with
+   * * v = 0 as the z=0 local plane
+   * * v = 1 as the z=1 local plane
+   * Return the (rectanglular) section at fractional v
+   */
   public constantVSection(zFraction: number): CurveCollection {
     const ls = this.strokeConstantVSection(zFraction);
     return Loop.create(ls);
   }
-  public extendRange(range: Range3d, transform?: Transform): void {
+  /** Extend  `rangeToExtend` by each of the 8 corners */
+  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     const boxTransform = this._localToWorld;
     const ax = this._baseX;
     const ay = this._baseY;
     const bx = this._topX;
     const by = this._topY;
     if (transform) {
-      range.extendTransformTransformedXYZ(transform, boxTransform, 0, 0, 0);
-      range.extendTransformTransformedXYZ(transform, boxTransform, ax, 0, 0);
-      range.extendTransformTransformedXYZ(transform, boxTransform, 0, ay, 0);
-      range.extendTransformTransformedXYZ(transform, boxTransform, ax, ay, 0);
-      range.extendTransformTransformedXYZ(transform, boxTransform, 0, 0, 1);
-      range.extendTransformTransformedXYZ(transform, boxTransform, bx, 0, 1);
-      range.extendTransformTransformedXYZ(transform, boxTransform, 0, by, 1);
-      range.extendTransformTransformedXYZ(transform, boxTransform, bx, by, 1);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, 0, 0);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, ax, 0, 0);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, ay, 0);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, ax, ay, 0);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, 0, 1);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, bx, 0, 1);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, 0, by, 1);
+      rangeToExtend.extendTransformTransformedXYZ(transform, boxTransform, bx, by, 1);
     } else {
-      range.extendTransformedXYZ(boxTransform, 0, 0, 0);
-      range.extendTransformedXYZ(boxTransform, ax, 0, 0);
-      range.extendTransformedXYZ(boxTransform, 0, ay, 0);
-      range.extendTransformedXYZ(boxTransform, ax, ay, 0);
-      range.extendTransformedXYZ(boxTransform, 0, 0, 1);
-      range.extendTransformedXYZ(boxTransform, bx, 0, 1);
-      range.extendTransformedXYZ(boxTransform, 0, by, 1);
-      range.extendTransformedXYZ(boxTransform, bx, by, 1);
+      rangeToExtend.extendTransformedXYZ(boxTransform, 0, 0, 0);
+      rangeToExtend.extendTransformedXYZ(boxTransform, ax, 0, 0);
+      rangeToExtend.extendTransformedXYZ(boxTransform, 0, ay, 0);
+      rangeToExtend.extendTransformedXYZ(boxTransform, ax, ay, 0);
+      rangeToExtend.extendTransformedXYZ(boxTransform, 0, 0, 1);
+      rangeToExtend.extendTransformedXYZ(boxTransform, bx, 0, 1);
+      rangeToExtend.extendTransformedXYZ(boxTransform, 0, by, 1);
+      rangeToExtend.extendTransformedXYZ(boxTransform, bx, by, 1);
     }
   }
   /**

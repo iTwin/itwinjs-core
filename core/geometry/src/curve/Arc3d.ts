@@ -714,9 +714,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return numStroke;
   }
-  /**
-   * Invoke `hander.handleArc3d(this)` per double-dispatch obligation
-   */
+  /** Second step of double dispatch:  call `handler.handleArc3d(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleArc3d(this);
   }

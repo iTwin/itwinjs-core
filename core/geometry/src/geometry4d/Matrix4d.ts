@@ -182,6 +182,7 @@ export class Matrix4d implements BeJSONFunctions {
     }
     return undefined;
   }
+  /** Set from nested array json e.g. `[[1,2,3,4],[0,1,2,4],[0,2,5,1],[0,0,1,2]]` */
   public setFromJSON(json?: Matrix4dProps) {
     if (Geometry.isArrayOfNumberArray(json, 4, 4))
       for (let i = 0; i < 4; ++i) {
@@ -224,6 +225,7 @@ export class Matrix4d implements BeJSONFunctions {
     }
     return value;
   }
+  /** Create from nested array json e.g. `[[1,2,3,4],[0,1,2,4],[0,2,5,1],[0,0,1,2]]` */
   public static fromJSON(json?: Matrix4dProps) {
     const result = new Matrix4d();
     result.setFromJSON(json);
@@ -261,7 +263,7 @@ export class Matrix4d implements BeJSONFunctions {
   /** Return row 3 as Point4d. */
   public rowW(): Point4d { return this.getSteppedPoint(12, 1); }
   /**
-   * @returns true if the 2 row has content other than [0,0,0,1]
+   * Returns true if the w row has content other than [0,0,0,1]
    */
   public get hasPerspective(): boolean {
     return this._coffs[12] !== 0.0
@@ -368,7 +370,7 @@ export class Matrix4d implements BeJSONFunctions {
     result = result ? result : Point4d.createZero();
     return result.set(this._coffs[0] * x + this._coffs[4] * y + this._coffs[8] * z + this._coffs[12] * w, this._coffs[1] * x + this._coffs[5] * y + this._coffs[9] * z + this._coffs[13] * w, this._coffs[2] * x + this._coffs[6] * y + this._coffs[10] * z + this._coffs[14] * w, this._coffs[3] * x + this._coffs[7] * y + this._coffs[11] * z + this._coffs[15] * w);
   }
-  /** @returns dot product of row rowIndex of this with column columnIndex of other.
+  /** Returns dot product of row rowIndex of this with column columnIndex of other.
    */
   public rowDotColumn(rowIndex: number, other: Matrix4d, columnIndex: number): number {
     const i = rowIndex * 4;
@@ -378,7 +380,7 @@ export class Matrix4d implements BeJSONFunctions {
       + this._coffs[i + 2] * other._coffs[j + 8]
       + this._coffs[i + 3] * other._coffs[j + 12];
   }
-  /** @returns dot product of row rowIndexThis of this with row rowIndexOther of other.
+  /** Returns dot product of row rowIndexThis of this with row rowIndexOther of other.
    */
   public rowDotRow(rowIndexThis: number, other: Matrix4d, rowIndexOther: number): number {
     const i = rowIndexThis * 4;
@@ -388,7 +390,7 @@ export class Matrix4d implements BeJSONFunctions {
       + this._coffs[i + 2] * other._coffs[j + 2]
       + this._coffs[i + 3] * other._coffs[j + 3];
   }
-  /** @returns dot product of row rowIndexThis of this with row rowIndexOther of other.
+  /** Returns dot product of row rowIndexThis of this with row rowIndexOther of other.
    */
   public columnDotColumn(columnIndexThis: number, other: Matrix4d, columnIndexOther: number): number {
     const i = columnIndexThis;
@@ -398,7 +400,7 @@ export class Matrix4d implements BeJSONFunctions {
       + this._coffs[i + 8] * other._coffs[j + 8]
       + this._coffs[i + 12] * other._coffs[j + 12];
   }
-  /** @returns dot product of column columnIndexThis of this with row rowIndexOther other.
+  /** Returns dot product of column columnIndexThis of this with row rowIndexOther other.
    */
   public columnDotRow(columnIndexThis: number, other: Matrix4d, rowIndexOther: number): number {
     const i = columnIndexThis;
@@ -408,7 +410,7 @@ export class Matrix4d implements BeJSONFunctions {
       + this._coffs[i + 8] * other._coffs[j + 2]
       + this._coffs[i + 12] * other._coffs[j + 3];
   }
-  /** @returns return a matrix entry by row and column index.
+  /** Return a matrix entry by row and column index.
    */
   public atIJ(rowIndex: number, columnIndex: number): number {
     return this._coffs[rowIndex * 4 + columnIndex];
@@ -553,7 +555,7 @@ export class Matrix4d implements BeJSONFunctions {
     // console.log("descaled", inverse.rowArrays());
     return inverse;
   }
-  /** @returns Restructure the matrix rows as separate arrays. (Useful for printing)
+  /** Returns an array-of-arrays of the matrix rows, optionally passing each value through a function.
    * @param f optional function to provide alternate values for each entry (e.g. force fuzz to zero.)
    */
   public rowArrays(f?: (value: number) => any): any {

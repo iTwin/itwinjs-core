@@ -46,15 +46,21 @@ export class StrokeOptions {
   public shouldTriangulate: boolean = false;
   private _needNormals?: boolean;
   private _needParams?: boolean;
+  /** ask if params are requested. */
   public get needParams(): boolean { return this._needParams !== undefined ? this._needParams : false; }
+  /** set the params request flag */
   public set needParams(value: boolean) { this._needParams = value; }
+  /** ask if normals are requested */
   public get needNormals(): boolean { return this._needNormals !== undefined ? this._needNormals : false; }
+  /** set the normals requst flag */
   public set needNormals(value: boolean) { this._needNormals = value; }
+  /** optional color request flag */
   public needColors?: boolean;
+  /** default number of strokes for a circle. */
   public defaultCircleStrokes = 16;
-
+/** ask if maxEdgeLength is specified */
   public get hasMaxEdgeLength(): boolean { return this.maxEdgeLength !== undefined && this.maxEdgeLength > 0.0; }
-  // return stroke count which is the larger of the minCount or count needed for edge length condition.
+  /** return stroke count which is the larger of the minCount or count needed for edge length condition. */
   public applyMaxEdgeLength(minCount: number, totalLength: number): number {
     if (this.maxEdgeLength && this.maxEdgeLength > 0.0 && minCount * this.maxEdgeLength < totalLength) {
       minCount = Geometry.stepCount(this.maxEdgeLength, totalLength, minCount);

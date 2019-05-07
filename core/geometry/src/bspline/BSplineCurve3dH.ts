@@ -323,7 +323,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
   public getSaturatedBezierSpan3dOr3dH(spanIndex: number, _prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined {
     return this.getSaturatedBezierSpan3dH(spanIndex, result);
   }
-
+/** Second step of double dispatch:  call `handler.handleBSplineCurve3dH(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBSplineCurve3dH(this);
   }

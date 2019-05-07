@@ -41,6 +41,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     this._radiusB = radiusB;
     this._maxRadius = Math.max(this._radiusA, this._radiusB);  // um... should resolve elliptical sections
   }
+  /** Return a clone of this Cone. */
   public clone(): Cone {
     return new Cone(this._localToWorld.clone(), this._radiusA, this._radiusB, this.capped);
   }
@@ -52,12 +53,19 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   public getConstructiveFrame(): Transform | undefined {
     return this._localToWorld.cloneRigid();
   }
+  /** Apply the transform to this cone's locla to world coordinates.
+   * * Note that the radii are not changed.  Scaling is absorbed into the frame.
+   * * This fails if the transformation is singular.
+   */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
+  /**
+   * Create a clone and immediately transform the clone.
+   */
   public cloneTransformed(transform: Transform): Cone | undefined {
     const result = this.clone();
     transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
@@ -94,16 +102,25 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const localToWorld = Transform.createOriginAndMatrixColumns(centerA, vectorX, vectorY, vectorZ);
     return new Cone(localToWorld, radiusA, radiusB, capped);
   }
-
+/** (Property accessor) Return the center point at the base plane */
   public getCenterA(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 0); }
+  /** (Property accessor) */
   public getCenterB(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 1); }
+  /** (Property accessor) Return the x vector in the local frame */
   public getVectorX(): Vector3d { return this._localToWorld.matrix.columnX(); }
+  /** (Property accessor) Return the y vector in the local frame */
   public getVectorY(): Vector3d { return this._localToWorld.matrix.columnY(); }
+  /** (Property accessor) return the radius at the base plane */
   public getRadiusA(): number { return this._radiusA; }
+  /** (Property accessor) return the radius at the top plane */
   public getRadiusB(): number { return this._radiusB; }
+  /** (Property accessor) return the larger of the base and top plane radii */
   public getMaxRadius(): number { return this._maxRadius; }
+  /** (Property accessor) return the radius at fraction `v` along the axis */
   public vFractionToRadius(v: number): number { return Geometry.interpolate(this._radiusA, v, this._radiusB); }
+  /** (Property accessor) test if `other` is an instance of `Cone` */
   public isSameGeometryClass(other: any): boolean { return other instanceof Cone; }
+  /** (Property accessor) Test for nearly equal coordinate data. */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof Cone) {
       if (this.capped !== other.capped) return false;
@@ -113,7 +130,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     }
     return false;
   }
-
+/** Second step of double dispatch:   call `handler.handleCone(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleCone(this);
   }
@@ -186,7 +203,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     return result;
   }
   /**
-   * @returns Return the Arc3d section at vFraction
+   * Return the Arc3d section at vFraction
    * @param vFraction fractional position along the sweep direction
    */
   public constantVSection(vFraction: number): CurveCollection | undefined {
@@ -197,13 +214,18 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const vector90 = transform.matrix.multiplyXYZ(0, r, 0);
     return Loop.create(Arc3d.create(center, vector0, vector90) as Arc3d);
   }
-  public extendRange(range: Range3d, transform?: Transform): void {
+  /** Extend `rangeToExtend` so it includes this `Cone` instance. */
+  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     const arc0 = this.constantVSection(0.0)!;
     const arc1 = this.constantVSection(1.0)!;
-    arc0.extendRange(range, transform);
-    arc1.extendRange(range, transform);
+    arc0.extendRange(rangeToExtend, transform);
+    arc1.extendRange(rangeToExtend, transform);
   }
-
+/** Evaluate a point on the Cone surfaces, with
+ * * v = 0 is the base plane.
+ * * v = 1 is the top plane
+ * * u = 0 to u = 1 wraps the angular range.
+ */
   public uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d {
     const theta = uFraction * Math.PI * 2.0;
     const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);
@@ -211,7 +233,12 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const sinTheta = Math.sin(theta);
     return this._localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction, result);
   }
-  public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+/** Evaluate a point tangent plane on the Cone surfaces, with
+ * * v = 0 is the base plane.
+ * * v = 1 is the top plane
+ * * u = 0 to u = 1 wraps the angular range.
+ */
+public uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const theta = uFraction * Math.PI * 2.0;
     const r = Geometry.interpolate(this._radiusA, vFraction, this._radiusB);
     const drdv = this._radiusB - this._radiusA;

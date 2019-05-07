@@ -501,7 +501,7 @@ export class IndexedPolyface extends Polyface {
 
     return true;
   }
-
+/** Second step of double dispatch:  call `handler.handleIndexedPolyface(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleIndexedPolyface(this);
   }

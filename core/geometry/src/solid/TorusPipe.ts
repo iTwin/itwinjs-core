@@ -22,11 +22,23 @@ import { Arc3d } from "../curve/Arc3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
 /**
- * the stored form of the torus pipe is oriented for positive volume:
- *
- * * Both radii are positive, with r0 >= r1 > 0
- * * The sweep is positive
- * * The coordinate system has positive determinant.
+ * A torus pipe is a partial torus (donut).  In a local coordinate system
+ * * The z axis passes through the hole.
+ * * The "major hoop" arc has
+ *   * vectorTheta0 = (radiusA,0,0)
+ *   * vectorTheta90 = (0, radiusA,0)
+ *   * The major arc point at angle theta is `C(theta) = vectorTheta0 * cos(theta) + vectorTheta90 * sin(theta)
+ * * The minor hoop at theta varius with phi "around the minor hoop"
+ *    * (x,y,z) = C(theta) + (radiusB *cos(theta), radiusB * sin(theta)) * cos(phi) + (0,radiusB,0) * sin(phi)
+ * * The stored form of the torus pipe is oriented for positive volume:
+ *   * Both radii are positive, with r0 >= r1 > 0
+ *   * The sweep is positive
+ *   * The coordinate system has positive determinant.
+ * * For uv parameterization,
+ *   * u is around the minor hoop, with (0..1) mapping to phi of (0 degrees ..360 degrees)
+ *   * v is along the major hoop with (0..1) mapping to theta of (0 .. sweep)
+ *   * a constant v section is a full circle
+ *   * a constant u section is an arc with sweep angle matching the torusPipe sweep angle.
  * @public
  */
 export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
@@ -44,26 +56,32 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     this._sweep = sweep;
     this._isReversed = false;
   }
-
+/** return a copy of the TorusPipe */
   public clone(): TorusPipe {
     const result = new TorusPipe(this._localToWorld.clone(), this._radiusA, this._radiusB, this._sweep.clone(), this.capped);
     result._isReversed = this._isReversed;
     return result;
   }
-
+/** Apply `transform` to the local coordinate system. */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
-
+/** Clone this TorusPipe and transform the clone */
   public cloneTransformed(transform: Transform): TorusPipe | undefined {
     const result = this.clone();
     transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
     return result;
   }
-
+/** Create a new `TorusPipe`
+ * @param frame local to world transformation
+ * @param majorRadius major hoop radius
+ * @param minorRadius minor hoop radius
+ * @param sweep sweep angle for major circle, with positive sweep from x axis towards y axis.
+ * @param capped true for circular caps
+ */
   public static createInFrame(frame: Transform, majorRadius: number, minorRadius: number, sweep: Angle, capped: boolean): TorusPipe | undefined {
     // force near-zero radii to true zero
     majorRadius = Math.abs(Geometry.correctSmallMetricDistance(majorRadius));
@@ -108,15 +126,25 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   public getConstructiveFrame(): Transform | undefined {
     return this._localToWorld.cloneRigid();
   }
+  /** Return the center of the torus pipe (inside the donut hole) */
   public cloneCenter(): Point3d { return this._localToWorld.getOrigin(); }
+  /** return the vector along the x axis (in the major hoops plane) */
   public cloneVectorX(): Vector3d { return this._localToWorld.matrix.columnX(); }
+  /** return the vector along the y axis (in the major hoop plane) */
   public cloneVectorY(): Vector3d { return this._localToWorld.matrix.columnY(); }
+  /** get the minor hoop radius (`radiusA`) */
   public getMinorRadius(): number { return this._radiusB; }
+  /** get the major hoop radius (`radiusB`) */
   public getMajorRadius(): number { return this._radiusA; }
+  /** get the sweep angle along the major circle. */
   public getSweepAngle(): Angle { return this._sweep.clone(); }
+  /** Ask if this TorusPipe is labeled as reversed */
   public getIsReversed(): boolean { return this._isReversed; }
+  /** Return the sweep angle as a fraction of full 360 degrees (2PI radians) */
   public getThetaFraction(): number { return this._sweep.radians / (Math.PI * 2.0); }
+  /** ask if `other` is an instance of `TorusPipe` */
   public isSameGeometryClass(other: any): boolean { return other instanceof TorusPipe; }
+  /** test if `this` and `other` have nearly equal geometry */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof TorusPipe) {
       if (this.capped !== other.capped) return false;
@@ -130,6 +158,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   /** Return the angle (in radians) for given fractional position around the major hoop.
    */
   public vFractionToRadians(v: number): number { return this._sweep.radians * v; }
+  /** Second step of double dispatch:  call `handler.handleTorusPipe(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleTorusPipe(this);
   }
@@ -150,6 +179,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const vector90 = this._localToWorld.multiplyVectorXYZ(0, 0, minorRadius);
     return Loop.create(Arc3d.create(center, vector0, vector90) as Arc3d);
   }
+  /** Return an arc at constant u, and arc sweep  matching this TorusPipe sweep. */
   public constantUSection(uFraction: number): CurveCollection | undefined {
     const theta1Radians = this._sweep.radians;
     const phiRadians = uFraction * Math.PI;
@@ -164,7 +194,8 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const vector90 = axes.multiplyXYZ(0, rxy, 0);
     return Path.create(Arc3d.create(center, vector0, vector90, AngleSweep.createStartEndRadians(0.0, theta1Radians)) as Arc3d);
   }
-  public extendRange(range: Range3d, transform?: Transform) {
+  /** extend `rangeToExtend` to include this `TorusPipe` */
+  public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const theta1Radians = this._sweep.radians;
     const majorRadius = this.getMajorRadius();
     const minorRadius = this.getMinorRadius();
@@ -200,7 +231,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
         for (j = 0; j <= numPhiSample; j++) {
           phi = phi0 + j * dphi;
           rxy = majorRadius + minorRadius * Math.cos(phi);
-          range.extendTransformTransformedXYZ(transform, transform0,
+          rangeToExtend.extendTransformTransformedXYZ(transform, transform0,
             cosTheta * rxy, sinTheta * rxy,
             Math.sin(phi) * minorRadius);
         }
@@ -208,7 +239,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
         for (j = 0; j <= numPhiSample; j++) {
           phi = phi0 + j * dphi;
           rxy = majorRadius + minorRadius * Math.sin(phi);
-          range.extendTransformedXYZ(transform0,
+          rangeToExtend.extendTransformedXYZ(transform0,
             cosTheta * rxy, sinTheta * rxy,
             Math.sin(phi) * minorRadius);
         }

@@ -671,7 +671,7 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return Point3dArray.isCloseToPlane(this.coffs, plane);
   }
-
+/** Second step of double dispatch:  call `handler.handleBSplineSurface3d(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBSplineSurface3d(this);
   }
@@ -909,10 +909,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return Point4dArray.isCloseToPlane(this.coffs, plane);
   }
-  /**
-   * Pass `this` (strongly typed) to `handler.handleBsplineSurface3dH(this)`.
-   * @param handler double dispatch handler.
-   */
+ /** Second step of double dispatch:  call `handler.handleBSplineSurface3dH(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBSplineSurface3dH(this);
   }

@@ -33,6 +33,7 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Loop } from "../../curve/Loop";
 import { prettyPrint } from "../testFunctions";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { Ray3d } from "../../geometry3d/Ray3d";
 /* tslint:disable:no-console no-trailing-whitespace */
 
 Checker.noisy.clipPlane = false;
@@ -328,53 +329,31 @@ describe("ClipPlaneSet", () => {
     for (let i = -0.5; i < 2; i++) {
       // Rotate rays 360 degrees around x and y axis
       for (let theta = 0; theta < 2 * Math.PI; theta += (Math.PI / 4)) {
-        const xAlignedOrigin = Point3d.create(xyMiddleOfCube, xyMiddleOfCube, i);
-        const xAlignedDirection = Vector3d.create(Math.cos(theta), 0, Math.sin(theta));
-        const yAlignedOrigin = Point3d.create(xyMiddleOfCube, xyMiddleOfCube, i);
-        const yAlignedDirection = Vector3d.create(0, Math.cos(theta), Math.sin(theta));
+        const xAlignedRay = Ray3d.create(Point3d.create(xyMiddleOfCube, xyMiddleOfCube, i), Vector3d.create(Math.cos(theta), 0, Math.sin(theta)));
+        const yAlignedRay = Ray3d.create(Point3d.create(xyMiddleOfCube, xyMiddleOfCube, i), Vector3d.create(0, Math.cos(theta), Math.sin(theta)));
+        const xAlignedRange = Range1d.createNull();
+        const yAlignedRange = Range1d.createNull();
+        set.hasIntersectionWithRay(xAlignedRay, xAlignedRange);
+        set.hasIntersectionWithRay(yAlignedRay, yAlignedRange);
 
-        const xAlignedResult = set.getRayIntersection(xAlignedOrigin, xAlignedDirection);
-        const yAlignedResult = set.getRayIntersection(yAlignedOrigin, yAlignedDirection);
-
-        if (Checker.noisy.clipPlane === true) {
-          console.log("Theta: " + (theta * 180 / Math.PI) + " degrees");
-          console.log("X Aligned Ray intersects at: " + xAlignedResult);
-          console.log("Y Aligned Ray intersects at: " + yAlignedResult);
-        }
-
-        if (xAlignedResult === undefined || yAlignedResult === undefined) {
-          ck.testUndefined(yAlignedResult, "Ray intersections are undefined");
-          ck.testFalse(set.testRayIntersect(xAlignedOrigin, xAlignedDirection));
-          ck.testFalse(set.testRayIntersect(yAlignedOrigin, yAlignedDirection));
+        if (xAlignedRange.isNull || yAlignedRange.isNull) {
+          ck.testFalse(set.hasIntersectionWithRay(xAlignedRay));
+          ck.testFalse(set.hasIntersectionWithRay(yAlignedRay));
           continue;
         }
 
-        ck.testCoordinate(xAlignedResult, yAlignedResult, "Intersections are equal for similar rays");
-        ck.testTrue(set.testRayIntersect(xAlignedOrigin, xAlignedDirection));
-        ck.testTrue(set.testRayIntersect(yAlignedOrigin, yAlignedDirection));
+        ck.testBoolean(set.hasIntersectionWithRay(xAlignedRay), !xAlignedRange.isNull);
+        ck.testBoolean(set.hasIntersectionWithRay(yAlignedRay), !yAlignedRange.isNull);
 
         if (i > -0.5 && i < 1) {
           // Ray began inside the region
-          ck.testCoordinate(xAlignedResult, 0, "Distance is zero");
+          ck.testFalse(xAlignedRange.isNull, "known containment");
+          ck.testTrue(xAlignedRange.containsX(0));
           continue;
-        }
-
-        // Check distances
-        if (theta % (Math.PI / 2) !== 0) {
-          // Dealing with an angle multiple of 45 degrees
-          ck.testCoordinate(Math.abs(xAlignedResult), Math.sqrt(2 * xyMiddleOfCube * xyMiddleOfCube), "Distance of ray origin to intersection");
-        } else {
-          // Dealing with angle parallel to z-axis.. if negative, ensure you account for ray direction, which would have it intersect
-          // the OPPOSITE side of the box
-          if (xAlignedResult < 0)
-            ck.testCoordinate(xAlignedResult, (sideLength + xyMiddleOfCube) * -1, "Distance of ray origin to intersection");
-          else
-            ck.testCoordinate(xAlignedResult, xyMiddleOfCube, "Distance of ray origin to intersection");
         }
       }
     }
 
-    ck.checkpoint("GetRayIntersections");
     expect(ck.getNumErrors()).equals(0);
   });
 

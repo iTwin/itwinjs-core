@@ -196,6 +196,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return result;
   }
 
+  /** Second step of double dispatch:  call `handler.handleSphere(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleSphere(this);
   }

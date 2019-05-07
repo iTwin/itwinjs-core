@@ -600,7 +600,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   public setWrappable(value: BSplineWrapMode) {
     this._bcurve.knots.wrappable = value;
   }
-
+/** Second step of double dispatch:  call `handler.handleBSplineCurve3d(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBSplineCurve3d(this);
   }

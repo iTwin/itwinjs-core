@@ -20,9 +20,12 @@ import { BezierCurveBase } from "./BezierCurveBase";
 import { Range3d } from "../geometry3d/Range";
 
 /** 3d curve with homogeneous weights.
+ * * A control point with weight w and cartesian (projected) coordinates x,y,z has the weight multiplied into the coordinates,
+ *    hence the control point as stored is (xw, yw, zw, w).
  * @public
  */
 export class BezierCurve3dH extends BezierCurveBase {
+  /** test if `other` is also a BezierCurve3dH. */
   public isSameGeometryClass(other: any): boolean { return other instanceof BezierCurve3dH; }
   /**
    * Apply (multiply by) an affine transform
@@ -62,7 +65,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     return undefined;
   }
   /**
-   * @returns true if all weights are within tolerance of 1.0
+   * Returns true if all weights are within tolerance of 1.0
    */
   public isUnitWeight(tolerance?: number): boolean {
     if (tolerance === undefined)
@@ -140,6 +143,7 @@ export class BezierCurve3dH extends BezierCurveBase {
   public loadSpan4dPoles(data: Float64Array, spanIndex: number) {
     this._polygon.loadSpanPoles(data, spanIndex);
   }
+  /** Clone the entire curve. */
   public clone(): BezierCurve3dH {
     return new BezierCurve3dH(this._polygon.clonePolygon());
   }
@@ -191,6 +195,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     Vector3d.createAdd2Scaled(ray0.direction, -a, ray1.direction, a, result.vectorV);
     return result;
   }
+  /** test for nearly equal control points */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof BezierCurve3dH) {
       return this._polygon.isAlmostEqual(other._polygon);
@@ -245,6 +250,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     }
     return numStrokes;
   }
+  /** Second step of double dispatch:  call `handler.handleBezierCurve3dH(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBezierCurve3dH(this);
   }
@@ -318,6 +324,10 @@ export class BezierCurve3dH extends BezierCurveBase {
     }
     return numUpdates > 0;
   }
+  /** Extend `rangeToExtend`, using candidate extrema at
+   * * both end points
+   * * any interal extrema in x,y,z
+   */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const order = this.order;
     if (!transform) {

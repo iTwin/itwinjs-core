@@ -28,11 +28,17 @@ import { CurveLocationDetail } from "./CurveLocationDetail";
  * @public
  */
 export class PathFragment {
+  /** distance along parent to this fragment start */
   public chainDistance0: number;
+  /** distance along parent to this fragment end */
   public chainDistance1: number;
+  /** Fractional position of this fragment start within its curve primitive. */
   public childFraction0: number;
+  /** Fractional position of this fragment end within its curve primitive.. */
   public childFraction1: number;
+  /** Curve primitive of this fragment */
   public childCurve: CurvePrimitive;
+  /** Create a fragment with complete fraction, distance and child data. */
   public constructor(childFraction0: number, childFraction1: number, distance0: number, distance1: number, childCurve: CurvePrimitive) {
     this.childFraction0 = childFraction0;
     this.childFraction1 = childFraction1;
@@ -79,6 +85,10 @@ export class PathFragment {
   public fractionScaleFactor(globalDistance: number): number {
     return globalDistance * (this.childFraction1 - this.childFraction0) / (this.chainDistance1 - this.chainDistance0);
   }
+  /** Reverse the fraction and distance data.
+   * * each child fraction `f` is replaced by `1-f`
+   * * each `chainDistance` is replaced by `totalDistance-chainDistance`
+   */
   public reverseFractionsAndDistances(totalDistance: number) {
     const f0 = this.childFraction0;
     const f1 = this.childFraction1;
@@ -254,7 +264,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     }
     CurvePrimitive.installStrokeCountMap(this, myMap, parentStrokeMap);
   }
-  /** dispatch the path to the handler */
+/** Second step of double dispatch:  call `this._path.dispatchToGeometryHandler (handler)`
+ * * Note that this exposes the children individually to the handler.
+ */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return this._path.dispatchToGeometryHandler(handler);
   }

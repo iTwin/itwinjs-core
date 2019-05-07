@@ -452,7 +452,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     vectorY.scaleInPlace(this.fractionToCurvature(fraction));
     return Plane3dByOriginAndVectors.createCapture(origin, vectorX, vectorY, result);
   }
-
+/** Second step of double dispatch:  call `handler.handleTransitionSpiral(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleTransitionSpiral(this);
   }
