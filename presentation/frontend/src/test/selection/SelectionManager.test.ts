@@ -470,6 +470,9 @@ describe("SelectionManager", () => {
 
       selectionManager.setSyncWithIModelToolSelection(imodelMock.object, false);
       expect(ss.onChanged.numberOfListeners).to.eq(0); // verify listener removed
+
+      selectionManager.setSyncWithIModelToolSelection(imodelMock.object, false);
+      expect(ss.onChanged.numberOfListeners).to.eq(0); // verify nothing happens as the listeners was removed previously
     });
 
     describe("syncing with imodel tool selection", () => {
@@ -487,107 +490,58 @@ describe("SelectionManager", () => {
         syncer = new ToolSelectionSyncHandler(imodelMock.object, locateManagerMock.object, selectionManager);
       });
 
-      it("uses non-scoped selection when `activeScope = undefined`", async () => {
-        scopesMock.setup((x) => x.activeScope).returns(() => undefined);
-        ss.add(createRandomId());
-        await waitForPendingAsyncs(syncer);
-        scopesMock.verify(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-        expect(selectionManager.getSelection(imodelMock.object).size).to.eq(1);
-      });
+      describe("choosing scope", () => {
 
-      it("uses non-scoped selection when `activeScope = \"element\"`", async () => {
-        scopesMock.setup((x) => x.activeScope).returns(() => "element");
-        ss.add(createRandomId());
-        await waitForPendingAsyncs(syncer);
-        scopesMock.verify(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-        expect(selectionManager.getSelection(imodelMock.object).size).to.eq(1);
-      });
-
-      it("uses non-scoped selection when doing multi selection", async () => {
-        scopesMock.setup((x) => x.activeScope).returns(() => "not element");
-        ss.add([createRandomId(), createRandomId()]);
-        await waitForPendingAsyncs(syncer);
-        scopesMock.verify(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-        expect(selectionManager.getSelection(imodelMock.object).size).to.eq(2);
-      });
-
-      it("uses non-scoped selection when doing fence selection with 1 element", async () => {
-        scopesMock.setup((x) => x.activeScope).returns(() => "not element");
-        const locateHitMock = moq.Mock.ofType<HitDetail>();
-        locateHitMock.setup((x) => x.sourceId).returns(() => createRandomId());
-        locateManagerMock.setup((x) => x.currHit).returns(() => locateHitMock.object);
-        ss.add(createRandomId());
-        await waitForPendingAsyncs(syncer);
-        scopesMock.verify(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-        expect(selectionManager.getSelection(imodelMock.object).size).to.eq(1);
-      });
-
-      describe("non-scoped", () => {
-
-        beforeEach(() => {
+        it("uses \"element\" scope when `activeScope = undefined`", async () => {
           scopesMock.setup((x) => x.activeScope).returns(() => undefined);
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "element"))
+            .returns(async () => new KeySet([createRandomECInstanceKey()]))
+            .verifiable();
+          ss.add(createRandomId());
+          await waitForPendingAsyncs(syncer);
+          scopesMock.verifyAll();
+          expect(selectionManager.getSelection(imodelMock.object).size).to.eq(1);
         });
 
-        it("ignores events with different imodel", async () => {
-          const imodelMock2 = moq.Mock.ofType<IModelConnection>();
-          ss.onChanged.raiseEvent(imodelMock2.object, SelectEventType.Add, [createRandomId()]);
+        it("uses \"element\" scope when `activeScope = \"element\"`", async () => {
+          scopesMock.setup((x) => x.activeScope).returns(() => "element");
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "element"))
+            .returns(async () => new KeySet([createRandomECInstanceKey()]))
+            .verifiable();
+          ss.add(createRandomId());
           await waitForPendingAsyncs(syncer);
-          const selection = selectionManager.getSelection(imodelMock.object);
-          expect(selection.size).to.eq(0);
+          scopesMock.verifyAll();
+          expect(selectionManager.getSelection(imodelMock.object).size).to.eq(1);
         });
 
-        it("ignores transient elements", async () => {
-          const transientId = Id64.fromLocalAndBriefcaseIds(123, 0xffffff);
-          const persistentId = createRandomId();
-          ss.add([transientId, persistentId]);
+        it("uses \"element\" scope when doing multi selection", async () => {
+          scopesMock.setup((x) => x.activeScope).returns(() => "not element");
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "element"))
+            .returns(async () => new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]))
+            .verifiable();
+          ss.add([createRandomId(), createRandomId()]);
           await waitForPendingAsyncs(syncer);
-          const selection = selectionManager.getSelection(imodelMock.object);
-          expect(selection.size).to.eq(1);
-          expect(selection.has({ className: "BisCore:Element", id: persistentId })).to.be.true;
+          scopesMock.verifyAll();
+          expect(selectionManager.getSelection(imodelMock.object).size).to.eq(2);
         });
 
-        it("adds elements to logical selection when tool selection changes", async () => {
-          const id = createRandomId();
-          ss.add(id);
+        it("uses \"element\" scope when doing fence selection with 1 element", async () => {
+          scopesMock.setup((x) => x.activeScope).returns(() => "not element");
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "element"))
+            .returns(async () => new KeySet([createRandomECInstanceKey()]))
+            .verifiable();
+          const locateHitMock = moq.Mock.ofType<HitDetail>();
+          locateHitMock.setup((x) => x.sourceId).returns(() => createRandomId());
+          locateManagerMock.setup((x) => x.currHit).returns(() => locateHitMock.object);
+          ss.add(createRandomId());
           await waitForPendingAsyncs(syncer);
-          const selection = selectionManager.getSelection(imodelMock.object);
-          expect(selection.size).to.eq(1);
-          expect(selection.has({ className: "BisCore:Element", id })).to.be.true;
-        });
-
-        it("replaces elements in logical selection when tool selection changes", async () => {
-          selectionManager.addToSelection("", imodelMock.object, [createRandomECInstanceKey()]);
-          const id = createRandomId();
-          ss.replace(id);
-          await waitForPendingAsyncs(syncer);
-          const selection = selectionManager.getSelection(imodelMock.object);
-          expect(selection.size).to.eq(1);
-          expect(selection.has({ className: "BisCore:Element", id })).to.be.true;
-        });
-
-        it("removes elements from logical selection when tool selection changes", async () => {
-          const id = createRandomId();
-          ss.add(id, false);
-          selectionManager.addToSelection("", imodelMock.object, [{ className: "BisCore:Element", id }]);
-          ss.remove(id);
-          await waitForPendingAsyncs(syncer);
-          const selection = selectionManager.getSelection(imodelMock.object);
-          expect(selection.size).to.eq(0);
-        });
-
-        it("clears elements from logical selection when tool selection is cleared", async () => {
-          const key = createRandomECInstanceKey();
-          ss.add(createRandomId(), false);
-          selectionManager.addToSelection("", imodelMock.object, [key]);
-          ss.emptyAll();
-          await waitForPendingAsyncs(syncer);
-          const selection = selectionManager.getSelection(imodelMock.object);
-          expect(selection.size).to.eq(0);
+          scopesMock.verifyAll();
+          expect(selectionManager.getSelection(imodelMock.object).size).to.eq(1);
         });
 
       });
 
-      describe("scoped", () => {
+      describe("changing logical selection", () => {
 
         let toolElementId: Id64String;
         let key: InstanceKey;
@@ -607,6 +561,23 @@ describe("SelectionManager", () => {
           const locateHitMock = moq.Mock.ofType<HitDetail>();
           locateHitMock.setup((x) => x.sourceId).returns(() => toolElementId);
           locateManagerMock.setup((x) => x.currHit).returns(() => locateHitMock.object);
+        });
+
+        it("ignores events with different imodel", async () => {
+          const spy = sinon.spy(selectionManager, "addToSelectionWithScope");
+          const imodelMock2 = moq.Mock.ofType<IModelConnection>();
+          ss.onChanged.raiseEvent(imodelMock2.object, SelectEventType.Add, [createRandomId()]);
+          await waitForPendingAsyncs(syncer);
+          expect(spy).to.not.be.called;
+        });
+
+        it("ignores transient elements", async () => {
+          const spy = sinon.spy(selectionManager, "addToSelectionWithScope");
+          const transientId = Id64.fromLocalAndBriefcaseIds(123, 0xffffff);
+          const persistentId = createRandomId();
+          ss.add([transientId, persistentId]);
+          await waitForPendingAsyncs(syncer);
+          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, [persistentId], "element", 0);
         });
 
         it("adds elements to logical selection when tool selection changes", async () => {

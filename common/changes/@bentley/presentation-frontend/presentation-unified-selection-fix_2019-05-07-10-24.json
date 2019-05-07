@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Always compute selection when syncing tool selection with logical selection - that's necessary to determine concrete element class names. Without that, we're adding keys with \"BisCore:Element\" class to selection and then our keys compare fails (presentation components like the table always have concrete class names). This can cause rows / nodes not to be highlighted in components.",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

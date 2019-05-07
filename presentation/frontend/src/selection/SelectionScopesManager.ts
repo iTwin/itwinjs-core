@@ -57,11 +57,28 @@ export class SelectionScopesManager {
    * @param scope Selection scope to apply
    */
   public async computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string): Promise<KeySet> {
+    // get scope id
     const scopeId = (typeof scope === "string") ? scope : scope.id;
+
+    // convert ids input to array
     if (typeof ids === "string")
       ids = [ids];
     else if (ids instanceof Set)
       ids = [...ids];
-    return this._rpcRequestsHandler.computeSelection({ imodel: imodel.iModelToken }, ids, scopeId);
+
+    // compute selection in batches to avoid HTTP 413
+    const keys = new KeySet();
+    const batchSize = 10000;
+    const batchesCount = Math.ceil(ids.length / batchSize);
+    const batchKeyPromises = [];
+    for (let batchIndex = 0; batchIndex < batchesCount; ++batchIndex) {
+      const batchStart = batchSize * batchIndex;
+      const batchEnd = (batchStart + batchSize > ids.length) ? ids.length : (batchStart + batchSize);
+      const batchIds = (0 === batchIndex && ids.length <= batchEnd) ? ids : ids.slice(batchStart, batchEnd);
+      batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.iModelToken }, batchIds, scopeId));
+    }
+    const batchKeys = await Promise.all(batchKeyPromises);
+    batchKeys.forEach((bk) => keys.add(bk));
+    return keys;
   }
 }

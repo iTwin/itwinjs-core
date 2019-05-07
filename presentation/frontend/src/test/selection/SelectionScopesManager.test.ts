@@ -7,12 +7,13 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import {
-  createRandomSelectionScope, createRandomId,
+  createRandomSelectionScope, createRandomId, createRandomECInstanceKey,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { RpcRequestsHandler, KeySet } from "@bentley/presentation-common";
 import { SelectionScopesManager, SelectionScopesManagerProps } from "../../selection/SelectionScopesManager";
+import { Id64String } from "@bentley/bentleyjs-core";
 
 describe("SelectionScopesManager", () => {
 
@@ -107,8 +108,10 @@ describe("SelectionScopesManager", () => {
         .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), ids, scope.id))
         .returns(async () => result)
         .verifiable();
-      expect(await getManager().computeSelection(imodelMock.object, ids, scope)).to.eq(result);
+      const computedResult = await getManager().computeSelection(imodelMock.object, ids, scope);
       rpcRequestsHandlerMock.verifyAll();
+      expect(computedResult.size).to.eq(result.size);
+      expect(computedResult.hasAll(result)).to.be.true;
     });
 
     it("forwards request to RpcRequestsHandler with scope as SelectionScope id", async () => {
@@ -119,8 +122,32 @@ describe("SelectionScopesManager", () => {
         .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), ids, scope.id))
         .returns(async () => result)
         .verifiable();
-      expect(await getManager().computeSelection(imodelMock.object, ids, scope.id)).to.eq(result);
+      const computedResult = await getManager().computeSelection(imodelMock.object, ids, scope.id);
       rpcRequestsHandlerMock.verifyAll();
+      expect(computedResult.size).to.eq(result.size);
+      expect(computedResult.hasAll(result)).to.be.true;
+    });
+
+    it("forwards multiple requests to RpcRequestsHandler when ids count exceeds max batch size", async () => {
+      const ids = new Array<Id64String>();
+      for (let i = 0; i < 10001; ++i)
+        ids.push(createRandomId());
+      const scope = createRandomSelectionScope();
+      const result1 = new KeySet([createRandomECInstanceKey()]);
+      const result2 = new KeySet([createRandomECInstanceKey()]);
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), moq.It.is((inIds: string[]): boolean => (inIds.length === 10000)), scope.id))
+        .returns(async () => result1)
+        .verifiable();
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), moq.It.is((inIds: string[]): boolean => (inIds.length === 1)), scope.id))
+        .returns(async () => result2)
+        .verifiable();
+      const computedResult = await getManager().computeSelection(imodelMock.object, ids, scope.id);
+      rpcRequestsHandlerMock.verifyAll();
+      expect(computedResult.size).to.eq(result1.size + result2.size);
+      expect(computedResult.hasAll(result1)).to.be.true;
+      expect(computedResult.hasAll(result2)).to.be.true;
     });
 
     it("forwards request to RpcRequestsHandler with ids as a single ID", async () => {
@@ -131,8 +158,10 @@ describe("SelectionScopesManager", () => {
         .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), moq.It.is((a) => a.length === 1 && a[0] === id), scope.id))
         .returns(async () => result)
         .verifiable();
-      expect(await getManager().computeSelection(imodelMock.object, id, scope.id)).to.eq(result);
+      const computedResult = await getManager().computeSelection(imodelMock.object, id, scope);
       rpcRequestsHandlerMock.verifyAll();
+      expect(computedResult.size).to.eq(result.size);
+      expect(computedResult.hasAll(result)).to.be.true;
     });
 
     it("forwards request to RpcRequestsHandler with ids as Set<Id64String>", async () => {
@@ -143,8 +172,10 @@ describe("SelectionScopesManager", () => {
         .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), moq.It.is((a) => a.length === 1 && a[0] === id), scope.id))
         .returns(async () => result)
         .verifiable();
-      expect(await getManager().computeSelection(imodelMock.object, new Set([id]), scope.id)).to.eq(result);
+      const computedResult = await getManager().computeSelection(imodelMock.object, new Set([id]), scope);
       rpcRequestsHandlerMock.verifyAll();
+      expect(computedResult.size).to.eq(result.size);
+      expect(computedResult.hasAll(result)).to.be.true;
     });
 
   });

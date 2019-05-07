@@ -316,15 +316,21 @@ export class ToolSelectionSyncHandler implements IDisposable {
     // wip: may want to allow selecting at different levels?
     const selectionLevel = 0;
 
+    // determine the scope id
+    // note: _always_ use "element" scope for fence selection
+    let scopeId = getScopeId(this._logicalSelection.scopes.activeScope);
     const isSingleSelectionFromPick = (undefined !== ids
       && 1 === ids.size
       && undefined !== this._locateManager.currHit
       && ids.has(this._locateManager.currHit.sourceId));
+    if (!isSingleSelectionFromPick)
+      scopeId = "element";
 
-    const scopeId = getScopeId(this._logicalSelection.scopes.activeScope);
-    const changer = ("element" !== scopeId && isSingleSelectionFromPick)
-      ? new ScopedSelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection, scopeId)
-      : new SelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection);
+    // we're always using scoped selection changer even if the scope is set to "element" - that
+    // makes sure we're adding to selection keys with concrete classes and not "BisCore:Element", which
+    // we can't because otherwise our keys compare fails (presentation components load data with
+    // concrete classes)
+    const changer = new ScopedSelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection, scopeId);
 
     // we know what to do immediately on `clear` events
     if (eventType === SelectEventType.Clear) {
@@ -385,44 +391,20 @@ const getPersistentElementIds = (ids: Id64Set): Id64Array | Id64Set => {
   return persistentElementIds;
 };
 
-const createElementKeys = (ids: Id64Array | Id64Set): KeySet => {
-  const set = new KeySet();
-  for (const id of ids) {
-    set.add({ classFullName: "BisCore:Element", id });
-  }
-  return set;
-};
-
 /** @hidden */
-class SelectionChanger {
+class ScopedSelectionChanger {
   public readonly name: string;
   public readonly imodel: IModelConnection;
   public readonly manager: SelectionManager;
-  public constructor(name: string, imodel: IModelConnection, manager: SelectionManager) {
+  public readonly scope: SelectionScope | string;
+  public constructor(name: string, imodel: IModelConnection, manager: SelectionManager, scope: SelectionScope | string) {
     this.name = name;
     this.imodel = imodel;
     this.manager = manager;
+    this.scope = scope;
   }
   public async clear(level: number): Promise<void> {
     this.manager.clearSelection(this.name, this.imodel, level);
-  }
-  public async add(ids: Id64Array | Id64Set, level: number): Promise<void> {
-    this.manager.addToSelection(this.name, this.imodel, createElementKeys(ids), level);
-  }
-  public async remove(ids: Id64Array | Id64Set, level: number): Promise<void> {
-    this.manager.removeFromSelection(this.name, this.imodel, createElementKeys(ids), level);
-  }
-  public async replace(ids: Id64Array | Id64Set, level: number): Promise<void> {
-    this.manager.replaceSelection(this.name, this.imodel, createElementKeys(ids), level);
-  }
-}
-
-/** @hidden */
-class ScopedSelectionChanger extends SelectionChanger {
-  public readonly scope: SelectionScope | string;
-  public constructor(name: string, imodel: IModelConnection, manager: SelectionManager, scope: SelectionScope | string) {
-    super(name, imodel, manager);
-    this.scope = scope;
   }
   public async add(ids: Id64Array | Id64Set, level: number): Promise<void> {
     await this.manager.addToSelectionWithScope(this.name, this.imodel, ids, this.scope, level);

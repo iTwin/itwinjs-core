@@ -6,7 +6,7 @@
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { tableWithUnifiedSelection, IPresentationTableDataProvider } from "@bentley/presentation-components";
-import { Table } from "@bentley/ui-components";
+import { Table, SelectionMode } from "@bentley/ui-components";
 import "./FindSimilarWidget.css";
 
 // tslint:disable-next-line:variable-name naming-convention
@@ -43,7 +43,7 @@ export default class FindSimilarWidget extends React.PureComponent<Props> {
           </button>
         </div>
         <div className="find-similar-widget-content">
-          <SampleTable dataProvider={this.props.dataProvider} selectionLevel={0} />
+          <SampleTable dataProvider={this.props.dataProvider} selectionLevel={0} selectionMode={SelectionMode.Extended} />
         </div>
       </div>
     );
