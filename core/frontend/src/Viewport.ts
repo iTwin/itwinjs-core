@@ -1288,7 +1288,19 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public get animationFraction(): number { return this._animationFraction; }
   /** @internal */
-  public set animationFraction(fraction: number) { this._animationFraction = fraction; this.sync.invalidateAnimationFraction(); }
+  public set animationFraction(fraction: number) {
+    // Temporary -- solar shadow testing.  Remove when solar UI is available.
+    const dateNow = new Date(Date.now());
+    dateNow.setHours(0);
+    dateNow.setMinutes(0);
+    dateNow.setSeconds(0);
+    const millis = dateNow.getTime() + fraction * 24 * 60 * 60 * 1000;
+    this.view.displayStyle.setSunTime(millis);
+    this.sync.invalidateScene();
+    //   End - Solar testing.
+
+    this._animationFraction = fraction; this.sync.invalidateAnimationFraction();
+  }
 
   /** @internal */
   protected readonly _viewRange: ViewRect = new ViewRect();
@@ -2406,10 +2418,12 @@ export abstract class Viewport implements IDisposable {
         view.createClassification(context);
         view.createScene(context);
         view.createTerrain(context);
+        view.createSolarShadowMap(context);
         context.requestMissingTiles();
         target.changeScene(context.graphics);
         target.changeTerrain(context.backgroundGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
+        target.changeSolarShadowMap(context.solarShadowMap);
 
         isRedrawNeeded = true;
       }

@@ -28,7 +28,7 @@ import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { Viewport } from "./Viewport";
+import { Viewport, ViewFrustum } from "./Viewport";
 import { SpatialClassification } from "./SpatialClassification";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
@@ -342,6 +342,9 @@ export abstract class ViewState extends ElementState {
   public createClassification(context: SceneContext): void {
     this.forEachTileTreeModel((model: TileTreeModelState) => SpatialClassification.addModelClassifierToScene(model, context));
   }
+
+  /** @internal */
+  public createSolarShadowMap(_context: SceneContext): void { }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
    * @internal
@@ -1541,6 +1544,19 @@ export class SpatialViewState extends ViewState3d {
   public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
     this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
     this.forEachModel((model: TileTreeModelState) => func(model));
+  }
+
+  public createSolarShadowMap(context: SceneContext): void {
+    context.solarShadowMap = undefined;
+    if (IModelApp.renderSystem.options.displaySolarShadows && this.viewFlags.shadows) {
+      const backgroundMapPlane = this.displayStyle.backgroundMapPlane;
+      const viewFrustum = (undefined === backgroundMapPlane) ? context.viewFrustum : ViewFrustum.createFromViewportAndPlane(context.viewport, backgroundMapPlane);
+      const solarDirection = this.displayStyle.sunDirection ? this.displayStyle.sunDirection : Vector3d.create(-1, -1, -1).normalize();
+      if (undefined !== viewFrustum) {
+        context.solarShadowMap = IModelApp.renderSystem.getSolarShadowMap(viewFrustum.getFrustum(), solarDirection!, this.displayStyle.solarShadowSettings, this.modelSelector, this.categorySelector, this.iModel);
+        context.solarShadowMap!.collectGraphics(context);
+      }
+    }
   }
 }
 

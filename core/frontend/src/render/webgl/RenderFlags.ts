@@ -65,6 +65,7 @@ export enum TextureUnit {
   PlanarClassificationColor = Six,        // classification or aux channel - not both.
   PlanarClassificationHilite = Six,       // hilite or color, not both.
   PlanarClassificationFeatureId = Seven,
+  ShadowMap = Six,                        // shadows or classification - not both.
 }
 
 /**

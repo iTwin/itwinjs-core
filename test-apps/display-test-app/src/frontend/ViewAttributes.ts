@@ -42,7 +42,7 @@ import { isString } from "util";
 
 type UpdateAttribute = (view: ViewState) => void;
 
-type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume" | "forceSurfaceDiscard";
+type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume" | "shadows" | "forceSurfaceDiscard";
 type EnvironmentAspect = "ground" | "sky";
 type SkyboxType = "2colors" | "4colors";
 
@@ -132,6 +132,7 @@ export class ViewAttributes {
     this.addViewFlagAttribute(flagsDiv, "Line Weights", "weights");
     this.addViewFlagAttribute(flagsDiv, "Line Styles", "styles");
     this.addViewFlagAttribute(flagsDiv, "Clip Volume", "clipVolume", true);
+    this.addViewFlagAttribute(flagsDiv, "Shadows", "shadows");
     this.addViewFlagAttribute(flagsDiv, "Force Surface Discard", "forceSurfaceDiscard", true);
 
     this.addLightingToggle(flagsDiv);

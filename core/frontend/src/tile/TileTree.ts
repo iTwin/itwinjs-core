@@ -23,6 +23,8 @@ import {
   Range3d,
   Transform,
   Vector3d,
+  Matrix4d,
+  Point4d,
 } from "@bentley/geometry-core";
 import {
   BatchType,
@@ -700,7 +702,7 @@ export namespace Tile {
       if (this.graphics.isEmpty)
         return;
 
-      const branch = this.context.createBranch(this.graphics, this.location, this.clipVolume, this.planarClassifier);
+      const branch = this.context.createGraphicBranch(this.graphics, this.location, this.clipVolume, this.planarClassifier);
 
       this.context.outputGraphic(branch);
     }
@@ -839,6 +841,29 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   }
 
   public debugForcedDepth?: number; // For debugging purposes - force selection of tiles of specified depth.
+  private static _scratchFrustum = new Frustum();
+  private static _scratchPoint4d = Point4d.createZero();
+  private extendRangeForTile(range: Range3d, tile: Tile, matrix: Matrix4d, treeTransform: Transform, frustumPlanes?: FrustumPlanes) {
+    const box = Frustum.fromRange(tile.range, TileTree._scratchFrustum);
+    box.transformBy(treeTransform, box);
+    if (frustumPlanes !== undefined && FrustumPlanes.Containment.Outside === frustumPlanes.computeFrustumContainment(box))
+      return;
+    if (tile.children === undefined) {
+      for (const boxPoint of box.points) {
+        matrix.multiplyPoint3d(boxPoint, 1, TileTree._scratchPoint4d);
+        if (TileTree._scratchPoint4d.w > .0001)
+          range.extendXYZW(TileTree._scratchPoint4d.x, TileTree._scratchPoint4d.y, TileTree._scratchPoint4d.z, TileTree._scratchPoint4d.w);
+      }
+    } else {
+      for (const child of tile.children)
+        this.extendRangeForTile(range, child, matrix, treeTransform, frustumPlanes);
+    }
+  }
+
+  /* extend range to include transformed range of this tile tree */
+  public accumlateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes) {
+    this.extendRangeForTile(range, this.rootTile, matrix, this.location, frustumPlanes);
+  }
 }
 
 const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({

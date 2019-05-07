@@ -8,7 +8,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ConvexClipPlaneSet, CurveLocationDetail, Geometry, LineSegment3d, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, Npc, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget, RenderPlanarClassifier, PlanarClassifierMap } from "./render/System";
+import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget, RenderPlanarClassifier, PlanarClassifierMap, RenderSolarShadowMap } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { ScreenViewport, Viewport, ViewFrustum } from "./Viewport";
 import { ViewState3d } from "./ViewState";
@@ -52,14 +52,16 @@ export class RenderContext {
    */
   public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder { return this._createGraphicBuilder(GraphicType.Scene, transform); }
 
+  /** @internal */
+  public createGraphicBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic { return this.target.renderSystem.createGraphicBranch(branch, location, clip, planarClassifier); }
+
   /** Create a [[RenderGraphic]] which groups a set of graphics into a node in a scene graph, applying to each a transform and optional clip volume and symbology overrides.
    * @param branch Contains the group of graphics and the symbology overrides.
    * @param location the local-to-world transform applied to the grouped graphics.
-   * @param clip Optional clipping volume applied to the grouped graphics.
    * @returns A RenderGraphic suitable for drawing the scene graph node within this context's [[Viewport]].
    * @see [[RenderSystem.createBranch]]
    */
-  public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic { return this.target.renderSystem.createBranch(branch, location, clip, planarClassifier); }
+  public createBranch(branch: GraphicBranch, location: Transform): RenderGraphic { return this.createGraphicBranch(branch, location); }
 }
 
 /** Provides context for an [[InteractiveTool]] to display decorations representing its current state.
@@ -518,6 +520,7 @@ export class SceneContext extends RenderContext {
   public backgroundMap?: BackgroundMapState;
   public modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
   public planarClassifiers?: PlanarClassifierMap;               // Classifier model id to planar classifier.
+  public solarShadowMap?: RenderSolarShadowMap;
 
   public constructor(vp: Viewport, frustum?: Frustum) {
     super(vp, frustum);

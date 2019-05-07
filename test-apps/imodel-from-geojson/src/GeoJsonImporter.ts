@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex, Arc3d, Range3d } from "@bentley/geometry-core";
-import { Cartographic, Code, ColorDef, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, GeometryParams, AxisAlignedBox3d, EcefLocation, ViewFlags, IModel, BackgroundMapProps, BackgroundMapType } from "@bentley/imodeljs-common";
+import { Cartographic, Code, ColorDef, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, GeometryParams, AxisAlignedBox3d, EcefLocation, ViewFlags, IModel, BackgroundMapProps, BackgroundMapType, RenderMode } from "@bentley/imodeljs-common";
 import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SpatialModel, ViewDefinition } from "@bentley/imodeljs-backend";
 import { GeoJson } from "./GeoJson";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
@@ -40,6 +40,7 @@ export class GeoJsonImporter {
     this._pointRadius = pointRadius === undefined ? .25 : pointRadius;
     this._colorIndex = pseudoColor ? 0 : undefined;
     this._viewFlags = new ViewFlags();
+    this._viewFlags.renderMode = RenderMode.SmoothShade;
     switch (mapType) {
       case "none":
         this._viewFlags.backgroundMap = false;

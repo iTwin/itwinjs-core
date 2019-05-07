@@ -51,7 +51,7 @@ export class NullRenderSystem extends RenderSystem {
   public createOffscreenTarget() { return new NullTarget(); }
   public createGraphicBuilder() { return undefined as any; }
   public createGraphicList() { return undefined as any; }
-  public createBranch() { return undefined as any; }
+  public createGraphicBranch() { return undefined as any; }
   public createBatch() { return undefined as any; }
   public dispose() { }
   public constructor() { super(); }

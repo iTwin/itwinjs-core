@@ -4514,6 +4514,21 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 }
 
 // @beta
+export interface SolarShadowProps {
+    bias?: number;
+    color?: ColorDefProps;
+}
+
+// @beta
+export class SolarShadowSettings implements SolarShadowProps {
+    constructor(props?: SolarShadowProps);
+    bias: number;
+    // (undocumented)
+    clone(): SolarShadowSettings;
+    color: ColorDef;
+    }
+
+// @beta
 export namespace SpatialClassificationProps {
     export enum Display {
         Dimmed = 2,

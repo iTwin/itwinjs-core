@@ -150,6 +150,7 @@ import { SkyBoxProps } from '@bentley/imodeljs-common';
 import { SkyCubeProps } from '@bentley/imodeljs-common';
 import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
+import { SolarShadowSettings } from '@bentley/imodeljs-common';
 import { SortedArray } from '@bentley/bentleyjs-core';
 import { SpatialClassificationProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
@@ -1800,7 +1801,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     readonly scheduleScript: RenderScheduleState.Script | undefined;
     setBackgroundMap(mapProps: BackgroundMapProps): void;
+    // @beta
+    setSunTime(time: number): void;
     abstract readonly settings: DisplayStyleSettings;
+    // @beta (undocumented)
+    readonly solarShadowSettings: SolarShadowSettings;
+    // @beta (undocumented)
+    readonly sunDirection: Vector3d | undefined;
     viewFlags: ViewFlags;
 }
 
@@ -3579,7 +3586,7 @@ export namespace MockRender {
         // (undocumented)
         createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): Batch;
         // (undocumented)
-        createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): Branch;
+        createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume): Branch;
         // (undocumented)
         createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): Builder;
         // (undocumented)
@@ -3753,7 +3760,7 @@ export class NullRenderSystem extends RenderSystem {
     // (undocumented)
     createBatch(): any;
     // (undocumented)
-    createBranch(): any;
+    createGraphicBranch(): any;
     // (undocumented)
     createGraphicBuilder(): any;
     // (undocumented)
@@ -4433,9 +4440,9 @@ export abstract class RenderClipVolume implements IDisposable, RenderMemory.Cons
 // @public
 export class RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
-    // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderClipVolume" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderPlanarClassifier" which is marked as @beta
-    createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
+    createBranch(branch: GraphicBranch, location: Transform): RenderGraphic;
+    // @internal (undocumented)
+    createGraphicBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
     // @internal (undocumented)
     protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
     createSceneGraphicBuilder(transform?: Transform): GraphicBuilder;
@@ -4536,13 +4543,15 @@ export namespace RenderMemory {
         // (undocumented)
         ClipVolumes = 4,
         // (undocumented)
-        COUNT = 6,
+        COUNT = 7,
         // (undocumented)
         FeatureOverrides = 3,
         // (undocumented)
         FeatureTables = 2,
         // (undocumented)
         PlanarClassifiers = 5,
+        // (undocumented)
+        ShadowMaps = 6,
         // (undocumented)
         Textures = 0,
         // (undocumented)
@@ -4574,6 +4583,8 @@ export namespace RenderMemory {
         // (undocumented)
         addPolylineEdges(numBytes: number): void;
         // (undocumented)
+        addShadowMap(numBytes: number): void;
+        // (undocumented)
         addSilhouetteEdges(numBytes: number): void;
         // (undocumented)
         addSurface(numBytes: number): void;
@@ -4597,6 +4608,8 @@ export namespace RenderMemory {
         readonly featureTables: Consumers;
         // (undocumented)
         readonly planarClassifiers: Consumers;
+        // (undocumented)
+        readonly shadowMaps: Consumers;
         // (undocumented)
         readonly textures: Consumers;
         // (undocumented)
@@ -4660,6 +4673,16 @@ export abstract class RenderPlanarClassifier implements IDisposable {
     abstract dispose(): void;
 }
 
+// @internal
+export abstract class RenderSolarShadowMap implements IDisposable {
+    // (undocumented)
+    abstract collectGraphics(sceneContext: SceneContext): void;
+    // (undocumented)
+    abstract collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
+    abstract dispose(): void;
+}
+
 // @public
 export abstract class RenderSystem implements IDisposable {
     // @internal
@@ -4668,11 +4691,11 @@ export abstract class RenderSystem implements IDisposable {
     addSpatialClassificationModel(_modelId: Id64String, _classificationModel: RenderClassifierModel, _iModel: IModelConnection): void;
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
-    // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderClipVolume" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "createBranch" is marked as @public, but its signature references "RenderPlanarClassifier" which is marked as @beta
-    abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
+    createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     // @internal (undocumented)
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
+    // @internal (undocumented)
+    abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
     abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
     // Warning: (ae-forgotten-export) The symbol "PolylineArgs" needs to be exported by the entry point imodeljs-frontend.d.ts
@@ -4718,6 +4741,8 @@ export abstract class RenderSystem implements IDisposable {
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
     // @internal (undocumented)
+    getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadowSettings, _models: ModelSelectorState, _categories: CategorySelectorState, _imodel: IModelConnection): RenderSolarShadowMap | undefined;
+    // @internal (undocumented)
     getSpatialClassificationModel(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined;
     // @internal (undocumented)
     abstract readonly isValid: boolean;
@@ -4745,6 +4770,8 @@ export namespace RenderSystem {
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         // @internal
+        displaySolarShadows?: boolean;
+        // @internal
         preserveShaderSourceCode?: boolean;
     }
 }
@@ -4767,6 +4794,8 @@ export abstract class RenderTarget implements IDisposable {
     abstract changeRenderPlan(plan: RenderPlan): void;
     // (undocumented)
     abstract changeScene(scene: GraphicList): void;
+    // (undocumented)
+    changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void;
     // (undocumented)
     abstract changeTerrain(_scene: GraphicList): void;
     // (undocumented)
@@ -4802,6 +4831,8 @@ export abstract class RenderTarget implements IDisposable {
     setHiliteSet(_hilited: Set<string>): void;
     // (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
+    // (undocumented)
+    readonly solarShadowMap: RenderSolarShadowMap | undefined;
     // (undocumented)
     abstract updateViewRect(): boolean;
     // (undocumented)
@@ -4896,6 +4927,8 @@ export class SceneContext extends RenderContext {
     requestMissingTiles(): void;
     // (undocumented)
     setPlanarClassifier(id: Id64String, planarClassifier: RenderPlanarClassifier): void;
+    // (undocumented)
+    solarShadowMap?: RenderSolarShadowMap;
     // (undocumented)
     readonly viewFrustum: ViewFrustum | undefined;
 }
@@ -5363,6 +5396,10 @@ export class SpatialViewState extends ViewState3d {
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined;
+    // Warning: (ae-incompatible-release-tags) The symbol "createSolarShadowMap" is marked as @public, but its signature references "SceneContext" which is marked as @internal
+    // 
+    // (undocumented)
+    createSolarShadowMap(context: SceneContext): void;
     // (undocumented)
     readonly defaultExtentLimits: {
         min: number;
@@ -5665,6 +5702,8 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     changeScene(scene: GraphicList): void;
     // (undocumented)
+    changeSolarShadowMap(solarShadowMap?: RenderSolarShadowMap): void;
+    // (undocumented)
     changeTerrain(terrain: GraphicList): void;
     // Warning: (ae-forgotten-export) The symbol "ClipDef" needs to be exported by the entry point imodeljs-frontend.d.ts
     // 
@@ -5716,6 +5755,8 @@ export abstract class Target extends RenderTarget {
     protected drawOverlayDecorations(): void;
     // (undocumented)
     drawPlanarClassifiers(): void;
+    // (undocumented)
+    drawSolarShadowMap(): void;
     // (undocumented)
     readonly dynamics: GraphicList | undefined;
     // Warning: (ae-forgotten-export) The symbol "ColorInfo" needs to be exported by the entry point imodeljs-frontend.d.ts
@@ -5850,6 +5891,10 @@ export abstract class Target extends RenderTarget {
     // 
     // (undocumented)
     readonly shaderLights: ShaderLights | undefined;
+    // Warning: (ae-forgotten-export) The symbol "SolarShadowMap" needs to be exported by the entry point imodeljs-frontend.d.ts
+    // 
+    // (undocumented)
+    readonly solarShadowMap: SolarShadowMap | undefined;
     // Warning: (ae-forgotten-export) The symbol "Techniques" needs to be exported by the entry point imodeljs-frontend.d.ts
     // 
     // (undocumented)
@@ -6291,6 +6336,8 @@ export abstract class TileLoader {
 // @internal
 export class TileTree implements IDisposable, RenderMemory.Consumer {
     constructor(props: TileTree.Params);
+    // (undocumented)
+    accumlateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes): void;
     // (undocumented)
     readonly clipVector: ClipVector | undefined;
     // (undocumented)
@@ -7738,6 +7785,8 @@ export abstract class ViewState extends ElementState {
     static createFromProps(_props: ViewStateProps, _iModel: IModelConnection): ViewState | undefined;
     // @internal (undocumented)
     createScene(context: SceneContext): void;
+    // @internal (undocumented)
+    createSolarShadowMap(_context: SceneContext): void;
     // @internal (undocumented)
     createTerrain(context: SceneContext): void;
     // @internal

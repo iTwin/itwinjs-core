@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support solar shadow display.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ray.Bentley@bentley.com"
+}

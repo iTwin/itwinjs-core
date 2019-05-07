@@ -234,6 +234,16 @@ export interface SkyBoxProps {
   image?: SkyBoxImageProps;
 }
 
+/** JSON representation of a solar shadow settings.
+ * @beta
+ */
+export interface SolarShadowProps {
+  /** Shadow color */
+  color?: ColorDefProps;
+  /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects. */
+  bias?: number;
+}
+
 /** JSON representation of the environment setup of a [[DisplayStyle3d]].
  * @public
  */

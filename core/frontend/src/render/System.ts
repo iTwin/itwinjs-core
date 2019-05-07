@@ -5,10 +5,10 @@
 /** @module Rendering */
 
 import { assert, base64StringToUint8Array, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, IndexedPolyface, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range3d, Transform, XAndY } from "@bentley/geometry-core";
+import { ClipVector, IndexedPolyface, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range3d, Transform, XAndY, Vector3d } from "@bentley/geometry-core";
 import {
   AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, Frustum, Gradient,
-  HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d,
+  HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d, SolarShadowSettings,
   QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion, SpatialClassificationProps,
 } from "@bentley/imodeljs-common";
 import { SkyBox } from "../DisplayStyleState";
@@ -25,6 +25,8 @@ import { MeshParams, PointStringParams, PolylineParams } from "./primitives/Vert
 import { TileTreeModelState } from "../ModelState";
 import { TileTree } from "../tile/TileTree";
 import { SceneContext } from "../ViewContext";
+import { ModelSelectorState } from "../ModelSelectorState";
+import { CategorySelectorState } from "../CategorySelectorState";
 
 // tslint:disable:no-const-enum
 
@@ -108,7 +110,7 @@ export namespace RenderMemory {
     FeatureOverrides,
     ClipVolumes,
     PlanarClassifiers,
-
+    ShadowMaps,
     COUNT,
   }
 
@@ -131,6 +133,7 @@ export namespace RenderMemory {
     public get featureOverrides() { return this.consumers[ConsumerType.FeatureOverrides]; }
     public get clipVolumes() { return this.consumers[ConsumerType.ClipVolumes]; }
     public get planarClassifiers() { return this.consumers[ConsumerType.PlanarClassifiers]; }
+    public get shadowMaps() { return this.consumers[ConsumerType.ShadowMaps]; }
 
     public addBuffer(type: BufferType, numBytes: number): void {
       this._totalBytes += numBytes;
@@ -155,6 +158,7 @@ export namespace RenderMemory {
     public addFeatureOverrides(numBytes: number) { this.addConsumer(ConsumerType.FeatureOverrides, numBytes); }
     public addClipVolume(numBytes: number) { this.addConsumer(ConsumerType.ClipVolumes, numBytes); }
     public addPlanarClassifier(numBytes: number) { this.addConsumer(ConsumerType.PlanarClassifiers, numBytes); }
+    public addShadowMap(numBytes: number) { this.addConsumer(ConsumerType.ShadowMaps, numBytes); }
 
     public addSurface(numBytes: number) { this.addBuffer(BufferType.Surfaces, numBytes); }
     public addVisibleEdges(numBytes: number) { this.addBuffer(BufferType.VisibleEdges, numBytes); }
@@ -283,6 +287,18 @@ export abstract class RenderClipVolume implements IDisposable, RenderMemory.Cons
 
   /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
+}
+/** An opaque representation of a shadow map.
+ * @internal
+ */
+export abstract class RenderSolarShadowMap implements IDisposable {
+  public abstract dispose(): void;
+
+  /** @internal */
+  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
+
+  /** @internal */
+  public abstract collectGraphics(sceneContext: SceneContext): void;
 }
 
 /** An opaque representation of a planar classifier applied to geometry within a [[Viewport]].
@@ -737,6 +753,7 @@ export abstract class RenderTarget implements IDisposable {
 
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
+  public get solarShadowMap(): RenderSolarShadowMap | undefined { return undefined; }
 
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
@@ -745,6 +762,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract changeScene(scene: GraphicList): void;
   public abstract changeTerrain(_scene: GraphicList): void;
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
+  public changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void { }
   public abstract changeDynamics(dynamics?: GraphicList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
@@ -921,7 +939,8 @@ export abstract class RenderSystem implements IDisposable {
   public addSpatialClassificationModel(_modelId: Id64String, _classificationModel: RenderClassifierModel, _iModel: IModelConnection) { }
   /** @internal */
   public createPlanarClassifier(_properties: SpatialClassificationProps.Properties, _tileTree: TileTree, _classifiedModel: TileTreeModelState, _sceneContext: SceneContext): RenderPlanarClassifier | undefined { return undefined; }
-
+  /** @internal */
+  public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadowSettings, _models: ModelSelectorState, _categories: CategorySelectorState, _imodel: IModelConnection): RenderSolarShadowMap | undefined { return undefined; }
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();
@@ -967,8 +986,13 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a RenderGraphic consisting of a list of Graphics to be drawn together. */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
-  /** Create a RenderGraphic consisting of a list of Graphics, with optional transform, clip, and symbology overrides applied to the list */
-  public abstract createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
+  /** Create a RenderGraphic consisting of a list of Graphics, with optional transform and symbology overrides applied to the list */
+  public createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic {
+    return this.createGraphicBranch(branch, transform);
+  }
+
+  /** @internal */
+  public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
 
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal
@@ -1092,6 +1116,11 @@ export namespace RenderSystem {
      * @internal
      */
     preserveShaderSourceCode?: boolean;
+    /** If true display solar shadows.
+     *      * @internal
+     */
+    displaySolarShadows?: boolean;
+
   }
 }
 

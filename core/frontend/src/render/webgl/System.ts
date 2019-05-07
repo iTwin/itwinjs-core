@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d, SpatialClassificationProps } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d, SpatialClassificationProps, Frustum, SolarShadowSettings } from "@bentley/imodeljs-common";
 import {
   ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
-  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask,
+  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d,
 } from "@bentley/geometry-core";
 import {
   InstancedGraphicParams,
@@ -22,6 +22,7 @@ import {
   GraphicList,
   PackedFeatureTable,
   WebGLExtensionName,
+  RenderSolarShadowMap,
 } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -50,6 +51,7 @@ import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyCubePrimitive, SkySpherePrimitive, Primitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
+import { SolarShadowMap } from "./SolarShadowMap";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
@@ -57,6 +59,8 @@ import { PlanarClassifier } from "./PlanarClassifier";
 import { TileTreeModelState } from "../../ModelState";
 import { TileTree } from "../../tile/TileTree";
 import { SceneContext } from "../../ViewContext";
+import { ModelSelectorState } from "../../ModelSelectorState";
+import { CategorySelectorState } from "../../CategorySelectorState";
 
 // tslint:disable:no-const-enum
 
@@ -298,7 +302,8 @@ export class IdMap implements IDisposable {
   public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
   /** Mapping of (planar) classification model ID to textures */
   public readonly classifiers: Map<Id64String, RenderClassifierModel>;
-
+  /** Solar shadow map (one for IModel) */
+  private _solarShadowMap?: RenderSolarShadowMap;
   public constructor() {
     this.materials = new Map<string, RenderMaterial>();
     this.textures = new Map<string, RenderTexture>();
@@ -419,8 +424,19 @@ export class IdMap implements IDisposable {
   /** Get a classifier model */
   public getSpatialClassificationModel(modelId: Id64String): RenderClassifierModel | undefined { return this.classifiers.get(modelId); }
 
+  /** @internal */
   /** Add a new classifier */
   public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel) { this.classifiers.set(modelId, classifier); }
+
+  /** @internal */
+  /** Get solar shadow map */
+  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadowSettings, models: ModelSelectorState, categories: CategorySelectorState) {
+    if (undefined === this._solarShadowMap)
+      this._solarShadowMap = new SolarShadowMap();
+
+    (this._solarShadowMap as SolarShadowMap)!.set(frustum, direction, settings, models, categories);
+    return this._solarShadowMap;
+  }
 }
 
 export type TextureBinding = WebGLTexture | undefined;
@@ -538,7 +554,7 @@ export class System extends RenderSystem {
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return Primitive.create(() => new PointCloudGeometry(args)); }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
-  public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier): RenderGraphic { return new Branch(branch, transform, clips, undefined, planarClassifier); }
+  public createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier): RenderGraphic { return new Branch(branch, transform, clips, undefined, planarClassifier); }
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
@@ -655,6 +671,8 @@ export class System extends RenderSystem {
   public getSpatialClassificationModel(modelId: Id64String, iModel: IModelConnection): RenderClassifierModel | undefined { return this.getIdMap(iModel).classifiers.get(modelId); }
   public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel, iModel: IModelConnection) { this.getIdMap(iModel).classifiers.set(modelId, classifier); }
   public createPlanarClassifier(properties: SpatialClassificationProps.Properties, tileTree: TileTree, classifiedModel: TileTreeModelState, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedModel, sceneContext); }
+  /** Solar Shadow Map */
+  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadowSettings, models: ModelSelectorState, categories: CategorySelectorState, iModel: IModelConnection): RenderSolarShadowMap | undefined { return this.getIdMap(iModel).getSolarShadowMap(frustum, direction, settings, models, categories); }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);

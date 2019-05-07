@@ -13,7 +13,7 @@ import {
   ShaderBuilder,
   ShaderBuilderFlags,
 } from "../ShaderBuilder";
-import { IsInstanced, IsAnimated, IsClassified, FeatureMode } from "../TechniqueFlags";
+import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable } from "../TechniqueFlags";
 import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
@@ -28,6 +28,7 @@ import { Material } from "../Material";
 import { System } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
 import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
+import { addSolarShadowMap } from "./SolarShadowMapping";
 import { MutableFloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef } from "@bentley/imodeljs-common";
 
@@ -83,7 +84,7 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: IsClassified): ProgramBuilder {
+function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: IsClassified, shadowable: IsShadowable): ProgramBuilder {
   const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
 
@@ -91,6 +92,8 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: 
     addAnimation(vert, true);
   if (classified)
     addColorPlanarClassifier(builder);
+  if (shadowable)
+    addSolarShadowMap(builder);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -102,7 +105,7 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: 
 
 /** @internal */
 export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified): ProgramBuilder {
-  const builder = createCommon(instanced, IsAnimated.No, classified);
+  const builder = createCommon(instanced, IsAnimated.No, classified, IsShadowable.No);
 
   addSurfaceFlags(builder, true);
   addTexture(builder, IsAnimated.No);
@@ -293,8 +296,8 @@ const scratchBgColor: MutableFloatRgb = MutableFloatRgb.fromColorDef(ColorDef.wh
 const blackColor = FloatRgba.fromColorDef(ColorDef.black);
 
 /** @internal */
-export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced, isAnimated: IsAnimated, isClassified: IsClassified): ProgramBuilder {
-  const builder = createCommon(isInstanced, isAnimated, isClassified);
+export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced, isAnimated: IsAnimated, isClassified: IsClassified, isShadowable: IsShadowable): ProgramBuilder {
+  const builder = createCommon(isInstanced, isAnimated, isClassified, isShadowable);
   addShaderFlags(builder);
 
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);

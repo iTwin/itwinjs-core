@@ -10,7 +10,7 @@ import { Light } from "./Lighting";
 import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor, Range1d } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
-import { CameraProps, ViewFlagProps, GroundPlaneProps } from "./ViewProps";
+import { CameraProps, ViewFlagProps, GroundPlaneProps, SolarShadowProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
@@ -2475,4 +2475,21 @@ export class GroundPlane implements GroundPlaneProps {
 
     return gradient;
   }
+}
+/** Solar shadows are imposed as a color scaling on geometry that is occluded from solar lighting.  Shadows are imposed independently
+ * of solar lighting and is applied to unlit geometry such as reality models and map tiles.
+ * @beta
+ */
+export class SolarShadowSettings implements SolarShadowProps {
+  private static readonly _defaultBias = .001;
+  /** Shadow color */
+  public color: ColorDef;
+  /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects. */
+  public bias: number;
+
+  public constructor(props?: SolarShadowProps) {
+    this.bias = props ? JsonUtils.asDouble(props.bias, SolarShadowSettings._defaultBias) : SolarShadowSettings._defaultBias;
+    this.color = (props !== undefined && props.color !== undefined) ? ColorDef.fromJSON(props.color) : new ColorDef(ColorByName.grey);
+  }
+  public clone() { return new SolarShadowSettings(this); }
 }

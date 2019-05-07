@@ -6,7 +6,7 @@
 
 import { ClipUtilities, ClipVector, Transform, Vector3d, Point3d, Matrix4d, Point2d, Range3d, XAndY } from "@bentley/geometry-core";
 import { assert, BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates, PlanarClassifierMap } from "../System";
+import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates, PlanarClassifierMap, RenderSolarShadowMap } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -31,6 +31,7 @@ import { ShaderLights } from "./Lighting";
 import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
 import { FloatRgba } from "./FloatRGBA";
+import { SolarShadowMap } from "./SolarShadowMap";
 
 // tslint:disable:no-const-enum
 
@@ -266,6 +267,7 @@ export abstract class Target extends RenderTarget {
   private _drawNonLocatable = true;
   public isFadeOutActive = false;
   public primitiveVisibility: PrimitiveVisibility = PrimitiveVisibility.All;
+  private _solarShadowMap?: SolarShadowMap;
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -310,6 +312,7 @@ export abstract class Target extends RenderTarget {
   public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
   public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
   public get branchStack(): BranchStack { return this._stack; }
+  public get solarShadowMap(): SolarShadowMap | undefined { return this._solarShadowMap; }
 
   public getWorldDecorations(decs: GraphicList): Branch {
     if (undefined === this._worldDecorations) {
@@ -490,6 +493,9 @@ export abstract class Target extends RenderTarget {
         planarClassifier[1].dispose();
 
     this._planarClassifiers = planarClassifiers;
+  }
+  public changeSolarShadowMap(solarShadowMap?: RenderSolarShadowMap): void {
+    this._solarShadowMap = solarShadowMap as SolarShadowMap;
   }
 
   public changeDynamics(dynamics?: GraphicList) {
@@ -832,6 +838,8 @@ export abstract class Target extends RenderTarget {
     } else {
       this.recordPerformanceMetric("Begin Draw Planar Classifiers");
       this.drawPlanarClassifiers();
+      this.recordPerformanceMetric("Begin Draw Shadow Maps");
+      this.drawSolarShadowMap();
       this.recordPerformanceMetric("Begin Paint");
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
 
@@ -1141,6 +1149,10 @@ export abstract class Target extends RenderTarget {
   public drawPlanarClassifiers() {
     if (this._planarClassifiers)
       this._planarClassifiers.forEach((classifier) => (classifier as PlanarClassifier).draw(this));
+  }
+  public drawSolarShadowMap() {
+    if (this._solarShadowMap)
+      (this._solarShadowMap as SolarShadowMap).draw(this);
   }
 
   // ---- Methods expected to be overridden by subclasses ---- //

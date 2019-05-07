@@ -130,7 +130,7 @@ export namespace MockRender {
 
     public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String) { return new Builder(this, placement, type, viewport, pickableId); }
     public createGraphicList(primitives: RenderGraphic[]) { return new List(primitives); }
-    public createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume) { return new Branch(branch, transform, clips); }
+    public createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume) { return new Branch(branch, transform, clips); }
     public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) { return new Batch(graphic, features, range); }
 
     public createMesh(_params: MeshParams) { return new Graphic(); }

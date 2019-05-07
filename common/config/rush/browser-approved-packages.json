@@ -463,6 +463,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "moment",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "multiparty",
       "allowedCategories": [ "backend" ]
     },
@@ -681,6 +685,10 @@
     {
       "name": "style-loader",
       "allowedCategories": [ "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "sun-position_grena3",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "superagent",

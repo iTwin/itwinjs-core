@@ -40,6 +40,9 @@ export const enum IsAnimated { No, Yes }
 /** @internal */
 export const enum IsClassified { No, Yes }
 
+/** @internal */
+export const enum IsShadowable { No, Yes }
+
 /** Flags used to control which shader program is used by a rendering Technique.
  * @internal
  */
@@ -50,6 +53,7 @@ export class TechniqueFlags {
   public isAnimated: IsAnimated = IsAnimated.No;
   public isInstanced: IsInstanced = IsInstanced.No;
   public isClassified: IsClassified = IsClassified.No;
+  public isShadowable: IsShadowable = IsShadowable.No;
   private _isHilite = false;
 
   public constructor(translucent: boolean = false) {
@@ -58,16 +62,17 @@ export class TechniqueFlags {
 
   public get hasClip(): boolean { return this.clip.type !== ClippingType.None; }
 
-  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No): void {
+  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No): void {
     if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass || RenderPass.HilitePlanarClassification === pass) {
       this.initForHilite(target.clipDef, instanced, (classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass) ? IsClassified.Yes : IsClassified.No);
     } else {
       this._isHilite = false;
       this.isTranslucent = RenderPass.Translucent === pass;
       this.clip = target.clipDef;
-      this.isAnimated = animated;
+      this.isAnimated = shadowable ? IsAnimated.No : animated;    // no animation with shadows (they share texture unit).
       this.isInstanced = instanced;
       this.isClassified = classified;
+      this.isShadowable = shadowable;
 
       if (undefined !== target.currentOverrides)
         this.featureMode = FeatureMode.Overrides;
@@ -78,13 +83,14 @@ export class TechniqueFlags {
     }
   }
 
-  public reset(mode: FeatureMode, instanced: IsInstanced = IsInstanced.No, isTranslucent: boolean = false) {
+  public reset(mode: FeatureMode, instanced: IsInstanced = IsInstanced.No, shadowable: IsShadowable) {
     this._isHilite = false;
     this.featureMode = mode;
-    this.isTranslucent = isTranslucent;
+    this.isTranslucent = false;
     this.isAnimated = IsAnimated.No;
     this.isClassified = IsClassified.No;
     this.isInstanced = instanced;
+    this.isShadowable = shadowable;
     this.clip.type = ClippingType.None;
     this.clip.numberOfPlanes = 0;
   }
@@ -115,6 +121,7 @@ export class TechniqueFlags {
     if (this.isHilite) parts.push("hilite");
     if (this.isClassified) parts.push("classified");
     if (this.hasClip) parts.push("clip");
+    if (this.isShadowable) parts.push("shadowable");
     if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "pick" : "overrides");
     return parts.join("; ");
   }

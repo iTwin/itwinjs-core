@@ -16,7 +16,7 @@ import { TileTreeModelState } from "../../ModelState";
 import { TileTree, Tile } from "../../tile/TileTree";
 import { Frustum, Npc, FrustumPlanes, RenderTexture, RenderMode, ColorDef, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry } from "./CachedGeometry";
-import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d, Point4d } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { TechniqueId } from "./TechniqueId";
 import { getDrawParams } from "./SceneCompositor";
@@ -64,7 +64,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _postProjectionMatrix = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, -1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
   private _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
   private static _scratchFrustum = new Frustum();
-  private static _scratchPoint4d = Point4d.createZero();
 
   private constructor(private _classifierProperties: SpatialClassificationProps.Properties) { super(); }
   public get colorTexture(): Texture | undefined { return this._colorTexture; }
@@ -80,7 +79,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
   public static create(properties: SpatialClassificationProps.Properties, tileTree: TileTree, classifiedModel: TileTreeModelState, sceneContext: SceneContext): PlanarClassifier {
     const classifier = new PlanarClassifier(properties);
-    classifier.drawScene(sceneContext, classifiedModel, tileTree);
+    classifier.collectGraphics(sceneContext, classifiedModel, tileTree);
     return classifier;
   }
 
@@ -126,24 +125,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this.pushBatches(batchState, this._graphics);
   }
 
-  private getTileRange(range: Range3d, frustumPlanes: FrustumPlanes, toNpc: Matrix4d, tile: Tile, treeTransform: Transform) {
-    const box = Frustum.fromRange(tile.range, PlanarClassifier._scratchFrustum);
-    box.transformBy(treeTransform, box);
-    if (FrustumPlanes.Containment.Outside === frustumPlanes.computeFrustumContainment(box))
-      return;
-    if (tile.children === undefined) {
-      for (const boxPoint of box.points) {
-        toNpc.multiplyPoint3d(boxPoint, 1, PlanarClassifier._scratchPoint4d);
-        if (PlanarClassifier._scratchPoint4d.w > .0001)
-          range.extendXYZW(PlanarClassifier._scratchPoint4d.x, PlanarClassifier._scratchPoint4d.y, PlanarClassifier._scratchPoint4d.z, PlanarClassifier._scratchPoint4d.w);
-      }
-    } else {
-      for (const child of tile.children)
-        this.getTileRange(range, frustumPlanes, toNpc, child, treeTransform);
-    }
-  }
-
-  public drawScene(context: SceneContext, classifiedModel: TileTreeModelState, tileTree: TileTree) {
+  public collectGraphics(context: SceneContext, classifiedModel: TileTreeModelState, tileTree: TileTree) {
     const classifierZ = this._plane.getNormalRef();
     if (undefined === context.viewFrustum)
       return;
@@ -178,7 +160,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const viewPlanes = new FrustumPlanes(viewFrustum);
     if (classifiedModel && classifiedModel.tileTree) {
       const tileRange = Range3d.createNull();
-      this.getTileRange(tileRange, viewPlanes, viewMap.transform0, classifiedModel.tileTree.rootTile, classifiedModel.tileTree.location);
+      classifiedModel.tileTree.accumlateTransformedRange(tileRange, viewMap.transform0, viewPlanes);
       if (undefined === tileRange)
         return;
       npcRange = npcRange.intersect(tileRange);
@@ -266,8 +248,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     viewFlags.solarLight = false;
     viewFlags.shadows = false;
     viewFlags.noGeometryMap = true;
-    viewFlags.acsTriad = false;
-    viewFlags.grid = false;
     viewFlags.monochrome = false;
     viewFlags.materials = false;
     viewFlags.ambientOcclusion = false;

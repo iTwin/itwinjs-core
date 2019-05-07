@@ -19,6 +19,7 @@ export interface SVTConfiguration {
   disableActiveVolumeCulling?: boolean;
   preserveShaderSourceCode?: boolean;
   omitEdges?: boolean;
+  displaySolarShadows?: boolean;
 }
 
 export interface ConnectProjectConfiguration {

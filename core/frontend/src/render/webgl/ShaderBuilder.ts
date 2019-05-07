@@ -640,6 +640,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Apply planar classifier.
   // vec4 applyPlanarClassification(vec4)
   ApplyPlanarClassifier,
+  // (Optional) Apply solar shadow map.
+  // vec4 applySolarShadowMap(vec4)
+  ApplySolarShadowMap,
   // (Optional) Apply a debug color
   // vec4 applyDebugColor(vec4 baseColor)
   ApplyDebugColor,
@@ -707,6 +710,11 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (undefined !== applyPlanarClassifier) {
       prelude.addFunction("vec4 applyPlanarClassifications(vec4 baseColor)", applyPlanarClassifier);
       main.addline("  baseColor = applyPlanarClassifications(baseColor);");
+    }
+    const applySolarShadowMap = this.get(FragmentShaderComponent.ApplySolarShadowMap);
+    if (undefined !== applySolarShadowMap) {
+      prelude.addFunction("vec4 applySolarShadowMap(vec4 baseColor)", applySolarShadowMap);
+      main.addline("  baseColor = applySolarShadowMap(baseColor);");
     }
     const applyFeatureColor = this.get(FragmentShaderComponent.ApplyFeatureColor);
     if (undefined !== applyFeatureColor) {
