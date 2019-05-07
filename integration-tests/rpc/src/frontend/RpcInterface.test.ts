@@ -508,7 +508,7 @@ describe("RpcInterface", () => {
   });
 
   it("should successfully call WipRpcInterface.placeholder", async () => {
-    const s: string = await WipRpcInterface.getClient().placeholder(new IModelToken());
+    const s: string = await WipRpcInterface.getClient().placeholder(new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
     assert.equal(s, "placeholder");
   });
 

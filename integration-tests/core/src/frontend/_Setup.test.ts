@@ -7,9 +7,11 @@ import * as frontend from "@bentley/imodeljs-frontend";
 frontend;
 
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, IModelToken, RpcOperation } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, IModelToken, RpcOperation, RpcConfiguration } from "@bentley/imodeljs-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { assert } from "chai";
+
+RpcConfiguration.developmentMode = true;
 
 if (ElectronRpcConfiguration.isElectron) {
   ElectronRpcManager.initializeClient({}, rpcInterfaces);
@@ -18,7 +20,7 @@ if (ElectronRpcConfiguration.isElectron) {
   config.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;
 
   for (const definition of rpcInterfaces) {
-    RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
+    RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findParameterOfType(IModelToken) || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
   }
 
   // This is a web-only test

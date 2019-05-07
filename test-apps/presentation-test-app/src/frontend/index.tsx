@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Config } from "@bentley/imodeljs-clients";
 import {
@@ -37,7 +37,7 @@ Logger.setLevelDefault(LogLevel.Warning);
     const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
     // __PUBLISH_EXTRACT_END__
     for (const def of rpcConfiguration.interfaces())
-      RpcOperation.forEach(def, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
+      RpcOperation.forEach(def, (operation) => operation.policy.token = (request) => (request.findParameterOfType(IModelToken) || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
   }
 })();
 

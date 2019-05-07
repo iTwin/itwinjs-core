@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow snapshot imodeltokens through bentleycloudrpcprotocol in development mode only.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}

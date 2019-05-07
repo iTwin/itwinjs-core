@@ -22,6 +22,7 @@ export type RpcConfigurationSupplier = () => { new(): RpcConfiguration };
 export abstract class RpcConfiguration {
   /** Whether development mode is enabled.
    * @note This parameter determines whether developer convenience features like backend stack traces are available.
+   * @note This parameter facilitates development-only scenarios like using snapshot iModels in a web application.
    */
   public static developmentMode: boolean = false;
 
