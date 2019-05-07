@@ -1178,6 +1178,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     // @internal (undocumented)
     environment: EnvironmentProps;
     hiddenLineSettings: HiddenLine.Settings;
+    solarShadowsSettings: SolarShadows.Settings;
     // (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
 }
@@ -1187,6 +1188,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     ao?: AmbientOcclusion.Props;
     environment?: EnvironmentProps;
     hline?: HiddenLine.SettingsProps;
+    solarShadows?: SolarShadows.Props;
 }
 
 // @beta
@@ -4520,13 +4522,23 @@ export interface SolarShadowProps {
 }
 
 // @beta
-export class SolarShadowSettings implements SolarShadowProps {
-    constructor(props?: SolarShadowProps);
-    bias: number;
-    // (undocumented)
-    clone(): SolarShadowSettings;
-    color: ColorDef;
+export namespace SolarShadows {
+    export interface Props {
+        bias?: number;
+        color?: ColorDefProps;
     }
+    export class Settings implements Props {
+        constructor(props?: SolarShadowProps);
+        bias: number;
+        // (undocumented)
+        clone(): Settings;
+        color: ColorDef;
+        // (undocumented)
+        static fromJSON(props?: Props): Settings;
+        // (undocumented)
+        toJSON(): Props;
+    }
+}
 
 // @beta
 export namespace SpatialClassificationProps {

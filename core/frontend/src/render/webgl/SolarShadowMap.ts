@@ -16,7 +16,7 @@ import { FrameBuffer } from "./FrameBuffer";
 import { SceneContext } from "../../ViewContext";
 import { TileTree, Tile } from "../../tile/TileTree";
 import { IModelConnection } from "../../IModelConnection";
-import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SolarShadowSettings } from "@bentley/imodeljs-common";
+import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SolarShadows } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { RenderState } from "./RenderState";
 import { BatchState, BranchStack } from "./BranchState";
@@ -55,11 +55,11 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
   private _shadowFrustum = new Frustum();
   private _viewFrustum = new Frustum();
   private _status = Status.OutOfSynch;
-  private _settings = new SolarShadowSettings();
+  private _settings = new SolarShadows.Settings();
   public get isReady() { return this._status === Status.TextureReady; }
   public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
   public get depthTexture(): Texture | undefined { return this._depthTexture; }
-  public get settings(): SolarShadowSettings { return this._settings; }
+  public get settings(): SolarShadows.Settings { return this._settings; }
   public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
   private static _scratchRange = Range3d.createNull();
   private static _scratchTransform = Transform.createIdentity();
@@ -78,7 +78,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     this._fbo = dispose(this._fbo);
     this.clearGraphics();
   }
-  public set(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadowSettings, models: ModelSelectorState, categories: CategorySelectorState) {
+  public set(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, models: ModelSelectorState, categories: CategorySelectorState) {
     const minimumHorizonDirection = -.1;
     this._settings = settings.clone();
     if (direction.z > minimumHorizonDirection) {

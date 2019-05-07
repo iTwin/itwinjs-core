@@ -1548,12 +1548,13 @@ export class SpatialViewState extends ViewState3d {
 
   public createSolarShadowMap(context: SceneContext): void {
     context.solarShadowMap = undefined;
-    if (IModelApp.renderSystem.options.displaySolarShadows && this.viewFlags.shadows) {
+    const displayStyle =  this.getDisplayStyle3d();
+    if (IModelApp.renderSystem.options.displaySolarShadows && this.viewFlags.shadows && displayStyle !== undefined) {
       const backgroundMapPlane = this.displayStyle.backgroundMapPlane;
       const viewFrustum = (undefined === backgroundMapPlane) ? context.viewFrustum : ViewFrustum.createFromViewportAndPlane(context.viewport, backgroundMapPlane);
-      const solarDirection = this.displayStyle.sunDirection ? this.displayStyle.sunDirection : Vector3d.create(-1, -1, -1).normalize();
+      const solarDirection = displayStyle.sunDirection ? displayStyle.sunDirection : Vector3d.create(-1, -1, -1).normalize();
       if (undefined !== viewFrustum) {
-        context.solarShadowMap = IModelApp.renderSystem.getSolarShadowMap(viewFrustum.getFrustum(), solarDirection!, this.displayStyle.solarShadowSettings, this.modelSelector, this.categorySelector, this.iModel);
+        context.solarShadowMap = IModelApp.renderSystem.getSolarShadowMap(viewFrustum.getFrustum(), solarDirection!, displayStyle.settings.solarShadowsSettings, this.modelSelector, this.categorySelector, this.iModel);
         context.solarShadowMap!.collectGraphics(context);
       }
     }

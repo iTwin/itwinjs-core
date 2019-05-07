@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d, SpatialClassificationProps, Frustum, SolarShadowSettings } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d, SpatialClassificationProps, Frustum, SolarShadows } from "@bentley/imodeljs-common";
 import {
   ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
   IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d,
@@ -430,7 +430,7 @@ export class IdMap implements IDisposable {
 
   /** @internal */
   /** Get solar shadow map */
-  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadowSettings, models: ModelSelectorState, categories: CategorySelectorState) {
+  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, models: ModelSelectorState, categories: CategorySelectorState) {
     if (undefined === this._solarShadowMap)
       this._solarShadowMap = new SolarShadowMap();
 
@@ -672,7 +672,7 @@ export class System extends RenderSystem {
   public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel, iModel: IModelConnection) { this.getIdMap(iModel).classifiers.set(modelId, classifier); }
   public createPlanarClassifier(properties: SpatialClassificationProps.Properties, tileTree: TileTree, classifiedModel: TileTreeModelState, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedModel, sceneContext); }
   /** Solar Shadow Map */
-  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadowSettings, models: ModelSelectorState, categories: CategorySelectorState, iModel: IModelConnection): RenderSolarShadowMap | undefined { return this.getIdMap(iModel).getSolarShadowMap(frustum, direction, settings, models, categories); }
+  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, models: ModelSelectorState, categories: CategorySelectorState, iModel: IModelConnection): RenderSolarShadowMap | undefined { return this.getIdMap(iModel).getSolarShadowMap(frustum, direction, settings, models, categories); }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);

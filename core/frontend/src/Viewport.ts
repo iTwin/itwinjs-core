@@ -1289,16 +1289,6 @@ export abstract class Viewport implements IDisposable {
   public get animationFraction(): number { return this._animationFraction; }
   /** @internal */
   public set animationFraction(fraction: number) {
-    // Temporary -- solar shadow testing.  Remove when solar UI is available.
-    const dateNow = new Date(Date.now());
-    dateNow.setHours(0);
-    dateNow.setMinutes(0);
-    dateNow.setSeconds(0);
-    const millis = dateNow.getTime() + fraction * 24 * 60 * 60 * 1000;
-    this.view.displayStyle.setSunTime(millis);
-    this.sync.invalidateScene();
-    //   End - Solar testing.
-
     this._animationFraction = fraction; this.sync.invalidateAnimationFraction();
   }
 

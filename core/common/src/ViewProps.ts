@@ -9,7 +9,7 @@ import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { ViewFlags, AnalysisStyleProps, HiddenLine, AmbientOcclusion } from "./Render";
+import { ViewFlags, AnalysisStyleProps, HiddenLine, AmbientOcclusion, SolarShadows } from "./Render";
 import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
 import { RenderSchedule } from "./RenderSchedule";
 import { SpatialClassificationProps } from "./SpatialClassificationProps";
@@ -302,6 +302,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   hline?: HiddenLine.SettingsProps;
   /** Settings controlling display of ambient occlusion, stored in Props. */
   ao?: AmbientOcclusion.Props;
+  /** Settings controlling display of solar shadoss, stored in Props. */
+  solarShadows?: SolarShadows.Props;
 }
 
 /** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]].
@@ -604,12 +606,14 @@ export class DisplayStyleSettings {
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _hline: HiddenLine.Settings;
   private _ao: AmbientOcclusion.Settings;
+  private _solarShadows: SolarShadows.Settings;
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
 
   public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }) {
     super(jsonProperties);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
+    this._solarShadows = SolarShadows.Settings.fromJSON(this._json3d.solarShadows);
   }
 
   public toJSON(): DisplayStyle3dSettingsProps { return this._json3d; }
@@ -632,6 +636,14 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._json3d.ao = ao.toJSON();
   }
 
+  /** The settings that control how solar shadows are displayed.
+   * @note Do not modify the settings in place. Clone them and pass the clone to the setter.
+   */
+  public get solarShadowsSettings(): SolarShadows.Settings { return this._solarShadows; }
+  public set solarShadowsSettings(solarShadows: SolarShadows.Settings) {
+    this._solarShadows = solarShadows;
+    this._json3d.solarShadows = solarShadows.toJSON();
+  }
   /** @internal */
   public get environment(): EnvironmentProps {
     const env = this._json3d.environment;

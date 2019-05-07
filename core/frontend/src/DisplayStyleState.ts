@@ -19,7 +19,6 @@ import {
     BackgroundMapProps,
     AnalysisStyle,
     ContextRealityModelProps,
-    SolarShadowSettings,
     Cartographic,
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
@@ -46,8 +45,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     private _contextRealityModels: ContextRealityModelState[];
     private _analysisStyle?: AnalysisStyle;
     private _scheduleScript?: RenderScheduleState.Script;
-    private _sunDirection?: Vector3d;
-    private _solarShadowSettings: SolarShadowSettings;
 
     /** The container for this display style's settings. */
     public abstract get settings(): DisplayStyleSettings;
@@ -63,7 +60,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
         const mapProps = undefined !== backgroundMap ? backgroundMap : {};
         this._backgroundMap = new BackgroundMapState(mapProps, iModel);
         this._contextRealityModels = [];
-        this._solarShadowSettings = new SolarShadowSettings(styles ? styles.solarShadowSettings : undefined);
 
         if (styles) {
             if (styles.contextRealityModels)
@@ -74,8 +70,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
                 this._analysisStyle = AnalysisStyle.fromJSON(styles.analysisStyle);
             if (styles.scheduleScript)
                 this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, this.iModel, styles.scheduleScript);
-            if (styles.sceneLights && styles.sceneLights.sunDir)
-                this._sunDirection = Vector3d.fromJSON(styles.sceneLights.sunDir);
         }
     }
 
@@ -122,27 +116,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     /** The name of this DisplayStyle */
     public get name(): string { return this.code.getValue(); }
 
-    /** @beta */
-    public get sunDirection() { return this._sunDirection; }
-
-    /** set the solar direction based on time value
-     * @param time The time in unix time milliseconds.
-     * @beta
-     */
-    public setSunTime(time: number) {
-        let cartoCenter;
-        if (this.iModel.isGeoLocated) {
-            const projectExtents = this.iModel.projectExtents;
-            const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
-            cartoCenter = this.iModel.spatialToCartographicFromEcef(projectCenter);
-        } else {
-            cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
-        }
-
-        this._sunDirection = calculateSolarDirection(new Date(time), cartoCenter);
-
-    }
-
     /** Settings controlling display of analytical models.
      * @note Do not modify the style in place. Clone it and pass the clone to the setter.
      */
@@ -162,9 +135,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     /** @internal */
     public get scheduleScript(): RenderScheduleState.Script | undefined { return this._scheduleScript; }
-
-    /** @beta */
-    public get solarShadowSettings(): SolarShadowSettings { return this._solarShadowSettings; }
 
     /** @internal */
     public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined { return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime); }
@@ -326,33 +296,33 @@ export abstract class SkyBox implements SkyBoxProps {
  * @public
  */
 export namespace SkyBox {
-  /** Parameters defining a spherical [[SkyBox]].
-   * @internal
-   */
-  export class SphereParams {
-    public constructor(public readonly texture: RenderTexture, public readonly rotation: number) { }
-  }
-
-  /** Parameters used by the [[RenderSystem]] to instantiate a [[SkyBox]].
-   * @public
-   */
-  export class CreateParams {
-    public readonly gradient?: SkyGradient;
-    public readonly sphere?: SphereParams;
-    public readonly cube?: RenderTexture;
-    public readonly zOffset: number;
-
-    private constructor(zOffset: number, gradient?: SkyGradient, sphere?: SphereParams, cube?: RenderTexture) {
-      this.gradient = gradient;
-      this.sphere = sphere;
-      this.cube = cube;
-      this.zOffset = zOffset;
+    /** Parameters defining a spherical [[SkyBox]].
+     * @internal
+     */
+    export class SphereParams {
+        public constructor(public readonly texture: RenderTexture, public readonly rotation: number) { }
     }
 
-    public static createForGradient(gradient: SkyGradient, zOffset: number) { return new CreateParams(zOffset, gradient); }
-    public static createForSphere(sphere: SphereParams, zOffset: number) { return new CreateParams(zOffset, undefined, sphere); }
-    public static createForCube(cube: RenderTexture) { return new CreateParams(0.0, undefined, undefined, cube); }
-  }
+    /** Parameters used by the [[RenderSystem]] to instantiate a [[SkyBox]].
+     * @public
+     */
+    export class CreateParams {
+        public readonly gradient?: SkyGradient;
+        public readonly sphere?: SphereParams;
+        public readonly cube?: RenderTexture;
+        public readonly zOffset: number;
+
+        private constructor(zOffset: number, gradient?: SkyGradient, sphere?: SphereParams, cube?: RenderTexture) {
+            this.gradient = gradient;
+            this.sphere = sphere;
+            this.cube = cube;
+            this.zOffset = zOffset;
+        }
+
+        public static createForGradient(gradient: SkyGradient, zOffset: number) { return new CreateParams(zOffset, gradient); }
+        public static createForSphere(sphere: SphereParams, zOffset: number) { return new CreateParams(zOffset, undefined, sphere); }
+        public static createForCube(cube: RenderTexture) { return new CreateParams(0.0, undefined, undefined, cube); }
+    }
 }
 
 /** A [[SkyBox]] drawn as a sphere with a gradient mapped to its interior surface.
@@ -600,6 +570,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     private _skyBoxParamsLoaded?: boolean;
     private _environment?: Environment;
     private _settings: DisplayStyle3dSettings;
+    private _sunDirection?: Vector3d;
 
     /** @internal */
     public clone(iModel: IModelConnection): this {
@@ -617,6 +588,9 @@ export class DisplayStyle3dState extends DisplayStyleState {
     public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
         super(props, iModel);
         this._settings = new DisplayStyle3dSettings(this.jsonProperties);
+        const styles = this.jsonProperties.styles;
+        if (styles.sceneLights && styles.sceneLights.sunDir)
+            this._sunDirection = Vector3d.fromJSON(styles.sceneLights.sunDir);
     }
 
     /** The [[SkyBox]] and [[GroundPlane]] settings for this style. */
@@ -660,5 +634,25 @@ export class DisplayStyle3dState extends DisplayStyleState {
         }
 
         return this._skyBoxParams;
+    }
+    /** @beta */
+    public get sunDirection() { return this._sunDirection; }
+
+    /** set the solar direction based on time value
+     * @param time The time in unix time milliseconds.
+     * @beta
+     */
+    public setSunTime(time: number) {
+        let cartoCenter;
+        if (this.iModel.isGeoLocated) {
+            const projectExtents = this.iModel.projectExtents;
+            const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
+            cartoCenter = this.iModel.spatialToCartographicFromEcef(projectCenter);
+        } else {
+            cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+        }
+
+        this._sunDirection = calculateSolarDirection(new Date(time), cartoCenter);
+
     }
 }

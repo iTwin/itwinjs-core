@@ -150,7 +150,7 @@ import { SkyBoxProps } from '@bentley/imodeljs-common';
 import { SkyCubeProps } from '@bentley/imodeljs-common';
 import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
-import { SolarShadowSettings } from '@bentley/imodeljs-common';
+import { SolarShadows } from '@bentley/imodeljs-common';
 import { SortedArray } from '@bentley/bentleyjs-core';
 import { SpatialClassificationProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
@@ -1759,8 +1759,12 @@ export class DisplayStyle3dState extends DisplayStyleState {
     environment: Environment;
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
+    // @beta
+    setSunTime(time: number): void;
     // (undocumented)
     readonly settings: DisplayStyle3dSettings;
+    // @beta (undocumented)
+    readonly sunDirection: Vector3d | undefined;
     }
 
 // @public
@@ -1801,13 +1805,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     readonly scheduleScript: RenderScheduleState.Script | undefined;
     setBackgroundMap(mapProps: BackgroundMapProps): void;
-    // @beta
-    setSunTime(time: number): void;
     abstract readonly settings: DisplayStyleSettings;
-    // @beta (undocumented)
-    readonly solarShadowSettings: SolarShadowSettings;
-    // @beta (undocumented)
-    readonly sunDirection: Vector3d | undefined;
     viewFlags: ViewFlags;
 }
 
@@ -4741,7 +4739,7 @@ export abstract class RenderSystem implements IDisposable {
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
     // @internal (undocumented)
-    getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadowSettings, _models: ModelSelectorState, _categories: CategorySelectorState, _imodel: IModelConnection): RenderSolarShadowMap | undefined;
+    getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _models: ModelSelectorState, _categories: CategorySelectorState, _imodel: IModelConnection): RenderSolarShadowMap | undefined;
     // @internal (undocumented)
     getSpatialClassificationModel(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined;
     // @internal (undocumented)
