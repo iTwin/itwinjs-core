@@ -1267,6 +1267,18 @@ export interface CachedIModelCoordinatesResponseProps {
     result: Array<PointWithStatus | undefined>;
 }
 
+// @beta
+export function calculateSolarAngles(date: Date, location: Cartographic): {
+    azimuth: number;
+    elevation: number;
+};
+
+// @beta
+export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d;
+
+// @beta
+export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date;
+
 // @public
 export interface CanvasDecoration {
     decorationCursor?: string;

@@ -3,11 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-    Viewport, DisplayStyle3dState,
-} from "@bentley/imodeljs-frontend";
+import { Viewport, DisplayStyle3dState, calculateSunriseOrSunset } from "@bentley/imodeljs-frontend";
+import { Cartographic } from "@bentley/imodeljs-common";
 import { ToolBarDropDown, createToolButton } from "./ToolBar";
 import { createCheckBox } from "./CheckBox";
+import { Point3d } from "@bentley/geometry-core";
 
 export class AnimationPanel extends ToolBarDropDown {
     private readonly _vp: Viewport;
@@ -129,14 +129,19 @@ export class AnimationPanel extends ToolBarDropDown {
         // If solar shadow testing.  Remove when solar UI is available.
         const displayStyle = this._vp.view.displayStyle as DisplayStyle3dState;
         if (displayStyle && displayStyle.viewFlags.shadows) {
-            const dateNow = new Date(Date.now());
-            dateNow.setHours(0);
-            dateNow.setMinutes(0);
-            dateNow.setSeconds(0);
-            const millis = dateNow.getTime() + fraction * 24 * 60 * 60 * 1000;
-            displayStyle.setSunTime(millis);
+            let cartoCenter;
+            if (this._vp.iModel.isGeoLocated) {
+                const projectExtents = this._vp.iModel.projectExtents;
+                const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
+                cartoCenter = this._vp.iModel.spatialToCartographicFromEcef(projectCenter);
+            } else {
+                cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+            }
+            const today = new Date(Date.now());
+            const sunrise = calculateSunriseOrSunset(today, cartoCenter, true);
+            const sunset = calculateSunriseOrSunset(today, cartoCenter, false);
+            displayStyle.setSunTime(sunrise.getTime() + fraction * (sunset.getTime() - sunrise.getTime()));
             this._vp.sync.invalidateScene();
-            //   End - Solar testing.
         }
     }
 

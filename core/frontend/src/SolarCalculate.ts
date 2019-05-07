@@ -157,7 +157,9 @@ function calcAzEl(T: number, localTime: number, latitude: number, longitude: num
 function calculateJulianDay(date: Date) {
     return Math.floor(date.getTime() / 86400000) + 2440587.5;    // https://stackoverflow.com/questions/11759992/calculating-jdayjulian-day-in-javascript
 }
-
+/** @beta
+ * calculate solar angles (in radians) based at a given date/time and location.
+ */
 export function calculateSolarAngles(date: Date, location: Cartographic): { azimuth: number, elevation: number } {
     const jDay = calculateJulianDay(date);
     const latitude = Angle.radiansToDegrees(location.latitude);
@@ -170,6 +172,9 @@ export function calculateSolarAngles(date: Date, location: Cartographic): { azim
     return calcAzEl(T, localMinutes, latitude, longitude, zone);
 }
 
+/** @beta
+ * calculate solar direction based at a given date/time and location.
+ */
 export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d {
     const azimuthElevation = calculateSolarAngles(date, location);
     const azimuth = Angle.degreesToRadians(azimuthElevation.azimuth);
@@ -199,6 +204,9 @@ function calcSunriseUtcMinutes(rise: boolean, lat: number, longitude: number, jD
     const delta = longitude + radToDeg(rise ? hourAngle : - hourAngle);
     return 720 - (4.0 * delta) - eqTime;	// in UTC minutes
 }
+/** @beta
+ * calculate solar sunrise or sunset for a given day and location.
+ */
 export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date {
     const jDay = calculateJulianDay(date);
     const longitude = Angle.radiansToDegrees(location.longitude);
