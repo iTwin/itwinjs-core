@@ -66,7 +66,7 @@
               "Subject"
             ]
           },
-          "instanceFilter": "NOT (json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR json_extract(this.JsonProperties, \"$.Subject.Model.Type\") = \"Hierarchy\")",
+          "instanceFilter": "NOT (json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR json_extract(this.JsonProperties, \"$.Subject.Model.Type\") = \"Hierarchy\") AND NOT (json_extract(this.JsonProperties, \"$.Subject.Model.Type\") = \"References\" AND NOT this.HasRelatedInstance(\"BisCore:SubjectOwnsPartitionElements\", \"Forward\", \"BisCore:InformationPartitionElement\"))",
           "hideNodesInHierarchy": false,
           "groupByClass": false,
           "groupByLabel": false

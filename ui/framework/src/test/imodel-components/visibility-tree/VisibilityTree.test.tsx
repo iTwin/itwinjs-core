@@ -1153,7 +1153,7 @@ describe("VisibilityTree", () => {
   describe("#integration", () => {
 
     let imodel: IModelConnection;
-    const testIModelPath = "src/test/test-data/Properties_60InstancesWithUrl2.ibim";
+    const testIModelPath = "src/test/test-data/JoesHouse.bim";
 
     before(() => {
       initializePresentationTesting();
@@ -1179,7 +1179,7 @@ describe("VisibilityTree", () => {
 
     it("renders component with real data and no active viewport", async () => {
       const result = render(<VisibilityTree imodel={imodel} />);
-      await waitForElement(() => result.getByText("DgnV8Bridge"), { timeout: 60 * 1000 });
+      await waitForElement(() => result.getByText("Joe's house.bim"), { timeout: 60 * 1000 });
       expect(result.container).to.matchSnapshot();
     });
 

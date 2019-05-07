@@ -56,7 +56,7 @@ exports[`VisibilityTree #integration renders component with real data and no act
                     class="components-tree-node-content"
                   >
                     <span>
-                      DgnV8Bridge
+                      Joe's house.bim
                     </span>
                   </div>
                 </div>
@@ -93,267 +93,350 @@ Array [
           Object {
             "children": Array [
               Object {
-                "icon": "icon-item",
-                "label": "Physical Object-0-38",
+                "children": Array [
+                  Object {
+                    "children": Array [
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2A",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "icon": "icon-layers",
+                    "label": "Floor",
+                  },
+                ],
+                "hasChildren": true,
+                "icon": "icon-table-of-contents",
+                "label": "Arch 1.dgn",
               },
               Object {
-                "icon": "icon-item",
-                "label": "Physical Object-0-39",
+                "children": Array [
+                  Object {
+                    "children": Array [
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3I",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3J",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3K",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3L",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "icon": "icon-layers",
+                    "label": "Walls",
+                  },
+                ],
+                "hasChildren": true,
+                "icon": "icon-table-of-contents",
+                "label": "Arch 2.dgn",
               },
               Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
-              },
-              Object {
-                "icon": "icon-item",
-                "label": "TestClass",
+                "children": Array [
+                  Object {
+                    "children": Array [
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3O",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "icon": "icon-layers",
+                    "label": "Roof",
+                  },
+                  Object {
+                    "children": Array [
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3M",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3N",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "icon": "icon-layers",
+                    "label": "Walls",
+                  },
+                ],
+                "hasChildren": true,
+                "icon": "icon-table-of-contents",
+                "label": "Arch 3.dgn",
               },
             ],
             "hasChildren": true,
-            "icon": "icon-layers",
-            "label": "Uncategorized",
+            "icon": "icon-table-of-contents",
+            "label": "Arch master.dgn",
+          },
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [
+                  Object {
+                    "children": Array [
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3Q",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "icon": "icon-layers",
+                    "label": "sewer",
+                  },
+                  Object {
+                    "children": Array [
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3P",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "icon": "icon-layers",
+                    "label": "supply",
+                  },
+                ],
+                "hasChildren": true,
+                "icon": "icon-table-of-contents",
+                "label": "MEP 1.dgn",
+              },
+            ],
+            "hasChildren": true,
+            "icon": "icon-table-of-contents",
+            "label": "MEP master.dgn",
+          },
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [
+                  Object {
+                    "children": Array [
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2B",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "icon": "icon-layers",
+                    "label": "Floor",
+                  },
+                ],
+                "hasChildren": true,
+                "icon": "icon-table-of-contents",
+                "label": "Struct 1.dgn",
+              },
+              Object {
+                "children": Array [
+                  Object {
+                    "children": Array [
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3C",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3D",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3E",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3F",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3G",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3H",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "icon": "icon-layers",
+                    "label": "Beams",
+                  },
+                  Object {
+                    "children": Array [
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2C",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2D",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2E",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2F",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2G",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2H",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2I",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2J",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2K",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2L",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2M",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2N",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2O",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2P",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2Q",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2R",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2S",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2T",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2U",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2V",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2W",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2X",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2Y",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-2Z",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3A",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-3B",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-30",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-31",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-32",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-33",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-34",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-35",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-36",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-37",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-38",
+                      },
+                      Object {
+                        "icon": "icon-item",
+                        "label": "Physical Object-0-39",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "icon": "icon-layers",
+                    "label": "Columns",
+                  },
+                ],
+                "hasChildren": true,
+                "icon": "icon-table-of-contents",
+                "label": "Struct 2.dgn",
+              },
+            ],
+            "hasChildren": true,
+            "icon": "icon-table-of-contents",
+            "label": "Struct master.dgn",
           },
         ],
         "hasChildren": true,
-        "icon": "icon-model",
-        "label": "Properties_60InstancesWithUrl2",
+        "icon": "icon-table-of-contents",
+        "label": "Joe's house",
       },
     ],
     "hasChildren": true,
     "icon": "icon-table-of-contents",
-    "label": "DgnV8Bridge",
+    "label": "Joe's house.bim",
   },
 ]
 `;
