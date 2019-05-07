@@ -27,7 +27,8 @@
   "iModelJs": {
     "buildModule": {
       "type": "application",
-      "sourceResources": [{
+      "sourceResources": [
+        {
           "source": "./src/**/*.css",
           "dest": "./lib"
         },
@@ -50,33 +51,33 @@
     }
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.191.0-dev.68",
-    "@bentley/geometry-core": "0.191.0-dev.68",
-    "@bentley/electron-manager": "0.191.0-dev.68",
-    "@bentley/express-server": "0.191.0-dev.68",
+    "@bentley/bentleyjs-core": "0.191.0-dev.69",
+    "@bentley/geometry-core": "0.191.0-dev.69",
+    "@bentley/electron-manager": "0.191.0-dev.69",
+    "@bentley/express-server": "0.191.0-dev.69",
     "@bentley/icons-generic-webfont": "^0.0.22",
-    "@bentley/imodeljs-clients": "0.191.0-dev.68",
-    "@bentley/imodeljs-common": "0.191.0-dev.68",
-    "@bentley/imodeljs-backend": "0.191.0-dev.68",
-    "@bentley/imodeljs-frontend": "0.191.0-dev.68",
-    "@bentley/imodeljs-i18n": "0.191.0-dev.68",
-    "@bentley/imodeljs-quantity": "0.191.0-dev.68",
-    "@bentley/presentation-common": "0.191.0-dev.68",
-    "@bentley/presentation-backend": "0.191.0-dev.68",
-    "@bentley/presentation-frontend": "0.191.0-dev.68",
-    "@bentley/presentation-components": "0.191.0-dev.68",
-    "@bentley/ui-core": "0.191.0-dev.68",
-    "@bentley/ui-components": "0.191.0-dev.68",
+    "@bentley/imodeljs-clients": "0.191.0-dev.69",
+    "@bentley/imodeljs-common": "0.191.0-dev.69",
+    "@bentley/imodeljs-backend": "0.191.0-dev.69",
+    "@bentley/imodeljs-frontend": "0.191.0-dev.69",
+    "@bentley/imodeljs-i18n": "0.191.0-dev.69",
+    "@bentley/imodeljs-quantity": "0.191.0-dev.69",
+    "@bentley/presentation-common": "0.191.0-dev.69",
+    "@bentley/presentation-backend": "0.191.0-dev.69",
+    "@bentley/presentation-frontend": "0.191.0-dev.69",
+    "@bentley/presentation-components": "0.191.0-dev.69",
+    "@bentley/ui-core": "0.191.0-dev.69",
+    "@bentley/ui-components": "0.191.0-dev.69",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "semver": "^5.5.0",
     "immutable": "^3.8.2"
   },
   "devDependencies": {
-    "@bentley/config-loader": "0.191.0-dev.68",
-    "@bentley/build-tools": "0.191.0-dev.68",
-    "@bentley/imodeljs-webserver": "0.191.0-dev.68",
-    "@bentley/webpack-tools": "0.191.0-dev.68",
+    "@bentley/config-loader": "0.191.0-dev.69",
+    "@bentley/build-tools": "0.191.0-dev.69",
+    "@bentley/imodeljs-webserver": "0.191.0-dev.69",
+    "@bentley/webpack-tools": "0.191.0-dev.69",
     "@types/bunyan": "^1.8.4",
     "@types/react": "^16.8.0",
     "@types/react-dom": "^16.8.0",
