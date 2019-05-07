@@ -10,7 +10,7 @@ import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
   ElectronRpcConfiguration, BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, SnapMode, AccuSnap, OidcClientWrapper } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SnapMode, AccuSnap, OidcClientWrapper, ViewClipByPlaneTool } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -21,7 +21,7 @@ import {
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
   ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher,
 } from "@bentley/ui-framework";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
 import { AppBackstage } from "./appui/AppBackstage";
@@ -47,7 +47,7 @@ else
 
 // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request
 for (const definition of rpcConfiguration.interfaces())
-  RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
+  RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findParameterOfType(IModelToken) || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
 
 // cSpell:ignore SETIMODELCONNECTION setTestProperty sampleapp setaccesstoken uitestapp
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
@@ -149,6 +149,8 @@ export class SampleAppIModelApp extends IModelApp {
       (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
     // register local commands.
+    // register core commands not automatically registered
+    ViewClipByPlaneTool.register();
 
     // Configure a CORS proxy in development mode.
     if (process.env.NODE_ENV === "development")

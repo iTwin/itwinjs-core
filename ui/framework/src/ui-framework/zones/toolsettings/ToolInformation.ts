@@ -21,22 +21,22 @@ export class ToolInformation {
   /** Get the ToolUiProvider registered for this tool */
   public get toolUiProvider(): ToolUiProvider | undefined {
     if (!this._toolUiProvider) {
-      let toolUiProvider: ToolUiProvider | undefined;
+      let provider: ToolUiProvider | undefined;
 
       if (ConfigurableUiManager.isControlRegistered(this.toolId)) {
-        toolUiProvider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
+        provider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
       } else {
-        if (ToolUiManager.useDefaultToolSettingsProvider)
-          toolUiProvider = ConfigurableUiManager.createControl("DefaultToolSettings", this.toolId) as ToolUiProvider;
+        if (ToolUiManager.useDefaultToolSettingsProvider && this.toolId === ToolUiManager.toolIdForCachedProperties)
+          provider = ConfigurableUiManager.createControl("DefaultToolSettings", this.toolId) as ToolUiProvider;
       }
       // istanbul ignore else
-      if (toolUiProvider) {
-        if (toolUiProvider.getType() !== ConfigurableUiControlType.ToolUiProvider) {
+      if (provider) {
+        if (provider.getType() !== ConfigurableUiControlType.ToolUiProvider) {
           throw Error("ToolInformation.toolUiProvider error: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
         }
 
-        toolUiProvider.initialize();
-        this._toolUiProvider = toolUiProvider;
+        provider.initialize();
+        this._toolUiProvider = provider;
       }
     } else {
       // if the tool settings are coming from tool, reinitialize provider so latest properties published from tool are displayed in UI

@@ -111,17 +111,30 @@ export class FrontstageManager {
 
   private static _nestedFrontstages: FrontstageDef[] = new Array<FrontstageDef>();
   private static _activePrimaryFrontstageDef: FrontstageDef | undefined;
-
   private static _toolInformationMap: Map<string, ToolInformation> = new Map<string, ToolInformation>();
+
+  /** This should only be caused within FrontstageManager and its tests.
+   *  @internal
+   */
+  public static ensureToolInformationIsSet(toolId: string): void {
+    // istanbul ignore else
+    if (!FrontstageManager._toolInformationMap.get(toolId))
+      FrontstageManager._toolInformationMap.set(toolId, new ToolInformation(toolId));
+  }
 
   /** Initializes the FrontstageManager */
   public static initialize() {
+    // istanbul ignore else
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.activeToolChanged.addListener((tool: Tool, _start: StartOrResume) => {
-        ToolUiManager.useDefaultToolSettingsProvider = false;
+        // make sure toolsettings properties are cached before creating ToolInformation
         ToolUiManager.clearCachedProperties();
+        // istanbul ignore else
         if (tool instanceof InteractiveTool)
           ToolUiManager.cachePropertiesForTool(tool);
+
+        // if the tool data is not already cached then see if there is data to cache
+        FrontstageManager.ensureToolInformationIsSet(tool.toolId);
         FrontstageManager.setActiveToolId(tool.toolId);
       });
     }
@@ -271,11 +284,6 @@ export class FrontstageManager {
     // istanbul ignore else
     if (FrontstageManager.activeToolId !== toolId) {
       FrontstageManager._activeToolId = toolId;
-
-      // istanbul ignore else
-      if (!FrontstageManager._toolInformationMap.get(toolId))
-        FrontstageManager._toolInformationMap.set(toolId, new ToolInformation(toolId));
-
       FrontstageManager.onToolActivatedEvent.emit({ toolId });
     }
   }

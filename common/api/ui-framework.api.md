@@ -777,6 +777,8 @@ export class CoreTools {
     // (undocumented)
     static readonly rotateViewCommand: ToolItemDef;
     // (undocumented)
+    static readonly sectionByPlaneCommand: ToolItemDef;
+    // (undocumented)
     static readonly selectElementCommand: ToolItemDef;
     // (undocumented)
     static readonly toggleCameraViewCommand: ToolItemDef;
@@ -1471,6 +1473,8 @@ export class FrontstageManager {
     static clearFrontstageDefs(): void;
     static closeModalFrontstage(): void;
     static closeNestedFrontstage(): Promise<void>;
+    // @internal
+    static ensureToolInformationIsSet(toolId: string): void;
     static findFrontstageDef(id?: string): FrontstageDef | undefined;
     static findWidget(widgetId: string): WidgetDef | undefined;
     static initialize(): void;

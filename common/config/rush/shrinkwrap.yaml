@@ -1,6 +1,6 @@
 dependencies:
   '@bentley/dev-cors-proxy-server': npm.bentley.com/@bentley/dev-cors-proxy-server/0.0.9
-  '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
+  '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.22
   '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.123.0
   '@microsoft/api-extractor': 7.1.4
   '@openid/appauth': 1.2.3
@@ -14795,7 +14795,7 @@ packages:
     version: 0.0.0
   'file:projects/presentation-test-app.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.22
       '@types/bunyan': 1.8.6
       '@types/react': 16.8.16
       '@types/react-dom': 16.8.4
@@ -14816,7 +14816,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-test-app'
     resolution:
-      integrity: sha512-yHG5WSbQua+UnfDuILASoSby9K49l9eIDiHAcYjqYOujFBHmVfjpnspRdbRV7AHhC6TNL5AfCq6pmwWt5mZDkA==
+      integrity: sha512-iApJRbgtyO23ly/Re6P6POVoY36hTMyqDvNyMA7aZl5GCx+jE4qa9d+6/BLQ8yQGYTBMz22/3t3ak0hfOZ5OYw==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
   'file:projects/presentation-testing.tgz':
@@ -14919,7 +14919,7 @@ packages:
     version: 0.0.0
   'file:projects/ui-components.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.22
       '@types/chai': 4.1.7
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.4
@@ -14985,12 +14985,12 @@ packages:
     dev: false
     name: '@rush-temp/ui-components'
     resolution:
-      integrity: sha512-CKVvez2LJLW9fJisXnlHnhvwzikQrNxkhVpf+PPzPvD+maHWjTN+y+n3KoCMs1nyG7dA7t8/GaVDKzAmrVceLg==
+      integrity: sha512-dW/DlVw+UgJoTc92l6gCFFWfJVASbY2jhwdR2qeHfnA0nEAXPN/uz4G58aEq8pfb724+VZa3g/UqhcdrYOk7ig==
       tarball: 'file:projects/ui-components.tgz'
     version: 0.0.0
   'file:projects/ui-core.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.22
       '@types/chai': 4.1.7
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.4
@@ -15035,12 +15035,12 @@ packages:
     dev: false
     name: '@rush-temp/ui-core'
     resolution:
-      integrity: sha512-ra7D+Y7HQNC6qpUbphdxsKJN4+b/0Uu8pBw9ACyCPPqHS3ketRR2EkUC8D8mf/jjkeMECfwYXZPB32fGVI47+Q==
+      integrity: sha512-SkUU71DaeUTtG0ctttdS4RM+zjWlvrGxMLtz2Cpczor6z5GVYA/OhlN+ioI6uGhUSA0MGfPxAVZOEPTUUcDkgQ==
       tarball: 'file:projects/ui-core.tgz'
     version: 0.0.0
   'file:projects/ui-framework.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.22
       '@types/chai': 4.1.7
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.4
@@ -15097,12 +15097,12 @@ packages:
     dev: false
     name: '@rush-temp/ui-framework'
     resolution:
-      integrity: sha512-vVu1l30ST9CPk9LP0ZgqPIHwBdAu8826KkHLxsZk3EpKkYQmAhjegAspKrRU45rTRz9YUrP887hE0/ciWaewQQ==
+      integrity: sha512-A5VgZ4Dqu15P7ZnQf5TrQoNjYwGX0VUjEf1qc2CiHfRylN/v70XcAme8uHSB30GY7S9HK3pYFWtCAEULFwmb6w==
       tarball: 'file:projects/ui-framework.tgz'
     version: 0.0.0
   'file:projects/ui-ninezone.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.22
       '@types/chai': 4.1.7
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.4
@@ -15164,12 +15164,12 @@ packages:
     dev: false
     name: '@rush-temp/ui-ninezone'
     resolution:
-      integrity: sha512-G7mSpM68bS4xrqnbP5e9o6G+FwQEAkZDyn8wgsy3FkF0Mvvb5oSM8yekJ/Nin4FwRbHaf9H5ZZGPhzTsHnHhqA==
+      integrity: sha512-37Rs4/f/qRd5wjv4kahFi6dya8tsCLg1CljERus3hMlKYa+89TgovuwiE0Lpp97YN+OWERvN0t3ZL6YSA7Sxsg==
       tarball: 'file:projects/ui-ninezone.tgz'
     version: 0.0.0
   'file:projects/ui-test-app.tgz':
     dependencies:
-      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.21
+      '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.22
       '@types/classnames': 2.2.7
       '@types/node': 10.14.1
       '@types/react': 16.8.16
@@ -15208,7 +15208,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-test-app'
     resolution:
-      integrity: sha512-L22tJUHzfc3XSsWRZdpGEWVMsPUHqI/yRf33WtuRMx6bBaHrCGSdN7san4+/V7Gwv9kr6aaRgheTKleQPUtbXA==
+      integrity: sha512-cS9zlFv5SOr4XIc+kdB680hHQh72CZ0mL3dOfVpBcwqh0XuYEJRs47+B5ekte1G6cOBO+WCHGJ6DVORR8bO1XQ==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/webpack-tools.tgz':
@@ -15331,14 +15331,14 @@ packages:
       registry: 'https://npm.bentley.com/npm/npm/'
       tarball: 'https://npm.bentley.com/npm/npm/@bentley/dev-cors-proxy-server/-/dev-cors-proxy-server-0.0.9.tgz'
     version: 0.0.9
-  npm.bentley.com/@bentley/icons-generic-webfont/0.0.21:
+  npm.bentley.com/@bentley/icons-generic-webfont/0.0.22:
     dev: false
     name: '@bentley/icons-generic-webfont'
     resolution:
-      integrity: sha1-yZjJY7tOd3Jn62V+EpdIDNhxXq8=
+      integrity: sha1-h3fZspHtUOmbIC4iLe8xdCHwG9c=
       registry: 'https://npm.bentley.com/npm/npm/'
-      tarball: 'https://npm.bentley.com/npm/npm/@bentley/icons-generic-webfont/-/icons-generic-webfont-0.0.21.tgz'
-    version: 0.0.21
+      tarball: 'https://npm.bentley.com/npm/npm/@bentley/icons-generic-webfont/-/icons-generic-webfont-0.0.22.tgz'
+    version: 0.0.22
   npm.bentley.com/@bentley/imodeljs-native/0.123.0:
     dev: false
     name: '@bentley/imodeljs-native'
@@ -15353,7 +15353,7 @@ shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   '@bentley/dev-cors-proxy-server': 0.0.9
-  '@bentley/icons-generic-webfont': ^0.0.21
+  '@bentley/icons-generic-webfont': ^0.0.22
   '@bentley/imodeljs-native': ~0.123.0
   '@microsoft/api-extractor': ^7.1.0
   '@openid/appauth': ^1.1.1

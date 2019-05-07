@@ -27,8 +27,7 @@
   "iModelJs": {
     "buildModule": {
       "type": "system",
-      "sourceResources": [
-        {
+      "sourceResources": [{
           "source": "./src/**/*.*css",
           "dest": "./lib"
         },
@@ -63,7 +62,7 @@
   ],
   "devDependencies": {
     "@bentley/build-tools": "0.191.0-dev.68",
-    "@bentley/icons-generic-webfont": "^0.0.21",
+    "@bentley/icons-generic-webfont": "^0.0.22",
     "@bentley/ui-core": "0.191.0-dev.68",
     "@bentley/webpack-tools": "0.191.0-dev.68",
     "@types/chai": "^4.1.4",

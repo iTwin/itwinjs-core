@@ -12,5 +12,4 @@ export class AppSelectTool extends SelectionTool {
   public static get flyover(): string { return IModelApp.i18n.translate("SampleApp:tools.AppSelect.flyover"); }
   public static get description(): string { return IModelApp.i18n.translate("SampleApp:tools.AppSelect.description"); }
   protected wantToolSettings(): boolean { return true; }
-  protected wantSelectionScopeInToolSettings(): boolean { return true; }
 }

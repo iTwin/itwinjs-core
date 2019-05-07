@@ -196,6 +196,27 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
               }
             }
           />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "execute": [Function],
+                "iconSpec": "icon-plane",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "ViewClip.ByPlane",
+              }
+            }
+          />
         </UNDEFINED>
       }
       panelAlignment={0}

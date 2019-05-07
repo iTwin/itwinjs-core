@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update to latest version of icon library.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "bill.steinbock@bentley.com"
+}

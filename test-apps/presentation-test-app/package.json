@@ -27,8 +27,7 @@
   "iModelJs": {
     "buildModule": {
       "type": "application",
-      "sourceResources": [
-        {
+      "sourceResources": [{
           "source": "./src/**/*.css",
           "dest": "./lib"
         },
@@ -55,7 +54,7 @@
     "@bentley/geometry-core": "0.191.0-dev.68",
     "@bentley/electron-manager": "0.191.0-dev.68",
     "@bentley/express-server": "0.191.0-dev.68",
-    "@bentley/icons-generic-webfont": "^0.0.21",
+    "@bentley/icons-generic-webfont": "^0.0.22",
     "@bentley/imodeljs-clients": "0.191.0-dev.68",
     "@bentley/imodeljs-common": "0.191.0-dev.68",
     "@bentley/imodeljs-backend": "0.191.0-dev.68",

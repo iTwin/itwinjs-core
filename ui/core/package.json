@@ -23,8 +23,7 @@
   "iModelJs": {
     "buildModule": {
       "type": "system",
-      "sourceResources": [
-        {
+      "sourceResources": [{
           "source": "./src/**/*.*css",
           "dest": "./lib"
         },
@@ -113,7 +112,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/icons-generic-webfont": "^0.0.21",
+    "@bentley/icons-generic-webfont": "^0.0.22",
     "classnames": "^2.2.5",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"

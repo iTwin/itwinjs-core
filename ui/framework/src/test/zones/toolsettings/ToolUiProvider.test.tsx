@@ -96,6 +96,7 @@ describe("ToolUiProvider", () => {
     if (frontstageDef) {
       FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
 
+      FrontstageManager.ensureToolInformationIsSet(testToolId);
       FrontstageManager.setActiveToolId(testToolId);
       expect(FrontstageManager.activeToolId).to.eq(testToolId);
 

@@ -62,22 +62,25 @@ export class ToolUiManager {
     ToolUiManager.useDefaultToolSettingsProvider = false;
     ToolUiManager._activeToolLabel = "";
     ToolUiManager._activeToolDescription = "";
+    ToolUiManager._toolIdForCachedProperties = "";
   }
 
   /** Cache Tool Settings properties */
   public static cacheToolSettingsProperties(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean {
     ToolUiManager.clearCachedProperties();
     // istanbul ignore else
-    if (toolId)
-      ToolUiManager._toolIdForCachedProperties = toolId;
-    // istanbul ignore else
     if (toolLabel)
       ToolUiManager._activeToolLabel = toolLabel;
+
     // istanbul ignore else
     if (toolDescription)
       ToolUiManager._activeToolDescription = toolDescription;
 
     if (toolSettingsProperties && toolSettingsProperties.length > 0) {
+      // istanbul ignore else
+      if (toolId)
+        ToolUiManager._toolIdForCachedProperties = toolId;
+
       ToolUiManager._useDefaultToolSettingsProvider = true;
       ToolUiManager._toolSettings = toolSettingsProperties;
       return true;

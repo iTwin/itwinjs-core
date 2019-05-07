@@ -518,7 +518,7 @@ class FrontstageNavigationWidget extends React.Component {
           <ActionItemButton actionItem={CoreTools.windowAreaCommand} />
           <ActionItemButton actionItem={CoreTools.zoomViewCommand} />
           <ActionItemButton actionItem={CoreTools.panViewCommand} />
-
+          <ActionItemButton actionItem={CoreTools.sectionByPlaneCommand} />
           {/* Use an SVG icon  */}
           <ActionItemButton actionItem={this._rotateViewCommand} />
         </>

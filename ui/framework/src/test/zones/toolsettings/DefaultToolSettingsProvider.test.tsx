@@ -80,8 +80,10 @@ describe("DefaultToolUiSettingsProvider", () => {
     if (frontstageDef) {
       await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
 
+      FrontstageManager.ensureToolInformationIsSet(firstToolId);
+
       // If a tool does not define toolSettingsProperties then useDefaultToolSettingsProvider should be false, but make sure we can gracefully handle
-      // case where useDefaultToolSettingsProvider is true but toolSettingsProperties is not defined.
+      // case where useDefaultToolSettingsProvider is true but toolSettingsProperties are not defined.
       ToolUiManager.useDefaultToolSettingsProvider = true;
 
       FrontstageManager.setActiveToolId(firstToolId);
@@ -92,11 +94,7 @@ describe("DefaultToolUiSettingsProvider", () => {
 
       if (toolInformation) {
         const toolUiProvider = toolInformation.toolUiProvider;
-        expect(toolUiProvider).to.not.be.undefined;
-
-        if (toolUiProvider) {
-          expect(toolUiProvider.toolSettingsNode).to.be.null;
-        }
+        expect(toolUiProvider).to.be.undefined;
       }
     }
   });
@@ -116,8 +114,11 @@ describe("DefaultToolUiSettingsProvider", () => {
       toolSettingsProperties.push(new ToolSettingsPropertyRecord(useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnIndex: 1 }));
       toolSettingsProperties.push(new ToolSettingsPropertyRecord(lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnIndex: 3 }));
       toolSettingsProperties.push(new ToolSettingsPropertyRecord(enumValue.clone() as PrimitiveValue, enumDescription, { rowPriority: 1, columnIndex: 3 }));
-      ToolUiManager.useDefaultToolSettingsProvider = true;
+      ToolUiManager.cacheToolSettingsProperties(toolSettingsProperties, testToolId, "testToolLabel", "testToolDescription");
 
+      expect(ToolUiManager.useDefaultToolSettingsProvider).to.be.true;
+      expect(ToolUiManager.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
+      FrontstageManager.ensureToolInformationIsSet(testToolId);
       FrontstageManager.setActiveToolId(testToolId);
       expect(FrontstageManager.activeToolId).to.eq(testToolId);
 
