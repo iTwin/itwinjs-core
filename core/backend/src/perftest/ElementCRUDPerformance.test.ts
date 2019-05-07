@@ -13,10 +13,11 @@ import { Point3d, Arc3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { IModelJsFs } from "../IModelJsFs";
-import * as fs from "fs";
 import { BackendRequestContext } from "../BackendRequestContext";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
 describe("PerformanceElementsTests", () => {
+  const reporter = new Reporter();
   let seedIModel: IModelDb;
   const opSizes: any[] = [1000, 2000, 3000];
   const dbSizes: any[] = [10000, 100000, 1000000];
@@ -28,7 +29,6 @@ describe("PerformanceElementsTests", () => {
     baseLong: "0x989680", sub1Long: "0x1312d00", sub2Long: "0x1c9c380", sub3Long: "0x2625a00",
     baseDouble: -3.1416, sub1Double: 2.71828, sub2Double: 1.414121, sub3Double: 1.61803398874,
   };
-  const csvPath = path.join(KnownTestLocations.outputDir, "PerformanceResults.csv");
 
   function createElemProps(className: string, iModelName: IModelDb, modId: Id64String, catId: Id64String): GeometricElementProps {
     // add Geometry
@@ -141,10 +141,11 @@ describe("PerformanceElementsTests", () => {
         }
       }
     }
-    if (!IModelJsFs.existsSync(csvPath))
-      fs.appendFileSync(csvPath, "DateTime,TestCaseName,TestName,ExecutionTime(s),opCount,TestDescription,OpType,InitialCount\n");
   });
-
+  after(() => {
+    const csvPath = path.join(KnownTestLocations.outputDir, "PerformanceResults.csv");
+    reporter.exportCSV(csvPath);
+  });
   it("ElementsInsert", () => {
     for (const className of classNames) {
       for (const dbSize of dbSizes) {
@@ -169,9 +170,7 @@ describe("PerformanceElementsTests", () => {
             const elapsedTime = (endTime - startTime) / 1000.0;
             totalTime = totalTime + elapsedTime;
           }
-          const recordTime = new Date().toISOString();
-          fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsInsert," + totalTime + "," + opCount +
-            ",\"Element API Insert   \'" + className + "\' [Initial count: " + dbSize + "]\",Insert," + dbSize + "\n");
+          reporter.addEntry("PerformanceElementsTests", "ElementsInsert", "Execution time(s)", totalTime, { ElementClassName: className, InitialCount: dbSize, opCount });
           perfimodel.withPreparedStatement("SELECT count(*) AS [count] FROM PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
             assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
             const row = stmt.getRow();
@@ -204,9 +203,7 @@ describe("PerformanceElementsTests", () => {
           }
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
-          const recordTime = new Date().toISOString();
-          fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsDelete," + elapsedTime + "," + opCount +
-            ",\"Element API Delete   \'" + className + "\' [Initial count: " + dbSize + "]\",Delete," + dbSize + "\n");
+          reporter.addEntry("PerformanceElementsTests", "ElementsDelete", "Execution time(s)", elapsedTime, { ElementClassName: className, InitialCount: dbSize, opCount });
           perfimodel.withPreparedStatement("SELECT count(*) AS [count] FROM PerfTestDomain:" + className, (stmt: ECSqlStatement) => {
             assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
             const row = stmt.getRow();
@@ -236,9 +233,7 @@ describe("PerformanceElementsTests", () => {
           }
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
-          const recordTime = new Date().toISOString();
-          fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsRead," + elapsedTime + "," + opCount +
-            ",\"Element API Read   \'" + className + "\' [Initial count: " + dbSize + "]\",Read," + dbSize + "\n");
+          reporter.addEntry("PerformanceElementsTests", "ElementsRead", "Execution time(s)", elapsedTime, { ElementClassName: className, InitialCount: dbSize, opCount });
           perfimodel.closeStandalone();
         }
       }
@@ -289,10 +284,7 @@ describe("PerformanceElementsTests", () => {
             assert.equal(elemFound.baseStr, "PerfElement - UpdatedValue");
           }
           const elapsedTime = (endTime - startTime) / 1000.0;
-          const recordTime = new Date().toISOString();
-          fs.appendFileSync(csvPath, recordTime + ",PerformanceElementsTests,ElementsUpdate," + elapsedTime + "," + opCount +
-            ",\"Element API Update   \'" + className + "\' [Initial count: " + dbSize + "]\",Update," + dbSize + "\n");
-
+          reporter.addEntry("PerformanceElementsTests", "ElementsUpdate", "Execution time(s)", elapsedTime, { ElementClassName: className, InitialCount: dbSize, opCount });
           perfimodel.closeStandalone();
         }
       }

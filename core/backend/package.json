@@ -57,6 +57,7 @@
     "@bentley/imodeljs-clients": "0.191.0-dev.69",
     "@bentley/imodeljs-clients-backend": "0.191.0-dev.69",
     "@bentley/imodeljs-common": "0.191.0-dev.69",
+    "@bentley/perf-tools": "0.191.0-dev.69",
     "@types/chai": "^4.1.4",
     "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",

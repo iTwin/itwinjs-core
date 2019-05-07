@@ -9,6 +9,7 @@ interface Entry {
   testName: string;
   valueDescription: string;
   value: number;
+  date: string;
   info?: any;
 }
 
@@ -24,7 +25,8 @@ export class Reporter {
    * @param info A JSON object for additional details
    */
   public addEntry(testSuite: string, testName: string, valueDescription: string, value: number, info?: any) {
-    const entry: Entry = { testSuite, testName, valueDescription, value, info };
+    const date = new Date().toISOString();
+    const entry: Entry = { testSuite, testName, valueDescription, value, date, info };
     this._entries.push(entry);
   }
 
@@ -38,10 +40,13 @@ export class Reporter {
       fileName = fileName + ".csv";
     }
     if (!fs.existsSync(fileName)) {
-      finalReport += "TestSuite,TestName,ValueDescription,Value,Info\n";
+      finalReport += "TestSuite,TestName,ValueDescription,Value,Date,Info\n";
     }
     for (const entry of this._entries) {
-      finalReport += `${entry.testSuite},${entry.testName},${entry.valueDescription},${entry.value},${JSON.stringify(entry.info)}\n`;
+      let info = JSON.stringify(entry.info);
+      info = info.replace(/\"/g, '""');
+      info = `"${info}"`;
+      finalReport += `${entry.testSuite},${entry.testName},${entry.valueDescription},${entry.value},${entry.date},${info}\n`;
     }
     fs.appendFileSync(fileName, finalReport);
   }
