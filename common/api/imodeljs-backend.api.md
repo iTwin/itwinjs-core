@@ -1468,7 +1468,7 @@ export class IModelDb extends IModel implements PageableECSql {
     // @internal (undocumented)
     readonly briefcase: BriefcaseEntry;
     cancelSnap(sessionId: string): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "classMetaDataRegistry" is marked as @public, but its signature references "MetaDataRegistry" which is marked as @internal
+    // @internal
     readonly classMetaDataRegistry: MetaDataRegistry;
     clearSqliteStatementCache(): void;
     clearStatementCache(): void;
@@ -1539,8 +1539,11 @@ export class IModelDb extends IModel implements PageableECSql {
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
+    // @beta
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "pushChanges" is marked as @public, but its signature references "ChangeSetDescriber" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "pushChanges" is marked as @beta, but its signature references "ChangeSetDescriber" which is marked as @internal
+    // 
+    // @beta
     pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void>;
     query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
@@ -1551,10 +1554,12 @@ export class IModelDb extends IModel implements PageableECSql {
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // (undocumented)
     readFontJson(): string;
+    // @beta
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     readonly relationships: Relationships;
     // (undocumented)
     requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
+    // @beta
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
@@ -1562,7 +1567,7 @@ export class IModelDb extends IModel implements PageableECSql {
     setGuid(guid: GuidString): DbResult;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
-    // (undocumented)
+    // @beta (undocumented)
     readonly txns: TxnManager;
     updateEcefLocation(ecef: EcefLocation): void;
     updateIModelProps(): void;
@@ -1676,7 +1681,7 @@ export class IModelHostConfiguration {
     static defaultTileRequestTimeout: number;
     imodelClient?: IModelClient;
     nativePlatform?: any;
-    // Warning: (ae-incompatible-release-tags) The symbol "tileCacheCredentials" is marked as @public, but its signature references "CloudStorageServiceCredentials" which is marked as @beta
+    // @beta
     tileCacheCredentials?: CloudStorageServiceCredentials;
     tileContentRequestTimeout: number;
     tileTreeRequestTimeout: number;
@@ -2811,14 +2816,14 @@ export class PlanCallout extends Callout {
 
 // @public
 export class Platform {
+    // @beta
     static readonly electron: any;
+    // @beta
     static readonly imodeljsMobile: any;
     static readonly isDesktop: boolean;
     static readonly isMobile: boolean;
     static readonly isNodeJs: boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "load" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     static load(dir?: string): typeof IModelJsNative;
     static readonly platformName: string;
 }
@@ -3283,20 +3288,20 @@ export enum TxnAction {
     Reverse = 3
 }
 
-// @public
+// @beta
 export class TxnManager {
     constructor(_iModel: IModelDb);
     beginMultiTxnOperation(): DbResult;
-    // Warning: (ae-incompatible-release-tags) The symbol "cancelTo" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "cancelTo" is marked as @beta, but its signature references "IModelJsNative" which is marked as @internal
     cancelTo(txnId: IModelJsNative.TxnIdString): IModelStatus_2;
-    // Warning: (ae-incompatible-release-tags) The symbol "describeChangeSet" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "describeChangeSet" is marked as @beta, but its signature references "IModelJsNative" which is marked as @internal
     describeChangeSet(endTxnId?: IModelJsNative.TxnIdString): string;
     endMultiTxnOperation(): DbResult;
-    // Warning: (ae-incompatible-release-tags) The symbol "getCurrentTxnId" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "getCurrentTxnId" is marked as @beta, but its signature references "IModelJsNative" which is marked as @internal
     getCurrentTxnId(): IModelJsNative.TxnIdString;
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
-    // Warning: (ae-incompatible-release-tags) The symbol "getTxnDescription" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "getTxnDescription" is marked as @beta, but its signature references "IModelJsNative" which is marked as @internal
     getTxnDescription(txnId: IModelJsNative.TxnIdString): string;
     getUndoString(): string;
     readonly hasFatalError: boolean;
@@ -3304,7 +3309,7 @@ export class TxnManager {
     readonly hasPendingTxns: boolean;
     readonly hasUnsavedChanges: boolean;
     readonly isRedoPossible: boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "isTxnIdValid" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "isTxnIdValid" is marked as @beta, but its signature references "IModelJsNative" which is marked as @internal
     isTxnIdValid(txnId: IModelJsNative.TxnIdString): boolean;
     readonly isUndoPossible: boolean;
     readonly onAfterUndoRedo: BeEvent<(_action: TxnAction) => void>;
@@ -3326,21 +3331,21 @@ export class TxnManager {
     protected _onRootChanged(props: RelationshipProps): void;
     // @internal (undocumented)
     protected _onValidateOutput(props: RelationshipProps): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "queryFirstTxnId" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "queryFirstTxnId" is marked as @beta, but its signature references "IModelJsNative" which is marked as @internal
     queryFirstTxnId(): IModelJsNative.TxnIdString;
-    // Warning: (ae-incompatible-release-tags) The symbol "queryNextTxnId" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "queryNextTxnId" is marked as @beta, but its signature references "IModelJsNative" which is marked as @internal
     queryNextTxnId(txnId: IModelJsNative.TxnIdString): IModelJsNative.TxnIdString;
-    // Warning: (ae-incompatible-release-tags) The symbol "queryPreviousTxnId" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "queryPreviousTxnId" is marked as @beta, but its signature references "IModelJsNative" which is marked as @internal
     queryPreviousTxnId(txnId: IModelJsNative.TxnIdString): IModelJsNative.TxnIdString;
     reinstateTxn(): IModelStatus_2;
-    // Warning: (ae-incompatible-release-tags) The symbol "reportError" is marked as @public, but its signature references "ValidationError" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "reportError" is marked as @beta, but its signature references "ValidationError" which is marked as @internal
     reportError(error: ValidationError): void;
     reverseAll(): IModelStatus_2;
     reverseSingleTxn(): IModelStatus_2;
-    // Warning: (ae-incompatible-release-tags) The symbol "reverseTo" is marked as @public, but its signature references "IModelJsNative" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "reverseTo" is marked as @beta, but its signature references "IModelJsNative" which is marked as @internal
     reverseTo(txnId: IModelJsNative.TxnIdString): IModelStatus_2;
     reverseTxns(numOperations: number): IModelStatus_2;
-    // Warning: (ae-incompatible-release-tags) The symbol "validationErrors" is marked as @public, but its signature references "ValidationError" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "validationErrors" is marked as @beta, but its signature references "ValidationError" which is marked as @internal
     readonly validationErrors: ValidationError[];
 }
 

@@ -137,6 +137,7 @@ export class IModelDb extends IModel implements PageableECSql {
   public readonly elements = new IModelDb.Elements(this);
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
+  /** @beta */
   public readonly txns = new TxnManager(this);
   private _relationships?: Relationships;
   private readonly _statementCache = new ECSqlStatementCache();
@@ -794,11 +795,11 @@ export class IModelDb extends IModel implements PageableECSql {
     this.nativeDb.abandonChanges();
   }
 
-  /**
-   * Pull and Merge changes from iModelHub
+  /** Pull and Merge changes from iModelHub
    * @param requestContext The client request context.
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
+   * @beta Need to consider the impact of *channels*
    */
   public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
@@ -810,11 +811,11 @@ export class IModelDb extends IModel implements PageableECSql {
     this.initializeIModelDb();
   }
 
-  /**
-   * Push changes to iModelHub
+  /** Push changes to iModelHub
    * @param requestContext The client request context.
    * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
    * @throws [[IModelError]] If the pull and merge fails.
+   * @beta Need to consider the impact of *channels*
    */
   public async pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void> {
     requestContext.enter();
@@ -825,11 +826,11 @@ export class IModelDb extends IModel implements PageableECSql {
     this.initializeIModelDb();
   }
 
-  /**
-   * Reverse a previously merged set of changes
+  /** Reverse a previously merged set of changes
    * @param requestContext The client request context.
    * @param version Version to reverse changes to.
    * @throws [[IModelError]] If the reversal fails.
+   * @beta Need to consider the impact of *channels*
    */
   public async reverseChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
@@ -838,11 +839,11 @@ export class IModelDb extends IModel implements PageableECSql {
     this.initializeIModelDb();
   }
 
-  /**
-   * Reinstate a previously reversed set of changes
+  /** Reinstate a previously reversed set of changes
    * @param requestContext The client request context.
    * @param version Version to reinstate changes to.
    * @throws [[IModelError]] If the reinstate fails.
+   * @beta Need to consider the impact of *channels*
    */
   public async reinstateChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
@@ -922,7 +923,9 @@ export class IModelDb extends IModel implements PageableECSql {
     return briefcaseEntry.iModelDb;
   }
 
-  /** Get the ClassMetaDataRegistry for this iModel. */
+  /** Get the ClassMetaDataRegistry for this iModel.
+   * @internal
+   */
   public get classMetaDataRegistry(): MetaDataRegistry {
     if (this._classMetaDataRegistry === undefined) this._classMetaDataRegistry = new MetaDataRegistry();
     return this._classMetaDataRegistry;
@@ -1716,7 +1719,7 @@ export interface ValidationError {
 }
 
 /** Local Txns in an IModelDb. Local Txns persist only until [[IModelDb.pushChanges]] is called.
- * @public
+ * @beta
  */
 export class TxnManager {
   constructor(private _iModel: IModelDb) { }

@@ -70,7 +70,9 @@ export class IModelHostConfiguration {
   /** The kind of iModel server to use. Defaults to iModelHubClient */
   public imodelClient?: IModelClient;
 
-  /** The credentials to use for the tile cache service. If omitted, a local cache will be used. */
+  /** The credentials to use for the tile cache service. If omitted, a local cache will be used.
+   * @beta
+   */
   public tileCacheCredentials?: CloudStorageServiceCredentials;
 
   /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status. */
@@ -320,7 +322,9 @@ export class IModelHost {
  * @public
  */
 export class Platform {
-  /** The imodeljs mobile info object, if this is running in the imodeljs mobile platform. */
+  /** The imodeljs mobile info object, if this is running in the imodeljs mobile platform.
+   * @beta
+   */
   public static get imodeljsMobile(): any { return (typeof (self) !== "undefined") ? (self as any).imodeljsMobile : undefined; }
 
   /** Get the name of the platform. Possible return values are: "win32", "linux", "darwin", "ios", "android", or "uwp". */
@@ -334,7 +338,9 @@ export class Platform {
     return process.platform;
   }
 
-  /** The Electron info object, if this is running in Electron. */
+  /** The Electron info object, if this is running in Electron.
+   * @beta
+   */
   public static get electron(): any { return ((typeof (process) !== "undefined") && ("electron" in process.versions)) ? require("electron") : undefined; }
 
   /** Query if this is a desktop configuration */
@@ -346,6 +352,7 @@ export class Platform {
   /** Query if this is running in Node.js  */
   public static get isNodeJs(): boolean { return !Platform.isMobile; } // currently we use nodejs for all non-mobile backend apps
 
+  /** @internal */
   public static load(dir?: string): typeof IModelJsNative {
     return this.isMobile ? this.imodeljsMobile.imodeljsNative : // we are running on a mobile platform
       require("@bentley/imodeljs-native/loadNativePlatform.js").loadNativePlatform(dir); // We are running in node or electron.
