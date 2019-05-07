@@ -34,6 +34,7 @@ import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { OutputMessageType } from '@bentley/imodeljs-frontend';
 import { Point3d } from '@bentley/geometry-core';
+import { Position } from '@bentley/ui-core';
 import { Primitives } from '@bentley/imodeljs-frontend';
 import { PropertyDescription } from '@bentley/imodeljs-frontend';
 import { PropertyRecord } from '@bentley/imodeljs-frontend';
@@ -129,15 +130,14 @@ export abstract class BasePointTypeConverter extends TypeConverter {
 
 // @alpha
 export class BaseTimelineDataProvider implements TimelineDataProvider {
+    constructor(viewport?: ScreenViewport);
     // (undocumented)
     animationFraction: number;
-    // (undocumented)
-    deleteMilestones(milestonesToDelete: Milestone[]): Promise<boolean>;
+    readonly duration: number;
     // (undocumented)
     end: Date | undefined;
     // (undocumented)
     findMilestoneById(milestoneId: string, milestones?: Milestone[]): Milestone | undefined;
-    getInitialDuration(): number;
     // (undocumented)
     getMilestones(parent?: Milestone): Milestone[];
     // (undocumented)
@@ -146,21 +146,29 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     getSettings(): PlaybackSettings;
     // (undocumented)
     readonly id = "TestTimelineDataProvider";
+    readonly initialDuration: number;
     // (undocumented)
     loadTimelineData(): Promise<boolean>;
+    // (undocumented)
+    readonly loop: boolean;
     // (undocumented)
     protected _milestones: Milestone[];
     // (undocumented)
     onAnimationFractionChanged: (_animationFraction: number) => void;
     // (undocumented)
     onPlaybackSettingChanged: (_settings: PlaybackSettings) => void;
-    saveMilestones(milestones: Milestone[], parent?: Milestone): Promise<boolean>;
+    // (undocumented)
+    protected _settings: PlaybackSettings;
     // (undocumented)
     start: Date | undefined;
     // (undocumented)
     supportsTimelineAnimation: boolean;
     // (undocumented)
     updateSettings(settings: PlaybackSettings): void;
+    // (undocumented)
+    viewport: ScreenViewport | undefined;
+    // (undocumented)
+    protected _viewport: ScreenViewport | undefined;
 }
 
 // @beta
@@ -723,6 +731,27 @@ export interface ColumnDescription {
     width?: number;
 }
 
+// @internal
+export class ContextMenu extends React.Component<ContextMenuProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal
+export class ContextMenuItem extends React.Component<MenuItem> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal
+export interface ContextMenuProps extends CommonProps {
+    isOpened: boolean;
+    items?: MenuItem[];
+    onClickOutside?: () => void;
+    parent: HTMLElement | null;
+    position: Position;
+}
+
 // @public
 export namespace ConvertedPrimitives {
     export type Point = Point2d | Point3d;
@@ -1133,6 +1162,18 @@ export interface ImmediatelyLoadedTreeNodeItem extends TreeNodeItem {
     children?: TreeNodeItem[];
 }
 
+// Warning: (ae-forgotten-export) The symbol "InlineEditProps" needs to be exported by the entry point ui-components.d.ts
+// Warning: (ae-forgotten-export) The symbol "InlineEditState" needs to be exported by the entry point ui-components.d.ts
+// 
+// @internal
+export class InlineEdit extends React.Component<InlineEditProps, InlineEditState> {
+    constructor(props: InlineEditProps);
+    // (undocumented)
+    componentWillReceiveProps(newProps: InlineEditProps): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
 // @internal
 export enum InputContext {
     FilteringFinished = 2,
@@ -1285,6 +1326,16 @@ export interface LoadedImage {
 
 // @public
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
+
+// @internal
+export interface MenuItem {
+    checked?: boolean;
+    disabled?: boolean;
+    icon?: string;
+    isSeparator?: boolean;
+    name?: string;
+    onClick?: () => void;
+}
 
 // @alpha
 export interface Milestone {
@@ -1439,15 +1490,50 @@ export interface PageOptions {
 export interface PlaybackSettings {
     allowMilestoneEdits?: boolean;
     dateDisplay?: TimelineDateDisplay;
-    displayDetail?: TimelineDetail;
-    duration: number;
-    loop: boolean;
+    duration?: number;
+    loop?: boolean;
+    minimized?: boolean;
     playbackEnd?: Date;
     playbackStart?: Date;
 }
 
 // @alpha
-export type PlaybackSettingsChangeHandler = (settings: PlaybackSettings) => void;
+export type PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void;
+
+// Warning: (ae-forgotten-export) The symbol "PlayButtonState" needs to be exported by the entry point ui-components.d.ts
+// 
+// @internal
+export class PlayButton extends React.Component<PlayButtonProps, PlayButtonState> {
+    constructor(props: PlayButtonProps, context?: any);
+    // (undocumented)
+    componentWillReceiveProps(nextProps: Readonly<PlayButtonProps>): void;
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal
+export interface PlayButtonProps extends CommonProps {
+    // (undocumented)
+    icon?: string;
+    // (undocumented)
+    onClick?: () => void;
+}
+
+// @internal
+export interface PlayButtonProps extends CommonProps {
+    // (undocumented)
+    isPlaying: boolean;
+    // (undocumented)
+    onPause?: () => void;
+    // (undocumented)
+    onPlay?: () => void;
+}
+
+// @internal
+export class PlayerButton extends React.PureComponent<any> {
+    // (undocumented)
+    render(): JSX.Element;
+}
 
 // @public
 export class Point2dTypeConverter extends BasePointTypeConverter {
@@ -1802,6 +1888,34 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
 export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
     hsv: HSVColor;
     onSaturationChange?: ((saturation: HSVColor) => void) | undefined;
+}
+
+// @internal
+export class Scrubber extends React.Component<ScrubberProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal
+export interface ScrubberProps extends CommonProps {
+    // (undocumented)
+    currentDuration: number;
+    // (undocumented)
+    endDate?: Date;
+    // (undocumented)
+    inMiniMode: boolean;
+    // (undocumented)
+    isPlaying: boolean;
+    // (undocumented)
+    onChange?: (values: ReadonlyArray<number>) => void;
+    // (undocumented)
+    onSlideStart?: () => void;
+    // (undocumented)
+    onUpdate?: (values: ReadonlyArray<number>) => void;
+    // (undocumented)
+    startDate?: Date;
+    // (undocumented)
+    totalDuration: number;
 }
 
 // @public
@@ -2293,23 +2407,45 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     readonly state: Readonly<TextEditorState>;
     }
 
+// Warning: (ae-forgotten-export) The symbol "TimelineState" needs to be exported by the entry point ui-components.d.ts
+// 
+// @internal
+export class Timeline extends React.Component<TimelineProps, TimelineState> {
+    constructor(props: TimelineProps);
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// Warning: (ae-forgotten-export) The symbol "TimelineComponentProps" needs to be exported by the entry point ui-components.d.ts
+// Warning: (ae-forgotten-export) The symbol "TimelineComponentState" needs to be exported by the entry point ui-components.d.ts
+// 
+// @alpha
+export class TimelineComponent extends React.PureComponent<TimelineComponentProps, TimelineComponentState> {
+    constructor(props: TimelineComponentProps);
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
 // @alpha
 export interface TimelineDataProvider {
     animationFraction?: number;
-    deleteMilestones(milestones: Milestone[]): Promise<boolean>;
+    duration: number;
     end?: Date;
-    getInitialDuration(): number;
     getMilestones(parent?: Milestone): Milestone[];
     getMilestonesCount(parent?: Milestone): number;
     getSettings(): PlaybackSettings;
     id: string;
+    initialDuration: number;
     loadTimelineData(): Promise<boolean>;
+    loop: boolean;
     onAnimationFractionChanged?: AnimationFractionChangeHandler;
     onPlaybackSettingChanged?: PlaybackSettingsChangeHandler;
-    saveMilestones(milestones: Milestone[], parent?: Milestone): Promise<boolean>;
     start?: Date;
     supportsTimelineAnimation: boolean;
     updateSettings(settings: PlaybackSettings): void;
+    viewport?: ScreenViewport;
 }
 
 // @alpha
@@ -2318,11 +2454,24 @@ export enum TimelineDateDisplay {
     ProjectTime = 1
 }
 
-// @alpha
-export enum TimelineDetail {
-    Full = 2,
-    Medium = 1,
-    Minimal = 0
+// @internal
+export interface TimelineProps extends CommonProps {
+    // (undocumented)
+    endDate: Date;
+    // (undocumented)
+    isPlaying: boolean;
+    // (undocumented)
+    milestones?: Milestone[];
+    // (undocumented)
+    onChange?: (values: ReadonlyArray<number>) => void;
+    // (undocumented)
+    onSlideStart?: () => void;
+    // (undocumented)
+    onUpdate?: (values: ReadonlyArray<number>) => void;
+    // (undocumented)
+    selectedDate: Date;
+    // (undocumented)
+    startDate: Date;
 }
 
 // @alpha
@@ -2624,7 +2773,7 @@ export class ViewportComponentEvents {
 // @public
 export interface ViewportProps extends CommonProps {
     // @internal (undocumented)
-    getViewOverlay?: (viewState: ViewState) => React.ReactNode;
+    getViewOverlay?: (viewport: ScreenViewport) => React.ReactNode;
     imodel: IModelConnection;
     // @internal (undocumented)
     onContextMenu?: (e: React.MouseEvent) => boolean;

@@ -56,6 +56,7 @@ export class Workflow extends ItemDefBase {
 
     this._taskIds.map((taskId: string, _index: number) => {
       const task = TaskManager.findTask(taskId);
+      // istanbul ignore else
       if (task)
         this._tasks.set(taskId, task);
     });
@@ -121,6 +122,7 @@ export class Workflow extends ItemDefBase {
 
     for (const key of this._tasks.keys()) {
       const task: Task | undefined = this._tasks.get(key);
+      // istanbul ignore else
       if (task && task.isVisible)
         sortedTasks.push(task);
     }
@@ -229,9 +231,11 @@ export class WorkflowManager {
    * @param task      The Task to set as active
    */
   public static async setActiveWorkflowAndTask(workflow: Workflow, task: Task): Promise<void> {
+    // istanbul ignore else
     if (!workflow.isActive)
       this.setActiveWorkflow(workflow);
 
+    // istanbul ignore else
     if (!task.isActive)
       workflow.setActiveTask(task);
   }
@@ -243,6 +247,7 @@ export class WorkflowManager {
 
   /** Gets the active Workflow id */
   public static get activeWorkflowId(): string {
+    // istanbul ignore else
     if (this._activeWorkflow !== undefined)
       return this._activeWorkflow.id;
     return "";
@@ -250,6 +255,7 @@ export class WorkflowManager {
 
   /** Gets the active Task */
   public static get activeTask(): Task | undefined {
+    // istanbul ignore else
     if (this._activeWorkflow !== undefined)
       return this._activeWorkflow.activeTask;
     return undefined;
@@ -257,7 +263,9 @@ export class WorkflowManager {
 
   /** Gets the active Task id */
   public static get activeTaskId(): string {
+    // istanbul ignore else
     if (this._activeWorkflow !== undefined) {
+      // istanbul ignore else
       if (this._activeWorkflow.activeTask)
         return this._activeWorkflow.activeTask.id;
     }

@@ -6,13 +6,15 @@ import * as React from "react";
 import classnames from "classnames";
 import { PlayerButton, PlayButton } from "./PlayerButton";
 import { Position } from "@bentley/ui-core";
-import { Milestone } from "@bentley/ui-components";
+import { Milestone, PlaybackSettings } from "./interfaces";
 import { Timeline } from "./Timeline";
 import { Scrubber } from "./Scrubber";
 import { InlineEdit } from "./InlineEdit";
 import { ContextMenu, ContextMenuItem } from "./ContextMenu";
+import { UiComponents } from "../UiComponents";
 import "./TimelineComponent.scss";
 
+/** @alpha */
 interface TimelineComponentProps {
   startDate?: Date; // start date
   endDate?: Date;   // end date
@@ -20,10 +22,14 @@ interface TimelineComponentProps {
   initialDuration?: number;  // initial value for current duration in milliseconds
   milestones?: Milestone[]; // optional milestones
   minimized?: boolean;  // show in minimized mode
+  repeat?: boolean;  // repeat animation indefinitely
   onChange?: (duration: number) => void; // callback with current value (as a fraction)
-  onPlayPause?: (playing: boolean) => void; // callback with play/pause button is pressed
+  onPlayPause?: (playing: boolean) => void; // callback triggered when play/pause button is pressed
+  onJump?: (forward: boolean) => void; // callback triggered when backward/forward buttons are pressed
+  onSettingsChange?: (arg: PlaybackSettings) => void; // callback triggered when settings is changed
 }
 
+/** @alpha */
 interface TimelineComponentState {
   isSettingsOpen: boolean; // settings popup is opened or closed
   isPlaying: boolean; // timeline is currently playing or paused
@@ -33,11 +39,17 @@ interface TimelineComponentState {
   repeat: boolean; // automatically restart when the timeline is finished playing
 }
 
+/** Component used to playback timeline data
+ * @alpha
+ */
 export class TimelineComponent extends React.PureComponent<TimelineComponentProps, TimelineComponentState> {
   private _timeLastCycle = 0;
   private _requestFrame = 0;
   private _unmounted = false;
   private _settings: HTMLElement | null = null;
+  private _expandLabel: string = "Expand";
+  private _minimizeLabel: string = "Minimize";
+  private _repeatLabel: string = "Repeat";
 
   constructor(props: TimelineComponentProps) {
     super(props);
@@ -48,8 +60,12 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       minimized: this.props.minimized,
       currentDuration: props.initialDuration ? props.initialDuration : 0,
       totalDuration: this.props.totalDuration,
-      repeat: false,
+      repeat: this.props.repeat ? true : false,
     };
+
+    this._expandLabel = UiComponents.i18n.translate("UiComponents:timeline.expand");
+    this._minimizeLabel = UiComponents.i18n.translate("UiComponents:timeline.minimize");
+    this._repeatLabel = UiComponents.i18n.translate("UiComponents:timeline.repeat");
   }
 
   public componentWillUnmount() {
@@ -59,14 +75,21 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
   // user clicked backward button
   private _onBackward = () => {
+    // istanbul ignore else
+    if (this.props.onJump)
+      this.props.onJump(false);
   }
 
   // user clicked forward button
   private _onForward = () => {
+    // istanbul ignore else
+    if (this.props.onJump)
+      this.props.onJump(true);
   }
 
   // user clicked play button
   private _onPlay = () => {
+    // istanbul ignore if
     if (this.state.isPlaying)
       return;
 
@@ -76,14 +99,16 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     } else
       this._play();
 
+    // istanbul ignore else
     if (this.props.onPlayPause)
       this.props.onPlayPause(true);
   }
 
   // user clicked pause button
   private _onPause = () => {
+    // istanbul ignore if
     if (!this.state.isPlaying)
-      return; // not playing
+      return;
 
     // stop requesting frames
     window.cancelAnimationFrame(this._requestFrame);
@@ -91,6 +116,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     // stop playing
     this.setState({ isPlaying: false });
 
+    // istanbul ignore else
     if (this.props.onPlayPause)
       this.props.onPlayPause(false);
   }
@@ -105,6 +131,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   private _setDuration = (currentDuration: number) => {
     this._timeLastCycle = new Date().getTime();
     this.setState({ currentDuration });
+    // istanbul ignore else
     if (this.props.onChange) {
       const fraction = currentDuration / this.state.totalDuration;
       this.props.onChange(fraction);
@@ -113,6 +140,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
   // recursively update the animation until we hit the end or the pause button is clicked
   private _updateAnimation = (_timestamp: number) => {
+    // istanbul ignore else
     if (!this.state.isPlaying && !this._unmounted) {
       return;
     }
@@ -130,6 +158,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       if (this.state.repeat)
         this._replay();
       else {
+        // istanbul ignore else
         if (this.props.onPlayPause)
           this.props.onPlayPause(false);
       }
@@ -143,11 +172,11 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
   private _play() {
     // start playing
-    this.setState({ isPlaying: true });
-
-    // request the next frame
-    this._timeLastCycle = new Date().getTime();
-    this._requestFrame = window.requestAnimationFrame(this._updateAnimation);
+    this.setState({ isPlaying: true }, () => {
+      // request the next frame
+      this._timeLastCycle = new Date().getTime();
+      this._requestFrame = window.requestAnimationFrame(this._updateAnimation);
+    });
   }
 
   private _replay = () => {
@@ -179,7 +208,11 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   private _onTotalDurationChange = (value: string) => {
     // NOTE: we should reset the current duration to 0
     const milliseconds = this._getMilliseconds(value);
-    this.setState({ totalDuration: milliseconds });
+    this.setState({ totalDuration: milliseconds }, () => {
+      if (this.props.onSettingsChange) {
+        this.props.onSettingsChange({ duration: this.state.totalDuration });
+      }
+    });
   }
 
   private _onSettingsClick = () => {
@@ -191,11 +224,19 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   }
 
   private _onModeChanged = () => {
-    this.setState({ minimized: !this.state.minimized, isSettingsOpen: false });
+    this.setState({ minimized: !this.state.minimized, isSettingsOpen: false }, () => {
+      if (this.props.onSettingsChange) {
+        this.props.onSettingsChange({ minimized: this.state.minimized });
+      }
+    });
   }
 
   private _onRepeatChanged = () => {
-    this.setState({ repeat: !this.state.repeat, isSettingsOpen: false });
+    this.setState({ repeat: !this.state.repeat, isSettingsOpen: false }, () => {
+      if (this.props.onSettingsChange) {
+        this.props.onSettingsChange({ loop: this.state.repeat });
+      }
+    });
   }
 
   private _currentDate = (): Date => {
@@ -208,14 +249,14 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   }
 
   private _renderSettings = () => {
-    const expandName = (this.state.minimized) ? "Expand" : "Minimize";
+    const expandName = (this.state.minimized) ? this._expandLabel : this._minimizeLabel;
     const hasDates = this.props.startDate && this.props.endDate;
     return (
       <>
-        <span className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick} ></span>
+        <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick} ></span>
         <ContextMenu parent={this._settings} isOpened={this.state.isSettingsOpen} onClickOutside={this._onCloseSettings.bind(this)} position={Position.BottomRight}>
           {hasDates && <ContextMenuItem name={expandName} onClick={this._onModeChanged} />}
-          <ContextMenuItem name="Repeat" checked={this.state.repeat} onClick={this._onRepeatChanged} />
+          <ContextMenuItem name={this._repeatLabel} checked={this.state.repeat} onClick={this._onRepeatChanged} />
         </ContextMenu>
       </>
     );
@@ -240,18 +281,18 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
           <span className="current-date">{currentDate.toLocaleDateString()}</span>
           {!miniMode && this._renderSettings()}
         </div>
-        <Timeline
+        {!miniMode && <Timeline
           className="timeline-timeline"
           startDate={startDate!}
           endDate={endDate!}
           selectedDate={currentDate}
           milestones={milestones}
           isPlaying={this.state.isPlaying}
-        />
+        />}
         <div className="scrubber">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <div className="start-time-container">
-            <span className="start-date">{startDate!.toLocaleDateString()}</span>
+            {hasDates && <span className="start-date">{startDate!.toLocaleDateString()}</span>}
             <span className="start-time">{durationString}</span>
           </div>
           <Scrubber
@@ -266,7 +307,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
             onUpdate={this._onTimelineChange}
           />
           <div className="end-time-container">
-            <span className="end-date">{endDate!.toLocaleDateString()}</span>
+            {hasDates && <span className="end-date">{endDate!.toLocaleDateString()}</span>}
             <InlineEdit className="end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />
           </div>
           {miniMode && this._renderSettings()}

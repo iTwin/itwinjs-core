@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { CommonProps } from "@bentley/ui-core";
 import "./InlineEdit.scss";
 
@@ -17,6 +17,9 @@ interface InlineEditState {
   originalValue: string;
 }
 
+/** Duration Inline Editor
+ * @internal
+ */
 export class InlineEdit extends React.Component<InlineEditProps, InlineEditState> {
   private _inputRef = React.createRef<HTMLInputElement>();
 
@@ -32,6 +35,7 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
     }
   }
 
+  // istanbul ignore next
   private _onBlur = (event: React.ChangeEvent<HTMLInputElement>) => {
     this._sendChange(event.target.value);
   }
@@ -53,6 +57,7 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
   }
 
   private _sendChange(value: string) {
+    // istanbul ignore else
     if (this.props.onChange)
       this.props.onChange(value);
   }
@@ -60,6 +65,7 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
   public render() {
     return (
       <input
+        data-testid="timeline-duration-edit-input"
         className={classnames("inline-edit-input", this.props.className)}
         ref={this._inputRef}
         type="text"

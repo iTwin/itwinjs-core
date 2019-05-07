@@ -560,7 +560,7 @@
     },
     {
       "name": "react-compound-slider",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-data-grid",

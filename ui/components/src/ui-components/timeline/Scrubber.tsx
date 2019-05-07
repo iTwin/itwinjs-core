@@ -198,6 +198,9 @@ function Track({ source, target, getTrackProps }: ITrackProps) {
   );
 }
 
+/** Properties for Scrubber/Slider used on timeline control
+ * @internal
+ */
 export interface ScrubberProps extends CommonProps {
   currentDuration: number;
   totalDuration: number;
@@ -210,6 +213,9 @@ export interface ScrubberProps extends CommonProps {
   onSlideStart?: () => void;
 }
 
+/** Scrubber/Slider for timeline control
+ * @internal
+ */
 export class Scrubber extends React.Component<ScrubberProps> {
 
   public render() {

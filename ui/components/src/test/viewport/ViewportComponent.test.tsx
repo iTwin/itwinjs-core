@@ -112,11 +112,11 @@ describe("ViewportComponent", () => {
     render(<ViewportComponent imodel={imodelMock.object} viewportRef={viewportRef} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
     expect(viewportRef).to.be.calledWith(viewportMock.object);
   });
-  it("should return view to getViewOverlay callback", async () => {
-    const getViewOverlay = sinon.spy();
-    render(<ViewportComponent imodel={imodelMock.object} getViewOverlay={getViewOverlay} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
-    expect(getViewOverlay).to.be.calledWith(viewState);
-  });
+  // it("should return view to getViewOverlay callback", async () => {
+  //   const getViewOverlay = sinon.spy();
+  //   render(<ViewportComponent imodel={imodelMock.object} getViewOverlay={getViewOverlay} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+  //   expect(getViewOverlay).to.be.calledWith(viewState);
+  // });
   it("should not error when contextMenu event is triggered", async () => {
     const component = render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
     const viewportDiv = component.getByTestId("viewport-component");

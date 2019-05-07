@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
+import { BaseTimelineDataProvider } from '@bentley/ui-components';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CheckBoxInfo } from '@bentley/ui-core';
 import { CommonProps } from '@bentley/ui-core';
@@ -40,6 +41,7 @@ import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
+import { PlaybackSettings } from '@bentley/ui-components';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-ninezone';
@@ -178,6 +180,17 @@ export interface ActivityMessageEventArgs {
 // @public
 export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArgs> {
 }
+
+// @alpha
+export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvider {
+    constructor(viewState: ViewState, viewport?: ScreenViewport);
+    // (undocumented)
+    loadTimelineData(): Promise<boolean>;
+    // (undocumented)
+    onAnimationFractionChanged: (animationFraction: number) => void;
+    // (undocumented)
+    onPlaybackSettingChanged: (settings: PlaybackSettings) => void;
+    }
 
 // @public
 export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef;
@@ -2507,6 +2520,17 @@ export interface RotationData {
 
 // @internal (undocumented)
 export const RULESET: Ruleset;
+
+// @alpha
+export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvider {
+    constructor(viewState: ViewState, viewport?: ScreenViewport);
+    // (undocumented)
+    loadTimelineData(): Promise<boolean>;
+    // (undocumented)
+    onAnimationFractionChanged: (animationFraction: number) => void;
+    // (undocumented)
+    onPlaybackSettingChanged: (settings: PlaybackSettings) => void;
+    }
 
 // @public
 export const SelectionInfoField: any;

@@ -76,6 +76,7 @@ export class ToolUiManager {
     if (toolDescription)
       ToolUiManager._activeToolDescription = toolDescription;
 
+    /* istanbul ignore else */
     if (toolSettingsProperties && toolSettingsProperties.length > 0) {
       // istanbul ignore else
       if (toolId)

@@ -38,5 +38,10 @@
     "profilePrompt": "Don't have a profile?",
     "register": "Register",
     "offlineButton": "Work Offline?"
+  },
+  "timeline": {
+    "expand": "Expand",
+    "minimize": "Minimize",
+    "repeat": "Repeat"
   }
 }

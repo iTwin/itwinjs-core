@@ -132,6 +132,7 @@
     "react": "^16.8.0",
     "react-highlight-words": "^0.14.0",
     "react-resize-detector": "^3.2.0",
+    "react-compound-slider": "^1.2.0",
     "react-data-grid": "6.0.1",
     "react-dom": "^16.8.0",
     "react-dnd": "^5.0.0",

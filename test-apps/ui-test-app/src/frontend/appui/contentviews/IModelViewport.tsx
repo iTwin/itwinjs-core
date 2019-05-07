@@ -14,7 +14,7 @@ import {
   ViewportContentControl,
   UiFramework,
 } from "@bentley/ui-framework";
-import { ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
 import { AnimationViewOverlay } from "./AnimationViewOverlay";
 
@@ -34,9 +34,9 @@ export class IModelViewportControl extends ViewportContentControl {
       UiFramework.setIsUiVisible(!isVisible);
   }
 
-  private _getViewOverlay = (viewState: ViewState): React.ReactNode => {
+  private _getViewOverlay = (viewport: ScreenViewport): React.ReactNode => {
     return (
-      <AnimationViewOverlay viewState={viewState} onPlayPause={this._onPlayPauseAnimation} />
+      <AnimationViewOverlay viewport={viewport} onPlayPause={this._onPlayPauseAnimation} />
     );
   }
 

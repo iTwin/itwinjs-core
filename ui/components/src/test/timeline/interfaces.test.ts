@@ -7,7 +7,6 @@ import { expect } from "chai";
 import { BaseTimelineDataProvider } from "../../ui-components/timeline/BaseTimelineDataProvider";
 import {
   Milestone, PlaybackSettings,
-  TimelineDetail,
 } from "../../ui-components/timeline/interfaces";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {
@@ -30,7 +29,6 @@ describe("Timeline", () => {
   describe("Duration only timeline", () => {
     const duration = 20;
     const loop = true;
-    const displayDetail = TimelineDetail.Minimal;
     const testanimationFraction = 0.3;
 
     class Test1TimelineDataProvider extends TestTimelineDataProvider {
@@ -38,7 +36,6 @@ describe("Timeline", () => {
         this.updateSettings({
           duration,
           loop,
-          displayDetail,
         });
 
         return Promise.resolve(true);
@@ -63,7 +60,6 @@ describe("Timeline", () => {
   describe("Start, End, and Duration only timeline", () => {
     const duration = 20;
     const loop = true;
-    const displayDetail = TimelineDetail.Medium;
     const startDate = new Date(2014, 6, 6);
     const endDate = new Date(2016, 8, 12);
     const testanimationFraction = 0.3;
@@ -73,7 +69,6 @@ describe("Timeline", () => {
         this.updateSettings({
           duration,
           loop,
-          displayDetail,
         });
 
         this.start = startDate;
@@ -107,7 +102,6 @@ describe("Timeline", () => {
     const loop = true;
     const startDate = new Date(2014, 6, 6);
     const endDate = new Date(2016, 8, 12);
-    const displayDetail = TimelineDetail.Full;
 
     const milestones: Milestone[] = [
       { id: "1", date: new Date(2014, 6, 15), label: "First meeting", readonly: true },
@@ -130,7 +124,6 @@ describe("Timeline", () => {
         this.updateSettings({
           duration,
           loop,
-          displayDetail,
         });
 
         this.start = startDate;
@@ -155,12 +148,10 @@ describe("Timeline", () => {
       expect(timelineProvider.pointerCallbackCalled).to.be.true;
 
       expect(timelineProvider.settingsCallbackCalled).to.be.false;
-      timelineProvider.onPlaybackSettingChanged({ duration: 35, loop: false } as PlaybackSettings);
+      timelineProvider.onPlaybackSettingChanged({ loop: false } as PlaybackSettings);
       expect(timelineProvider.settingsCallbackCalled).to.be.true;
-      const { duration: updatedDuration, loop: updatedLoop } = timelineProvider.getSettings();
-      expect(updatedDuration).to.be.equal(35);
+      const { loop: updatedLoop } = timelineProvider.getSettings();
       expect(updatedLoop).to.be.equal(false);
-      expect(updatedDuration).to.be.equal(35);
     });
   });
 
@@ -170,7 +161,6 @@ describe("Timeline", () => {
     const loop = true;
     const startDate = new Date(2014, 6, 6);
     const endDate = new Date(2016, 8, 12);
-    const displayDetail = TimelineDetail.Full;
 
     const nestedMilestones: Milestone[] = [
       {
@@ -207,7 +197,6 @@ describe("Timeline", () => {
         this.updateSettings({
           duration,
           loop,
-          displayDetail,
         });
 
         this.start = startDate;
@@ -231,14 +220,23 @@ describe("Timeline", () => {
       timelineProvider.onAnimationFractionChanged(testanimationFraction);
       expect(timelineProvider.pointerCallbackCalled).to.be.true;
 
-      const foundMilestone = timelineProvider.findMilestoneById("3-3-3");
+      let foundMilestone = timelineProvider.findMilestoneById("3-3-3");
       expect(foundMilestone).not.to.be.undefined;
+      let childCount = timelineProvider.getMilestonesCount(foundMilestone);
+      expect(childCount).to.be.equal(0);
 
-      const milestoneToDelete = timelineProvider.findMilestoneById("3-3");
-      expect(milestoneToDelete).not.to.be.undefined;
-      const didDelete = await timelineProvider.deleteMilestones([milestoneToDelete!]);
-      expect(didDelete).to.be.true;
-      expect(timelineProvider.findMilestoneById("3-3")).to.be.undefined;
+      const milestoneThree = timelineProvider.findMilestoneById("3-3");
+      expect(milestoneThree).not.to.be.undefined;
+      childCount = timelineProvider.getMilestonesCount(milestoneThree);
+      expect(childCount).to.be.greaterThan(0);
+      expect(timelineProvider.getMilestones(milestoneThree!).length).to.be.equal(childCount);
+
+      foundMilestone = timelineProvider.findMilestoneById("3-3-3", milestoneThree!.children);
+      expect(foundMilestone).not.to.be.undefined;
+      expect(timelineProvider.getMilestones(foundMilestone!).length).to.be.equal(0);
+
+      foundMilestone = timelineProvider.findMilestoneById("44", []);
+      expect(foundMilestone).to.be.undefined;
     });
 
   });

@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Timeline */
 
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
+
 /**
  * A range of time which can be used to focus in on activities scheduled around a milestone.
  * @alpha
@@ -37,16 +39,8 @@ export interface Milestone {
 /** The amount of detail to be displayed in timeline.
  * @alpha
  */
-export enum TimelineDetail {
-  /** Show duration and milestones if available. */
-  Minimal = 0,
-  /** Show start/end Date and playback dates only. */
-  Medium = 1,
-  /** Detailed timeline showing all available Milestones within playback range */
-  Full = 2,
-}
 
-/** The timeline scale to be displayed if TimelineDetail in NOT set to 'Minimal'.
+/** The timeline scale.
  * @alpha
  */
 export enum TimelineScale {
@@ -78,9 +72,11 @@ export enum TimelineDateDisplay {
  */
 export interface PlaybackSettings {
   /** time in milliseconds to play animation from start date to end date */
-  duration: number;
+  duration?: number;
   /** Set to True if animation to restart each time playbackEnd is reached. Defaults to false. */
-  loop: boolean;
+  loop?: boolean;
+  /** If true a minimal set of data is displayed. */
+  minimized?: boolean;
   /** Playback start. If defined must be within start-end range. If not define 'start' is used. */
   playbackStart?: Date;
   /** Playback end. If defined must be within start-end range and later than playbackStart. If not define 'end' is used. */
@@ -89,8 +85,6 @@ export interface PlaybackSettings {
   allowMilestoneEdits?: boolean;
   /** Define if actual date/times are used or date/times relative to project are used to draw timeline axis. */
   dateDisplay?: TimelineDateDisplay;
-  /**  Defines the amount of detail to be displayed. */
-  displayDetail?: TimelineDetail;
 }
 
 /**
@@ -104,7 +98,7 @@ export type AnimationFractionChangeHandler = (animationFraction: number) => void
  * Contains the settings to be used.
  * @alpha
  */
-export type PlaybackSettingsChangeHandler = (settings: PlaybackSettings) => void;
+export type PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void;
 
 /** Interface for a timeline data provider class
  * @alpha
@@ -124,14 +118,14 @@ export interface TimelineDataProvider {
   getMilestonesCount(parent?: Milestone): number;
   /** Get array of milestones. If parent milestone is not defined then the root milestones will be returned. */
   getMilestones(parent?: Milestone): Milestone[];
-  /** Called to save updated set of milestones */
-  saveMilestones(milestones: Milestone[], parent?: Milestone): Promise<boolean>;
-  /** Called to delete one or more milestone */
-  deleteMilestones(milestones: Milestone[]): Promise<boolean>;
   /** Called to get the playback settings. */
   getSettings(): PlaybackSettings;
   /** Called to get the initial scrubber location. This must be a value between 0 and the duration in PlaybackSettings. */
-  getInitialDuration(): number;
+  initialDuration: number;
+  /** Called to get the duration of the Playback. */
+  duration: number;
+  /** If true the playback will continuously loop. */
+  loop: boolean;
   /** Called to save the playback settings */
   updateSettings(settings: PlaybackSettings): void;
   /** Async call to load milestone and settings data */
@@ -140,4 +134,7 @@ export interface TimelineDataProvider {
   onPlaybackSettingChanged?: PlaybackSettingsChangeHandler;
   /** Called when the an internal process has defined the playback settings and the UI needs to be updated */
   onAnimationFractionChanged?: AnimationFractionChangeHandler;
+  /** viewport to show animation */
+  viewport?: ScreenViewport;
+
 }

@@ -146,7 +146,7 @@ export class SyncUiEventDispatcher {
     }
 
     /* istanbul ignore else */
-    if (SyncUiEventDispatcher._syncEventTimerId) clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
+    if (SyncUiEventDispatcher._syncEventTimerId) window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
     SyncUiEventDispatcher._eventIdAdded = false;
     // if events have been added before the initial timer expired wait half that time to see if events are still being added.
     SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod / 2);

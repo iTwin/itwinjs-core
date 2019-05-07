@@ -60,8 +60,14 @@ export * from "./ui-components/properties/renderers/PrimitivePropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyView";
 
-export * from "./ui-components/timeline/BaseTimelineDataProvider";
 export * from "./ui-components/timeline/interfaces";
+export * from "./ui-components/timeline/BaseTimelineDataProvider";
+export * from "./ui-components/timeline/ContextMenu";
+export * from "./ui-components/timeline/InlineEdit";
+export * from "./ui-components/timeline/PlayerButton";
+export * from "./ui-components/timeline/Scrubber";
+export * from "./ui-components/timeline/Timeline";
+export * from "./ui-components/timeline/TimelineComponent";
 
 export * from "./ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./ui-components/properties/renderers/label/PrimitivePropertyLabelRenderer";

@@ -4,16 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ViewportComponent, TimelineDataProvider } from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ViewportContentControl, ContentViewManager } from "@bentley/ui-framework";
+import { ViewportComponent, TimelineDataProvider, TimelineComponent } from "@bentley/ui-components";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ViewportContentControl, ContentViewManager, ScheduleAnimationTimelineDataProvider, AnalysisAnimationTimelineDataProvider } from "@bentley/ui-framework";
 import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
-import { TimelineComponent } from "../timeline/TimelineComponent";
 import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { SampleAppIModelApp } from "../..";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { LoadingSpinner } from "@bentley/ui-core";
-import { ScheduleAnimationTimelineDataProvider, AnalysisAnimationTimelineDataProvider } from "../contentviews/AnimationViewOverlay";
 
 // create a HOC viewport component that supports unified selection
 // tslint:disable-next-line:variable-name
@@ -111,6 +109,19 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
     return undefined;
   }
 
+  private _onAnimationFractionChanged = (animationFraction: number) => {
+    if (this.state.dataProvider && undefined === this.state.dataProvider.viewport) {
+      const activeContentControl = ContentViewManager.getActiveContentControl();
+      if (activeContentControl && activeContentControl.viewport) {
+        if (this.state.viewId === activeContentControl.viewport.view.id)
+          this.state.dataProvider.viewport = activeContentControl.viewport;
+      }
+    }
+
+    if (this.state.dataProvider && this.state.dataProvider.onAnimationFractionChanged)
+      this.state.dataProvider.onAnimationFractionChanged(animationFraction);
+  }
+
   private _setTimelineDataProvider(viewState: ViewState): boolean {
     const dataProvider = this._getTimelineDataProvider(viewState);
     if (dataProvider && dataProvider.supportsTimelineAnimation) {
@@ -158,10 +169,10 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
             <TimelineComponent
               startDate={this.state.dataProvider.start}
               endDate={this.state.dataProvider.end}
-              totalDuration={this.state.dataProvider.getSettings().duration}
+              totalDuration={this.state.dataProvider.duration}
               milestones={this.state.dataProvider.getMilestones()}
               minimized={this.state.dataProvider.getMilestones().length === 0}
-              onChange={this.state.dataProvider.onAnimationFractionChanged} />
+              onChange={this._onAnimationFractionChanged} />
           </div>
         }
       </div>

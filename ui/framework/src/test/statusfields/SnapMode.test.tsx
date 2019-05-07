@@ -85,6 +85,9 @@ describe("SnapModeField", () => {
       expect(wrapper.find(itemId).length).to.eq(1);
     }
 
+    wrapper.find(".nz-footer-snapMode-indicator .nz-indicator").simulate("click"); // Closes popup
+    wrapper.update();
+
     wrapper.unmount();
   });
 

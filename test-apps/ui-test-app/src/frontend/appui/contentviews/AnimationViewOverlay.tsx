@@ -6,127 +6,24 @@ import * as React from "react";
 
 import {
   TimelineDataProvider,
-  BaseTimelineDataProvider, PlaybackSettings, TimelineDetail, Milestone,
+  TimelineComponent,
 } from "@bentley/ui-components";
-import { ContentViewManager, SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "@bentley/ui-framework";
-import { ViewState } from "@bentley/imodeljs-frontend";
-import { TimelineComponent } from "../timeline/TimelineComponent";
+import {
+  ContentViewManager,
+  SyncUiEventDispatcher,
+  SyncUiEventArgs,
+  SyncUiEventId,
+  ScheduleAnimationTimelineDataProvider,
+  AnalysisAnimationTimelineDataProvider,
+} from "@bentley/ui-framework";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
 
 import "./AnimationViewOverlay.scss";
-
-/** ScheduleAnimation Timeline Data Provider - handles View that define 'scheduleScript' data. */
-export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvider {
-  private _viewState: ViewState;
-
-  constructor(viewState: ViewState) {
-    super();
-    this._viewState = viewState;
-    if (viewState && viewState.scheduleScript) {
-      this.supportsTimelineAnimation = true;
-    }
-  }
-
-  public async loadTimelineData(): Promise<boolean> {
-    // if animationFraction is set pointer should match
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport) {
-      if (activeContentControl.viewport.view.id === this._viewState.id) {
-        this.animationFraction = activeContentControl.viewport.animationFraction;
-      }
-    }
-
-    if (this.supportsTimelineAnimation && this._viewState.scheduleScript) {
-      // for now just initial settings
-      this.updateSettings({
-        duration: 20 * 1000,      // this is playback duration
-        loop: true,
-        displayDetail: TimelineDetail.Medium,
-      });
-
-      const timeRange = this._viewState.scheduleScript!.duration;
-      this.start = new Date(timeRange.low * 1000);
-      this.end = new Date(timeRange.high * 1000);
-
-      const quarter = (this.end.getTime() - this.start.getTime()) / 4;
-      const milestones: Milestone[] = [];
-      milestones.push({ id: "1", label: "1st Floor Concrete", date: new Date(this.start.getTime() + quarter), readonly: true });
-      milestones.push({ id: "2", label: "2nd Floor Concrete", date: new Date(this.end.getTime() - quarter), readonly: true });
-      this._milestones = milestones;
-
-      return Promise.resolve(true);
-    }
-
-    return Promise.resolve(false);
-  }
-
-  // const fraction = (animationFraction.getTime() - this.start.getTime()) / (this.end.getTime() - this.start.getTime());
-
-  public onAnimationFractionChanged = (animationFraction: number) => {
-    this.animationFraction = animationFraction;
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.animationFraction = animationFraction;
-    }
-  }
-
-  public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
-    this.updateSettings(settings);
-  }
-}
-
-/**  Analysis Timeline Data Provider - handles View that define 'analysisStyle' data. */
-
-export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvider {
-  private _viewState: ViewState;
-
-  constructor(viewState: ViewState) {
-    super();
-    this._viewState = viewState;
-    if (viewState && viewState.analysisStyle) {
-      this.supportsTimelineAnimation = true;
-    }
-  }
-
-  public async loadTimelineData(): Promise<boolean> {
-    if (this.supportsTimelineAnimation && this._viewState.analysisStyle) {
-      // if animationFraction is set pointer should match
-      const activeContentControl = ContentViewManager.getActiveContentControl();
-      if (activeContentControl && activeContentControl.viewport) {
-        if (activeContentControl.viewport.view.id === this._viewState.id) {
-          this.animationFraction = activeContentControl.viewport.animationFraction;
-        }
-      }
-
-      // for now just initial settings
-      this.updateSettings({
-        duration: 5 * 1000,
-        loop: true,
-        displayDetail: TimelineDetail.Minimal,
-      });
-
-      return Promise.resolve(true);
-    }
-
-    return Promise.resolve(false);
-  }
-
-  public onAnimationFractionChanged = (animationFraction: number) => {
-    this.animationFraction = animationFraction;
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.animationFraction = animationFraction;
-    }
-  }
-
-  public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
-    this.updateSettings(settings);
-  }
-}
 
 /** iModel Viewport Control
  */
 interface AnimationOverlayProps {
-  viewState: ViewState;
+  viewport: ScreenViewport;
   onPlayPause?: (playing: boolean) => void; // callback with play/pause button is pressed
 }
 
@@ -147,7 +44,7 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
   }
 
   public async componentDidMount() {
-    this._setTimelineDataProvider(this.props.viewState);
+    this._setTimelineDataProvider(this.props.viewport);
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
@@ -164,7 +61,7 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
   private isInActiveContentControl(): boolean {
     const activeContentControl = ContentViewManager.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
-      if (activeContentControl.viewport.view.id === this.props.viewState.id) {
+      if (activeContentControl.viewport.view.id === this.props.viewport.view.id) {
         return true;
       }
     }
@@ -184,15 +81,15 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
     }
   }
 
-  private _getTimelineDataProvider(viewState: ViewState): TimelineDataProvider | undefined {
+  private _getTimelineDataProvider(viewport: ScreenViewport): TimelineDataProvider | undefined {
     let timelineDataProvider: TimelineDataProvider;
 
-    timelineDataProvider = new ScheduleAnimationTimelineDataProvider(viewState);
+    timelineDataProvider = new ScheduleAnimationTimelineDataProvider(viewport.view, viewport);
     if (timelineDataProvider.supportsTimelineAnimation) {
       if (timelineDataProvider.loadTimelineData())
         return timelineDataProvider as TimelineDataProvider;
     } else {
-      timelineDataProvider = new AnalysisAnimationTimelineDataProvider(viewState);
+      timelineDataProvider = new AnalysisAnimationTimelineDataProvider(viewport.view, viewport);
       if (timelineDataProvider.supportsTimelineAnimation) {
         if (timelineDataProvider.loadTimelineData())
           return timelineDataProvider as TimelineDataProvider;
@@ -201,8 +98,8 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
     return undefined;
   }
 
-  private _setTimelineDataProvider(viewState: ViewState): boolean {
-    const dataProvider = this._getTimelineDataProvider(viewState);
+  private _setTimelineDataProvider(viewport: ScreenViewport): boolean {
+    const dataProvider = this._getTimelineDataProvider(viewport);
     if (dataProvider && dataProvider.supportsTimelineAnimation) {
       this.setState({ dataProvider, showOverlay: this.isInActiveContentControl() });
       return true;
@@ -220,8 +117,8 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
           <TimelineComponent
             startDate={this.state.dataProvider.start}
             endDate={this.state.dataProvider.end}
-            initialDuration={this.state.dataProvider.getInitialDuration()}
-            totalDuration={this.state.dataProvider.getSettings().duration}
+            initialDuration={this.state.dataProvider.initialDuration}
+            totalDuration={this.state.dataProvider.duration}
             milestones={this.state.dataProvider.getMilestones()}
             minimized={true}
             onChange={this.state.dataProvider.onAnimationFractionChanged}

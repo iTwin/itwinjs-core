@@ -6,7 +6,7 @@ import * as React from "react";
 import classnames from "classnames";
 import { CommonProps } from "@bentley/ui-core";
 import { Slider, Rail, Handles, Ticks, SliderItem } from "react-compound-slider";
-import { Milestone } from "@bentley/ui-components";
+import { Milestone } from "./interfaces";
 import "./Timeline.scss";
 
 const formatDate = (value: number) => {
@@ -206,6 +206,9 @@ function Tick({ tick, count, index }: TickProps) {
 
 // {formatDate(tick.value)}
 
+/** Properties used to show milestone timeline in timeline player control
+ * @internal
+ */
 export interface TimelineProps extends CommonProps {
   startDate: Date;
   endDate: Date;
@@ -221,6 +224,9 @@ interface TimelineState {
   ticks: number[];
 }
 
+/** Component used to show milestone timeline in timeline player control
+ * @internal
+ */
 export class Timeline extends React.Component<TimelineProps, TimelineState> {
 
   constructor(props: TimelineProps) {

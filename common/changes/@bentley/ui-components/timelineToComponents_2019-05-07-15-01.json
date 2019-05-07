@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Move timeline components from ui-test-app to ui-components package",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "bill.steinbock@bentley.com"
+}

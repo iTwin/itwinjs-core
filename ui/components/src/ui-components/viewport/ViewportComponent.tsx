@@ -44,7 +44,7 @@ export interface ViewportProps extends CommonProps {
   onContextMenu?: (e: React.MouseEvent) => boolean;
   /** @internal */
 
-  getViewOverlay?: (viewState: ViewState) => React.ReactNode;
+  getViewOverlay?: (viewport: ScreenViewport) => React.ReactNode;
   /** @internal used only for testing */
   viewManagerOverride?: ViewManager;
   /** @internal used only for testing */
@@ -211,7 +211,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   }
 
   public render() {
-    const viewOverlay = this._vp && this.props.getViewOverlay ? this.props.getViewOverlay(this._vp.view) : null;
+    const viewOverlay = this._vp && this.props.getViewOverlay ? this.props.getViewOverlay(this._vp) : null;
 
     const parentDivStyle: React.CSSProperties = {
       height: "100%", width: "100%", position: "relative",

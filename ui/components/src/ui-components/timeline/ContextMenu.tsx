@@ -3,11 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { CommonProps, Popup, Position } from "@bentley/ui-core";
 import "./ContextMenu.scss";
 
-/** Properties for [[ContextMenuItem]] component */
+/** Properties for [[ContextMenuItem]] component
+ * @internal
+ */
 export interface MenuItem {
   /** Name of the context menu item */
   name?: string;
@@ -25,6 +27,7 @@ export interface MenuItem {
 
 /**
  * A context menu item.
+ * @internal
  */
 export class ContextMenuItem extends React.Component<MenuItem> {
 
@@ -36,7 +39,7 @@ export class ContextMenuItem extends React.Component<MenuItem> {
   }
 
   public render() {
-    const menuClassName = classnames (
+    const menuClassName = classnames(
       "contextmenu-item-wip",
       this.props.disabled && "disabled",
       this.props.checked && "checked",
@@ -57,7 +60,9 @@ export class ContextMenuItem extends React.Component<MenuItem> {
   }
 }
 
-/** Properties for [[ContextMenu]] component */
+/** Properties for [[ContextMenu]] component
+ * @internal
+ */
 export interface ContextMenuProps extends CommonProps {
   /** Show or hide the context menu */
   isOpened: boolean;
@@ -71,16 +76,19 @@ export interface ContextMenuProps extends CommonProps {
   parent: HTMLElement | null;
 }
 
+/** Context menu for timeline component
+ * @internal
+ */
 export class ContextMenu extends React.Component<ContextMenuProps> {
   public render() {
     const { items, parent, position, isOpened, onClickOutside } = this.props;
     return (
       <Popup isOpen={isOpened} target={parent} position={position} onClose={onClickOutside}>
-        <div className="contextmenu-wip">
+        <div data-testid="timeline-contextmenu-div" className="contextmenu-wip">
           <ul>
             {items && items.map((item: MenuItem, index: number) => (
               <ContextMenuItem key={index} name={item.name} icon={item.icon} disabled={item.disabled} onClick={item.onClick} isSeparator={item.isSeparator} />
-              ))
+            ))
             }
             {this.props.children}
           </ul>

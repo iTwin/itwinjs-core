@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Timeline */
 
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import {
   TimelineDataProvider,
   Milestone, PlaybackSettings,
-  TimelineDetail,
 } from "./interfaces";
 
 /** Base Timeline Data Provider
@@ -20,19 +20,42 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
   public supportsTimelineAnimation = false; // set to true when provider determines animation data is available.
   public animationFraction: number = 0; // value from 0.0 to 1.0 that specifies the percentage complete for the animation.
   protected _milestones: Milestone[] = [];
-  private _settings: PlaybackSettings = {
-    duration: 20,
+  protected _viewport: ScreenViewport | undefined;
+
+  constructor(viewport?: ScreenViewport) {
+    this._viewport = viewport;
+  }
+
+  protected _settings: PlaybackSettings = {
+    duration: 20 * 1000,
     loop: true,
-    displayDetail: TimelineDetail.Minimal,
   };
 
+  // istanbul ignore next
   public async loadTimelineData(): Promise<boolean> {
     return Promise.resolve(false);
   }
 
   /** Called to get the initial scrubber location */
-  public getInitialDuration(): number {
-    return this.getSettings().duration * this.animationFraction;
+  public get initialDuration(): number {
+    return this.duration * this.animationFraction;
+  }
+
+  /** Called to get playback duration  */
+  public get duration(): number {
+    return (this.getSettings().duration) ? this.getSettings().duration! : 20000;
+  }
+
+  public set viewport(viewport: ScreenViewport | undefined) {
+    this._viewport = viewport;
+  }
+
+  public get viewport(): ScreenViewport | undefined {
+    return this._viewport;
+  }
+
+  public get loop(): boolean {
+    return (undefined === this.getSettings().loop) ? false : this.getSettings().loop!;
   }
 
   public getMilestonesCount(parent?: Milestone): number {
@@ -82,39 +105,6 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     return [];
   }
 
-  /** save a complete set of milestones for a given parent. If parent is undefined then the milestone are considered root milestones. */
-  public async saveMilestones(milestones: Milestone[], parent?: Milestone): Promise<boolean> {
-    if (undefined === parent) {
-      this._milestones = milestones;
-      return Promise.resolve(true);
-    } else {
-      parent.children = milestones;
-      return Promise.resolve(true);
-    }
-    return Promise.resolve(false);
-  }
-
-  public async deleteMilestones(milestonesToDelete: Milestone[]): Promise<boolean> {
-    let milestonesDeleted = false;
-    if (undefined === milestonesToDelete)
-      return Promise.resolve(milestonesDeleted);
-
-    milestonesToDelete.forEach((milestoneToDelete) => {
-      if (milestoneToDelete.parentId) {
-        const parent = this.findMilestoneById(milestoneToDelete.parentId, this._milestones);
-        if (parent) {
-          const indexToRemove = parent.children!.findIndex((child) => child === milestoneToDelete);
-          if (indexToRemove !== -1) {
-
-            parent.children!.splice(indexToRemove, 1);
-            milestonesDeleted = true;
-          }
-        }
-      }
-    });
-    return Promise.resolve(milestonesDeleted);
-  }
-
   public getSettings(): PlaybackSettings {
     return this._settings;
   }
@@ -123,9 +113,11 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     this._settings = { ...this._settings, ...settings };
   }
 
+  // istanbul ignore next
   public onPlaybackSettingChanged = (_settings: PlaybackSettings) => {
   }
 
+  // istanbul ignore next
   public onAnimationFractionChanged = (_animationFraction: number) => {
   }
 }

@@ -87,6 +87,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
       // tslint:disable-next-line:no-console
       // (`[_handleSyncToolSettingsPropertiesEvent] Tool updating '${syncItem.propertyName}' to value of ${(syncItem.value as ToolSettingsValue).value}`);
       const colValue = this.state.valueMap.get(syncItem.propertyName);
+      /* istanbul ignore else */
       if (colValue) {
         const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(colValue, syncItem.value as ToolSettingsValue);
         updatedPropertyRecord.isDisabled = syncItem.isDisabled;
@@ -94,6 +95,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
 
         // keep label enable state in sync with property editor
         const labelCol = this.state.labelMap.get(syncItem.propertyName);
+        /* istanbul ignore else */
         if (labelCol)
           labelCol.isDisabled = syncItem.isDisabled;
         needToForceUpdate = true;
@@ -210,8 +212,10 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     if (col.type === ColumnType.RecordSpan)
       return null;
 
+    /* istanbul ignore else */
     if (col.type === ColumnType.Record) {
       const record = this.state.valueMap.get(col.name);
+      /* istanbul ignore else */
       if (record) {
         const editor = this.getEditor(record);
         let spanStyle: React.CSSProperties | undefined;
