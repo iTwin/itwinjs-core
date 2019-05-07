@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changes to build process to put all JavaScript files in version-specific subdirectories to avoid browser caching problems when deploying new versions.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Barry.Bentley@bentley.com"
+}

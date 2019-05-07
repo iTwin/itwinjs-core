@@ -57,10 +57,10 @@ class ScriptLoader {
 
   // loads an array of packages in parallel. Promise is resolved when all are loaded.
   // The packages can be loaded in any order, so they must be independent of each other.
-  public static async loadPackagesParallel(packages: string[]): Promise<void[]> {
+  public static async loadPackagesParallel(packages: string[], options: IModelJsLoadOptions): Promise<void[]> {
     const promises: Array<Promise<void>> = new Array<Promise<void>>();
     for (const thisPackage of packages) {
-      promises.push(this.loadPackage(thisPackage));
+      promises.push(this.loadPackage(options.prefixVersion(thisPackage)));
     }
     return Promise.all(promises);
   }
@@ -118,10 +118,10 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
   // if we are going to load the ui modules, get the third party stuff started now. They don't depend on any of our modules so can be loaded at any time.
   let thirdPartyRootPromise;
   if (options.loadUiComponents)
-    thirdPartyRootPromise = ScriptLoader.loadPackagesParallel(["lodash.js", "react.js", "redux.js"]);
+    thirdPartyRootPromise = ScriptLoader.loadPackagesParallel(["lodash.js", "react.js", "redux.js"], options);
 
   // load the lowest level stuff. geometry-core doesn't depend on bentleyjs-core, so they can be loaded together.
-  await ScriptLoader.loadPackagesParallel([options.prefixVersion("bentleyjs-core.js"), options.prefixVersion("geometry-core.js")]);
+  await ScriptLoader.loadPackagesParallel(["bentleyjs-core.js", "geometry-core.js"], options);
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-i18n.js"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-clients.js"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-common.js"));
@@ -132,7 +132,7 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
   if (options.loadUiComponents) {
     await thirdPartyRootPromise;
     // load the rest of the third party modules that depend on react and redux.
-    await ScriptLoader.loadPackagesParallel(["react-dom.js", "inspire-tree.js", "react-dnd.js", "react-dnd-html5-backend.js", "react-redux.js"]);
+    await ScriptLoader.loadPackagesParallel(["react-dom.js", "inspire-tree.js", "react-dnd.js", "react-dnd-html5-backend.js", "react-redux.js"], options);
     await ScriptLoader.loadPackage(options.prefixVersion("ui-core.js"));
     await ScriptLoader.loadPackage(options.prefixVersion("ui-components.js"));
     if (options.loadECPresentation) {
@@ -145,7 +145,7 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
       await ScriptLoader.loadPackage(options.prefixVersion("ui-framework.js"));
     }
   }
-  await ScriptLoader.loadPackage("main.js");
+  await ScriptLoader.loadPackage(options.prefixVersion("main.js"));
 }
 
 function getOptions(): IModelJsLoadOptions {

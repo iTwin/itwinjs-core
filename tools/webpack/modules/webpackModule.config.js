@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // This script sets module.export to the proper value for webpacking one of our packages as a Universal Module Definition library.
-// All of the package's open source dependencies are set to external.
+// Some of the package's open source dependencies are set to external.
 // All the other @bentley dependencies are set to external.
 
 // arguments (specified on the package.json script line)
@@ -27,20 +27,25 @@ const autoprefixer = require("autoprefixer");
 // NOTE: This was set up to return an array of configs, one for target: "web" and one for target: "node", but the node target didn't work, so I dropped it.
 module.exports = (env) => { return getConfig(env); };
 
-function getIModelJsVersionsFromPackage(iModelJsVersions, packageContents, sourceDir, externalList, depth) {
-  // we need the dependents and peer dependents. We care only about those that start with @bentley and are also in externalList.
+function getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, nestedDir, externalList, depth) {
+  // we need the dependents and peer dependents. We care only about those in externalList.
   let dependentsAndPeerDependents = [];
   if (packageContents.dependencies)
     dependentsAndPeerDependents = Object.getOwnPropertyNames(packageContents.dependencies);
   if (packageContents.peerDependencies)
     dependentsAndPeerDependents = dependentsAndPeerDependents.concat(Object.getOwnPropertyNames(packageContents.peerDependencies));
   for (dependent of dependentsAndPeerDependents) {
-    if (dependent.startsWith("@bentley") && externalList[dependent]) {
-      const packageName = dependent.substr(9);
+    if (externalList[dependent]) {
+      let packageName = dependent;
+      if (dependent.startsWith("@bentley"))
+        packageName = dependent.substr(9);
       // if we don't already have it, get its info.
-      if (!iModelJsVersions[packageName]) {
-        const version = packageContents.dependencies[dependent] || packageContents.peerDependencies[dependent];
-        iModelJsVersions[packageName] = version;
+      if (!externalModuleVersions[packageName]) {
+        const subDirectory = path.join(sourceDir, "node_modules", dependent);
+        const alternateDir = (nestedDir) ? path.join(nestedDir, "node_modules", dependent) : undefined;
+        const dependentPackageContents = getPackageFromJson(subDirectory, alternateDir);
+        const version = dependentPackageContents.version;
+        externalModuleVersions[packageName] = version;
       }
     }
   }
@@ -51,23 +56,36 @@ function getIModelJsVersionsFromPackage(iModelJsVersions, packageContents, sourc
       if (dependent.startsWith("@bentley") && externalList[dependent]) {
         const subDirectory = path.join(sourceDir, "node_modules", dependent);
         const dependentPackageContents = getPackageFromJson(subDirectory);
-        getIModelJsVersionsFromPackage(iModelJsVersions, dependentPackageContents, subDirectory, externalList, depth + 1);
+        getExternalModuleVersionsFromPackage(externalModuleVersions, dependentPackageContents, sourceDir, subDirectory, externalList, depth + 1);
       }
     }
   }
 }
 
 // gets a Map with the dependent iModel.js modules as the keys and the required version as the values.
-function getIModelJsVersions(sourceDir, packageContents, externalList) {
-  const iModelJsVersions = new Object();
-  getIModelJsVersionsFromPackage(iModelJsVersions, packageContents, sourceDir, externalList, 0);
-  return iModelJsVersions;
+function getExternalModuleVersions(sourceDir, packageContents, externalList) {
+  const externalModuleVersions = new Object();
+  externalModuleVersions["main"] = packageContents.version;
+  getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, undefined, externalList, 0);
+  return externalModuleVersions;
 }
 
 
 // gets the version from this modules package.json file, so it can be injected into the output.
-function getPackageFromJson(sourceDir) {
-  const packageFileName = path.resolve(sourceDir, "./package.json");
+function getPackageFromJson(sourceDir, alternateDir) {
+  let packageFileName = path.resolve(sourceDir, "./package.json");
+  if (!fs.existsSync(packageFileName)) {
+    if (alternateDir) {
+      packageFileName = path.resolve(alternateDir, "./package.json");
+      if (!fs.existsSync(packageFileName)) {
+        console.log("Cannot find package file in either", sourceDir, "or", alternateDir);
+        return {};
+      }
+    } else {
+      console.log ("Cannot find package file in", sourceDir);
+      return {};
+    }
+  }
   const packageFileContents = fs.readFileSync(packageFileName, "utf8");
   const packageContents = JSON.parse(packageFileContents);
   return packageContents;
@@ -100,7 +118,7 @@ function getConfig(env) {
   const bundleName = env.bundlename;
 
   // get the version number for the javascript currently being webpacked.
-  const packageContents = getPackageFromJson(sourceDir);
+  const packageContents = getPackageFromJson(sourceDir, undefined);
 
   // build the object for the webpack configuration
   const webpackLib = {
@@ -222,13 +240,17 @@ function getConfig(env) {
   // The reason for it is to set the version of the iModelJs modules that the application requires into index.html.
   // It gets that by reading the version of imodeljs-frontend listed in package.json.
   if (env.htmltemplate || env.plugin) {
-    const iModelJsVersions = getIModelJsVersions(sourceDir, packageContents, webpackLib.externals);
+    const externalModuleVersions = getExternalModuleVersions(sourceDir, packageContents, webpackLib.externals);
 
     if (env.htmltemplate) {
       const HtmlWebpackPlugin = require("html-webpack-plugin");
-      const versionString = JSON.stringify(iModelJsVersions);
+      const versionString = JSON.stringify(externalModuleVersions);
+      const imjsLoaderVersion = externalModuleVersions["imodeljs-frontend"];
+      const runtimeVersion = packageContents.version;
       webpackLib.plugins.push(new HtmlWebpackPlugin({
         imjsVersions: versionString,
+        loaderVersion: imjsLoaderVersion,
+        runtimeVersion: runtimeVersion,
         template: env.htmltemplate,
         filename: "./index.html",
         minify: "false",
@@ -239,20 +261,20 @@ function getConfig(env) {
     if (env.plugin) {
 
       // correct the keys with something like 0.190.0-dev.8 to something like ">=0.190.0.dev-0" otherwise the semver matching is too strict.
-      for (const key in iModelJsVersions) {
-        if (iModelJsVersions.hasOwnProperty(key)) {
-          const moduleVersion = iModelJsVersions[key];
+      for (const key in externalModuleVersions) {
+        if (externalModuleVersions.hasOwnProperty(key)) {
+          const moduleVersion = externalModuleVersions[key];
           const dashPosition = moduleVersion.indexOf("-");
           if (-1 !== dashPosition) {
             const lastNumPosition = moduleVersion.lastIndexOf('.');
             if ((-1 !== lastNumPosition) && (lastNumPosition > dashPosition)) {
-              iModelJsVersions[key] = ">=" + moduleVersion.slice(0, lastNumPosition + 1) + "0";
+              externalModuleVersions[key] = ">=" + moduleVersion.slice(0, lastNumPosition + 1) + "0";
             }
           }
         }
       }
 
-      const versionString = JSON.stringify(iModelJsVersions);
+      const versionString = JSON.stringify(externalModuleVersions);
       definePluginDefinitions.IMODELJS_VERSIONS_REQUIRED = JSON.stringify(versionString);
       definePluginDefinitions.PLUGIN_NAME = JSON.stringify(bundleName);
     }

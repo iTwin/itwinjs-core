@@ -123,6 +123,16 @@ class Utils {
       // do nothing on error.
     }
   }
+
+  public static moveFile (sourceDirectory: string, destDirectory: string, fileName: string) {
+    const sourceFile = path.join (sourceDirectory, fileName);
+    if (!fs.existsSync (sourceFile)) {
+      console.log ("Error: Trying to move file that does not exist", sourceFile);
+    }
+    const destFile = path.join (destDirectory, fileName);
+    fs.renameSync(sourceFile, destFile);
+  }
+
 }
 
 // description of each node_module.
@@ -130,7 +140,7 @@ class ModuleInfo {
   public destFileName: string;
   public relativePath: string;
 
-  constructor(public isDevelopment: boolean, public useVersion: boolean, public moduleName: string, destFileName: string | undefined, relativePath?: string | undefined, public publicResourceDirectory?: string | undefined) {
+  constructor(public isDevelopment: boolean, public moduleName: string, destFileName: string | undefined, relativePath?: string | undefined, public publicResourceDirectory?: string | undefined) {
     // if relativePath not supplied, it's one of our @bentley modules and we can figure it out.
     this.destFileName = destFileName ? destFileName : moduleName + ".js";
     if (!relativePath) {
@@ -143,7 +153,7 @@ class ModuleInfo {
 
 // keeps track of each dependent's information.
 class DependentInfo {
-  constructor(public name: string, public packageRoot: string, public parentPackageRoot: string, public externalModule: ModuleInfo, public version: string) {
+  constructor(public name: string, public packageRoot: string, public parentPackageRoot: string, public externalModule: ModuleInfo, public versionRequested: string, public versionAvailable: string) {
   }
 }
 
@@ -153,32 +163,32 @@ class ModuleCopier {
   private _externalModules: ModuleInfo[];
 
   // these are all modules that are listed as external in our webpack configuration, and therefore need to be copied to the web resources directory.
-  constructor(private _nodeModulesDirectory: string, private _isDevelopment: boolean, private _detail: number, private _alwaysCopy: boolean) {
+  constructor(private _nodeModulesDirectory: string, _isDevelopment: boolean, private _detail: number, private _alwaysCopy: boolean) {
     this._dependentList = [];
     this._externalModules = [
-      new ModuleInfo(_isDevelopment, true, "@bentley/bentleyjs-core", "bentleyjs-core.js", undefined),
-      new ModuleInfo(_isDevelopment, true, "@bentley/geometry-core", "geometry-core.js", undefined),
-      new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-i18n", "imodeljs-i18n.js", undefined),
-      new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-clients", "imodeljs-clients.js", undefined),
-      new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-common", "imodeljs-common.js", undefined),
-      new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-quantity", "imodeljs-quantity.js", undefined),
-      new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-frontend", "imodeljs-frontend.js", undefined, "lib/public"),
-      new ModuleInfo(_isDevelopment, true, "@bentley/imodeljs-markup", "imodeljs-markup.js", undefined, "lib/public"),
-      new ModuleInfo(_isDevelopment, true, "@bentley/ui-core", "ui-core.js", undefined, "lib/public"),
-      new ModuleInfo(_isDevelopment, true, "@bentley/ui-components", "ui-components.js", undefined, "lib/public"),
-      new ModuleInfo(_isDevelopment, true, "@bentley/ui-framework", "ui-framework.js", undefined, "lib/public"),
-      new ModuleInfo(_isDevelopment, true, "@bentley/ui-ninezone", "ui-ninezone.js", undefined),
-      new ModuleInfo(_isDevelopment, true, "@bentley/presentation-common", "presentation-common.js", undefined),
-      new ModuleInfo(_isDevelopment, true, "@bentley/presentation-components", "presentation-components.js", undefined, "lib/public"),
-      new ModuleInfo(_isDevelopment, true, "@bentley/presentation-frontend", "presentation-frontend.js", undefined),
-      new ModuleInfo(_isDevelopment, false, "react", undefined, path.join("react", _isDevelopment ? "umd/react.development.js" : "umd/react.production.min.js")),
-      new ModuleInfo(_isDevelopment, false, "react-dnd", undefined, path.join("react-dnd", _isDevelopment ? "dist/ReactDnD.js" : "dist/ReactDnD.min.js")),
-      new ModuleInfo(_isDevelopment, false, "react-dnd-html5-backend", undefined, path.join("react-dnd-html5-backend", _isDevelopment ? "dist/ReactDnDHTML5Backend.js" : "dist/ReactDnDHTML5Backend.min.js")),
-      new ModuleInfo(_isDevelopment, false, "react-dom", undefined, path.join("react-dom", _isDevelopment ? "umd/react-dom.development.js" : "umd/react-dom.production.min.js")),
-      new ModuleInfo(_isDevelopment, false, "react-redux", undefined, path.join("react-redux", _isDevelopment ? "dist/react-redux.js" : "dist/react-redux.min.js")),
-      new ModuleInfo(_isDevelopment, false, "redux", undefined, path.join("redux", _isDevelopment ? "dist/redux.js" : "dist/redux.min.js")),
-      new ModuleInfo(_isDevelopment, false, "inspire-tree", undefined, path.join("inspire-tree", _isDevelopment ? "dist/inspire-tree.js" : "dist/inspire-tree.min.js")),
-      new ModuleInfo(_isDevelopment, false, "lodash", undefined, path.join("lodash", _isDevelopment ? "lodash.js" : "lodash.min.js")),
+      new ModuleInfo(_isDevelopment, "@bentley/bentleyjs-core", "bentleyjs-core.js", undefined),
+      new ModuleInfo(_isDevelopment, "@bentley/geometry-core", "geometry-core.js", undefined),
+      new ModuleInfo(_isDevelopment, "@bentley/imodeljs-i18n", "imodeljs-i18n.js", undefined),
+      new ModuleInfo(_isDevelopment, "@bentley/imodeljs-clients", "imodeljs-clients.js", undefined),
+      new ModuleInfo(_isDevelopment, "@bentley/imodeljs-common", "imodeljs-common.js", undefined),
+      new ModuleInfo(_isDevelopment, "@bentley/imodeljs-quantity", "imodeljs-quantity.js", undefined),
+      new ModuleInfo(_isDevelopment, "@bentley/imodeljs-frontend", "imodeljs-frontend.js", undefined, "lib/public"),
+      new ModuleInfo(_isDevelopment, "@bentley/imodeljs-markup", "imodeljs-markup.js", undefined, "lib/public"),
+      new ModuleInfo(_isDevelopment, "@bentley/ui-core", "ui-core.js", undefined, "lib/public"),
+      new ModuleInfo(_isDevelopment, "@bentley/ui-components", "ui-components.js", undefined, "lib/public"),
+      new ModuleInfo(_isDevelopment, "@bentley/ui-framework", "ui-framework.js", undefined, "lib/public"),
+      new ModuleInfo(_isDevelopment, "@bentley/ui-ninezone", "ui-ninezone.js", undefined),
+      new ModuleInfo(_isDevelopment, "@bentley/presentation-common", "presentation-common.js", undefined),
+      new ModuleInfo(_isDevelopment, "@bentley/presentation-components", "presentation-components.js", undefined, "lib/public"),
+      new ModuleInfo(_isDevelopment, "@bentley/presentation-frontend", "presentation-frontend.js", undefined),
+      new ModuleInfo(_isDevelopment, "react", undefined, path.join("react", _isDevelopment ? "umd/react.development.js" : "umd/react.production.min.js")),
+      new ModuleInfo(_isDevelopment, "react-dnd", undefined, path.join("react-dnd", _isDevelopment ? "dist/ReactDnD.js" : "dist/ReactDnD.min.js")),
+      new ModuleInfo(_isDevelopment, "react-dnd-html5-backend", undefined, path.join("react-dnd-html5-backend", _isDevelopment ? "dist/ReactDnDHTML5Backend.js" : "dist/ReactDnDHTML5Backend.min.js")),
+      new ModuleInfo(_isDevelopment, "react-dom", undefined, path.join("react-dom", _isDevelopment ? "umd/react-dom.development.js" : "umd/react-dom.production.min.js")),
+      new ModuleInfo(_isDevelopment, "react-redux", undefined, path.join("react-redux", _isDevelopment ? "dist/react-redux.js" : "dist/react-redux.min.js")),
+      new ModuleInfo(_isDevelopment, "redux", undefined, path.join("redux", _isDevelopment ? "dist/redux.js" : "dist/redux.min.js")),
+      new ModuleInfo(_isDevelopment, "inspire-tree", undefined, path.join("inspire-tree", _isDevelopment ? "dist/inspire-tree.js" : "dist/inspire-tree.min.js")),
+      new ModuleInfo(_isDevelopment, "lodash", undefined, path.join("lodash", _isDevelopment ? "lodash.js" : "lodash.min.js")),
     ];
   }
 
@@ -271,7 +281,11 @@ class ModuleCopier {
       for (const externalModule of this._externalModules) {
         if (externalModule.moduleName === dependent) {
           const dependentPackageRoot = path.resolve(parentPackageRoot, "node_modules", dependent);
-          newDependents.push(new DependentInfo(dependent, dependentPackageRoot, parentPackageRoot, externalModule, packageFileContents.dependencies[dependent]));
+          const dependentPackageContents: any = Utils.readPackageFileContents(dependentPackageRoot);
+          if (!dependentPackageContents.version) {
+            console.log("  Cannot find version in package.json of dependent:", dependent);
+          }
+          newDependents.push(new DependentInfo(dependent, dependentPackageRoot, parentPackageRoot, externalModule, packageFileContents.dependencies[dependent], dependentPackageContents.version));
         }
       }
     }
@@ -347,7 +361,7 @@ class ModuleCopier {
       const missingModuleList: string[] = [];
       for (const dependent of this._dependentList) {
         const externalModule = dependent.externalModule;
-        const versionString = (externalModule.useVersion) ? dependent.version : undefined;
+        const versionString = dependent.versionAvailable;
 
         const moduleSourceFile = this.findExternalModuleFile(dependent, externalModule.relativePath);
 
@@ -366,6 +380,13 @@ class ModuleCopier {
           }
           const fullFilePath = path.resolve(outFilePath, externalModule.destFileName);
           this.symlinkOrCopyModuleFile(moduleSourceFile, fullFilePath);
+
+          // copy/symlink the iModelJsLoader.js file into the same directory as imodeljs-frontend
+          if (dependent.name === "imodeljs-frontend") {
+            const imjsLoaderSourceFile = moduleSourceFile.replace ("imodeljs-frontend", "IModelJsLoader");
+            const imjsLoaderPath = path.resolve(outFilePath, "IModelJsLoader.js");
+            this.symlinkOrCopyModuleFile(imjsLoaderSourceFile, imjsLoaderPath);
+          }
 
           // symlink any subModules in the build.
           const packageFileContents: any = Utils.readPackageFileContents(dependent.packageRoot);
@@ -393,11 +414,6 @@ class ModuleCopier {
       if (missingModule) {
         return new Result("Symlink or Copy External Modules", 1, undefined, undefined, "Could not find one or more dependencies:\n".concat(...missingModuleList));
       }
-
-      // link the IModelJsLoader.js from imodeljs/frontend also. NOTE: imodeljs-frontend must always be in package.json's dependencies.
-      const loaderFile = path.resolve(process.cwd(), "node_modules/@bentley/imodeljs-frontend", this._isDevelopment ? "lib/module/dev/IModelJsLoader.js" : "lib/module/prod/IModelJsLoader.js");
-      this.symlinkOrCopyModuleFile(loaderFile, path.resolve(outputDirectory, "IModelJsLoader.js"));
-
     } catch (e) {
       return new Result("Symlink or Copy External Modules", 1, e);
     }
@@ -532,7 +548,7 @@ class IModelJsModuleBuilder {
   private _alwaysCopy: boolean;
 
   // constructor
-  constructor(private _moduleDescription: any, private _detail: number, private _isDevelopment: boolean, private _webpackStats: boolean) {
+  constructor(private _moduleDescription: any, private _version: string, private _detail: number, private _isDevelopment: boolean, private _webpackStats: boolean) {
     this._alwaysCopy = process.env.BUILDIMODEL_SYMLINKS === undefined;
   }
 
@@ -661,7 +677,7 @@ class IModelJsModuleBuilder {
         for (const thisSource of this._moduleDescription.makeConfig.sources) {
           let filter: string = thisSource.filter;
           if (0 === filter.length)
-            args.push (`${thisSource.file}`);
+            args.push(`${thisSource.file}`);
           else
             args.push(`${thisSource.file}|${filter}`);
         }
@@ -704,7 +720,7 @@ class IModelJsModuleBuilder {
   }
 
   // spawns a webpack process
-  private startWebpack(operation: string, outputPath: string, entry: string, bundleName: string, styleSheets: boolean, buildType: string, isDevelopment: boolean, doStats: boolean, moduleNum: number,  htmlTemplate?: string): Promise<Result> {
+  private startWebpack(operation: string, outputPath: string, entry: string, bundleName: string, styleSheets: boolean, buildType: string, version: string | undefined, isDevelopment: boolean, doStats: boolean, moduleNum: number, htmlTemplate?: string): Promise<Result> {
     const webpackFullPath = this.findWebpack();
     if (!webpackFullPath) {
       return Promise.resolve(new Result(operation, 1, undefined, undefined, "Unable to locate webpack"));
@@ -743,6 +759,16 @@ class IModelJsModuleBuilder {
       child_process.execFile(webpackFullPath, args, { cwd: process.cwd() }, (error: Error | null, stdout: string, stderr: string) => {
         if (this._detail > 0)
           console.log("Finished", operation);
+
+        // if we are building an application, move the main.js to the version directory.
+        if (buildType === "application" && version) {
+          const destPath = path.resolve (outputPath, "v" + version);
+          Utils.makeDirectoryNoError(destPath);
+          Utils.moveFile (outputPath, destPath, "main.js");
+          Utils.moveFile (outputPath, destPath, "main.js.map");
+          Utils.moveFile (outputPath, destPath, "runtime.js");
+          Utils.moveFile (outputPath, destPath, "runtime.js.map");
+        }
         resolve(new Result(operation, (null !== error) || (stderr && stderr.length) ? 1 : 0, error, stdout, stderr));
       })
     });
@@ -772,7 +798,7 @@ class IModelJsModuleBuilder {
     const styleSheets: boolean = webpack.styleSheets ? true : false;
     if (this._detail > 0)
       console.log("Starting Webpack Module");
-    return this.startWebpack("Webpack Module", outputPath, webpack.entry, webpack.bundleName, styleSheets, this._moduleDescription.type, this._isDevelopment, this._webpackStats, 0, webpack.htmlTemplate);
+    return this.startWebpack("Webpack Module", outputPath, webpack.entry, webpack.bundleName, styleSheets, this._moduleDescription.type, this._version, this._isDevelopment, this._webpackStats, 0, webpack.htmlTemplate);
   }
 
   // build the array of subModules.
@@ -809,7 +835,7 @@ class IModelJsModuleBuilder {
       if (this._detail > 0)
         console.log("Starting webpack of", subModule.entry);
 
-      const pluginResult: Result = await this.startWebpack(`Webpack Plugin ${subModule.entry}`, outputPath, subModule.entry, subModule.bundleName, styleSheets, subType, this._isDevelopment, this._webpackStats, moduleNum++);
+      const pluginResult: Result = await this.startWebpack(`Webpack Plugin ${subModule.entry}`, outputPath, subModule.entry, subModule.bundleName, styleSheets, subType, undefined, this._isDevelopment, this._webpackStats, moduleNum++);
       results.push(pluginResult);
       if (pluginResult.error || pluginResult.stderr) {
         return Promise.resolve(results);
@@ -989,7 +1015,7 @@ async function main(): Promise<number> {
   // instantiate the builder
   const isDevelopment = !cmdLineArgs.production;
   const doStats: boolean = cmdLineArgs.stats;
-  const builder = new IModelJsModuleBuilder(packageContents.iModelJs.buildModule, detail, isDevelopment, doStats);
+  const builder = new IModelJsModuleBuilder(packageContents.iModelJs.buildModule, packageContents.version, detail, isDevelopment, doStats);
 
   if (builder.checkDefinition())
     return 1;

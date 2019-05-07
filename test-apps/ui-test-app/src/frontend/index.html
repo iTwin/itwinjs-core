@@ -25,10 +25,10 @@
     }
   </style>
   <!-- we use one webpack-generated runtime.js to get our modules to share dependencies. -->
-  <script type="text/javascript" src="runtime.js"></script>
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.runtimeVersion %>/runtime.js"></script>
   <!-- Use the IModelJs loader to load the system modules in the correct order -->
   <!-- The lodash template in the next line is replaced by webpack with the name and versions of imodeljs frontend packages -->
-  <script type="text/javascript" src="IModelJsLoader.js"
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/IModelJsLoader.js"
     data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
 </head>
 
