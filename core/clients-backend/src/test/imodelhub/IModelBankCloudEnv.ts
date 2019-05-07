@@ -15,6 +15,12 @@ import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { workDir } from "./TestUtils";
 import { Logger } from "@bentley/bentleyjs-core";
 
+// To run tests with imodel-bank integration:
+// set NODE_EXTRA_CA_CERTS=d:\imjs\imodeljs\core\clients-backend\src\test\assets\local_dev_server.crt
+// set imjs_test_imodel_bank_run_orchestrator=%SrcRoot%\imodel-bank\local-orchestrator\lib\server.js
+// To control logging, specifying a logger config .json file:
+// set imjs_test_imodel_bank_logging_config=<somewhere>logging.config.json
+
 export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
 
   const loggingCategory = "imodeljs-clients-backend.IModelBankCloudEnv";
