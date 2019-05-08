@@ -98,6 +98,7 @@ export class IModelHost {
   private static _authorizationClient?: IAuthorizationClient;
   public static backendVersion = "";
   private static _platform?: typeof IModelJsNative;
+  /** @internal */
   public static get platform(): typeof IModelJsNative { return this._platform!; }
 
   public static configuration?: IModelHostConfiguration;

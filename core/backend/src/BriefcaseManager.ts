@@ -24,7 +24,7 @@ import * as glob from "glob";
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** The Id assigned to a briefcase by iModelHub, or one of the special values that identify special kinds of iModels
- * @internal
+ * @public
  */
 export class BriefcaseId {
   private _value: number;
@@ -37,7 +37,7 @@ export class BriefcaseId {
 }
 
 /** Option to keep briefcase when the imodel is closed
- * @internal
+ * @public
  */
 export enum KeepBriefcase {
   No = 0,

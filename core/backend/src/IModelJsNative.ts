@@ -8,7 +8,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { ElementProps, ChangedElements } from "@bentley/imodeljs-common";
 import { ExportGraphicsProps } from "./ExportGraphics";
-import { IModelDb } from "./IModelDb";
+import { IModelDb, TxnIdString } from "./IModelDb";
 
 // tslint:disable:prefer-get
 
@@ -45,7 +45,6 @@ export declare namespace IModelJsNative {
   export function addReferenceToObjectInVault(id: string): void;
   export function getObjectRefCountFromVault(id: string): number;
   export function clearLogLevelCache(): void;
-  export type TxnIdString = string;
 
   /** Logger categories used by the native addon */
   export const enum BackendLoggerCategory {  // tslint:disable-line:no-const-enum

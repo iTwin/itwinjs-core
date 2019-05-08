@@ -32,12 +32,14 @@ import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
 
+export type TxnIdString = string;
+
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId.
- * @internal Uses the internal `IModelJsNative` type.
+ * @public
  */
-export type ChangeSetDescriber = (endTxnId: IModelJsNative.TxnIdString) => string;
+export type ChangeSetDescriber = (endTxnId: TxnIdString) => string;
 
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub
  * @public
@@ -50,7 +52,7 @@ export enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
 export enum AccessMode { Shared = 1, Exclusive = 2 }
 
 /** Additional options for exclusive access to IModelDb
- * @internal
+ * @public
  */
 export enum ExclusiveAccessOption {
   /** Create or acquire a new briefcase every time the open call is made */
@@ -1707,7 +1709,7 @@ export namespace IModelDb {
 export enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
 
 /** An error generated during dependency validation.
- * @internal
+ * @beta
  */
 export interface ValidationError {
   /** If true, txn is aborted. */
@@ -1819,13 +1821,13 @@ export class TxnManager {
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: IModelJsNative.TxnIdString) { return this._nativeDb.reverseTo(txnId); }
+  public reverseTo(txnId: TxnIdString) { return this._nativeDb.reverseTo(txnId); }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: IModelJsNative.TxnIdString) { return this._nativeDb.cancelTo(txnId); }
+  public cancelTo(txnId: TxnIdString) { return this._nativeDb.cancelTo(txnId); }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
@@ -1835,22 +1837,22 @@ export class TxnManager {
   public reinstateTxn(): IModelStatus { return this._nativeDb.reinstateTxn(); }
 
   /** Get the Id of the first transaction, if any. */
-  public queryFirstTxnId(): IModelJsNative.TxnIdString { return this._nativeDb.queryFirstTxnId(); }
+  public queryFirstTxnId(): TxnIdString { return this._nativeDb.queryFirstTxnId(); }
 
   /** Get the successor of the specified TxnId */
-  public queryNextTxnId(txnId: IModelJsNative.TxnIdString): IModelJsNative.TxnIdString { return this._nativeDb.queryNextTxnId(txnId); }
+  public queryNextTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryNextTxnId(txnId); }
 
   /** Get the predecessor of the specified TxnId */
-  public queryPreviousTxnId(txnId: IModelJsNative.TxnIdString): IModelJsNative.TxnIdString { return this._nativeDb.queryPreviousTxnId(txnId); }
+  public queryPreviousTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryPreviousTxnId(txnId); }
 
   /** Get the Id of the current (tip) transaction.  */
-  public getCurrentTxnId(): IModelJsNative.TxnIdString { return this._nativeDb.getCurrentTxnId(); }
+  public getCurrentTxnId(): TxnIdString { return this._nativeDb.getCurrentTxnId(); }
 
   /** Get the description that was supplied when the specified transaction was saved. */
-  public getTxnDescription(txnId: IModelJsNative.TxnIdString): string { return this._nativeDb.getTxnDescription(txnId); }
+  public getTxnDescription(txnId: TxnIdString): string { return this._nativeDb.getTxnDescription(txnId); }
 
   /** Test if a TxnId is valid */
-  public isTxnIdValid(txnId: IModelJsNative.TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
+  public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
   public get hasPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
@@ -1862,7 +1864,7 @@ export class TxnManager {
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 
   /** Make a description of the changeset by combining all local txn comments. */
-  public describeChangeSet(endTxnId?: IModelJsNative.TxnIdString): string {
+  public describeChangeSet(endTxnId?: TxnIdString): string {
     if (endTxnId === undefined)
       endTxnId = this.getCurrentTxnId();
 
