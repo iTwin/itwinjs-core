@@ -32,6 +32,8 @@ import { SVTConfiguration } from "../common/SVTConfiguration";
 import { DisplayTestApp } from "./App";
 import { Viewer } from "./Viewer";
 
+RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
+
 const activeViewState: SimpleViewState = new SimpleViewState();
 const configuration = {} as SVTConfiguration;
 
