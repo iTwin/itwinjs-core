@@ -39,6 +39,7 @@ import { createColorInput, ColorInput, ColorInputProps } from "./ColorInput";
 import { createNumericInput } from "./NumericInput";
 import { Settings } from "./FeatureOverrides";
 import { isString } from "util";
+import { createNestedMenu } from "./NestedMenu";
 
 type UpdateAttribute = (view: ViewState) => void;
 
@@ -49,6 +50,7 @@ type SkyboxType = "2colors" | "4colors";
 export class ViewAttributes {
   private static _expandViewFlags = false;
   private static _expandEdgeDisplay = false;
+  private static _expandEnvironmentEditor = false;
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
   private readonly _updates: UpdateAttribute[] = [];
@@ -93,32 +95,17 @@ export class ViewAttributes {
     this.addRenderMode();
     this._element.appendChild(document.createElement("hr"));
 
-    const flagsHeader = document.createElement("div");
-    flagsHeader.style.width = "100%";
-
-    const flagsToggle = document.createElement("span");
-    flagsToggle.innerText = "View Flags";
-    flagsHeader.appendChild(flagsToggle);
-
-    flagsHeader.onclick = () => {
-      ViewAttributes._expandViewFlags = !ViewAttributes._expandViewFlags;
-      flagsDiv.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
-      toggleFlagsButton.button.value = ViewAttributes._expandViewFlags ? "-" : "+";
-    };
-
-    const toggleFlagsButton = createButton({
-      parent: flagsHeader,
-      inline: true,
-      handler: () => undefined, // handled by div.onclick
-      value: ViewAttributes._expandViewFlags ? "-" : "+",
+    const flagsDiv = document.createElement("div");
+    createNestedMenu({
+      id: this._nextId,
+      label: "View Flags",
+      parent: this._element,
+      // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
+      expand: ViewAttributes._expandViewFlags,
+      handler: (expanded) => ViewAttributes._expandViewFlags = expanded,
+      body: flagsDiv,
     });
 
-    toggleFlagsButton.div.style.cssFloat = "right";
-
-    flagsHeader.appendChild(document.createElement("hr"));
-    this._element.appendChild(flagsHeader);
-
-    const flagsDiv = document.createElement("div");
     this._element.appendChild(flagsDiv);
 
     this.addViewFlagAttribute(flagsDiv, "ACS Triad", "acsTriad");
@@ -132,14 +119,11 @@ export class ViewAttributes {
     this.addViewFlagAttribute(flagsDiv, "Line Weights", "weights");
     this.addViewFlagAttribute(flagsDiv, "Line Styles", "styles");
     this.addViewFlagAttribute(flagsDiv, "Clip Volume", "clipVolume", true);
-    this.addViewFlagAttribute(flagsDiv, "Shadows", "shadows");
     this.addViewFlagAttribute(flagsDiv, "Force Surface Discard", "forceSurfaceDiscard", true);
 
+    this.addShadowsToggle(flagsDiv);
     this.addLightingToggle(flagsDiv);
     this.addCameraToggle(flagsDiv);
-
-    // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
-    flagsDiv.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
 
     this.addEdgeDisplay();
 
@@ -160,41 +144,23 @@ export class ViewAttributes {
   }
 
   private addEdgeDisplay(): void {
-    const edgeDisplayHeader = document.createElement("div");
-    edgeDisplayHeader.style.width = "100%";
-    const edgeDisplayToggle = document.createElement("span");
-    edgeDisplayToggle.innerText = "Edge Display";
-    edgeDisplayHeader.appendChild(edgeDisplayToggle);
-
-    edgeDisplayHeader.onclick = () => {
-      ViewAttributes._expandViewFlags = !ViewAttributes._expandViewFlags;
-      edgeDisplayDiv.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
-      toggleEDButton.button.value = ViewAttributes._expandViewFlags ? "-" : "+";
-    };
+    const edgeDisplayDiv = document.createElement("div");
+    const nestedMenu = createNestedMenu({
+      id: this._nextId,
+      label: "Edge Display",
+      parent: this._element,
+      expand: ViewAttributes._expandEdgeDisplay,
+      // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
+      handler: (expanded) => ViewAttributes._expandEdgeDisplay = expanded,
+      body: edgeDisplayDiv,
+    });
 
     this._updates.push((view) => {
       if (view.is2d())
-        edgeDisplayHeader.hidden = true;
+        nestedMenu.div.hidden = true;
       else
-        edgeDisplayHeader.hidden = false;
+        nestedMenu.div.hidden = false;
     });
-
-    const toggleEDButton = createButton({
-      parent: edgeDisplayHeader,
-      inline: true,
-      handler: () => {
-        ViewAttributes._expandEdgeDisplay = !ViewAttributes._expandEdgeDisplay;
-        edgeDisplayDiv.style.display = ViewAttributes._expandEdgeDisplay ? "block" : "none";
-        toggleEDButton.button.value = ViewAttributes._expandEdgeDisplay ? "-" : "+";
-      },
-      value: ViewAttributes._expandEdgeDisplay ? "-" : "+",
-    });
-    toggleEDButton.div.style.cssFloat = "right";
-
-    edgeDisplayHeader.appendChild(document.createElement("hr"));
-    this._element.appendChild(edgeDisplayHeader);
-    const edgeDisplayDiv = document.createElement("div");
-    this._element.appendChild(edgeDisplayDiv);
 
     // Create Visible Edges Checkbox
     const visEdgesCb = this.addCheckbox("Visible Edges", (enabled: boolean) => {
@@ -202,7 +168,7 @@ export class ViewAttributes {
       vf.visibleEdges = enabled;
       this._vp.viewFlags = vf;
       this.sync();
-    }, edgeDisplayDiv);
+    }, nestedMenu.body);
     const visEdgeDiv = this.addHiddenLineEditor(visEdgesCb, edgeDisplayDiv);
 
     // Create Hidden Edges Checkbox
@@ -232,9 +198,6 @@ export class ViewAttributes {
         }
       }
     });
-
-    // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
-    edgeDisplayDiv.style.display = ViewAttributes._expandEdgeDisplay ? "block" : "none";
   }
 
   private addHiddenLineEditor(parentCb: CheckBox, parent: HTMLDivElement, hiddenEdge?: true): HTMLDivElement {
@@ -435,10 +398,18 @@ export class ViewAttributes {
   }
 
   private addEnvironmentEditor() {
+    const nestedMenu = createNestedMenu({
+      id: this._nextId,
+      label: "Edit Environment",
+      parent: this._element,
+      // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
+      expand: ViewAttributes._expandEnvironmentEditor,
+      handler: (expanded) => ViewAttributes._expandEnvironmentEditor = expanded,
+    }).body;
     const is3d = this._vp.view.is3d();
 
     this._eeBackgroundColor = createColorInput({
-      parent: this._element,
+      parent: nestedMenu,
       value: this._vp.view.backgroundColor.toHexString(),
       handler: (value) => {
         this._vp.view.displayStyle.backgroundColor = new ColorDef(value);
@@ -471,9 +442,9 @@ export class ViewAttributes {
       this._eeBackgroundColor!.div.style.display = enabled ? "none" : "block";
     };
 
-    this.addEnvAttribute(this._element, "Sky Box", "sky", showSkyboxControls);
+    this.addEnvAttribute(nestedMenu, "Sky Box", "sky", showSkyboxControls);
 
-    this._element.appendChild(this._eeBackgroundColor.div);
+    nestedMenu.appendChild(this._eeBackgroundColor.div);
 
     this._eeSkyboxType = createRadioBox({
       id: this._nextId,
@@ -495,37 +466,45 @@ export class ViewAttributes {
       defaultValue: (undefined !== currentEnvironment && currentEnvironment.twoColor) ? "2colors" : "4colors",
     });
 
-    this._eeZenithColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ zenithColor: new ColorDef(value) }),
-      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.zenithColor.toHexString(),
-      label: "Zenith Color",
-      parent: eeDiv,
-    });
-    this._eeZenithColor.div.style.textAlign = "right";
+    const row1 = document.createElement("div");
+    eeDiv.appendChild(row1);
+    row1.style.display = "flex";
+    row1.style.justifyContent = "flex-end";
 
     this._eeSkyColor = createColorInput({
       handler: (value: string) => this.updateEnvironment({ skyColor: new ColorDef(value) }),
       value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.skyColor.toHexString(),
       label: "Sky Color",
-      parent: eeDiv,
+      parent: row1,
     });
-    this._eeSkyColor.div.style.textAlign = "right";
+    this._eeSkyColor.div.style.marginRight = "10px";
+
+    this._eeZenithColor = createColorInput({
+      handler: (value: string) => this.updateEnvironment({ zenithColor: new ColorDef(value) }),
+      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.zenithColor.toHexString(),
+      label: "Zenith Color",
+      parent: row1,
+    });
+
+    const row2 = document.createElement("div");
+    eeDiv.appendChild(row2);
+    row2.style.display = "flex";
+    row2.style.justifyContent = "flex-end";
 
     this._eeGroundColor = createColorInput({
       handler: (value: string) => this.updateEnvironment({ groundColor: new ColorDef(value) }),
       value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.groundColor.toHexString(),
       label: "Ground Color",
-      parent: eeDiv,
+      parent: row2,
     });
-    this._eeGroundColor.div.style.textAlign = "right";
+    this._eeGroundColor.div.style.marginRight = "16px";
 
     this._eeNadirColor = createColorInput({
       handler: (value: string) => this.updateEnvironment({ nadirColor: new ColorDef(value) }),
       value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.nadirColor.toHexString(),
       label: "Nadir Color",
-      parent: eeDiv,
+      parent: row2,
     });
-    this._eeNadirColor.div.style.textAlign = "right";
 
     this._eeSkyExponent = createSlider({
       parent: eeDiv,
@@ -537,7 +516,6 @@ export class ViewAttributes {
       value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.skyExponent.toString(),
       handler: (slider) => this.updateEnvironment({ skyExponent: parseFloat(slider.value) }),
     });
-    this._eeSkyExponent.div.style.textAlign = "right";
 
     this._eeGroundExponent = createSlider({
       parent: eeDiv,
@@ -549,7 +527,6 @@ export class ViewAttributes {
       value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.groundExponent.toString(),
       handler: (slider) => this.updateEnvironment({ groundExponent: parseFloat(slider.value) }),
     });
-    this._eeGroundExponent.div.style.textAlign = "right";
 
     const buttonDiv = document.createElement("div") as HTMLDivElement;
 
@@ -577,7 +554,7 @@ export class ViewAttributes {
     eeDiv.appendChild(buttonDiv);
 
     showSkyboxControls(undefined !== currentEnvironment && currentEnvironment.display);
-    this._element.appendChild(eeDiv);
+    nestedMenu.appendChild(eeDiv);
     this._updates.push((view) => {
       let skyboxEnabled = false;
       if (view.is3d()) {
@@ -588,7 +565,7 @@ export class ViewAttributes {
       showSkyboxControls(skyboxEnabled);
       this.updateEnvironmentEditorUI(view);
     });
-    this.addEnvAttribute(this._element, "Ground Plane", "ground");
+    this.addEnvAttribute(nestedMenu, "Ground Plane", "ground");
   }
 
   private updateEnvironment(newEnv: SkyBoxProps): void {
@@ -653,6 +630,52 @@ export class ViewAttributes {
       if (visible)
         elems.checkbox.checked = view.viewFlags[flag];
     };
+
+    this._updates.push(update);
+  }
+
+  private addShadowsToggle(parent: HTMLElement): void {
+    let currentColor: ColorDef | undefined;
+    if (this._vp.view.is3d())
+      currentColor = (this._vp.view as ViewState3d).getDisplayStyle3d().settings.solarShadowsSettings.color;
+
+    const shadowsColorInput = createColorInput({
+      label: "Shadow Color",
+      id: this._nextId,
+      parent,
+      display: "inline",
+      value: undefined === currentColor ? "#FFFFFF" : currentColor.toHexString(),
+      handler: (color) => {
+        (this._vp.view as ViewState3d).getDisplayStyle3d().settings.solarShadowsSettings.color = new ColorDef(color);
+        this.sync();
+      },
+    });
+    shadowsColorInput.div.style.cssFloat = "right";
+
+    const elems = this.addCheckbox("Shadows", (enabled: boolean) => {
+      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
+      vf.shadows = enabled;
+      this._vp.viewFlags = vf;
+      this.sync();
+    }, parent);
+
+    const updateUI = (view: ViewState) => {
+      if (view.is3d())
+        currentColor = (view as ViewState3d).getDisplayStyle3d().settings.solarShadowsSettings.color;
+      shadowsColorInput.input.value = undefined === currentColor ? "#FFFFFF" : currentColor.toHexString();
+    };
+
+    const update = (view: ViewState) => {
+      const vf = view.viewFlags;
+      const visible = view.is3d();
+      elems.div.style.display = visible ? "block" : "none";
+      shadowsColorInput.div.style.display = (visible && vf.shadows) ? "inline" : "none";
+      updateUI(view);
+      if (visible)
+        elems.checkbox.checked = vf.shadows;
+    };
+
+    this._vp.onDisplayStyleChanged.addListener((vp) => updateUI(vp.view));
 
     this._updates.push(update);
   }
