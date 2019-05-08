@@ -399,7 +399,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     let canSkipThisTile = this.isReady || this.isParentDisplayable;
     if (canSkipThisTile && this.isDisplayable) { // skipping an undisplayable tile doesn't count toward the maximum
       // Some tiles do not sub-divide - they only facet the same geometry to a higher resolution. We can skip directly to the correct resolution.
-      const isNotReady = !this.hasGraphics && !this.hasSizeMultiplier;
+      const isNotReady = !this.isReady && !this.hasGraphics && !this.hasSizeMultiplier;
       if (isNotReady) {
         if (numSkipped >= this.root.maxTilesToSkip)
           canSkipThisTile = false;

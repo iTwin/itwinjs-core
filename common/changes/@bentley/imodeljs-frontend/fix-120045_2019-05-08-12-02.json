@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix rare failure to refine tiles displayed in view resulting in missing geometry.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}
