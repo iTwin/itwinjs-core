@@ -87,13 +87,29 @@ describe("LineString3d", () => {
 
   it("createXY", () => {
     const ck = new Checker();
-    const ls = LineString3d.createXY(
-      [Point2d.create(1, 1),
-      Point2d.create(4, 1),
-      Point2d.create(4, 2),
-      Point2d.create(0, 2)],
-      10.0);
-    ck.testExactNumber(4, ls.numPoints());
+    const xyArray = [Point2d.create(1, 1),
+    Point2d.create(4, 1),
+    Point2d.create(4, 2),
+    Point2d.create(0, 2)];
+    const jsArrayXY = [];
+    const jsArrayXYZ = [];
+    const dz = 10.0;
+    for (const p of xyArray) {
+      jsArrayXY.push([p.x, p.y]);
+      jsArrayXYZ.push([p.x, p.y, dz]);
+    }
+    const ls10 = LineString3d.createXY(xyArray, dz);
+    const ls0 = LineString3d.create(xyArray);
+    const lsArrayXY = LineString3d.create(jsArrayXY);
+    const lsArrayXYZ = LineString3d.create(jsArrayXYZ);
+    lsArrayXY.tryTranslateInPlace(0, 0, dz);
+    ls0.tryTranslateInPlace(0, 0, dz);
+
+    ck.testTrue(ls0.isAlmostEqual(ls10));
+    ck.testTrue(ls0.isAlmostEqual(lsArrayXY));
+    ck.testTrue(ls0.isAlmostEqual(lsArrayXYZ));
+
+    ck.testExactNumber(4, ls10.numPoints());
     expect(ck.getNumErrors()).equals(0);
   });
 

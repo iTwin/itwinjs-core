@@ -129,12 +129,6 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return c;
   }
 
-  private static flattenArray(arr: any): any {
-    return arr.reduce((flat: any, toFlatten: any) => {
-      return flat.concat(Array.isArray(toFlatten) ? LineString3d.flattenArray(toFlatten) : toFlatten);
-    }, []);
-  }
-/** Create a linestring from points */
   public static create(...points: any[]): LineString3d {
     const result = new LineString3d();
     result.addPoints(points);
@@ -159,13 +153,17 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return result;
   }
-/** Add points to this linestring. */
+  /** Add points to the linestring.
+   * Valid inputs are:
+   * * a Point2d
+   * * a point3d
+   * * An array of 2 doubles
+   * * An array of 3 doubles
+   * * A GrowableXYZArray
+   * * An array of any of the above
+   */
   public addPoints(...points: any[]) {
-    const toAdd: any[] = LineString3d.flattenArray(points);
-    for (const p of toAdd) {
-      if (p instanceof Point3d)
-        this._points.push(p);
-    }
+    this._points.pushFrom (points);
   }
   /** Add points accessed by index in a GrowableXYZArray, with a specified index step. */
   public addSteppedPoints(source: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number) {

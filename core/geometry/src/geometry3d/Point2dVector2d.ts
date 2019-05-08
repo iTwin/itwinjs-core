@@ -331,7 +331,9 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return undefined;
   }
 
-  // Divide by denominator, but return undefined if denominator is zero.
+  /** Return a (new or optionally reused) vector which is `this` divided by denominator
+   * * return undefined if denominator is zero.
+   */
   public safeDivideOrNull(denominator: number, result?: Vector2d): Vector2d | undefined {
     if (denominator !== 0.0) {
       return this.scale(1.0 / denominator, result);
@@ -362,7 +364,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return result;
   }
 
-  // return a vector same length as this but rotate 90 degrees CCW
+  /** Return a vector same length as this but rotated 90 degrees counter clockwise */
   public rotate90CCWXY(result?: Vector2d): Vector2d {
     result = result ? result : new Vector2d();
     // save x,y to allow aliasing ..
@@ -373,7 +375,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return result;
   }
 
-  // return a vector same length as this but rotate 90 degrees CW
+  /** Return a vector same length as this but rotated 90 degrees clockwise */
   public rotate90CWXY(result?: Vector2d): Vector2d {
     result = result ? result : new Vector2d();
     // save x,y to allow aliasing ..
@@ -500,6 +502,11 @@ export class Vector2d extends XY implements BeJSONFunctions {
     isInSmallerSector(vectorA: Vector2d, vectorB: Vector2d): boolean { }
     isInCCWSector(vectorA: Vector2d, vectorB: Vector2d, upVector: Vector2d): boolean { }
     */
+  /**
+   * Test if `thsi` and `other` area parallel, with angle tolerance `Geoemtry.smallAngleRadiansSquared`.
+   * @param other second vector for comparison.
+   * @param oppositeIsParallel if true, treat vectors 180 opposite as parallel.  If false, treat those as non-parallel.
+   */
   public isParallelTo(other: Vector2d, oppositeIsParallel: boolean = false): boolean {
     const a2 = this.magnitudeSquared();
     const b2 = other.magnitudeSquared();

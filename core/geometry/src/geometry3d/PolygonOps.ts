@@ -13,6 +13,7 @@ import { Ray3d } from "./Ray3d";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Point3dArrayCarrier, Point3dArray } from "./PointHelpers";
 import { XYParitySearchContext } from "../topology/XYParitySearchContext";
+import { GrowableXYZArray } from "./GrowableXYZArray";
 /** Static class for operations that treat an array of points as a polygon (with area!) */
 /**
  * Various (static method) computations for arrays of points interpreted as a polygon.
@@ -24,23 +25,29 @@ export class PolygonOps {
    * * Sum the areas(absolute, without regard to orientation) all these triangles.
    * @returns sum of absolute triangle areas.
    */
-  public static sumTriangleAreas(points: Point3d[]): number {
-    let s = 0.0;
+  public static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number {
+    let s = 0;
     const n = points.length;
-    if (n >= 3) {
-      const origin = points[0];
-      const vector0 = origin.vectorTo(points[1]);
-      let vector1 = Vector3d.create();
-      // This will work with or without closure edge.  If closure is given, the last vector is 000.
-      for (let i = 2; i < n; i++) {
-        vector1 = origin.vectorTo(points[i], vector1);
-        s += vector0.crossProductMagnitude(vector1);
-        vector0.setFrom(vector1);
+    if (Array.isArray(points)) {
+      if (n >= 3) {
+        const origin = points[0];
+        const vector0 = origin.vectorTo(points[1]);
+        let vector1 = Vector3d.create();
+        // This will work with or without closure edge.  If closure is given, the last vector is 000.
+        for (let i = 2; i < n; i++) {
+          vector1 = origin.vectorTo(points[i], vector1);
+          s += vector0.crossProductMagnitude(vector1);
+          vector0.setFrom(vector1);
+        }
       }
+      return s * 0.5;
     }
-    s *= 0.5;
-    // console.log ("polygon area ", s, points);
-    return s;
+    const crossVector = Vector3d.create();
+    for (let i = 2; i < n; i++) {
+      points.crossProductIndexIndexIndex(0, i - 1, i, crossVector);
+      s += crossVector.magnitude();
+    }
+    return s * 0.5;
   }
   /** Sum areas of triangles from points[0] to each far edge.
    * * Consider triangles from points[0] to each edge.

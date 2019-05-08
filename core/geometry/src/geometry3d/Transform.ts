@@ -489,7 +489,8 @@ export class Transform implements BeJSONFunctions {
     return result;
   }
   /**
-   * @returns Return a Transform which is the inverse of this transform. Return undefined if this Transform's matrix is singular.
+   * * Return a Transform which is the inverse of this transform.
+   * * Return undefined if this Transform's matrix is singular.
    */
   public inverse(): Transform | undefined {
     const matrixInverse = this._matrix.inverse();

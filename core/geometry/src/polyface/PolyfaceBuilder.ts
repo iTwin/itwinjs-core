@@ -455,7 +455,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Optionally provide params and the plane normal, otherwise they will be calculated without reference data.
    * Optionally mark this quad as the last piece of a face in this polyface.
    */
-  public addQuadFacet(points: Point3d[], params?: Point2d[], normals?: Vector3d[]) {
+  public addQuadFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]) {
+    if (points instanceof GrowableXYZArray)
+    points = points.getPoint3dArray ();
     // If params and/or normals are needed, calculate them first
     const needParams = this.options.needParams;
     const needNormals = this.options.needNormals;
@@ -594,10 +596,22 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Add a triangle to the polyface given its points in order around the edges.
    * * Optionally provide params and triangle normals, otherwise they will be calculated without reference data.
    */
-  public addTriangleFacet(points: Point3d[], params?: Point2d[], normals?: Vector3d[]) {
+  public addTriangleFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]) {
+    if (points.length < 3)
+      return;
     let idx0: number;
     let idx1: number;
     let idx2: number;
+    let point0, point1, point2;
+    if (points instanceof GrowableXYZArray) {
+      point0 = points.getPoint3dAtCheckedPointIndex(0)!;
+      point1 = points.getPoint3dAtCheckedPointIndex(1)!;
+      point2 = points.getPoint3dAtCheckedPointIndex(2)!;
+    } else {
+      point0 = points[0];
+      point1 = points[1];
+      point2 = points[2];
+    }
 
     // Add params if needed
     if (this._options.needParams) {
@@ -606,10 +620,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         idx1 = this._polyface.addParam(params[1]);
         idx2 = this._polyface.addParam(params[2]);
       } else {  // Compute params
-        const paramTransform = this.getUVTransformForTriangleFacet(points[0], points[1], points[2]);
-        idx0 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(points[0]) : undefined));
-        idx1 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(points[1]) : undefined));
-        idx2 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(points[2]) : undefined));
+        const paramTransform = this.getUVTransformForTriangleFacet(point0, point1, point2);
+        idx0 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(point0) : undefined));
+        idx1 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(point1) : undefined));
+        idx2 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(point1) : undefined));
       }
       this.addIndexedTriangleParamIndexes(idx0, idx1, idx2);
     }
@@ -621,7 +635,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         idx1 = this._polyface.addNormal(normals[1]);
         idx2 = this._polyface.addNormal(normals[2]);
       } else {  // Compute normals
-        const normal = this.getNormalForTriangularFacet(points[0], points[1], points[2]);
+        const normal = this.getNormalForTriangularFacet(point0, point1, point2);
         idx0 = this._polyface.addNormal(normal);
         idx1 = this._polyface.addNormal(normal);
         idx2 = this._polyface.addNormal(normal);
@@ -630,9 +644,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
 
     // Add point and point indexes last (terminates the facet)
-    idx0 = this.findOrAddPoint(points[0]);
-    idx1 = this.findOrAddPoint(points[1]);
-    idx2 = this.findOrAddPoint(points[2]);
+    idx0 = this.findOrAddPoint(point0);
+    idx1 = this.findOrAddPoint(point1);
+    idx2 = this.findOrAddPoint(point2);
     this.addIndexedTrianglePointIndexes(idx0, idx1, idx2);
   }
 

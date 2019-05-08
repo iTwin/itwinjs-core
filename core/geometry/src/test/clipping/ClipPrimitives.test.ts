@@ -280,7 +280,7 @@ function getPointIntersectionsOfConvexSetPlanes(convexSet: ConvexClipPlaneSet, c
 }
 
 /** Simple 2D area of triangle calculation given three points. This does not take into account values along the z-axis. */
-function triangleArea(pointA: Point3d, pointB: Point3d, pointC: Point3d): number {
+function triangleAreaXY(pointA: Point3d, pointB: Point3d, pointC: Point3d): number {
   const a = pointA.x * (pointB.y - pointC.y);
   const b = pointB.x * (pointC.y - pointA.y);
   const c = pointC.x * (pointA.y - pointB.y);
@@ -495,7 +495,7 @@ describe("ClipPrimitive", () => {
         ck.testExactNumber(trianglePoints.length, 3);
         unionRange.extendArray(trianglePoints);
         ck.testTrue(pointArrayIsSubsetOfOther(trianglePoints, clipShape.polygon), "All points of triangulated convex area of polygon should fall on boundary");
-        unionArea += triangleArea(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+        unionArea += triangleAreaXY(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
       }
       ck.testRange3d(originalRange, unionRange, "Range extended by all convex regions should match range of entire concave region.");
       ck.testTrue(unionArea <= areaRestriction, "Total area of unioned convex triangles should be less than or equal to area of entire range.");
@@ -513,16 +513,17 @@ describe("ClipPrimitive", () => {
     let clipShapeArea = 0;
     for (const convexSet of convexSetUnion.convexSets) {
       const trianglePoints = getPointIntersectionsOfConvexSetPlanes(convexSet, ck);
-      clipShapeArea += triangleArea(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+      clipShapeArea += triangleAreaXY(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
     }
 
-    const clippedPolygons = ClipUtilities.clipPolygonToClipShape(polygonA, clipShape);
+    const clippedPolygons = ClipUtilities.clipPolygonToClipShapeReturnGrowableXYZArrays(polygonA, clipShape);
 
     // Triangulate any resulting smaller polygons that have a vertex length of greater than 3 and find total area of clipped result
     let clippedPolygonArea = 0;
     for (const polygon of clippedPolygons) {
       if (polygon.length <= 3) {
-        clippedPolygonArea += triangleArea(polygon[0], polygon[1], polygon[2]);
+        if (polygon.length === 3)
+          clippedPolygonArea += Math.abs (polygon.crossProductIndexIndexIndex(0, 1, 2)!.z * 0.5);
         continue;
       }
 
@@ -536,7 +537,7 @@ describe("ClipPrimitive", () => {
             subTrianglePoints.push(Point3d.create(node.x, node.y, 0));
           });
           ck.testExactNumber(3, subTrianglePoints.length, "Length clipped polygon piece after further triangulation must be 3");
-          clippedPolygonArea += triangleArea(subTrianglePoints[0], subTrianglePoints[1], subTrianglePoints[2]);
+          clippedPolygonArea += triangleAreaXY(subTrianglePoints[0], subTrianglePoints[1], subTrianglePoints[2]);
         }
         return true;
       });

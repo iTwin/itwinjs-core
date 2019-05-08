@@ -19,6 +19,7 @@ import { AnalyticRoots } from "../numerics/Polynomials";
 import { Arc3d } from "../curve/Arc3d";
 import { Clipper, ClipUtilities } from "./ClipUtils";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 
 /** A ClipPlane is a single plane represented as
  * * An inward unit normal (u,v,w)
@@ -276,7 +277,7 @@ export class ClipPlane implements Clipper {
    * @param spacePoint point to test.
    * @param tolerance tolerance for considering "near plane" to be "on plane"
    */
-public isPointOnOrInside(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
+  public isPointOnOrInside(spacePoint: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     let value = this.evaluatePoint(spacePoint);
     if (tolerance) { value += tolerance; }
     return value >= 0.0;
@@ -301,11 +302,11 @@ public isPointOnOrInside(spacePoint: Point3d, tolerance: number = Geometry.small
   public isPointOn(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     return Math.abs(this.evaluatePoint(point)) <= tolerance;
   }
-/**
- * Compute intersections of an (UNBOUNDED) arc with the plane.  Append them (as radians) to a growing array.
- * @param arc arc to test.  The angle limits of the arc are NOT considered.
- * @param intersectionRadians array to receive results
- */
+  /**
+   * Compute intersections of an (UNBOUNDED) arc with the plane.  Append them (as radians) to a growing array.
+   * @param arc arc to test.  The angle limits of the arc are NOT considered.
+   * @param intersectionRadians array to receive results
+   */
   public appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array) {
     const arcVectors = arc.toVectors();
     const alpha = this.evaluatePoint(arc.center);
@@ -415,7 +416,59 @@ public isPointOnOrInside(spacePoint: Point3d, tolerance: number = Geometry.small
       }
       work.length = 0;
     }
+  }
+  /**
+   * Clip a polygon to the inside or outside of the plane.
+   * * Results with 2 or fewer points are ignored.
+   * * Other than ensuring capacity in the arrays, there are no object allocations during execution of this function.
+   * @param xyz input points.
+   * @param work work buffer
+   * @param tolerance tolerance for "on plane" decision.
+   */
+  public clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, inside: boolean = true, tolerance: number = Geometry.smallMetricDistance) {
+    work.clear();
+    const n = xyz.length;
+    let numNegative = 0;
+    ClipPlane.fractionTol = 1.0e-8;
+    const b = -tolerance;
+    const s = inside ? 1.0 : -1.0;
+    const nx = s * this._inwardNormal.x;
+    const ny = s * this._inwardNormal.y;
+    const nz = s * this._inwardNormal.z;
+    const d = s * this._distanceFromOrigin;
+    if (xyz.length > 1) {
+      let a1;
+      let index0 = xyz.length - 1;
+      let a0 = xyz.evaluateUncheckedIndexDotProductXYZ(index0, nx, ny, nz) - d;
+      //    if (a0 >= 0.0)
+      //      work.push_back (xyz0);
+      for (let index1 = 0; index1 < n; a0 = a1, index0 = index1++) {
+        a1 = xyz.evaluateUncheckedIndexDotProductXYZ(index1, nx, ny, nz) - d;
+        if (a1 < 0)
+          numNegative++;
+        if (a0 * a1 < 0.0) {
+          // simple crossing . . .
+          const f = - a0 / (a1 - a0);
+          if (f > 1.0 - ClipPlane.fractionTol && a1 >= 0.0) {
+            // the endpoint will be saved -- avoid the duplicate
+          } else {
+            work.pushInterpolatedFromGrowableXYZArray(xyz, index0, f, index1);
+          }
+        }
+        if (a1 >= b)
+          work.pushFromGrowableXYZArray(xyz, index1);
+        index0 = index1;
+        a0 = a1;
+      }
+    }
 
+    if (work.length <= 2) {
+      xyz.clear();
+    } else if (numNegative > 0) {
+      xyz.clear();
+      xyz.pushFromGrowableXYZArray(work);
+    }
+    work.clear();
   }
 
   public polygonCrossings(xyz: Point3d[], crossings: Point3d[]) {
@@ -552,7 +605,7 @@ public isPointOnOrInside(spacePoint: Point3d, tolerance: number = Geometry.small
    * @param range
    * @param xyzOut intersection polygon.  This is convex.
    */
-  public intersectRange(range: Range3d, addClosurePoint: boolean = false): Point3d[] | undefined {
+  public intersectRange(range: Range3d, addClosurePoint: boolean = false): GrowableXYZArray | undefined {
     if (range.isNull)
       return undefined;
     const corners = range.corners();
@@ -562,17 +615,17 @@ public isPointOnOrInside(spacePoint: Point3d, tolerance: number = Geometry.small
     if (localRange.low.z * localRange.high.z > 0.0)
       return undefined;
     // oversized polygon on local z= 0
-    const xyzOut: Point3d[] = [];
-    xyzOut.push(Point3d.create(localRange.low.x, localRange.low.y));
-    xyzOut.push(Point3d.create(localRange.high.x, localRange.low.y));
-    xyzOut.push(Point3d.create(localRange.high.x, localRange.high.y));
-    xyzOut.push(Point3d.create(localRange.low.x, localRange.high.y));
-    frameOnPlane.multiplyPoint3dArrayInPlace(xyzOut);
+    const xyzOut = new GrowableXYZArray();
+    xyzOut.pushXYZ(localRange.low.x, localRange.low.y, 0);
+    xyzOut.pushXYZ(localRange.high.x, localRange.low.y, 0);
+    xyzOut.pushXYZ(localRange.high.x, localRange.high.y, 0);
+    xyzOut.pushXYZ(localRange.low.x, localRange.high.y, 0);
+    xyzOut.multiplyTransformInPlace(frameOnPlane);
     ClipPlane.intersectRangeConvexPolygonInPlace(range, xyzOut);
     if (xyzOut.length === 0)
       return undefined;
     if (addClosurePoint)
-      xyzOut.push(xyzOut[0].clone());
+      xyzOut.pushWrap(1);
     return xyzOut;
   }
   /**
@@ -580,37 +633,37 @@ public isPointOnOrInside(spacePoint: Point3d, tolerance: number = Geometry.small
    * @param range
    * @param xyzOut intersection polygon.  This is convex.
    */
-  public static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: Point3d[]) {
+  public static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray) {
     if (range.isNull)
       return undefined;
-    const work: Point3d[] = [];
+    const work = new GrowableXYZArray();
     // clip the polygon to each plane of the cubic ...
     const clipper = ClipPlane.createNormalAndPointXYZXYZ(-1, 0, 0, range.high.x, range.high.y, range.high.z)!;
-    clipper.convexPolygonClipInPlace(xyz, work);
+    clipper.clipConvexPolygonInPlace(xyz, work);
     if (xyz.length === 0)
       return undefined;
     clipper.safeSetXYZDistance(0, -1, 0, -range.high.y);
-    clipper.convexPolygonClipInPlace(xyz, work);
+    clipper.clipConvexPolygonInPlace(xyz, work);
 
     if (xyz.length === 0)
       return undefined;
     clipper.safeSetXYZDistance(0, 0, -1, -range.high.z);
-    clipper.convexPolygonClipInPlace(xyz, work);
+    clipper.clipConvexPolygonInPlace(xyz, work);
 
     if (xyz.length === 0)
       return undefined;
     clipper.safeSetXYZDistance(1, 0, 0, range.low.x);
-    clipper.convexPolygonClipInPlace(xyz, work);
+    clipper.clipConvexPolygonInPlace(xyz, work);
 
     if (xyz.length === 0)
       return undefined;
     clipper.safeSetXYZDistance(0, 1, 0, range.low.y);
-    clipper.convexPolygonClipInPlace(xyz, work);
+    clipper.clipConvexPolygonInPlace(xyz, work);
 
     if (xyz.length === 0)
       return undefined;
     clipper.safeSetXYZDistance(0, 0, 1, range.low.z);
-    clipper.convexPolygonClipInPlace(xyz, work);
+    clipper.clipConvexPolygonInPlace(xyz, work);
     if (xyz.length === 0)
       return undefined;
 

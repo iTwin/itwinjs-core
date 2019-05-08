@@ -96,11 +96,17 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     result._xyzInUse = this.length;
     return result;
   }
-
-  public static create(data: XYAndZ[]): GrowableXYZArray {
-    const newPoints = new GrowableXYZArray(data.length);
-    for (const p of data) newPoints.push(p);
-    return newPoints;
+  /** Copy point coordinates from data to a growable array.
+   * @param data source points.
+   * @param result optional pre-allocated GrowableXYZArray to clear and fill.
+   */
+  public static create(data: XYAndZ[], result?: GrowableXYZArray): GrowableXYZArray {
+    if (result)
+      result.clear();
+    else
+      result = new GrowableXYZArray(data.length);
+    for (const p of data) result.push(p);
+    return result;
   }
 
   /** push a point to the end of the array */
@@ -112,6 +118,39 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   public pushAll(points: Point3d[]) {
     for (const p of points) this.push(p);
   }
+  /** Push points from variant sources.
+   * Valid inputs are:
+   * * Point2d
+   * * point3d
+   * * An array of 2 doubles
+   * * An array of 3 doubles
+   * * A GrowableXYZArray
+   * * Any json object satisfying Point3d.isXYAndZ
+   * * Any json object satisfying Point3d.isXAndY
+   * * An array of any of the above
+   * @returns the number of points added.
+   */
+  public pushFrom(p: any) {
+    if (p instanceof Point3d)
+      this.pushXYZ(p.x, p.y, p.z);
+    else if (p instanceof GrowableXYZArray)
+      this.pushFromGrowableXYZArray(p);
+    else if (p instanceof Point2d)
+      this.pushXYZ(p.x, p.y, 0.0);
+    else if (Geometry.isNumberArray(p, 3))
+      this.pushXYZ(p[0], p[1], p[2]);
+    else if (Geometry.isNumberArray(p, 2))
+      this.pushXYZ(p[0], p[1], 0.0);
+    else if (Array.isArray(p)) {
+      // diret recursion re-wraps p and goes infinite.  unroll here .
+      for (const q of p)
+        this.pushFrom(q);
+    } else if (Point3d.isXYAndZ(p))
+      this.pushXYZ(p.x, p.y, p.z);
+    else if (Point3d.isXAndY(p))
+      this.pushXYZ(p.x, p.y, 0.0);
+  }
+
   /**
    * Replicate numWrap xyz values from the front of the array as new values at the end.
    * @param numWrap number of xyz values to replicate
@@ -235,16 +274,28 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   /**
    * push coordinates from the source array to the end of this array.
    * @param source source array
-   * @param sourceIndex xyz index within the source
-   * @returns true if sourceIndex is valid.
+   * @param sourceIndex xyz index within the source.  If undefined, entire source is pushed.
+   * @returns number of points pushed.
    */
-  public pushFromGrowableXYZArray(source: GrowableXYZArray, sourceIndex: number) {
+  public pushFromGrowableXYZArray(source: GrowableXYZArray, sourceIndex?: number): number {
+    // full array push  . . .
+    if (sourceIndex === undefined) {
+      const numXYZAdd = source.length;
+      this.ensureCapacity(this.length + numXYZAdd);
+      const nXAdd = source.length * 3;
+      const i0 = this._xyzInUse * 3;
+      for (let i = 0; i < nXAdd; i++)
+        this._data[i0 + i] = source._data[i];
+      this._xyzInUse += numXYZAdd;
+      return numXYZAdd;
+    }
+    // single point push . . .
     if (source.isIndexValid(sourceIndex)) {
       const j = sourceIndex * 3;
       this.pushXYZ(source._data[j], source._data[j + 1], source._data[j + 2]);
-      return true;
+      return 1;
     }
-    return false;
+    return 0;
   }
 
   /**
@@ -472,6 +523,23 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     return undefined;
   }
 
+  /**
+   * * Compute a point at fractional coordinate between points i and j of source
+   * * push onto this array.
+   */
+  public pushInterpolatedFromGrowableXYZArray(source: GrowableXYZArray, i: number, fraction: number, j: number) {
+    if (source.isIndexValid(i) && source.isIndexValid(j)) {
+      const fraction0 = 1.0 - fraction;
+      const data = source._data;
+      i = 3 * i;
+      j = 3 * j;
+      this.pushXYZ(
+        fraction0 * data[i] + fraction * data[j],
+        fraction0 * data[i + 1] + fraction * data[j + 1],
+        fraction0 * data[i + 2] + fraction * data[j + 2]);
+    }
+  }
+
   /** Sum the signed areas of the projection to xy plane */
   public areaXY(): number {
     let area = 0.0;
@@ -531,6 +599,13 @@ export class GrowableXYZArray extends IndexedXYZCollection {
         data[k] - data[i], data[k + 1] - data[i + 1], data[k + 2] - data[i + 2],
         result);
     return undefined;
+  }
+
+  /** Compute the dot product of pointIndex with [x,y,z] */
+  public evaluateUncheckedIndexDotProductXYZ(pointIndex: number, x: number, y: number, z: number): number {
+    const i = pointIndex * 3;
+    const data = this._data;
+    return data[i] * x + data[i + 1] * y + data[i + 2] * z;
   }
 
   /**

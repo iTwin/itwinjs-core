@@ -520,8 +520,8 @@ describe("GrowablePoint3dArray", () => {
 
     const array1 = new GrowableXYZArray();
     // transfers with bad source index
-    ck.testFalse(array1.pushFromGrowableXYZArray(array0, -1), "invalide source index for pushFromGrowable");
-    ck.testFalse(array1.pushFromGrowableXYZArray(array0, n0 + 1), "invalide source index for pushFromGrowable");
+    ck.testExactNumber(0, array1.pushFromGrowableXYZArray(array0, -1), "invalide source index for pushFromGrowable");
+    ck.testExactNumber(0, array1.pushFromGrowableXYZArray(array0, n0 + 1), "invalide source index for pushFromGrowable");
     // Any trasnfer into empty array is bad . ..
     ck.testFalse(array1.transferFromGrowableXYZArray(-1, array0, 1), "invalid source index transferFromGrowable");
     ck.testFalse(array1.transferFromGrowableXYZArray(0, array0, 1), "invalid source index transferFromGrowable");
@@ -537,7 +537,7 @@ describe("GrowablePoint3dArray", () => {
     const resultA = Point3d.create();
     const interpolationFraction = 0.321;
     for (let k = 1; k + 2 < n0; k++) {
-      ck.testTrue(array1.pushFromGrowableXYZArray(array0, k), "transformFromGrowable");
+      ck.testExactNumber(1, array1.pushFromGrowableXYZArray(array0, k), "transformFromGrowable");
 
       ck.testUndefined(array1.interpolate(-1, 0.3, k), "interpolate with bad index");
       ck.testUndefined(array1.interpolate(100, 0.3, k), "interpolate with bad index");
@@ -654,4 +654,37 @@ describe("GrowablePoint3dArray", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+  it("pushFrom", () => {
+    const ck = new Checker();
+    const dataA = new GrowableXYZArray();
+    const dataB = new GrowableXYZArray();
+    const dataC = new GrowableXYZArray();
+    const dataD = new GrowableXYZArray();
+    const dataA0 = new GrowableXYZArray();
+    const dataB0 = new GrowableXYZArray();
+    const dataC0 = new GrowableXYZArray();
+    const points = [
+      Point3d.create(1, 2, 3),
+      Point3d.create(2, 4, 10)];
+
+    /** Assemble the points into GrowableXYZArray with variant input parse ... */
+    dataA.pushFrom(points);
+    for (const p of points) {
+      dataB.pushFrom(p);
+      dataC.pushFrom({ x: p.x, y: p.y, z: p.z });
+      dataD.pushFrom([p.x, p.y, p.z]);
+    }
+    for (const p of points) {
+      const p2 = Point2d.create(p.x, p.y);
+      dataA0.pushFrom(p2);
+      dataB0.pushFrom({ x: p.x, y: p.y });
+      dataC0.pushFrom([p.x, p.y]);
+    }
+    ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA, dataB));
+    ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA, dataC));
+    ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA0, dataB0));
+    ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA0, dataC0));
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

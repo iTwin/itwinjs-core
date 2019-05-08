@@ -17,6 +17,7 @@ import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { Geometry } from "../Geometry";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 
 /**
  * A collection of ConvexClipPlaneSets.
@@ -51,7 +52,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     }
     return result;
   }
-
+  /** Create a `UnionOfComvexClipPlaneSets` with no members. */
   public static createEmpty(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     if (result) {
       result._convexSets.length = 0;
@@ -71,13 +72,14 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
         return false;
     return true;
   }
+  /** Create a `UnionOfComvexClipPlaneSets` with given `ConvexClipPlaneSet` members */
   public static createConvexSets(convexSets: ConvexClipPlaneSet[], result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     result = result ? result : new UnionOfConvexClipPlaneSets();
     for (const set of convexSets)
       result._convexSets.push(set);
     return result;
   }
-
+/** return a deep copy. */
   public clone(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     result = result ? result : new UnionOfConvexClipPlaneSets();
     result._convexSets.length = 0;
@@ -178,12 +180,14 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
   }
 
   /** Clip a polygon using this ClipPlaneSet, returning new polygon boundaries. Note that each polygon may lie next to the previous, or be disconnected. */
-  public polygonClip(input: Point3d[], output: Point3d[][]) {
+  public polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[]) {
     output.length = 0;
-
+    if (Array.isArray(input))
+      input = GrowableXYZArray.create(input);
+    const work = new GrowableXYZArray();
     for (const convexSet of this._convexSets) {
-      const convexSetOutput: Point3d[] = [];
-      convexSet.polygonClip(input, convexSetOutput, []);
+      const convexSetOutput = new GrowableXYZArray();
+      convexSet.polygonClip(input, convexSetOutput, work);
       if (convexSetOutput.length !== 0)
         output.push(convexSetOutput);
     }
@@ -210,6 +214,9 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
   }
 
   private static _clipArcFractionArray = new GrowableFloat64Array();
+  /** Find parts of an arc that are inside any member clipper.
+   * Announce each with `announce(startFraction, endFraction, this)`
+   */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     const breaks = UnionOfConvexClipPlaneSets._clipArcFractionArray;
     breaks.clear();
@@ -262,13 +269,13 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     }
     return true;
   }
-
+/** Recursively call `setInivisible` on all member convex sets. */
   public setInvisible(invisible: boolean) {
     for (const convexSet of this._convexSets) {
       convexSet.setInvisible(invisible);
     }
   }
-
+/** add convex sets that accept points below `zLow` and above `zHigh` */
   public addOutsideZClipSets(invisible: boolean, zLow?: number, zHigh?: number) {
     if (zLow) {
       const convexSet = ConvexClipPlaneSet.createEmpty();

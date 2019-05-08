@@ -19,6 +19,7 @@ import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { Range3d, Range1d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.
@@ -476,18 +477,18 @@ export class ConvexClipPlaneSet implements Clipper {
    * @param work work array.
    * @param containingPlane if this plane is found inthe convex set, it is NOT applied.
    */
-  public polygonClip(input: Point3d[], output: Point3d[], work: Point3d[], planeToSkip?: ClipPlane) {
-    output.length = 0;
-    // Copy input array
-    for (const i of input)
-      output.push(i);
+  public polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work: GrowableXYZArray, planeToSkip?: ClipPlane) {
+    if (input instanceof GrowableXYZArray)
+      input.clone(output);
+    else
+      GrowableXYZArray.create(input, output);
 
     for (const plane of this._planes) {
       if (planeToSkip === plane)
         continue;
       if (output.length === 0)
         break;
-      plane.convexPolygonClipInPlace(output, work);
+      plane.clipConvexPolygonInPlace(output, work);
     }
   }
   /**

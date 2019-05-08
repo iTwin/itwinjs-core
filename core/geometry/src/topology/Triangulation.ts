@@ -199,7 +199,7 @@ export class Triangulator {
    * * The loop may be either CCW or CW -- CCW order will be used for triangles.
    * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops
    */
-  public static createTriangulatedGraphFromSingleLoop(data: XAndY[]): HalfEdgeGraph {
+  public static createTriangulatedGraphFromSingleLoop(data: XAndY[] | GrowableXYZArray): HalfEdgeGraph {
     const graph = new HalfEdgeGraph();
     const startingNode = Triangulator.createFaceLoopFromCoordinates(graph, data, true, true);
 

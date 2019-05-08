@@ -123,11 +123,24 @@ export class ClipUtilities {
    * @return An multidimensional array of points, where each array is the boundary of part of the remaining polygon.
    */
   public static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipPrimitive): Point3d[][] {
-    const output: Point3d[][] = [];
+    const outputA = this.clipPolygonToClipShapeReturnGrowableXYZArrays(polygon, clipShape);
+    const output = [];
+    for (const g of outputA)
+      output.push(g.getPoint3dArray());
+    return output;
+  }
+
+  /**
+   * Clip a polygon down to regions defined by each shape of a ClipShape.
+   * @return An multidimensional array of points, where each array is the boundary of part of the remaining polygon.
+   */
+  public static clipPolygonToClipShapeReturnGrowableXYZArrays(polygon: Point3d[], clipShape: ClipPrimitive): GrowableXYZArray[] {
+    const output: GrowableXYZArray[] = [];
     const clipper = clipShape.fetchClipPlanesRef();
     // NEEDS WORK -- what if it is a mask !!!!
-    if (clipper)
+    if (clipper) {
       clipper.polygonClip(polygon, output);
+    }
     return output;
   }
 
@@ -178,16 +191,16 @@ export class ClipUtilities {
    * @param includeRangeFaces if false, do not compute facets originating as range faces
    * @param ignoreInvisiblePlanes if true, do NOT compute a facet for convex set faces marked invisible.
    */
-  public static announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d, loopFunction: (loopPoints: Point3d[]) => void,
+  public static announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d, loopFunction: (loopPoints: GrowableXYZArray) => void,
     includeConvexSetFaces: boolean = true, includeRangeFaces: boolean = true, ignoreInvisiblePlanes = false) {
-    const work: Point3d[] = [];
+    const work = new GrowableXYZArray();
     if (includeConvexSetFaces) {
       // Clip convexSet planes to the range and to the rest of the convexSet . .
       for (const plane of convexSet.planes) {
         if (ignoreInvisiblePlanes && plane.invisible)
           continue;
         const pointsClippedToRange = plane.intersectRange(range, true);
-        const finalPoints: Point3d[] = [];
+        const finalPoints = new GrowableXYZArray();
         if (pointsClippedToRange) {
           convexSet.polygonClip(pointsClippedToRange, finalPoints, work, plane);
           if (finalPoints.length > 0)
@@ -201,9 +214,9 @@ export class ClipUtilities {
       const corners = range.corners();
       for (let i = 0; i < 6; i++) {
         const indices = Range3d.faceCornerIndices(i);
-        const finalPoints: Point3d[] = [];
+        const finalPoints = new GrowableXYZArray();
         const lineString = LineString3d.createIndexedPoints(corners, indices);
-        convexSet.polygonClip(lineString.points, finalPoints, work);
+        convexSet.polygonClip(lineString.packedPoints, finalPoints, work);
         if (finalPoints.length > 0)
           loopFunction(finalPoints);
       }
@@ -222,7 +235,7 @@ export class ClipUtilities {
     includeConvexSetFaces: boolean = true, includeRangeFaces: boolean = true, ignoreInvisiblePlanes = false): GeometryQuery[] {
     const result: GeometryQuery[] = [];
     this.announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet, range,
-      (points: Point3d[]) => {
+      (points: GrowableXYZArray) => {
         if (points.length > 0) result.push(Loop.createPolygon(points));
       },
       includeConvexSetFaces, includeRangeFaces, ignoreInvisiblePlanes);
@@ -237,7 +250,7 @@ export class ClipUtilities {
   public static rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d): Range3d {
     const result = Range3d.createNull();
     this.announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet, range,
-      (points: Point3d[]) => {
+      (points: GrowableXYZArray) => {
         if (points.length > 0) result.extendArray(points);
       },
       true, true, false);
@@ -349,7 +362,7 @@ export class ClipUtilities {
    */
   public static doesConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d,
     includeConvexSetFaces: boolean = true, includeRangeFaces: boolean = true, ignoreInvisiblePlanes = false): boolean {
-    const work: Point3d[] = [];
+    const work = new GrowableXYZArray();
     if (includeConvexSetFaces) {
       // Clip convexSet planes to the range and to the rest of the convexSet . .
       for (const plane of convexSet.planes) {
@@ -357,7 +370,7 @@ export class ClipUtilities {
           continue;
         const pointsClippedToRange = plane.intersectRange(range, true);
         if (pointsClippedToRange) {
-          const finalPoints: Point3d[] = [];
+          const finalPoints = new GrowableXYZArray();
           convexSet.polygonClip(pointsClippedToRange, finalPoints, work, plane);
           if (finalPoints.length > 0)
             return true;
@@ -370,9 +383,9 @@ export class ClipUtilities {
       const corners = range.corners();
       for (let i = 0; i < 6; i++) {
         const indices = Range3d.faceCornerIndices(i);
-        const finalPoints: Point3d[] = [];
+        const finalPoints = new GrowableXYZArray();
         const lineString = LineString3d.createIndexedPoints(corners, indices);
-        convexSet.polygonClip(lineString.points, finalPoints, work);
+        convexSet.polygonClip(lineString.packedPoints, finalPoints, work);
         if (finalPoints.length > 0)
           return true;
       }

@@ -43,8 +43,9 @@ Checker.noisy.clipPlane = false;
  * @param range range
  * @param xyz post-clip polygon
  */
-function testPolygonClippedToRange(ck: Checker, range: Range3d, convexXYZ: Point3d[]): boolean {
+function testPolygonClippedToRange(ck: Checker, range: Range3d, polygon: GrowableXYZArray): boolean {
   const expandedRange = range.clone();
+  const convexXYZ = polygon.getPoint3dArray();
   expandedRange.expandInPlace(Geometry.smallMetricDistance);
   // every point must be in . . .
   for (const xyz of convexXYZ) {
@@ -750,10 +751,10 @@ describe("CurveClips", () => {
     const ck = new Checker();
     const ax = 1;
     const ay = 2;
-    const range = Range3d.createXYZXYZ(ax, ay, 3, 6, 7, 4);
-    const convexA = ConvexClipPlaneSet.createRange3dPlanes(range, true, false, true, false, false)!;
     const bx = 4;
-    const by = 8;
+    const by = 5;
+    const range = Range3d.createXYZXYZ(ax, ay, -1, bx + 1, by + 1, 4);
+    const convexA = ConvexClipPlaneSet.createRange3dPlanes(range, true, false, true, false, false)!;
     const rectangle0 = [
       Point3d.create(-1, -1, 0),
       Point3d.create(bx, - 1, 0),
@@ -761,8 +762,8 @@ describe("CurveClips", () => {
       Point3d.create(-1, by, 0)];
 
     // const area0 = PolygonOps.sumTriangleAreas(rectangle0);
-    const splitA: Point3d[] = [];
-    const work: Point3d[] = [];
+    const splitA = new GrowableXYZArray();
+    const work = new GrowableXYZArray();
     convexA.polygonClip(rectangle0, splitA, work);
     const areaA = PolygonOps.sumTriangleAreas(splitA);
 
@@ -786,8 +787,8 @@ describe("CurveClips", () => {
     const clipper = ConvexClipPlaneSet.createSweptPolyline(triangle0, upVector, tiltAngle);
     if (ck.testPointer(clipper, "createSweptPolygon") && clipper) {
       // const area0 = PolygonOps.sumTriangleAreas(rectangle0);
-      const splitA: Point3d[] = [];
-      const work: Point3d[] = [];
+      const splitA = new GrowableXYZArray();
+      const work = new GrowableXYZArray();
       clipper.polygonClip(rectangle0, splitA, work);
       const areaA = PolygonOps.sumTriangleAreas(splitA);
       ck.testCoordinate(area0, areaA);
@@ -909,7 +910,7 @@ describe("CurveClips", () => {
     for (let i = 0; i < 6; i++) {
       const indices = Range3d.faceCornerIndices(i);
       const lineString = LineString3d.createIndexedPoints(corners, indices);
-      testPolygonClippedToRange(ck, range, lineString.points);
+      testPolygonClippedToRange(ck, range, lineString.packedPoints);
       GeometryCoreTestIO.captureGeometry(allGeometry, Loop.create(lineString), 0, 0, 0);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "RangeFaces");
@@ -938,7 +939,7 @@ describe("CurveClips", () => {
         const indices = Range3d.faceCornerIndices(i);
         const linestring = LineString3d.createIndexedPoints(cornerB, indices, true);
         GeometryCoreTestIO.captureGeometry(allGeometry, linestring.clone(), 0, dy, 0);
-        const clippedPoints = linestring.points;
+        const clippedPoints = linestring.packedPoints.clone();
         clippedPoints.pop(); // get rid of closure
         ClipPlane.intersectRangeConvexPolygonInPlace(range, clippedPoints);
         if (clippedPoints && clippedPoints.length > 0)
