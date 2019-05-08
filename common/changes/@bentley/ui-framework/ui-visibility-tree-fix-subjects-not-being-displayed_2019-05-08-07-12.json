@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Visibility Tree: Fix some subjects not being displayed in the hierarchy",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "grigas.petraitis@bentley.com"
+}
