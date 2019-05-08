@@ -1012,6 +1012,7 @@ export abstract class RenderSystem implements IDisposable {
    * @returns A Promise resolving to the created RenderTexture or to undefined if the texture could not be created.
    * @note If the texture is successfully created, it will be cached on the IModelConnection such that it can later be retrieved by its ID using [[RenderSystem.findTexture]].
    * @see [[RenderSystem.loadTextureImage]].
+   * @internal
    */
   public async loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined> {
     let texture = this.findTexture(id.toString(), iModel);
@@ -1032,6 +1033,7 @@ export abstract class RenderSystem implements IDisposable {
    * @param iModel The IModel containing the texture element.
    * @returns A Promise resolving to a TextureImage created from the texture element's data, or to undefined if the TextureImage could not be created.
    * @see [[RenderSystem.loadTexture]]
+   * @internal
    */
   public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined> {
     const elemProps = await iModel.elements.getProps(id);

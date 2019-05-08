@@ -565,7 +565,9 @@ export class SelectionTool extends PrimitiveTool {
     this.syncToolSettingsProperties([syncMode]);
   }
 
-  /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
+  /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed
+   * @beta
+   */
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
     if (!this.wantToolSettings())
       return undefined;
@@ -576,7 +578,9 @@ export class SelectionTool extends PrimitiveTool {
     return toolSettings;
   }
 
-  /** Used to send changes from UI back to Tool */
+  /** Used to send changes from UI back to Tool
+   * @beta
+   */
   public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
     let changed = false;
     if (updatedValue.propertyName === SelectionTool._methodsName) {

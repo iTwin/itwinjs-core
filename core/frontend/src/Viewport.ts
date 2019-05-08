@@ -1207,6 +1207,7 @@ export abstract class Viewport implements IDisposable {
   private _animationFraction = 0.0;
   private _doContinuousRendering = false;
   private _animator?: Animator;
+  /** @internal */
   protected _changeFlags = new ChangeFlags();
   private _scheduleTime = 0.0;
   private _selectionSetDirty = true;
@@ -1499,6 +1500,7 @@ export abstract class Viewport implements IDisposable {
 
   /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
    * @see [[Tile.DebugBoundingBoxes]]
+   * @internal
    */
   public get debugBoundingBoxes(): Tile.DebugBoundingBoxes { return this._debugBoundingBoxes; }
   public set debugBoundingBoxes(boxes: Tile.DebugBoundingBoxes) {
@@ -1637,7 +1639,9 @@ export abstract class Viewport implements IDisposable {
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
-  /** Allows visibility of categories within this viewport to be overridden on a per-model basis. */
+  /** Allows visibility of categories within this viewport to be overridden on a per-model basis.
+   * @alpha
+   */
   public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides { return this._perModelCategoryVisibility; }
 
   /** Adds visibility overrides for any subcategories whose visibility differs from that defined by the view's
@@ -2487,6 +2491,7 @@ export abstract class Viewport implements IDisposable {
    * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error.
    * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
+   * @beta
    */
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable = false): void {
     const viewRect = this.viewRect;
@@ -2507,7 +2512,9 @@ export abstract class Viewport implements IDisposable {
     return this.target.readImage(rect, targetSize, flipVertically);
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates */
+  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates
+   * @beta
+   */
   public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
     if (z <= 0.0)
@@ -2527,7 +2534,9 @@ export abstract class Viewport implements IDisposable {
     return result;
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in world coordinates */
+  /** Get the point at the specified x and y location in the pixel buffer in world coordinates
+   * @beta
+   */
   public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
     if (undefined !== npc)

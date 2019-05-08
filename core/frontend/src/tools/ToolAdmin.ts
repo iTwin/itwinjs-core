@@ -1302,7 +1302,9 @@ export class ToolAdmin {
     this.setPrimitiveTool(newTool);
   }
 
-  /** Method used by interactive tools to send updated values to UI components, typically showing tool settings. */
+  /** Method used by interactive tools to send updated values to UI components, typically showing tool settings.
+   * @beta
+   */
   public syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
     if (this.toolSettingsChangeHandler)
       this.toolSettingsChangeHandler(toolId, syncProperties);

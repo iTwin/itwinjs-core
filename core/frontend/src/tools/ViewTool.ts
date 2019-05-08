@@ -218,6 +218,7 @@ export class ViewHandleArray {
  * @public
  */
 export abstract class ViewManip extends ViewTool {
+  /** @internal */
   public viewHandles: ViewHandleArray;
   public frustumValid = false;
   public readonly targetCenterWorld = new Point3d();
@@ -227,6 +228,7 @@ export abstract class ViewManip extends ViewTool {
   public targetCenterValid = false;
   public targetCenterLocked = false;
   public nPts = 0;
+  /** @internal */
   protected _forcedHandle = ViewHandleType.None;
 
   constructor(viewport: ScreenViewport | undefined, public handleMask: number, public oneShot: boolean, public isDraggingRequired: boolean = false) {
@@ -298,6 +300,7 @@ export abstract class ViewManip extends ViewTool {
     return EventHandled.Yes;
   }
 
+  /** @internal */
   public async startHandleDrag(ev: BeButtonEvent, forcedHandle?: ViewHandleType): Promise<EventHandled> {
     if (this.inHandleModify)
       return EventHandled.No; // If already changing the view reject the request...

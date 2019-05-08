@@ -325,7 +325,9 @@ export abstract class ViewState extends ElementState {
   /** @internal */
   public abstract setFromUndo(props: ViewStateUndo): void;
 
-  /** Execute a function on each viewed model */
+  /** Execute a function on each viewed model
+   * @alpha
+   */
   public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void { this.forEachModel((model: GeometricModelState) => func(model)); }
   /** @internal */
   public createScene(context: SceneContext): void {
@@ -1541,14 +1543,17 @@ export class SpatialViewState extends ViewState3d {
         func(model3d);
     }
   }
+
+  /** @alpha */
   public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
     this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
     this.forEachModel((model: TileTreeModelState) => func(model));
   }
 
+  /** @internal */
   public createSolarShadowMap(context: SceneContext): void {
     context.solarShadowMap = undefined;
-    const displayStyle =  this.getDisplayStyle3d();
+    const displayStyle = this.getDisplayStyle3d();
     if (IModelApp.renderSystem.options.displaySolarShadows && this.viewFlags.shadows && displayStyle !== undefined) {
       const backgroundMapPlane = this.displayStyle.backgroundMapPlane;
       const viewFrustum = (undefined === backgroundMapPlane) ? context.viewFrustum : ViewFrustum.createFromViewportAndPlane(context.viewport, backgroundMapPlane);

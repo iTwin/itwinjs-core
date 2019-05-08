@@ -212,8 +212,6 @@ export class AccuDraw {
     changeCompassMode(animate?: boolean): void;
     // @internal (undocumented)
     clearTentative(): boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "compassMode" is marked as @public, but its signature references "CompassMode" which is marked as @internal
-    // 
     // (undocumented)
     compassMode: CompassMode;
     // @internal (undocumented)
@@ -358,8 +356,6 @@ export class AccuDraw {
     refreshDecorationsAndDynamics(): void;
     // @internal (undocumented)
     restoreState(stateBuffer: SavedState): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "rotationMode" is marked as @public, but its signature references "RotationMode" which is marked as @internal
-    // 
     // (undocumented)
     rotationMode: RotationMode;
     // @internal (undocumented)
@@ -372,7 +368,7 @@ export class AccuDraw {
     saveState(stateBuffer: SavedState): void;
     // @internal (undocumented)
     sendDataPoint(pt: Point3d, vp: ScreenViewport): void;
-    // @internal (undocumented)
+    // (undocumented)
     setCompassMode(mode: CompassMode): void;
     // @internal (undocumented)
     setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: Matrix3d | Vector3d, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus;
@@ -388,7 +384,7 @@ export class AccuDraw {
     setLastPoint(pt: Point3d): void;
     // @internal (undocumented)
     protected setNewFocus(index: ItemField): void;
-    // @internal (undocumented)
+    // (undocumented)
     setRotationMode(mode: RotationMode): void;
     // @internal (undocumented)
     setValueByIndex(index: ItemField, value: number): void;
@@ -525,7 +521,7 @@ export class AccuDrawHintBuilder {
     setXAxis2(xAxis: Vector3d): void;
 }
 
-// @beta
+// @internal
 export class AccuDrawShortcuts {
     // (undocumented)
     static alignView(): void;
@@ -537,26 +533,16 @@ export class AccuDrawShortcuts {
     static defineACSByPoints(): void;
     // (undocumented)
     static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldAcceptInput" is marked as @beta, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldLockToggle" is marked as @beta, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldLockToggle(index: ItemField): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNavigate" is marked as @beta, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldNavigate(index: ItemField, str: string, forward: boolean): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNewInput" is marked as @beta, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldNewInput(index: ItemField): void;
     // (undocumented)
     static itemFieldUnlockAll(): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemRotationModeChange" is marked as @beta, but its signature references "RotationMode" which is marked as @internal
-    // 
     // (undocumented)
     static itemRotationModeChange(rotation: RotationMode): void;
     // (undocumented)
@@ -575,7 +561,6 @@ export class AccuDrawShortcuts {
     static lockZ(): void;
     // (undocumented)
     static processPendingHints(): void;
-    // @internal
     static processShortcutKey(keyEvent: KeyboardEvent): boolean;
     // (undocumented)
     static requestInputFocus(): void;
@@ -595,8 +580,6 @@ export class AccuDrawShortcuts {
     static rotateToElement(updateCurrentACS: boolean): void;
     // (undocumented)
     static setOrigin(explicitOrigin?: Point3d): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "setStandardRotation" is marked as @beta, but its signature references "RotationMode" which is marked as @internal
-    // 
     // (undocumented)
     static setStandardRotation(rotation: RotationMode): void;
     // (undocumented)
@@ -605,7 +588,7 @@ export class AccuDrawShortcuts {
     static writeACS(_acsName: string): BentleyStatus;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export abstract class AccuDrawTool {
     // (undocumented)
     activateAccuDrawOnStart(): boolean;
@@ -619,8 +602,6 @@ export abstract class AccuDrawTool {
     static installTool(shortcut: AccuDrawTool): boolean;
     // (undocumented)
     onDecorate(_context: DecorateContext): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "onManipulationComplete" is marked as @beta, but its signature references "AccuDrawFlags" which is marked as @internal
-    // 
     // (undocumented)
     onManipulationComplete(): AccuDrawFlags;
     // (undocumented)
@@ -1458,7 +1439,7 @@ export interface ColorEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.ColorData;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export enum CompassMode {
     // (undocumented)
     Polar = 0,
@@ -2908,7 +2889,7 @@ export class IModelApp {
     static startup(opts?: IModelAppOptions): void;
     // @internal (undocumented)
     static readonly tentativePoint: TentativePoint;
-    // Warning: (ae-incompatible-release-tags) The symbol "tileAdmin" is marked as @public, but its signature references "TileAdmin" which is marked as @alpha
+    // @alpha
     static readonly tileAdmin: TileAdmin;
     static readonly toolAdmin: ToolAdmin;
     static readonly tools: ToolRegistry;
@@ -2936,7 +2917,7 @@ export interface IModelAppOptions {
     settings?: SettingsAdmin;
     // @internal (undocumented)
     tentativePoint?: TentativePoint;
-    // Warning: (ae-incompatible-release-tags) The symbol "tileAdmin" is marked as @public, but its signature references "TileAdmin" which is marked as @alpha
+    // @alpha
     tileAdmin?: TileAdmin;
     toolAdmin?: ToolAdmin;
     viewManager?: ViewManager;
@@ -3088,7 +3069,7 @@ export interface InstancedGraphicParams {
 
 // @public
 export abstract class InteractiveTool extends Tool {
-    // Warning: (ae-incompatible-release-tags) The symbol "applyToolSettingPropertyChange" is marked as @public, but its signature references "ToolSettingsPropertySyncItem" which is marked as @beta
+    // @beta
     applyToolSettingPropertyChange(_updatedValue: ToolSettingsPropertySyncItem): boolean;
     beginDynamics(): void;
     changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
@@ -3137,9 +3118,9 @@ export abstract class InteractiveTool extends Tool {
     onTouchTap(_ev: BeTouchEvent): Promise<EventHandled>;
     onUnsuspend(): void;
     receivedDownEvent: boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "supplyToolSettingsProperties" is marked as @public, but its signature references "ToolSettingsPropertyRecord" which is marked as @beta
+    // @beta
     supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
-    // Warning: (ae-incompatible-release-tags) The symbol "syncToolSettingsProperties" is marked as @public, but its signature references "ToolSettingsPropertySyncItem" which is marked as @beta
+    // @beta
     syncToolSettingsProperties(syncData: ToolSettingsPropertySyncItem[]): void;
     testDecorationHit(_id: string): boolean;
 }
@@ -4770,8 +4751,9 @@ export abstract class RenderSystem implements IDisposable {
     getSpatialClassificationModel(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined;
     // @internal (undocumented)
     abstract readonly isValid: boolean;
+    // @internal
     loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined>;
-    // Warning: (ae-incompatible-release-tags) The symbol "loadTextureImage" is marked as @public, but its signature references "TextureImage" which is marked as @internal
+    // @internal
     loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined>;
     // @internal (undocumented)
     readonly maxTextureSize: number;
@@ -4874,7 +4856,7 @@ export class RotateViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export enum RotationMode {
     // (undocumented)
     ACS = 5,
@@ -5076,7 +5058,7 @@ export class SelectionSet {
 
 // @public
 export class SelectionTool extends PrimitiveTool {
-    // Warning: (ae-incompatible-release-tags) The symbol "applyToolSettingPropertyChange" is marked as @public, but its signature references "ToolSettingsPropertySyncItem" which is marked as @beta
+    // @beta
     applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
     // (undocumented)
     autoLockTarget(): void;
@@ -5144,7 +5126,7 @@ export class SelectionTool extends PrimitiveTool {
     protected showPrompt(mode: SelectionMode, method: SelectionMethod): void;
     // (undocumented)
     static startTool(): boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "supplyToolSettingsProperties" is marked as @public, but its signature references "ToolSettingsPropertyRecord" which is marked as @beta
+    // @beta
     supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
     // (undocumented)
     static toolId: string;
@@ -5415,9 +5397,7 @@ export class SpatialViewState extends ViewState3d {
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined;
-    // Warning: (ae-incompatible-release-tags) The symbol "createSolarShadowMap" is marked as @public, but its signature references "SceneContext" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     createSolarShadowMap(context: SceneContext): void;
     // (undocumented)
     readonly defaultExtentLimits: {
@@ -5428,9 +5408,7 @@ export class SpatialViewState extends ViewState3d {
     equals(other: this): boolean;
     // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "forEachTileTreeModel" is marked as @public, but its signature references "TileTreeModelState" which is marked as @alpha
-    // 
-    // (undocumented)
+    // @alpha (undocumented)
     forEachTileTreeModel(func: (model: TileTreeModelState) => void): void;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
@@ -6609,7 +6587,7 @@ export class ToolAdmin {
     startPrimitiveTool(newTool?: PrimitiveTool): void;
     // @internal (undocumented)
     startViewTool(newTool: ViewTool): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "syncToolSettingsProperties" is marked as @public, but its signature references "ToolSettingsPropertySyncItem" which is marked as @beta
+    // @beta
     syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void;
     // @internal (undocumented)
     testDecorationHit(id: string): boolean;
@@ -7432,9 +7410,7 @@ export abstract class ViewManip extends ViewTool {
     enforceZUp(pivotPoint: Point3d): boolean;
     // (undocumented)
     static fitView(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "_forcedHandle" is marked as @public, but its signature references "ViewHandleType" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     protected _forcedHandle: ViewHandleType;
     // (undocumented)
     frustumValid: boolean;
@@ -7496,9 +7472,7 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     setCameraLensAngle(lensAngle: Angle, retainEyePoint: boolean): ViewStatus;
     setTargetCenterWorld(pt: Point3d, lockTarget: boolean, saveTarget: boolean): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "startHandleDrag" is marked as @public, but its signature references "ViewHandleType" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     startHandleDrag(ev: BeButtonEvent, forcedHandle?: ViewHandleType): Promise<EventHandled>;
     // (undocumented)
     stoppedOverHandle: boolean;
@@ -7512,9 +7486,7 @@ export abstract class ViewManip extends ViewTool {
     updateTargetCenter(): void;
     // (undocumented)
     protected static _useViewAlignedVolume: boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "viewHandles" is marked as @public, but its signature references "ViewHandleArray" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     viewHandles: ViewHandleArray;
     // (undocumented)
     static zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): Promise<boolean>;
@@ -7546,9 +7518,7 @@ export abstract class Viewport implements IDisposable {
     changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
     // @internal (undocumented)
     changeDynamics(dynamics: GraphicList | undefined): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "_changeFlags" is marked as @public, but its signature references "ChangeFlags" which is marked as @beta
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     protected _changeFlags: ChangeFlags;
     changeModelDisplay(models: Id64Arg, display: boolean): boolean;
     // @alpha
@@ -7562,7 +7532,7 @@ export abstract class Viewport implements IDisposable {
     continuousRendering: boolean;
     // @internal (undocumented)
     createSceneContext(): SceneContext;
-    // Warning: (ae-incompatible-release-tags) The symbol "debugBoundingBoxes" is marked as @public, but its signature references "Tile" which is marked as @internal
+    // @internal
     debugBoundingBoxes: Tile.DebugBoundingBoxes;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
     displayStyle: DisplayStyleState;
@@ -7588,9 +7558,9 @@ export abstract class Viewport implements IDisposable {
     getAuxCoordRotation(result?: Matrix3d): Matrix3d;
     getContrastToBackgroundColor(): ColorDef;
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
-    // Warning: (ae-incompatible-release-tags) The symbol "getPixelDataNpcPoint" is marked as @public, but its signature references "Pixel" which is marked as @beta
+    // @beta
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
-    // Warning: (ae-incompatible-release-tags) The symbol "getPixelDataWorldPoint" is marked as @public, but its signature references "Pixel" which is marked as @beta
+    // @beta
     getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
     // @internal (undocumented)
@@ -7656,7 +7626,7 @@ export abstract class Viewport implements IDisposable {
     // @beta
     readonly onViewUndoRedo: BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "perModelCategoryVisibility" is marked as @public, but its signature references "PerModelCategoryVisibility" which is marked as @alpha
+    // @alpha
     readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
     pixelsFromInches(inches: number): number;
     // @internal (undocumented)
@@ -7664,7 +7634,7 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     pointToGrid(point: Point3d): void;
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
-    // Warning: (ae-incompatible-release-tags) The symbol "readPixels" is marked as @public, but its signature references "Pixel" which is marked as @beta
+    // @beta
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     // @internal (undocumented)
     removeAnimator(): void;
@@ -7819,7 +7789,7 @@ export abstract class ViewState extends ElementState {
     equals(other: this): boolean;
     extentLimits: ExtentLimits;
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "forEachTileTreeModel" is marked as @public, but its signature references "TileTreeModelState" which is marked as @alpha
+    // @alpha
     forEachTileTreeModel(func: (model: TileTreeModelState) => void): void;
     getAspectRatio(): number;
     getAspectRatioSkew(): number;

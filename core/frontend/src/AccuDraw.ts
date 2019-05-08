@@ -47,13 +47,13 @@ export enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
-/** @internal */
+/** @public */
 export enum CompassMode {
   Polar = 0,
   Rectangular = 1,
 }
 
-/** @internal */
+/** @public */
 export enum RotationMode {
   Top = 1,
   Front = 2,
@@ -332,14 +332,14 @@ export class AccuDraw {
       this.currentState = CurrentState.Deactivated;
   }
 
-  /** @internal */
+  /** @public */
   public setCompassMode(mode: CompassMode): void {
     if (mode === this.compassMode) return;
     this.compassMode = mode;
     this.onCompassModeChange();
   }
 
-  /** @internal */
+  /** @public */
   public setRotationMode(mode: RotationMode): void {
     if (mode === this.rotationMode) return;
     this.rotationMode = mode;

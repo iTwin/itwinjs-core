@@ -47,7 +47,9 @@ export interface IModelAppOptions {
   settings?: SettingsAdmin;
   /** If present, supplies the [[ViewManager]] for this session. */
   viewManager?: ViewManager;
-  /** If present, supplies the [[TileAdmin]] for this session. */
+  /** If present, supplies the [[TileAdmin]] for this session.
+   * @alpha
+   */
   tileAdmin?: TileAdmin;
   /** If present, supplies the [[NotificationManager]] for this session. */
   notifications?: NotificationManager;
@@ -115,7 +117,9 @@ export class IModelApp {
   public static get viewManager(): ViewManager { return this._viewManager; }
   /** The [[NotificationManager]] for this session. */
   public static get notifications(): NotificationManager { return this._notifications; }
-  /** The [[TileAdmin]] for this session. */
+  /** The [[TileAdmin]] for this session.
+   * @alpha
+   */
   public static get tileAdmin(): TileAdmin { return this._tileAdmin; }
   /** The [[QuantityFormatter]] for this session.
    * @alpha
