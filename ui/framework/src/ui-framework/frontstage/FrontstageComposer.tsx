@@ -263,12 +263,13 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           if (!zoneDef)
             return;
 
-          for (let i = 0; i < zoneDef.widgetDefs.length; i++) {
-            const widgetDef = zoneDef.widgetDefs[i];
+          const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible);
+          for (let i = 0; i < visibleWidgets.length; i++) {
+            const widgetDef = visibleWidgets[i];
             let state = widgetDef.state;
             if (w.props.tabIndex === i)
               state = WidgetState.Open;
-            else if (state !== WidgetState.Unloaded)
+            else if (state === WidgetState.Open)
               state = WidgetState.Closed;
             widgetDef.setWidgetState(state);
           }

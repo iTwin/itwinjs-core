@@ -72,9 +72,9 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
     const zoneDef = this.props.zoneDefProvider.getZoneDef(id);
     if (zoneDef) {
-      // tslint:disable-next-line:prefer-for-of
-      for (let index = 0; index < zoneDef.widgetDefs.length; index++) {
-        const wDef = zoneDef.widgetDefs[index];
+      const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible);
+      for (let index = 0; index < visibleWidgets.length; index++) {
+        const wDef = visibleWidgets[index];
         if (wDef === widgetDef) {
           this.props.widgetChangeHandler.handleWidgetStateChange(id, index, widgetDef.state === WidgetState.Open);
           break;
