@@ -463,57 +463,57 @@ Descriptor {
 }
 `;
 
-exports[`PresentationManager addon results conversion to Presentation objects returns content for BisCore:Element instances 1`] = `
+exports[`PresentationManager addon results conversion to Presentation objects returns content for BisCore:Element instances when concrete key is found 1`] = `
 Content {
   "contentSet": Array [
     Item {
       "classInfo": Object {
-        "id": "0x12aff0000005fc3",
-        "label": "matrix",
-        "name": "Sleek",
+        "id": "0x720200000068e3",
+        "label": "firewall Pizza",
+        "name": "Camp",
       },
       "displayValues": Object {
-        "Tactics": "intermediate Credit Card Account",
+        "integrated": "Books",
       },
-      "imageId": "b4051c08-8353-4c9f-8d33-e8b4313850c7",
-      "label": "Music THX",
+      "imageId": "0a36038b-15fa-44e4-8431-a1d69bd1c5cc",
+      "label": "dot-com",
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "FTP",
-          "id": "0x13a7b0000017888",
+          "className": "Computer",
+          "id": "0x1a32000000903e",
         },
       ],
       "values": Object {
-        "Tactics": "backing up Berkshire",
+        "integrated": "parsing 1080p",
       },
     },
   ],
   "descriptor": Descriptor {
     "contentFlags": 0,
-    "displayType": "quo quae consequatur",
+    "displayType": "dolor molestiae nihil",
     "fields": Array [
       PropertiesField {
         "category": Object {
-          "description": "Consectetur accusantium placeat aut maxime sed id odio recusandae.",
-          "expand": false,
-          "label": "deposit",
-          "name": "FTP",
-          "priority": 82691,
+          "description": "Et aut a deleniti saepe.",
+          "expand": true,
+          "label": "Designer Chicken",
+          "name": "intuitive",
+          "priority": 57489,
         },
-        "isReadonly": false,
-        "label": "Sports",
-        "name": "Tactics",
-        "priority": 904,
+        "isReadonly": true,
+        "label": "black back-end",
+        "name": "integrated",
+        "priority": 17035,
         "properties": Array [
           Object {
             "property": Object {
               "classInfo": Object {
-                "id": "0x125640000000505",
-                "label": "Drive Money Market Account Investor",
-                "name": "Analyst",
+                "id": "0x24a40000007d31",
+                "label": "generate",
+                "name": "Future",
               },
-              "name": "neural",
+              "name": "olive",
               "type": "string",
             },
             "relatedClassPath": Array [],
@@ -531,9 +531,87 @@ Content {
         "pathToPrimaryClass": Array [],
         "relatedPropertyPaths": Array [],
         "selectClassInfo": Object {
-          "id": "0x87710000000087",
-          "label": "Intelligent model circuit",
-          "name": "interface",
+          "id": "0x53270000006ebf",
+          "label": "scalable",
+          "name": "invoice",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects returns content for BisCore:Element instances when concrete key is not found 1`] = `
+Content {
+  "contentSet": Array [
+    Item {
+      "classInfo": Object {
+        "id": "0xfb610000011d76",
+        "label": "bypass",
+        "name": "Electronics",
+      },
+      "displayValues": Object {
+        "cross-platform": "extend Representative",
+      },
+      "imageId": "a779c65f-fc64-497e-98f4-5fe86109603d",
+      "label": "back-end",
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "Awesome",
+          "id": "0x16bf2000001096c",
+        },
+      ],
+      "values": Object {
+        "cross-platform": "mint green",
+      },
+    },
+  ],
+  "descriptor": Descriptor {
+    "contentFlags": 0,
+    "displayType": "aut provident quasi",
+    "fields": Array [
+      PropertiesField {
+        "category": Object {
+          "description": "Illum dolores veniam eligendi.",
+          "expand": false,
+          "label": "Dynamic Savings Account IB",
+          "name": "Arizona",
+          "priority": 8726,
+        },
+        "isReadonly": false,
+        "label": "Small Soft Keyboard azure",
+        "name": "cross-platform",
+        "priority": 2383,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x1ffb000000cddc",
+                "label": "Administrator",
+                "name": "driver",
+              },
+              "name": "Open-architected",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "pathToPrimaryClass": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0xee020000002ed5",
+          "label": "value-added Officer overriding",
+          "name": "Home",
         },
       },
     ],

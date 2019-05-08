@@ -16,7 +16,7 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
-import { using, ClientRequestContext, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { using, ClientRequestContext, Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
 import { EntityMetaData, ElementProps, ModelProps } from "@bentley/imodeljs-common";
 import { IModelHost, IModelDb, DrawingGraphic, Element, ECSqlStatement, ECSqlValue } from "@bentley/imodeljs-backend";
 import {
@@ -57,7 +57,16 @@ describe("PresentationManager", () => {
       const valueMock = moq.Mock.ofType<ECSqlValue>();
       valueMock.setup((x) => x.getClassNameForClassId()).returns(() => key.className);
       const stmtMock = moq.Mock.ofType<ECSqlStatement>();
+      stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
       stmtMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
+      cb(stmtMock.object);
+    });
+  };
+
+  const setupIModelForNoResultStatement = (imodelMock: moq.IMock<IModelDb>) => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).callback((_q, cb) => {
+      const stmtMock = moq.Mock.ofType<ECSqlStatement>();
+      stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
       cb(stmtMock.object);
     });
   };
@@ -879,7 +888,7 @@ describe("PresentationManager", () => {
       verifyWithSnapshot(result, expectedParams);
     });
 
-    it("returns content for BisCore:Element instances", async () => {
+    it("returns content for BisCore:Element instances when concrete key is found", async () => {
       // what the addon receives
       const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
       const concreteClassKey = { className: faker.random.word(), id: baseClassKey.id };
@@ -889,6 +898,79 @@ describe("PresentationManager", () => {
         requestId: NativePlatformRequestTypes.GetContent,
         params: {
           keys: keysetToJSON(new KeySet([concreteClassKey])),
+          descriptorOverrides: descriptor.createDescriptorOverrides(),
+          paging: testData.pageOptions,
+          rulesetId: testData.rulesetId,
+        },
+      };
+
+      // what the addon returns
+      const fieldName = faker.random.word();
+      const addonResponse = {
+        descriptor: {
+          displayType: descriptor.displayType,
+          selectClasses: [{
+            selectClassInfo: createRandomECClassInfoJSON(),
+            isSelectPolymorphic: true,
+            pathToPrimaryClass: [],
+            relatedPropertyPaths: [],
+          } as SelectClassInfoJSON],
+          fields: [{
+            name: fieldName,
+            category: createRandomCategory(),
+            label: faker.random.words(),
+            type: {
+              typeName: "string",
+              valueFormat: "Primitive",
+            } as PrimitiveTypeDescription,
+            isReadonly: faker.random.boolean(),
+            priority: faker.random.number(),
+            properties: [{
+              property: {
+                classInfo: createRandomECClassInfoJSON(),
+                name: faker.random.word(),
+                type: "string",
+              } as PropertyInfoJSON,
+              relatedClassPath: [],
+            } as PropertyJSON],
+          } as PropertiesFieldJSON],
+          contentFlags: 0,
+        } as DescriptorJSON,
+        contentSet: [{
+          primaryKeys: [createRandomECInstanceKeyJSON()],
+          classInfo: createRandomECClassInfoJSON(),
+          label: faker.random.words(),
+          imageId: faker.random.uuid(),
+          values: {
+            [fieldName]: faker.random.words(),
+          },
+          displayValues: {
+            [fieldName]: faker.random.words(),
+          },
+          mergedFieldNames: [],
+        } as ItemJSON],
+      } as ContentJSON;
+      setup(addonResponse);
+
+      // test
+      const options: Paged<ContentRequestOptions<IModelDb>> = {
+        imodel: imodelMock.object,
+        rulesetId: testData.rulesetId,
+        paging: testData.pageOptions,
+      };
+      const result = await manager.getContent(ClientRequestContext.current, options, descriptor, new KeySet([baseClassKey]));
+      verifyWithSnapshot(result, expectedParams);
+    });
+
+    it("returns content for BisCore:Element instances when concrete key is not found", async () => {
+      // what the addon receives
+      const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
+      setupIModelForNoResultStatement(imodelMock);
+      const descriptor = createRandomDescriptor();
+      const expectedParams = {
+        requestId: NativePlatformRequestTypes.GetContent,
+        params: {
+          keys: keysetToJSON(new KeySet([baseClassKey])),
           descriptorOverrides: descriptor.createDescriptorOverrides(),
           paging: testData.pageOptions,
           rulesetId: testData.rulesetId,
@@ -1444,6 +1526,14 @@ describe("PresentationManager", () => {
           keys.forEach((key) => expect(result.has(key)));
         });
 
+        it("skips non-existing element ids", async () => {
+          const keys = [createRandomECInstanceKey()];
+          setupIModelForNoResultStatement(imodelMock);
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, keys.map((k) => k.id), "element");
+          expect(result.size).to.eq(0);
+        });
+
         it("skips transient element ids", async () => {
           const keys = [createRandomECInstanceKey(), { className: "any:class", id: createTransientElementId() }];
           setupIModelForElementKey(imodelMock, keys[0]);
@@ -1491,6 +1581,15 @@ describe("PresentationManager", () => {
           expect(result.has(key)).to.be.true;
         });
 
+        it("skips non-existing element ids", async () => {
+          const key = createRandomECInstanceKey();
+          setupIModelForNoResultStatement(imodelMock);
+          const elementProps = createRandomTopmostElementProps();
+          elementsMock.setup((x) => x.getElementProps(key.id)).returns(() => elementProps);
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [key.id], "assembly");
+          expect(result.size).to.eq(0);
+        });
+
         it("skips transient element ids", async () => {
           const parentKeys = [createRandomECInstanceKey()];
           setupIModelForElementKey(imodelMock, parentKeys[0]);
@@ -1530,6 +1629,15 @@ describe("PresentationManager", () => {
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [key.id], "top-assembly");
           expect(result.size).to.eq(1);
           expect(result.has(key)).to.be.true;
+        });
+
+        it("skips non-existing element ids", async () => {
+          const key = createRandomECInstanceKey();
+          setupIModelForNoResultStatement(imodelMock);
+          const elementProps = createRandomTopmostElementProps();
+          elementsMock.setup((x) => x.getElementProps(key.id)).returns(() => elementProps);
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [key.id], "top-assembly");
+          expect(result.size).to.eq(0);
         });
 
         it("skips transient element ids", async () => {

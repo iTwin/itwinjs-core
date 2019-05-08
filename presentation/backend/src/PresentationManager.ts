@@ -5,7 +5,7 @@
 /** @module Core */
 
 import * as path from "path";
-import { ClientRequestContext, Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64String, Id64, DbResult } from "@bentley/bentleyjs-core";
 import { IModelDb, Element, GeometricElement } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
@@ -372,7 +372,7 @@ export default class PresentationManager {
       if (k.className === "BisCore:Element")
         return this.getElementKey(requestOptions.imodel, k.id);
       return k;
-    });
+    }).filter<InstanceKey>((k): k is InstanceKey => (undefined !== k));
     const rulesetId = "RulesDrivenECPresentationManager_RulesetId_DisplayLabel";
     const overrides: DescriptorOverrides = {
       displayType: DefaultContentDisplayTypes.LIST,
@@ -414,21 +414,23 @@ export default class PresentationManager {
     ];
   }
 
-  private getElementKey(imodel: IModelDb, id: Id64String): InstanceKey {
-    let key: InstanceKey;
+  private getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
+    let key: InstanceKey | undefined;
     const query = `SELECT ECClassId FROM ${Element.classFullName} e WHERE ECInstanceId = ?`;
     imodel.withPreparedStatement(query, (stmt) => {
       stmt.bindId(1, id);
-      stmt.step();
-      key = { className: stmt.getValue(0).getClassNameForClassId().replace(".", ":"), id };
+      if (stmt.step() === DbResult.BE_SQLITE_ROW)
+        key = { className: stmt.getValue(0).getClassNameForClassId().replace(".", ":"), id };
     });
-    return key!;
+    return key;
   }
 
   private computeElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const keys = new KeySet();
     ids.forEach(skipTransients((id) => {
-      keys.add(this.getElementKey(requestOptions.imodel, id));
+      const key = this.getElementKey(requestOptions.imodel, id);
+      if (key)
+        keys.add(key);
     }));
     return keys;
   }
@@ -447,7 +449,9 @@ export default class PresentationManager {
       if (parentKey) {
         parentKeys.add(parentKey);
       } else {
-        parentKeys.add(this.getElementKey(requestOptions.imodel, id));
+        const elementKey = this.getElementKey(requestOptions.imodel, id);
+        if (elementKey)
+          parentKeys.add(elementKey);
       }
     }));
     return parentKeys;
@@ -462,7 +466,10 @@ export default class PresentationManager {
         curr = parent;
         parent = this.getParentInstanceKey(requestOptions.imodel, curr.id);
       }
-      parentKeys.add(curr ? curr : this.getElementKey(requestOptions.imodel, id));
+      if (!curr)
+        curr = this.getElementKey(requestOptions.imodel, id);
+      if (curr)
+        parentKeys.add(curr);
     }));
     return parentKeys;
   }
@@ -549,8 +556,11 @@ export default class PresentationManager {
     const keyset = new KeySet();
     keyset.add(keys);
     elementIds.forEach((elementId) => {
-      keyset.delete({ className: elementClassName, id: elementId });
-      keyset.add(this.getElementKey(imodel, elementId));
+      const concreteKey = this.getElementKey(imodel, elementId);
+      if (concreteKey) {
+        keyset.delete({ className: elementClassName, id: elementId });
+        keyset.add(concreteKey);
+      }
     });
     return keyset;
   }
