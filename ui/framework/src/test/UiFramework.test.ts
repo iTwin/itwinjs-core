@@ -8,7 +8,7 @@ import { UiFramework, ColorTheme } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
 import { Presentation } from "@bentley/presentation-frontend";
-import { NoRenderApp } from "@bentley/imodeljs-frontend";
+import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 
 describe("UiFramework", () => {
 
@@ -87,8 +87,8 @@ describe("UiFramework", () => {
 // before we can test setting scope to a valid scope id we must make sure Presentation Manager is initialized.
 describe("Requires Presentation", () => {
   const shutdownIModelApp = () => {
-    if (NoRenderApp.initialized)
-      NoRenderApp.shutdown();
+    if (IModelApp.initialized)
+      IModelApp.shutdown();
   };
 
   beforeEach(() => {

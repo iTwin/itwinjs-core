@@ -7,7 +7,6 @@ import * as fs from "fs";
 import * as path from "path";
 import * as cpx from "cpx";
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-// common includes
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { LoggingNamespaces } from "@bentley/presentation-common";
@@ -47,7 +46,9 @@ class IntegrationTestsApp extends NoRenderApp {
     const urlTemplate = "file://" + path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/");
     return { urlTemplate };
   }
-  protected static onStartup(): void {
+
+  public static startup() {
+    NoRenderApp.startup({ i18n: this.supplyI18NOptions() });
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyBentleyBackendAssets("lib/assets");
     copyBentleyFrontendAssets("lib/public");
@@ -72,5 +73,5 @@ export const initialize = () => {
 };
 
 export const terminate = () => {
-  terminateTesting(IntegrationTestsApp);
+  terminateTesting();
 };

@@ -648,8 +648,9 @@ describe("TileAdmin", () => {
 
   class App extends MockRender.App {
     public static async start(requestTilesWithoutEdges: boolean): Promise<IModelConnection> {
-      IModelApp.tileAdmin = TileAdmin.create({ requestTilesWithoutEdges });
-      super.startup();
+      super.startup({
+        tileAdmin: TileAdmin.create({ requestTilesWithoutEdges }),
+      });
 
       theIModel = await IModelConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
       return theIModel;

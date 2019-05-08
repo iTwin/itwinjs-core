@@ -142,7 +142,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (!vp || !(vp.view instanceof SpatialViewState))
       return;
 
-    const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
+    const modelQueryParams: ModelQueryParams = { from: SpatialModelState.classFullName, wantPrivate: false };
     let curModelProps: ModelProps[] = new Array<ModelProps>();
 
     if (this.props.iModelConnection)

@@ -30,7 +30,7 @@ describe("FeatureSymbology.Overrides", () => {
   before(async () => {
     IModelApp.startup();
     imodel = await IModelConnection.openSnapshot(iModelLocation);
-    const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
+    const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
   });
@@ -231,8 +231,8 @@ describe("FeatureSymbology.Overrides", () => {
   });
 
   it("excludedElements works as expected", async () => {
-    const viewStateExcludElem = viewState.clone();
-    viewStateExcludElem.displayStyle.settings.addExcludedElements(Id64.fromString("0x123"));
+    const viewStateExcludeElem = viewState.clone();
+    viewStateExcludeElem.displayStyle.settings.addExcludedElements(Id64.fromString("0x123"));
 
     const elementId = Id64.fromString("0x123");
     const elementId2 = Id64.fromString("0x128");
@@ -241,10 +241,10 @@ describe("FeatureSymbology.Overrides", () => {
     const feature = new Feature(elementId, subCategoryId, geometryClass);
     const feature2 = new Feature(elementId2, subCategoryId, geometryClass);
 
-    let overrides = new Overrides(viewStateExcludElem);
+    let overrides = new Overrides(viewStateExcludeElem);
     assert.isFalse(overrides.isFeatureVisible(feature), "if subCategoryId isn't included in visibleSubCategories set, feature isn't visible");
     assert.isFalse(overrides.isFeatureVisible(feature2), "if subCategoryId isn't included in visibleSubCategories set, feature isn't visible");
-    overrides = new Overrides(viewStateExcludElem);
+    overrides = new Overrides(viewStateExcludeElem);
     overrides.setAlwaysDrawn(elementId);
     overrides.setAlwaysDrawn(elementId2);
 
@@ -253,8 +253,8 @@ describe("FeatureSymbology.Overrides", () => {
 
     const vf = new ViewFlags();
     vf.constructions = true;
-    viewStateExcludElem.displayStyle.viewFlags = vf;
-    overrides = new Overrides(viewStateExcludElem);
+    viewStateExcludeElem.displayStyle.viewFlags = vf;
+    overrides = new Overrides(viewStateExcludeElem);
     overrides.setVisibleSubCategory(subCategoryId);
     assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in excludedElements and if geometryClass and subCategory are visible, feature isn't visible");
     assert.isTrue(overrides.isFeatureVisible(feature2), "if elementId is not in excludedElements and if geometryClass and subCategory are visible, feature is visible");

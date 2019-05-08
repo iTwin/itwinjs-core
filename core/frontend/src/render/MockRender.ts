@@ -18,7 +18,7 @@ import {
   RenderTarget,
 } from "./System";
 import { GraphicType } from "./GraphicBuilder";
-import { IModelApp } from "../IModelApp";
+import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { MeshParams, PolylineParams, PointStringParams } from "./primitives/VertexTable";
@@ -145,13 +145,17 @@ export namespace MockRender {
   /** An implementation of IModelApp which uses a MockRender.System by default.
    * @internal
    */
-  export class App extends IModelApp {
+  export class App {
     public static systemFactory: SystemFactory = () => App.createDefaultRenderSystem();
 
-    protected static supplyRenderSystem(): RenderSystem { return this.systemFactory(); }
+    public static startup(opts?: IModelAppOptions) {
+      opts = opts ? opts : {};
+      opts.renderSys = this.systemFactory();
+      IModelApp.startup(opts);
+    }
     public static shutdown(): void {
       this.systemFactory = () => App.createDefaultRenderSystem();
-      super.shutdown();
+      IModelApp.shutdown();
     }
 
     protected static createDefaultRenderSystem() { return new System(); }

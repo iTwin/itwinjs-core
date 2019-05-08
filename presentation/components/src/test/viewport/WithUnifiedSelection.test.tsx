@@ -22,7 +22,7 @@ import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helper
 import { waitForAllAsyncs } from "@bentley/presentation-frontend/lib/test/_helpers/PendingAsyncsHelper";
 import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementProps, Code } from "@bentley/imodeljs-common";
-import { IModelConnection, ViewState3d, NoRenderApp, HilitedSet } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ViewState3d, NoRenderApp, HilitedSet, IModelApp } from "@bentley/imodeljs-frontend";
 import {
   KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item,
   RegisteredRuleset, DescriptorOverrides, ContentFlags,
@@ -46,7 +46,7 @@ describe("Viewport withUnifiedSelection", () => {
     classNameGenerator = () => faker.random.word();
   });
   after(() => {
-    NoRenderApp.shutdown();
+    IModelApp.shutdown();
   });
 
   let viewDefinitionId: Id64String;
@@ -201,7 +201,7 @@ describe("ViewportSelectionHandler", () => {
   });
 
   after(() => {
-    NoRenderApp.shutdown();
+    IModelApp.shutdown();
   });
 
   beforeEach(() => {

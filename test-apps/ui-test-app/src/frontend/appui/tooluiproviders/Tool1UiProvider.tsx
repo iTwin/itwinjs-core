@@ -7,10 +7,8 @@ import * as React from "react";
 import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { HSVColor, ColorDef } from "@bentley/imodeljs-common";
-
 import { ColorSwatch, HueSlider, AlphaSlider, SaturationPicker, ColorPickerButton, WeightPickerButton } from "@bentley/ui-components";
 import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
-import { SampleAppIModelApp } from "../..";
 
 class Tool1UiProvider extends ToolUiProvider {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -117,23 +115,23 @@ class Tool1Settings extends React.Component<{}, State> {
               <th>Input</th>
             </tr>
             <tr>
-              <td>{SampleAppIModelApp.i18n.translate("SampleApp:tool1.month")}</td>
+              <td>{IModelApp.i18n.translate("SampleApp:tool1.month")}</td>
               <td> <input type="month" /> </td>
             </tr>
             <tr>
-              <td>{SampleAppIModelApp.i18n.translate("SampleApp:tool1.number")}</td>
+              <td>{IModelApp.i18n.translate("SampleApp:tool1.number")}</td>
               <td> <input type="number" min="10" max="20" /> </td>
             </tr>
             <tr>
-              <td>{SampleAppIModelApp.i18n.translate("SampleApp:tool1.password")}</td>
+              <td>{IModelApp.i18n.translate("SampleApp:tool1.password")}</td>
               <td> <input type="password" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="radio">{SampleAppIModelApp.i18n.translate("SampleApp:tool1.radio")}</label></td>
+              <td><label htmlFor="radio">{IModelApp.i18n.translate("SampleApp:tool1.radio")}</label></td>
               <td> <input name="radio" type="radio" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="range">{SampleAppIModelApp.i18n.translate("SampleApp:tool1.range")}</label></td>
+              <td><label htmlFor="range">{IModelApp.i18n.translate("SampleApp:tool1.range")}</label></td>
               <td> <input name="range" type="range" min="1" max="100" step="5" /> </td>
             </tr>
             <tr>

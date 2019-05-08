@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { RenderSystem, RenderTarget, AnimationBranchStates } from "./rendering";
-import { IModelApp } from "./IModelApp";
+import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { ViewRect } from "./Viewport";
 
 /**
@@ -58,10 +58,15 @@ export class NullRenderSystem extends RenderSystem {
 }
 
 /**
- * An IModelApp for applications that must run in environments where WebGL is not present.
+ * A class for applications that must run in environments where WebGL is not present.
  * This is typically used in tests.
  * @internal
  */
-export class NoRenderApp extends IModelApp {
-  protected static supplyRenderSystem(): RenderSystem { return new NullRenderSystem(); }
+export class NoRenderApp {
+  public static startup(opts?: IModelAppOptions) {
+    opts = opts ? opts : {};
+    opts.renderSys = new NullRenderSystem();
+    IModelApp.startup(opts);
+
+  }
 }

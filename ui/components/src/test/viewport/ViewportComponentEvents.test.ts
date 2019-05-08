@@ -16,7 +16,7 @@ describe("ViewportComponentEvents", () => {
     ViewportComponentEvents.initialize();
   });
   it.skip("should initialize when IModelApp.viewManager is defined", () => {
-    IModelApp.viewManager = { onSelectedViewportChanged } as ViewManager;
+    (IModelApp as any)._viewManager = { onSelectedViewportChanged } as ViewManager;
     ViewportComponentEvents.initialize();
     expect(onSelectedViewportChanged.numberOfListeners).to.equal(1);
   });

@@ -28,7 +28,7 @@ export async function initializeCustomCloudEnv(projectName: string | undefined, 
 
   const project = await bankContextClient.queryContextByName(requestContext, projectName);
 
-  IModelApp.iModelClient = new IModelBankClient(url, undefined);
+  (IModelApp as any)._iModelClient = new IModelBankClient(url, undefined);
 
   return project;
 }

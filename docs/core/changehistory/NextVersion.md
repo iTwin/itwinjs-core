@@ -3,6 +3,67 @@ ignore: true
 ---
 # NextVersion
 
+## Changes to [IModelApp.startup]($frontend)
+
+In previous versions of the `@bentley/imodeljs-frontend` package, the recommendation was to create a subclass of `IModelApp` to customize frontend behavior.
+
+This proved problematic, since all of the members of `IModelApp` are static, and `IModelApp` itself is intended to be a singleton. This works at cross-purposes with JavaScript subclassing with static members, since each subclass creates a separate object (you can either have subclassing or a singleton, not both.)
+
+To resolve this issue, it is now **illegal** to subclass from IModelApp, and instead all options for customization are supplied by the new [IModelAppOptions]($frontend) argument to [IModelApp.startup]($frontend).
+
+In addition, the static methods:
+
+- `onStartup`
+- `supplyRenderSystem`
+- `supplyI18NOptions`
+
+on [IModelApp]($frontend) have been removed, since their only purpose was to allow customization via subclasses. The latter two are replaced by members of the [IModelAppOptions]($frontend) argument.
+
+The `onStartup ` method was previously called on the subclass inside [IModelApp.startup]($frontend). A typical pattern was:
+
+```ts
+  class MyApp extends IModelApp {
+    public static appData: MyAppData;
+    protected static onStartup() {
+      IModelApp.applicationId = "2322"; // Note: "this.applicationId" would not have worked previously
+      this.myAppData = new MyAppData();
+      . . . other startup code
+    }
+  }
+```
+
+This can now be replaced with code like:
+```ts
+  class MyApp { // note, does not extend IModelApp
+    public static appData: MyAppData;
+    public static startup() {
+      IModelApp.startup({ applicationId: "2322" });
+      this.myAppData = new MyAppData();
+      . . . other startup code
+    }
+  }
+```
+
+Then the call to `MyApp.startup()` elsewhere in your code can remain unchanged. Any place where you may have accessed members of [IModelApp]($frontend) via `MyApp` should be changed to instead access `IModelApp` directly. E.g.:
+
+```ts
+  const val = MyApp.i18n.translate("key");
+```
+
+can be replaced with
+
+```ts
+  const val = IModelApp.i18n.translate("key");
+```
+
+In summary, it is no longer necessary (or possible) to subclass from `IModelApp`. However, if your application has global information you wish to hold, you may simply create your own `xxxApp` singleton class that does not derive from `IModelApp`. This is an API breaking change, and all frontend apps will likely have some necessary change.
+
+## Changes to methods of [EntityState]($frontend)
+
+The method `EntityState.getClassFullName` was renamed to an accessor `get classFullName` for consistency with the same method on [Entity]($backend).
+
+The method `EntityState.sqlName` was removed. It returned a string in the form "SchemaName.ClassName", whereas `EntityState.classFullName` returns "SchemaName:ClassName" (colon vs. dot syntax.) Since `ECSql` now supports both syntaxes, it is no longer necessary to have the `sqlName` method. You may simply replace all uses of `sqlName` with `classFullName`.
+
 ## Changes to OidcAgentClient
 
 [OidcAgentClient]($clients-backend) now follows the typical OIDC client credentials authorization workflow. This implies the caller need not supply "serviceUserEmail" and "serviceUserPassword" as part of the configuration. For example:

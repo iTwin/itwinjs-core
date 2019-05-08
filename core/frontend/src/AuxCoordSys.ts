@@ -71,7 +71,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
    */
   public static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState {
     const myCode = new Code({ spec: BisCodeSpec.auxCoordSystemSpatial, scope: IModel.dictionaryId.toString(), value: acsName });
-    return new AuxCoordSystemSpatialState({ model: IModel.dictionaryId, code: myCode, classFullName: this.getClassFullName() }, iModel);
+    return new AuxCoordSystemSpatialState({ model: IModel.dictionaryId, code: myCode, classFullName: this.classFullName }, iModel);
   }
 
   public constructor(props: AuxCoordSystemProps, iModel: IModelConnection) {

@@ -207,7 +207,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   }
 
   private _fetchAllModelNodeIds = async (): Promise<string[]> => {
-    const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
+    const modelQueryParams: ModelQueryParams = { from: SpatialModelState.classFullName, wantPrivate: false };
     let curModelProps: ModelProps[] = new Array<ModelProps>();
 
     if (this.props.iModelConnection)

@@ -8,7 +8,7 @@ import { ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { TestUtility } from "./TestUtility";
 import { TestUsers } from "./TestUsers";
-import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
+import { IModelConnection, MockRender, IModelApp } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
@@ -31,9 +31,9 @@ describe("IModelConnection (#integration)", () => {
 
     const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
     await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    MockRender.App.authorizationClient = imsTestAuthorizationClient;
+    IModelApp.authorizationClient = imsTestAuthorizationClient;
 
-    assert(MockRender.App.authorizationClient);
+    assert(IModelApp.authorizationClient);
 
     testProjectId = await TestUtility.getTestProjectId("Bridge866");
     testIModelId = await TestUtility.getTestIModelId(testProjectId, "Building");

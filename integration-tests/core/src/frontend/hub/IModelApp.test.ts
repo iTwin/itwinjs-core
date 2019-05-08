@@ -12,7 +12,11 @@ import { TestUsers } from "./TestUsers";
 describe("IModelApp (#integration)", () => {
 
   before(async () => {
-    IModelApp.startup();
+    IModelApp.startup({
+      applicationId: "1234",
+      applicationVersion: "testappversion",
+      sessionId: "testsessionid",
+    });
 
     const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
     await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
@@ -26,10 +30,6 @@ describe("IModelApp (#integration)", () => {
   });
 
   it("should setup access token and application id values for the backend", async () => {
-    IModelApp.applicationId = "1234";
-    IModelApp.applicationVersion = "testappversion";
-    IModelApp.sessionId = "testsessionid";
-
     const expectedAccessTokenStr = (await IModelApp.authorizationClient!.getAccessToken()).toTokenString();
 
     let authorizedRequestContext: AuthorizedClientRequestContext = await AuthorizedFrontendRequestContext.create();

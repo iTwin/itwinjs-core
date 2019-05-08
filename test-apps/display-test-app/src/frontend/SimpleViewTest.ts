@@ -130,9 +130,9 @@ async function main() {
   if (configuration.omitEdges)
     DisplayTestApp.tileAdminProps.requestTilesWithoutEdges = true;
 
-  DisplayTestApp.startup(undefined, renderSystemOptions);
+  DisplayTestApp.startup({ renderSys: renderSystemOptions });
   if (configuration.enableDiagnostics)
-    DisplayTestApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+    IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
   let rpcConfiguration: RpcConfiguration;

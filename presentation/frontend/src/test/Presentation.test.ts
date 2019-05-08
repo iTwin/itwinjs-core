@@ -18,8 +18,8 @@ import PresentationManager from "../PresentationManager";
 describe("Presentation", () => {
 
   const shutdownIModelApp = () => {
-    if (NoRenderApp.initialized)
-      NoRenderApp.shutdown();
+    if (IModelApp.initialized)
+      IModelApp.shutdown();
   };
 
   beforeEach(() => {
@@ -55,7 +55,7 @@ describe("Presentation", () => {
 
     it("initializes PresentationManager.i18n with IModelApp.i18", () => {
       const i18nMock = moq.Mock.ofType<I18N>();
-      IModelApp.i18n = i18nMock.object;
+      (IModelApp as any)._i18n = i18nMock.object;
       Presentation.initialize({ activeLocale: "test" });
       expect(Presentation.i18n).to.equal(i18nMock.object);
     });
@@ -98,7 +98,7 @@ describe("Presentation", () => {
 
     it("initializes SelectionScopesManager's locale callback to return PresentationManager's activeLocale", () => {
       Presentation.initialize({
-        activeLocale: "test"
+        activeLocale: "test",
       });
       expect(Presentation.presentation.activeLocale).to.eq("test");
       expect(Presentation.selection.scopes.activeLocale).to.eq("test");

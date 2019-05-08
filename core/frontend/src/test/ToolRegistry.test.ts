@@ -28,7 +28,8 @@ class TestImmediate extends Tool {
 class TestCommandApp extends MockRender.App {
   public static testNamespace?: I18NNamespace;
 
-  protected static onStartup() {
+  public static startup() {
+    IModelApp.startup({ i18n: this.supplyI18NOptions() });
     this.testNamespace = IModelApp.i18n.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);
   }
@@ -39,7 +40,7 @@ class TestCommandApp extends MockRender.App {
 async function setupToolRegistryTests() {
   TestCommandApp.startup();
   createTestTools();
-  await TestCommandApp.i18n.waitForAllRead();
+  await IModelApp.i18n.waitForAllRead();
 
 }
 

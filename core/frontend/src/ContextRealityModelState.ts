@@ -49,7 +49,7 @@ export class ContextRealityModelState implements TileTreeModelState {
 
   private static async getAccessToken(): Promise<AccessToken | undefined> {
     if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
-    return undefined; // Not signed in
+      return undefined; // Not signed in
     let accessToken: AccessToken;
     try {
       accessToken = await IModelApp.authorizationClient.getAccessToken();
@@ -65,11 +65,11 @@ export class ContextRealityModelState implements TileTreeModelState {
    */
   public async intersectsProjectExtents(): Promise<boolean> {
     if (undefined === this._iModel.ecefLocation)
-    return false;
+      return false;
 
     const accessToken = await ContextRealityModelState.getAccessToken();
     if (!accessToken)
-    return false;
+      return false;
 
     const client = new RealityModelTileClient(this._tilesetUrl, accessToken);
     const json = await client.getRootDocument(this._tilesetUrl);
@@ -78,7 +78,7 @@ export class ContextRealityModelState implements TileTreeModelState {
       undefined === json.root ||
       undefined === (tileTreeRange = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)) ||
       undefined === (tileTreeTransform = RealityModelTileUtils.transformFromJson(json.root.transform)))
-    return false;
+      return false;
 
     const treeCartographicRange = new CartographicRange(tileTreeRange, tileTreeTransform);
     const projectCartographicRange = new CartographicRange(this._iModel.projectExtents, this._iModel.ecefLocation.getTransform());
@@ -87,7 +87,7 @@ export class ContextRealityModelState implements TileTreeModelState {
   }
   /**
    * Gets a tileset's tile data blob key url
-   * @param other Another ContextRealityModelState oject to compare with self.
+   * @param other Another ContextRealityModelState object to compare with self.
    * @returns a bool that indicates if the two match
    */
   public matches(other: ContextRealityModelState) {
@@ -113,7 +113,7 @@ export class ContextRealityModelState implements TileTreeModelState {
 
     const accessToken: AccessToken | undefined = await ContextRealityModelState.getAccessToken();
     if (!accessToken)
-    return availableRealityModels;
+      return availableRealityModels;
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
@@ -132,7 +132,7 @@ export class ContextRealityModelState implements TileTreeModelState {
     // Get set of URLs that are directly attached to the model.
     const modelRealityDataIds = new Set<string>();
     if (iModel) {
-      const query = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
+      const query = { from: SpatialModelState.classFullName, wantPrivate: false };
       const props = await iModel.models.queryProps(query);
       for (const prop of props)
         if (prop.jsonProperties !== undefined && prop.jsonProperties.tilesetUrl) {
@@ -142,7 +142,7 @@ export class ContextRealityModelState implements TileTreeModelState {
         }
     }
 
-    // We obtain the reality data name, and RDS URL for each RD retuned.
+    // We obtain the reality data name, and RDS URL for each RD returned.
     for (const currentRealityData of realityData) {
       let realityDataName: string = "";
       let validRd: boolean = true;

@@ -297,7 +297,7 @@ export abstract class SkyBox implements SkyBoxProps {
  */
 export namespace SkyBox {
     /** Parameters defining a spherical [[SkyBox]].
-     * @internal
+     * @public
      */
     export class SphereParams {
         public constructor(public readonly texture: RenderTexture, public readonly rotation: number) { }
@@ -445,7 +445,6 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
 
     private constructor(front: Id64String, back: Id64String, top: Id64String, bottom: Id64String, right: Id64String, left: Id64String, display?: boolean) {
         super({ display });
-
         this.front = front;
         this.back = back;
         this.top = top;
@@ -557,15 +556,13 @@ export class Environment implements EnvironmentProps {
 function isSameSkyBox(a: SkyBoxProps | undefined, b: SkyBoxProps | undefined): boolean {
     if (undefined === a || undefined === b)
         return undefined === a && undefined === b;
-    else
-        return JSON.stringify(a) === JSON.stringify(b);
+    return JSON.stringify(a) === JSON.stringify(b);
 }
 
 /** A [[DisplayStyleState]] that can be applied to spatial views.
  * @public
  */
 export class DisplayStyle3dState extends DisplayStyleState {
-    /** @internal */
     private _skyBoxParams?: SkyBox.CreateParams;
     private _skyBoxParamsLoaded?: boolean;
     private _environment?: Environment;

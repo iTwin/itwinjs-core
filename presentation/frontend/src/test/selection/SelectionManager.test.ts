@@ -12,7 +12,7 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { waitForPendingAsyncs } from "../_helpers/PendingAsyncsHelper";
 import { Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { IModelConnection, SelectionSet, IModelApp, ViewManager, SelectEventType, ElementLocateManager, HitDetail } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SelectionSet, IModelApp, SelectEventType, ElementLocateManager, HitDetail } from "@bentley/imodeljs-frontend";
 import { KeySet, InstanceKey, SelectionScope } from "@bentley/presentation-common";
 import { SelectionManager } from "../../presentation-frontend";
 import { SelectionScopesManager } from "../../selection/SelectionScopesManager";
@@ -478,12 +478,11 @@ describe("SelectionManager", () => {
     describe("syncing with imodel tool selection", () => {
 
       let syncer: ToolSelectionSyncHandler;
-      let locateManagerMock = moq.Mock.ofType<ElementLocateManager>();
+      const locateManagerMock = moq.Mock.ofType<ElementLocateManager>();
 
       beforeEach(() => {
         // core globals...
-        IModelApp.viewManager = new ViewManager();
-        IModelApp.locateManager = locateManagerMock.object;
+        (IModelApp as any)._locateManager = locateManagerMock.object;
 
         locateManagerMock.reset();
 

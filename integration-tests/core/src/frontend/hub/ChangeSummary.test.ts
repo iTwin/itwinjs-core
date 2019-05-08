@@ -31,9 +31,9 @@ describe("ChangeSummary (#integration)", () => {
 
     const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
     await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    MockRender.App.authorizationClient = imsTestAuthorizationClient;
+    IModelApp.authorizationClient = imsTestAuthorizationClient;
 
-    assert(MockRender.App.authorizationClient);
+    assert(IModelApp.authorizationClient);
     assert(IModelApp.authorizationClient);
 
     testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");

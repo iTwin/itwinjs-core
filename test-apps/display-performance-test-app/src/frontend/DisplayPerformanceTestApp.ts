@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection,
-  OidcClientWrapper, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState,
+  OidcClientWrapper, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -74,8 +74,12 @@ function combineFilePaths(additionalPath: string, initPath?: string) {
   return combined;
 }
 
-class DisplayPerfTestApp extends IModelApp {
-  protected static supplyI18NOptions(): I18NOptions | undefined { return { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions; }
+class DisplayPerfTestApp {
+  public static startup(opts?: IModelAppOptions) {
+    opts = opts ? opts : {};
+    opts.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
+    IModelApp.startup(opts);
+  }
 }
 
 function setViewFlagOverrides(vf: any, vfo?: ViewFlag.Overrides): ViewFlag.Overrides {
@@ -585,7 +589,7 @@ async function loadIModel(testConfig: DefaultConfigs) {
   // Set the display style
   const iModCon = activeViewState.iModelConnection;
   if (iModCon && testConfig.displayStyle) {
-    const displayStyleProps = await iModCon.elements.queryProps({ from: DisplayStyleState.sqlName, where: "CodeValue = '" + testConfig.displayStyle + "'" });
+    const displayStyleProps = await iModCon.elements.queryProps({ from: DisplayStyleState.classFullName, where: "CodeValue = '" + testConfig.displayStyle + "'" });
     if (displayStyleProps.length >= 1)
       theViewport!.view.setDisplayStyle(new DisplayStyle3dState(displayStyleProps[0] as DisplayStyleProps, iModCon));
   }
@@ -642,8 +646,11 @@ function restartIModelApp(testConfig: DefaultConfigs) {
   curRenderOpts = newRenderOpts;
   curTileProps = newTileProps;
   if (!IModelApp.initialized) {
-    IModelApp.tileAdmin = TileAdmin.create(curTileProps);
-    DisplayPerfTestApp.startup(undefined, testConfig.renderOptions);
+    DisplayPerfTestApp.startup({
+      renderSys: testConfig.renderOptions,
+      tileAdmin: TileAdmin.create(curTileProps),
+    });
+
     (IModelApp.renderSystem as System).techniques.compileShaders();
   }
 }
@@ -794,7 +801,7 @@ async function runTest(testConfig: DefaultConfigs) {
 
 // selects the configured view.
 async function loadView(state: SimpleViewState, viewName: string) {
-  const viewIds = await state.iModelConnection!.elements.queryIds({ from: ViewState.sqlName, where: "CodeValue = '" + viewName + "'" });
+  const viewIds = await state.iModelConnection!.elements.queryIds({ from: ViewState.classFullName, where: "CodeValue = '" + viewName + "'" });
   if (1 === viewIds.size)
     state.viewState = await state.iModelConnection!.views.load(viewIds.values().next().value);
 

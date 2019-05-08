@@ -15,11 +15,11 @@ There are several types of notifications and messages that can be displayed usin
 
 ## NotificationManager
 
-To display prompts and messages correctly, the AppNotificationManager subclass of NotificationManager from ui-framework should be set to `IModelApp.notifications` in the application's `onStartup()` method.
+To display prompts and messages correctly, the AppNotificationManager subclass of NotificationManager from ui-framework should be set to `IModelAppOptions.notifications` in the application's call to `IModelApp.startup`.
 
 ```TS
     // Use the AppNotificationManager subclass from ui-framework to get prompts and messages
-    IModelApp.notifications = new AppNotificationManager();
+    IModelApp.startup({notifications:  new AppNotificationManager()});
 ```
 
 ## API Reference

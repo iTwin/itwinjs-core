@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "remove IModelApp subclasses",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "keith.bentley@bentley.com"
+}

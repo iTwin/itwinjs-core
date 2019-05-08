@@ -9,7 +9,7 @@ import {
   AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
   SettingsAdmin, IAuthorizationClient, IncludePrefix,
 } from "@bentley/imodeljs-clients";
-import { FeatureGates, IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccuSnap } from "./AccuSnap";
 import { AccuDraw } from "./AccuDraw";
@@ -33,143 +33,154 @@ import * as measureTool from "./tools/MeasureTool";
 
 declare var BUILD_SEMVER: string;
 
-/** Creates an *Application* to show an iModel in a web browser.
- * It connects the user interface with the iModel.js services. There can be only one IModelApp active in a session.
+/** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
+ * @public
+ */
+export interface IModelAppOptions {
+  /** If present, supplies the [[IModelClient]] for this session. */
+  imodelClient?: IModelClient;
+  /** If present, supplies the Id of this application. Applications must set this to the Bentley Global Product Registry Id (GPRID) for usage logging. */
+  applicationId?: string;
+  /** If present, supplies the version of this application. Must be set for usage logging. */
+  applicationVersion?: string;
+  /** If present, supplies the [[SettingsAdmin]] for this session. */
+  settings?: SettingsAdmin;
+  /** If present, supplies the [[ViewManager]] for this session. */
+  viewManager?: ViewManager;
+  /** If present, supplies the [[TileAdmin]] for this session. */
+  tileAdmin?: TileAdmin;
+  /** If present, supplies the [[NotificationManager]] for this session. */
+  notifications?: NotificationManager;
+  /** If present, supplies the [[ToolAdmin]] for this session. */
+  toolAdmin?: ToolAdmin;
+  /** If present, supplies the [[AccuDraw]] for this session. */
+  accuDraw?: AccuDraw;
+  /** If present, supplies the [[AccuSnap]] for this session. */
+  accuSnap?: AccuSnap;
+  /** If present, supplies the [[I18N]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
+  i18n?: I18N | I18NOptions;
+  /** If present, supplies the authorization information for various frontend APIs */
+  authorizationClient?: IAuthorizationClient;
+  /** @internal */
+  sessionId?: GuidString;
+  /** @internal */
+  locateManager?: ElementLocateManager;
+  /** @internal */
+  tentativePoint?: TentativePoint;
+  /** @internal */
+  quantityFormatter?: QuantityFormatter;
+  /** @internal */
+  renderSys?: RenderSystem | RenderSystem.Options;
+}
+
+/**
+ * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
+ * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
  *
- * Applications may customize the behavior of their application by subclassing this class and supplying different
- * implementations of the members.
+ * Before any interactive operations may be performed by the @bentley/imodeljs-frontend package, [[IModelApp.startup]] must be called.
+ * Applications may customize the frontend behavior of iModel.js by supplying options to [[IModelApp.startup]].
  *
- * Before any interactive operations may be performed, [[IModelApp.startup]] must be called (typically on a subclass of IModelApp)
  * @public
  */
 export class IModelApp {
-  /** @internal */
-  protected static _initialized = false;
+  private static _initialized = false;
+  private static _accuDraw: AccuDraw;
+  private static _accuSnap: AccuSnap;
+  private static _applicationId: string;
+  private static _applicationVersion: string;
+  private static _i18n: I18N;
+  private static _imodelClient: IModelClient;
+  private static _locateManager: ElementLocateManager;
+  private static _notifications: NotificationManager;
+  private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
-  private static _authorizationClient?: IAuthorizationClient;
+  private static _settings: SettingsAdmin;
+  private static _tentativePoint: TentativePoint;
+  private static _tileAdmin: TileAdmin;
+  private static _toolAdmin: ToolAdmin;
+  private static _viewManager: ViewManager;
+
+  // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
+  private constructor() { }
+
+  /** Provides authorization information for various frontend APIs */
+  public static authorizationClient?: IAuthorizationClient;
+  /** The [[ToolRegistry]] for this session. */
+  public static readonly tools = new ToolRegistry();
+  /** A uniqueId for this session */
+  public static sessionId: GuidString;
   /** The [[RenderSystem]] for this session. */
-  public static get renderSystem(): RenderSystem { return IModelApp._renderSystem!; }
+  public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
-  public static viewManager: ViewManager;
+  public static get viewManager(): ViewManager { return this._viewManager; }
   /** The [[NotificationManager]] for this session. */
-  public static notifications: NotificationManager;
+  public static get notifications(): NotificationManager { return this._notifications; }
   /** The [[TileAdmin]] for this session. */
-  public static tileAdmin: TileAdmin;
+  public static get tileAdmin(): TileAdmin { return this._tileAdmin; }
   /** The [[QuantityFormatter]] for this session.
    * @alpha
    */
-  public static quantityFormatter: QuantityFormatter;
+  public static get quantityFormatter(): QuantityFormatter { return this._quantityFormatter; }
   /** The [[ToolAdmin]] for this session. */
-  public static toolAdmin: ToolAdmin;
-  /** The [[AccuDraw]] for this session.
-   * @public
-   */
-  public static accuDraw: AccuDraw;
-  /** The [[AccuSnap]] for this session.
-   * @public
-   */
-  public static accuSnap: AccuSnap;
-  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session */
-  public static get authorizationClient(): IAuthorizationClient | undefined {
-    return IModelApp._authorizationClient;
-  }
-  public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) {
-    IModelApp._authorizationClient = authorizationClient;
-  }
+  public static get toolAdmin(): ToolAdmin { return this._toolAdmin; }
+  /** The [[AccuDraw]] for this session. */
+  public static get accuDraw(): AccuDraw { return this._accuDraw; }
+  /** The [[AccuSnap]] for this session. */
+  public static get accuSnap(): AccuSnap { return this._accuSnap; }
   /** @internal */
-  public static locateManager: ElementLocateManager;
+  public static get locateManager(): ElementLocateManager { return this._locateManager; }
   /** @internal */
-  public static tentativePoint: TentativePoint;
+  public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
   /** The [[I18N]] for this session. */
-  public static i18n: I18N;
+  public static get i18n(): I18N { return this._i18n; }
   /** The [[SettingsAdmin]] for this session. */
-  public static settings: SettingsAdmin;
-
-  /** Because static members are inheritable in Typescript, it is valid to access these static members using the 'this' keyword on any derived class.
-   * In such cases, the 'this' keyword is interpreted as the class scope that is making the call.
-   * This feature conflicts, however, with Typescript's arrow functions, which always preserve the meaning of 'this' from the scope in which they were declared.
-   * Because arrow functions break static inheritance, it is thus unreliable to use 'this' within arrow functions defined in a static scope.
-   * In order to grant flexibility to the deriving class when setting inherited static values, we wrap a private field on the base class with inheritable accessors,
-   * so that all derived classes set the field on the base class regardless of the assignment method employed.
-   */
-  private static _applicationId: string;
+  public static get settings(): SettingsAdmin { return this._settings; }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
-  public static get applicationId(): string { return IModelApp._applicationId; }
-  public static set applicationId(applicationId: string) { IModelApp._applicationId = applicationId; }
-
-  /** Because static members are inheritable in Typescript, it is valid to access these static members using the 'this' keyword on any derived class.
-   * In such cases, the 'this' keyword is interpreted as the class scope that is making the call.
-   * This feature conflicts, however, with Typescript's arrow functions, which always preserve the meaning of 'this' from the scope in which they were declared.
-   * Because arrow functions break static inheritance, it is thus unreliable to use 'this' within arrow functions defined in a static scope.
-   * In order to grant flexibility to the deriving class when setting inherited static values, we wrap a private field on the base class with inheritable accessors,
-   * so that all derived classes set the field on the base class regardless of the assignment method employed.
-   */
-  private static _applicationVersion: string;
+  public static get applicationId(): string { return this._applicationId; }
   /** The version of this application. Must be set for usage logging. */
-  public static get applicationVersion(): string { return IModelApp._applicationVersion; }
-  public static set applicationVersion(applicationVersion: string) { IModelApp._applicationVersion = applicationVersion; }
-
-  /** A uniqueId for this session */
-  public static sessionId: GuidString;
+  public static get applicationVersion(): string { return this._applicationVersion; }
   /** @internal */
-  public static readonly features = new FeatureGates();
-  /** The [[ToolRegistry]] for this session. */
-  public static readonly tools = new ToolRegistry();
-  /** @internal */
-  protected static _imodelClient?: IModelClient;
-  /** @internal */
-  public static get initialized() { return IModelApp._initialized; }
-
+  public static get initialized() { return this._initialized; }
   /** The [[IModelClient]] for this session. */
-  public static get iModelClient(): IModelClient {
-    if (!this._imodelClient)
-      this._imodelClient = new IModelHubClient();
-    return this._imodelClient;
-  }
-
-  /** @internal */
-  public static set iModelClient(client: IModelClient) { this._imodelClient = client; }
+  public static get iModelClient(): IModelClient { return this._imodelClient; }
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
 
   /**
-   * This method must be called before any iModel.js frontend services are used. Typically, an application will make a subclass of IModelApp
-   * and call this method on that subclass. E.g:
+   * This method must be called before any iModel.js frontend services are used.
+   * In your source, somewhere before you use any iModel.js services, call IModelApp.startup. E.g.:
    * ``` ts
-   * MyApp extends IModelApp {
-   *  . . .
-   * }
+   * IModelApp.startup({applicationId: myAppId, i18n: myi18Opts});
    * ```
-   * in your source somewhere before you use any iModel.js services, call:
-   * ``` ts
-   * MyApp.startup();
-   * ```
+   * @param opts The options for configuring IModelApp
    */
-  public static startup(imodelClient?: IModelClient, renderSysOpt?: RenderSystem.Options): void {
-    if (IModelApp._initialized)
+  public static startup(opts?: IModelAppOptions): void {
+    opts = opts ? opts : {};
+
+    if (this._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 
     // Setup a current context for all requests that originate from this frontend
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
 
-    IModelApp._initialized = true;
+    this._initialized = true;
 
     // Initialize basic application details before log messages are sent out
-    IModelApp.sessionId = Guid.createValue();
-    if (!IModelApp.applicationId) IModelApp.applicationId = "2686";  // Default to product id of iModel.js
-    if (!IModelApp.applicationVersion) IModelApp.applicationVersion = IModelApp.getApplicationVersion();
+    this.sessionId = (opts.sessionId !== undefined) ? opts.sessionId : Guid.createValue();
+    this._applicationId = (opts.applicationId !== undefined) ? opts.applicationId : "2686";  // Default to product id of iModel.js
+    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : (typeof (BUILD_SEMVER) !== "undefined" ? BUILD_SEMVER : "");
+    this.authorizationClient = opts.authorizationClient;
 
-    if (imodelClient !== undefined)
-      IModelApp._imodelClient = imodelClient;
+    this._imodelClient = (opts.imodelClient !== undefined) ? opts.imodelClient : new IModelHubClient();
 
-    IModelApp._setupRpcRequestContext();
+    this._setupRpcRequestContext();
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    IModelApp.i18n = new I18N(["iModelJs"], "iModelJs", this.supplyI18NOptions());
+    this._i18n = (opts.i18n instanceof I18N) ? opts.i18n : new I18N(["iModelJs"], "iModelJs", opts.i18n);
 
-    const tools = IModelApp.tools; // first register all the core tools. Subclasses may choose to override them.
-    const coreNamespace = IModelApp.i18n.registerNamespace("CoreTools");
+    const tools = this.tools; // first register all the core tools. Subclasses may choose to override them.
+    const coreNamespace = this.i18n.registerNamespace("CoreTools");
     tools.registerModule(selectTool, coreNamespace);
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);
@@ -177,57 +188,42 @@ export class IModelApp {
     tools.registerModule(measureTool, coreNamespace);
     tools.registerModule(pluginTool, coreNamespace);
 
-    this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.
+    this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
     // the startup function may have already allocated any of these members, so first test whether they're present
-    if (!IModelApp.settings) IModelApp.settings = new ConnectSettingsClient(IModelApp.applicationId);
-    if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem(renderSysOpt);
-    if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
-    if (!IModelApp.tileAdmin) IModelApp.tileAdmin = TileAdmin.create();
-    if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
-    if (!IModelApp.toolAdmin) IModelApp.toolAdmin = new ToolAdmin();
-    if (!IModelApp.accuDraw) IModelApp.accuDraw = new AccuDraw();
-    if (!IModelApp.accuSnap) IModelApp.accuSnap = new AccuSnap();
-    if (!IModelApp.locateManager) IModelApp.locateManager = new ElementLocateManager();
-    if (!IModelApp.tentativePoint) IModelApp.tentativePoint = new TentativePoint();
-    if (!IModelApp.quantityFormatter) IModelApp.quantityFormatter = new QuantityFormatter();
+    this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
+    this._viewManager = (opts.viewManager !== undefined) ? opts.viewManager : new ViewManager();
+    this._tileAdmin = (opts.tileAdmin !== undefined) ? opts.tileAdmin : TileAdmin.create();
+    this._notifications = (opts.notifications !== undefined) ? opts.notifications : new NotificationManager();
+    this._toolAdmin = (opts.toolAdmin !== undefined) ? opts.toolAdmin : new ToolAdmin();
+    this._accuDraw = (opts.accuDraw !== undefined) ? opts.accuDraw : new AccuDraw();
+    this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
+    this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
+    this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
+    this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
 
-    IModelApp._renderSystem.onInitialized();
-    IModelApp.viewManager.onInitialized();
-    IModelApp.toolAdmin.onInitialized();
-    IModelApp.accuDraw.onInitialized();
-    IModelApp.accuSnap.onInitialized();
-    IModelApp.locateManager.onInitialized();
-    IModelApp.tentativePoint.onInitialized();
+    this.renderSystem.onInitialized();
+    this.viewManager.onInitialized();
+    this.toolAdmin.onInitialized();
+    this.accuDraw.onInitialized();
+    this.accuSnap.onInitialized();
+    this.locateManager.onInitialized();
+    this.tentativePoint.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */
   public static shutdown() {
-    IModelApp.toolAdmin.onShutDown();
-    IModelApp.viewManager.onShutDown();
-    IModelApp.tileAdmin.onShutDown();
-    IModelApp._renderSystem = dispose(IModelApp._renderSystem);
-    IModelApp._initialized = false;
+    if (this._initialized) {
+      this.toolAdmin.onShutDown();
+      this.viewManager.onShutDown();
+      this.tileAdmin.onShutDown();
+      this._renderSystem = dispose(this._renderSystem);
+      this._initialized = false;
+    }
   }
 
-  /** Implement this method to register your app's tools, override implementation of managers, and initialize your app-specific members.
-   * @note The default tools will already be registered, so if you register tools with the same toolId, your tools will override the defaults.
-   */
-  protected static onStartup(): void { }
-
-  /** Implement this method to supply options for the initialization of the [I18N]($i18n) system.
-   * @internal
-   */
-  protected static supplyI18NOptions(): I18NOptions | undefined { return undefined; }
-
-  /** Implement this method to supply the RenderSystem that provides display capabilities.
-   * @internal
-   */
-  protected static supplyRenderSystem(options?: RenderSystem.Options): RenderSystem { return System.create(options); }
-
-  private static getApplicationVersion(): string {
-    return typeof (BUILD_SEMVER) !== "undefined" ? BUILD_SEMVER : "";
-  }
+  /** @internal */
+  public static createRenderSys(opts?: RenderSystem.Options): RenderSystem { return System.create(opts); }
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.getId = (_request: RpcRequest): string => {
@@ -249,9 +245,9 @@ export class IModelApp {
       }
       return {
         id,
-        applicationId: IModelApp.applicationId,
-        applicationVersion: IModelApp.applicationVersion,
-        sessionId: IModelApp.sessionId,
+        applicationId: this.applicationId,
+        applicationVersion: this.applicationVersion,
+        sessionId: this.sessionId,
         authorization,
         userId,
       };

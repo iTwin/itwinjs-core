@@ -41,10 +41,10 @@ Logger.setLevelDefault(LogLevel.Warning);
   }
 })();
 
-// subclass of IModelApp needed to use IModelJs API
-export class SampleApp extends IModelApp {
+export class SampleApp {
   private static _ready: Promise<void>;
-  protected static onStartup() {
+  public static startup() {
+    IModelApp.startup();
     const readyPromises = new Array<Promise<void>>();
 
     const localizationNamespace = IModelApp.i18n.registerNamespace("Sample");

@@ -1053,7 +1053,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
 
     const view = this._vp.view;
     const is3d = view.is3d();
-    const sqlName: string = is3d ? DisplayStyle3dState.sqlName : DisplayStyle2dState.sqlName;
+    const sqlName: string = is3d ? DisplayStyle3dState.classFullName : DisplayStyle2dState.classFullName;
     const displayStyleProps = await this._vp.view.iModel.elements.queryProps({ from: sqlName, where: "IsPrivate=FALSE" });
     const displayStyles = new Map<Id64String, DisplayStyleState>();
     const styleEntries = [];

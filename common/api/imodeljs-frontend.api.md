@@ -51,7 +51,6 @@ import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { EnvironmentProps } from '@bentley/imodeljs-common';
 import { Feature } from '@bentley/imodeljs-common';
-import { FeatureGates } from '@bentley/imodeljs-common';
 import { FeatureIndex } from '@bentley/imodeljs-common';
 import { FeatureIndexType } from '@bentley/imodeljs-common';
 import { FeatureTable } from '@bentley/imodeljs-common';
@@ -2121,11 +2120,11 @@ export class EntityState implements EntityProps {
     constructor(props: EntityProps, iModel: IModelConnection, _state?: EntityState);
     // (undocumented)
     readonly classFullName: string;
+    static readonly classFullName: string;
     static readonly className: string;
     clone(iModel?: IModelConnection): this;
     // (undocumented)
     equals(other: this): boolean;
-    static getClassFullName(): string;
     // (undocumented)
     readonly id: Id64String;
     // (undocumented)
@@ -2136,8 +2135,6 @@ export class EntityState implements EntityProps {
     };
     // (undocumented)
     static schemaName: string;
-    // (undocumented)
-    static readonly sqlName: string;
     // (undocumented)
     toJSON(): EntityProps;
 }
@@ -2886,46 +2883,63 @@ export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 
 // @public
 export class IModelApp {
-    static accuDraw: AccuDraw;
-    static accuSnap: AccuSnap;
-    static applicationId: string;
-    static applicationVersion: string;
-    static authorizationClient: IAuthorizationClient | undefined;
+    static readonly accuDraw: AccuDraw;
+    static readonly accuSnap: AccuSnap;
+    static readonly applicationId: string;
+    static readonly applicationVersion: string;
+    static authorizationClient?: IAuthorizationClient;
     // @internal (undocumented)
-    static readonly features: FeatureGates;
+    static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @internal (undocumented)
     static readonly hasRenderSystem: boolean;
-    static i18n: I18N;
-    // @internal (undocumented)
-    static iModelClient: IModelClient;
-    // @internal (undocumented)
-    protected static _imodelClient?: IModelClient;
+    static readonly i18n: I18N;
+    static readonly iModelClient: IModelClient;
     // @internal (undocumented)
     static readonly initialized: boolean;
     // @internal (undocumented)
-    protected static _initialized: boolean;
-    // @internal (undocumented)
-    static locateManager: ElementLocateManager;
-    static notifications: NotificationManager;
-    protected static onStartup(): void;
+    static readonly locateManager: ElementLocateManager;
+    static readonly notifications: NotificationManager;
     // @alpha
-    static quantityFormatter: QuantityFormatter;
+    static readonly quantityFormatter: QuantityFormatter;
     static readonly renderSystem: RenderSystem;
     static sessionId: GuidString;
-    static settings: SettingsAdmin;
+    static readonly settings: SettingsAdmin;
     static shutdown(): void;
-    static startup(imodelClient?: IModelClient, renderSysOpt?: RenderSystem.Options): void;
-    // @internal
-    protected static supplyI18NOptions(): I18NOptions | undefined;
-    // @internal
-    protected static supplyRenderSystem(options?: RenderSystem.Options): RenderSystem;
+    static startup(opts?: IModelAppOptions): void;
     // @internal (undocumented)
-    static tentativePoint: TentativePoint;
+    static readonly tentativePoint: TentativePoint;
     // Warning: (ae-incompatible-release-tags) The symbol "tileAdmin" is marked as @public, but its signature references "TileAdmin" which is marked as @alpha
-    static tileAdmin: TileAdmin;
-    static toolAdmin: ToolAdmin;
+    static readonly tileAdmin: TileAdmin;
+    static readonly toolAdmin: ToolAdmin;
     static readonly tools: ToolRegistry;
-    static viewManager: ViewManager;
+    static readonly viewManager: ViewManager;
+    }
+
+// @public
+export interface IModelAppOptions {
+    accuDraw?: AccuDraw;
+    accuSnap?: AccuSnap;
+    applicationId?: string;
+    applicationVersion?: string;
+    authorizationClient?: IAuthorizationClient;
+    i18n?: I18N | I18NOptions;
+    imodelClient?: IModelClient;
+    // @internal (undocumented)
+    locateManager?: ElementLocateManager;
+    notifications?: NotificationManager;
+    // @internal (undocumented)
+    quantityFormatter?: QuantityFormatter;
+    // @internal (undocumented)
+    renderSys?: RenderSystem | RenderSystem.Options;
+    // @internal (undocumented)
+    sessionId?: GuidString;
+    settings?: SettingsAdmin;
+    // @internal (undocumented)
+    tentativePoint?: TentativePoint;
+    // Warning: (ae-incompatible-release-tags) The symbol "tileAdmin" is marked as @public, but its signature references "TileAdmin" which is marked as @alpha
+    tileAdmin?: TileAdmin;
+    toolAdmin?: ToolAdmin;
+    viewManager?: ViewManager;
 }
 
 // @public
@@ -3518,13 +3532,13 @@ export enum MessageBoxValue {
 
 // @internal
 export namespace MockRender {
-    export class App extends IModelApp {
+    export class App {
         // (undocumented)
         protected static createDefaultRenderSystem(): System;
         // (undocumented)
         static shutdown(): void;
         // (undocumented)
-        protected static supplyRenderSystem(): RenderSystem;
+        static startup(opts?: IModelAppOptions): void;
         // (undocumented)
         static systemFactory: SystemFactory;
     }
@@ -3716,9 +3730,9 @@ export interface MultilineTextEditorParams extends BasePropertyEditorParams {
 }
 
 // @internal
-export class NoRenderApp extends IModelApp {
+export class NoRenderApp {
     // (undocumented)
-    protected static supplyRenderSystem(): RenderSystem;
+    static startup(opts?: IModelAppOptions): void;
 }
 
 // @public
@@ -5205,22 +5219,17 @@ export namespace SkyBox {
         static createForCube(cube: RenderTexture): CreateParams;
         // (undocumented)
         static createForGradient(gradient: SkyGradient, zOffset: number): CreateParams;
-        // Warning: (ae-incompatible-release-tags) The symbol "createForSphere" is marked as @public, but its signature references "SphereParams" which is marked as @internal
-        // 
         // (undocumented)
         static createForSphere(sphere: SphereParams, zOffset: number): CreateParams;
         // (undocumented)
         readonly cube?: RenderTexture;
         // (undocumented)
         readonly gradient?: SkyGradient;
-        // Warning: (ae-incompatible-release-tags) The symbol "sphere" is marked as @public, but its signature references "SphereParams" which is marked as @internal
-        // 
         // (undocumented)
         readonly sphere?: SphereParams;
         // (undocumented)
         readonly zOffset: number;
     }
-    // @internal
     export class SphereParams {
         constructor(texture: RenderTexture, rotation: number);
         // (undocumented)

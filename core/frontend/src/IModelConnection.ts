@@ -342,7 +342,7 @@ export class IModelConnection extends IModel {
     return IModelReadRpcInterface.getClient().queryRowCount(this.iModelToken, ecsql, bindings);
   }
 
-  /** Execute a query agaisnt this ECDb
+  /** Execute a query against this ECDb
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -623,7 +623,7 @@ export namespace IModelConnection {
     /** Query for a set of ModelProps of the specified ModelQueryParams. */
     public async queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
       const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
-      params.from = queryParams.from || ModelState.sqlName; // use "BisCore.Model" as default class name
+      params.from = queryParams.from || ModelState.classFullName; // use "BisCore:Model" as default class name
       params.where = queryParams.where || "";
       if (!queryParams.wantPrivate) {
         if (params.where.length > 0) params.where += " AND ";
@@ -727,7 +727,7 @@ export namespace IModelConnection {
      */
     public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
       const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy
-      params.from = queryParams.from || ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
+      params.from = queryParams.from || ViewState.classFullName; // use "BisCore:ViewDefinition" as default class name
       params.where = queryParams.where || "";
       if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
         if (params.where.length > 0) params.where += " AND ";

@@ -37,7 +37,7 @@ describe("ViewState", () => {
   before(async () => {
     MockRender.App.startup();
     imodel = await IModelConnection.openSnapshot(iModelLocation);
-    const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
+    const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
 

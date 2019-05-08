@@ -11,8 +11,6 @@ The iModel.js packages contain some APIs which are intentionally excluded from t
 
 The iModel.js library is organized into the following separately downloadable [npm](https://www.npmjs.com/) packages under the `@bentley` scope:
 
-- ($bentley)
-- ($geometry)
 - ($frontend)
 - ($common)
 - ($backend)
@@ -20,3 +18,5 @@ The iModel.js library is organized into the following separately downloadable [n
 - ($markup)
 - ($quantity)
 - ($i18n)
+- ($bentley)
+- ($geometry)

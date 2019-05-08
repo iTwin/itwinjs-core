@@ -152,7 +152,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
       // load model presentation rules
       await this.loadModelsFromPresentationRules();
 
-      const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
+      const modelQueryParams: ModelQueryParams = { from: SpatialModelState.classFullName, wantPrivate: false };
       const currentModelProps = await this.props.iModelConnection.models.queryProps(modelQueryParams);
       for (const _modelProps of currentModelProps) {
         if (_modelProps.name && this.isUnique(_modelProps.name)) {

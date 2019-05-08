@@ -289,7 +289,7 @@ export class AppTools {
         let displayString = "Current Snap Mode(s):";
 
         if (SampleAppIModelApp.store.getState().frameworkState) {
-          const snapModes = SampleAppIModelApp.accuSnap.getActiveSnapModes();
+          const snapModes = IModelApp.accuSnap.getActiveSnapModes();
           for (const mode of snapModes) {
             if (mode === SnapMode.Bisector) displayString += " Bisector";
             if (mode === SnapMode.Center) displayString += " Center";

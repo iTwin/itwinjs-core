@@ -79,16 +79,16 @@ export class ViewManager {
 
   /** @internal */
   public onInitialized() {
-    IModelConnection.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
+    IModelConnection.registerClass(SpatialModelState.classFullName, SpatialModelState);
     IModelConnection.registerClass("BisCore:PhysicalModel", SpatialModelState);
     IModelConnection.registerClass("BisCore:SpatialLocationModel", SpatialModelState);
-    IModelConnection.registerClass(DrawingModelState.getClassFullName(), DrawingModelState);
-    IModelConnection.registerClass(SectionDrawingModelState.getClassFullName(), SectionDrawingModelState);
-    IModelConnection.registerClass(SheetModelState.getClassFullName(), SheetModelState);
-    IModelConnection.registerClass(OrthographicViewState.getClassFullName(), OrthographicViewState as any); // the "as any" is to get around problem with abstract base classes
-    IModelConnection.registerClass(SpatialViewState.getClassFullName(), SpatialViewState as any);
-    IModelConnection.registerClass(DrawingViewState.getClassFullName(), DrawingViewState as any);
-    IModelConnection.registerClass(SheetViewState.getClassFullName(), SheetViewState as any);
+    IModelConnection.registerClass(DrawingModelState.classFullName, DrawingModelState);
+    IModelConnection.registerClass(SectionDrawingModelState.classFullName, SectionDrawingModelState);
+    IModelConnection.registerClass(SheetModelState.classFullName, SheetModelState);
+    IModelConnection.registerClass(OrthographicViewState.classFullName, OrthographicViewState as any); // the "as any" is to get around problem with abstract base classes
+    IModelConnection.registerClass(SpatialViewState.classFullName, SpatialViewState as any);
+    IModelConnection.registerClass(DrawingViewState.classFullName, DrawingViewState as any);
+    IModelConnection.registerClass(SheetViewState.classFullName, SheetViewState as any);
 
     this.addDecorator(IModelApp.accuSnap);
     this.addDecorator(IModelApp.tentativePoint);

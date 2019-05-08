@@ -11,7 +11,7 @@ import { TestUtility } from "./TestUtility";
 import { TestUsers } from "./TestUsers";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection,
-  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, MockRender,
+  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, MockRender, IModelApp,
 } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 
@@ -34,7 +34,7 @@ describe("IModelConnection (#integration)", () => {
 
     const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
     await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    MockRender.App.authorizationClient = imsTestAuthorizationClient;
+    IModelApp.authorizationClient = imsTestAuthorizationClient;
 
     const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
@@ -86,9 +86,9 @@ describe("IModelConnection (#integration)", () => {
     assert.isAtLeast(viewDefinitions.length, 1);
     let viewState: ViewState = await iModel.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
-    assert.equal(viewState.classFullName, OrthographicViewState.getClassFullName());
-    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
-    assert.equal(viewState.displayStyle.classFullName, DisplayStyle3dState.getClassFullName());
+    assert.equal(viewState.classFullName, OrthographicViewState.classFullName);
+    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.classFullName);
+    assert.equal(viewState.displayStyle.classFullName, DisplayStyle3dState.classFullName);
     assert.instanceOf(viewState, OrthographicViewState);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle3dState);
@@ -100,8 +100,8 @@ describe("IModelConnection (#integration)", () => {
     assert.exists(viewState);
     assert.equal(viewState.code.getValue(), viewDefinitions[0].name);
     assert.equal(viewState.classFullName, viewDefinitions[0].class);
-    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
-    assert.equal(viewState.displayStyle.classFullName, DisplayStyle2dState.getClassFullName());
+    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.classFullName);
+    assert.equal(viewState.displayStyle.classFullName, DisplayStyle2dState.classFullName);
     assert.instanceOf(viewState, DrawingViewState);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);

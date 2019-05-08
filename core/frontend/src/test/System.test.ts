@@ -17,8 +17,10 @@ describe("Instancing", () => {
       if (!supportsInstancing)
         renderSysOpts.disabledExtensions = ["ANGLE_instanced_arrays"];
 
-      IModelApp.startup(undefined, renderSysOpts);
-      IModelApp.tileAdmin = TileAdmin.create(tileAdminProps);
+      IModelApp.startup({
+        renderSys: renderSysOpts,
+        tileAdmin: TileAdmin.create(tileAdminProps),
+      });
     }
   }
 
@@ -30,19 +32,19 @@ describe("Instancing", () => {
 
   it("should properly toggle instancing", () => {
     TestApp.start(true, true);
-    assert.equal(TestApp.tileAdmin.enableInstancing, true, "should produce tileAdmin.enableInstancing=true from TestApp.start(true,true)");
+    assert.equal(IModelApp.tileAdmin.enableInstancing, true, "should produce tileAdmin.enableInstancing=true from TestApp.start(true,true)");
     TestApp.shutdown();
 
     TestApp.start(true, false);
-    assert.equal(TestApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(true,false)");
+    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(true,false)");
     TestApp.shutdown();
 
     TestApp.start(false, true);
-    assert.equal(TestApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(false,true)");
+    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(false,true)");
     TestApp.shutdown();
 
     TestApp.start(false, false);
-    assert.equal(TestApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(false,false)");
+    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(false,false)");
     TestApp.shutdown();
   });
 });

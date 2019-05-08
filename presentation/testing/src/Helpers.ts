@@ -22,7 +22,7 @@ import {
   RpcInterfaceDefinition,
   RpcDefaultConfiguration,
 } from "@bentley/imodeljs-common";
-import { NoRenderApp } from "@bentley/imodeljs-frontend";
+import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 import { Presentation as PresentationFrontend } from "@bentley/presentation-frontend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
@@ -65,14 +65,14 @@ export const initialize = (backendProps?: PresentationBackendProps, frontendProp
   frontendApp.startup();
 
   const defaultFrontendProps: PresentationFrontendProps = {
-    activeLocale: frontendApp.i18n.languageList()[0],
+    activeLocale: IModelApp.i18n.languageList()[0],
   };
   PresentationFrontend.initialize({ ...defaultFrontendProps, ...frontendProps });
 
   isInitialized = true;
 };
 
-export const terminate = (frontendApp = NoRenderApp) => {
+export const terminate = () => {
   if (!isInitialized)
     return;
 
@@ -88,7 +88,7 @@ export const terminate = (frontendApp = NoRenderApp) => {
 
   // terminate frontend
   PresentationFrontend.terminate();
-  frontendApp.shutdown();
+  IModelApp.shutdown();
 
   isInitialized = false;
 };

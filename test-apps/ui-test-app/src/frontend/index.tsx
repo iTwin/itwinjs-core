@@ -127,15 +127,16 @@ export interface RootState {
   frameworkState?: FrameworkState;
 }
 
-// subclass of IModelApp needed to use IModelJs API
-export class SampleAppIModelApp extends IModelApp {
+export class SampleAppIModelApp {
   public static sampleAppNamespace: I18NNamespace;
   public static store: Store<RootState>;
   public static rootReducer: any;
 
-  protected static onStartup() {
-    IModelApp.notifications = new AppNotificationManager();
-    IModelApp.accuSnap = new SampleAppAccuSnap();
+  public static startup() {
+    IModelApp.startup({
+      notifications: new AppNotificationManager(),
+      accuSnap: new SampleAppAccuSnap(),
+    });
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
     // this is the rootReducer for the sample application.
@@ -163,8 +164,8 @@ export class SampleAppIModelApp extends IModelApp {
   public static async initialize() {
     Presentation.initialize();
     Presentation.selection.scopes.activeScope = "top-assembly";
-    UiCore.initialize(SampleAppIModelApp.i18n); // tslint:disable-line:no-floating-promises
-    UiComponents.initialize(SampleAppIModelApp.i18n); // tslint:disable-line:no-floating-promises
+    UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
+    UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
     const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read";
@@ -178,7 +179,7 @@ export class SampleAppIModelApp extends IModelApp {
       oidcConfiguration = { clientId, redirectUri, scope };
     }
 
-    await UiFramework.initialize(SampleAppIModelApp.store, SampleAppIModelApp.i18n, oidcConfiguration, "frameworkState");
+    await UiFramework.initialize(SampleAppIModelApp.store, IModelApp.i18n, oidcConfiguration, "frameworkState");
 
     // initialize Presentation
     Presentation.initialize({

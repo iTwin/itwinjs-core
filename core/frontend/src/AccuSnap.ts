@@ -225,13 +225,11 @@ export class AccuSnap implements Decorator {
   private get _isSnapSuspended(): boolean { return (0 !== this._suppressed || 0 !== this.toolState.suspended); }
 
   /** Get the current snap divisor to use to use for SnapMode.NearestKeypoint.
-   * A subclass of IModelApp can implement onStartup to return a subclass of AccuSnap that implements this method to provide a snap divisor ui component.
    * @public
    */
   public get keypointDivisor() { return 2; }
 
   /** Get the current active SnapModes. SnapMode position determines priority, with the first entry being the highest. The SnapDetail will be returned for the first SnapMode that produces a hot snap.
-   * A subclass of IModelApp can implement onStartup to return a subclass of AccuSnap that implements this method to provide a SnapMode ui component.
    * @public
    */
   public getActiveSnapModes(): SnapMode[] {

@@ -139,7 +139,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
   public async queryViewProps(imodel: IModelConnection, refresh?: boolean): Promise<ViewDefinitionProps[]> {
     if (!this._viewDefCache || refresh) {
       const params: ViewQueryParams = {};
-      params.from = ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
+      params.from = ViewState.classFullName; // use "BisCore.ViewDefinition" as default class name
       params.where = "";
       const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.iModelToken, params);
       this._viewDefCache = viewProps as ViewDefinitionProps[];

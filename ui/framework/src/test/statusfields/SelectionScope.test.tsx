@@ -7,7 +7,7 @@ import * as React from "react";
 import { Provider } from "react-redux";
 import { render, cleanup, fireEvent } from "react-testing-library";
 import { Presentation } from "@bentley/presentation-frontend";
-import { NoRenderApp } from "@bentley/imodeljs-frontend";
+import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 
 import TestUtils from "../TestUtils";
 import {
@@ -92,8 +92,8 @@ describe("Test that requires Presentation", () => {
   afterEach(cleanup);
 
   const shutdownIModelApp = () => {
-    if (NoRenderApp.initialized)
-      NoRenderApp.shutdown();
+    if (IModelApp.initialized)
+      IModelApp.shutdown();
   };
 
   beforeEach(async () => {

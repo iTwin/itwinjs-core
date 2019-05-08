@@ -201,7 +201,7 @@ export class CategoryPicker extends IdPicker {
   protected async _populate(): Promise<void> {
     const view = this._vp.view;
     const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
-    const bindings = view.is2d() ? [ view.baseModelId ] : undefined;
+    const bindings = view.is2d() ? [view.baseModelId] : undefined;
     const rows = Array.from(await view.iModel.queryPage(ecsql, bindings, { size: 1000 })); // max rows to return after which result will be truncated.
     rows.sort((lhs, rhs) => {
       const lhName = getCategoryName(lhs);
@@ -254,7 +254,7 @@ export class ModelPicker extends IdPicker {
     const view = this._vp.view as SpatialViewState;
     assert(undefined !== view && view.isSpatialView());
 
-    const query = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
+    const query = { from: SpatialModelState.classFullName, wantPrivate: false };
     const props = await view.iModel.models.queryProps(query);
     props.sort((lhs, rhs) => compareStringsOrUndefined(lhs.name, rhs.name));
 
