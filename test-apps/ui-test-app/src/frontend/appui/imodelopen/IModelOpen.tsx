@@ -12,6 +12,7 @@ import { NavigationList, NavigationItem } from "./Navigation";
 import { BlockingPrompt } from "./BlockingPrompt";
 import "./IModelOpen.scss";
 import "./Common.scss";
+import { AppTools } from "../../tools/ToolSpecifications";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
@@ -131,7 +132,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       <div>
         <div className="open-appbar">
           <div className="backstage-icon">
-            <span className="icon icon-app-launcher" />
+            <span className="icon icon-home" onPointerUp={() => AppTools.backstageToggleCommand.execute()} />
           </div>
           <div className="project-picker-content">
             <span className="projects-label">Projects</span>

@@ -30,7 +30,7 @@ export class BreadcrumbDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <BreadcrumbDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
+    this.reactElement = <BreadcrumbDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection} />;
   }
 }
 

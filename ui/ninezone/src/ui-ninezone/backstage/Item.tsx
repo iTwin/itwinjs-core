@@ -47,7 +47,7 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
         <div className="nz-icon">{this.props.icon}</div>
         <div>
           <span>{this.props.children}</span>
-          {this.props.subtitle !== undefined && <span>{this.props.subtitle}</span>}
+          {this.props.subtitle && <span>{this.props.subtitle}</span>}
         </div>
       </li>
     );

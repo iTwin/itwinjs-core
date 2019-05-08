@@ -4,7 +4,8 @@
 import * as React from "react";
 import {
   CoreTools, ContentGroup, ContentControl, ConfigurableCreateInfo,
-  FrontstageProvider, FrontstageProps, Frontstage } from "@bentley/ui-framework";
+  FrontstageProvider, FrontstageProps, Frontstage,
+} from "@bentley/ui-framework";
 import { IModelIndex } from "../imodelindex/IModelIndex";
 import { SampleAppIModelApp } from "../../index";
 import { Id64String } from "@bentley/bentleyjs-core";
@@ -22,7 +23,7 @@ class IModelIndexControl extends ContentControl {
     const iModelConnection = SampleAppIModelApp.getIModelConnection()!;
     const contextId = iModelConnection.iModelToken.contextId!;
     const iModelId = iModelConnection.iModelToken.iModelId!;
-    await SampleAppIModelApp.openViews(contextId, iModelId, viewIds);
+    await SampleAppIModelApp.openIModelAndViews(contextId, iModelId, viewIds);
   }
 }
 

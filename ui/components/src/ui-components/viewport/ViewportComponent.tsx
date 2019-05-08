@@ -68,6 +68,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   private _vp?: ScreenViewport;
   private _viewClassFullName: string = "";
   private _lastTargetPoint?: Point3d;
+  private _mounted: boolean = false;
 
   public constructor(props: ViewportProps) {
     super(props);
@@ -78,6 +79,8 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   }
 
   public async componentDidMount() {
+    this._mounted = true;
+
     // istanbul ignore next
     if (!this._viewportDiv.current)
       throw new Error("Parent <div> failed to load");
@@ -113,6 +116,8 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   }
 
   public componentWillUnmount() {
+    this._mounted = false;
+
     if (this._vp) {
       const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
       viewManager.dropViewport(this._vp, true);
@@ -198,7 +203,9 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     if (this.state.viewId !== vp.view.id) {
       setTimeout(() => {
         ViewportComponentEvents.onViewIdChangedEvent.emit({ viewport: vp, oldId: this.state.viewId, newId: vp.view.id });
-        this.setState({ viewId: vp.view.id });
+
+        if (this._mounted)
+          this.setState({ viewId: vp.view.id });
       });
     }
   }

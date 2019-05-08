@@ -46,10 +46,7 @@ export class Annulus {
 }
 
 // @beta
-export class BodyText extends React.PureComponent<TextProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const BodyText: React.FunctionComponent<TextProps>;
 
 // @public
 export class Button extends React.PureComponent<ButtonProps> {
@@ -84,6 +81,9 @@ export enum ButtonType {
     // (undocumented)
     Primary = "primary"
 }
+
+// @beta
+export const Centered: React.FunctionComponent<CommonDivProps>;
 
 // @beta
 export const Checkbox: React.FunctionComponent<CheckboxProps>;
@@ -156,6 +156,10 @@ export class Circle {
 // @public
 export interface ClassNameProps {
     className?: string;
+}
+
+// @public
+export interface CommonDivProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
 }
 
 // @public
@@ -456,6 +460,17 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     y?: number;
 }
 
+// @internal
+export class Div extends React.PureComponent<DivProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal
+export interface DivProps extends CommonDivProps {
+    mainClassName: string;
+}
+
 // @public
 export class ElementSeparator extends React.PureComponent<ElementSeparatorProps> {
     // (undocumented)
@@ -542,6 +557,12 @@ export enum Face {
     Top = "top"
 }
 
+// @beta
+export const FillCentered: React.FunctionComponent<CommonDivProps>;
+
+// @beta
+export const FlexWrapContainer: React.FunctionComponent<CommonDivProps>;
+
 // @internal
 export const getDisplayName: (component: React.ComponentType<any>) => string;
 
@@ -581,10 +602,7 @@ export interface GlobalDialogProps extends DialogProps {
 }
 
 // @beta
-export class Headline extends React.PureComponent<TextProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const Headline: React.FunctionComponent<TextProps>;
 
 // @public
 export enum HorizontalAlignment {
@@ -694,16 +712,10 @@ export interface LabeledTextareaProps extends TextareaProps, LabeledComponentPro
 }
 
 // @beta
-export class LeadingText extends React.PureComponent<TextProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const LeadingText: React.FunctionComponent<TextProps>;
 
 // @beta
-export class LeadingText2 extends React.PureComponent<TextProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const LeadingText2: React.FunctionComponent<TextProps>;
 
 // @internal
 export class Line {
@@ -855,10 +867,7 @@ export enum MessageSeverity {
 }
 
 // @beta
-export class MutedText extends React.PureComponent<TextProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const MutedText: React.FunctionComponent<TextProps>;
 
 // @public
 export interface NodeCheckboxProps {
@@ -1018,6 +1027,9 @@ export class Radio extends React.PureComponent<RadioProps> {
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
 }
 
+// @beta
+export const ScrollView: React.FunctionComponent<CommonDivProps>;
+
 // Warning: (ae-forgotten-export) The symbol "SearchBoxState" needs to be exported by the entry point ui-core.d.ts
 // 
 // @beta
@@ -1065,10 +1077,7 @@ export const shallowDiffers: (a: {
 } | undefined) => boolean;
 
 // @beta
-export class SmallText extends React.PureComponent<TextProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const SmallText: React.FunctionComponent<TextProps>;
 
 // @public
 export enum SortDirection {
@@ -1130,17 +1139,22 @@ export interface SplitButtonProps extends CommonProps {
     onClick?: (event: any) => any;
 }
 
-// @beta
-export class Subheading extends React.PureComponent<TextProps> {
+// @internal
+export class StyledText extends React.PureComponent<StyleTextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
-export class Subheading2 extends React.PureComponent<TextProps> {
-    // (undocumented)
-    render(): JSX.Element;
+// @internal
+export interface StyleTextProps extends TextProps {
+    mainClassName: string;
 }
+
+// @beta
+export const Subheading: React.FunctionComponent<TextProps>;
+
+// @beta
+export const Subheading2: React.FunctionComponent<TextProps>;
 
 // @beta
 export class SvgPath extends React.PureComponent<SvgPathProps> {
@@ -1212,16 +1226,10 @@ export class Timer {
     }
 
 // @beta
-export class Title extends React.PureComponent<TextProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const Title: React.FunctionComponent<TextProps>;
 
 // @beta
-export class Title2 extends React.PureComponent<TextProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const Title2: React.FunctionComponent<TextProps>;
 
 // Warning: (ae-forgotten-export) The symbol "ToggleState" needs to be exported by the entry point ui-core.d.ts
 // 
@@ -1419,12 +1427,10 @@ export enum VerticalAlignment {
 export const WebFontIcon: React.FunctionComponent<WebFontIconProps>;
 
 // @public
-export interface WebFontIconProps {
-    className?: string;
+export interface WebFontIconProps extends CommonProps {
     iconName: string;
     iconSize?: "small" | "medium" | "large" | "x-large";
     onClick?: React.MouseEventHandler<HTMLSpanElement>;
-    style?: React.CSSProperties;
     title?: string;
 }
 

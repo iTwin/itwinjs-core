@@ -24,7 +24,8 @@ describe("<SmallText />", () => {
   });
 
   it("has correct text", () => {
-    const wrapper = shallow(<SmallText>Test Content</SmallText>);
+    const wrapper = mount(<SmallText>Test Content</SmallText>);
     wrapper.find(".uicore-text-small").text().should.equal("Test Content");
+    wrapper.unmount();
   });
 });

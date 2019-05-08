@@ -46,7 +46,8 @@
     "task2": "View iModel via Task",
     "exit": "Exit",
     "imodelopen": "IModel Open",
-    "imodelindex": "IModel Index"
+    "imodelindex": "IModel Index",
+    "fileSelect": "Open Local File"
   },
   "zone6": {
     "month": "Month",
@@ -227,5 +228,9 @@
     "TableDemo": "Table Demo",
     "TreeDemo": "Tree Demo",
     "FeedbackDemo": "Feedback Demo"
+  },
+  "localFileStage": {
+    "localFile": "Local File",
+    "selectFile": "Select Local File"
   }
 }

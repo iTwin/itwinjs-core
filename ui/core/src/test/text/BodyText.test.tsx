@@ -24,7 +24,8 @@ describe("<BodyText />", () => {
   });
 
   it("has correct text", () => {
-    const wrapper = shallow(<BodyText>Test Content</BodyText>);
+    const wrapper = mount(<BodyText>Test Content</BodyText>);
     wrapper.find(".uicore-text-block").text().should.equal("Test Content");
+    wrapper.unmount();
   });
 });

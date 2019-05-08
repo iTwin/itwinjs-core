@@ -56,7 +56,7 @@ describe("SheetsModalFrontstage", () => {
       const wrapper = mount(content as React.ReactElement<any>);
       const onCardSelected = sinon.spy();
       const removeListener = CardContainer.onCardSelectedEvent.addListener(onCardSelected);
-      wrapper.find("div.sheet-card").simulate("click");
+      wrapper.find("div.uifw-sheet-card").simulate("click");
       expect(onCardSelected.called).to.be.true;
       removeListener();
     });

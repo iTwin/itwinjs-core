@@ -98,6 +98,22 @@ describe("NavigationWidget", () => {
     ).should.matchSnapshot();
   });
 
+  it("NavigationWidget should support update", () => {
+    const wrapper = mount(
+      <NavigationWidget
+        horizontalToolbar={horizontalToolbar}
+        verticalToolbar={verticalToolbar}
+      />,
+    );
+    expect(wrapper.find(ToolButton).length).to.eq(4);
+
+    wrapper.setProps({ verticalToolbar: undefined });
+    wrapper.update();
+    expect(wrapper.find(ToolButton).length).to.eq(2);
+
+    wrapper.unmount();
+  });
+
   class TestContentControl extends ContentControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);

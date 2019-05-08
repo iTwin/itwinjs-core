@@ -53,6 +53,8 @@ describe("FrontstageComposer", () => {
     expect(backButton.length).to.eq(1);
     backButton.simulate("click");
     expect(FrontstageManager.modalFrontstageCount).to.eq(0);
+
+    wrapper.unmount();
   });
 
   it("should handle tab click", async () => {
@@ -69,6 +71,8 @@ describe("FrontstageComposer", () => {
 
     handleTabClickStub.calledOnce.should.true;
     wrapper.instance().state.nineZoneProps.should.eq(newNineZoneProps);
+
+    wrapper.unmount();
   });
 
   it("should update widget state when tab is opened", async () => {
@@ -88,6 +92,8 @@ describe("FrontstageComposer", () => {
     wrapper.instance().handleTabClick(6, 1);
     setWidgetStateSpy1.calledOnceWithExactly(WidgetState.Closed);
     setWidgetStateSpy2.calledOnceWithExactly(WidgetState.Open);
+
+    wrapper.unmount();
   });
 
   it("should not update state of unloaded widgets", async () => {
@@ -104,6 +110,8 @@ describe("FrontstageComposer", () => {
     const setWidgetStateSpy1 = sinon.spy(widgetDef1, "setWidgetState");
     wrapper.instance().handleTabClick(6, 1);
     setWidgetStateSpy1.calledOnceWithExactly(WidgetState.Hidden);
+
+    wrapper.unmount();
   });
 
   it("should not update widget state if zone is not found", async () => {
@@ -121,5 +129,7 @@ describe("FrontstageComposer", () => {
 
     wrapper.instance().handleTabClick(6, 1);
     setWidgetStateSpy2.notCalled.should.true;
+
+    wrapper.unmount();
   });
 });

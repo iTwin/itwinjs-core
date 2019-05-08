@@ -11,6 +11,7 @@ import { Status, MessageLayout, MessageProgress } from "@bentley/ui-ninezone";
 import { MessageManager, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
 import { StatusFieldProps } from "./StatusFieldProps";
+import { Centered } from "@bentley/ui-core";
 
 /** State for the [[ActivityCenterField]] component
  * @internal
@@ -70,7 +71,7 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
       const tooltip = this.state.title + " - " + moreDetails;
 
       footerMessages = (
-        <div className={classnames("uifw-centered", "open-activity-message", this.props.className)}
+        <Centered className={classnames("open-activity-message", this.props.className)}
           style={this.props.style}
           onClick={this._openActivityMessage} title={tooltip}
         >
@@ -82,7 +83,7 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
               />
             }
           />
-        </div>
+        </Centered>
       );
     } else {
       footerMessages = <div />;

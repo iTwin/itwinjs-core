@@ -5,21 +5,12 @@
 /** @module Text */
 
 import * as React from "react";
-import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
+import { StyledText } from "./StyledText";
 
 /** Styled small text
  * @beta
  */
-
-export class SmallText extends React.PureComponent<TextProps> {
-  public render(): JSX.Element {
-    const { className, style, ...props } = this.props;
-
-    return (
-      <span {...props} className={classnames("uicore-text-small", className)} style={style}>
-        {this.props.children}
-      </span>
-    );
-  }
-}
+export const SmallText: React.FunctionComponent<TextProps> = (props) => {  // tslint:disable-line:variable-name
+  return <StyledText {...props} mainClassName="uicore-text-small" />;
+};

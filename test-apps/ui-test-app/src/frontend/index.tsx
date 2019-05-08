@@ -36,8 +36,11 @@ import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { configure as mobxConfigure } from "mobx";
 
 import "./index.scss";
+import { TestAppConfiguration } from "../common/TestAppConfiguration";
+import { LocalFileStage } from "./appui/frontstages/LocalFileStage";
 
 // Initialize my application gateway configuration for the frontend
+RpcConfiguration.developmentMode = true;
 let rpcConfiguration: RpcConfiguration;
 const rpcInterfaces = getSupportedRpcs();
 if (ElectronRpcConfiguration.isElectron)
@@ -49,7 +52,7 @@ else
 for (const definition of rpcConfiguration.interfaces())
   RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findParameterOfType(IModelToken) || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
 
-// cSpell:ignore SETIMODELCONNECTION setTestProperty sampleapp setaccesstoken uitestapp
+// cSpell:ignore SETIMODELCONNECTION setTestProperty sampleapp setaccesstoken uitestapp setisimodellocal
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
  */
@@ -58,18 +61,21 @@ export enum SampleAppUiActionId {
   setAccessToken = "sampleapp:setaccesstoken",
   setTestProperty = "sampleapp:settestproperty",
   setAnimationViewId = "sampleapp:setAnimationViewId",
+  setIsIModelLocal = "sampleapp:setisimodellocal",
 }
 
 export interface SampleAppState {
-  currentIModelConnection?: IModelConnection;
+  iModelConnection?: IModelConnection;
   accessToken?: AccessToken;
   testProperty: string;
   animationViewId: string;
+  isIModelLocal: boolean;
 }
 
 const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
+  isIModelLocal: false,
 };
 
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
@@ -79,6 +85,7 @@ export const SampleAppActions = {
   setAccessToken: (accessToken: AccessToken) => createAction(SampleAppUiActionId.setAccessToken, accessToken),
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
+  setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -105,7 +112,7 @@ export type SampleAppActionsUnion = ActionsUnion<typeof SampleAppActions>;
 function SampleAppReducer(state: SampleAppState = initialState, action: SampleAppActionsUnion): DeepReadonly<SampleAppState> {
   switch (action.type) {
     case SampleAppUiActionId.setIModelConnection: {
-      return { ...state, currentIModelConnection: action.payload };
+      return { ...state, iModelConnection: action.payload };
     }
     case SampleAppUiActionId.setAccessToken: {
       return { ...state, accessToken: action.payload };
@@ -115,6 +122,9 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     }
     case SampleAppUiActionId.setAnimationViewId: {
       return { ...state, animationViewId: action.payload };
+    }
+    case SampleAppUiActionId.setIsIModelLocal: {
+      return { ...state, isIModelLocal: action.payload };
     }
   }
 
@@ -196,10 +206,28 @@ export class SampleAppIModelApp {
     IModelApp.toolAdmin.defaultToolId = AppSelectTool.toolId;
   }
 
-  public static async openViews(projectId: string, iModelId: string, viewIdsSelected: Id64String[]) {
+  public static async openIModelAndViews(projectId: string, iModelId: string, viewIdsSelected: Id64String[]) {
+    // Close the current iModelConnection
+    await SampleAppIModelApp.closeCurrentIModel();
+
     // open the imodel
     const iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
+    SampleAppIModelApp.setIsIModelLocal(false, true);
 
+    await this.openViews(iModelConnection, viewIdsSelected);
+  }
+
+  public static async closeCurrentIModel() {
+    const currentIModelConnection = this.getIModelConnection();
+    if (currentIModelConnection) {
+      if (SampleAppIModelApp.isIModelLocal)
+        await currentIModelConnection.closeSnapshot();
+      else
+        await currentIModelConnection.close();
+    }
+  }
+
+  public static async openViews(iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) {
     // store the IModelConnection in the sample app store
     SampleAppIModelApp.setIModelConnection(iModelConnection, true);
 
@@ -222,11 +250,16 @@ export class SampleAppIModelApp {
   public static async showIModelIndex(contextId: string, iModelId: string) {
     const currentConnection = SampleAppIModelApp.getIModelConnection();
     if (!currentConnection || (currentConnection.iModelToken.iModelId !== iModelId)) {
+      // Close the current iModelConnection
+      await SampleAppIModelApp.closeCurrentIModel();
+
       // open the imodel
       const iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
+      SampleAppIModelApp.setIsIModelLocal(false, true);
 
       // store the IModelConnection in the sample app store
       SampleAppIModelApp.setIModelConnection(iModelConnection, true);
+      SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
     }
 
     await SampleAppIModelApp.showFrontstage("IModelIndex");
@@ -279,11 +312,14 @@ export class SampleAppIModelApp {
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openViews(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId, [viewId!]);
+        await SampleAppIModelApp.openIModelAndViews(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId, [viewId!]);
       } else {
         // open to the IModelIndex frontstage
         await SampleAppIModelApp.showIModelIndex(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId);
       }
+    } else if (testAppConfiguration.startWithSnapshots) {
+      // open to the Local File modal stage
+      LocalFileStage.open();
     } else {
       // open to the IModelOpen frontstage
       await SampleAppIModelApp.showIModelOpen(undefined);
@@ -314,6 +350,10 @@ export class SampleAppIModelApp {
     UiFramework.dispatchActionToStore(SampleAppUiActionId.setIModelConnection, iModelConnection, immediateSync);
   }
 
+  public static setIsIModelLocal(isIModelLocal: boolean, immediateSync = false) {
+    UiFramework.dispatchActionToStore(SampleAppUiActionId.setIsIModelLocal, isIModelLocal, immediateSync);
+  }
+
   public static setAccessToken(accessToken: AccessToken, immediateSync = false) {
     UiFramework.dispatchActionToStore(SampleAppUiActionId.setAccessToken, accessToken, immediateSync);
   }
@@ -323,7 +363,11 @@ export class SampleAppIModelApp {
   }
 
   public static getIModelConnection(): IModelConnection | undefined {
-    return SampleAppIModelApp.store.getState().sampleAppState.currentIModelConnection;
+    return SampleAppIModelApp.store.getState().sampleAppState.iModelConnection;
+  }
+
+  public static get isIModelLocal(): boolean {
+    return SampleAppIModelApp.store.getState().sampleAppState.isIModelLocal;
   }
 
   public static async showFrontstage(frontstageId: string) {
@@ -362,9 +406,45 @@ export class SampleAppViewer extends React.Component<any> {
   }
 }
 
-SampleAppIModelApp.startup();
-
-// wait for both our i18n namespaces to be read.
-SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
-  ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
+// If we are using a browser, close the current iModel before leaving
+window.addEventListener("beforeunload", async () => {
+  await SampleAppIModelApp.closeCurrentIModel();
 });
+
+export const testAppConfiguration = {} as TestAppConfiguration;
+
+// Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
+async function retrieveConfiguration(): Promise<void> {
+  return new Promise<void>((resolve, _reject) => {
+    const request: XMLHttpRequest = new XMLHttpRequest();
+    request.open("GET", "testAppConfiguration.json", false);
+    request.setRequestHeader("Cache-Control", "no-cache");
+    request.onreadystatechange = ((_event: Event) => {
+      if (request.readyState === XMLHttpRequest.DONE) {
+        if (request.status === 200) {
+          const newConfigurationInfo: any = JSON.parse(request.responseText);
+          Object.assign(testAppConfiguration, newConfigurationInfo);
+          resolve();
+        }
+      }
+    });
+    request.send();
+  });
+}
+
+// main entry point.
+async function main() {
+  // retrieve, set, and output the global configuration variable
+  await retrieveConfiguration(); // (does a fetch)
+  console.log("Configuration", JSON.stringify(testAppConfiguration)); // tslint:disable-line:no-console
+
+  SampleAppIModelApp.startup();
+
+  // wait for both our i18n namespaces to be read.
+  SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
+    ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
+  });
+}
+
+// Entry point - run the main function
+main(); // tslint:disable-line:no-floating-promises

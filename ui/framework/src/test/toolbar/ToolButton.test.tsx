@@ -77,7 +77,10 @@ describe("ToolButton", () => {
   it("sync event should trigger stateFunc", () => {
     const testEventId = "test-buttonstate";
     let stateFunctionCalled = false;
-    const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => { stateFunctionCalled = true; return state; };
+    const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => {
+      stateFunctionCalled = true;
+      return { ...state, isActive: true };
+    };
 
     const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" stateSyncIds={[testEventId]} stateFunc={testStateFunc} />);
     const element = wrapper.find(".nz-toolbar-item-item");

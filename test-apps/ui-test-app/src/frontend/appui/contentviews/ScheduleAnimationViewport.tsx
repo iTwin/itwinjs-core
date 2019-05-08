@@ -24,7 +24,7 @@ export class ScheduleAnimationViewportControl extends ViewportContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    const _iModelConnection = SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection!;
+    const _iModelConnection = SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection!;
 
     this.reactElement = <ScheduleAnimationViewport iModelConnection={_iModelConnection} viewportRef={(v: ScreenViewport) => { this.viewport = v; }} />;
   }

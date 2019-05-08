@@ -533,7 +533,7 @@ class FrontstageNavigationWidget extends React.Component {
           <ActionItemButton actionItem={CoreTools.walkViewCommand} />
           <ActionItemButton actionItem={CoreTools.flyViewCommand} />
           <ActionItemButton actionItem={CoreTools.toggleCameraViewCommand} />
-          <ViewSelector imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
+          <ViewSelector imodel={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection} />
         </>
       }
     />;
@@ -542,7 +542,7 @@ class FrontstageNavigationWidget extends React.Component {
     return (
       <NavigationWidget
         navigationAidId="CubeNavigationAid"
-        iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection!}
+        iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection!}
         horizontalToolbar={this._horizontalToolbar}
         verticalToolbar={this._verticalToolbar}
       />

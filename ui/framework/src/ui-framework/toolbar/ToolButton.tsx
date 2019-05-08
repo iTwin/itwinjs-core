@@ -94,6 +94,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
   }
 
   private _handleKeyDown = (e: React.KeyboardEvent): void => {
+    // istanbul ignore else
     if (e.key === "Escape") {
       KeyboardShortcutManager.setFocusToHome();
     }

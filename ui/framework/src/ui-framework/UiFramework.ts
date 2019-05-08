@@ -169,6 +169,7 @@ export class UiFramework {
   }
 
   public static setActiveSelectionScope(selectionScopeId: string): void {
+    // istanbul ignore else
     if (UiFramework.frameworkState) {
       const foundIndex = UiFramework.frameworkState.sessionState.availableSelectionScopes.findIndex((selectionScope: PresentationSelectionScope) => selectionScope.id === selectionScopeId);
       if (-1 !== foundIndex) {

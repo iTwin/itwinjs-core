@@ -552,17 +552,17 @@ export type ConfigurableUiControlConstructor = new (info: ConfigurableCreateInfo
 // @public
 export enum ConfigurableUiControlType {
     // (undocumented)
-    Content = /** Represents [[ContentControl]] */ 0,
+    Content = "ContentControl",
     // (undocumented)
-    NavigationAid = /** Represents [[NavigationAidControl]] */ 1,
+    NavigationAid = "NavigationAidControl",
     // (undocumented)
-    StatusBarWidget = /** Represents [[StatusBarWidgetControl]]  */ 2,
+    StatusBarWidget = "StatusBarWidgetControl",
     // (undocumented)
-    ToolUiProvider = /** Represents [[ToolUiProvider]]  */ 3,
+    ToolUiProvider = "ToolUiProvider",
     // (undocumented)
-    Viewport = /** Represents [[ViewportContentControl]] */ 4,
+    Viewport = "ViewportContentControl",
     // (undocumented)
-    Widget = /** Represents [[WidgetControl]]  */ 5
+    Widget = "WidgetControl"
 }
 
 // @public
@@ -3561,7 +3561,7 @@ export class WidgetControl extends ConfigurableUiControl {
 
 // @public
 export class WidgetDef {
-    constructor(widgetProps?: WidgetProps);
+    constructor(widgetProps: WidgetProps);
     // (undocumented)
     readonly activeState: WidgetState;
     // (undocumented)

@@ -69,7 +69,7 @@ describe("StatusBar", () => {
   it("StatusBar should render a Toast message", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
-    const details = new NotifyMessageDetails(OutputMessagePriority.Warning, "A brief message.");
+    const details = new NotifyMessageDetails(OutputMessagePriority.Warning, "A brief message.", "A detailed message.");
     notifications.outputMessage(details);
 
     wrapper.unmount();
@@ -78,7 +78,7 @@ describe("StatusBar", () => {
   it("StatusBar should render a Sticky message", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
-    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", undefined, OutputMessageType.Sticky);
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
     notifications.outputMessage(details);
 
     wrapper.unmount();
@@ -87,7 +87,7 @@ describe("StatusBar", () => {
   it("Sticky message should closed", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
-    const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", undefined, OutputMessageType.Sticky);
+    const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
     notifications.outputMessage(details);
 
     wrapper.update();
@@ -99,7 +99,7 @@ describe("StatusBar", () => {
   it("StatusBar should render a Modal message", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
-    const details = new NotifyMessageDetails(OutputMessagePriority.Fatal, "A brief message.", undefined, OutputMessageType.Alert);
+    const details = new NotifyMessageDetails(OutputMessagePriority.Fatal, "A brief message.", "A detailed message.", OutputMessageType.Alert);
     notifications.outputMessage(details);
 
     wrapper.unmount();
@@ -108,7 +108,7 @@ describe("StatusBar", () => {
   it("StatusBar should render an Activity message", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
-    const details = new ActivityMessageDetails(true, true, true);
+    const details = new ActivityMessageDetails(true, true, false);
     notifications.setupActivityMessage(details);
     notifications.outputActivityMessage("Message text", 50);
     notifications.endActivityMessage(ActivityMessageEndReason.Completed);

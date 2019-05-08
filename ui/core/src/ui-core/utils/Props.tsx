@@ -21,3 +21,8 @@ export interface ClassNameProps {
   /** Custom CSS class name */
   className?: string;
 }
+
+/** Common properties using a div element
+ * @public
+ */
+export interface CommonDivProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps { }

@@ -5,20 +5,12 @@
 /** @module Text */
 
 import * as React from "react";
-import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
+import { StyledText } from "./StyledText";
 
 /** Styled body text
  * @beta
  */
-export class BodyText extends React.PureComponent<TextProps> {
-  public render(): JSX.Element {
-    const { className, style, ...props } = this.props;
-
-    return (
-      <span {...props} className={classnames("uicore-text-block", className)} style={style}>
-        {this.props.children}
-      </span>
-    );
-  }
-}
+export const BodyText: React.FunctionComponent<TextProps> = (props) => {  // tslint:disable-line:variable-name
+  return <StyledText {...props} mainClassName="uicore-text-block" />;
+};

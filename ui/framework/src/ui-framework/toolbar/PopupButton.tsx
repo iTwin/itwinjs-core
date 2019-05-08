@@ -94,6 +94,8 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     // istanbul ignore else
     if (!refreshState && this.props.stateSyncIds && this.props.stateSyncIds.length > 0)
       refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+
+    // istanbul ignore else
     if (refreshState) {
       // istanbul ignore else
       if (this.props.stateFunc)

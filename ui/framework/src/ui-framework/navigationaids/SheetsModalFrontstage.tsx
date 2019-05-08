@@ -8,7 +8,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 import { ModalFrontstageInfo, FrontstageManager } from "../frontstage/FrontstageManager";
-import { SearchBox, UiEvent, CommonProps } from "@bentley/ui-core";
+import { SearchBox, UiEvent, CommonProps, ScrollView, FlexWrapContainer } from "@bentley/ui-core";
 import "./SheetsModalFrontstage.scss";
 import { UiFramework } from "../UiFramework";
 import { SheetData } from "./SheetNavigationAid";
@@ -109,8 +109,8 @@ export class CardContainer extends React.Component<CardContainerProps> {
   /** @internal */
   public render() {
     return (
-      <div className={classnames("uifw-sheets-scrollview", this.props.className)} style={this.props.style}>
-        <div className="uifw-sheets-flex-container">
+      <ScrollView className={this.props.className} style={this.props.style}>
+        <FlexWrapContainer>
           {
             this.props.cards.map((card: CardInfo, _index: number) => {
               let includeCard = true;
@@ -129,8 +129,8 @@ export class CardContainer extends React.Component<CardContainerProps> {
               return null;
             })
           }
-        </div>
-      </div>
+        </FlexWrapContainer>
+      </ScrollView>
     );
   }
 
@@ -212,7 +212,7 @@ export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
     const { label, index, iconSpec } = this.props;
 
     const className = classnames(
-      "sheet-card",
+      "uifw-sheet-card",
       this.state.isActive && "is-active",
       this.state.isPressed && "is-pressed",
     );

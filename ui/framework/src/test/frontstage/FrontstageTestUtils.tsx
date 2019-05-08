@@ -18,6 +18,9 @@ import {
   WidgetControl,
   ZoneLocation,
   CoreTools,
+  StatusBarWidgetControl,
+  MessageCenterField,
+  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
 
 // tslint:disable: completed-docs
@@ -47,6 +50,20 @@ export class TestWidgetElement extends React.Component {
 
   public render() {
     return <div />;
+  }
+}
+
+export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+  }
+
+  public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+    return (
+      <>
+        <MessageCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+      </>
+    );
   }
 }
 
@@ -121,7 +138,7 @@ export class TestFrontstage extends FrontstageProvider {
           <Zone
             widgets={[
               <Widget id="statusBar" isStatusBar={true} iconSpec="icon-placeholder" labelKey="App:widgets.StatusBar"
-                control={TestWidget} applicationData={{ key: "value" }} />,
+                control={AppStatusBarWidgetControl} applicationData={{ key: "value" }} />,
             ]}
           />
         }

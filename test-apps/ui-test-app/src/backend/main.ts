@@ -11,12 +11,14 @@ import getSupportedRpcs from "../common/rpcs";
 
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { initializeLogging } from "./web/BackendServer";
+import { initializeLogging, setupSnapshotConfiguration } from "./web/BackendServer";
 
 IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
 
-if (!electron)
+if (!electron) {
   initializeLogging();
+  setupSnapshotConfiguration();
+}
 
 // initialize imodeljs-backend
 IModelHost.startup();

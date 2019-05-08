@@ -32,6 +32,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
   }
 
   public get reactElement(): React.ReactNode {
+    // istanbul ignore else
     if (!this._reactElement)
       this._reactElement = <ToolWidgetWithDef toolWidgetDef={this} />;
 

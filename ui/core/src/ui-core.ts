@@ -5,10 +5,12 @@
 export * from "./ui-core/UiCore";
 export * from "./ui-core/utils/Props";
 
-export * from "./ui-core/icons/SvgPath";
-export * from "./ui-core/icons/SvgSprite";
-export * from "./ui-core/icons/WebFontIcon";
 export * from "./ui-core/base/UiEvent";
+export * from "./ui-core/base/Div";
+export * from "./ui-core/base/Centered";
+export * from "./ui-core/base/FillCentered";
+export * from "./ui-core/base/ScrollView";
+export * from "./ui-core/base/FlexWrapContainer";
 
 export * from "./ui-core/checklistbox/CheckListBox";
 
@@ -33,6 +35,10 @@ export * from "./ui-core/expandable/ExpandableBlock";
 export * from "./ui-core/hocs/withIsPressed";
 export * from "./ui-core/hocs/withOnOutsideClick";
 export * from "./ui-core/hocs/withTimeout";
+
+export * from "./ui-core/icons/SvgPath";
+export * from "./ui-core/icons/SvgSprite";
+export * from "./ui-core/icons/WebFontIcon";
 
 export * from "./ui-core/messagebox/MessageBox";
 
@@ -95,6 +101,7 @@ export * from "./ui-core/text/MutedText";
 export * from "./ui-core/text/SmallText";
 export * from "./ui-core/text/Subheading";
 export * from "./ui-core/text/Subheading2";
+export * from "./ui-core/text/StyledText";
 export * from "./ui-core/text/TextProps";
 export * from "./ui-core/text/Title";
 export * from "./ui-core/text/Title2";

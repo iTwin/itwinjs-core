@@ -5,20 +5,12 @@
 /** @module Text */
 
 import * as React from "react";
-import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
+import { StyledText } from "./StyledText";
 
 /** Styled title text
  * @beta
  */
-export class Title2 extends React.PureComponent<TextProps> {
-  public render(): JSX.Element {
-    const { className, style, ...props } = this.props;
-
-    return (
-      <span {...props} className={classnames("uicore-text-title-2", this.props.className)} style={style}>
-        {this.props.children}
-      </span>
-    );
-  }
-}
+export const Title2: React.FunctionComponent<TextProps> = (props) => {  // tslint:disable-line:variable-name
+  return <StyledText {...props} mainClassName="uicore-text-title-2" />;
+};

@@ -7,7 +7,7 @@ import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 
-import { LoadingSpinner } from "@bentley/ui-core";
+import { LoadingSpinner, FillCentered } from "@bentley/ui-core";
 import { ViewportComponent } from "@bentley/ui-components";
 import { ModelessDialog, ModelessDialogManager } from "@bentley/ui-framework";
 import { ExternalIModel } from "../widgets/ExternalIModel";
@@ -81,13 +81,10 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
   }
 
   private getContent(): React.ReactNode {
-    const divStyle: React.CSSProperties = {
-      height: "100%",
-    };
     let content: React.ReactNode;
 
     if (this.state.viewId === undefined || this.state.iModelConnection === undefined)
-      content = <div className="uifw-centered" style={divStyle}> <LoadingSpinner message={this._loading} /> </div>;
+      content = <FillCentered> <LoadingSpinner message={this._loading} /> </FillCentered>;
     else
       content = <ViewportComponent viewDefinitionId={this.state.viewId} imodel={this.state.iModelConnection} />;
 

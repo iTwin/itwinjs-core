@@ -53,12 +53,12 @@ export class ConfigurableBase implements ConfigurableUiElement {
  * @public
  */
 export enum ConfigurableUiControlType {
-  Content,          /** Represents [[ContentControl]] */
-  NavigationAid,    /** Represents [[NavigationAidControl]] */
-  StatusBarWidget,  /** Represents [[StatusBarWidgetControl]]  */
-  ToolUiProvider,   /** Represents [[ToolUiProvider]]  */
-  Viewport,         /** Represents [[ViewportContentControl]] */
-  Widget,           /** Represents [[WidgetControl]]  */
+  Content = "ContentControl",
+  NavigationAid = "NavigationAidControl",
+  StatusBarWidget = "StatusBarWidgetControl",
+  ToolUiProvider = "ToolUiProvider",
+  Viewport = "ViewportContentControl",
+  Widget = "WidgetControl",
 }
 
 /** Prototype for ConfigurableUiControl constructor

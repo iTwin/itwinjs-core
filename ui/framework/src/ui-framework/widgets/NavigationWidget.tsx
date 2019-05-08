@@ -137,6 +137,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
     setTimeout(() => {
       const activeContentControl = ContentViewManager.getActiveContentControl();
 
+      // istanbul ignore else
       if (activeContentControl && args.viewport === activeContentControl.viewport) {
         const navigationAidId = activeContentControl.navigationAidControl;
         FrontstageManager.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);

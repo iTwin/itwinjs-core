@@ -25,7 +25,7 @@ export class TableDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <TableDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
+    this.reactElement = <TableDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection} />;
   }
 }
 

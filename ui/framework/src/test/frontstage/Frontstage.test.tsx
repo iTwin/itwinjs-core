@@ -97,6 +97,8 @@ describe("Frontstage", () => {
 
     expect(saveTransientStateSpy.calledOnce).true;
     expect(restoreTransientStateSpy.calledOnce).true;
+
+    wrapper.unmount();
   });
 
   it("should remount widget if widget control is not provided", async () => {
@@ -122,6 +124,8 @@ describe("Frontstage", () => {
     expect(contentRenderer.state().widgetKey).eq(1);
     expect(componentWillUnmountSpy.calledOnce).true;
     expect(widgetElementComponentDidMountSpy.calledOnce).true;
+
+    wrapper.unmount();
   });
 
   it("should remount widget if widget control did not handle state restoration", async () => {
@@ -147,6 +151,8 @@ describe("Frontstage", () => {
     expect(contentRenderer.state().widgetKey).eq(1);
     expect(componentWillUnmountSpy.calledOnce).true;
     expect(widgetElementComponentDidMountSpy.calledOnce).true;
+
+    wrapper.unmount();
   });
 
   it("should not remount widget if widget control handled state restoration", async () => {
@@ -172,6 +178,8 @@ describe("Frontstage", () => {
     expect(contentRenderer.state().widgetKey).eq(0);
     expect(componentWillUnmountSpy.calledOnce).false;
     expect(widgetElementComponentDidMountSpy.calledOnce).false;
+
+    wrapper.unmount();
   });
 
   it("should load widget content when widget is loaded", async () => {
@@ -190,5 +198,7 @@ describe("Frontstage", () => {
 
     const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
     expect(contentRenderer.state().isLoaded).true;
+
+    wrapper.unmount();
   });
 });

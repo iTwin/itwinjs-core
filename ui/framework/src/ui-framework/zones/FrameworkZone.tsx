@@ -71,6 +71,8 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
       return;
 
     const zoneDef = this.props.zoneDefProvider.getZoneDef(id);
+
+    // istanbul ignore else
     if (zoneDef) {
       const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible);
       for (let index = 0; index < visibleWidgets.length; index++) {
@@ -109,15 +111,19 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   }
 
   private getWidgetPropsIdForDef(widgetDef: WidgetDef): number | undefined {
+    // istanbul ignore else
     if (this.props.zoneProps.widgets.length > 0) {
       for (const wProps of this.props.zoneProps.widgets) {
         const zoneDef = this.props.zoneDefProvider.getZoneDef(wProps.id);
+
+        // istanbul ignore else
         if (zoneDef) {
           if (zoneDef.widgetDefs.some((wDef: WidgetDef) => wDef === widgetDef))
             return wProps.id;
         }
       }
     }
+
     return undefined;
   }
 

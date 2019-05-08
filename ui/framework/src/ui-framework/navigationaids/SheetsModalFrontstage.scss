@@ -6,77 +6,63 @@
 
  $sheets-modal-padding: 10px;
 
-.uifw-sheets-scrollview {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
+.uifw-sheet-card {
+  position: relative;
+  background-color: #f1f1f1;
+  width: 200px;
+  height: 250px;
+  margin: 10px;
+  padding: $sheets-modal-padding;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  border-color: #f1f1f1;
+  border-width: 8px;
+  border-radius: 12px;
+  border-style: solid;
+  box-sizing: border-box;
+  user-select: none;
 
-  @include uicore-touch-scrolling;
-  @include uicore-scrollbar();
-}
+  &:hover {
+    cursor: pointer;
+  }
 
-.uifw-sheets-flex-container {
-  display: flex;
-  flex-wrap: wrap;
+  .sheet-image-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-  > .sheet-card {
-    position: relative;
-    background-color: #f1f1f1;
-    width: 200px;
-    height: 250px;
-    margin: 10px;
-    padding: $sheets-modal-padding;
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-    border-color: #f1f1f1;
-    border-width: 8px;
-    border-radius: 12px;
-    border-style: solid;
-    box-sizing: border-box;
-    user-select: none;
-
-    &:hover {
-      cursor: pointer;
+    .icon {
+      width: 50px;
+      height: 50px;
+      font-size: 50px;
     }
+  }
 
-    .sheet-image-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+  .sheet-index {
+    position: absolute;
+    width: 100%;
+    bottom: $sheets-modal-padding;
+    left: 0;
+  }
 
-      .icon {
-        width: 50px;
-        height: 50px;
-        font-size: 50px;
-      }
-    }
+  &.is-active {
+    border-color: $uicore-blue;
+  }
 
-    .sheet-index {
-      position: absolute;
-      width: 100%;
-      bottom: $sheets-modal-padding;
-      left: 0;
-    }
+  &.is-pressed {
+    border-color: $uicore-blue;
+  }
 
-    &.is-active {
-      border-color: $uicore-blue;
-    }
-
-    &.is-pressed {
-      border-color: $uicore-blue;
-    }
-
-    &:not(.is-active) {
-      &:not(.is-pressed) {
-        &:hover {
-          border-color: $uicore-blue-a;
-        }
+  &:not(.is-active) {
+    &:not(.is-pressed) {
+      &:hover {
+        border-color: $uicore-blue-a;
       }
     }
   }

@@ -19,6 +19,7 @@ import {
   ActionItemButton,
   CoreTools,
   ItemList,
+  FrontstageManager,
 } from "../../ui-framework";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
@@ -149,6 +150,38 @@ describe("ToolWidget", () => {
         verticalItems={hItemList}
       />,
     );
+    wrapper.unmount();
+  });
+
+  it("ToolWidget should support update", () => {
+    const wrapper = mount(
+      <ToolWidget
+        button={<button />}
+        horizontalToolbar={horizontalToolbar}
+        verticalToolbar={verticalToolbar}
+      />,
+    );
+    expect(wrapper.find(ToolButton).length).to.eq(6);
+
+    wrapper.setProps({ verticalToolbar: undefined });
+    wrapper.update();
+    expect(wrapper.find(ToolButton).length).to.eq(2);
+
+    wrapper.unmount();
+  });
+
+  it("ToolWidget should tool activated", () => {
+    const wrapper = mount(
+      <ToolWidget
+        button={<button />}
+        horizontalToolbar={horizontalToolbar}
+        verticalToolbar={verticalToolbar}
+      />,
+    );
+
+    FrontstageManager.onToolActivatedEvent.emit({ toolId: "tool1" });
+    wrapper.update();
+
     wrapper.unmount();
   });
 

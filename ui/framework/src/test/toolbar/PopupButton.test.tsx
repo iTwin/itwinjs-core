@@ -101,9 +101,12 @@ describe("<PopupButton />", async () => {
   it("sync event should trigger stateFunc", () => {
     const testEventId = "test-buttonstate";
     let stateFunctionCalled = false;
-    const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => { stateFunctionCalled = true; return state; };
+    const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => {
+      stateFunctionCalled = true;
+      return { ...state, isActive: true };
+    };
 
-    const renderedComponent = render(<PopupButton iconSpec="icon-arrow-down" label="Popup-Test" stateSyncIds={[testEventId]} stateFunc={testStateFunc}>
+    const renderedComponent = render(<PopupButton iconSpec="icon-arrow-down" stateSyncIds={[testEventId]} stateFunc={testStateFunc}>
       <div style={{ width: "200px", height: "100px" }}>
         hello world!
       </div>

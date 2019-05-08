@@ -95,6 +95,8 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   public render(): React.ReactNode {
     let footerSections: React.ReactNode = null;
     const widgetControl = this.props.widgetControl;
+
+    // istanbul ignore else
     if (widgetControl && widgetControl.getReactNode) {
       footerSections = widgetControl.getReactNode({
         isInFooterMode: this.props.isInFooterMode,

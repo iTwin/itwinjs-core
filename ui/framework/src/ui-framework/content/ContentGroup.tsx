@@ -36,7 +36,7 @@ export interface ContentGroupProps {
 // ContentGroup class
 // -----------------------------------------------------------------------------
 
-/** ContentGroup class. ContentGroups define content displayed in content views that are laid out using a [ContentLayout].
+/** ContentGroup class. ContentGroups define content displayed in content views that are laid out using a [[ContentLayout]].
  * @public
  */
 export class ContentGroup {
@@ -68,21 +68,26 @@ export class ContentGroup {
     let contentControl: ContentControl | undefined;
 
     if (!this._contentControls.get(id)) {
+      let usedClassId: string = "";
+
       if (typeof contentProps.classId === "string") {
         if (!this._contentControls.get(id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
           contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData) as ContentControl;
-          if (contentControl.getType() !== ConfigurableUiControlType.Content && contentControl.getType() !== ConfigurableUiControlType.Viewport) {
-            throw Error("ContentGroup.getContentControl error: classId '" + contentProps.classId + "' is registered to a control that is NOT a ContentControl");
-          }
-          contentControl.initialize();
+          usedClassId = contentProps.classId;
         }
       } else {
         const info = new ConfigurableCreateInfo(contentProps.classId.name, id, id);
         contentControl = new contentProps.classId(info, contentProps.applicationData) as ContentControl;
+        usedClassId = contentProps.classId.name;
       }
 
-      if (contentControl)
+      if (contentControl) {
+        if (contentControl.getType() !== ConfigurableUiControlType.Content && contentControl.getType() !== ConfigurableUiControlType.Viewport) {
+          throw Error("ContentGroup.getContentControl error: '" + usedClassId + "' is NOT a ContentControl or ViewportContentControl");
+        }
+        contentControl.initialize();
         this._contentControls.set(id, contentControl);
+      }
     }
 
     return this._contentControls.get(id);

@@ -6,7 +6,6 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { UiFramework, IModelInfo } from "@bentley/ui-framework";
 import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Spinner, SpinnerSize } from "@bentley/ui-core";
 import "./Common.scss";
@@ -59,9 +58,9 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
 
 /** Properties for the [[IModelViewPicker]] component */
 export interface ViewsProps {
-  accessToken: AccessToken;
-  iModel: IModelInfo;
-  OnViewsSelected?: (views: ViewDefinitionProps[]) => void;
+  iModelInfo?: IModelInfo;
+  iModelConnection?: IModelConnection;
+  onViewsSelected?: (views: ViewDefinitionProps[]) => void;
   onClose: () => void;
 }
 
@@ -104,16 +103,23 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
   }
 
   private _onOKPressed = () => {
-    if (this.props.OnViewsSelected && this.state.views)
-      this.props.OnViewsSelected(this.state.selectedViews);
+    if (this.props.onViewsSelected && this.state.views)
+      this.props.onViewsSelected(this.state.selectedViews);
   }
 
   private async startRetrieveViews() {
-    const projectInfo = this.props.iModel.projectInfo;
-    const iModelWsgId = this.props.iModel.wsgId;
+    if (this.props.iModelInfo) {
+      const projectInfo = this.props.iModelInfo.projectInfo;
+      const iModelWsgId = this.props.iModelInfo.wsgId;
 
-    // this.setState({ waitingForViews: true });
-    this._iModelConnection = await UiFramework.iModelServices.openIModel(projectInfo.wsgId, iModelWsgId);
+      // this.setState({ waitingForViews: true });
+      this._iModelConnection = await UiFramework.iModelServices.openIModel(projectInfo.wsgId, iModelWsgId);
+    } else if (this.props.iModelConnection) {
+      this._iModelConnection = this.props.iModelConnection;
+    } else {
+      throw Error("IModelViewPicker: Either iModelInfo or iModelConnection must be passed as Props");
+    }
+
     const viewQueryParams: ViewQueryParams = { wantPrivate: false };
     let viewProps: ViewDefinitionProps[] = [];
     try {
@@ -150,11 +156,17 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
   }
 
   public render() {
+    let iModelName = "";
+    if (this.props.iModelInfo)
+      iModelName = this.props.iModelInfo.name;
+    else if (this.props.iModelConnection)
+      iModelName = this.props.iModelConnection.name;
+
     return (
       <div className="modal-background fade-in-fast">
         <div className="views animate">
           <div className="views-header">
-            <h3>Select Views - {this.props.iModel.name}</h3>
+            <h3>Select Views - {iModelName}</h3>
             <span onClick={this._onClose.bind(this)} className="close icon icon-close" title="Close" />
           </div>
           {this.renderViews()}

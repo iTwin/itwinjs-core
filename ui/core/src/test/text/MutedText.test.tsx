@@ -24,7 +24,8 @@ describe("<MutedText />", () => {
   });
 
   it("has correct text", () => {
-    const wrapper = shallow(<MutedText>Test Content</MutedText>);
+    const wrapper = mount(<MutedText>Test Content</MutedText>);
     wrapper.find(".uicore-text-muted").text().should.equal("Test Content");
+    wrapper.unmount();
   });
 });

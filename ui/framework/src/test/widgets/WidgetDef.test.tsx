@@ -72,6 +72,28 @@ describe("WidgetDef", () => {
     expect(widgetDef.reactElement).to.not.be.undefined;
   });
 
+  it("labelKey and tooltipKey should return translated string", () => {
+    const widgetProps: WidgetProps = {
+      classId: "WidgetDefTest",
+      labelKey: "App:label",
+      tooltipKey: "App:tooltip",
+    };
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+
+    expect(widgetDef.label).to.eq("label");
+    expect(widgetDef.tooltip).to.eq("tooltip");
+  });
+
+  it("reactElement supports set and get", () => {
+    const widgetProps: WidgetProps = {
+      classId: "WidgetDefTest",
+    };
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+
+    widgetDef.reactElement = <div />;
+    expect(widgetDef.reactElement).to.not.be.undefined;
+  });
+
   it("widgetControl using constructor classId", () => {
     const widgetProps: WidgetProps = {
       classId: TestWidget,

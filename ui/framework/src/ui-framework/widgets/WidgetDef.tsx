@@ -130,16 +130,15 @@ export class WidgetDef {
     }
   }
 
-  constructor(widgetProps?: WidgetProps) {
-    if (widgetProps && widgetProps.id !== undefined)
+  constructor(widgetProps: WidgetProps) {
+    if (widgetProps.id !== undefined)
       this.id = widgetProps.id;
     else {
       WidgetDef._sId++;
       this.id = "Widget-" + WidgetDef._sId;
     }
 
-    if (widgetProps)
-      WidgetDef.initializeFromWidgetProps(widgetProps, this);
+    WidgetDef.initializeFromWidgetProps(widgetProps, this);
   }
 
   public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) {
@@ -240,19 +239,25 @@ export class WidgetDef {
 
   public getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined {
     if (!this._widgetControl && this.classId) {
+      let usedClassId: string = "";
+
       if (typeof this.classId === "string") {
-        if (this.classId) {
+        // istanbul ignore else
+        if (this.classId)
           this._widgetControl = ConfigurableUiManager.createControl(this.classId, this.id, this.applicationData) as WidgetControl;
-          if (this._widgetControl.getType() !== type) {
-            throw Error("WidgetDef.widgetControl error: classId '" + this.classId + "' is registered to a control that is NOT a Widget");
-          }
-        }
+        usedClassId = this.classId;
       } else {
         const info = new ConfigurableCreateInfo(this.classId.name, this.id, this.id);
+        usedClassId = this.classId.name;
         this._widgetControl = new this.classId(info, this.applicationData) as WidgetControl;
       }
 
+      // istanbul ignore else
       if (this._widgetControl) {
+        if (this._widgetControl.getType() !== type) {
+          throw Error("WidgetDef.widgetControl error: '" + usedClassId + "' is NOT a " + type + "; it is a " + this._widgetControl.getType());
+        }
+
         this._widgetControl.widgetDef = this;
         this._widgetControl.initialize();
       }
@@ -265,6 +270,7 @@ export class WidgetDef {
     if (!this._widgetReactNode) {
       const widgetControl = this.getWidgetControl(ConfigurableUiControlType.Widget);
 
+      // istanbul ignore else
       if (widgetControl && widgetControl.reactElement)
         this._widgetReactNode = widgetControl.reactElement;
     }

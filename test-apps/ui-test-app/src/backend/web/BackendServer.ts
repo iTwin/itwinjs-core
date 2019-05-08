@@ -3,10 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 // tslint:disable:no-console
+import * as fs from "fs";
+import * as path from "path";
 import { IModelError, IModelStatus, RpcInterfaceDefinition, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { Logger, LogLevel, EnvMacroSubst } from "@bentley/bentleyjs-core";
 import { BunyanLoggerConfig, SeqLoggerConfig } from "@bentley/logger-config";
+import { TestAppConfiguration } from "../../common/TestAppConfiguration";
 
 const loggerCategory = "ui-test-app";
 
@@ -34,6 +37,18 @@ export function initializeLogging() {
   Logger.setLevelDefault(LogLevel.Error);
   if ("loggerConfig" in config)
     Logger.configureLevels(config.loggerConfig);
+}
+
+/** Initializes config variables and makes them available to the frontend via testAppConfiguration.json */
+export function setupSnapshotConfiguration() {
+  const testAppConfiguration: TestAppConfiguration = {};
+  testAppConfiguration.snapshotPath = process.env.TESTAPP_SNAPSHOT_FILEPATH; // optional (browser-use only)
+  if (undefined !== process.env.TESTAPP_START_WITH_SNAPSHOTS)
+    testAppConfiguration.startWithSnapshots = true;
+
+  const configPathname = path.normalize(path.join(__dirname, "..", "..", "webresources", "testAppConfiguration.json"));
+
+  fs.writeFileSync(configPathname, JSON.stringify(testAppConfiguration), "utf8");
 }
 
 /**
