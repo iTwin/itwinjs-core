@@ -35,7 +35,7 @@ export class RequestHost {
       return false;
     }
 
-    RequestGlobalOptions.HTTPS_PROXY = new HttpsProxyAgent(proxyUrl);
+    RequestGlobalOptions.httpsProxy = new HttpsProxyAgent(proxyUrl);
     const protocol = RequestHost.getProtocol(proxyUrl);
     if (protocol === "http")
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";

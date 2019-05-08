@@ -200,6 +200,7 @@ The electron version used internally has  been updated to v4.10.0.
 * [IModelDb.onOpened.addListener]($backend) takes a callback with a different signature -  [AuthorizedClientRequestContext]($clients) is now passed as te first argument.
 * [ImsActiveSecureTokenClient]($client) takes [ImsCredentials]($client) as a single argument instead of separate email and password fields.
 * Deleted agent-test-app from the repository.
+* [RequestGlobalOptions.timeout]($client) is now available to control global timeouts for requests to various Bentley services.
 
 ## Breaking changes to ImodelServices.openIModel
 

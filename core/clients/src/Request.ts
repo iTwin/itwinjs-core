@@ -60,6 +60,25 @@ export interface RequestQueryStringifyOptions {
   // sep -> delimiter, eq deprecated, encode -> encode
 }
 
+/** Option to control the time outs
+ * Use a short response timeout to detect unresponsive networks quickly, and a long deadline to give time for downloads on slow,
+ * but reliable, networks. Note that both of these timers limit how long uploads of attached files are allowed to take. Use long
+ * timeouts if you're uploading files.
+ * @alpha
+ */
+export interface RequestTimeoutOptions {
+  /** Sets a deadline (in milliseconds) for the entire request (including all uploads, redirects, server processing time) to complete.
+   * If the response isn't fully downloaded within that time, the request will be aborted
+   */
+  deadline?: number;
+
+  /** Sets maximum time (in milliseconds) to wait for the first byte to arrive from the server, but it does not limit how long the entire
+   * download can take. Response timeout should be at least few seconds longer than just the time it takes the server to respond, because
+   * it also includes time to make DNS lookup, TCP/IP and TLS connections, and time to upload request data.
+   */
+  response?: number;
+}
+
 /** @alpha */
 export interface RequestOptions {
   method: string;
@@ -68,7 +87,7 @@ export interface RequestOptions {
   body?: any;
   qs?: any | RequestQueryOptions;
   responseType?: string;
-  timeout?: number | { deadline?: number, response?: number }; // Optional timeout in milliseconds. If unspecified, an arbitrary default is setup.
+  timeout?: RequestTimeoutOptions; // Optional timeouts. If unspecified, an arbitrary default is setup.
   stream?: any; // Optional stream to read the response to/from (only for NodeJs applications)
   readStream?: any; // Optional stream to read input from (only for NodeJs applications)
   buffer?: any;
@@ -101,7 +120,11 @@ export interface ProgressInfo {
 
 /** @internal */
 export class RequestGlobalOptions {
-  public static HTTPS_PROXY?: https.Agent = undefined;
+  public static httpsProxy?: https.Agent = undefined;
+  public static timeout: RequestTimeoutOptions = {
+    deadline: 25000,
+    response: 10000,
+  };
 }
 
 /** Error object that's thrown/rejected if the Request fails due to a network error, or if the status is *not* in the range of 200-299 (inclusive)
@@ -256,47 +279,38 @@ export async function request(requestContext: ClientRequestContext, url: string,
 
   Logger.logInfo(loggerCategory, fullUrl);
 
-  if (options.auth) {
+  if (options.auth)
     sareq = sareq.auth(options.auth.user, options.auth.password);
-  }
 
-  if (options.accept) {
+  if (options.accept)
     sareq = sareq.accept(options.accept);
-  }
 
-  if (options.body) {
+  if (options.body)
     sareq = sareq.send(options.body);
-  }
 
-  if (options.timeout) {
+  if (options.timeout)
     sareq = sareq.timeout(options.timeout);
-  } else {
-    sareq = sareq.timeout(10000);
-  }
+  else
+    sareq = sareq.timeout(RequestGlobalOptions.timeout);
 
-  if (options.responseType) {
+  if (options.responseType)
     sareq = sareq.responseType(options.responseType);
-  }
 
-  if (options.redirects) {
+  if (options.redirects)
     sareq = sareq.redirects(options.redirects);
-  } else {
+  else
     sareq = sareq.redirects(0);
-  }
 
-  if (options.buffer) {
+  if (options.buffer)
     sareq.buffer(options.buffer);
-  }
 
-  if (options.parser) {
+  if (options.parser)
     sareq.parse(options.parser);
-  }
 
-  if (options.agent) {
+  if (options.agent)
     sareq.agent(options.agent);
-  } else if (RequestGlobalOptions.HTTPS_PROXY) {
-    sareq.agent(RequestGlobalOptions.HTTPS_PROXY);
-  }
+  else if (RequestGlobalOptions.httpsProxy)
+    sareq.agent(RequestGlobalOptions.httpsProxy);
 
   if (options.progressCallback) {
     sareq.on("progress", (event: sarequest.ProgressEvent) => {
@@ -313,9 +327,8 @@ export async function request(requestContext: ClientRequestContext, url: string,
   const errorCallback = options.errorCallback ? options.errorCallback : ResponseError.parse;
 
   if (options.readStream) {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined")
       throw new Error("This option is not supported on browsers");
-    }
 
     return new Promise<Response>((resolve, reject) => {
       sareq = sareq.type("blob");
@@ -338,9 +351,8 @@ export async function request(requestContext: ClientRequestContext, url: string,
   }
 
   if (options.stream) {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined")
       throw new Error("This option is not supported on browsers");
-    }
 
     return new Promise<Response>((resolve, reject) => {
       sareq

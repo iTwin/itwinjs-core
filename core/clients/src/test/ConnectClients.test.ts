@@ -28,7 +28,7 @@ describe("ConnectClient (#integration)", () => {
     };
 
     const projects: Project[] = await connectClient.getProjects(requestContext, queryOptions);
-    chai.expect(projects.length).greaterThan(10);
+    chai.expect(projects.length).greaterThan(0);
   });
 
   it("should get a list of Most Recently Used (MRU) projects (#integration)", async function (this: Mocha.ITestCallbackContext) {
@@ -39,7 +39,7 @@ describe("ConnectClient (#integration)", () => {
     };
 
     const projects: Project[] = await connectClient.getProjects(requestContext, queryOptions);
-    chai.expect(projects.length).greaterThan(5);
+    chai.expect(projects.length).greaterThan(0);
   });
 
   it("should get a list of Favorite projects (#integration)", async function (this: Mocha.ITestCallbackContext) {
@@ -64,7 +64,7 @@ describe("ConnectClient (#integration)", () => {
 
   it("should get a list of invited projects (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const invitedProjects: Project[] = await connectClient.getInvitedProjects(requestContext);
-    chai.expect(invitedProjects.length).greaterThan(5); // TODO: Setup a private test user where we can maintain a more strict control of invited projects.
+    chai.expect(invitedProjects.length).greaterThan(0);
   });
 
 });

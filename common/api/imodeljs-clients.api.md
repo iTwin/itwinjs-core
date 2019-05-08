@@ -1462,7 +1462,9 @@ export interface RequestBasicCredentials {
 // @internal (undocumented)
 export class RequestGlobalOptions {
     // (undocumented)
-    static HTTPS_PROXY?: https.Agent;
+    static httpsProxy?: https.Agent;
+    // (undocumented)
+    static timeout: RequestTimeoutOptions;
 }
 
 // @alpha (undocumented)
@@ -1505,10 +1507,7 @@ export interface RequestOptions {
     // (undocumented)
     stream?: any;
     // (undocumented)
-    timeout?: number | {
-        deadline?: number;
-        response?: number;
-    };
+    timeout?: RequestTimeoutOptions;
     // (undocumented)
     useCorsProxy?: boolean;
 }
@@ -1528,6 +1527,12 @@ export interface RequestQueryStringifyOptions {
     delimiter?: string;
     // (undocumented)
     encode?: boolean;
+}
+
+// @alpha
+export interface RequestTimeoutOptions {
+    deadline?: number;
+    response?: number;
 }
 
 // @public

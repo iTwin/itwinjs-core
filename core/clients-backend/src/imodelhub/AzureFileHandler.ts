@@ -282,7 +282,10 @@ export class AzureFileHandler implements FileHandler {
       body: buffer,
       progressCallback: callback,
       agent: this.agent,
-      timeout: 60000,
+      timeout: {
+        deadline: 60000,
+        response: 60000,
+      },
     };
 
     const uploadUrl = `${uploadUrlString}&comp=block&blockid=${this.getBlockId(blockId)}`;

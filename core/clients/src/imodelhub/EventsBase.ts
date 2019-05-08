@@ -111,7 +111,10 @@ export async function getEventBaseOperationRequestOptions(handler: IModelBaseHan
 
   // Request timeout is in seconds, wait 50% more than the expected timeout from server
   if (requestTimeout)
-    options.timeout = requestTimeout * 1500;
+    options.timeout = {
+      deadline: requestTimeout * 1500,
+      response: requestTimeout * 1500,
+    };
 
   await new DefaultRequestOptionsProvider().assignOptions(options);
 
