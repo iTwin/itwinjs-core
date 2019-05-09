@@ -16,7 +16,7 @@ const loggerCategory: string = ClientsBackendLoggerCategory.IModelHub;
  * @internal
  */
 export class IOSAzureFileHandler implements FileHandler {
-  /** @hidden */
+  /** @internal */
   public agent: any;
 
   /**

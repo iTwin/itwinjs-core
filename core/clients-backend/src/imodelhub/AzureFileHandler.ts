@@ -104,7 +104,7 @@ export class BufferedStream extends Transform {
  * @internal
  */
 export class AzureFileHandler implements FileHandler {
-  /** @hidden */
+  /** @internal */
   public agent: https.Agent;
   private _threshold: number;
   private _useDownloadBuffer: boolean | undefined;

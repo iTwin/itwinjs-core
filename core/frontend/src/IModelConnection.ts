@@ -53,7 +53,9 @@ export class IModelConnection extends IModel {
   public readonly subcategories: SubCategoriesCache;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
-  /** The Geographic location services available for this iModelConnection */
+  /** The Geographic location services available for this iModelConnection
+   * @internal
+   */
   public readonly geoServices: GeoServices;
   /** @internal Whether it has already been determined that this iModelConnection does not have a map projection. */
   protected _noGcsDefined?: boolean;

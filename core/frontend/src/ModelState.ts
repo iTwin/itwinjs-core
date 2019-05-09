@@ -18,6 +18,7 @@ import { TileTree, TileTreeState } from "./tile/TileTree";
  * @public
  */
 export class ModelState extends EntityState implements ModelProps {
+  /** The name of the associated ECClass */
   public static get className() { return "Model"; }
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
@@ -100,6 +101,7 @@ export interface TileTreeModelState {
  * @public
  */
 export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
+  /** The name of the associated ECClass */
   public static get className() { return "GeometricModel"; }
 
   private _modelRange?: Range3d;
@@ -223,6 +225,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
  * @public
  */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
+  /** The name of the associated ECClass */
   public static get className() { return "GeometricModel2d"; }
   /** @internal */
   public readonly globalOrigin: Point2d;
@@ -248,6 +251,7 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
  * @public
  */
 export class GeometricModel3dState extends GeometricModelState {
+  /** The name of the associated ECClass */
   public static get className() { return "GeometricModel3d"; }
   /** @internal */
   public get is3d(): boolean { return true; }
@@ -259,6 +263,7 @@ export class GeometricModel3dState extends GeometricModelState {
  * @public
  */
 export class SheetModelState extends GeometricModel2dState {
+  /** The name of the associated ECClass */
   public static get className() { return "SheetModel"; }
 }
 
@@ -266,6 +271,7 @@ export class SheetModelState extends GeometricModel2dState {
  * @public
  */
 export class SpatialModelState extends GeometricModel3dState {
+  /** The name of the associated ECClass */
   public static get className() { return "SpatialModel"; }
 }
 
@@ -273,6 +279,7 @@ export class SpatialModelState extends GeometricModel3dState {
  * @public
  */
 export class PhysicalModelState extends SpatialModelState {
+  /** The name of the associated ECClass */
   public static get className() { return "PhysicalModel"; }
 }
 
@@ -280,6 +287,7 @@ export class PhysicalModelState extends SpatialModelState {
  * @public
  */
 export class SpatialLocationModelState extends SpatialModelState {
+  /** The name of the associated ECClass */
   public static get className() { return "SpatialLocationModel"; }
 }
 
@@ -287,6 +295,7 @@ export class SpatialLocationModelState extends SpatialModelState {
  * @public
  */
 export class DrawingModelState extends GeometricModel2dState {
+  /** The name of the associated ECClass */
   public static get className() { return "DrawingModel"; }
 }
 
@@ -294,5 +303,6 @@ export class DrawingModelState extends GeometricModel2dState {
  * @public
  */
 export class SectionDrawingModelState extends DrawingModelState {
+  /** The name of the associated ECClass */
   public static get className() { return "SectionDrawingModel"; }
 }

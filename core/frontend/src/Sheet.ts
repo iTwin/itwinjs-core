@@ -1051,6 +1051,7 @@ export namespace Attachments {
  * @public
  */
 export class SheetViewState extends ViewState2d {
+  /** The name of the associated ECClass */
   public static get className() { return "SheetViewDefinition"; }
   public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
     const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);

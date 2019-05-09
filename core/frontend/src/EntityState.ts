@@ -63,6 +63,7 @@ export class EntityState implements EntityProps {
  * @public
  */
 export class ElementState extends EntityState implements ElementProps {
+  /** The name of the associated ECClass */
   public static get className() { return "Element"; }
 
   public readonly model: Id64String;

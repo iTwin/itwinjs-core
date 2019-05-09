@@ -18,6 +18,7 @@ import { CategorySelectorProps } from "@bentley/imodeljs-common";
  * @public
  */
 export class CategorySelectorState extends ElementState {
+  /** The name of the associated ECClass */
   public static get className() { return "CategorySelector"; }
   public categories: Set<string> = new Set<string>();
   constructor(props: CategorySelectorProps, iModel: IModelConnection) {

@@ -151,6 +151,7 @@ class ViewState2dUndo extends ViewStateUndo {
  * @public
  */
 export abstract class ViewState extends ElementState {
+  /** The name of the associated ECClass */
   public static get className() { return "ViewDefinition"; }
 
   private _auxCoordSystem?: AuxCoordSystemState;
@@ -952,7 +953,7 @@ export abstract class ViewState3d extends ViewState {
   public readonly camera: Camera;
   /** Minimum distance for front plane */
   public forceMinFrontDist = 0.0;
-  /** @internal */
+  /** The name of the associated ECClass */
   public static get className() { return "ViewDefinition3d"; }
   public onRenderFrame(_viewport: Viewport): void { }
   public allow3dManipulations(): boolean { return true; }
@@ -1466,6 +1467,7 @@ export abstract class ViewState3d extends ViewState {
  * @public
  */
 export class SpatialViewState extends ViewState3d {
+  /** The name of the associated ECClass */
   public static get className() { return "SpatialViewDefinition"; }
   public modelSelector: ModelSelectorState;
 
@@ -1571,6 +1573,7 @@ export class SpatialViewState extends ViewState3d {
  * @public
  */
 export class OrthographicViewState extends SpatialViewState {
+  /** The name of the associated ECClass */
   public static get className() { return "OrthographicViewDefinition"; }
 
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
@@ -1582,6 +1585,7 @@ export class OrthographicViewState extends SpatialViewState {
  * @public
  */
 export abstract class ViewState2d extends ViewState {
+  /** The name of the associated ECClass */
   public static get className() { return "ViewDefinition2d"; }
   public readonly origin: Point2d;
   public readonly delta: Point2d;
@@ -1665,6 +1669,7 @@ export abstract class ViewState2d extends ViewState {
  * @public
  */
 export class DrawingViewState extends ViewState2d {
+  /** The name of the associated ECClass */
   public static get className() { return "DrawingViewDefinition"; }
   // Computed from the tile tree range once the tile tree is available; cached thereafter to avoid recomputing.
   private _modelLimits?: ExtentLimits;

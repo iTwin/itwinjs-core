@@ -45,7 +45,9 @@ export interface PropertyDescription {
   typename: string;
   enum?: EnumerationChoicesInfo;
   editor?: PropertyEditorInfo;
-  /** QuantityType or name KOQ full name - used by quantity formatter */
+  /** QuantityType or name KOQ full name - used by quantity formatter
+   * @alpha
+   */
   quantityType?: QuantityType | string;
   /** Get the custom DataController by this name and register it with the property editor */
   dataController?: string;
