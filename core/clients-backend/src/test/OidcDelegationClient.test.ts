@@ -7,7 +7,7 @@ import * as chai from "chai";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Config, AccessToken } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { OidcDelegationClient, OidcDelegationClientConfiguration, OidcAgentClient, OidcAgentClientConfiguration } from "../imodeljs-clients-backend";
+import { OidcDelegationClient, OidcDelegationClientConfiguration, OidcAgentClientV2, OidcAgentClientConfigurationV2 } from "../imodeljs-clients-backend";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
@@ -23,13 +23,13 @@ describe("OidcDelegationClient (#integration)", () => {
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
 
-    const agentConfiguration: OidcAgentClientConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
+    const agentConfiguration: OidcAgentClientConfigurationV2 = {
+      clientId: Config.App.getString("imjs_agent_test_client_id_v2"),
+      clientSecret: Config.App.getString("imjs_agent_test_client_secret_v2"),
       scope: "context-registry-service imodelhub imodeljs-backend-2686",
     };
 
-    const agentClient = new OidcAgentClient(agentConfiguration);
+    const agentClient = new OidcAgentClientV2(agentConfiguration);
     jwt = await agentClient.getToken(requestContext);
   });
 

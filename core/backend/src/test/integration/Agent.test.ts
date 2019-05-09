@@ -22,8 +22,11 @@ describe("Agent (#integration)", () => {
     agentConfiguration = {
       clientId: Config.App.getString("imjs_agent_test_client_id"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
-      scope: "context-registry-service imodelhub",
+      serviceUserEmail: Config.App.getString("imjs_agent_test_service_user_email"),
+      serviceUserPassword: Config.App.getString("imjs_agent_test_service_user_password"),
+      scope: "openid email profile organization context-registry-service imodelhub",
     };
+
   });
 
   it("Agent should be able to open an iModel Readonly", async () => {

@@ -64,13 +64,30 @@ export class IOSAzureFileHandler implements FileHandler {
 
 // @beta
 export class OidcAgentClient extends OidcBackendClient {
-    constructor(agentConfiguration: OidcAgentClientConfiguration);
+    constructor(_agentConfiguration: OidcAgentClientConfiguration);
+    // (undocumented)
     getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+    // (undocumented)
     refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
 }
 
 // @beta
-export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
+export interface OidcAgentClientConfiguration extends OidcBackendClientConfiguration {
+    // (undocumented)
+    serviceUserEmail: string;
+    // (undocumented)
+    serviceUserPassword: string;
+}
+
+// @internal
+export type OidcAgentClientConfigurationV2 = OidcBackendClientConfiguration;
+
+// @internal
+export class OidcAgentClientV2 extends OidcBackendClient {
+    constructor(agentConfiguration: OidcAgentClientConfigurationV2);
+    getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+    refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
+}
 
 // @beta
 export abstract class OidcBackendClient extends OidcClient {

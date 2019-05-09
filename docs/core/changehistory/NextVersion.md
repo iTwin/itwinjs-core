@@ -64,22 +64,6 @@ The method `EntityState.getClassFullName` was renamed to an accessor `get classF
 
 The method `EntityState.sqlName` was removed. It returned a string in the form "SchemaName.ClassName", whereas `EntityState.classFullName` returns "SchemaName:ClassName" (colon vs. dot syntax.) Since `ECSql` now supports both syntaxes, it is no longer necessary to have the `sqlName` method. You may simply replace all uses of `sqlName` with `classFullName`.
 
-## Changes to OidcAgentClient
-
-[OidcAgentClient]($clients-backend) now follows the typical OIDC client credentials authorization workflow. This implies the caller need not supply "serviceUserEmail" and "serviceUserPassword" as part of the configuration. For example:
-
-```ts
-const agentConfiguration:  = {
-      clientId: "some-client-id-obtained-through-registration",
-      clientSecret: "some-client-secret-obtained-through-registration",
-      scope: "context-registry-service imodelhub",
-    };
-
-const agentClient = new OidcAgentClient(agentConfiguration);
-```
-
-Note that what was OidcAgentClientV2 has now become [OidcAgentClient]($clients-backend) - i.e., the older OidcAgentClient has been entirely replaced.
-
 ## Deprecation of *standalone* iModels
 
 The confusing concept of *standalone* iModels has been removed from the frontend API and deprecated in the backend API.
