@@ -15,8 +15,7 @@ import {
 } from "@bentley/presentation-components";
 import { PropertyData, RowItem } from "@bentley/ui-components";
 
-// ###TODO Grigas these sporadically fail with no details.
-describe.skip("Find Similar", () => {
+describe("Find Similar", () => {
 
   let imodel: IModelConnection;
 
@@ -129,8 +128,7 @@ describe.skip("Find Similar", () => {
     });
   });
 
-  // WIP: fails when run after the above tests due to issue in imodeljs-native, succeeds when run isolated
-  it.skip("creates a valid 'similar instances' data provider for related instance property", async () => {
+  it("creates a valid 'similar instances' data provider for related instance property", async () => {
     // get properties for one of the elements
     propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
     const propertyData = await propertiesDataProvider.getData();

@@ -24,7 +24,7 @@ describe("LabelsProvider", async () => {
     terminate();
   });
 
-  describe.skip("getLabel", () => {
+  describe("getLabel", () => {
 
     it("returns correct label", async () => {
       const props = (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0];
