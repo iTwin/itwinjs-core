@@ -1051,6 +1051,7 @@ export namespace Attachments {
  * @public
  */
 export class SheetViewState extends ViewState2d {
+  public static get className() { return "SheetViewDefinition"; }
   public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
     const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
@@ -1072,8 +1073,6 @@ export class SheetViewState extends ViewState2d {
       this._attachments = new Attachments.AttachmentList();
     }
   }
-
-  public static get className() { return "SheetViewDefinition"; }
 
   /** The width and height of the sheet in world coordinates. */
   public readonly sheetSize: Point2d;

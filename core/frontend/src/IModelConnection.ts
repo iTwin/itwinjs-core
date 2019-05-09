@@ -103,20 +103,13 @@ export class IModelConnection extends IModel {
     return tileTree;
   }
 
-  /** Registry of className to EntityState class */
-  private static _registry = new Map<string, typeof EntityState>();
-
-  /** Register a class by classFullName */
-  public static registerClass(className: string, classType: typeof EntityState) { this._registry.set(className.toLowerCase(), classType); }
-  private static lookupClass(className: string) { return this._registry.get(className.toLowerCase()); }
-
   /** Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.
    * @param className The full name of the class of interest.
    * @param defaultClass If no base class of the className is registered, return this value.
    * @note this method is async since it may have to query the server to get the class hierarchy.
    */
   public async findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined> {
-    let ctor = IModelConnection.lookupClass(className) as T | undefined;
+    let ctor = IModelApp.lookupEntityClass(className) as T | undefined;
     if (undefined !== ctor)
       return ctor;
 
@@ -127,12 +120,12 @@ export class IModelConnection extends IModel {
     const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.iModelToken, className);
     // walk through the list until we find a registered base class
     baseClasses.some((baseClass: string) => {
-      const test = IModelConnection.lookupClass(baseClass) as T | undefined;
+      const test = IModelApp.lookupEntityClass(baseClass) as T | undefined;
       if (test === undefined)
         return false; // nope, not registered
 
       ctor = test; // found it, save it
-      IModelConnection.registerClass(className, ctor); // and register the fact that our starting class is handled by this subclass.
+      IModelApp.registerEntityState(className, ctor); // and register the fact that our starting class is handled by this subclass.
       return true; // stop
     });
     return ctor; // either the baseClass handler or defaultClass if we didn't find a registered baseClass

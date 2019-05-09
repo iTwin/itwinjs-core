@@ -24,12 +24,21 @@ import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { ViewManager } from "./ViewManager";
 import { TileAdmin } from "./tile/TileAdmin";
+import { EntityState } from "./EntityState";
+
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
 import * as pluginTool from "./tools/PluginTool";
 import * as viewTool from "./tools/ViewTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as measureTool from "./tools/MeasureTool";
+import * as modelState from "./ModelState";
+import * as sheetState from "./Sheet";
+import * as viewState from "./ViewState";
+import * as displayStyleState from "./DisplayStyleState";
+import * as modelselector from "./ModelSelectorState";
+import * as categorySelectorState from "./CategorySelectorState";
+import * as auxCoordState from "./AuxCoordSys";
 
 declare var BUILD_SEMVER: string;
 
@@ -150,9 +159,41 @@ export class IModelApp {
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
 
+  /** Map of classFullName to EntityState class */
+  private static _entityClasses = new Map<string, typeof EntityState>();
+
+  /** Register all of the subclasses of EntityState from a module.
+   * @internal
+   */
+  public static registerModuleEntities(moduleObj: any) {
+    for (const thisMember in moduleObj) {
+      if (!thisMember)
+        continue;
+
+      const thisEntityState = moduleObj[thisMember];
+      if (thisEntityState.prototype instanceof EntityState) {
+        this.registerEntityState(thisEntityState.classFullName, thisEntityState);
+      }
+    }
+  }
+
+  /** Register an EntityState class by its classFullName
+   * @internal
+   */
+  public static registerEntityState(classFullName: string, classType: typeof EntityState) {
+    const lowerName = classFullName.toLowerCase();
+    if (this._entityClasses.has(lowerName))
+      throw new Error("Class " + classFullName + " is already registered. Make sure static schemaName and className members are correct on class " + classType.name);
+
+    this._entityClasses.set(lowerName, classType);
+  }
+
+  /** @internal */
+  public static lookupEntityClass(classFullName: string) { return this._entityClasses.get(classFullName.toLowerCase()); }
+
   /**
    * This method must be called before any iModel.js frontend services are used.
-   * In your source, somewhere before you use any iModel.js services, call IModelApp.startup. E.g.:
+   * In your code, somewhere before you use any iModel.js services, call IModelApp.startup. E.g.:
    * ``` ts
    * IModelApp.startup({applicationId: myAppId, i18n: myi18Opts});
    * ```
@@ -192,6 +233,15 @@ export class IModelApp {
     tools.registerModule(measureTool, coreNamespace);
     tools.registerModule(pluginTool, coreNamespace);
 
+    this.registerEntityState(EntityState.classFullName, EntityState);
+    this.registerModuleEntities(modelState);
+    this.registerModuleEntities(sheetState);
+    this.registerModuleEntities(viewState);
+    this.registerModuleEntities(displayStyleState);
+    this.registerModuleEntities(modelselector);
+    this.registerModuleEntities(categorySelectorState);
+    this.registerModuleEntities(auxCoordState);
+
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
     // the startup function may have already allocated any of these members, so first test whether they're present
@@ -222,6 +272,7 @@ export class IModelApp {
       this.viewManager.onShutDown();
       this.tileAdmin.onShutDown();
       this._renderSystem = dispose(this._renderSystem);
+      this._entityClasses.clear();
       this._initialized = false;
     }
   }

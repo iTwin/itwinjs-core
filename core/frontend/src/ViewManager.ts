@@ -7,14 +7,11 @@ import { BentleyStatus, BeEvent, BeUiEvent } from "@bentley/bentleyjs-core";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { DrawingModelState, SectionDrawingModelState, SheetModelState, SpatialModelState } from "./ModelState";
 import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { DrawingViewState, OrthographicViewState, SpatialViewState } from "./ViewState";
 import { GeometryStreamProps } from "@bentley/imodeljs-common";
-import { SheetViewState } from "./Sheet";
 
 /** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
  * Decorators generate [[Decorations]].
@@ -79,17 +76,6 @@ export class ViewManager {
 
   /** @internal */
   public onInitialized() {
-    IModelConnection.registerClass(SpatialModelState.classFullName, SpatialModelState);
-    IModelConnection.registerClass("BisCore:PhysicalModel", SpatialModelState);
-    IModelConnection.registerClass("BisCore:SpatialLocationModel", SpatialModelState);
-    IModelConnection.registerClass(DrawingModelState.classFullName, DrawingModelState);
-    IModelConnection.registerClass(SectionDrawingModelState.classFullName, SectionDrawingModelState);
-    IModelConnection.registerClass(SheetModelState.classFullName, SheetModelState);
-    IModelConnection.registerClass(OrthographicViewState.classFullName, OrthographicViewState as any); // the "as any" is to get around problem with abstract base classes
-    IModelConnection.registerClass(SpatialViewState.classFullName, SpatialViewState as any);
-    IModelConnection.registerClass(DrawingViewState.classFullName, DrawingViewState as any);
-    IModelConnection.registerClass(SheetViewState.classFullName, SheetViewState as any);
-
     this.addDecorator(IModelApp.accuSnap);
     this.addDecorator(IModelApp.tentativePoint);
     this.addDecorator(IModelApp.accuDraw);

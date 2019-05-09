@@ -15,6 +15,8 @@ import { SpatialClassification } from "./SpatialClassification";
  * @public
  */
 export class ModelSelectorState extends ElementState {
+  public static get className() { return "ModelSelector"; }
+
   /** The set of ModelIds of this ModelSelectorState */
   public readonly models = new Set<string>();
   constructor(props: ModelSelectorProps, iModel: IModelConnection) {

@@ -151,6 +151,8 @@ class ViewState2dUndo extends ViewStateUndo {
  * @public
  */
 export abstract class ViewState extends ElementState {
+  public static get className() { return "ViewDefinition"; }
+
   private _auxCoordSystem?: AuxCoordSystemState;
   private _extentLimits?: ExtentLimits;
   private _clipVector?: ClipVector;
@@ -160,7 +162,6 @@ export abstract class ViewState extends ElementState {
   public categorySelector: CategorySelectorState;
   /** Selects the styling parameters for this this ViewState. */
   public displayStyle: DisplayStyleState;
-  public static get className() { return "ViewDefinition"; }
 
   /** @internal */
   protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState) {
@@ -1465,6 +1466,7 @@ export abstract class ViewState3d extends ViewState {
  * @public
  */
 export class SpatialViewState extends ViewState3d {
+  public static get className() { return "SpatialViewDefinition"; }
   public modelSelector: ModelSelectorState;
 
   public static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
@@ -1486,7 +1488,6 @@ export class SpatialViewState extends ViewState3d {
 
   public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
 
-  public static get className() { return "SpatialViewDefinition"; }
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
   public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth }; }
 
@@ -1581,13 +1582,12 @@ export class OrthographicViewState extends SpatialViewState {
  * @public
  */
 export abstract class ViewState2d extends ViewState {
+  public static get className() { return "ViewDefinition2d"; }
   public readonly origin: Point2d;
   public readonly delta: Point2d;
   public readonly angle: Angle;
   public readonly baseModelId: Id64String;
   private _viewedExtents?: AxisAlignedBox3d;
-
-  public static get className() { return "ViewDefinition2d"; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
@@ -1665,6 +1665,7 @@ export abstract class ViewState2d extends ViewState {
  * @public
  */
 export class DrawingViewState extends ViewState2d {
+  public static get className() { return "DrawingViewDefinition"; }
   // Computed from the tile tree range once the tile tree is available; cached thereafter to avoid recomputing.
   private _modelLimits?: ExtentLimits;
 
@@ -1674,8 +1675,6 @@ export class DrawingViewState extends ViewState2d {
     // use "new this" so subclasses are correct
     return new this(props.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState);
   }
-
-  public static get className() { return "DrawingViewDefinition"; }
 
   public get defaultExtentLimits() {
     if (undefined !== this._modelLimits)

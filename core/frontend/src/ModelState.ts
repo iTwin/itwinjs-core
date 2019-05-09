@@ -18,6 +18,7 @@ import { TileTree, TileTreeState } from "./tile/TileTree";
  * @public
  */
 export class ModelState extends EntityState implements ModelProps {
+  public static get className() { return "Model"; }
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
   public parentModel: Id64String;
@@ -99,6 +100,8 @@ export interface TileTreeModelState {
  * @public
  */
 export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
+  public static get className() { return "GeometricModel"; }
+
   private _modelRange?: Range3d;
   /** @internal */
   protected _tileTreeState: TileTreeState = new TileTreeState(this.iModel, !this.is2d, this.id);
@@ -220,6 +223,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
  * @public
  */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
+  public static get className() { return "GeometricModel2d"; }
   /** @internal */
   public readonly globalOrigin: Point2d;
 
@@ -244,6 +248,7 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
  * @public
  */
 export class GeometricModel3dState extends GeometricModelState {
+  public static get className() { return "GeometricModel3d"; }
   /** @internal */
   public get is3d(): boolean { return true; }
   /** @internal */
@@ -253,19 +258,41 @@ export class GeometricModel3dState extends GeometricModelState {
 /** Represents the front-end state of a [SheetModel]($backend).
  * @public
  */
-export class SheetModelState extends GeometricModel2dState { }
+export class SheetModelState extends GeometricModel2dState {
+  public static get className() { return "SheetModel"; }
+}
 
 /** Represents the front-end state of a [SpatialModel]($backend).
  * @public
  */
-export class SpatialModelState extends GeometricModel3dState { }
+export class SpatialModelState extends GeometricModel3dState {
+  public static get className() { return "SpatialModel"; }
+}
+
+/** Represents the front-end state of a [PhysicalModel]($backend).
+ * @public
+ */
+export class PhysicalModelState extends SpatialModelState {
+  public static get className() { return "PhysicalModel"; }
+}
+
+/** Represents the front-end state of a [SpatialLocationModel]($backend).
+ * @public
+ */
+export class SpatialLocationModelState extends SpatialModelState {
+  public static get className() { return "SpatialLocationModel"; }
+}
 
 /** Represents the front-end state of a [DrawingModel]($backend).
  * @public
  */
-export class DrawingModelState extends GeometricModel2dState { }
+export class DrawingModelState extends GeometricModel2dState {
+  public static get className() { return "DrawingModel"; }
+}
 
 /** Represents the front-end state of a [SectionDrawingModel]($backend).
  * @public
  */
-export class SectionDrawingModelState extends DrawingModelState { }
+export class SectionDrawingModelState extends DrawingModelState {
+  public static get className() { return "SectionDrawingModel"; }
+}

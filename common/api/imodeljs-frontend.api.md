@@ -1017,6 +1017,8 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
     // (undocumented)
     angle: number;
     // (undocumented)
+    static readonly className: string;
+    // (undocumented)
     getOrigin(result?: Point3d): Point3d;
     // (undocumented)
     getRotation(result?: Matrix3d): Matrix3d;
@@ -1033,6 +1035,8 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
 // @public
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
     constructor(props: AuxCoordSystem3dProps, iModel: IModelConnection);
+    // (undocumented)
+    static readonly className: string;
     // (undocumented)
     getOrigin(result?: Point3d): Point3d;
     // (undocumented)
@@ -1055,11 +1059,15 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
 
 // @public
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
+    // (undocumented)
+    static readonly className: string;
 }
 
 // @public
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
     constructor(props: AuxCoordSystemProps, iModel: IModelConnection);
+    // (undocumented)
+    static readonly className: string;
     static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState;
     // (undocumented)
     description?: string;
@@ -1282,6 +1290,8 @@ export class CategorySelectorState extends ElementState {
     // (undocumented)
     categories: Set<string>;
     changeCategoryDisplay(arg: Id64Arg, add: boolean): void;
+    // (undocumented)
+    static readonly className: string;
     dropCategories(arg: Id64Arg): void;
     equalState(other: CategorySelectorState): boolean;
     has(id: Id64String): boolean;
@@ -1740,12 +1750,16 @@ export class DevTools {
 export class DisplayStyle2dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
     // (undocumented)
+    static readonly className: string;
+    // (undocumented)
     readonly settings: DisplayStyleSettings;
     }
 
 // @public
 export class DisplayStyle3dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
+    // (undocumented)
+    static readonly className: string;
     // @internal (undocumented)
     clone(iModel: IModelConnection): this;
     environment: Environment;
@@ -1772,6 +1786,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     readonly backgroundMap: BackgroundMapState;
     // @internal (undocumented)
     readonly backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined;
+    // (undocumented)
+    static readonly className: string;
     // @internal (undocumented)
     containsContextRealityModel(contextRealityModel: ContextRealityModelState): boolean;
     // @internal (undocumented)
@@ -1803,6 +1819,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
 // @public
 export class DrawingModelState extends GeometricModel2dState {
+    // (undocumented)
+    static readonly className: string;
 }
 
 // @public
@@ -2013,6 +2031,8 @@ export class ElementPicker {
 export class ElementState extends EntityState implements ElementProps {
     constructor(props: ElementProps, iModel: IModelConnection);
     // (undocumented)
+    static readonly className: string;
+    // (undocumented)
     readonly code: Code;
     // (undocumented)
     readonly federationGuid?: GuidString;
@@ -2099,9 +2119,9 @@ export interface EmphasizeElementsProps {
 // @public
 export class EntityState implements EntityProps {
     constructor(props: EntityProps, iModel: IModelConnection, _state?: EntityState);
+    static readonly classFullName: string;
     // (undocumented)
     readonly classFullName: string;
-    static readonly classFullName: string;
     static readonly className: string;
     clone(iModel?: IModelConnection): this;
     // (undocumented)
@@ -2114,8 +2134,7 @@ export class EntityState implements EntityProps {
     readonly jsonProperties: {
         [key: string]: any;
     };
-    // (undocumented)
-    static schemaName: string;
+    static readonly schemaName: string;
     // (undocumented)
     toJSON(): EntityProps;
 }
@@ -2476,6 +2495,8 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
     constructor(props: GeometricModel2dProps, iModel: IModelConnection);
     // @internal (undocumented)
     readonly asGeometricModel2d: GeometricModel2dState;
+    // (undocumented)
+    static readonly className: string;
     // @internal (undocumented)
     readonly globalOrigin: Point2d;
     // @internal (undocumented)
@@ -2488,6 +2509,8 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
 export class GeometricModel3dState extends GeometricModelState {
     // @internal (undocumented)
     readonly asGeometricModel3d: GeometricModel3dState;
+    // (undocumented)
+    static readonly className: string;
     // @internal (undocumented)
     readonly is3d: boolean;
 }
@@ -2502,6 +2525,8 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     readonly classifierTileTree: TileTree | undefined;
     // @internal (undocumented)
     protected _classifierTileTreeState: TileTreeState;
+    // (undocumented)
+    static readonly className: string;
     readonly is2d: boolean;
     abstract readonly is3d: boolean;
     // @internal (undocumented)
@@ -2879,9 +2904,15 @@ export class IModelApp {
     static readonly initialized: boolean;
     // @internal (undocumented)
     static readonly locateManager: ElementLocateManager;
+    // @internal (undocumented)
+    static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
     static readonly notifications: NotificationManager;
     // @alpha
     static readonly quantityFormatter: QuantityFormatter;
+    // @internal
+    static registerEntityState(classFullName: string, classType: typeof EntityState): void;
+    // @internal
+    static registerModuleEntities(moduleObj: any): void;
     static readonly renderSystem: RenderSystem;
     static sessionId: GuidString;
     static readonly settings: SettingsAdmin;
@@ -2965,7 +2996,6 @@ export class IModelConnection extends IModel {
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
-    static registerClass(className: string, classType: typeof EntityState): void;
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     saveChanges(description?: string): Promise<void>;
     readonly selectionSet: SelectionSet;
@@ -3659,6 +3689,8 @@ export namespace MockRender {
 export class ModelSelectorState extends ElementState {
     constructor(props: ModelSelectorProps, iModel: IModelConnection);
     addModels(arg: Id64Arg): void;
+    // (undocumented)
+    static readonly className: string;
     containsModel(modelId: Id64String): boolean;
     dropModels(arg: Id64Arg): void;
     equalState(other: ModelSelectorState): boolean;
@@ -3676,6 +3708,8 @@ export class ModelState extends EntityState implements ModelProps {
     readonly asGeometricModel: GeometricModelState | undefined;
     readonly asGeometricModel2d: GeometricModel2dState | undefined;
     readonly asGeometricModel3d: GeometricModel3dState | undefined;
+    // (undocumented)
+    static readonly className: string;
     readonly isGeometricModel: boolean;
     // (undocumented)
     readonly isPrivate: boolean;
@@ -4073,6 +4107,12 @@ export namespace PerModelCategoryVisibility {
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
         setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
     }
+}
+
+// @public
+export class PhysicalModelState extends SpatialModelState {
+    // (undocumented)
+    static readonly className: string;
 }
 
 // @internal
@@ -4993,6 +5033,8 @@ export class ScrollViewTool extends ViewManip {
 
 // @public
 export class SectionDrawingModelState extends DrawingModelState {
+    // (undocumented)
+    static readonly className: string;
 }
 
 // @public
@@ -5154,6 +5196,8 @@ export class SheetBorder {
 
 // @public
 export class SheetModelState extends GeometricModel2dState {
+    // (undocumented)
+    static readonly className: string;
 }
 
 // @public
@@ -5379,7 +5423,15 @@ export namespace SpatialClassification {
 }
 
 // @public
+export class SpatialLocationModelState extends SpatialModelState {
+    // (undocumented)
+    static readonly className: string;
+}
+
+// @public
 export class SpatialModelState extends GeometricModel3dState {
+    // (undocumented)
+    static readonly className: string;
 }
 
 // @public

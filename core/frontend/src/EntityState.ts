@@ -16,7 +16,11 @@ export class EntityState implements EntityProps {
   public readonly iModel: IModelConnection;
   public readonly classFullName: string;
   public readonly jsonProperties: { [key: string]: any };
-  public static schemaName = "BisCore";
+
+  /** The ECSchema name for this EntityState */
+  public static get schemaName() { return "BisCore"; }
+  /** The ECClass name for this EntityState. */
+  public static get className() { return "Entity"; }
 
   /** Constructor for EntityState
    * @param props the properties of the Entity for this EntityState
@@ -49,12 +53,6 @@ export class EntityState implements EntityProps {
    * @note Subclasses from other than the BisCore domain should override their static member "schemaName" with their schema name.
    */
   public static get classFullName(): string { return this.schemaName + ":" + this.className; }
-
-  /** Get the ECClass name for this EntityState.
-   * @note This default implementation relies on all EntityState subclasses using their ECClass name as their JavaScript class name, **with "State" appended to the end**.
-   * If this is not true, you must override this method.
-   */
-  public static get className(): string { return this.name.slice(0, this.name.lastIndexOf("State")); }
 }
 
 /** The "state" of an Element as represented in a web browser.
@@ -66,6 +64,7 @@ export class ElementState extends EntityState implements ElementProps {
   public readonly parent?: RelatedElement;
   public readonly federationGuid?: GuidString;
   public readonly userLabel?: string;
+  public static get className() { return "Element"; }
 
   constructor(props: ElementProps, iModel: IModelConnection) {
     super(props, iModel);
