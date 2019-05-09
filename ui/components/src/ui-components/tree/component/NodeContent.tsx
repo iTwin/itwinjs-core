@@ -47,17 +47,21 @@ export interface TreeNodeContentProps extends CommonProps {
 /** @internal */
 export interface TreeNodeContentState {
   label: React.ReactNode;
+  renderTimestamp?: number;
 }
 
 /** React component for displaying [[TreeNode]] label
  * @internal
  */
 export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeNodeContentState> {
-  public readonly state: TreeNodeContentState = {
-    label: <TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />,
-  };
-
   private _isMounted = false;
+
+  public constructor(props: TreeNodeContentProps) {
+    super(props);
+    this.state = {
+      label: <TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />,
+    };
+  }
 
   private getStyle(style?: ItemStyle, isSelected?: boolean): React.CSSProperties {
     return ItemStyleProvider.createStyle(style ? style : {}, isSelected);
@@ -115,22 +119,30 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
   public componentDidMount() {
     this._isMounted = true;
 
-    this.updateLabel(this.props); // tslint:disable-line:no-floating-promises
+    // tslint:disable-next-line:no-floating-promises
+    this.updateLabel(this.props);
+    this.setState({ renderTimestamp: this.props.node.itree!.dirtyTimestamp });
   }
 
-  private doPropsDiffer(props1: TreeNodeContentProps, props2: TreeNodeContentProps) {
+  private static doPropsDiffer(props1: TreeNodeContentProps, props2: TreeNodeContentProps) {
     return shallowDiffers(props1.highlightProps, props2.highlightProps)
       || props1.valueRendererManager !== props2.valueRendererManager
       || props1.cellEditing !== props2.cellEditing
       || props1.showDescription !== props2.showDescription;
   }
 
-  public componentDidUpdate(prevProps: TreeNodeContentProps) {
-    if (this.props.node.isDirty() || this.doPropsDiffer(prevProps, this.props)) {
-      this.props.node.setDirty(false);
+  private static needsLabelUpdate(state: TreeNodeContentState, prevProps: TreeNodeContentProps, nextProps: TreeNodeContentProps) {
+    return this.doPropsDiffer(prevProps, nextProps)
+      || nextProps.node.itree!.dirtyTimestamp && (!state.renderTimestamp || state.renderTimestamp < nextProps.node.itree!.dirtyTimestamp!);
+  }
 
-      this.updateLabel(this.props); // tslint:disable-line:no-floating-promises
+  public componentDidUpdate(prevProps: TreeNodeContentProps) {
+    if (TreeNodeContent.needsLabelUpdate(this.state, prevProps, this.props)) {
+      // tslint:disable-next-line:no-floating-promises
+      this.updateLabel(this.props);
     }
+
+    this.setState({ renderTimestamp: this.props.node.itree!.dirtyTimestamp });
   }
 
   public componentWillUnmount() {
@@ -138,7 +150,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
   }
 
   public shouldComponentUpdate(nextProps: TreeNodeContentProps, nextState: TreeNodeContentState) {
-    if (this.state.label !== nextState.label || nextProps.node.isDirty() || this.doPropsDiffer(this.props, nextProps))
+    if (this.state.label !== nextState.label || TreeNodeContent.needsLabelUpdate(nextState, this.props, nextProps))
       return true;
 
     if (nextState.label) {
@@ -155,13 +167,11 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
   }
 
   public render() {
-    let editor: JSX.Element | undefined;
-
     // handle cell editing
+    let editor: JSX.Element | undefined;
     if (this.props.cellEditing && this.props.cellEditing.isEditingEnabled(this.props.node)) {
       // if cell editing is enabled, return editor instead of the label
       const style = this.props.node.payload ? this.getStyle(this.props.node.payload.style, this.props.node.selected()) : undefined;
-
       editor = this.props.cellEditing.renderEditor(this.props.node, style);
     }
 

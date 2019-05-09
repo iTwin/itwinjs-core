@@ -313,6 +313,8 @@ export interface BeInspireTreeNodeITree {
     // (undocumented)
     checkboxTooltip?: string;
     // (undocumented)
+    dirtyTimestamp?: number;
+    // (undocumented)
     icon?: string;
     // (undocumented)
     state?: {

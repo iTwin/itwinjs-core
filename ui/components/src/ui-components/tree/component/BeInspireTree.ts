@@ -54,6 +54,7 @@ export interface BeInspireTreeNodeConfig {
 export interface BeInspireTreeNodeITree {
   icon?: string;
   checkboxTooltip?: string;
+  dirtyTimestamp?: number;
   state?: {
     checkboxVisible?: boolean;
     checkboxDisabled?: boolean;
@@ -718,6 +719,15 @@ export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNo
     else
       anyNode.itree.dirty = value;
   };
+  if (!anyNode._markDirtyOverriden) {
+    const markDirtyBase = inspireNode.markDirty;
+    inspireNode.markDirty = () => {
+      const result = markDirtyBase.call(inspireNode);
+      anyNode.itree.dirtyTimestamp = (new Date()).getTime();
+      return result;
+    };
+    anyNode._markDirtyOverriden = markDirtyBase;
+  }
 
   return anyNode;
 };

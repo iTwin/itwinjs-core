@@ -72,6 +72,7 @@ export interface TreeNodeProps extends CommonProps {
  * @internal
  */
 export class TreeNode extends React.Component<TreeNodeProps> {
+
   public shouldComponentUpdate(nextProps: TreeNodeProps) {
     if (nextProps.node.isDirty() || doPropsDiffer(this.props, nextProps))
       return true;
@@ -85,6 +86,11 @@ export class TreeNode extends React.Component<TreeNodeProps> {
       nextProps.onFinalRenderComplete(nextProps.renderId);
 
     return false;
+  }
+
+  public componentDidUpdate(_prevProps: TreeNodeProps) {
+    if (this.props.node.isDirty())
+      this.props.node.setDirty(false);
   }
 
   public render() {

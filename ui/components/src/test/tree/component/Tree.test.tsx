@@ -937,6 +937,24 @@ describe("Tree", () => {
       expect(node.checkbox!.checked).to.be.false;
     });
 
+    it("re-renders checkboxes when `checkboxInfo` callback and `selectedNodes` change", async () => {
+      const checkboxInfo1 = async () => ({ isVisible: true, isDisabled: true, state: CheckBoxState.On });
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo1} selectedNodes={[]} />), renderNodesSpy, 1);
+      let node = getNode("0");
+      expect(node.checkbox).to.not.be.undefined;
+      expect(node.checkbox!.disabled).to.be.true;
+      expect(node.checkbox!.checked).to.be.true;
+      expect(node.classList.contains("is-selected")).to.be.false;
+
+      const checkboxInfo2 = async () => ({ isVisible: true, isDisabled: false, state: CheckBoxState.Off });
+      await waitForUpdate(() => renderedTree.rerender(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo2} selectedNodes={["0"]} />), renderNodesSpy, 2);
+      node = getNode("0");
+      expect(node.checkbox).to.not.be.undefined;
+      expect(node.checkbox!.disabled).to.be.false;
+      expect(node.checkbox!.checked).to.be.false;
+      expect(node.classList.contains("is-selected")).to.be.true;
+    });
+
     it("checks and unchecks a node", async () => {
       const checkboxInfo = (n: TreeNodeItem) => ({ isVisible: true, state: (n.id === "0") ? CheckBoxState.On : CheckBoxState.Off });
       await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo} />), renderNodesSpy, 1);

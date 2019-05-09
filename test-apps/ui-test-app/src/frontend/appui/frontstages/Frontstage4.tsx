@@ -26,6 +26,7 @@ import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl 
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
+import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidget";
 
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
@@ -83,6 +84,7 @@ export class Frontstage4 extends FrontstageProvider {
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeDemo" control={TreeDemoWidgetControl} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeSelectionDemo" control={TreeSelectionDemoWidgetControl} />,
             ]}
           />
         }
