@@ -12,7 +12,7 @@ import { FeatureSymbology } from "./rendering";
 /** Whether override includes both color and alpha, only color, or only alpha.
  * @internal
  */
-export const enum FeatureOverrideType { ColorOnly, AlphaOnly, ColorAndAlpha }  // tslint:disable-line:no-const-enum
+export enum FeatureOverrideType { ColorOnly, AlphaOnly, ColorAndAlpha }
 
 /** @internal */
 export interface AppearanceOverrideProps {
@@ -37,8 +37,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   private _defaultAppearance?: FeatureSymbology.Appearance;
   private _overrideAppearance?: Map<number, Id64Set>;
 
-  /**
-   * Establish active feature overrides to emphasize elements and apply color/transparency overrides.
+  /** Establish active feature overrides to emphasize elements and apply color/transparency overrides.
    * @see [[Viewport.featureOverrideProvider]]
    */
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, vp: Viewport): void {

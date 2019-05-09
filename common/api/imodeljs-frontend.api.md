@@ -2210,7 +2210,7 @@ export interface FeatureOverrideProvider {
 }
 
 // @internal
-export const enum FeatureOverrideType {
+export enum FeatureOverrideType {
     // (undocumented)
     AlphaOnly = 1,
     // (undocumented)
