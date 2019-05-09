@@ -64,10 +64,11 @@ export class Enumeration extends SchemaItem {
     return this.enumerators.find((item) => item.value === value);
   }
 
-  /** @hidden
+  /**
    * Checks whether there already exists an enumerator with this name or this value
    * @param name The name of the enumerator we are trying to create
    * @param value The value of the enumerator we are trying to create
+   * @internal
    */
   private findDuplicateEnumerators(name: string, value: string | number) {
     this._enumerators.forEach((element: AnyEnumerator) => { // Name and value must be unique within the ECEnumerations

@@ -1838,8 +1838,11 @@ export class RelationshipMultiplicity {
 
 // @beta (undocumented)
 export class Schema implements CustomAttributeContainerProps {
+    // @internal
     constructor(context: SchemaContext);
+    // @internal
     constructor(context: SchemaContext, name: string, readVersion: number, writeVersion: number, minorVersion: number);
+    // @internal
     constructor(context: SchemaContext, key: SchemaKey);
     // (undocumented)
     protected addCustomAttribute(customAttribute: CustomAttribute): void;

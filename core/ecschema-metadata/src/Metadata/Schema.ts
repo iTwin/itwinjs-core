@@ -61,7 +61,7 @@ export class Schema implements CustomAttributeContainerProps {
    * Constructs an empty Schema (without a SchemaKey) in the provided context.
    * This should only be used when the schema name and version will be deserialized (via `fromJson()`) immediately after this Schema is instantiated.
    * @param context The SchemaContext that will control the lifetime of the schema
-   * @hidden
+   * @internal
    */
   constructor(context: SchemaContext);
   constructor(context: SchemaContext, nameOrKey?: SchemaKey | string, readVer?: SchemaContext | number, writeVer?: number, minorVer?: number) {
