@@ -97,11 +97,15 @@ export class DisableNativeAssertions implements IDisposable {
   }
 }
 
-export class TestBim extends Schema { }
+export class TestBim extends Schema {
+  public static get schemaName(): string { return "TestBim"; }
+
+}
 export interface TestRelationshipProps extends RelationshipProps {
   property1: string;
 }
 export class TestElementDrivesElement extends ElementDrivesElement implements TestRelationshipProps {
+  public static get className(): string { return "TestElementDrivesElement"; }
   public property1!: string;
   public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
   public static validateOutput = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
@@ -114,6 +118,7 @@ export interface TestPhysicalObjectProps extends GeometricElementProps {
   intProperty: number;
 }
 export class TestPhysicalObject extends PhysicalElement implements TestPhysicalObjectProps {
+  public static get className(): string { return "TestPhysicalObject"; }
   public intProperty!: number;
   public static beforeOutputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
   public static allInputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
@@ -250,7 +255,7 @@ export class IModelTestUtils {
   }
 
   public static registerTestBimSchema() {
-    if (!Schemas.isRegistered(TestBim)) {
+    if (undefined === Schemas.getRegisteredSchema(TestBim.schemaName)) {
       Schemas.registerSchema(TestBim);
       ClassRegistry.register(TestPhysicalObject, TestBim);
       ClassRegistry.register(TestElementDrivesElement, TestBim);

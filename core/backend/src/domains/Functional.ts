@@ -16,15 +16,16 @@ import * as elementsModule from "./FunctionalElements";
 const loggerCategory: string = BackendLoggerCategory.Functional;
 
 /** @public */
-export class Functional extends Schema {
+export class FunctionalSchema extends Schema {
+  public static get schemaName(): string { return "Functional"; }
   public static registerSchema() {
-    Schemas.unregisterSchema(Functional.name);
-    Schemas.registerSchema(new Functional());
+    if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
+      Schemas.unregisterSchema(this.schemaName);
+      Schemas.registerSchema(this);
+      ClassRegistry.registerModule(elementsModule, this);
+    }
   }
-  private constructor() {
-    super();
-    ClassRegistry.registerModule(elementsModule, this);
-  }
+
   public static async importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb) {
     // NOTE: this concurrencyControl logic was copied from IModelDb.importSchema
     requestContext.enter();

@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Guid, Id64String, Id64, Logger } from "@bentley/bentleyjs-core";
 import { Code, CodeSpec, CodeScopeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
-import { BriefcaseManager, ECSqlStatement, Functional, FunctionalModel, IModelDb, SqliteStatement, BackendRequestContext } from "../../imodeljs-backend";
+import { BriefcaseManager, ECSqlStatement, FunctionalSchema, FunctionalModel, IModelDb, SqliteStatement, BackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
@@ -22,8 +22,8 @@ describe("Functional Domain", () => {
     });
 
     // Import the Functional schema
-    await Functional.importSchema(requestContext, iModelDb);
-    Functional.registerSchema();
+    await FunctionalSchema.importSchema(requestContext, iModelDb);
+    FunctionalSchema.registerSchema();
 
     let commits = 0;
     let committed = 0;

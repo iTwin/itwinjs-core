@@ -19,24 +19,25 @@ export class ClassRegistry {
 
   /** @internal */
   public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
-
   /** @internal */
   public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "metadata not found for " + className); }
-
   /** @internal */
-  public static register(entityClass: typeof Entity, schema: Schema) { entityClass.schema = schema; this._classMap.set(this.getKey(entityClass.schema.name, entityClass.name), entityClass); }
+  public static register(entityClass: typeof Entity, schema: typeof Schema) {
+    entityClass.schema = schema;
+    const key = this.getKey(entityClass.schema.schemaName, entityClass.className);
+    if (this._classMap.has(key))
+      throw new Error("Class " + key + " is already registered. Make sure static className member is correct on JavaScript class " + entityClass.name);
+    this._classMap.set(key, entityClass);
+  }
   /** @internal */
-  public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }
+  public static registerSchema(schema: typeof Schema) { Schemas.registerSchema(schema); }
   /** @internal */
   public static getRegisteredSchema(domainName: string) { return Schemas.getRegisteredSchema(domainName); }
   /** @internal */
   public static getSchemaBaseClass() { return Schema; }
 
-  private static generateProxySchema(schemaName: string): typeof Schema {
-    const schemaClass = class extends Schema { };
-    // the above line creates an "anonymous" class. But, we rely on the "constructor.name" property to be eponymous with the Schema name.
-    // this is the (only) way to change that readonly property.
-    Object.defineProperty(schemaClass, "name", { get: () => schemaName });
+  private static generateProxySchema(proxySchemaName: string): typeof Schema {
+    const schemaClass = class extends Schema { public static get schemaName() { return proxySchemaName; } };
     this.registerSchema(schemaClass); // register the class before we return it.
     return schemaClass;
   }
@@ -48,13 +49,13 @@ export class ClassRegistry {
   private static generateClassForEntity(entityMetaData: EntityMetaData): typeof Entity {
     const name = entityMetaData.ecclass.split(":");
     const schemaName = name[0];
-    const className = name[1];
+    const bisClassName = name[1];
 
     if (entityMetaData.baseClasses.length === 0) // metadata must contain a superclass
       throw new IModelError(IModelStatus.BadArg, "class " + name + " has no superclass");
 
     // make sure schema exists
-    let schema = Schemas.getRegisteredSchema(schemaName);
+    let schema: typeof Schema | undefined = Schemas.getRegisteredSchema(schemaName);
     if (!schema)
       schema = this.generateProxySchema(schemaName); // no schema found, create it too
 
@@ -63,10 +64,9 @@ export class ClassRegistry {
     if (!superclass)
       throw new IModelError(IModelStatus.NotFound, "cannot find superclass for class " + name);
 
-    const generatedClass = class extends superclass { };
-    // the above line creates an "anonymous" class. We rely on the "constructor.name" property to be the same as the EcClass name.
-    Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
-
+    const generatedClass = class extends superclass { public static get className() { return bisClassName; } };
+    // the above line creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
+    Object.defineProperty(generatedClass, "name", { get: () => bisClassName });  // this is the (only) way to change that readonly property.
     this.register(generatedClass, schema); // register it before returning
     return generatedClass;
   }
@@ -76,7 +76,7 @@ export class ClassRegistry {
    * @param moduleObj The module to search for subclasses of Entity
    * @param schema The schema for all found classes
    */
-  public static registerModule(moduleObj: any, schema: Schema) {
+  public static registerModule(moduleObj: any, schema: typeof Schema) {
     for (const thisMember in moduleObj) {
       if (!thisMember)
         continue;

@@ -22,28 +22,18 @@ import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
  * definition. You would then edit the generated TypeScript class to add methods.
  */
 export class RobotWorld extends Schema {
+  public static get schemaName(): string { return "RobotWorld"; }
   /** An app must call this to register the RobotWorld schema prior to using it. */
   public static registerSchema() {
+
     // Make sure that this Schema is registered.
     // An app may call this more than once. Make sure that's harmless.
-    if (Schemas.getRegisteredSchema(RobotWorld.name) !== undefined)
-      return;
-
-    Schemas.registerSchema(new RobotWorld());
+    if (this !== Schemas.getRegisteredSchema(RobotWorld.name)) {
+      Schemas.registerSchema(this);
+      ClassRegistry.registerModule(robots, this);
+      ClassRegistry.registerModule(obstacles, this);
+    }
   }
-
-  // Registers all classes of the RobotWorld schema.
-  private constructor() {
-    super();
-    // Register all modules that define classes in this schema.
-    // ClassRegistry detects all classes defined by each module and registers them.
-    ClassRegistry.registerModule(robots, this);
-    ClassRegistry.registerModule(obstacles, this);
-    // ... other modules ...
-  }
-
-  // ...
-
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ IModelDb.importSchema

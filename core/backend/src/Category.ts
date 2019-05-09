@@ -14,6 +14,7 @@ import { CategoryOwnsSubCategories } from "./NavigationRelationship";
  * @public
  */
 export class SubCategory extends DefinitionElement implements SubCategoryProps {
+  public static get className(): string { return "SubCategory"; }
   /** The Appearance parameters for this SubCategory */
   public appearance: SubCategoryAppearance;
   /** Optional description of this SubCategory. */
@@ -92,6 +93,7 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
  * @public
  */
 export class Category extends DefinitionElement implements CategoryProps {
+  public static get className(): string { return "Category"; }
   public rank: Rank = Rank.User;
 
   /** @internal */
@@ -125,6 +127,8 @@ export class Category extends DefinitionElement implements CategoryProps {
  * @public
  */
 export class DrawingCategory extends Category {
+  public static get className(): string { return "DrawingCategory"; }
+
   /** Construct a DrawingCategory
    * @param opts  The properties of the new DrawingCategory
    * @param iModel The IModelDb where the DrawingCategory may be inserted.
@@ -190,6 +194,7 @@ export class DrawingCategory extends Category {
  * @public
  */
 export class SpatialCategory extends Category {
+  public static get className(): string { return "SpatialCategory"; }
   /** Construct a SpatialCategory
    * @param opts  The properties of the new SpatialCategory
    * @param iModel The IModelDb where the SpatialCategory may be inserted.

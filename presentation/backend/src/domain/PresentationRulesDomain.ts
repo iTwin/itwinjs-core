@@ -9,18 +9,14 @@ import * as RulesetElements from "./RulesetElements";
 
 /** @hidden */
 export class PresentationRules extends Schema {
+  public static get schemaName(): string { return "PresentationRules"; }
 
-  /**
-   * Registers this schema and it's elements' classes
-   */
+  /** Registers this schema and it's elements' classes */
   public static registerSchema() {
-    if (!Schemas.getRegisteredSchema(PresentationRules.name))
-      Schemas.registerSchema(new PresentationRules());
-  }
-
-  private constructor() {
-    super();
-    ClassRegistry.registerModule(RulesetElements, this);
+    if (this !== Schemas.getRegisteredSchema(PresentationRules.schemaName)) {
+      Schemas.registerSchema(PresentationRules);
+      ClassRegistry.registerModule(RulesetElements, this);
+    }
   }
 }
 

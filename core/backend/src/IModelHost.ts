@@ -11,10 +11,10 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import { BackendRequestContext } from "./BackendRequestContext";
-import { BisCore } from "./BisCore";
+import { BisCoreSchema } from "./BisCore";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { Functional } from "./domains/Functional";
-import { Generic } from "./domains/Generic";
+import { FunctionalSchema } from "./domains/Functional";
+import { GenericSchema } from "./domains/Generic";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -260,9 +260,9 @@ export class IModelHost {
     WipRpcImpl.register();
     DevToolsRpcImpl.register();
 
-    BisCore.registerSchema();
-    Generic.registerSchema();
-    Functional.registerSchema();
+    BisCoreSchema.registerSchema();
+    GenericSchema.registerSchema();
+    FunctionalSchema.registerSchema();
 
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();

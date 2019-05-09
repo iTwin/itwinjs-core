@@ -18,6 +18,7 @@ import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
  * @public
  */
 export class Model extends Entity implements ModelProps {
+  public static get className(): string { return "Model"; }
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
   public readonly parentModel: Id64String;
@@ -87,6 +88,8 @@ export class Model extends Entity implements ModelProps {
  * @public
  */
 export class GeometricModel extends Model {
+  public static get className(): string { return "GeometricModel"; }
+
   /** Query for the union of the extents of the elements contained by this model. */
   public queryExtents(): AxisAlignedBox3d {
     const { error, result } = this.iModel.nativeDb.queryModelExtents(JSON.stringify({ id: this.id.toString() }));
@@ -100,12 +103,14 @@ export class GeometricModel extends Model {
  * @public
  */
 export abstract class GeometricModel3d extends GeometricModel {
+  public static get className(): string { return "GeometricModel3d"; }
 }
 
 /** A container for persisting 2d geometric elements.
  * @public
  */
 export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
+  public static get className(): string { return "GeometricModel2d"; }
   public globalOrigin?: Point2d;
 }
 
@@ -113,18 +118,21 @@ export abstract class GeometricModel2d extends GeometricModel implements Geometr
  * @public
  */
 export abstract class GraphicalModel2d extends GeometricModel2d {
+  public static get className(): string { return "GraphicalModel2d"; }
 }
 
 /** A container for persisting 3d geometric elements that are spatially located.
  * @public
  */
 export abstract class SpatialModel extends GeometricModel3d {
+  public static get className(): string { return "SpatialModel"; }
 }
 
 /** A container for persisting physical elements that model physical space.
  * @public
  */
 export class PhysicalModel extends SpatialModel {
+  public static get className(): string { return "PhysicalModel"; }
   /** Insert a PhysicalPartition and a PhysicalModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
@@ -151,18 +159,21 @@ export class PhysicalModel extends SpatialModel {
  * @public
  */
 export class SpatialLocationModel extends SpatialModel {
+  public static get className(): string { return "SpatialLocationModel"; }
 }
 
 /** A 2d model that holds [[DrawingGraphic]]s. DrawingModels may be dimensional or non-dimensional.
  * @public
  */
 export class DrawingModel extends GraphicalModel2d {
+  public static get className(): string { return "DrawingModel"; }
 }
 
 /** A container for persisting section [[DrawingGraphic]]s.
  * @public
  */
 export class SectionDrawingModel extends DrawingModel {
+  public static get className(): string { return "SectionDrawingModel"; }
 }
 
 /** A container for persisting [[ViewAttachment]]s and [[DrawingGraphic]]s.
@@ -171,30 +182,36 @@ export class SectionDrawingModel extends DrawingModel {
  * @public
  */
 export class SheetModel extends GraphicalModel2d {
+  public static get className(): string { return "SheetModel"; }
 }
 
 /** A container for persisting role elements.
  * @public
  */
 export class RoleModel extends Model {
+  public static get className(): string { return "RoleModel"; }
 }
 
 /** A container for persisting information elements.
  * @public
  */
 export abstract class InformationModel extends Model {
+  public static get className(): string { return "InformationModel"; }
 }
 
 /** A container for persisting group information elements.
  * @public
  */
 export abstract class GroupInformationModel extends InformationModel {
+  public static get className(): string { return "GroupInformationModel"; }
 }
 
 /** A container for persisting Information Record Elements
  * @public
  */
 export class InformationRecordModel extends InformationModel {
+  public static get className(): string { return "InformationRecordModel"; }
+
   /** Insert a InformationRecordPartition and a InformationRecordModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The InformationRecordPartition will be inserted as a child of this Subject element.
@@ -221,6 +238,8 @@ export class InformationRecordModel extends InformationModel {
  * @public
  */
 export class DefinitionModel extends InformationModel {
+  public static get className(): string { return "DefinitionModel"; }
+
   /** Insert a DefinitionPartition and a DefinitionModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DefinitionPartition will be inserted as a child of this Subject element.
@@ -247,12 +266,14 @@ export class DefinitionModel extends InformationModel {
  * @public
  */
 export class RepositoryModel extends DefinitionModel {
+  public static get className(): string { return "RepositoryModel"; }
 }
 
 /** Contains a list of document elements.
  * @public
  */
 export class DocumentListModel extends InformationModel {
+  public static get className(): string { return "DocumentListModel"; }
   /** Insert a DocumentPartition and a DocumentListModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
@@ -279,16 +300,19 @@ export class DocumentListModel extends InformationModel {
  * @public
  */
 export class LinkModel extends InformationModel {
+  public static get className(): string { return "LinkModel"; }
 }
 
 /** The singleton container for repository-specific definition elements.
  * @public
  */
 export class DictionaryModel extends DefinitionModel {
+  public static get className(): string { return "DictionaryModel"; }
 }
 
 /** Obtains and displays multi-resolution tiled raster organized according to the WebMercator tiling system.
  * @public
  */
 export class WebMercatorModel extends SpatialModel {
+  public static get className(): string { return "WebMercatorModel"; }
 }

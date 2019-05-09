@@ -31,6 +31,7 @@ export interface RelationshipProps extends EntityProps, SourceAndTarget {
  * @public
  */
 export class Relationship extends Entity implements RelationshipProps {
+  public static get className(): string { return "Relationship"; }
   public readonly sourceId: Id64String;
   public readonly targetId: Id64String;
 
@@ -73,6 +74,7 @@ export class Relationship extends Entity implements RelationshipProps {
  * @public
  */
 export class ElementRefersToElements extends Relationship {
+  public static get className(): string { return "ElementRefersToElements"; }
   /** Create an instance of the Relationship.
    * @param iModel The iModel that will contain the relationship
    * @param sourceId The sourceId of the relationship, that is, the driver element
@@ -98,6 +100,7 @@ export class ElementRefersToElements extends Relationship {
  * @public
  */
 export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
+  public static get className(): string { return "DrawingGraphicRepresentsElement"; }
 }
 
 /** Properties that are common to all types of link table ECRelationships
@@ -111,6 +114,7 @@ export interface ElementGroupsMembersProps extends RelationshipProps {
  * @public
  */
 export class ElementGroupsMembers extends ElementRefersToElements {
+  public static get className(): string { return "ElementGroupsMembers"; }
   public memberPriority: number;
 
   constructor(props: ElementGroupsMembersProps, iModel: IModelDb) {
@@ -136,6 +140,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * @beta
  */
 export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
+  public static get className(): string { return "ElementDrivesElement"; }
   public status: number;
   public priority: number;
 

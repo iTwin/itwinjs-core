@@ -16,6 +16,7 @@ import { IModelDb } from "./IModelDb";
  * @public
  */
 export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
+  public static get className(): string { return "DisplayStyle"; }
   public abstract get settings(): DisplayStyleSettings;
 
   /** @internal */
@@ -38,6 +39,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
  * @public
  */
 export class DisplayStyle2d extends DisplayStyle {
+  public static get className(): string { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
   public get settings(): DisplayStyleSettings { return this._settings; }
@@ -97,6 +99,7 @@ export interface DisplayStyleCreationOptions {
  * @public
  */
 export class DisplayStyle3d extends DisplayStyle {
+  public static get className(): string { return "DisplayStyle3d"; }
   private readonly _settings: DisplayStyle3dSettings;
 
   public get settings(): DisplayStyle3dSettings { return this._settings; }
@@ -164,6 +167,8 @@ export class DisplayStyle3d extends DisplayStyle {
  * @public
  */
 export class ModelSelector extends DefinitionElement implements ModelSelectorProps {
+  public static get className(): string { return "ModelSelector"; }
+
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
   public models: string[];
   /** @internal */
@@ -223,6 +228,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
  * @public
  */
 export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
+  public static get className(): string { return "CategorySelector"; }
   /** The array of element Ids of the Categories selected by this CategorySelector */
   public categories: string[];
   /** @internal */
@@ -291,6 +297,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
  * @public
  */
 export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
+  public static get className(): string { return "ViewDefinition"; }
   /** The element Id of the [[CategorySelector]] for this ViewDefinition */
   public categorySelectorId: Id64String;
   /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
@@ -341,6 +348,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
  * @public
  */
 export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
+  public static get className(): string { return "ViewDefinition3d"; }
   /** If true, camera is used. Otherwise, use an orthographic projection. */
   public cameraOn: boolean;
   /** The lower left back corner of the view frustum. */
@@ -390,6 +398,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
  * @public
  */
 export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
+  public static get className(): string { return "SpatialViewDefinition"; }
   /** The element Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public modelSelectorId: Id64String;
   /** @internal */
@@ -409,6 +418,7 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
  * @public
  */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
+  public static get className(): string { return "OrthographicViewDefinition"; }
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
   /**
    * Create an OrthographicViewDefinition
@@ -474,6 +484,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
  * @public
  */
 export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2dProps {
+  public static get className(): string { return "ViewDefinition2d"; }
   /** The Id of the Model displayed by this view. */
   public baseModelId: Id64String;
   /** The lower-left corner of this view in Model coordinates. */
@@ -509,6 +520,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
  * @public
  */
 export class DrawingViewDefinition extends ViewDefinition2d {
+  public static get className(): string { return "DrawingViewDefinition"; }
   /** @internal */
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -558,23 +570,30 @@ export class DrawingViewDefinition extends ViewDefinition2d {
 /** Defines a view of a [[SheetModel]].
  * @public
  */
-export class SheetViewDefinition extends ViewDefinition2d { }
+export class SheetViewDefinition extends ViewDefinition2d {
+  public static get className(): string { return "SheetViewDefinition"; }
+}
 
 /** A ViewDefinition used to display a 2d template model.
  * @internal
  */
-export class TemplateViewDefinition2d extends ViewDefinition2d { }
+export class TemplateViewDefinition2d extends ViewDefinition2d {
+  public static get className(): string { return "TemplateViewDefinition2d"; }
+}
 
 /** A ViewDefinition used to display a 3d template model.
  * @internal
  */
-export class TemplateViewDefinition3d extends ViewDefinition3d { }
+export class TemplateViewDefinition3d extends ViewDefinition3d {
+  public static get className(): string { return "TemplateViewDefinition3d"; }
+}
 
 /** An auxiliary coordinate system element. Auxiliary coordinate systems can be used by views to show
  * coordinate information in different units and/or orientations.
  * @public
  */
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
+  public static get className(): string { return "AuxCoordSystem"; }
   public type!: number;
   public description?: string;
   public constructor(props: AuxCoordSystemProps, iModel: IModelDb) { super(props, iModel); }
@@ -584,6 +603,7 @@ export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoo
  * @public
  */
 export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
+  public static get className(): string { return "AuxCoordSystem2d"; }
   public origin?: Point2d;
   public angle!: number;
   public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
@@ -603,6 +623,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
  * @public
  */
 export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
+  public static get className(): string { return "AuxCoordSystem3d"; }
   public origin?: Point3d;
   public yaw!: number;
   public pitch!: number;
@@ -624,6 +645,7 @@ export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3d
  * @public
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
+  public static get className(): string { return "AuxCoordSystemSpatial"; }
   /** Create a Code for a AuxCoordSystemSpatial element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystemSpatial element and provides the scope for its name.
@@ -639,6 +661,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
  * @public
  */
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
+  public static get className(): string { return "ViewAttachment"; }
   public view: RelatedElement;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
@@ -651,6 +674,7 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
  * @public
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
+  public static get className(): string { return "LightLocation"; }
   /** Whether this light is currently turned on. */
   public enabled!: boolean;
   /** @internal */

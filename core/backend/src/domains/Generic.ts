@@ -9,13 +9,13 @@ import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./GenericElements";
 
 /** @public */
-export class Generic extends Schema {
+export class GenericSchema extends Schema {
+  public static get schemaName(): string { return "Generic"; }
   public static registerSchema() {
-    Schemas.unregisterSchema(Generic.name);
-    Schemas.registerSchema(new Generic());
-  }
-  private constructor() {
-    super();
-    ClassRegistry.registerModule(elementsModule, this);
+    if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
+      Schemas.unregisterSchema(this.schemaName);
+      Schemas.registerSchema(this);
+      ClassRegistry.registerModule(elementsModule, this);
+    }
   }
 }

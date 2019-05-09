@@ -9,14 +9,29 @@ import { EntityProps, PropertyCallback, PropertyMetaData } from "@bentley/imodel
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
-/** Base class for all Entities in an iModel.
+/** Base class for all Entities in an iModel. Every subclass of Entity handles one BIS class.
  * @public
  */
 export class Entity implements EntityProps {
+  /** The Schema that defines this class. */
+  public static schema: typeof Schema;
+
+  private get _ctor(): typeof Entity { return this.constructor as typeof Entity; }
+
+  /** The name of the BIS class handled by this Entity.
+   * @note Every subclass of Entity **MUST** override this method to identify its BIS class.
+   * Failure to do so will ordinarily result in an error when the class is registered, since there may only
+   * be one JavaScript class for a given BIS class (usually the errant class will collide with its superclass.)
+   */
+  public static get className(): string { return "Entity"; }
+
   [propName: string]: any;
 
-  /** The schema that defines this class. */
-  public static schema: Schema;
+  /** Get the name of the Bis Schema that defines this class */
+  public get schemaName(): string { return this._ctor.schema.schemaName; }
+
+  /** Get the BIS Class name for this class */
+  public get className(): string { return this._ctor.className; }
 
   /** The [[IModelDb]] that contains this Entity */
   public iModel: IModelDb;
@@ -53,18 +68,12 @@ export class Entity implements EntityProps {
   /** Call a function for each property of this Entity. Function arguments are property name and property metadata. */
   public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { IModelDb.forEachMetaData(this.iModel, this.classFullName, true, func, includeCustom); }
 
-  /** Get the full name of this class, in the form "schema:class"  */
-  public static get classFullName(): string { return this.schema.name + ":" + this.name; }
+  /**  Get the full BIS class name of this Entity in the form "schema:class"  */
+  public static get classFullName(): string { return this.schema.schemaName + ":" + this.className; }
 
-  /** Get full class name of this Entity in the form "schema:class". */
-  public get classFullName(): string { return this.schemaName + ":" + this.className; }
-
-  /** Get the name of the schema that defines this class */
-  public get schemaName(): string { return (this.constructor as typeof Entity).schema.name; }
-
-  /** Get the name of this class */
-  public get className(): string { return this.constructor.name; }
+  /** Get the full BIS class name of this Entity in the form "schema:class". */
+  public get classFullName(): string { return this._ctor.classFullName; }
 
   /** Make a deep copy of this Entity */
-  public clone(): this { return new (this.constructor as any)(this, this.iModel); }
+  public clone(): this { return new this._ctor(this, this.iModel) as this; }
 }

@@ -12,15 +12,21 @@ import { IModelConnection } from "./IModelConnection";
  * @public
  */
 export class EntityState implements EntityProps {
+  /** The BIS schema name for this EntityState.
+   * @note Subclasses from other than the BisCore domain must override the static member "schemaName" with their schema name.
+   */
+  public static get schemaName() { return "BisCore"; }
+  /** The BIS class name for this EntityState.
+   * @note Every subclass of EntityState **MUST** override this method to identify its BIS class.
+   * Failure to do so will ordinarily result in an error when the class is registered, since there may only
+   * be one JavaScript class for a given BIS class (usually the errant class will collide with its superclass.)
+   */
+  public static get className() { return "Entity"; }
+
   public readonly id: Id64String;
   public readonly iModel: IModelConnection;
   public readonly classFullName: string;
   public readonly jsonProperties: { [key: string]: any };
-
-  /** The ECSchema name for this EntityState */
-  public static get schemaName() { return "BisCore"; }
-  /** The ECClass name for this EntityState. */
-  public static get className() { return "Entity"; }
 
   /** Constructor for EntityState
    * @param props the properties of the Entity for this EntityState
@@ -49,9 +55,7 @@ export class EntityState implements EntityProps {
   /** Make an independent copy of this EntityState */
   public clone(iModel?: IModelConnection): this { return new (this.constructor as typeof EntityState)(this.toJSON(), iModel ? iModel : this.iModel, this) as this; }
 
-  /** Get full class name of this Entity in the form "SchemaName:ClassName".
-   * @note Subclasses from other than the BisCore domain should override their static member "schemaName" with their schema name.
-   */
+  /** Get full BIS class name of this Entity in the form "SchemaName:ClassName".  */
   public static get classFullName(): string { return this.schemaName + ":" + this.className; }
 }
 
@@ -59,12 +63,13 @@ export class EntityState implements EntityProps {
  * @public
  */
 export class ElementState extends EntityState implements ElementProps {
+  public static get className() { return "Element"; }
+
   public readonly model: Id64String;
   public readonly code: Code;
   public readonly parent?: RelatedElement;
   public readonly federationGuid?: GuidString;
   public readonly userLabel?: string;
-  public static get className() { return "Element"; }
 
   constructor(props: ElementProps, iModel: IModelConnection) {
     super(props, iModel);

@@ -14,6 +14,7 @@ import { IModelDb } from "./IModelDb";
  * @public
  */
 export class ElementAspect extends Entity implements ElementAspectProps {
+  public static get className(): string { return "ElementAspect"; }
   public element: RelatedElement;
 
   /** @internal */
@@ -34,10 +35,12 @@ export class ElementAspect extends Entity implements ElementAspectProps {
  * @public
  */
 export class ElementUniqueAspect extends ElementAspect {
+  public static get className(): string { return "ElementUniqueAspect"; }
 }
 
 /** An Element Multi-Aspect is an ElementAspect where there can be **n** instances of the Element Aspect class per Element.
  * @public
  */
 export class ElementMultiAspect extends ElementAspect {
+  public static get className(): string { return "ElementMultiAspect"; }
 }

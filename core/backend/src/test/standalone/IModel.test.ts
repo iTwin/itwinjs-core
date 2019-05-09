@@ -37,10 +37,10 @@ import {
 import { assert, expect } from "chai";
 import * as path from "path";
 import {
-  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCore, Category, ClassRegistry, DefinitionPartition,
+  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionPartition,
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
-  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterial, SpatialCategory, SqliteStatement, SqliteValue,
+  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
@@ -221,12 +221,12 @@ describe("iModel", () => {
   });
 
   it("should use schema to look up classes by name", () => {
-    const elementClass = BisCore.getClass(Element.name, imodel1);
-    const categoryClass = BisCore.getClass(Category.name, imodel1);
+    const elementClass = BisCoreSchema.getClass(Element.className, imodel1);
+    const categoryClass = BisCoreSchema.getClass(Category.className, imodel1);
     assert.isDefined(elementClass);
     assert.isDefined(categoryClass);
-    assert.equal(elementClass!.name, "Element");
-    assert.equal(categoryClass!.name, "Category");
+    assert.equal(elementClass!.className, "Element");
+    assert.equal(categoryClass!.className, "Category");
   });
 
   it("FontMap", () => {
@@ -395,7 +395,7 @@ describe("iModel", () => {
       TextureId: "test_textureid",
     };
 
-    const renderMaterialParams = new RenderMaterial.Params(testPaletteName);
+    const renderMaterialParams = new RenderMaterialElement.Params(testPaletteName);
     renderMaterialParams.description = testDescription;
     renderMaterialParams.color = color;
     renderMaterialParams.specularColor = specularColor;
@@ -406,10 +406,10 @@ describe("iModel", () => {
     renderMaterialParams.reflect = reflect;
     renderMaterialParams.reflectColor = reflectColor;
     renderMaterialParams.patternMap = textureMapProps;
-    const renderMaterialId = RenderMaterial.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
+    const renderMaterialId = RenderMaterialElement.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
 
-    const renderMaterial = imodel2.elements.getElement<RenderMaterial>(renderMaterialId);
-    assert((renderMaterial instanceof RenderMaterial) === true, "did not retrieve an instance of RenderMaterial");
+    const renderMaterial = imodel2.elements.getElement<RenderMaterialElement>(renderMaterialId);
+    assert((renderMaterial instanceof RenderMaterialElement) === true, "did not retrieve an instance of RenderMaterial");
     expect(renderMaterial.paletteName).to.equal(testPaletteName);
     expect(renderMaterial.description).to.equal(testDescription);
     expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasBaseColor).to.equal(true);
@@ -458,7 +458,7 @@ describe("iModel", () => {
 
     const texId = Texture.insert(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
 
-    const matId = RenderMaterial.insert(imodel5, IModel.dictionaryId, "test material name",
+    const matId = RenderMaterialElement.insert(imodel5, IModel.dictionaryId, "test material name",
       {
         paletteName: "TestPaletteName",
         patternMap: {
@@ -470,8 +470,8 @@ describe("iModel", () => {
       });
 
     /** Create a simple flat mesh with 4 points (2x2) */
-    const width = imodel5.projectExtents.xLength () * 0.2;
-    const height = imodel5.projectExtents.yLength () * 0.2;
+    const width = imodel5.projectExtents.xLength() * 0.2;
+    const height = imodel5.projectExtents.yLength() * 0.2;
     let shape: GeometryQuery;
     const doPolyface = true;
     if (doPolyface) {
@@ -748,7 +748,7 @@ describe("iModel", () => {
     for (const drawingGraphicRow of drawingGraphicRows!) {
       const drawingGraphic = imodel2.elements.getElement({ id: drawingGraphicRow.id, wantGeometry: true });
       assert.exists(drawingGraphic);
-      assert.isTrue(drawingGraphic.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
+      assert.isTrue(drawingGraphic.className === "DrawingGraphic", "Should be instance of DrawingGraphic");
       assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
       if (Id64.getLocalId(drawingGraphic.id) === 0x25) {
         assert.isTrue(drawingGraphic.placement.origin.x === 0.0);
@@ -828,23 +828,23 @@ describe("iModel", () => {
       const modeledElement = imodel2.elements.getElement(modelId);
       assert.exists(modeledElement, "Modeled Element should exist");
 
-      if (model.constructor.name === "LinkModel") {
+      if (model.className === "LinkModel") {
         // expect LinkModel to be accompanied by LinkPartition
         assert.isTrue(modeledElement instanceof LinkPartition);
         continue;
-      } else if (model.constructor.name === "DictionaryModel") {
+      } else if (model.className === "DictionaryModel") {
         assert.isTrue(modeledElement instanceof DefinitionPartition);
         continue;
-      } else if (model.constructor.name === "PhysicalModel") {
+      } else if (model.className === "PhysicalModel") {
         assert.isTrue(modeledElement instanceof PhysicalPartition);
         continue;
-      } else if (model.constructor.name === "GroupModel") {
+      } else if (model.className === "GroupModel") {
         assert.isTrue(modeledElement instanceof GroupInformationPartition);
         continue;
-      } else if (model.constructor.name === "DocumentListModel") {
+      } else if (model.className === "DocumentListModel") {
         assert.isTrue(modeledElement instanceof DocumentPartition);
         continue;
-      } else if (model.constructor.name === "DefinitionModel") {
+      } else if (model.className === "DefinitionModel") {
         assert.isTrue(modeledElement instanceof DefinitionPartition);
         continue;
       } else {

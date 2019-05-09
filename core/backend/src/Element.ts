@@ -35,6 +35,8 @@ import {
  * @public
  */
 export class Element extends Entity implements ElementProps {
+  public static get className(): string { return "Element"; }
+
   /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
   /** The [Code]($docs/bis/intro/codes.md) for this element */
@@ -144,6 +146,7 @@ export class Element extends Entity implements ElementProps {
  * @public
  */
 export abstract class GeometricElement extends Element implements GeometricElementProps {
+  public static get className(): string { return "GeometricElement"; }
   /** The Id of the [[Category]] for this GeometricElement. */
   public category: Id64String;
   /** The GeometryStream for this GeometricElement. */
@@ -179,6 +182,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
  * @public
  */
 export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
+  public static get className(): string { return "GeometricElement3d"; }
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
 
@@ -204,6 +208,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
  * @public
  */
 export abstract class GraphicalElement3d extends GeometricElement3d {
+  public static get className(): string { return "GraphicalElement3d"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -212,6 +217,7 @@ export abstract class GraphicalElement3d extends GeometricElement3d {
  * @public
  */
 export abstract class GeometricElement2d extends GeometricElement implements GeometricElement2dProps {
+  public static get className(): string { return "GeometricElement2d"; }
   public placement: Placement2d;
   public typeDefinition?: TypeDefinition;
 
@@ -237,6 +243,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
  * @public
  */
 export abstract class GraphicalElement2d extends GeometricElement2d {
+  public static get className(): string { return "GraphicalElement2d"; }
   /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -245,6 +252,7 @@ export abstract class GraphicalElement2d extends GeometricElement2d {
  * @public
  */
 export class AnnotationElement2d extends GraphicalElement2d {
+  public static get className(): string { return "AnnotationElement2d"; }
   /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -253,6 +261,7 @@ export class AnnotationElement2d extends GraphicalElement2d {
  * @public
  */
 export class DrawingGraphic extends GraphicalElement2d {
+  public static get className(): string { return "DrawingGraphic"; }
   /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -261,6 +270,7 @@ export class DrawingGraphic extends GraphicalElement2d {
  * @public
  */
 export class TextAnnotation2d extends AnnotationElement2d {
+  public static get className(): string { return "TextAnnotation2d"; }
   /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -269,6 +279,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
  * @public
  */
 export class TextAnnotation3d extends GraphicalElement3d {
+  public static get className(): string { return "TextAnnotation3d"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -277,6 +288,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
  * @public
  */
 export abstract class SpatialElement extends GeometricElement3d {
+  public static get className(): string { return "SpatialElement"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -285,6 +297,7 @@ export abstract class SpatialElement extends GeometricElement3d {
  * @public
  */
 export abstract class PhysicalElement extends SpatialElement {
+  public static get className(): string { return "PhysicalElement"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -293,6 +306,7 @@ export abstract class PhysicalElement extends SpatialElement {
  * @public
  */
 export abstract class SpatialLocationElement extends SpatialElement {
+  public static get className(): string { return "SpatialLocationElement"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -301,6 +315,7 @@ export abstract class SpatialLocationElement extends SpatialElement {
  * @public
  */
 export class VolumeElement extends SpatialLocationElement {
+  public static get className(): string { return "VolumeElement"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -311,6 +326,7 @@ export class VolumeElement extends SpatialLocationElement {
  * @public
  */
 export abstract class InformationContentElement extends Element {
+  public static get className(): string { return "InformationContentElement"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -320,6 +336,7 @@ export abstract class InformationContentElement extends Element {
  * @beta
  */
 export abstract class DriverBundleElement extends InformationContentElement {
+  public static get className(): string { return "DriverBundleElement"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -328,6 +345,7 @@ export abstract class DriverBundleElement extends InformationContentElement {
  * @public
  */
 export abstract class InformationReferenceElement extends InformationContentElement {
+  public static get className(): string { return "InformationReferenceElement"; }
   /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -337,6 +355,7 @@ export abstract class InformationReferenceElement extends InformationContentElem
  * @public
  */
 export class Subject extends InformationReferenceElement implements SubjectProps {
+  public static get className(): string { return "Subject"; }
   public description?: string;
   /** @internal */
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
@@ -389,6 +408,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
  * @public
  */
 export abstract class Document extends InformationContentElement {
+  public static get className(): string { return "Document"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -397,6 +417,7 @@ export abstract class Document extends InformationContentElement {
  * @public
  */
 export class Drawing extends Document {
+  public static get className(): string { return "Drawing"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -437,6 +458,7 @@ export class Drawing extends Document {
  * @public
  */
 export class SectionDrawing extends Drawing {
+  public static get className(): string { return "SectionDrawing"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -445,6 +467,7 @@ export class SectionDrawing extends Drawing {
  * @public
  */
 export class SheetBorderTemplate extends Document implements SheetBorderTemplateProps {
+  public static get className(): string { return "SheetBorderTemplate"; }
   public height?: number;
   public width?: number;
   /** @internal */
@@ -455,6 +478,7 @@ export class SheetBorderTemplate extends Document implements SheetBorderTemplate
  * @public
  */
 export class SheetTemplate extends Document implements SheetTemplateProps {
+  public static get className(): string { return "SheetTemplate"; }
   public height?: number;
   public width?: number;
   public border?: Id64String;
@@ -466,6 +490,7 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
  * @public
  */
 export class Sheet extends Document implements SheetProps {
+  public static get className(): string { return "Sheet"; }
   public height: number;
   public width: number;
   public scale?: number;
@@ -496,6 +521,7 @@ export class Sheet extends Document implements SheetProps {
  * @internal
  */
 export abstract class InformationCarrierElement extends Element {
+  public static get className(): string { return "InformationCarrierElement"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -505,6 +531,7 @@ export abstract class InformationCarrierElement extends Element {
  * @internal
  */
 export abstract class DocumentCarrier extends InformationCarrierElement {
+  public static get className(): string { return "DocumentCarrier"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -514,6 +541,7 @@ export abstract class DocumentCarrier extends InformationCarrierElement {
  * @public
  */
 export abstract class InformationRecordElement extends InformationContentElement {
+  public static get className(): string { return "InformationRecordElement"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -522,6 +550,7 @@ export abstract class InformationRecordElement extends InformationContentElement
  * @public
  */
 export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
+  public static get className(): string { return "DefinitionElement"; }
   /** If true, don't show this DefinitionElement in user interface lists. */
   public isPrivate: boolean;
   /** @internal */
@@ -538,6 +567,7 @@ export abstract class DefinitionElement extends InformationContentElement implem
  * @public
  */
 export abstract class TypeDefinitionElement extends DefinitionElement implements TypeDefinitionElementProps {
+  public static get className(): string { return "TypeDefinitionElement"; }
   public recipe?: RelatedElement;
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
@@ -547,6 +577,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
  * @internal
  */
 export abstract class RecipeDefinitionElement extends DefinitionElement {
+  public static get className(): string { return "RecipeDefinitionElement"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -557,6 +588,7 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
  * @public
  */
 export abstract class PhysicalType extends TypeDefinitionElement {
+  public static get className(): string { return "PhysicalType"; }
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -575,6 +607,7 @@ export abstract class PhysicalType extends TypeDefinitionElement {
  * @public
  */
 export abstract class SpatialLocationType extends TypeDefinitionElement {
+  public static get className(): string { return "SpatialLocationType"; }
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -593,6 +626,7 @@ export abstract class SpatialLocationType extends TypeDefinitionElement {
  * @internal
  */
 export class TemplateRecipe3d extends RecipeDefinitionElement {
+  public static get className(): string { return "TemplateRecipe3d"; }
   /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -601,6 +635,7 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
  * @public
  */
 export abstract class GraphicalType2d extends TypeDefinitionElement {
+  public static get className(): string { return "GraphicalType2d"; }
   /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -619,6 +654,7 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
  * @internal
  */
 export class TemplateRecipe2d extends RecipeDefinitionElement {
+  public static get className(): string { return "TemplateRecipe2d"; }
   /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -629,6 +665,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
  * @public
  */
 export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
+  public static get className(): string { return "InformationPartitionElement"; }
   public description?: string;
   /** @internal */
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
@@ -646,6 +683,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
  * @public
  */
 export class DefinitionPartition extends InformationPartitionElement {
+  public static get className(): string { return "DefinitionPartition"; }
 }
 
 /** A Document Partition element indicates that there is a document-related modeling perspective within
@@ -653,6 +691,7 @@ export class DefinitionPartition extends InformationPartitionElement {
  * @public
  */
 export class DocumentPartition extends InformationPartitionElement {
+  public static get className(): string { return "DocumentPartition"; }
 }
 
 /** A Group Information Partition element indicates that there is a group-information-related modeling perspective
@@ -661,6 +700,7 @@ export class DocumentPartition extends InformationPartitionElement {
  * @public
  */
 export class GroupInformationPartition extends InformationPartitionElement {
+  public static get className(): string { return "GroupInformationPartition"; }
 }
 
 /** A Information Record Partition element indicates that there is an information-record-related modeling
@@ -669,6 +709,7 @@ export class GroupInformationPartition extends InformationPartitionElement {
  * @public
  */
 export class InformationRecordPartition extends InformationPartitionElement {
+  public static get className(): string { return "InformationRecordPartition"; }
 }
 
 /** A Link Partition element indicates that there is a link-related modeling perspective within the overall
@@ -676,6 +717,7 @@ export class InformationRecordPartition extends InformationPartitionElement {
  * @public
  */
 export class LinkPartition extends InformationPartitionElement {
+  public static get className(): string { return "LinkPartition"; }
 }
 
 /** A Physical Partition element indicates that there is a physical modeling perspective within the overall
@@ -683,6 +725,7 @@ export class LinkPartition extends InformationPartitionElement {
  * @public
  */
 export class PhysicalPartition extends InformationPartitionElement {
+  public static get className(): string { return "PhysicalPartition"; }
 }
 
 /** A Spatial Location Partition element indicates that there is a spatial-location-related modeling perspective
@@ -691,6 +734,7 @@ export class PhysicalPartition extends InformationPartitionElement {
  * @public
  */
 export class SpatialLocationPartition extends InformationPartitionElement {
+  public static get className(): string { return "SpatialLocationPartition"; }
 }
 
 /** Group Information is an abstract base class for modeling entities whose main purpose is to reference
@@ -698,12 +742,14 @@ export class SpatialLocationPartition extends InformationPartitionElement {
  * @public
  */
 export abstract class GroupInformationElement extends InformationReferenceElement {
+  public static get className(): string { return "GroupInformationElement"; }
 }
 
 /** An information element that specifies a link.
  * @public
  */
 export abstract class LinkElement extends InformationReferenceElement {
+  public static get className(): string { return "LinkElement"; }
   /** Create a Code for a LinkElement given a name that is meant to be unique within the scope of the specified Model.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the Model that contains the LinkElement and provides the scope for its name.
@@ -719,18 +765,21 @@ export abstract class LinkElement extends InformationReferenceElement {
  * @public
  */
 export class UrlLink extends LinkElement {
+  public static get className(): string { return "UrlLink"; }
 }
 
 /** An information element that links to an embedded file.
  * @public
  */
 export class EmbeddedFileLink extends LinkElement {
+  public static get className(): string { return "EmbeddedFileLink"; }
 }
 
 /** An information element that links to a repository.
  * @public
  */
 export class RepositoryLink extends UrlLink {
+  public static get className(): string { return "RepositoryLink"; }
 }
 
 /** A real world entity is modeled as a Role Element when a set of external circumstances define an important
@@ -739,6 +788,7 @@ export class RepositoryLink extends UrlLink {
  * @public
  */
 export abstract class RoleElement extends Element {
+  public static get className(): string { return "RoleElement"; }
 }
 
 /** A Definition Element that specifies a collection of geometry that is meant to be reused across Geometric
@@ -746,6 +796,7 @@ export abstract class RoleElement extends Element {
  * @public
  */
 export class GeometryPart extends DefinitionElement implements GeometryPartProps {
+  public static get className(): string { return "GeometryPart"; }
   public geom?: GeometryStreamProps;
   public bbox: ElementAlignedBox3d;
   /** @internal */
@@ -779,6 +830,7 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
  * @public
  */
 export class LineStyle extends DefinitionElement implements LineStyleProps {
+  public static get className(): string { return "LineStyle"; }
   public description?: string;
   public data!: string;
   /** @internal */

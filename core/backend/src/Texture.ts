@@ -13,6 +13,7 @@ import { IModelDb } from "./IModelDb";
  * @public
  */
 export class Texture extends DefinitionElement implements TextureProps {
+  public static get className(): string { return "Texture"; }
   public format: ImageSourceFormat;
   public data: string;
   public width: number;

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "remove requirement that JavaScript classnames match BIS classnames",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "keith.bentley@bentley.com"
+}

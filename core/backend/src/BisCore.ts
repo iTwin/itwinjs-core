@@ -27,19 +27,16 @@ import * as materialMod from "./Material";
  * ```
  * @public
  */
-export class BisCore extends Schema {
-  /**
-   * Call this method to register the BisCore schema prior to using it.
-   * @note This method is called automatically by [[IModelHost.startup]], so it is rarely necessary to call it directly
-   */
-  public static registerSchema() {
-    if (!Schemas.getRegisteredSchema(BisCore.name))
-      Schemas.registerSchema(new BisCore());
-  }
+export class BisCoreSchema extends Schema {
+  public static get schemaName(): string { return "BisCore"; }
 
-  // Registers all classes of the BisCore schema.
-  private constructor() {
-    super();
+  /** @internal */
+  public static registerSchema() {
+    if (this === Schemas.getRegisteredSchema(this.schemaName))
+      return;
+
+    Schemas.unregisterSchema(this.schemaName);
+    Schemas.registerSchema(this);
     // this list should include all backend .ts files with implementations of Entity-based classes. Order does not matter.
     ClassRegistry.registerModule(elementMod, this);
     ClassRegistry.registerModule(aspectMod, this);

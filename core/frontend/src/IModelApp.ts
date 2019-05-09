@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
-import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import {
   AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
   SettingsAdmin, IAuthorizationClient, IncludePrefix,
@@ -39,6 +39,7 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 
 declare var BUILD_SEMVER: string;
 
@@ -183,7 +184,8 @@ export class IModelApp {
   public static registerEntityState(classFullName: string, classType: typeof EntityState) {
     const lowerName = classFullName.toLowerCase();
     if (this._entityClasses.has(lowerName))
-      throw new Error("Class " + classFullName + " is already registered. Make sure static schemaName and className members are correct on class " + classType.name);
+      throw new IModelError(IModelStatus.DuplicateName, "Class " + classFullName + " is already registered. Make sure static schemaName and className members are correct on class " + classType.name,
+        Logger.logWarning, FrontendLoggerCategory.IModelConnection);
 
     this._entityClasses.set(lowerName, classType);
   }
