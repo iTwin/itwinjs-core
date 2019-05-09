@@ -527,24 +527,6 @@ async function signIn(): Promise<boolean> {
   return true;
 }
 
-// Retrieves the configuration for which project and imodel to open from connect-configuration.json file located in the built public folder
-async function retrieveProjectConfiguration(): Promise<void> {
-  return new Promise<void>((resolve, _reject) => {
-    const request: XMLHttpRequest = new XMLHttpRequest();
-    request.open("GET", "connect-configuration.json", false);
-    request.setRequestHeader("Cache-Control", "no-cache");
-    request.onreadystatechange = ((_event: Event) => {
-      if (request.readyState === XMLHttpRequest.DONE) {
-        if (request.status === 200) {
-          activeViewState.projectConfig = JSON.parse(request.responseText);
-          resolve();
-        }
-      }
-    });
-    request.send();
-  });
-}
-
 async function loadIModel(testConfig: DefaultConfigs) {
   activeViewState = new SimpleViewState();
   activeViewState.viewState;
@@ -569,7 +551,6 @@ async function loadIModel(testConfig: DefaultConfigs) {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
-    await retrieveProjectConfiguration();
     activeViewState.projectConfig!.projectName = testConfig.iModelHubProject;
     activeViewState.projectConfig!.iModelName = testConfig.iModelName!.replace(".ibim", "").replace(".bim", "");
     activeViewState.project = await initializeIModelHub(activeViewState.projectConfig!.projectName);

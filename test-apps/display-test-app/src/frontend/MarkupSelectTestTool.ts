@@ -6,10 +6,12 @@
 import { EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
 import { SelectTool } from "@bentley/imodeljs-markup";
 
-function getSvgFile(uri: string) {
+async function getSvgFile(uri: string): Promise<string> {
   const xhr = new XMLHttpRequest();
-  xhr.open("GET", uri, false);
+  xhr.open("GET", uri);
+  const loaded = new Promise((resolve) => xhr.addEventListener("load", resolve));
   xhr.send();
+  await loaded;
   return xhr.responseText;
 }
 
@@ -53,13 +55,13 @@ export class MarkupSelectTestTool extends SelectTool {
         tools.run("Markup.Text.Place");
         return EventHandled.Yes;
       case "1":
-        const symbol1 = getSvgFile("Warning_sign.svg");
+        const symbol1 = await getSvgFile("Warning_sign.svg");
         if (undefined === symbol1)
           return EventHandled.No;
         tools.run("Markup.Symbol", symbol1);
         return EventHandled.Yes;
       case "2":
-        const symbol2 = getSvgFile("window-area.svg");
+        const symbol2 = await getSvgFile("window-area.svg");
         if (undefined === symbol2)
           return EventHandled.No;
         tools.run("Markup.Symbol", symbol2, true);

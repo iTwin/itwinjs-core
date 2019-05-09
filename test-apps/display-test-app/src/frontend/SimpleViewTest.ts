@@ -46,7 +46,7 @@ async function retrieveConfiguration(): Promise<void> {
       resolve();
     } else {
       const request: XMLHttpRequest = new XMLHttpRequest();
-      request.open("GET", "configuration.json", false);
+      request.open("GET", "configuration.json");
       request.setRequestHeader("Cache-Control", "no-cache");
       request.onreadystatechange = ((_event: Event) => {
         if (request.readyState === XMLHttpRequest.DONE) {

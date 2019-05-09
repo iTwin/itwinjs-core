@@ -5,24 +5,6 @@
 
 import * as fs from "fs";
 
-// const fs = require('fs');
-
-export function readCsvFile(file: string) {
-  const rawFile = new XMLHttpRequest();
-  rawFile.open("GET", file, false);
-  rawFile.onreadystatechange = () => {
-    if (rawFile.readyState === 4) {
-      if (rawFile.status === 200 || rawFile.status === 0) {
-        // const allText = rawFile.responseText;
-        // var allRows = data.split(/\r?\n|\r/);
-        // debugPrint("READ FILE:\n" + allText);
-        // alert(allText);
-      }
-    }
-  };
-  rawFile.send(undefined);
-}
-
 export function createFilePath(filePath: string) {
   const files = filePath.split(/\/|\\/); // /\.[^/.]+$/ // /\/[^\/]+$/
   let curFile = "";
