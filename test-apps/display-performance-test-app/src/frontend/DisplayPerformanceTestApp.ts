@@ -838,6 +838,7 @@ window.onload = () => {
   const configuration = {} as SVTConfiguration;
 
   // Choose RpcConfiguration based on whether we are in electron or browser
+  RpcConfiguration.developmentMode = true;
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
     rpcConfiguration = ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
