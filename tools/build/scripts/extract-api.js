@@ -53,6 +53,10 @@ const config = {
       "ae-internal-missing-underscore": {
         addToApiReportFile: false,
         logLevel: "none"
+      },
+      "ae-forgotten-export": {
+        addToApiReportFile: false,
+        logLevel: "none"
       }
     }
   }

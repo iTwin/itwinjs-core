@@ -886,8 +886,6 @@ export namespace Attachments {
         abstract readonly is3dAttachment: boolean;
         // (undocumented)
         readonly priority: Tile.LoadPriority;
-        // Warning: (ae-forgotten-export) The symbol "TileRequest" needs to be exported by the entry point imodeljs-frontend.d.ts
-        // 
         // (undocumented)
         requestTileContent(_tile: Tile): Promise<TileRequest.Response>;
         // (undocumented)
@@ -1419,8 +1417,6 @@ export class Clips {
     readonly isValid: boolean;
     // (undocumented)
     set(numPlanes: number, texture: TextureHandle): void;
-    // Warning: (ae-forgotten-export) The symbol "TextureHandle" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly texture: TextureHandle | undefined;
     }
@@ -1773,8 +1769,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     addContextRealityModel(contextRealityModel: ContextRealityModelProps, iModel: IModelConnection): void;
     analysisStyle: AnalysisStyle | undefined;
     backgroundColor: ColorDef;
-    // Warning: (ae-forgotten-export) The symbol "BackgroundMapState" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // @internal (undocumented)
     readonly backgroundMap: BackgroundMapState;
     // @internal (undocumented)
@@ -1800,8 +1794,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     removeContextRealityModel(index: number): void;
-    // Warning: (ae-forgotten-export) The symbol "RenderScheduleState" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // @internal (undocumented)
     readonly scheduleScript: RenderScheduleState.Script | undefined;
     setBackgroundMap(mapProps: BackgroundMapProps): void;
@@ -2521,8 +2513,6 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     loadClassifierTileTree(type: BatchType.PlanarClassifier | BatchType.VolumeClassifier, expansion: number): TileTree.LoadStatus;
     // @internal (undocumented)
     loadStatus: TileTree.LoadStatus;
-    // Warning: (ae-forgotten-export) The symbol "IModelTile" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // @internal (undocumented)
     loadTileTree(treeId: IModelTile.TreeId): TileTree.LoadStatus;
     // @internal (undocumented)
@@ -3423,8 +3413,6 @@ export class MeasureDistanceTool extends PrimitiveTool {
     static toolId: string;
     // (undocumented)
     protected _totalDistance: number;
-    // Warning: (ae-forgotten-export) The symbol "MeasureLabel" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     protected _totalDistanceMarker?: MeasureLabel;
     // (undocumented)
@@ -3563,8 +3551,6 @@ export namespace MockRender {
         // (undocumented)
         readonly transform: Transform;
     }
-    // Warning: (ae-forgotten-export) The symbol "PrimitiveBuilder" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     export class Builder extends PrimitiveBuilder {
         constructor(system: System, placement: Transform | undefined, type: GraphicType, viewport: Viewport, pickId?: Id64String);
@@ -3612,22 +3598,14 @@ export namespace MockRender {
         createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): Builder;
         // (undocumented)
         createGraphicList(primitives: RenderGraphic[]): List;
-        // Warning: (ae-forgotten-export) The symbol "MeshParams" needs to be exported by the entry point imodeljs-frontend.d.ts
-        // 
         // (undocumented)
         createMesh(_params: MeshParams): Graphic;
         // (undocumented)
         createOffscreenTarget(rect: ViewRect): RenderTarget;
-        // Warning: (ae-forgotten-export) The symbol "PointCloudArgs" needs to be exported by the entry point imodeljs-frontend.d.ts
-        // 
         // (undocumented)
         createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): Graphic;
-        // Warning: (ae-forgotten-export) The symbol "PointStringParams" needs to be exported by the entry point imodeljs-frontend.d.ts
-        // 
         // (undocumented)
         createPointString(_params: PointStringParams): Graphic;
-        // Warning: (ae-forgotten-export) The symbol "PolylineParams" needs to be exported by the entry point imodeljs-frontend.d.ts
-        // 
         // (undocumented)
         createPolyline(_params: PolylineParams): Graphic;
         // (undocumented)
@@ -4160,8 +4138,6 @@ export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
 
 // @internal
 export class PlanarClassifiers {
-    // Warning: (ae-forgotten-export) The symbol "PlanarClassifier" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly classifier: PlanarClassifier | undefined;
     // (undocumented)
@@ -4364,8 +4340,6 @@ export class QuantityFormatter implements UnitsProvider {
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
     findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
-    // Warning: (ae-forgotten-export) The symbol "UnitDefinition" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     protected findUnitDefinition(name: string): UnitDefinition | undefined;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
@@ -4725,8 +4699,6 @@ export abstract class RenderSystem implements IDisposable {
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
     abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
-    // Warning: (ae-forgotten-export) The symbol "PolylineArgs" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // @internal (undocumented)
     createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
     createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined;
@@ -4756,8 +4728,6 @@ export abstract class RenderSystem implements IDisposable {
     createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
     // @internal (undocumented)
     createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined;
-    // Warning: (ae-forgotten-export) The symbol "MeshArgs" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // @internal (undocumented)
     createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -5698,18 +5668,12 @@ export abstract class Target extends RenderTarget {
     animationBranches: AnimationBranchStates | undefined;
     // (undocumented)
     protected abstract _assignDC(): boolean;
-    // Warning: (ae-forgotten-export) The symbol "BatchState" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly batchState: BatchState;
     // (undocumented)
     protected abstract _beginPaint(): void;
-    // Warning: (ae-forgotten-export) The symbol "FloatRgba" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly bgColor: FloatRgba;
-    // Warning: (ae-forgotten-export) The symbol "BranchStack" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly branchStack: BranchStack;
     // (undocumented)
@@ -5730,8 +5694,6 @@ export abstract class Target extends RenderTarget {
     changeScene(scene: GraphicList): void;
     // (undocumented)
     changeSolarShadowMap(solarShadowMap?: RenderSolarShadowMap): void;
-    // Warning: (ae-forgotten-export) The symbol "ClipDef" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly clipDef: ClipDef;
     // (undocumented)
@@ -5740,20 +5702,14 @@ export abstract class Target extends RenderTarget {
     readonly clips: Clips;
     // (undocumented)
     readonly compositor: SceneCompositor;
-    // Warning: (ae-forgotten-export) The symbol "SceneCompositor" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     protected _compositor: SceneCompositor;
     // (undocumented)
     readonly currentBatchId: number;
     // (undocumented)
     readonly currentFeatureSymbologyOverrides: FeatureSymbology.Overrides;
-    // Warning: (ae-forgotten-export) The symbol "FeatureOverrides" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     currentOverrides: FeatureOverrides | undefined;
-    // Warning: (ae-forgotten-export) The symbol "ShaderFlags" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly currentShaderFlags: ShaderFlags;
     // (undocumented)
@@ -5766,8 +5722,6 @@ export abstract class Target extends RenderTarget {
     protected debugPaint(): void;
     // (undocumented)
     protected _decorations?: Decorations;
-    // Warning: (ae-forgotten-export) The symbol "BranchState" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly decorationState: BranchState;
     // (undocumented)
@@ -5784,14 +5738,10 @@ export abstract class Target extends RenderTarget {
     drawSolarShadowMap(): void;
     // (undocumented)
     readonly dynamics: GraphicList | undefined;
-    // Warning: (ae-forgotten-export) The symbol "ColorInfo" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly edgeColor: ColorInfo;
     // (undocumented)
     protected abstract _endPaint(): void;
-    // Warning: (ae-forgotten-export) The symbol "FrameBuffer" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     protected _fbo?: FrameBuffer;
     // (undocumented)
@@ -5806,16 +5756,10 @@ export abstract class Target extends RenderTarget {
     readonly fStop: number;
     // (undocumented)
     getEdgeLineCode(params: ShaderProgramParams, baseCode: number): number;
-    // Warning: (ae-forgotten-export) The symbol "RenderPass" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     getEdgeOverrides(pass: RenderPass): EdgeOverrides | undefined;
-    // Warning: (ae-forgotten-export) The symbol "ShaderProgramParams" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     getEdgeWeight(params: ShaderProgramParams, baseWeight: number): number;
-    // Warning: (ae-forgotten-export) The symbol "Branch" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     getWorldDecorations(decs: GraphicList): Branch;
     // (undocumented)
@@ -5842,8 +5786,6 @@ export abstract class Target extends RenderTarget {
     readonly isEdgeWeightOverridden: boolean;
     // (undocumented)
     isFadeOutActive: boolean;
-    // Warning: (ae-forgotten-export) The symbol "CachedGeometry" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     isGeometryOutsideActiveVolume(geom: CachedGeometry): boolean;
     // (undocumented)
@@ -5882,12 +5824,8 @@ export abstract class Target extends RenderTarget {
     readonly projectionMatrix: Matrix4d;
     // (undocumented)
     pushActiveVolume(): void;
-    // Warning: (ae-forgotten-export) The symbol "Batch" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     pushBatch(batch: Batch): void;
-    // Warning: (ae-forgotten-export) The symbol "ShaderProgramExecutor" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     pushBranch(exec: ShaderProgramExecutor, branch: Branch): void;
     // (undocumented)
@@ -5912,24 +5850,16 @@ export abstract class Target extends RenderTarget {
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
     setHiliteSet(hilite: Set<string>): void;
-    // Warning: (ae-forgotten-export) The symbol "ShaderLights" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly shaderLights: ShaderLights | undefined;
-    // Warning: (ae-forgotten-export) The symbol "SolarShadowMap" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly solarShadowMap: SolarShadowMap | undefined;
-    // Warning: (ae-forgotten-export) The symbol "Techniques" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly techniques: Techniques;
     // (undocumented)
     readonly transparencyThreshold: number;
     // (undocumented)
     readonly viewMatrix: Transform;
-    // Warning: (ae-forgotten-export) The symbol "EdgeOverrides" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     readonly visibleEdgeOverrides: EdgeOverrides | undefined;
     // (undocumented)
@@ -6338,8 +6268,6 @@ export abstract class TileLoader {
     protected readonly _loadEdges: boolean;
     // (undocumented)
     loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
-    // Warning: (ae-forgotten-export) The symbol "TileIO" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // (undocumented)
     loadTileContentFromStream(tile: Tile, streamBuffer: TileIO.StreamBuffer, isCanceled?: () => boolean): Promise<Tile.Content>;
     // (undocumented)
@@ -7930,8 +7858,6 @@ export abstract class ViewState2d extends ViewState {
     saveForUndo(): ViewStateUndo;
     // (undocumented)
     setExtents(delta: Vector3d): void;
-    // Warning: (ae-forgotten-export) The symbol "ViewState2dUndo" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // @internal (undocumented)
     setFromUndo(val: ViewState2dUndo): void;
     // (undocumented)
@@ -8008,8 +7934,6 @@ export abstract class ViewState3d extends ViewState {
     setExtents(extents: XYAndZ): void;
     setEyePoint(pt: XYAndZ): void;
     setFocusDistance(dist: number): void;
-    // Warning: (ae-forgotten-export) The symbol "ViewState3dUndo" needs to be exported by the entry point imodeljs-frontend.d.ts
-    // 
     // @internal (undocumented)
     setFromUndo(val: ViewState3dUndo): void;
     setLensAngle(angle: Angle): void;
@@ -8179,11 +8103,6 @@ export class ZoomViewTool extends ViewManip {
     static toolId: string;
 }
 
-
-// Warnings were encountered during analysis:
-// 
-// src/tools/MeasureTool.ts:101:7 - (ae-forgotten-export) The symbol "MeasureMarker" needs to be exported by the entry point imodeljs-frontend.d.ts
-// src/tools/ViewTool.ts:102:80 - (ae-forgotten-export) The symbol "ViewManipPriority" needs to be exported by the entry point imodeljs-frontend.d.ts
 
 // (No @packageDocumentation comment for this package)
 

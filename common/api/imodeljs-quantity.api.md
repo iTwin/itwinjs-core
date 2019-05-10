@@ -247,7 +247,6 @@ export enum FractionalPrecision {
 // @alpha
 export class Parser {
     static parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps>;
-    // Warning: (ae-forgotten-export) The symbol "ParseToken" needs to be exported by the entry point imodeljs-quantity.d.ts
     static parseQuantitySpecification(quantitySpecification: string, format: Format): ParseToken[];
 }
 

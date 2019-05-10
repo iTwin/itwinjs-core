@@ -16,9 +16,6 @@ export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass 
 // @beta
 export type AnyDiagnostic = IDiagnostic<AnyECType, any[]>;
 
-// Warning: (ae-forgotten-export) The symbol "CustomAttributeContainerProps" needs to be exported by the entry point ecschema-metadata.d.ts
-// Warning: (ae-forgotten-export) The symbol "CustomAttribute" needs to be exported by the entry point ecschema-metadata.d.ts
-// 
 // @beta (undocumented)
 export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute;
 
@@ -89,8 +86,6 @@ export class Constant extends SchemaItem {
     protected _denominator: number;
     // (undocumented)
     deserialize(constantProps: ConstantProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "ConstantProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(constantProps: ConstantProps): void;
     // (undocumented)
@@ -202,8 +197,6 @@ export class CustomAttributeClass extends ECClass {
     protected _containerType?: CustomAttributeContainerType;
     // (undocumented)
     deserialize(customAttributeProps: CustomAttributeClassProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "CustomAttributeClassProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(customAttributeProps: CustomAttributeClassProps): void;
     // (undocumented)
@@ -551,14 +544,10 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty>;
     // (undocumented)
     protected createStructPropertySync(name: string, structType: string | StructClass): StructProperty;
-    // Warning: (ae-forgotten-export) The symbol "CustomAttributeSet" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     readonly customAttributes: CustomAttributeSet | undefined;
     // (undocumented)
     deserialize(classProps: ClassProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "ClassProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(classProps: ClassProps): void;
     getAllBaseClasses(): AsyncIterableIterator<ECClass>;
@@ -756,8 +745,6 @@ export class EntityClass extends ECClass {
     protected createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
     // (undocumented)
     protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
-    // Warning: (ae-forgotten-export) The symbol "EntityClassProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserialize(entityClassProps: EntityClassProps): Promise<void>;
     // (undocumented)
@@ -783,8 +770,6 @@ export class Enumeration extends SchemaItem {
     createEnumerator(name: string, value: string | number, label?: string, description?: string): AnyEnumerator;
     // (undocumented)
     deserialize(enumerationProps: EnumerationProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "EnumerationProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(enumerationProps: EnumerationProps): void;
     // (undocumented)
@@ -815,8 +800,6 @@ export class Enumeration extends SchemaItem {
     protected _type?: PrimitiveType.Integer | PrimitiveType.String;
 }
 
-// Warning: (ae-forgotten-export) The symbol "EnumerationArrayProperty_base" needs to be exported by the entry point ecschema-metadata.d.ts
-// 
 // @beta (undocumented)
 export class EnumerationArrayProperty extends EnumerationArrayProperty_base {
     constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration);
@@ -827,8 +810,6 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration);
     // (undocumented)
     deserialize(enumerationPropertyProps: EnumerationPropertyProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "EnumerationPropertyProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(enumerationPropertyProps: EnumerationPropertyProps): void;
     // (undocumented)
@@ -870,8 +851,6 @@ export class Format extends SchemaItem {
     protected _decimalSeparator: string;
     // (undocumented)
     deserialize(formatProps: FormatProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "FormatProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(formatProps: FormatProps): void;
     // Warning: (ae-incompatible-release-tags) The symbol "formatTraits" is marked as @beta, but its signature references "FormatTraits" which is marked as @internal
@@ -1062,8 +1041,6 @@ export class InvertedUnit extends SchemaItem {
     constructor(schema: Schema, name: string);
     // (undocumented)
     deserialize(invertedUnitProps: InvertedUnitProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "InvertedUnitProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(invertedUnitProps: InvertedUnitProps): void;
     // (undocumented)
@@ -1180,8 +1157,6 @@ export class KindOfQuantity extends SchemaItem {
     readonly defaultPresentationFormat: undefined | Format | OverrideFormat;
     // (undocumented)
     deserialize(kindOfQuantityProps: KindOfQuantityProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "KindOfQuantityProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(kindOfQuantityProps: KindOfQuantityProps): void;
     // (undocumented)
@@ -1283,8 +1258,6 @@ export class Mixin extends ECClass {
     protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
     // (undocumented)
     deserialize(mixinProps: MixinProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "MixinProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(mixinProps: MixinProps): void;
     // (undocumented)
@@ -1431,8 +1404,6 @@ export class Phenomenon extends SchemaItem {
     protected _definition: string;
     // (undocumented)
     deserialize(phenomenonProps: PhenomenonProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "PhenomenonProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(phenomenonProps: PhenomenonProps): void;
     // (undocumented)
@@ -1443,8 +1414,6 @@ export class Phenomenon extends SchemaItem {
     };
 }
 
-// Warning: (ae-forgotten-export) The symbol "PrimitiveArrayProperty_base" needs to be exported by the entry point ecschema-metadata.d.ts
-// 
 // @beta (undocumented)
 export class PrimitiveArrayProperty extends PrimitiveArrayProperty_base {
     constructor(ecClass: ECClass, name: string, primitiveType?: PrimitiveType);
@@ -1455,8 +1424,6 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     constructor(ecClass: ECClass, name: string, type: PropertyType);
     // (undocumented)
     deserialize(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "PrimitiveOrEnumPropertyBaseProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps): void;
     // (undocumented)
@@ -1488,8 +1455,6 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
     constructor(ecClass: ECClass, name: string, primitiveType?: PrimitiveType);
     // (undocumented)
     deserialize(primitivePropertyProps: PrimitivePropertyProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "PrimitivePropertyProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(primitivePropertyProps: PrimitivePropertyProps): void;
     // (undocumented)
@@ -1548,8 +1513,6 @@ export abstract class Property implements CustomAttributeContainerProps {
     protected _description?: string;
     // (undocumented)
     deserialize(propertyProps: PropertyProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "PropertyProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(propertyProps: PropertyProps): void;
     readonly fullName: string;
@@ -1599,8 +1562,6 @@ export class PropertyCategory extends SchemaItem {
     constructor(schema: Schema, name: string);
     // (undocumented)
     deserialize(propertyCategoryProps: PropertyCategoryProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "PropertyCategoryProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(propertyCategoryProps: PropertyCategoryProps): void;
     // (undocumented)
@@ -1712,8 +1673,6 @@ export class RelationshipClass extends ECClass {
     protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
     // (undocumented)
     deserialize(relationshipClassProps: RelationshipClassProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "RelationshipClassProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(relationshipClassProps: RelationshipClassProps): void;
     // (undocumented)
@@ -1761,8 +1720,6 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     readonly customAttributes: CustomAttributeSet | undefined;
     // (undocumented)
     deserialize(relationshipConstraintProps: RelationshipConstraintProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "RelationshipConstraintProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(relationshipConstraintProps: RelationshipConstraintProps): void;
     readonly fullName: "Source" | "Target";
@@ -1907,8 +1864,6 @@ export class Schema implements CustomAttributeContainerProps {
     protected _description?: string;
     // (undocumented)
     deserialize(schemaProps: SchemaProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "SchemaProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(schemaProps: SchemaProps): void;
     // (undocumented)
@@ -2028,8 +1983,6 @@ export abstract class SchemaItem {
     protected _description?: string;
     // (undocumented)
     deserialize(schemaItemProps: SchemaItemProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "SchemaItemProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(schemaItemProps: SchemaItemProps): void;
     static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItemOrKey?: SchemaItem | SchemaItemKey): boolean;
@@ -2225,7 +2178,6 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
     readonly diagnosticReporters: IDiagnosticReporter[];
     registerReporter(...reporters: IDiagnosticReporter[]): void;
     registerRuleSet(ruleSet: IRuleSet): void;
-    // Warning: (ae-forgotten-export) The symbol "RuleSetArray" needs to be exported by the entry point ecschema-metadata.d.ts
     readonly ruleSets: RuleSetArray;
     visitClass(ecClass: AnyClass): Promise<void>;
     visitConstant(constant: Constant): Promise<void>;
@@ -2316,8 +2268,6 @@ export enum StrengthType {
     Referencing = 0
 }
 
-// Warning: (ae-forgotten-export) The symbol "StructArrayProperty_base" needs to be exported by the entry point ecschema-metadata.d.ts
-// 
 // @beta (undocumented)
 export class StructArrayProperty extends StructArrayProperty_base {
     constructor(ecClass: ECClass, name: string, type: StructClass);
@@ -2335,8 +2285,6 @@ export class StructProperty extends Property {
     constructor(ecClass: ECClass, name: string, type: StructClass);
     // (undocumented)
     deserialize(structPropertyProps: StructPropertyProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "StructPropertyProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(structPropertyProps: StructPropertyProps): void;
     // (undocumented)
@@ -2368,8 +2316,6 @@ export class Unit extends SchemaItem {
     protected _denominator: number;
     // (undocumented)
     deserialize(unitProps: UnitProps): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "UnitProps" needs to be exported by the entry point ecschema-metadata.d.ts
-    // 
     // (undocumented)
     deserializeSync(unitProps: UnitProps): void;
     // (undocumented)

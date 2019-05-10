@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update the standard configuration for extract-api to turn off ae-forgotten-export warnings.",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Caleb.Shafer@bentley.com"
+}

@@ -376,7 +376,6 @@ export interface CodeUpdateOptions {
 // @public
 export class Config {
     static readonly App: Config;
-    // Warning: (ae-forgotten-export) The symbol "ValueType" needs to be exported by the entry point imodeljs-clients.d.ts
     get(varName: string, defaultVal?: ValueType): any;
     getBoolean(name: string, defaultVal?: boolean): boolean;
     getContainer(): any;
@@ -512,8 +511,6 @@ export class ECJsonTypeMap {
     static toJson<T extends ECInstance>(applicationKey: string, typedInstance: T): any | undefined;
 }
 
-// Warning: (ae-forgotten-export) The symbol "EventBaseHandler" needs to be exported by the entry point imodeljs-clients.d.ts
-// 
 // @public
 export class EventHandler extends EventBaseHandler {
     // @internal
@@ -526,8 +523,6 @@ export class EventHandler extends EventBaseHandler {
     readonly subscriptions: EventSubscriptionHandler;
 }
 
-// Warning: (ae-forgotten-export) The symbol "BaseEventSAS" needs to be exported by the entry point imodeljs-clients.d.ts
-// 
 // @public
 export class EventSAS extends BaseEventSAS {
 }
@@ -778,8 +773,6 @@ export class IModelBankClient extends IModelClient {
     constructor(url: string, handler: FileHandler | undefined);
 }
 
-// Warning: (ae-forgotten-export) The symbol "ContextManagerClient" needs to be exported by the entry point imodeljs-clients.d.ts
-// 
 // @internal (undocumented)
 export class IModelBankFileSystemContextClient implements ContextManagerClient {
     constructor(baseUri: string);
@@ -817,7 +810,6 @@ export class IModelBaseHandler extends WsgClient {
     formatProjectIdForUrl(projectId: string): string;
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     getAgent(): any;
-    // Warning: (ae-forgotten-export) The symbol "CustomRequestOptions" needs to be exported by the entry point imodeljs-clients.d.ts
     getCustomRequestOptions(): CustomRequestOptions;
     // (undocumented)
     getFileHandler(): FileHandler | undefined;
@@ -953,8 +945,6 @@ export class IModelHubError extends WsgError {
     static shouldRetry(error: any, response: any): boolean;
 }
 
-// Warning: (ae-forgotten-export) The symbol "IModelHubBaseEvent" needs to be exported by the entry point imodeljs-clients.d.ts
-// 
 // @public
 export abstract class IModelHubEvent extends IModelHubBaseEvent {
     // @internal

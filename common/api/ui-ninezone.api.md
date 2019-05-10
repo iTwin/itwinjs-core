@@ -203,8 +203,6 @@ export class Css {
 
 // @internal
 export class CssProperties {
-    // Warning: (ae-forgotten-export) The symbol "React" needs to be exported by the entry point ui-ninezone.d.ts
-    // 
     // (undocumented)
     static fromBounds(props: RectangleProps): React_2.CSSProperties;
     // (undocumented)
@@ -363,8 +361,6 @@ export interface FooterIndicatorProps extends CommonProps {
     isInFooterMode?: boolean;
 }
 
-// Warning: (ae-forgotten-export) The symbol "FooterPopupState" needs to be exported by the entry point ui-ninezone.d.ts
-// 
 // @beta
 export class FooterPopup extends React.PureComponent<FooterPopupProps, FooterPopupState> {
     // (undocumented)
@@ -1361,8 +1357,6 @@ export class Root {
     size: SizeProps;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ScrollableState" needs to be exported by the entry point ui-ninezone.d.ts
-// 
 // @alpha
 export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableState> {
     // (undocumented)
@@ -1384,8 +1378,6 @@ export interface ScrollableProps extends ToolbarProps {
     visibleItemThreshold: number;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ScrollableToolSettingsState" needs to be exported by the entry point ui-ninezone.d.ts
-// 
 // @beta
 export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSettingsProps, ScrollableToolSettingsState> {
     // (undocumented)
@@ -1819,8 +1811,6 @@ export interface TitleProps extends CommonProps {
     children?: React.ReactNode;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ToastState" needs to be exported by the entry point ui-ninezone.d.ts
-// 
 // @alpha
 export class Toast extends React.PureComponent<ToastProps, ToastState> {
     constructor(props: ToastProps);
@@ -1981,8 +1971,6 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     render(): JSX.Element;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ToolSettingsPopupState" needs to be exported by the entry point ui-ninezone.d.ts
-// 
 // @beta
 export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps, ToolSettingsPopupState> {
     // (undocumented)

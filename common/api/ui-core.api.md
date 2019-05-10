@@ -167,8 +167,6 @@ export interface CommonProps extends ClassNameProps {
     style?: React.CSSProperties;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ContextMenuState" needs to be exported by the entry point ui-core.d.ts
-// 
 // @beta
 export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMenuState> {
     constructor(props: ContextMenuProps);
@@ -224,8 +222,6 @@ export class ContextMenuDivider extends React.PureComponent<CommonProps> {
     render(): JSX.Element;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ContextMenuItemState" needs to be exported by the entry point ui-core.d.ts
-// 
 // @beta
 export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, ContextMenuItemState> {
     constructor(props: ContextMenuItemProps);
@@ -277,8 +273,6 @@ export interface ContextMenuProps extends CommonProps {
     selectedIndex?: number;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ContextSubMenuState" needs to be exported by the entry point ui-core.d.ts
-// 
 // @beta
 export class ContextSubMenu extends React.Component<ContextSubMenuProps, ContextSubMenuState> {
     constructor(props: ContextSubMenuProps);
@@ -350,8 +344,6 @@ export enum DateFormat {
     Short = 1
 }
 
-// Warning: (ae-forgotten-export) The symbol "DialogState" needs to be exported by the entry point ui-core.d.ts
-// 
 // @beta
 export class Dialog extends React.Component<DialogProps, DialogState> {
     constructor(props: DialogProps);
@@ -506,8 +498,6 @@ export interface ExpandableBlockProps extends CommonProps {
     title: string;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ExpandableListState" needs to be exported by the entry point ui-core.d.ts
-// 
 // @public
 export class ExpandableList extends React.PureComponent<ExpandableListProps, ExpandableListState> {
     constructor(props: ExpandableListProps);
@@ -909,8 +899,6 @@ export class Point {
     y: number;
 }
 
-// Warning: (ae-forgotten-export) The symbol "PopupState" needs to be exported by the entry point ui-core.d.ts
-// 
 // @beta
 export class Popup extends React.Component<PopupProps, PopupState> {
     constructor(props: PopupProps);
@@ -962,8 +950,6 @@ export enum Position {
     TopRight = 1
 }
 
-// Warning: (ae-forgotten-export) The symbol "RadialButtonState" needs to be exported by the entry point ui-core.d.ts
-// 
 // @beta
 export class RadialButton extends React.Component<RadialButtonProps, RadialButtonState> {
     constructor(props: RadialButtonProps);
@@ -984,8 +970,6 @@ export interface RadialButtonProps extends CommonProps {
     selected?: boolean;
 }
 
-// Warning: (ae-forgotten-export) The symbol "RadialMenuState" needs to be exported by the entry point ui-core.d.ts
-// 
 // @beta
 export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState> {
     constructor(props: RadialMenuProps);
@@ -1030,8 +1014,6 @@ export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>,
 // @beta
 export const ScrollView: React.FunctionComponent<CommonDivProps>;
 
-// Warning: (ae-forgotten-export) The symbol "SearchBoxState" needs to be exported by the entry point ui-core.d.ts
-// 
 // @beta
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     constructor(props: SearchBoxProps);
@@ -1113,8 +1095,6 @@ export enum SpinnerSize {
     XLarge = 3
 }
 
-// Warning: (ae-forgotten-export) The symbol "SplitButtonState" needs to be exported by the entry point ui-core.d.ts
-// 
 // @beta
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
     constructor(props: SplitButtonProps);
@@ -1231,8 +1211,6 @@ export const Title: React.FunctionComponent<TextProps>;
 // @beta
 export const Title2: React.FunctionComponent<TextProps>;
 
-// Warning: (ae-forgotten-export) The symbol "ToggleState" needs to be exported by the entry point ui-core.d.ts
-// 
 // @beta
 export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
     constructor(props: ToggleProps);

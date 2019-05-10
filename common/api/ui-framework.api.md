@@ -142,14 +142,10 @@ export class ActiveContentChangedEvent extends UiEvent<ActiveContentChangedEvent
 export interface ActiveContentChangedEventArgs {
     // (undocumented)
     activeContent?: React.ReactNode;
-    // Warning: (ae-forgotten-export) The symbol "React" needs to be exported by the entry point ui-framework.d.ts
-    // 
     // (undocumented)
     oldContent?: React.ReactNode;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ActivityCenterState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class ActivityCenterField extends React_2.Component<StatusFieldProps, ActivityCenterState> {
     constructor(p: StatusFieldProps);
@@ -219,8 +215,6 @@ export class AppNotificationManager extends NotificationManager {
     protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
 }
 
-// Warning: (ae-forgotten-export) The symbol "BackstageState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class Backstage extends React_2.Component<BackstageProps, BackstageState> {
     constructor(props: BackstageProps);
@@ -320,8 +314,6 @@ export interface BooleanListenerProps {
     eventIds: string[];
 }
 
-// Warning: (ae-forgotten-export) The symbol "BooleanListenerState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class BooleanSyncUiListener extends React_2.Component<BooleanListenerProps, BooleanListenerState> {
     constructor(props: BooleanListenerProps);
@@ -673,8 +665,6 @@ export interface ContentGroupProps {
     id?: string;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ContentLayoutState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class ContentLayout extends React_2.Component<ContentLayoutComponentProps, ContentLayoutState> {
     constructor(props: ContentLayoutComponentProps);
@@ -819,7 +809,6 @@ export enum CubeHover {
     None = 0
 }
 
-// Warning: (ae-forgotten-export) The symbol "CubeNavigationAidState" needs to be exported by the entry point ui-framework.d.ts
 // Warning: (ae-incompatible-release-tags) The symbol "CubeNavigationAid" is marked as @public, but its signature references "CubeNavigationAidProps" which is marked as @internal
 // 
 // @public
@@ -1155,8 +1144,6 @@ export interface EachWidgetProps {
     tabs: WidgetTabProps[];
 }
 
-// Warning: (ae-forgotten-export) The symbol "ElementTooltipState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class ElementTooltip extends React_2.Component<CommonProps, ElementTooltipState> {
     constructor(props: CommonProps);
@@ -1196,8 +1183,6 @@ export interface ElementTooltipChangedEventArgs {
     pt?: XAndY;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ExpandableSectionState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @beta
 export class ExpandableSection extends React_2.PureComponent<ExpandableSectionProps, ExpandableSectionState> {
     constructor(props: ExpandableSectionProps);
@@ -1251,8 +1236,6 @@ export interface FrameworkState {
     sessionState: SessionState;
 }
 
-// Warning: (ae-forgotten-export) The symbol "FrameworkZoneState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @internal
 export class FrameworkZone extends React_2.Component<FrameworkZoneProps, FrameworkZoneState> {
     constructor(props: FrameworkZoneProps);
@@ -1298,8 +1281,6 @@ export interface FrameworkZoneProps extends CommonProps {
     zoneProps: ZonePropsBase;
 }
 
-// Warning: (ae-forgotten-export) The symbol "FrontstageState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class Frontstage extends React_2.Component<FrontstageProps, FrontstageState> {
     // @internal
@@ -1325,8 +1306,6 @@ export interface FrontstageActivatedEventArgs {
     deactivatedFrontstageDef?: FrontstageDef;
 }
 
-// Warning: (ae-forgotten-export) The symbol "FrontstageComposerState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class FrontstageComposer extends React_2.Component<CommonProps, FrontstageComposerState> implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider {
     constructor(props: CommonProps);
@@ -2045,8 +2024,6 @@ export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
     render(): JSX.Element;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ListPickerState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @beta
 export class ListPickerBase extends React_2.PureComponent<ListPickerProps, ListPickerState> {
     constructor(props: any);
@@ -2117,8 +2094,6 @@ export interface MessageAddedEventArgs {
     message: NotifyMessageDetails;
 }
 
-// Warning: (ae-forgotten-export) The symbol "MessageCenterState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class MessageCenterField extends React_2.Component<MessageCenterFieldProps, MessageCenterState> {
     constructor(p: MessageCenterFieldProps);
@@ -2256,9 +2231,6 @@ export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
     render(): React_2.ReactNode;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ModelSelectorWidgetProps" needs to be exported by the entry point ui-framework.d.ts
-// Warning: (ae-forgotten-export) The symbol "ModelSelectorWidgetState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @alpha
 export class ModelSelectorWidget extends React_2.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
     constructor(props: ModelSelectorWidgetProps);
@@ -2329,8 +2301,6 @@ export class NavigationAidControl extends ConfigurableUiControl {
     reactElement: React_2.ReactNode;
     }
 
-// Warning: (ae-forgotten-export) The symbol "NavigationWidgetState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class NavigationWidget extends React_2.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
     constructor(props: NavigationWidgetPropsEx);
@@ -2376,8 +2346,6 @@ export class NestedFrontstage {
     static readonly backToPreviousFrontstageCommand: CommandItemDef;
 }
 
-// Warning: (ae-forgotten-export) The symbol "PointerMessageState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class PointerMessage extends React_2.Component<PointerMessageProps, PointerMessageState> {
     // (undocumented)
@@ -2578,8 +2546,6 @@ export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
 // @beta
 export function SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): SessionState;
 
-// Warning: (ae-forgotten-export) The symbol "SheetCardState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @alpha
 export class SheetCard extends React_2.Component<SheetCardProps, SheetCardState> {
     constructor(props: SheetCardProps);
@@ -2609,8 +2575,6 @@ export interface SheetData {
     viewId: string;
 }
 
-// Warning: (ae-forgotten-export) The symbol "SheetNavigationState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @alpha
 export class SheetNavigationAid extends React_2.Component<SheetNavigationProps, SheetNavigationState> {
     constructor(props: SheetNavigationProps);
@@ -2804,8 +2768,6 @@ export enum StagePanelState {
     Popup = 3
 }
 
-// Warning: (ae-forgotten-export) The symbol "StandardMessageBoxState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class StandardMessageBox extends React_2.PureComponent<StandardMessageBoxProps, StandardMessageBoxState> {
     constructor(props: StandardMessageBoxProps);
@@ -2824,8 +2786,6 @@ export interface StandardMessageBoxProps extends CommonProps {
     title: string;
 }
 
-// Warning: (ae-forgotten-export) The symbol "StandardRotationNavigationAidState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @alpha
 export class StandardRotationNavigationAid extends React_2.Component<CommonProps, StandardRotationNavigationAidState> {
     constructor(props: any);
@@ -2843,8 +2803,6 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
 // @public
 export type StateType<R extends Reducer<any, any>> = DeepReadonly<ReturnType<R>>;
 
-// Warning: (ae-forgotten-export) The symbol "StatusBarState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState> {
     constructor(props: StatusBarProps);
@@ -3079,8 +3037,6 @@ export interface TaskPropsList {
 // @beta
 export const ThemeManager: any;
 
-// Warning: (ae-forgotten-export) The symbol "TileLoadingIndicatorState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @internal
 export class TileLoadingIndicator extends React_2.PureComponent<CommonProps, TileLoadingIndicatorState> {
     constructor(props: CommonProps);
@@ -3172,8 +3128,6 @@ export interface ToolItemProps extends ItemProps, CommandHandler {
     toolId: string;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ToolSettingsZoneState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @internal
 export class ToolSettingsZone extends React_2.Component<ToolSettingsZoneProps, ToolSettingsZoneState> {
     constructor(props: ToolSettingsZoneProps);
@@ -3223,8 +3177,6 @@ export class ToolUiProvider extends ConfigurableUiControl {
     toolSettingsNode: React_2.ReactNode;
     }
 
-// Warning: (ae-forgotten-export) The symbol "ToolWidgetState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class ToolWidget extends React_2.Component<ToolWidgetPropsEx, ToolWidgetState> {
     constructor(props: ToolWidgetPropsEx);
@@ -3495,8 +3447,6 @@ export interface VisibilityStatus {
     tooltip?: string;
 }
 
-// Warning: (ae-forgotten-export) The symbol "VisibilityTreeState" needs to be exported by the entry point ui-framework.d.ts
-// 
 // @public
 export class VisibilityTree extends React_2.PureComponent<VisibilityTreeProps, VisibilityTreeState> {
     constructor(props: VisibilityTreeProps);

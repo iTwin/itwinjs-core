@@ -15,8 +15,6 @@ import { IModelToken } from '@bentley/imodeljs-common';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { RpcInterface } from '@bentley/imodeljs-common';
 
-// Warning: (ae-forgotten-export) The symbol "ChildNodeSpecificationBase" needs to be exported by the entry point presentation-common.d.ts
-// Warning: (ae-forgotten-export) The symbol "DefaultGroupingPropertiesContainer" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "AllInstanceNodesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -35,7 +33,6 @@ export interface AllRelatedInstanceNodesSpecification extends ChildNodeSpecifica
     supportedSchemas?: SchemasSpecification;
 }
 
-// Warning: (ae-forgotten-export) The symbol "BaseTypeDescription" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "ArrayTypeDescription" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -94,8 +91,6 @@ export interface CategoryDescription {
     priority: number;
 }
 
-// Warning: (ae-forgotten-export) The symbol "RuleBase" needs to be exported by the entry point presentation-common.d.ts
-// Warning: (ae-forgotten-export) The symbol "ConditionContainer" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "CheckBoxRule" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -108,7 +103,6 @@ export interface CheckBoxRule extends RuleBase, ConditionContainer {
     useInversedPropertyValue?: boolean;
 }
 
-// Warning: (ae-forgotten-export) The symbol "NavigationRuleBase" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "ChildNodeRule" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -117,7 +111,6 @@ export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
     ruleType: RuleTypes.ChildNodes;
 }
 
-// Warning: (ae-forgotten-export) The symbol "GroupingSpecificationBase" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "ClassGroup" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -197,7 +190,6 @@ export enum ContentFlags {
     ShowLabels = 4
 }
 
-// Warning: (ae-forgotten-export) The symbol "ContentSpecificationBase" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "ContentInstancesOfSpecificClassesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -270,7 +262,6 @@ export type ContentRpcRequestOptions = RpcRequestOptions & Omit<ContentRequestOp
 export interface ContentRule extends RuleBase, ConditionContainer {
     condition?: string;
     ruleType: RuleTypes.Content;
-    // Warning: (ae-forgotten-export) The symbol "ContentSpecification" needs to be exported by the entry point presentation-common.d.ts
     specifications: ContentSpecification[];
 }
 
@@ -289,7 +280,6 @@ export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
 // 
 // @public
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
-    // Warning: (ae-forgotten-export) The symbol "QuerySpecification" needs to be exported by the entry point presentation-common.d.ts
     queries?: QuerySpecification[];
     specType: RuleSpecificationTypes.CustomQueryInstanceNodes;
 }
@@ -428,7 +418,6 @@ export function displayValuesMapFromJSON(json: DisplayValuesMapJSON): DisplayVal
 export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> {
 }
 
-// Warning: (ae-forgotten-export) The symbol "GroupingNodeKey" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "ECClassGroupingNodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -468,7 +457,6 @@ export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
     type: StandardNodeTypes.ECPropertyGroupingNode;
 }
 
-// Warning: (ae-forgotten-export) The symbol "QuerySpecificationBase" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "ECPropertyValueQuerySpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -738,7 +726,6 @@ export interface ItemJSON {
 // @public
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
 
-// Warning: (ae-forgotten-export) The symbol "KeySetJSON" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "Keys" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -990,8 +977,6 @@ export type NodeKeyPath = NodeKey[];
 export interface NodePathElement {
     // (undocumented)
     children: NodePathElement[];
-    // Warning: (ae-forgotten-export) The symbol "NodePathFilteringData" needs to be exported by the entry point presentation-common.d.ts
-    // 
     // (undocumented)
     filteringData?: NodePathFilteringData;
     // (undocumented)
@@ -1161,7 +1146,6 @@ export interface Property {
     relatedClassPath: Readonly<RelationshipPathInfo>;
 }
 
-// Warning: (ae-forgotten-export) The symbol "PropertyEditorParametersBase" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "PropertyEditorJsonParameters" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -1217,7 +1201,6 @@ export interface PropertyEditorSliderParameters extends PropertyEditorParameters
 // @public
 export interface PropertyEditorsSpecification {
     editorName: string;
-    // Warning: (ae-forgotten-export) The symbol "PropertyEditorParameters" needs to be exported by the entry point presentation-common.d.ts
     parameters?: PropertyEditorParameters[];
     propertyName: string;
 }
@@ -1408,7 +1391,6 @@ export interface RelatedInstanceSpecification {
 export interface RelatedPropertiesSpecification {
     isPolymorphic?: boolean;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
-    // Warning: (ae-forgotten-export) The symbol "RelatedPropertiesSpecialValues" needs to be exported by the entry point presentation-common.d.ts
     propertyNames?: string[] | RelatedPropertiesSpecialValues;
     relatedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     relationshipMeaning?: RelationshipMeaning;
@@ -1480,7 +1462,6 @@ export interface RpcRequestOptions {
 // 
 // @public
 export class RpcRequestsHandler implements IDisposable {
-    // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-common.d.ts
     constructor(props?: Props);
     readonly clientId: string;
     readonly clientStateId: string | undefined;
@@ -1536,8 +1517,6 @@ export interface RpcResponse<TResult = undefined> {
     statusCode: PresentationStatus;
 }
 
-// Warning: (ae-forgotten-export) The symbol "CustomizationRule" needs to be exported by the entry point presentation-common.d.ts
-// Warning: (ae-forgotten-export) The symbol "NavigationRule" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "Rule" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -1744,8 +1723,6 @@ export enum SortDirection {
     Descending = 1
 }
 
-// Warning: (ae-forgotten-export) The symbol "PropertySortingRule" needs to be exported by the entry point presentation-common.d.ts
-// Warning: (ae-forgotten-export) The symbol "DisabledSortingRule" needs to be exported by the entry point presentation-common.d.ts
 // Warning: (ae-missing-release-tag) "SortingRule" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -1777,8 +1754,6 @@ export interface StringQuerySpecification extends QuerySpecificationBase {
 // 
 // @public
 export interface StructTypeDescription extends BaseTypeDescription {
-    // Warning: (ae-forgotten-export) The symbol "StructFieldMemberDescription" needs to be exported by the entry point presentation-common.d.ts
-    // 
     // (undocumented)
     members: StructFieldMemberDescription[];
     // (undocumented)
@@ -1801,7 +1776,6 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
 // @public
 export interface SubCondition extends ConditionContainer {
     condition?: string;
-    // Warning: (ae-forgotten-export) The symbol "ChildNodeSpecification" needs to be exported by the entry point presentation-common.d.ts
     specifications?: ChildNodeSpecification[];
     subConditions?: SubCondition[];
 }

@@ -57,7 +57,6 @@ export class PersistenceHelper {
 export class Presentation {
     // (undocumented)
     static i18n: I18N;
-    // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-frontend.d.ts
     static initialize(props?: Props): void;
     // (undocumented)
     static presentation: PresentationManager;
@@ -88,7 +87,6 @@ export class PresentationManager implements IDisposable {
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: NodeKey): Promise<number>;
     // (undocumented)
     readonly rpcRequestsHandler: RpcRequestsHandler;
-    // Warning: (ae-forgotten-export) The symbol "RulesetManager" needs to be exported by the entry point presentation-frontend.d.ts
     rulesets(): RulesetManager;
     vars(rulesetId: string): RulesetVariablesManager;
 }
@@ -182,7 +180,6 @@ export class SelectionHandler implements IDisposable {
 // 
 // @public
 export class SelectionManager implements ISelectionProvider {
-    // Warning: (ae-forgotten-export) The symbol "SelectionManagerProps" needs to be exported by the entry point presentation-frontend.d.ts
     constructor(props: SelectionManagerProps);
     addToSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
@@ -193,7 +190,6 @@ export class SelectionManager implements ISelectionProvider {
     removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     replaceSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "SelectionScopesManager" needs to be exported by the entry point presentation-frontend.d.ts
     readonly scopes: SelectionScopesManager;
     readonly selectionChange: SelectionChangeEvent;
     setSyncWithIModelToolSelection(imodel: IModelConnection, sync?: boolean): void;

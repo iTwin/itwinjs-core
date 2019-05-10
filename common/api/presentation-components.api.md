@@ -52,7 +52,6 @@ export class ContentBuilder {
     static createPropertyRecord(field: Field, item: Item, path?: Field[]): PropertyRecord;
 }
 
-// Warning: (ae-forgotten-export) The symbol "IContentDataProvider" needs to be exported by the entry point presentation-components.d.ts
 // Warning: (ae-missing-release-tag) "ContentDataProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -67,7 +66,6 @@ export class ContentDataProvider implements IContentDataProvider {
     getContentSetSize(): Promise<number>;
     protected getDescriptorOverrides(): DescriptorOverrides;
     imodel: IModelConnection;
-    // Warning: (ae-forgotten-export) The symbol "CacheInvalidationProps" needs to be exported by the entry point presentation-components.d.ts
     protected invalidateCache(props: CacheInvalidationProps): void;
     protected isFieldHidden(_field: Field): boolean;
     keys: KeySet;
@@ -84,7 +82,6 @@ export class ContentDataProvider implements IContentDataProvider {
 // @public
 export class DataProvidersFactory {
     constructor(props?: DataProvidersFactoryProps);
-    // Warning: (ae-forgotten-export) The symbol "PresentationTableDataProviderProps" needs to be exported by the entry point presentation-components.d.ts
     createSimilarInstancesTableDataProvider(propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord, props: Omit<PresentationTableDataProviderProps, "imodel" | "ruleset">): Promise<IPresentationTableDataProvider & {
         description: string;
     }>;
@@ -119,7 +116,6 @@ export type IPresentationTableDataProvider = TableDataProvider & IContentDataPro
     getRowKey: (row: RowItem) => InstanceKey;
 };
 
-// Warning: (ae-forgotten-export) The symbol "IPresentationDataProvider" needs to be exported by the entry point presentation-components.d.ts
 // Warning: (ae-missing-release-tag) "IPresentationTreeDataProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -197,25 +193,21 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     readonly rulesetId: string;
     }
 
-// Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
 // Warning: (ae-missing-release-tag) "propertyGridWithUnifiedSelection" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
 export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props>;
 
-// Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
 // Warning: (ae-missing-release-tag) "tableWithUnifiedSelection" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
 export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props_2> & Props_2>;
 
-// Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
 // Warning: (ae-missing-release-tag) "treeWithFilteringSupport" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
 export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & Props_4>;
 
-// Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
 // Warning: (ae-missing-release-tag) "treeWithUnifiedSelection" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 // 
 // @public
@@ -291,7 +283,6 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 
 // Warnings were encountered during analysis:
 // 
-// src/viewport/WithUnifiedSelection.tsx:36:108 - (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
 // src/viewport/WithUnifiedSelection.tsx:47:5 - (ae-incompatible-release-tags) The symbol "viewportSelectionHandler" is marked as @public, but its signature references "ViewportSelectionHandler" which is marked as @internal
 // src/viewport/WithUnifiedSelection.tsx:47:5 - (ae-incompatible-release-tags) The symbol "viewportSelectionHandler" is marked as @public, but its signature references "ViewportSelectionHandler" which is marked as @internal
 
