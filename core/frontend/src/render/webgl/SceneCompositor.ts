@@ -575,9 +575,9 @@ abstract class Compositor extends SceneCompositor {
     this.renderSkyBox(commands, needComposite);
     this.target.recordPerformanceMetric("Render SkyBox");
 
-    // Render the terrain
-    this.renderTerrain(commands, needComposite);
-    this.target.recordPerformanceMetric("Render Terrain");
+    // Render the background map graphics
+    this.renderBackgroundMap(commands, needComposite);
+    this.target.recordPerformanceMetric("Render BackgroundMap (background map)");
 
     // Enable clipping
     this.target.pushActiveVolume();
@@ -710,20 +710,20 @@ abstract class Compositor extends SceneCompositor {
     return false;
   }
 
-  private renderTerrain(commands: RenderCommands, needComposite: boolean) {
-    const cmds = commands.getCommands(RenderPass.Terrain);
+  private renderBackgroundMap(commands: RenderCommands, needComposite: boolean) {
+    const cmds = commands.getCommands(RenderPass.BackgroundMap);
     if (0 === cmds.length) {
       return;
     }
 
-    this.target.plan!.selectTerrainFrustum();
+    this.target.plan!.selectExpandedFrustum();
     this.target.changeFrustum(this.target.plan!.frustum, this.target.plan!.fraction, this.target.plan!.is3d);
 
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
-      System.instance.applyRenderState(this.getRenderState(RenderPass.Terrain));
-      this.target.techniques.execute(this.target, cmds, RenderPass.Terrain);
+      System.instance.applyRenderState(this.getRenderState(RenderPass.BackgroundMap));
+      this.target.techniques.execute(this.target, cmds, RenderPass.BackgroundMap);
     });
 
     this.target.plan!.selectViewFrustum();

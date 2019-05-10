@@ -15,7 +15,7 @@ import {
 } from "@bentley/presentation-components";
 import { PropertyData, RowItem } from "@bentley/ui-components";
 
-describe("Find Similar", () => {
+describe.skip("Find Similar", () => {
 
   let imodel: IModelConnection;
 

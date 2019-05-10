@@ -296,7 +296,7 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   /** Transform tile coordinates to iModel world coordinates. */
   public location: TransformProps;
   public yAxisUp = true;
-  public isTerrain = true;
+  public isBackgroundMap = true;
   public maxTilesToSkip = 4;
   public constructor(groundBias: number) {
     const corners: Point3d[] = [];

@@ -217,7 +217,7 @@ export abstract class Target extends RenderTarget {
   private _stack = new BranchStack();
   private _batchState = new BatchState();
   private _scene: GraphicList = [];
-  private _terrain: GraphicList = [];
+  private _backgroundMap: GraphicList = [];
   private _planarClassifiers?: PlanarClassifierMap;
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
@@ -484,8 +484,8 @@ export abstract class Target extends RenderTarget {
   public changeScene(scene: GraphicList) {
     this._scene = scene;
   }
-  public changeTerrain(terrain: GraphicList) {
-    this._terrain = terrain;
+  public changeBackgroundMap(backgroundMap: GraphicList) {
+    this._backgroundMap = backgroundMap;
   }
   public changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap) {
     if (this._planarClassifiers)
@@ -829,7 +829,7 @@ export abstract class Target extends RenderTarget {
       const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
       this.pushState(state);
 
-      this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
+      this._renderCommands.init(this._scene, this._backgroundMap, this._decorations, this._dynamics, true);
       this.recordPerformanceMetric("Init Commands");
       this.compositor.drawForReadPixels(this._renderCommands);
       this._stack.pop();
@@ -841,7 +841,7 @@ export abstract class Target extends RenderTarget {
       this.recordPerformanceMetric("Begin Draw Shadow Maps");
       this.drawSolarShadowMap();
       this.recordPerformanceMetric("Begin Paint");
-      this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
+      this._renderCommands.init(this._scene, this._backgroundMap, this._decorations, this._dynamics);
 
       this.recordPerformanceMetric("Init Commands");
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
@@ -1004,7 +1004,7 @@ export abstract class Target extends RenderTarget {
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
     this._renderCommands.clear();
     this._renderCommands.setCheckRange(rectFrust);
-    this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
+    this._renderCommands.init(this._scene, this._backgroundMap, this._decorations, this._dynamics, true);
     this._renderCommands.clearCheckRange();
     this.recordPerformanceMetric("Init Commands");
 

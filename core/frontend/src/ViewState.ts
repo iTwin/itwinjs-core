@@ -337,7 +337,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public createTerrain(context: SceneContext): void {
+  public createBackgroundMap(context: SceneContext): void {
     if (undefined !== this.displayStyle.backgroundMapPlane)
       this.displayStyle.backgroundMap.addToScene(context);
   }

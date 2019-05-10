@@ -21,7 +21,7 @@ export const enum RenderPass {
   WorldOverlay,
   ViewOverlay,
   SkyBox,
-  Terrain,
+  BackgroundMap,
   HiliteClassification,  // Secondary hilite pass for stencil volumes to process hilited classifiers for reality data
   ClassificationByIndex, // Stencil volumes for processing classification one classifier at a time (used for generating pick data Ids and flashing a single classifier).
   HilitePlanarClassification,

@@ -979,11 +979,11 @@ export namespace TileTree {
       public readonly modelId: Id64String,
       public readonly maxTilesToSkip?: number,
       public readonly yAxisUp?: boolean,
-      public readonly isTerrain?: boolean,
+      public readonly isBackgroundMap?: boolean,
       public readonly clipVector?: ClipVector) { }
 
     public static fromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, modelId: Id64String) {
-      return new Params(props.id, props.rootTile, iModel, is3d, loader, Transform.fromJSON(props.location), modelId, props.maxTilesToSkip, props.yAxisUp, props.isTerrain);
+      return new Params(props.id, props.rootTile, iModel, is3d, loader, Transform.fromJSON(props.location), modelId, props.maxTilesToSkip, props.yAxisUp, props.isBackgroundMap);
     }
   }
 

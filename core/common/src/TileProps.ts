@@ -36,8 +36,8 @@ export interface TileTreeProps {
   maxTilesToSkip?: number;
   /** Optional - set to True for Y Axis up. By default Z Axis is up. */
   yAxisUp?: boolean;
-  /** Optional - if defined and true, this TileTree contains only terrain tiles. */
-  isTerrain?: boolean;
+  /** Optional - if defined and true, this TileTree contains only background map tiles. */
+  isBackgroundMap?: boolean;
   /** Optionally specifies the maximum tile format version supported. */
   formatVersion?: number;
 }

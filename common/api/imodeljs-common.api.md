@@ -4883,7 +4883,7 @@ export interface TileProps {
 export interface TileTreeProps {
     formatVersion?: number;
     id: string;
-    isTerrain?: boolean;
+    isBackgroundMap?: boolean;
     location: TransformProps;
     maxTilesToSkip?: number;
     rootTile: TileProps;

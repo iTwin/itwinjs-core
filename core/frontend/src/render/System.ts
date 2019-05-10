@@ -183,7 +183,7 @@ export class RenderPlan {
   public readonly is3d: boolean;
   public readonly viewFlags: ViewFlags;
   public readonly viewFrustum: ViewFrustum;
-  public readonly terrainFrustum: ViewFrustum | undefined;
+  public readonly expandedFrustum: ViewFrustum | undefined;
   public readonly bgColor: ColorDef;
   public readonly monoColor: ColorDef;
   public readonly hiliteSettings: Hilite.Settings;
@@ -202,10 +202,10 @@ export class RenderPlan {
   public get frustum(): Frustum { return this._curFrustum.getFrustum(); }
   public get fraction(): number { return this._curFrustum.frustFraction; }
 
-  public selectTerrainFrustum() { if (undefined !== this.terrainFrustum) this._curFrustum = this.terrainFrustum; }
+  public selectExpandedFrustum() { if (undefined !== this.expandedFrustum) this._curFrustum = this.expandedFrustum; }
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, terrainFrustum: ViewFrustum | undefined, activeVolume?: ClipVector, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, expandedFrustum: ViewFrustum | undefined, activeVolume?: ClipVector, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
     this.is3d = is3d;
     this.viewFlags = viewFlags;
     this.bgColor = bgColor;
@@ -217,7 +217,7 @@ export class RenderPlan {
     this.hline = hline;
     this.lights = lights;
     this._curFrustum = this.viewFrustum = viewFrustum;
-    this.terrainFrustum = terrainFrustum;
+    this.expandedFrustum = expandedFrustum;
     this.analysisStyle = analysisStyle;
     this.ao = ao;
     this.isFadeOutActive = isFadeOutActive;
@@ -231,8 +231,8 @@ export class RenderPlan {
     const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
     const lights = undefined; // view.is3d() ? view.getLights() : undefined
     const clipVec = view.getViewClip();
-    const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, terrainFrustum!, clipVec, hline, lights, style.analysisStyle, ao);
+    const expandedFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, expandedFrustum!, clipVec, hline, lights, style.analysisStyle, ao);
     if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
       rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
@@ -760,7 +760,7 @@ export abstract class RenderTarget implements IDisposable {
   public dispose(): void { }
   public reset(): void { }
   public abstract changeScene(scene: GraphicList): void;
-  public abstract changeTerrain(_scene: GraphicList): void;
+  public abstract changeBackgroundMap(_scene: GraphicList): void;
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
   public changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void { }
   public abstract changeDynamics(dynamics?: GraphicList): void;

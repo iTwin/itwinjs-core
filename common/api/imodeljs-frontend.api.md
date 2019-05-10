@@ -3649,6 +3649,8 @@ export namespace MockRender {
         // (undocumented)
         readonly cameraFrustumNearScaleLimit: number;
         // (undocumented)
+        changeBackgroundMap(_backgroundMap: GraphicList): void;
+        // (undocumented)
         changeDecorations(_decs: Decorations): void;
         // (undocumented)
         changeDynamics(_dynamics?: GraphicList): void;
@@ -3656,8 +3658,6 @@ export namespace MockRender {
         changeRenderPlan(_plan: RenderPlan): void;
         // (undocumented)
         changeScene(_scene: GraphicList): void;
-        // (undocumented)
-        changeTerrain(_terrain: GraphicList): void;
         // (undocumented)
         drawFrame(_sceneTime?: number): void;
         // (undocumented)
@@ -3807,6 +3807,8 @@ export class NullTarget extends RenderTarget {
     // (undocumented)
     readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
+    changeBackgroundMap(): void;
+    // (undocumented)
     changeDecorations(): void;
     // (undocumented)
     changeDynamics(): void;
@@ -3814,8 +3816,6 @@ export class NullTarget extends RenderTarget {
     changeRenderPlan(): void;
     // (undocumented)
     changeScene(): void;
-    // (undocumented)
-    changeTerrain(): void;
     // (undocumented)
     dispose(): void;
     // (undocumented)
@@ -4667,6 +4667,8 @@ export class RenderPlan {
     // (undocumented)
     static createFromViewport(vp: Viewport): RenderPlan;
     // (undocumented)
+    readonly expandedFrustum: ViewFrustum | undefined;
+    // (undocumented)
     readonly fraction: number;
     // (undocumented)
     readonly frustum: Frustum;
@@ -4683,11 +4685,9 @@ export class RenderPlan {
     // (undocumented)
     readonly monoColor: ColorDef;
     // (undocumented)
-    selectTerrainFrustum(): void;
+    selectExpandedFrustum(): void;
     // (undocumented)
     selectViewFrustum(): void;
-    // (undocumented)
-    readonly terrainFrustum: ViewFrustum | undefined;
     // (undocumented)
     readonly viewFlags: ViewFlags;
     // (undocumented)
@@ -4813,6 +4813,8 @@ export abstract class RenderTarget implements IDisposable {
     // (undocumented)
     abstract readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
+    abstract changeBackgroundMap(_scene: GraphicList): void;
+    // (undocumented)
     abstract changeDecorations(decorations: Decorations): void;
     // (undocumented)
     abstract changeDynamics(dynamics?: GraphicList): void;
@@ -4824,8 +4826,6 @@ export abstract class RenderTarget implements IDisposable {
     abstract changeScene(scene: GraphicList): void;
     // (undocumented)
     changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void;
-    // (undocumented)
-    abstract changeTerrain(_scene: GraphicList): void;
     // (undocumented)
     createGraphicBuilder(type: GraphicType, viewport: Viewport, placement?: Transform, pickableId?: Id64String): GraphicBuilder;
     static depthFromDisplayPriority(priority: number): number;
@@ -5715,6 +5715,8 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
+    changeBackgroundMap(backgroundMap: GraphicList): void;
+    // (undocumented)
     changeDecorations(decs: Decorations): void;
     // (undocumented)
     changeDynamics(dynamics?: GraphicList): void;
@@ -5728,8 +5730,6 @@ export abstract class Target extends RenderTarget {
     changeScene(scene: GraphicList): void;
     // (undocumented)
     changeSolarShadowMap(solarShadowMap?: RenderSolarShadowMap): void;
-    // (undocumented)
-    changeTerrain(terrain: GraphicList): void;
     // Warning: (ae-forgotten-export) The symbol "ClipDef" needs to be exported by the entry point imodeljs-frontend.d.ts
     // 
     // (undocumented)
@@ -6427,7 +6427,7 @@ export namespace TileTree {
         NotLoaded = 0
     }
     export class Params {
-        constructor(id: string, rootTile: TileProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, location: Transform, modelId: Id64String, maxTilesToSkip?: number | undefined, yAxisUp?: boolean | undefined, isTerrain?: boolean | undefined, clipVector?: ClipVector | undefined);
+        constructor(id: string, rootTile: TileProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, location: Transform, modelId: Id64String, maxTilesToSkip?: number | undefined, yAxisUp?: boolean | undefined, isBackgroundMap?: boolean | undefined, clipVector?: ClipVector | undefined);
         // (undocumented)
         readonly clipVector?: ClipVector | undefined;
         // (undocumented)
@@ -6439,7 +6439,7 @@ export namespace TileTree {
         // (undocumented)
         readonly is3d: boolean;
         // (undocumented)
-        readonly isTerrain?: boolean | undefined;
+        readonly isBackgroundMap?: boolean | undefined;
         // (undocumented)
         readonly loader: TileLoader;
         // (undocumented)
@@ -7797,14 +7797,14 @@ export abstract class ViewState extends ElementState {
     // @internal (undocumented)
     abstract createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     // @internal (undocumented)
+    createBackgroundMap(context: SceneContext): void;
+    // @internal (undocumented)
     createClassification(context: SceneContext): void;
     static createFromProps(_props: ViewStateProps, _iModel: IModelConnection): ViewState | undefined;
     // @internal (undocumented)
     createScene(context: SceneContext): void;
     // @internal (undocumented)
     createSolarShadowMap(_context: SceneContext): void;
-    // @internal (undocumented)
-    createTerrain(context: SceneContext): void;
     // @internal
     decorate(context: DecorateContext): void;
     abstract readonly defaultExtentLimits: ExtentLimits;

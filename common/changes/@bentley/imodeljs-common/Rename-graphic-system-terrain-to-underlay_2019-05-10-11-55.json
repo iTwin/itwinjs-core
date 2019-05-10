@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Rename terrain to backgroundMap.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ray.Bentley@bentley.com"
+}

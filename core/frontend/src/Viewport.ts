@@ -2411,11 +2411,11 @@ export abstract class Viewport implements IDisposable {
         const context = this.createSceneContext();
         view.createClassification(context);
         view.createScene(context);
-        view.createTerrain(context);
+        view.createBackgroundMap(context);
         view.createSolarShadowMap(context);
         context.requestMissingTiles();
         target.changeScene(context.graphics);
-        target.changeTerrain(context.backgroundGraphics);
+        target.changeBackgroundMap(context.backgroundGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
         target.changeSolarShadowMap(context.solarShadowMap);
 
