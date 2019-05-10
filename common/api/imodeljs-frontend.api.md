@@ -28,6 +28,7 @@ import { Cartographic } from '@bentley/imodeljs-common';
 import { CartographicRange } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ClipPlane } from '@bentley/geometry-core';
 import { ClipShape } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { Code } from '@bentley/imodeljs-common';
@@ -7073,6 +7074,8 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
 export class ViewClipTool extends PrimitiveTool {
     constructor(_clipEventHandler?: ViewClipEventHandler | undefined);
     // (undocumented)
+    static areClipsEqual(clipA: ClipVector, clipB: ClipVector): boolean;
+    // (undocumented)
     protected _clipEventHandler?: ViewClipEventHandler | undefined;
     // (undocumented)
     static doClipClear(viewport: Viewport): boolean;
@@ -7110,6 +7113,8 @@ export class ViewClipTool extends PrimitiveTool {
     static hasClip(viewport: Viewport): boolean;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    static isSingleClipPlane(clip: ClipVector): ClipPlane | undefined;
     // (undocumented)
     static isSingleClipShape(clip: ClipVector): ClipShape | undefined;
     // (undocumented)

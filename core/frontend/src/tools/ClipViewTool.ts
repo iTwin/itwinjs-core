@@ -9,7 +9,7 @@ import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels } from
 import { IModelApp } from "../IModelApp";
 import { BeButtonEvent, EventHandled, CoordinateLockOverrides } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
-import { Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64Arg, Id64 } from "@bentley/bentleyjs-core";
 import { Viewport, ScreenViewport } from "../Viewport";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { PrimitiveTool } from "./PrimitiveTool";
@@ -295,8 +295,49 @@ export class ViewClipTool extends PrimitiveTool {
     return (undefined !== planeSets && 1 === planeSets.convexSets.length) ? planeSets.convexSets[0] : undefined;
   }
 
+  public static isSingleClipPlane(clip: ClipVector): ClipPlane | undefined {
+    const clipPlanes = ViewClipTool.isSingleConvexClipPlaneSet(clip);
+    if (undefined === clipPlanes || 1 !== clipPlanes.planes.length)
+      return undefined;
+    return clipPlanes.planes[0];
+  }
+
+  public static areClipsEqual(clipA: ClipVector, clipB: ClipVector): boolean {
+    if (clipA === clipB)
+      return true;
+    if (clipA.clips.length !== clipB.clips.length)
+      return false;
+    for (let iPrim = 0; iPrim < clipA.clips.length; iPrim++) {
+      const primA = clipA.clips[iPrim];
+      const primB = clipB.clips[iPrim];
+      const planesA = primA.fetchClipPlanesRef();
+      const planesB = primB.fetchClipPlanesRef();
+      if (undefined !== planesA && undefined !== planesB) {
+        if (planesA.convexSets.length !== planesB.convexSets.length)
+          return false;
+        for (let iPlane = 0; iPlane < planesA.convexSets.length; iPlane++) {
+          const planeSetA = planesA.convexSets[iPlane];
+          const planeSetB = planesB.convexSets[iPlane];
+          if (planeSetA.planes.length !== planeSetB.planes.length)
+            return false;
+          for (let iClipPlane = 0; iClipPlane < planeSetA.planes.length; iClipPlane++) {
+            const planeA = planeSetA.planes[iClipPlane];
+            const planeB = planeSetB.planes[iClipPlane];
+            if (!planeA.isAlmostEqual(planeB))
+              return false;
+          }
+        }
+      } else if (undefined === planesA && undefined === planesB) {
+        continue;
+      } else {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public static hasClip(viewport: Viewport) {
-    return (undefined !== viewport.view.peekDetail("clip"));
+    return (undefined !== viewport.view.getViewClip());
   }
 }
 
@@ -416,7 +457,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
         this.outputPrompt("ByShape.Prompts.ThirdPoint");
         break;
       default:
-        this.outputPrompt("ByShape.Prompts.Next");
+        this.outputPrompt("ByShape.Prompts.NextPoint");
         break;
     }
   }
@@ -649,8 +690,12 @@ export class ViewClipByElementTool extends ViewClipTool {
   public onPostInstall(): void {
     super.onPostInstall();
     if (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive) {
-      this.doClipToSelectedElements(this.targetView); // tslint:disable-line:no-floating-promises
-      return;
+      let useSelection = true;
+      this.targetView.iModel.selectionSet.elements.forEach((val) => { if (Id64.isInvalid(val) || Id64.isTransient(val)) useSelection = false; });
+      if (useSelection) {
+        this.doClipToSelectedElements(this.targetView); // tslint:disable-line:no-floating-promises
+        return;
+      }
     }
     this.initLocateElements(true, false, "default", CoordinateLockOverrides.All);
   }
