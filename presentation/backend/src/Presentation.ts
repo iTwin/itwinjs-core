@@ -15,6 +15,8 @@ import PresentationRpcImpl from "./PresentationRpcImpl";
 import PresentationManager, { Props as PresentationManagerProps } from "./PresentationManager";
 import TemporaryStorage from "./TemporaryStorage";
 
+const defaultResultWaitTime: number = 500;
+
 /**
  * Properties that can be used to configure [[Presentation]] API
  */
@@ -24,6 +26,11 @@ export interface Props extends PresentationManagerProps {
    * @hidden
    */
   clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
+
+  /**
+   * Time in milliseconds after which the request will timeout.
+   */
+  requestTimeout?: number;
 
   /**
    * How much time should an unused client manager be stored in memory
@@ -49,6 +56,7 @@ export default class Presentation {
 
   private static _initProps: Props | undefined;
   private static _clientsStorage: TemporaryStorage<ClientStoreItem> | undefined;
+  private static _requestTimeout: number | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
 
   /* istanbul ignore next */
@@ -78,6 +86,7 @@ export default class Presentation {
     }
     this._initProps = props || {};
     this._shutdownListener = IModelHost.onBeforeShutdown.addListener(Presentation.terminate);
+    this._requestTimeout = (props && props.requestTimeout) ? props.requestTimeout : defaultResultWaitTime;
     this._clientsStorage = new TemporaryStorage<ClientStoreItem>({
       factory: this.createClientManager,
       cleanupHandler: this.disposeClientManager,
@@ -102,6 +111,8 @@ export default class Presentation {
       this._shutdownListener = undefined;
     }
     this._initProps = undefined;
+    if (this._requestTimeout)
+      this._requestTimeout = undefined;
   }
 
   private static createClientManager(clientId: string): ClientStoreItem {
@@ -129,4 +140,12 @@ export default class Presentation {
     return Presentation._clientsStorage.getValue(clientId || "").manager;
   }
 
+  /**
+   * Get the time in milliseconds that backend should respond in .
+   */
+  public static getRequestTimeout(): number {
+    if (!this._requestTimeout)
+      throw new PresentationError(PresentationStatus.NotInitialized, "Presentation must be first initialized by calling Presentation.initialize");
+    return this._requestTimeout;
+  }
 }

@@ -53,6 +53,7 @@ export interface IClientStateHolder<TState> {
  * @hidden
  */
 export default class RpcRequestsHandler implements IDisposable {
+  private _maxRequestRepeatCount: number = 10;
 
   private _clientStateId?: string;
   private _clientStateHolders: Array<IClientStateHolder<any>>;
@@ -119,7 +120,7 @@ export default class RpcRequestsHandler implements IDisposable {
     await this.rpcClient.syncClientState(token, this.createRequestOptions({ state: clientState }));
   }
 
-  private async requestRepeatedly<TResult, TOptions extends RpcRequestOptions>(func: (opts: TOptions) => PresentationRpcResponse<TResult>, options: TOptions, imodelToken: IModelToken): Promise<TResult> {
+  private async requestRepeatedly<TResult, TOptions extends RpcRequestOptions>(func: (opts: TOptions) => PresentationRpcResponse<TResult>, options: TOptions, imodelToken: IModelToken, repeatCount: number = 1): Promise<TResult> {
     const response = await func(options);
 
     if (response.statusCode === PresentationStatus.Success)
@@ -129,6 +130,10 @@ export default class RpcRequestsHandler implements IDisposable {
       options.clientStateId = this._clientStateId;
       await this.sync(imodelToken);
       return this.requestRepeatedly(func, options, imodelToken);
+    }
+    if (response.statusCode === PresentationStatus.BackendTimeout && repeatCount < this._maxRequestRepeatCount) {
+      repeatCount++;
+      return this.requestRepeatedly(func, options, imodelToken, repeatCount);
     }
 
     throw new PresentationError(response.statusCode, response.errorMessage);

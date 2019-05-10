@@ -300,6 +300,24 @@ describe("RpcRequestsHandler", () => {
 
     });
 
+    describe("when request returns a status of BackendTimeout", () => {
+
+      it("returns PresentationError", async () => {
+        const func = async () => Promise.resolve(errorResponse(PresentationStatus.BackendTimeout));
+        await expect(handler.request(undefined, func, defaultRpcOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", 65543);
+      });
+
+      it("calls request handler 10 times", async () => {
+        const requestHandlerStub = sinon.stub();
+        requestHandlerStub.returns(Promise.resolve(errorResponse(PresentationStatus.BackendTimeout)));
+        const requestHandlerSpy = sinon.spy(() => requestHandlerStub());
+
+        await expect(handler.request(undefined, requestHandlerSpy, defaultRpcOptions)).to.eventually.be.rejectedWith(PresentationError);
+        expect(requestHandlerSpy.callCount).to.be.equal(10);
+      });
+
+    });
+
   });
 
   describe("requests forwarding to PresentationRpcInterface", () => {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
-import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64String, BeDuration } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
@@ -47,6 +47,11 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     super();
     this._clientStateIds = new Map();
   }
+
+  /**
+   * Get the maximum result waiting time.
+   */
+  public get requestTimeout(): number { return Presentation.getRequestTimeout(); }
 
   /** Returns an ok response with result inside */
   private successResponse<TResult>(result: TResult): RpcResponse<TResult> {
@@ -114,10 +119,17 @@ export default class PresentationRpcImpl extends PresentationRpcInterface {
     } catch (e) {
       return this.errorResponse((e as PresentationError).errorNumber, (e as PresentationError).message);
     }
-
-    const result = await request(requestContext, options) as TResult;
+    let timeout = false;
+    const waitPromise = BeDuration.wait(this.requestTimeout).then(() => { timeout = true; });
+    const result = await Promise.race([request(requestContext, options), waitPromise]);
+    if (timeout) {
+      return {
+        statusCode: PresentationStatus.BackendTimeout,
+        result: undefined,
+      } as RpcResponse<undefined>;
+    }
     requestContext.enter();
-    return this.successResponse(result);
+    return this.successResponse(result as TResult);
   }
 
   public async getNodesAndCount(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKey): PresentationRpcResponse<NodesResponse> {

@@ -1102,6 +1102,8 @@ export enum PresentationStatus {
     // (undocumented)
     BackendOutOfSync = 65542,
     // (undocumented)
+    BackendTimeout = 65543,
+    // (undocumented)
     Error = 65536,
     // (undocumented)
     InvalidArgument = 65539,

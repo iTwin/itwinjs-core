@@ -37,6 +37,7 @@ import { VariableValueTypes } from '@bentley/presentation-common/lib/RulesetVari
 export class Presentation {
     // Warning: (ae-forgotten-export) The symbol "PresentationManager" needs to be exported by the entry point presentation-backend.d.ts
     static getManager(clientId?: string): PresentationManager;
+    static getRequestTimeout(): number;
     static initialize(props?: Props): void;
     // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-backend.d.ts
     // 

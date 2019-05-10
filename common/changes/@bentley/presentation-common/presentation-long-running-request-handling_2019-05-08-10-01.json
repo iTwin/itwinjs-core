@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added handling for timeouted backend responses with request repeating",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "Laurynas.Vaisys@bentley.com"
+}

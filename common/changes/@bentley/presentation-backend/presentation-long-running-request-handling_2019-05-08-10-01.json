@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added presentation request timing out if it takes longer that predefined periond of time.",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "Laurynas.Vaisys@bentley.com"
+}
