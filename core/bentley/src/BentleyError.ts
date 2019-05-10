@@ -308,6 +308,7 @@ export enum IModelHubStatus {
   NotSupportedInBrowser = IMODELHUBERROR_REQUESTERRORBASE + 4,
   FileHandlerNotSet = IMODELHUBERROR_REQUESTERRORBASE + 5,
   FileNotFound = IMODELHUBERROR_REQUESTERRORBASE + 6,
+  InitializationTimeout = IMODELHUBERROR_REQUESTERRORBASE + 7,
 }
 
 /** Authentication Errors

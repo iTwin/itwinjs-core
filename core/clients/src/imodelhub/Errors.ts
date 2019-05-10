@@ -209,6 +209,14 @@ export class IModelHubClientError extends IModelHubError {
       `Supplied ${argumentName} must include download URL. Use selectDownloadUrl() when getting ${argumentName}.`);
   }
 
+  /** Create error for seed file initialization timing out.
+   * @returns Created error.
+   * @internal
+   */
+  public static initializationTimeout(): IModelHubClientError {
+    return this.fromId(IModelHubStatus.InitializationTimeout, `Timed out waiting for Seed File initialization.`);
+  }
+
   /** Create error for incompatible operation being used in browser.
    * @returns Created error.
    * @internal

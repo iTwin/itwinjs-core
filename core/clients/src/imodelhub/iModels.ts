@@ -465,7 +465,7 @@ export class IModelsHandler {
         }
 
         Logger.logWarning(loggerCategory, errorMessage);
-        return Promise.reject(new Error("Timed out waiting for seed file initialization."));
+        return Promise.reject(IModelHubClientError.initializationTimeout());
     }
 
     /** Update iModel's name and/or description

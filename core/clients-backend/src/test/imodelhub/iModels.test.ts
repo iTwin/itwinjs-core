@@ -280,6 +280,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.assert(error);
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.UndefinedArgumentError);
   });
+
   it("should fail creating existing and initialized iModel", async function (this: Mocha.ITestCallbackContext) {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
@@ -304,10 +305,19 @@ describe("iModelHub iModelsHandler", () => {
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateiModel(projectId, Guid.createValue(), createIModelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
-    const iModel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, filePath, description, progressTracker.track(), 240000);
-
-    chai.expect(iModel.name).to.be.equal(createIModelName);
-    chai.expect(iModel.initialized).to.be.equal(true);
+    let iModel: HubIModel | undefined;
+    try {
+      iModel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, filePath, description, progressTracker.track(), 240000);
+    } catch (error) {
+      chai.expect(error).to.be.instanceof(IModelHubClientError);
+      const clientError = error as IModelHubClientError;
+      if (clientError.status! === IModelHubStatus.InitializationTimeout) {
+        this.skip();
+      }
+    }
+    chai.assert(iModel);
+    chai.expect(iModel!.name).to.be.equal(createIModelName);
+    chai.expect(iModel!.initialized).to.be.equal(true);
     progressTracker.check();
   });
 

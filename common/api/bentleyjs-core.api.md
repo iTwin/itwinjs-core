@@ -605,6 +605,8 @@ export enum IModelHubStatus {
     // (undocumented)
     iModelIsNotInitialized = 102413,
     // (undocumented)
+    InitializationTimeout = 102663,
+    // (undocumented)
     InvalidArgumentError = 102658,
     // (undocumented)
     InvalidBriefcase = 102406,

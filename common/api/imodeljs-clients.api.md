@@ -232,6 +232,7 @@ export class Checkpoint extends WsgInstance {
     fileName?: string;
     fileSize?: string;
     mergedChangeSetId?: string;
+    state?: InitializationState;
 }
 
 // @internal
@@ -243,6 +244,7 @@ export class CheckpointHandler {
 
 // @internal
 export class CheckpointQuery extends Query {
+    byChangeSetId(changeSetId: string): this;
     nearestCheckpoint(targetChangeSetId: string): this;
     precedingCheckpoint(targetChangeSetId: string): this;
     selectDownloadUrl(): this;
@@ -922,6 +924,8 @@ export class IModelHubClientError extends IModelHubError {
     static fileNotFound(): IModelHubClientError;
     // @internal
     static fromId(id: IModelHubStatus, message: string): IModelHubClientError;
+    // @internal
+    static initializationTimeout(): IModelHubClientError;
     // @internal
     static invalidArgument(argumentName: string): IModelHubClientError;
     // @internal

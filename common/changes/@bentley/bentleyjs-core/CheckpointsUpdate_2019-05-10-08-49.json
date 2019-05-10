@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added an error for seed file initialization timeout",
+      "packageName": "@bentley/bentleyjs-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "Karolis.Dziedzelis@bentley.com"
+}

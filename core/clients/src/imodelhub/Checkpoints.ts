@@ -13,6 +13,7 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
 import { addSelectFileAccessKey, Query } from "./Query";
+import { InitializationState } from "./iModels";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
@@ -40,6 +41,10 @@ export class Checkpoint extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.FileId")
   public fileId?: GuidString;
 
+  /** State of checkpoint generation. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.State")
+  public state?: InitializationState;
+
   /** Id of the last [[ChangeSet]] that was merged into this checkpoint file. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.MergedChangeSetId")
   public mergedChangeSetId?: string;
@@ -59,7 +64,7 @@ export class Checkpoint extends WsgInstance {
  */
 export class CheckpointQuery extends Query {
   /** Query will return closest [[Checkpoint]] to target [[ChangeSet]], based on ChangeSets size.
-   * This query can return a Checkpoint that is ahead of the specified ChangeSet, if reversing ChangeSets would be faster than merging forward.
+   * This query can return a Checkpoint that is ahead of the specified ChangeSet, if reversing ChangeSets would be faster than merging forward. This resets all previously set filters.
    * @returns This query.
    */
   public nearestCheckpoint(targetChangeSetId: string): this {
@@ -68,11 +73,19 @@ export class CheckpointQuery extends Query {
   }
 
   /** Query will return closest [[Checkpoint]] to target [[ChangeSet]] that does not exceed the specified ChangeSet.
-   * This query returns a closest Checkpoint that will reach target ChangeSet by only merging forward.
+   * This query returns a closest Checkpoint that will reach target ChangeSet by only merging forward. This resets all previously set filters.
    * @returns This query.
    */
   public precedingCheckpoint(targetChangeSetId: string): this {
     this.filter(`PrecedingCheckpoint-backward-ChangeSet.Id+eq+'${targetChangeSetId}'`);
+    return this;
+  }
+
+  /** Query will return [[Checkpoint]] with specified [[ChangeSet]] id.
+   * @returns This query.
+   */
+  public byChangeSetId(changeSetId: string): this {
+    this.addFilter(`MergedChangeSetId+eq+'${changeSetId}'`, "and");
     return this;
   }
 
@@ -109,7 +122,7 @@ export class CheckpointHandler {
    * @internal
    */
   private getRelativeUrl(iModelId: GuidString) {
-    return `/Repositories/iModel--${iModelId}/iModelScope/Checkpoint`;
+    return `/Repositories/iModel--${iModelId}/iModelScope/Checkpoint/`;
   }
 
   /** Get the [[Checkpoint]]s.
