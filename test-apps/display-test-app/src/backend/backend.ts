@@ -38,7 +38,6 @@ function setupStandaloneConfiguration() {
     configuration.omitEdges = undefined !== process.env.SVT_OMIT_EDGES;
     configuration.displaySolarShadows = true;     // default solar shadows on.... undefined !== process.env.SVT_DISPLAY_SOLAR_SHADOWS;
 
-    configuration.enableBackfaceCulling = undefined !== process.env.SVT_ENABLE_BACKFACE_CULLING;
     configuration.disableActiveVolumeCulling = undefined !== process.env.SVT_DISABLE_ACTIVE_VOLUME_CULLING;
     configuration.preserveShaderSourceCode = undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE;
 

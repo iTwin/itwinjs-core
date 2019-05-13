@@ -206,7 +206,6 @@ function getRenderOpts(): string {
         break;
     }
   });
-  if (curRenderOpts.backfaceCulling) optString += "+bfCull";
   if (curRenderOpts.enableOptimizedSurfaceShaders) optString += "+optSurf";
   return optString;
 }

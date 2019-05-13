@@ -468,7 +468,6 @@ abstract class Compositor extends SceneCompositor {
     this._geom = geometry;
 
     this._opaqueRenderState.flags.depthTest = true;
-    this._opaqueRenderState.flags.cull = true === System.instance.options.backfaceCulling;
 
     this._translucentRenderState.flags.depthMask = false;
     this._translucentRenderState.flags.blend = this._translucentRenderState.flags.depthTest = true;
@@ -1232,7 +1231,6 @@ class MPCompositor extends Compositor {
     super(target, new MPFrameBuffers(), new MPGeometry());
 
     this._opaqueRenderStateNoZWt.flags.depthTest = true;
-    this._opaqueRenderStateNoZWt.flags.cull = true === System.instance.options.backfaceCulling;
     this._opaqueRenderStateNoZWt.flags.depthMask = false;
   }
 
