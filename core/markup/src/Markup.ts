@@ -188,7 +188,7 @@ export class MarkupApp {
     if (this.markup)
       return; // a markup session is already active.
 
-    await this.init();
+    await this.initialize();
 
     // first, lock the viewport to its current size while the markup session is running
     this.lockViewportSize(view, markupData);
@@ -229,16 +229,25 @@ export class MarkupApp {
     return data;
   }
 
-  /** @internal */
-  protected static async init() {
-    if (this.markupNamespace)
-      return; // only need to do this once
-
-    this.markupNamespace = IModelApp.i18n.registerNamespace("MarkupTools");
-    IModelApp.tools.register(SelectTool, this.markupNamespace);
-    IModelApp.tools.registerModule(redlineTool, this.markupNamespace);
-    IModelApp.tools.registerModule(textTool, this.markupNamespace);
-    return this.markupNamespace.readFinished; // make sure our localized messages are ready.
+  /** Call this method to initialize the Markup system.
+   * It asynchronously loads the MarkupTools namespace for the prompts and tool names for the Markup system, and
+   * also registers all of the Markup tools.
+   * @return a Promise that may be awaited to ensure that the MarkupTools namespace had been loaded.
+   * @note This method is automatically called every time you call [[start]]. Since the Markup tools cannot
+   * start unless there is a Markup active, there's really no need to call this method directly.
+   * The only virtue in doing so is to pre-load the Markup namespace if you have an opportunity to do so earlier in your
+   * startup code.
+   * @note This method may be called multiple times, but only the first time initiates the loading/registering. Subsequent
+   * calls return the same Promise.
+   */
+  public static async initialize(): Promise<void> {
+    if (undefined === this.markupNamespace) {     // only need to do this once
+      this.markupNamespace = IModelApp.i18n.registerNamespace("MarkupTools");
+      IModelApp.tools.register(SelectTool, this.markupNamespace);
+      IModelApp.tools.registerModule(redlineTool, this.markupNamespace);
+      IModelApp.tools.registerModule(textTool, this.markupNamespace);
+    }
+    return this.markupNamespace.readFinished; // so caller can make sure localized messages are ready.
   }
 
   /** convert the current markup SVG into a string, but don't include decorations or dynamics

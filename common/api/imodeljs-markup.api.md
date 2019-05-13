@@ -218,8 +218,7 @@ export class MarkupApp {
     static getVpToScreenMtx(): Matrix;
     // (undocumented)
     static getVpToVbMtx(): Matrix;
-    // @internal (undocumented)
-    protected static init(): Promise<void>;
+    static initialize(): Promise<void>;
     static readonly isActive: boolean;
     // (undocumented)
     protected static lockViewportSize(view: ScreenViewport, markupData?: MarkupSvgData): void;

@@ -46,7 +46,7 @@ describe("Content", () => {
     });
   });
 
-  describe("when getContent request in the backend exceeds the backend result wait time", () => {
+  describe.skip("when getContent request in the backend exceeds the backend result wait time", () => {
     let beDurationWaitStub: sinon.SinonStub<any[], any>;
     let resultWaitTime: number;
 
