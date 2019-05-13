@@ -109,7 +109,7 @@
     "cross-env": "^5.1.4",
     "dom-testing-library": "^3.16.6",
     "enzyme": "^3.4.0",
-    "enzyme-adapter-react-16": "^1.2.0",
+    "enzyme-adapter-react-16": "1.12.1",
     "enzyme-to-json": "^3.3.4",
     "ignore-styles": "^5.0.1",
     "jsdom": "^11.12.0",
