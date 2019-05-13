@@ -1823,11 +1823,8 @@ export class IModelHostConfiguration {
 // @alpha (undocumented)
 export class IModelImporter {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
-    // (undocumented)
     addCodeSpecId(sourceId: Id64String, targetId: Id64String): void;
-    // (undocumented)
     addElementId(sourceId: Id64String, targetId: Id64String): void;
-    // (undocumented)
     dispose(): void;
     // (undocumented)
     excludeCodeSpec(codeSpecName: string): void;
@@ -1845,12 +1842,11 @@ export class IModelImporter {
     excludeElementId(elementId: Id64String): void;
     // (undocumented)
     excludeSubject(subjectPath: string): void;
-    // (undocumented)
     findCodeSpecId(sourceId: Id64String): Id64String;
-    // (undocumented)
     findElementId(sourceId: Id64String): Id64String;
     // (undocumented)
     import(): void;
+    importChildElements(sourceElementId: Id64String): void;
     // (undocumented)
     importCodeSpec(sourceId: Id64String): Id64String;
     // (undocumented)
@@ -1859,10 +1855,8 @@ export class IModelImporter {
     importElement(sourceElementId: Id64String): Id64String;
     // (undocumented)
     importFonts(): void;
-    // (undocumented)
     importModel(sourceModeledElementId: Id64String): void;
-    // (undocumented)
-    importModelContents(modelId: Id64String): void;
+    importModelContents(sourceModeledElementId: Id64String): void;
     // (undocumented)
     importModels(modeledElementClass: string): void;
     // (undocumented)
