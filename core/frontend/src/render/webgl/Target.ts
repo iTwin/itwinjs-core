@@ -427,6 +427,7 @@ export abstract class Target extends RenderTarget {
     range = this.currentTransform.multiplyRange(range, range);
 
     // ###TODO: Avoid allocation of Range3d inside called function...
+    // ###TODO: Use some not-yet-existent API which will return as soon as it determines ANY intersection (we don't care about the actual intersection range).
     const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(this._activeClipVolume.clipVector, range);
     return clippedRange.isNull;
   }
@@ -437,11 +438,7 @@ export abstract class Target extends RenderTarget {
     if (undefined === this._activeClipVolume || !this._stack.top.showClipVolume || !this.clips.isValid)
       return false;
 
-    const lut = geom.asLUT;
-    if (undefined === lut)
-      return false;
-
-    const range = lut.computeRange(this._scratchRange);
+    const range = geom.computeRange(this._scratchRange);
     return this.isRangeOutsideActiveVolume(range);
   }
 

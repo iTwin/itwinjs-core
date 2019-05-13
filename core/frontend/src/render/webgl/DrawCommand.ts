@@ -608,14 +608,12 @@ export class RenderCommands {
 
     if (undefined !== this._frustumPlanes) { // See if we can cull this primitive.
       if (RenderPass.Classification === prim.getRenderPass(this.target)) {
-        const geom = prim.cachedGeometry.asLUT;
-        if (undefined !== geom) {
-          geom.computeRange(this._scratchRange);
-          let frustum = Frustum.fromRange(this._scratchRange, this._scratchFrustum);
-          frustum = frustum.transformBy(this.target.currentTransform, frustum);
-          if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
-            return;
-          }
+        const geom = prim.cachedGeometry;
+        geom.computeRange(this._scratchRange);
+        let frustum = Frustum.fromRange(this._scratchRange, this._scratchFrustum);
+        frustum = frustum.transformBy(this.target.currentTransform, frustum);
+        if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
+          return;
         }
       }
     }

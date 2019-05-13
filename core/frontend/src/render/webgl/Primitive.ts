@@ -40,6 +40,9 @@ export class Primitive extends Graphic {
     if (undefined !== instances) {
       assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
       geom = new InstancedGeometry(geom as LUTGeometry, true, instances);
+
+      // Ensure range computed immediately so we can discard the Float32Array holding the instance transforms...
+      geom.computeRange();
     }
 
     return undefined !== geom ? new this(geom) : undefined;

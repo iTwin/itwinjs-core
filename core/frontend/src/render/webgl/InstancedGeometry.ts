@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { assert, dispose, IDisposable } from "@bentley/bentleyjs-core";
-import { Point3d, Transform } from "@bentley/geometry-core";
+import { Range3d, Point3d, Transform } from "@bentley/geometry-core";
 import { InstancedGraphicParams, RenderMemory } from "../System";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { Target } from "./Target";
@@ -27,8 +27,10 @@ export class InstanceBuffers implements IDisposable {
   private readonly _rtcTransform: Transform;
   // The model matrix from which _rtcTransform was previously computed. If it changes, _rtcTransform must be recomputed.
   private readonly _modelMatrix = Transform.createIdentity();
+  // Holds the instance transforms for computing range. Set to undefined after range computed (immediately after construction)
+  private _transforms?: Float32Array;
 
-  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, symbology?: BufferHandle, featureIds?: BufferHandle, featuresInfo?: FeaturesInfo) {
+  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, transformsData: Float32Array, symbology?: BufferHandle, featureIds?: BufferHandle, featuresInfo?: FeaturesInfo) {
     this.shared = shared;
     this.numInstances = count;
     this.transforms = transforms;
@@ -37,6 +39,7 @@ export class InstanceBuffers implements IDisposable {
     this.symbology = symbology;
     this._rtcCenter = rtcCenter;
     this._rtcTransform = Transform.createTranslation(this._rtcCenter);
+    this._transforms = transformsData;
   }
 
   public static create(params: InstancedGraphicParams, shared: boolean): InstanceBuffers | undefined {
@@ -58,7 +61,7 @@ export class InstanceBuffers implements IDisposable {
       return undefined;
 
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
-    return undefined !== tfBuf ? new InstanceBuffers(shared, count, tfBuf, params.transformCenter, symBuf, idBuf, featuresInfo) : undefined;
+    return undefined !== tfBuf ? new InstanceBuffers(shared, count, tfBuf, params.transformCenter, transforms, symBuf, idBuf, featuresInfo) : undefined;
   }
 
   public getRtcTransform(modelMatrix: Transform): Transform {
@@ -83,6 +86,45 @@ export class InstanceBuffers implements IDisposable {
 
     const bytesUsed = this.transforms.bytesUsed + symBytes + featureBytes;
     stats.addInstances(bytesUsed);
+  }
+
+  public computeRange(reprRange: Range3d, out?: Range3d): Range3d {
+    if (undefined === out)
+      out = new Range3d();
+
+    out.setNull();
+    const tfs = this._transforms;
+    if (undefined === tfs) {
+      assert(false);
+      return out;
+    }
+
+    this._transforms = undefined;
+
+    const numFloatsPerTransform = 3 * 4;
+    assert(0 === tfs.length % (3 * 4));
+
+    const tf = Transform.createIdentity();
+    const r = new Range3d();
+    for (let i = 0; i < tfs.length; i += numFloatsPerTransform) {
+      tf.setFromJSON({
+        origin: [ tfs[i + 3], tfs[i + 7], tfs[i + 11] ],
+        matrix: [
+          [ tfs[i + 0], tfs[i + 1], tfs[i + 2] ],
+          [ tfs[i + 4], tfs[i + 5], tfs[i + 6] ],
+          [ tfs[i + 8], tfs[i + 9], tfs[i + 10] ],
+        ],
+      });
+
+      reprRange.clone(r);
+      tf.multiplyRange(r, r);
+      out.extendRange(r);
+    }
+
+    const rtcTransform = Transform.createTranslation(this._rtcCenter);
+    rtcTransform.multiplyRange(out, out);
+
+    return out;
   }
 }
 
@@ -147,6 +189,16 @@ export class InstancedGeometry extends CachedGeometry {
 
   public draw() {
     this._repr.drawInstanced(this.numInstances);
+  }
+
+  public computeRange(output?: Range3d): Range3d {
+    if (undefined === this._range) {
+      this._range = new Range3d();
+      const reprRange = this._repr.computeRange();
+      this._buffers.computeRange(reprRange, this._range);
+    }
+
+    return this._range.clone(output);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics) {

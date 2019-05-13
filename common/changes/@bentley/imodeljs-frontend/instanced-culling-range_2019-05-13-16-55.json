@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix erroneous clipping of instanced geometry.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

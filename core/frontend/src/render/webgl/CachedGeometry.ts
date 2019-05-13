@@ -30,6 +30,7 @@ import { SurfaceGeometry, MeshGeometry, EdgeGeometry, SilhouetteEdgeGeometry } f
  * @internal
  */
 export abstract class CachedGeometry implements IDisposable, RenderMemory.Consumer {
+  protected _range?: Range3d;
   /**
    * Functions for obtaining a subclass of CachedGeometry.
    * IMPORTANT: Do NOT use code like `const surface = cachedGeom as SurfaceGeometry`.
@@ -124,6 +125,22 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
+
+  public computeRange(output?: Range3d): Range3d {
+    if (undefined === this._range) {
+      const lowX = this.qOrigin[0];
+      const lowY = this.qOrigin[1];
+      const lowZ = this.qOrigin[2];
+
+      const hiX = 0xffff * this.qScale[0] + lowX;
+      const hiY = 0xffff * this.qScale[1] + lowY;
+      const hiZ = 0xffff * this.qScale[2] + lowZ;
+
+      this._range = Range3d.createXYZXYZ(lowX, lowY, lowZ, hiX, hiY, hiZ);
+    }
+
+    return this._range.clone(output);
+  }
 }
 
 /** Geometry which is drawn using indices into a look-up texture of vertex data, via gl.drawArrays()
@@ -144,24 +161,6 @@ export abstract class LUTGeometry extends CachedGeometry {
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
   public get hasAnimation() { return this.lut.hasAnimation; }
-
-  public computeRange(output?: Range3d): Range3d {
-    const range = undefined !== output ? output : new Range3d();
-    range.setNull();
-
-    const lowX = this.qOrigin[0];
-    const lowY = this.qOrigin[1];
-    const lowZ = this.qOrigin[2];
-
-    const hiX = 0xffff * this.qScale[0] + lowX;
-    const hiY = 0xffff * this.qScale[1] + lowY;
-    const hiZ = 0xffff * this.qScale[2] + lowZ;
-
-    range.setXYZ(lowX, lowY, lowZ);
-    range.extendXYZ(hiX, hiY, hiZ);
-
-    return range;
-  }
 
   protected constructor() { super(); }
 }
