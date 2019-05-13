@@ -146,7 +146,7 @@ dependencies:
   electron: 4.2.0
   electron-chromedriver: 2.0.0
   enzyme: 3.9.0
-  enzyme-adapter-react-16: 1.13.0
+  enzyme-adapter-react-16: 1.12.1
   enzyme-to-json: 3.3.5
   escape-string-regexp: 1.0.5
   event-stream: 4.0.1
@@ -3981,7 +3981,7 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha1-QWgTO0K7BcOKNbGuQ5fIKYqzaeA=
-  /enzyme-adapter-react-16/1.13.0:
+  /enzyme-adapter-react-16/1.12.1:
     dependencies:
       enzyme-adapter-utils: 1.12.0
       object.assign: 4.1.0
@@ -3996,8 +3996,8 @@ packages:
       react: ^16.0.0-0
       react-dom: ^16.0.0-0
     resolution:
-      integrity: sha512-ZUVo9XATKrKavfe9v61EiYDu6V1NJCKtJyp1X2ILPgtuGQ58bItUR9uWwH6gzKJNww3sUiXM826jIiwPgO9iVQ==
-  /enzyme-adapter-react-16/1.13.0/ee2efeb9ba09e3479f87e6d53c5a2c00:
+      integrity: sha512-GB61gvY97XvrA6qljExGY+lgI6BBwz+ASLaRKct9VQ3ozu0EraqcNn3CcrUckSGIqFGa1+CxO5gj5is5t3lwrw==
+  /enzyme-adapter-react-16/1.12.1/ee2efeb9ba09e3479f87e6d53c5a2c00:
     dependencies:
       enzyme: 3.9.0
       enzyme-adapter-utils: /enzyme-adapter-utils/1.12.0/react@16.8.6
@@ -4010,13 +4010,13 @@ packages:
       react-test-renderer: /react-test-renderer/16.8.6/react@16.8.6
       semver: 5.7.0
     dev: false
-    id: registry.npmjs.org/enzyme-adapter-react-16/1.13.0
+    id: registry.npmjs.org/enzyme-adapter-react-16/1.12.1
     peerDependencies:
       enzyme: ^3.0.0
       react: ^16.0.0-0
       react-dom: ^16.0.0-0
     resolution:
-      integrity: sha512-ZUVo9XATKrKavfe9v61EiYDu6V1NJCKtJyp1X2ILPgtuGQ58bItUR9uWwH6gzKJNww3sUiXM826jIiwPgO9iVQ==
+      integrity: sha512-GB61gvY97XvrA6qljExGY+lgI6BBwz+ASLaRKct9VQ3ozu0EraqcNn3CcrUckSGIqFGa1+CxO5gj5is5t3lwrw==
   /enzyme-adapter-utils/1.12.0:
     dependencies:
       airbnb-prop-types: 2.13.2
@@ -13941,7 +13941,7 @@ packages:
       cpx: 1.5.0
       cross-spawn: 6.0.5
       css-loader: 0.28.11
-      enzyme-adapter-react-16: 1.13.0
+      enzyme-adapter-react-16: 1.12.1
       enzyme-to-json: 3.3.5
       file-loader: 1.1.11
       fs-extra: 6.0.1
@@ -13978,7 +13978,7 @@ packages:
     dev: false
     name: '@rush-temp/build-tools'
     resolution:
-      integrity: sha512-on1NToF7s3VGMNDDFbSjVBb597tOuTl9ZHwzzpRKoFppX1c0l7eStyueGwAPJX+IuqeiEFbCVkW2nnTscgDLmQ==
+      integrity: sha512-dOv2qb3yPR1obEjHTeADDEZjO0ztx5bmflfDcXegsHBtDGZxaBXNtO3KARsC+8fmwwjk4m7ZmaTHajLSwdCd6g==
       tarball: 'file:projects/build-tools.tgz'
     version: 0.0.0
   'file:projects/certa.tgz':
@@ -14726,7 +14726,7 @@ packages:
       cpx: 1.5.0
       cross-env: 5.2.0
       enzyme: 3.9.0
-      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.13.0/ee2efeb9ba09e3479f87e6d53c5a2c00
+      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.12.1/ee2efeb9ba09e3479f87e6d53c5a2c00
       enzyme-to-json: /enzyme-to-json/3.3.5/enzyme@3.9.0
       faker: 4.1.0
       ignore-styles: 5.0.1
@@ -14747,7 +14747,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-components'
     resolution:
-      integrity: sha512-bwaHyTWzpHwFdUYb8qz19SpzidEcpxhUtXhIyTzDVoXrUWO6706KIMVY43rdM0mmzd4dxeTju1v2SD9aR9V/UQ==
+      integrity: sha512-9dAc4iOOhbw4trMxf8TcuNns0dgk4YQKEpwpmOs+e2pIuiirLaMPFbp4jFc9GmbaQe7JSNaHmmKBpgXv7CXvDw==
       tarball: 'file:projects/presentation-components.tgz'
     version: 0.0.0
   'file:projects/presentation-frontend.tgz':
@@ -14979,7 +14979,7 @@ packages:
       classnames: 2.2.6
       cross-env: 5.2.0
       enzyme: 3.9.0
-      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.13.0/ee2efeb9ba09e3479f87e6d53c5a2c00
+      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.12.1/ee2efeb9ba09e3479f87e6d53c5a2c00
       enzyme-to-json: /enzyme-to-json/3.3.5/enzyme@3.9.0
       eventemitter2: 5.0.1
       faker: 4.1.0
@@ -15018,7 +15018,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-components'
     resolution:
-      integrity: sha512-/Z5KrGi4k2/g57eE3Ng5C5GAJ9GoGlPy5QyPP9SdRIr49g+9r1Hd59+lblfPlhG8rDvZO2ZO176pvVf1XaAGxA==
+      integrity: sha512-Ompais4xx6xjDBogva8o4VIfc8V8yuoVEAEJI1fvpQI3Uh3xicuOHxQ06fiGdm71QmtBRHZjrLukpcxIlGm8Fw==
       tarball: 'file:projects/ui-components.tgz'
     version: 0.0.0
   'file:projects/ui-core.tgz':
@@ -15044,7 +15044,7 @@ packages:
       cross-env: 5.2.0
       csstype: 2.6.4
       enzyme: 3.9.0
-      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.13.0/ee2efeb9ba09e3479f87e6d53c5a2c00
+      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.12.1/ee2efeb9ba09e3479f87e6d53c5a2c00
       enzyme-to-json: /enzyme-to-json/3.3.5/enzyme@3.9.0
       ignore-styles: 5.0.1
       jsdom: 11.12.0
@@ -15068,7 +15068,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-core'
     resolution:
-      integrity: sha512-c34T/LGzHGgGY6HAxJPAyl37TW7BvCBtNDkyR0OMrh9wDrTwQMZhYmU3R0yxmUF/4OFqhZh77nizsj1/n9nvnw==
+      integrity: sha512-MbI4144Nj9s8708mMhdGuibHfcUCSwtB3bTG/dzsuw7p/nuHZruq/eIi3uAr1xG1AXrTlHjYm4JLgI7msvMrRg==
       tarball: 'file:projects/ui-core.tgz'
     version: 0.0.0
   'file:projects/ui-framework.tgz':
@@ -15097,7 +15097,7 @@ packages:
       cross-env: 5.2.0
       dom-testing-library: 3.19.4
       enzyme: 3.9.0
-      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.13.0/ee2efeb9ba09e3479f87e6d53c5a2c00
+      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.12.1/ee2efeb9ba09e3479f87e6d53c5a2c00
       enzyme-to-json: /enzyme-to-json/3.3.5/enzyme@3.9.0
       ignore-styles: 5.0.1
       immutable: 3.8.2
@@ -15130,7 +15130,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-framework'
     resolution:
-      integrity: sha512-PNRH77DUvyaGrl6kegKI+Za/t4n2uBdgAeAuTDlzgbC5UNIYbyXCYPQ55aZ55XYeXiRBpa4FIeFGhp4ed2fquw==
+      integrity: sha512-CQOGg9/pXKFMIKG8mjzkLno5vQff+9q/mwnGsPbnXJYpLH23GrC0hpXbY+XjJV/4+kKn9MhaZm0fBrzyH7Ljtg==
       tarball: 'file:projects/ui-framework.tgz'
     version: 0.0.0
   'file:projects/ui-ninezone.tgz':
@@ -15157,7 +15157,7 @@ packages:
       cross-env: 5.2.0
       css-loader: 0.28.11
       enzyme: 3.9.0
-      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.13.0/ee2efeb9ba09e3479f87e6d53c5a2c00
+      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.12.1/ee2efeb9ba09e3479f87e6d53c5a2c00
       enzyme-to-json: /enzyme-to-json/3.3.5/enzyme@3.9.0
       highlight.js: 9.14.2
       html-webpack-plugin: /html-webpack-plugin/4.0.0-alpha.2/webpack@4.31.0
@@ -15197,7 +15197,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-ninezone'
     resolution:
-      integrity: sha512-VsPXAn1I5eP28NaqIGA8ttqDz32Izn3TeMAF9ybJ3Q2yNYq6jOtBR4sC7Ob0UrOrBSKqTgTr+FRIiIH8GdX/xA==
+      integrity: sha512-v2U9MtQw+noTzVI770M/NpbDikLoXWjE/4QCPiNDuTFufThgbk+ndbUW0kMFrNNyHnArLxma0/SuwwLQ8xHKAg==
       tarball: 'file:projects/ui-ninezone.tgz'
     version: 0.0.0
   'file:projects/ui-test-app.tgz':
@@ -15268,7 +15268,7 @@ packages:
       css-loader: 0.28.11
       dotenv: 6.2.0
       enzyme: 3.9.0
-      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.13.0/ee2efeb9ba09e3479f87e6d53c5a2c00
+      enzyme-adapter-react-16: /enzyme-adapter-react-16/1.12.1/ee2efeb9ba09e3479f87e6d53c5a2c00
       enzyme-to-json: /enzyme-to-json/3.3.5/enzyme@3.9.0
       escape-string-regexp: 1.0.5
       exports-loader: 0.7.0
@@ -15333,7 +15333,7 @@ packages:
     dev: false
     name: '@rush-temp/webpack-tools'
     resolution:
-      integrity: sha512-UoG+ndO07feOv7YpTA0T32MTCVLfPBbVSl7T46NxZc7JajL6zSgTIQeCNVpQs2pGglthOn69SpL2ZkiIhftkmA==
+      integrity: sha512-KQpM1PUhnggFnpD867IgMmXrsxzgAbCEtKdgruu0yxYKwKKvDRN+8E/VmsD2dvZMHRB6JKgICnMhlijjPHiHbg==
       tarball: 'file:projects/webpack-tools.tgz'
     version: 0.0.0
   'file:projects/webworker-test-app.tgz':
@@ -15532,7 +15532,7 @@ specifiers:
   electron: ^4.1.0
   electron-chromedriver: ^2.0.0
   enzyme: ^3.4.0
-  enzyme-adapter-react-16: ^1.2.0
+  enzyme-adapter-react-16: 1.12.1
   enzyme-to-json: ^3.3.4
   escape-string-regexp: ^1.0.5
   event-stream: ~4.0.1
