@@ -38,12 +38,26 @@ export class SettingsResult {
    * @internal
    * @param status The result of the settings method.
    * @param errorMessage An error message that is sometimes returned by the server.
-   * @param setting The object returned by the Settings method. Used only in the "get" methods.
+   * @param setting The object returned by the "get" Settings methods.
    */
   constructor(public status: SettingsStatus, public errorMessage?: string, public setting?: any) {
   }
 }
 
+/** The result of the SettingsAdmin methods to retrieve all settings by namespace.
+ * These are constructed by the SettingsAdmin "getxxxByNamespace" methods and examined by applications.
+ * @alpha
+ */
+export class SettingsMapResult {
+  /** Construct a new SettingsResult. SettingsResult objects are created by the SettingsAdmin methods.
+   * @internal
+   * @param status The result of the settings method.
+   * @param errorMessage An error message that is sometimes returned by the server.
+   * @param settingsMap A Map of name to property objects.
+   */
+  constructor(public status: SettingsStatus, public errorMessage?: string, public settingsMap?: Map<string, any>) {
+  }
+}
 /** Methods available to save and get Settings objects on behalf of combinations of the Application, Project, iModel, and User
  * @alpha
  */
@@ -119,4 +133,24 @@ export interface SettingsAdmin {
    * @note The logged in user must have the appropriate permissions to delete a non-user-specific setting.
    */
   deleteSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+
+  /** Retrieves an array of non-user-specific settings objects that are stored with the specified namespace
+   * @param requestContext The client request context.
+   * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
+   * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+   * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
+   * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined.The projectId must be specified if iModelId is specified.
+   * @return The result of the retrieval operation. If successful, SettingsResult.settingsMap contains a map of string to settings values containing all of the settings stored with the specified namespace.
+   */
+  getSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
+
+  /** Retrieves an array of user-specific settings objects that are stored with the specified namespace
+   * @param requestContext The client request context.
+   * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
+   * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+   * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
+   * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined.The projectId must be specified if iModelId is specified.
+   * @return The result of the retrieval operation. If successful, SettingsResult.settingsMap contains a map of string to settings values containing all of the settings stored with the specified namespace.
+   */
+  getUserSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
 }

@@ -6,7 +6,7 @@
 import { request, RequestOptions, Response } from "./Request";
 import { Client } from "./Client";
 import { AuthorizationToken, AccessToken } from "./Token";
-import { SettingsAdmin, SettingsStatus, SettingsResult } from "./SettingsAdmin";
+import { SettingsAdmin, SettingsStatus, SettingsResult, SettingsMapResult } from "./SettingsAdmin";
 import { BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
@@ -39,7 +39,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   protected getUrlSearchKey(): string { return ConnectSettingsClient.searchKey; }
 
   // gets the portion of the Url that encapsulates the type of setting requested.
-  private getUrlOptions(settingNamespace: string, settingName: string, userSpecific: boolean, applicationSpecific: boolean, projectId?: string, iModelId?: string) {
+  private getUrlOptions(settingNamespace: string | undefined, settingName: string | undefined, userSpecific: boolean, applicationSpecific: boolean, projectId?: string, iModelId?: string) {
     // The types of settings are:
     // Application, Project, iModel, and User specific.
     // Application, Project, and User Specific
@@ -49,9 +49,15 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     // Application Specific
     let urlTerminator: string;
     if (userSpecific)
-      urlTerminator = `/User/Setting/${settingNamespace}/${settingName}`;
+      urlTerminator = "/User/Setting";
     else
-      urlTerminator = `/Setting/${settingNamespace}/${settingName}`;
+      urlTerminator = "/Setting";
+
+    // append the settingsNamespace and settingName if appropriate.
+    if (settingNamespace)
+      urlTerminator = urlTerminator.concat(`/${settingNamespace}`);
+    if (settingName)
+      urlTerminator = urlTerminator.concat(`/${settingName}`);
 
     let urlOptions: string;
     if (applicationSpecific) {
@@ -141,6 +147,37 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     });
   }
 
+  // Retrieves all saved settings with the same namespace.
+  private async getAnySettingsByNamespace(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult> {
+    const baseUrl: string = await this.getUrl(requestContext);
+    const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
+
+    const options: RequestOptions = {
+      method: "GET",
+      headers: { authorization: accessTokenString },
+    };
+    await this.setupOptionDefaults(options);
+
+    const urlOptions: string = this.getUrlOptions(undefined, undefined, userSpecific, applicationSpecific, projectId, iModelId);
+    let url: string = baseUrl.concat(urlOptions);
+
+    // now we want to append the query for the namespace.
+    const queryString = `?$filter=namespace+eq+'${settingNamespace}'`;
+    url = url.concat(queryString);
+
+    return request(requestContext, url, options).then(async (response: Response): Promise<SettingsResult> => {
+      const settingsMap: Map<string, any> = new Map<string, any>();
+      for (const settingBody of response.body) {
+        settingsMap.set(settingBody.name, settingBody.properties);
+      }
+      return Promise.resolve(new SettingsMapResult(SettingsStatus.Success, undefined, settingsMap));
+    }, async (response: Response): Promise<SettingsMapResult> => {
+      if ((response.status < 200) || (response.status > 299))
+        return Promise.resolve(this.formErrorResponse(response));
+      return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
+    });
+  }
+
   private async deleteAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     const baseUrl: string = await this.getUrl(requestContext);
     const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
@@ -188,4 +225,13 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   public async deleteSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     return this.deleteAnySetting(requestContext, false, settingNamespace, settingName, applicationSpecific, projectId, iModelId);
   }
+
+  public async getSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult> {
+    return this.getAnySettingsByNamespace(requestContext, false, namespace, applicationSpecific, projectId, iModelId);
+  }
+
+  public async getUserSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult> {
+    return this.getAnySettingsByNamespace(requestContext, true, namespace, applicationSpecific, projectId, iModelId);
+  }
+
 }
