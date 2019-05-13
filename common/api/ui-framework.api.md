@@ -23,6 +23,7 @@ import { DropTarget } from '@bentley/ui-ninezone';
 import { Face } from '@bentley/ui-core';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
+import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
@@ -611,7 +612,9 @@ export class ContentControl extends ConfigurableUiControl {
     readonly navigationAidControl: string;
     onActivated(): void;
     onDeactivated(): void;
+    processViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): Promise<void>;
     reactElement: React_2.ReactNode;
+    readonly supportsViewSelectorChange: boolean;
     readonly viewport: ScreenViewport | undefined;
 }
 
@@ -645,6 +648,8 @@ export class ContentGroup {
     groupId: string;
     onFrontstageDeactivated(): void;
     onFrontstageReady(): void;
+    // (undocumented)
+    refreshContentNodes(): void;
     }
 
 // @public
@@ -732,6 +737,8 @@ export class ContentLayoutManager {
     // (undocumented)
     static loadLayouts(layoutPropsList: ContentLayoutProps[]): void;
     // (undocumented)
+    static refreshActiveLayout(): void;
+    // (undocumented)
     static setActiveLayout(contentLayout: ContentLayoutDef, contentGroup: ContentGroup): void;
 }
 
@@ -765,6 +772,7 @@ export class ContentViewManager {
     static readonly isMouseDown: boolean;
     static readonly onActiveContentChangedEvent: ActiveContentChangedEvent;
     static readonly onMouseDownChangedEvent: MouseDownChangedEvent;
+    static refreshActiveContent(activeContent: React.ReactNode): void;
     static setActiveContent(activeContent?: React.ReactNode, forceEventProcessing?: boolean): void;
     static setMouseDown(mouseDown: boolean): void;
 }
@@ -3360,12 +3368,15 @@ export interface VersionInfo {
 // @public
 export class ViewportContentControl extends ContentControl {
     constructor(info: ConfigurableCreateInfo, options: any);
+    getReactElementForViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): React.ReactNode;
     getType(): ConfigurableUiControlType;
     readonly isReady: Promise<void>;
     readonly isViewport: boolean;
     readonly navigationAidControl: string;
     onActivated(): void;
+    processViewSelectorChange(iModel: IModelConnection, viewDefinitionId: Id64String, viewState: ViewState, name: string): Promise<void>;
     setIsReady(): void;
+    readonly supportsViewSelectorChange: boolean;
     viewport: ScreenViewport | undefined;
     }
 

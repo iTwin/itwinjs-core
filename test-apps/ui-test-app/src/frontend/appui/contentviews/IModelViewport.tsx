@@ -14,8 +14,10 @@ import {
   ViewportContentControl,
   UiFramework,
 } from "@bentley/ui-framework";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
+
 import { AnimationViewOverlay } from "./AnimationViewOverlay";
 
 // create a HOC viewport component that supports unified selection
@@ -45,12 +47,12 @@ export class IModelViewportControl extends ViewportContentControl {
 
     this._options = options;
 
-    if (options.viewId) {
-      this.reactElement = <UnifiedSelectionViewport viewportRef={(v: ScreenViewport) => { this.viewport = v; }}
-        viewDefinitionId={options.viewId} imodel={options.iModelConnection} ruleset={options.ruleset} getViewOverlay={this._getViewOverlay} />;
-    } else {
-      this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
-    }
+    // if (options.viewId) {
+    //   this.reactElement = this.getReactElement(options.iModelConnection, options.viewId);
+    // } else {
+    this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
+    this.setIsReady();
+    // }
   }
   /** Returns a promise that resolves when the control is ready for usage.
    */
@@ -68,6 +70,25 @@ export class IModelViewportControl extends ViewportContentControl {
     else
       return "StandardRotationNavigationAid";
   }
+
+  /** Get the React.Element for a ViewSelector change. */
+  public getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _viewDefinitionId: Id64String, viewState: ViewState, _name: string): React.ReactNode {
+    return this.getReactElement(iModelConnection, undefined, viewState);
+  }
+
+  /** Get the React.Element for */
+  private getReactElement(iModelConnection: IModelConnection, viewDefinitionId?: Id64String, viewState?: ViewState): React.ReactNode {
+    return (
+      <UnifiedSelectionViewport
+        viewportRef={(v: ScreenViewport) => { this.viewport = v; }}
+        viewDefinitionId={viewDefinitionId}
+        viewState={viewState}
+        imodel={iModelConnection}
+        ruleset={this._options.ruleset}
+        getViewOverlay={this._getViewOverlay} />
+    );
+  }
+
 }
 
 // This is used for fake viewports (those with no ViewId)

@@ -116,6 +116,10 @@ export class ContentGroup {
     return this._contentSetMap.get(node);
   }
 
+  public refreshContentNodes() {
+    this._contentSetMap.clear();
+  }
+
   public getContentControls(): ContentControl[] {
     const contentControls: ContentControl[] = new Array<ContentControl>();
 

@@ -649,6 +649,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
 export class ContentLayoutManager {
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();
   private static _activeLayout?: ContentLayoutDef;
+  private static _activeGroup?: ContentGroup;
 
   public static loadLayouts(layoutPropsList: ContentLayoutProps[]) {
     layoutPropsList.map((layoutProps, _index) => {
@@ -676,7 +677,15 @@ export class ContentLayoutManager {
 
   public static setActiveLayout(contentLayout: ContentLayoutDef, contentGroup: ContentGroup) {
     this._activeLayout = contentLayout;
+    this._activeGroup = contentGroup;
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout, contentGroup });
+  }
+
+  public static refreshActiveLayout() {
+    if (this._activeLayout && this._activeGroup) {
+      FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._activeLayout, contentGroup: this._activeGroup });
+      this._activeGroup.refreshContentNodes();
+    }
   }
 
   public static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined {

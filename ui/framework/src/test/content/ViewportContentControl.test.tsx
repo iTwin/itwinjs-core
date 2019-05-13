@@ -113,6 +113,8 @@ describe("ViewportContentControl", () => {
         expect(contentControl.isViewport).to.be.true;
         expect(contentControl.viewport).to.not.be.undefined;
         expect(contentControl.getType()).to.eq(ConfigurableUiControlType.Viewport);
+
+        expect(contentControl.supportsViewSelectorChange).to.be.true;
       }
     }
   });

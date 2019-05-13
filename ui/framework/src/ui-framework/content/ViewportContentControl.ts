@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ContentView */
 
-import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
+import { ScreenViewport, IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
 
 import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { ContentControl } from "./ContentControl";
 import { ViewUtilities } from "../utils/ViewUtilities";
+import { ContentViewManager } from "./ContentViewManager";
 
 /** The base class for Frontstage Viewport content controls.
  * @public
@@ -103,4 +105,19 @@ export class ViewportContentControl extends ContentControl {
     return navigationAidId;
   }
 
+  /** Returns true if this control supports processing ViewSelector changes. */
+  public get supportsViewSelectorChange(): boolean { return true; }
+
+  /** Process a ViewSelector change. */
+  public async processViewSelectorChange(iModel: IModelConnection, viewDefinitionId: Id64String, viewState: ViewState, name: string): Promise<void> {
+    if (this._viewport) {
+      this._viewport.changeView(viewState);
+    } else {
+      this.reactElement = this.getReactElementForViewSelectorChange(iModel, viewDefinitionId, viewState, name);
+      ContentViewManager.refreshActiveContent(this.reactElement);
+    }
+  }
+
+  /** Get the React.Element for a ViewSelector change. */
+  public getReactElementForViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): React.ReactNode { return null; }
 }

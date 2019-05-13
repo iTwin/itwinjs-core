@@ -6,9 +6,11 @@
 
 import * as React from "react";
 
-import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "../configurableui/ConfigurableUiControl";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
+
+import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "../configurableui/ConfigurableUiControl";
 
 /** ControlControl Activated Event Args interface.
  * @public
@@ -50,9 +52,9 @@ export class ContentControl extends ConfigurableUiControl {
 
   /** Returns true if this control is a Viewport control. */
   public get isViewport(): boolean { return false; }
-
   /** Returns the ScreenViewport if isViewport is true */
   public get viewport(): ScreenViewport | undefined { return undefined; }
+
   /** Gets the React element associated with this control */
   public get reactElement(): React.ReactNode { return this._reactElement; }
   /** Sets the React element associated with this control */
@@ -62,4 +64,10 @@ export class ContentControl extends ConfigurableUiControl {
   public get navigationAidControl(): string {
     return "";
   }
+
+  /** Returns true if this control supports reacting to ViewSelector changes. */
+  public get supportsViewSelectorChange(): boolean { return false; }
+  /** Process a ViewSelector change. */
+  public async processViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): Promise<void> { return; }
+
 }
