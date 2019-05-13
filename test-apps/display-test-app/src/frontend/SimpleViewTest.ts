@@ -122,6 +122,7 @@ async function main() {
     cullAgainstActiveVolume: !configuration.disableActiveVolumeCulling,
     preserveShaderSourceCode: configuration.preserveShaderSourceCode,
     displaySolarShadows: configuration.displaySolarShadows,
+    enableOptimizedSurfaceShaders: configuration.enableOptimizedSurfaceShaders,
   };
 
   if (configuration.disableInstancing)

@@ -16,7 +16,7 @@ import {
 } from "../ShaderBuilder";
 import { Hilite, ColorDef } from "@bentley/imodeljs-common";
 import { TextureUnit, OvrFlags } from "../RenderFlags";
-import { FeatureMode } from "../TechniqueFlags";
+import { FeatureMode, IsEdgeTestNeeded, IsClassified } from "../TechniqueFlags";
 import { addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
 import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
 import { GLSLCommon, addEyeSpace, addUInt32s } from "./Common";
@@ -496,11 +496,9 @@ const isBelowTransparencyThreshold = `
 `;
 
 /** @internal */
-export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
+export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode, isEdgeTestNeeded: IsEdgeTestNeeded, isClassified: IsClassified) {
   const frag = builder.frag;
   const vert = builder.vert;
-
-  addWindowToTexCoords(frag);
 
   vert.set(VertexShaderComponent.CheckForLateDiscard, isBelowTransparencyThreshold);
   vert.addUniform("u_transparencyThreshold", VariableType.Float, (prog) => {
@@ -509,32 +507,41 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
     });
   });
 
-  if (FeatureMode.None === feat) {
-    addSamplers(frag, false);
-    frag.addFunction(GLSLFragment.computeLinearDepth);
-    frag.addFunction(GLSLDecode.depthRgb);
-    frag.addFunction(readDepthAndOrder);
-    addEyeSpace(builder);
-    frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscard);
-  } else {
+  if (isEdgeTestNeeded) {
+    addWindowToTexCoords(frag);
+
+    if (FeatureMode.None === feat) {
+      addSamplers(frag, false);
+      frag.addFunction(GLSLFragment.computeLinearDepth);
+      frag.addFunction(GLSLDecode.depthRgb);
+      frag.addFunction(readDepthAndOrder);
+      addEyeSpace(builder);
+      frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscard);
+    } else {
+      addFeatureIndex(vert);
+      addLineWeight(vert);
+
+      addSamplers(frag, true);
+      addRenderOrderConstants(frag);
+      addPixelWidthFactor(frag);
+      frag.addFunction(GLSLFragment.computeLinearDepth);
+      frag.addFunction(GLSLDecode.depthRgb);
+      frag.addFunction(readDepthAndOrder);
+      frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscardWithFeatureID);
+
+      addEyeSpace(builder);
+      builder.addInlineComputedVarying("v_lineWeight", VariableType.Float, "v_lineWeight = computeLineWeight();");
+      addFeatureId(builder);
+    }
+
+    addRenderOrder(frag);
+    addRenderPass(frag);
+  } else if (isClassified && FeatureMode.None !== feat) {
     addFeatureIndex(vert);
-    addLineWeight(vert);
-
-    addSamplers(frag, true);
-    addRenderOrderConstants(frag);
-    addPixelWidthFactor(frag);
-    frag.addFunction(GLSLFragment.computeLinearDepth);
-    frag.addFunction(GLSLDecode.depthRgb);
-    frag.addFunction(readDepthAndOrder);
-    frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscardWithFeatureID);
-
     addEyeSpace(builder);
-    builder.addInlineComputedVarying("v_lineWeight", VariableType.Float, "v_lineWeight = computeLineWeight();");
     addFeatureId(builder);
+    addRenderOrder(frag);
   }
-
-  addRenderOrder(frag);
-  addRenderPass(frag);
 }
 
 // bool feature_invisible = false;

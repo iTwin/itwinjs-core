@@ -207,7 +207,7 @@ function getRenderOpts(): string {
     }
   });
   if (curRenderOpts.backfaceCulling) optString += "+bfCull";
-  // if (curRenderOpts.enableOptimizedSurfaceShaders) optString += "+optSurf";
+  if (curRenderOpts.enableOptimizedSurfaceShaders) optString += "+optSurf";
   return optString;
 }
 
@@ -605,7 +605,7 @@ function restartIModelApp(testConfig: DefaultConfigs) {
   if (IModelApp.initialized) {
     if (curTileProps.disableThrottling !== newTileProps.disableThrottling || curTileProps.elideEmptyChildContentRequests !== newTileProps.elideEmptyChildContentRequests
       || curTileProps.enableInstancing !== newTileProps.enableInstancing || curTileProps.maxActiveRequests !== newTileProps.maxActiveRequests || curTileProps.retryInterval !== newTileProps.retryInterval
-      /*|| curRenderOpts.enableOptimizedSurfaceShaders !== newRenderOpts.enableOptimizedSurfaceShaders*/ || ((curRenderOpts.disabledExtensions ? curRenderOpts.disabledExtensions.length : 0) !== (newRenderOpts.disabledExtensions ? newRenderOpts.disabledExtensions.length : 0))) {
+      || curRenderOpts.enableOptimizedSurfaceShaders !== newRenderOpts.enableOptimizedSurfaceShaders || ((curRenderOpts.disabledExtensions ? curRenderOpts.disabledExtensions.length : 0) !== (newRenderOpts.disabledExtensions ? newRenderOpts.disabledExtensions.length : 0))) {
       if (theViewport) {
         theViewport.dispose();
         theViewport = undefined;
@@ -634,6 +634,98 @@ function restartIModelApp(testConfig: DefaultConfigs) {
 
     (IModelApp.renderSystem as System).techniques.compileShaders();
   }
+}
+
+async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Selector, pixStr: string) {
+  const width = testConfig.view!.width;
+  const height = testConfig.view!.height;
+  const viewRect = new ViewRect(0, 0, width, height);
+  if (theViewport && theViewport.canvas) {
+    const ctx = theViewport.canvas.getContext("2d");
+    if (ctx) {
+      ctx.clearRect(0, 0, theViewport.canvas.width, theViewport.canvas.height);
+      const elemIdImgData = (pix & Pixel.Selector.Feature) ? ctx.createImageData(width, height) : undefined;
+      const depthImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
+      const typeImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
+
+      theViewport.readPixels(viewRect, pix, (pixels: any) => {
+        if (undefined === pixels)
+          return;
+        for (let y = viewRect.top; y < viewRect.bottom; ++y) {
+          for (let x = viewRect.left; x < viewRect.right; ++x) {
+            const index = (x * 4) + (y * 4 * viewRect.right);
+            const pixel = pixels.getPixel(x, y);
+            // // RGB for element ID
+            if (elemIdImgData !== undefined) {
+              const elemId = Id64.getLowerUint32(pixel.elementId ? pixel.elementId : "");
+              elemIdImgData.data[index + 0] = elemId % 256;
+              elemIdImgData.data[index + 1] = (Math.floor(elemId / 256)) % 256;
+              elemIdImgData.data[index + 2] = (Math.floor(elemId / (256 ^ 2))) % 256;
+              elemIdImgData.data[index + 3] = 255; // Set alpha to 100% opaque
+            }
+            // RGB for Depth
+            if (depthImgData !== undefined) {
+              const distColor = pixels.getPixel(x, y).distanceFraction * 255;
+              depthImgData.data[index + 0] = depthImgData.data[index + 1] = depthImgData.data[index + 2] = distColor;
+              depthImgData.data[index + 3] = 255; // Set alpha to 100% opaque
+            }
+            // RGB for type
+            if (typeImgData !== undefined) {
+              const type = pixels.getPixel(x, y).type;
+              switch (type) {
+                case Pixel.GeometryType.None: // White
+                  typeImgData.data[index + 0] = 255;
+                  typeImgData.data[index + 1] = 255;
+                  typeImgData.data[index + 2] = 255;
+                  break;
+                case Pixel.GeometryType.Surface: // Red
+                  typeImgData.data[index + 0] = 255;
+                  typeImgData.data[index + 1] = 0;
+                  typeImgData.data[index + 2] = 0;
+                  break;
+                case Pixel.GeometryType.Linear: // Green
+                  typeImgData.data[index + 0] = 0;
+                  typeImgData.data[index + 1] = 255;
+                  typeImgData.data[index + 2] = 0;
+                  break;
+                case Pixel.GeometryType.Edge: // Blue
+                  typeImgData.data[index + 0] = 0;
+                  typeImgData.data[index + 1] = 0;
+                  typeImgData.data[index + 2] = 255;
+                  break;
+                case Pixel.GeometryType.Silhouette: // Purple
+                  typeImgData.data[index + 0] = 255;
+                  typeImgData.data[index + 1] = 0;
+                  typeImgData.data[index + 2] = 255;
+                  break;
+                case Pixel.GeometryType.Unknown: // Black
+                default:
+                  typeImgData.data[index + 0] = 0;
+                  typeImgData.data[index + 1] = 0;
+                  typeImgData.data[index + 2] = 0;
+                  break;
+              }
+              typeImgData.data[index + 3] = 255; // Set alpha to 100% opaque
+            }
+          }
+        }
+        return;
+      });
+      if (elemIdImgData !== undefined) {
+        ctx.putImageData(elemIdImgData, 0, 0);
+        await savePng(getImageString(testConfig, "elemId_" + pixStr + "_"));
+      }
+      if (depthImgData !== undefined) {
+        ctx.putImageData(depthImgData, 0, 0);
+        await savePng(getImageString(testConfig, "depth_" + pixStr + "_"));
+      }
+      if (typeImgData !== undefined) {
+        ctx.putImageData(typeImgData, 0, 0);
+        await savePng(getImageString(testConfig, "type_" + pixStr + "_"));
+      }
+    }
+  }
+
 }
 
 async function runTest(testConfig: DefaultConfigs) {
@@ -667,91 +759,20 @@ async function runTest(testConfig: DefaultConfigs) {
       const viewRect = new ViewRect(0, 0, width, height);
       const testReadPix = async (pixSelect: Pixel.Selector, pixSelectStr: string) => {
         for (let i = 0; i < numToRender; ++i) {
-          theViewport!.readPixels(viewRect, pixSelect, (_pixels) => { return; });
+          theViewport!.readPixels(viewRect, pixSelect, (_pixels: any) => { return; });
           finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
           finalFrameTimings[i].delete("Scene Time");
         }
         const rowData = getRowData(finalFrameTimings, testConfig, pixSelectStr);
         await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
+
+        // Create images from the elementID, depth (i.e. distance), and type (i.e. order)
+        await createReadPixelsImages(testConfig, pixSelect, pixSelectStr);
       };
       // Test each combo of pixel selectors
       await testReadPix(Pixel.Selector.Feature, "+feature");
       await testReadPix(Pixel.Selector.GeometryAndDistance, "+geom+dist");
       await testReadPix(Pixel.Selector.All, "+feature+geom+dist");
-
-      // Create images from the elementID, depth (i.e. distance), and type (i.e. order)
-      if (theViewport && theViewport.canvas) {
-        const ctx = theViewport.canvas.getContext("2d");
-        if (ctx) {
-          ctx.clearRect(0, 0, theViewport.canvas.width, theViewport.canvas.height);
-          const elemIdImgData = ctx.createImageData(width, height);
-          const depthImgData = ctx.createImageData(width, height);
-          const typeImgData = ctx.createImageData(width, height);
-
-          theViewport.readPixels(viewRect, Pixel.Selector.All, (pixels) => {
-            if (undefined === pixels)
-              return;
-            for (let y = viewRect.top; y < viewRect.bottom; ++y) {
-              for (let x = viewRect.left; x < viewRect.right; ++x) {
-                const index = (x * 4) + (y * 4 * viewRect.right);
-                const pixel = pixels.getPixel(x, y);
-                // // RGB for element ID
-                const elemId = Id64.getLowerUint32(pixel.elementId ? pixel.elementId : "");
-                elemIdImgData.data[index + 0] = elemId % 256;
-                elemIdImgData.data[index + 1] = (Math.floor(elemId / 256)) % 256;
-                elemIdImgData.data[index + 2] = (Math.floor(elemId / (256 ^ 2))) % 256;
-                // RGB for Depth
-                const distColor = pixels.getPixel(x, y).distanceFraction * 255;
-                const type = pixels.getPixel(x, y).type;
-                depthImgData.data[index + 0] = depthImgData.data[index + 1] = depthImgData.data[index + 2] = distColor;
-                // RGB for type
-                switch (type) {
-                  case Pixel.GeometryType.None: // White
-                    typeImgData.data[index + 0] = 255;
-                    typeImgData.data[index + 1] = 255;
-                    typeImgData.data[index + 2] = 255;
-                    break;
-                  case Pixel.GeometryType.Surface: // Red
-                    typeImgData.data[index + 0] = 255;
-                    typeImgData.data[index + 1] = 0;
-                    typeImgData.data[index + 2] = 0;
-                    break;
-                  case Pixel.GeometryType.Linear: // Green
-                    typeImgData.data[index + 0] = 0;
-                    typeImgData.data[index + 1] = 255;
-                    typeImgData.data[index + 2] = 0;
-                    break;
-                  case Pixel.GeometryType.Edge: // Blue
-                    typeImgData.data[index + 0] = 0;
-                    typeImgData.data[index + 1] = 0;
-                    typeImgData.data[index + 2] = 255;
-                    break;
-                  case Pixel.GeometryType.Silhouette: // Purple
-                    typeImgData.data[index + 0] = 255;
-                    typeImgData.data[index + 1] = 0;
-                    typeImgData.data[index + 2] = 255;
-                    break;
-                  case Pixel.GeometryType.Unknown: // Black
-                  default:
-                    typeImgData.data[index + 0] = 0;
-                    typeImgData.data[index + 1] = 0;
-                    typeImgData.data[index + 2] = 0;
-                    break;
-                }
-                // Alpha for all - set to 100% opaque
-                elemIdImgData.data[index + 3] = depthImgData.data[index + 3] = typeImgData.data[index + 3] = 255;
-              }
-            }
-            return;
-          });
-          ctx.putImageData(elemIdImgData, 0, 0);
-          await savePng(getImageString(testConfig, "elemId_"));
-          ctx.putImageData(depthImgData, 0, 0);
-          await savePng(getImageString(testConfig, "depth_"));
-          ctx.putImageData(typeImgData, 0, 0);
-          await savePng(getImageString(testConfig, "type_"));
-        }
-      }
     } else {
       const timer = new StopWatch(undefined, true);
       for (let i = 0; i < numToRender; ++i) {

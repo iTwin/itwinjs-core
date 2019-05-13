@@ -7,7 +7,7 @@
 import { assert, using, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
-import { IsInstanced, IsAnimated, IsClassified, IsShadowable, TechniqueFlags, FeatureMode, ClipDef } from "./TechniqueFlags";
+import { IsInstanced, IsAnimated, IsClassified, IsShadowable, TechniqueFlags, FeatureMode, ClipDef, IsEdgeTestNeeded } from "./TechniqueFlags";
 import { ProgramBuilder, FragmentShaderComponent, ClippingShaders } from "./ShaderBuilder";
 import { DrawParams, DrawCommands, OmitStatus } from "./DrawCommand";
 import { Target } from "./Target";
@@ -201,9 +201,10 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly _kTranslucent = 1;
   private static readonly _kInstanced = 2;
   private static readonly _kFeature = 4;
-  private static readonly _kAnimated = numFeatureVariants(SurfaceTechnique._kFeature);
-  private static readonly _kShadowable = SurfaceTechnique._kAnimated + numFeatureVariants(SurfaceTechnique._kFeature);
-  private static readonly _kHilite = SurfaceTechnique._kShadowable + numFeatureVariants(SurfaceTechnique._kFeature);
+  private static readonly _kEdgeTestNeeded = 8; // only when hasFeatures
+  private static readonly _kAnimated = numFeatureVariants(SurfaceTechnique._kFeature) + SurfaceTechnique._kEdgeTestNeeded;
+  private static readonly _kShadowable = SurfaceTechnique._kAnimated + numFeatureVariants(SurfaceTechnique._kFeature) + SurfaceTechnique._kEdgeTestNeeded;
+  private static readonly _kHilite = SurfaceTechnique._kShadowable + numFeatureVariants(SurfaceTechnique._kFeature) + SurfaceTechnique._kEdgeTestNeeded;
   // Classifiers are a special case - they are never translucent, animated, or instanced. We have 4 variants: 1 for each of the 3 feature modes, plus 1 for hilite.
   private static readonly _kClassified = SurfaceTechnique._kHilite + numHiliteVariants;
 
@@ -216,18 +217,23 @@ class SurfaceTechnique extends VariedTechnique {
       for (let hasAnimOrShadow = HasAnimationOrShadows.Neither; hasAnimOrShadow <= HasAnimationOrShadows.Shadows; hasAnimOrShadow++) {
         const iAnimate = HasAnimationOrShadows.Animation === hasAnimOrShadow ? IsAnimated.Yes : IsAnimated.No;
         const shadowable = HasAnimationOrShadows.Shadows === hasAnimOrShadow ? IsShadowable.Yes : IsShadowable.No;
-        for (const featureMode of featureModes) {
-          flags.reset(featureMode, instanced, shadowable);
-          flags.isAnimated = iAnimate;
-          const builder = createSurfaceBuilder(featureMode, flags.isInstanced, flags.isAnimated, IsClassified.No, flags.isShadowable);
-          addMonochrome(builder.frag);
-          addMaterial(builder.frag);
+        for (let edgeTestNeeded = IsEdgeTestNeeded.No; edgeTestNeeded <= IsEdgeTestNeeded.Yes; edgeTestNeeded++) {
+          for (const featureMode of featureModes) {
+            if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
+              flags.reset(featureMode, instanced, shadowable);
+              flags.isAnimated = iAnimate;
+              flags.isEdgeTestNeeded = edgeTestNeeded;
+              const builder = createSurfaceBuilder(featureMode, flags.isInstanced, flags.isAnimated, IsClassified.No, flags.isShadowable, flags.isEdgeTestNeeded);
+              addMonochrome(builder.frag);
+              addMaterial(builder.frag);
 
-          addSurfaceDiscardByAlpha(builder.frag);
-          this.addShader(builder, flags, gl);
+              addSurfaceDiscardByAlpha(builder.frag);
+              this.addShader(builder, flags, gl);
 
-          builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
-          this.addTranslucentShader(builder, flags, gl);
+              builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
+              this.addTranslucentShader(builder, flags, gl);
+            }
+          }
         }
       }
     }
@@ -237,7 +243,7 @@ class SurfaceTechnique extends VariedTechnique {
       flags.reset(featureMode, IsInstanced.No, IsShadowable.No);
       flags.isClassified = IsClassified.Yes;
 
-      const builder = createSurfaceBuilder(featureMode, IsInstanced.No, IsAnimated.No, IsClassified.Yes, IsShadowable.No);
+      const builder = createSurfaceBuilder(featureMode, IsInstanced.No, IsAnimated.No, IsClassified.Yes, IsShadowable.No, flags.isEdgeTestNeeded);
       addMonochrome(builder.frag);
       addMaterial(builder.frag);
       addSurfaceDiscardByAlpha(builder.frag);
@@ -256,6 +262,7 @@ class SurfaceTechnique extends VariedTechnique {
       assert(!flags.isTranslucent);
       assert(!flags.isInstanced);
       assert(!flags.isShadowable);
+      assert(!flags.isEdgeTestNeeded);
 
       const baseIndex = SurfaceTechnique._kClassified;
       return flags.isHilite ? baseIndex + numFeatureVariants(1) : baseIndex + flags.featureMode;
@@ -264,14 +271,15 @@ class SurfaceTechnique extends VariedTechnique {
       return SurfaceTechnique._kHilite + flags.isInstanced;
     }
 
+    assert(flags.hasFeatures || flags.isEdgeTestNeeded === IsEdgeTestNeeded.No);
     let index = flags.isTranslucent ? SurfaceTechnique._kTranslucent : SurfaceTechnique._kOpaque;
-    index += SurfaceTechnique._kFeature * flags.featureMode;
-    if (flags.isAnimated)
-      index += SurfaceTechnique._kAnimated;
-
     if (flags.isInstanced)
       index += SurfaceTechnique._kInstanced;
-
+    index += SurfaceTechnique._kFeature * flags.featureMode;
+    if (flags.isEdgeTestNeeded)
+      index += SurfaceTechnique._kEdgeTestNeeded;
+    if (flags.isAnimated)
+      index += SurfaceTechnique._kAnimated;
     if (flags.isShadowable)
       index += SurfaceTechnique._kShadowable;
 
@@ -314,7 +322,6 @@ class PolylineTechnique extends VariedTechnique {
         this.addShader(builder, flags, gl);
       }
     }
-
     this.verifyShadersContiguous();
   }
 
@@ -373,7 +380,6 @@ class EdgeTechnique extends VariedTechnique {
         }
       }
     }
-
     this.verifyShadersContiguous();
   }
 
@@ -426,7 +432,6 @@ class PointStringTechnique extends VariedTechnique {
         this.addShader(builder, flags, gl);
       }
     }
-
     this.verifyShadersContiguous();
   }
 
@@ -466,7 +471,6 @@ class PointCloudTechnique extends VariedTechnique {
         this.addShader(builder, flags, gl);
       }
     }
-
     this.verifyShadersContiguous();
   }
 

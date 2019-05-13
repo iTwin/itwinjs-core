@@ -1226,19 +1226,14 @@ class MPGeometry extends Geometry {
 class MPCompositor extends Compositor {
   private _currentRenderTargetIndex: number = 0;
   private _drawMultiPassDepth: boolean = true;
-  private readonly _opaqueRenderStateWithEqualDepthFunc = new RenderState();
-  private readonly _opaqueRenderStateWithEqualDepthFuncNoZWt = new RenderState();
+  private readonly _opaqueRenderStateNoZWt = new RenderState();
 
   public constructor(target: Target) {
     super(target, new MPFrameBuffers(), new MPGeometry());
 
-    this._opaqueRenderStateWithEqualDepthFunc.flags.depthTest = true;
-    this._opaqueRenderStateWithEqualDepthFunc.depthFunc = GL.DepthFunc.LessOrEqual;
-    this._opaqueRenderStateWithEqualDepthFunc.flags.cull = true === System.instance.options.backfaceCulling;
-    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.depthTest = true;
-    this._opaqueRenderStateWithEqualDepthFuncNoZWt.depthFunc = GL.DepthFunc.LessOrEqual;
-    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.depthMask = false;
-    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.cull = true === System.instance.options.backfaceCulling;
+    this._opaqueRenderStateNoZWt.flags.depthTest = true;
+    this._opaqueRenderStateNoZWt.flags.cull = true === System.instance.options.backfaceCulling;
+    this._opaqueRenderStateNoZWt.flags.depthMask = false;
   }
 
   protected getRenderState(pass: RenderPass): RenderState {
@@ -1246,7 +1241,7 @@ class MPCompositor extends Compositor {
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
-        return this._drawMultiPassDepth ? this._opaqueRenderStateWithEqualDepthFunc : this._opaqueRenderStateWithEqualDepthFuncNoZWt;
+        return this._drawMultiPassDepth ? this._opaqueRenderState : this._opaqueRenderStateNoZWt;
     }
 
     return super.getRenderState(pass);
@@ -1317,10 +1312,14 @@ class MPCompositor extends Compositor {
       this._drawMultiPassDepth = false;
     }
     this._currentRenderTargetIndex++;
-    stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth));
-    this._drawMultiPassDepth = false;
+    if (!this.target.isReadPixelsInProgress || Pixel.Selector.None !== (this.target.readPixelsSelector & Pixel.Selector.Feature)) {
+      stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth));
+      this._drawMultiPassDepth = false;
+    }
     this._currentRenderTargetIndex++;
-    stack.execute(this._fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, false));
+    if (!this.target.isReadPixelsInProgress || Pixel.Selector.None !== (this.target.readPixelsSelector & Pixel.Selector.GeometryAndDistance)) {
+      stack.execute(this._fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth));
+    }
     this._currentRenderTargetIndex = 0;
   }
 

@@ -51,9 +51,12 @@ The types of view flags that can be specified are as follows:
 * backgroundMap
 * hLineMaterialColors
 * edgeMask
+* ambientOcclusion
+* forceSurfaceDiscard
 
 The types of render options that can be specified are as follows:
 * disabledExtensions - This should contain an array of all the WebGL extensions that you wish to disable. The program will restart the IModelApp every time this value changes, to ensure that the render system is changed appropriately (so it is better to group things that use the same render options). The extensions that may be disabled are found in WebGLExtensionName, and they currently include the following: "WEBGL_draw_buffers", "OES_element_index_uint", "OES_texture_float", "OES_texture_half_float", "WEBGL_depth_texture", "EXT_color_buffer_float", "EXT_shader_texture_lod", and "ANGLE_instanced_arrays".
+* enableOptimizedSurfaceShaders - This should be a boolean value that describes whether or not you wish to enable optimized surface shaders. It defaults to false (i.e. not enabling the optimized shaders).
 
 If any settings are not specified, the program will not change these settings. For example: if no view flags were specified, the program will not specifically alter the view flags. (though the view flags may be altered depending on what settings the chosen view has applied or if a specific display style has been chosen that affects the view flags).
 
@@ -84,7 +87,8 @@ Below is an example json config file:
           "testType": "timing",
           "viewName": "V0",
           "renderOptions": {
-		      "disabledExtensions": ["WEBGL_draw_buffers", "OES_texture_half_float"]
+		      "disabledExtensions": ["WEBGL_draw_buffers", "OES_texture_half_float"],
+          "enableOptimizedSurfaceShaders": true
 		      },
           "tileProps": {
             "disableThrottling": false,
@@ -115,7 +119,9 @@ Below is an example json config file:
             "noGeometryMap": false,
             "backgroundMap": false,
             "hLineMaterialColors": false,
-            "edgeMask": 0
+            "edgeMask": 0,
+            "ambientOcclusion": false,
+            "forceSurfaceDiscard": false
           },
           "displayStyle": "Filled Hidden Line"
         },
@@ -131,7 +137,7 @@ Below is an example json config file:
     },
     {
       "iModelName": "Wraith_MultiMulti.ibim",
-      "outputPath": "D:/models/TimingTests/Wrath_MultiMultiPics",
+      "outputPath": "D:/output/TimingTests/Wrath_MultiMultiPics",
       "view": {
         "width": 500,
         "height": 500
@@ -220,18 +226,18 @@ The 'View Flags' column contains a string representation of view flag specificat
 * -pat  - pattern geometry is hidden
 * -wt   - non-zero lines are displayed using weight 0
 * -sty  - line styles are not used
-* -trn  - element transparency is used
+* -trn  - element transparency is not used
 * -fll  - the fills on filled elements are not displayed
 * -txt  - do not display texture maps for material assignments; only use material color for display
 * -mat  - geometry with materials draws as if it has no material
-* +vsE  - visible edges in shaded render mode are hidden
-* +hdE  - hidden edges in shaded render mode are hidden
-* +scL  - source lights in spatial models are not used
-* +cmL  - camera (ambient, portrait, flashbulb) lights are not used
-* +slL  - source lights in spatial models are not used
-* +shd  - shadows are hidden
+* +vsE  - visible edges in shaded render mode are visible
+* +hdE  - hidden edges in shaded render mode are visible
+* +scL  - source lights in spatial models are used
+* +cmL  - camera (ambient, portrait, flashbulb) lights are used
+* +slL  - source lights in spatial models are used
+* +shd  - shadows are visible
 * -clp  - clip volume is not applied
-* +con  - construction class geometry is hidden
+* +con  - construction class geometry is visible
 * +mno  - all graphics are drawn in a single color
 * +noG  - ignore geometry maps
 * +bkg  - display background maps

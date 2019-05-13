@@ -42,6 +42,9 @@ function setupStandaloneConfiguration() {
     configuration.disableActiveVolumeCulling = undefined !== process.env.SVT_DISABLE_ACTIVE_VOLUME_CULLING;
     configuration.preserveShaderSourceCode = undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE;
 
+    if (undefined !== process.env.SVT_OPTIMIZED_SURFACE_SHADERS)
+      configuration.enableOptimizedSurfaceShaders = true;
+
     const extensions = process.env.SVT_DISABLED_EXTENSIONS;
     if (undefined !== extensions)
       configuration.disabledExtensions = extensions.split(";");

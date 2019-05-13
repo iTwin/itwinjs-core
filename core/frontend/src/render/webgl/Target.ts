@@ -264,6 +264,7 @@ export abstract class Target extends RenderTarget {
   public plan?: RenderPlan;
   private _animationBranches?: AnimationBranchStates;
   private _isReadPixelsInProgress = false;
+  private _readPixelsSelector = Pixel.Selector.None;
   private _drawNonLocatable = true;
   public isFadeOutActive = false;
   public primitiveVisibility: PrimitiveVisibility = PrimitiveVisibility.All;
@@ -282,6 +283,7 @@ export abstract class Target extends RenderTarget {
 
   public get compositor() { return this._compositor; }
   public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
+  public get readPixelsSelector(): Pixel.Selector { return this._readPixelsSelector; }
   public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
 
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
@@ -811,6 +813,7 @@ export abstract class Target extends RenderTarget {
     const drawForReadPixels = false;
     if (drawForReadPixels) {
       this._isReadPixelsInProgress = true;
+      this._readPixelsSelector = Pixel.Selector.Feature;
 
       this.recordPerformanceMetric("Begin Paint");
       const vf = this.currentViewFlags.clone(this._scratchViewFlags);
@@ -953,6 +956,7 @@ export abstract class Target extends RenderTarget {
   private readonly _scratchViewFlags = new ViewFlags();
   private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     this._isReadPixelsInProgress = true;
+    this._readPixelsSelector = selector;
 
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.

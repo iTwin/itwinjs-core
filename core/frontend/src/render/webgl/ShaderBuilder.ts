@@ -923,7 +923,8 @@ export class ProgramBuilder {
   }
 
   public setDebugDescription(description: string): void {
-    this.vert.headerComment = this.frag.headerComment = ("//! " + description);
+    this.vert.headerComment = ("//!V! " + description);
+    this.frag.headerComment = ("//!F! " + description);
   }
 
   /** Returns a deep copy of this program builder. */

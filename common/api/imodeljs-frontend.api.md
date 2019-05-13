@@ -4784,6 +4784,8 @@ export namespace RenderSystem {
         // @internal
         displaySolarShadows?: boolean;
         // @internal
+        enableOptimizedSurfaceShaders?: boolean;
+        // @internal
         preserveShaderSourceCode?: boolean;
     }
 }
@@ -5856,6 +5858,8 @@ export abstract class Target extends RenderTarget {
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;
     // (undocumented)
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
+    // (undocumented)
+    readonly readPixelsSelector: Pixel.Selector;
     // (undocumented)
     recordPerformanceMetric(operation: string): void;
     // (undocumented)

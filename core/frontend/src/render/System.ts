@@ -1106,6 +1106,12 @@ export namespace RenderSystem {
      * @internal
      */
     disabledExtensions?: WebGLExtensionName[];
+    /** Specifies whether to use optimized surface shaders when edge display is not important. If set to true, then in 3d views the optimized shaders will be used if:
+     *  - Render mode is wireframe; or
+     *  - Render mode is smooth shade and visible edges are turned off.
+     * @internal
+     */
+    enableOptimizedSurfaceShaders?: boolean;
     /** If true, back-face culling will be enabled when appropriate, which should improve display performance.
      * @internal
      */
