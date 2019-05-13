@@ -23,6 +23,7 @@ import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { ViewManager } from "./ViewManager";
+import { WebGLRenderCompatibilityInfo } from "./RenderCompatibility";
 import { TileAdmin } from "./tile/TileAdmin";
 import { EntityState } from "./EntityState";
 
@@ -192,6 +193,14 @@ export class IModelApp {
 
   /** @internal */
   public static lookupEntityClass(classFullName: string) { return this._entityClasses.get(classFullName.toLowerCase()); }
+
+  /**
+   * Obtain WebGL rendering compatibility information for the client system.  This information describes whether the client meets the
+   * minimum rendering capabilities.  It also describes whether the system lacks any optional capabilities that could improve quality
+   * and/or performance.
+   * @beta
+   */
+  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return System.queryRenderCompatibility(); }
 
   /**
    * This method must be called before any iModel.js frontend services are used.

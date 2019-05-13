@@ -2886,6 +2886,8 @@ export class IModelApp {
     static readonly notifications: NotificationManager;
     // @alpha
     static readonly quantityFormatter: QuantityFormatter;
+    // @beta
+    static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
     // @internal

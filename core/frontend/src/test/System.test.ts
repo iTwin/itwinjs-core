@@ -3,11 +3,137 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Capabilities, RenderType, DepthType } from "../webgl";
+import { Capabilities, RenderType, DepthType, System } from "../webgl";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
 import { TileAdmin } from "../tile/TileAdmin";
 import { RenderSystem } from "../render/System";
+import { WebGLRenderCompatibilityStatus, WebGLFeature } from "../RenderCompatibility";
+
+class OverriddenFunctions {
+  public origCreateContext = System.createContext;
+
+  public overrideCreateContext(newGetParameter?: (ctx: WebGLRenderingContext, pname: number) => any, useContextAttributes: boolean = true) {
+    System.createContext = (canvas, attr) => {
+      const ctx = this.origCreateContext(canvas, useContextAttributes ? attr : undefined);
+      if (undefined !== ctx && undefined !== newGetParameter) {
+        const origGetParameter = ctx.getParameter;
+        ctx.getParameter = (pname: number) => {
+          const result = newGetParameter(ctx, pname);
+          if (result !== undefined)
+            return result;
+          const boundGetParameter = origGetParameter.bind(ctx);
+          return boundGetParameter(pname);
+        };
+      }
+      return ctx;
+    };
+  }
+
+  public restore() {
+    System.createContext = this.origCreateContext;
+  }
+}
+
+function _createCanvas(): HTMLCanvasElement | undefined {
+  const canvas = document.createElement("canvas") as HTMLCanvasElement;
+  if (null === canvas)
+    return undefined;
+  return canvas;
+}
+
+describe("Render Compatibility", () => {
+  const overriddenFunctions = new OverriddenFunctions();
+
+  after(async () => {
+    overriddenFunctions.restore();
+  });
+
+  // NB: We assume software rendering for these tests because puppeteer only supports software rendering.
+  // Further, we run in the context of Chrome, whose Swift software renderer fully supports our renderer.
+
+  it("should query proper render compatibility info assuming software rendering causing performance caveat", () => {
+    const compatibility = IModelApp.queryRenderCompatibility();
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MajorPerformanceCaveat);
+    expect(compatibility.contextErrorMessage).to.not.be.undefined;
+  });
+
+  it("should query proper render compatibility info assuming software rendering ignoring performance caveat", () => {
+    overriddenFunctions.overrideCreateContext(undefined, false);
+    const compatibility = IModelApp.queryRenderCompatibility();
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.AllOkay);
+    expect(compatibility.missingRequiredFeatures.length).to.equal(0);
+    expect(compatibility.missingOptionalFeatures.length).to.equal(0);
+    expect(compatibility.contextErrorMessage).to.be.undefined;
+    overriddenFunctions.restore();
+  });
+
+  it("should query proper render compatibility info assuming not enough texture units", () => {
+    overriddenFunctions.overrideCreateContext((ctx: WebGLRenderingContext, pname: number): any => {
+      if (ctx.MAX_TEXTURE_IMAGE_UNITS === pname)
+        return 0;
+      return undefined;
+    });
+
+    const compatibility = IModelApp.queryRenderCompatibility();
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingRequiredFeatures);
+    expect(compatibility.missingRequiredFeatures.indexOf(WebGLFeature.MinimalTextureUnits)).to.not.equal(-1);
+    overriddenFunctions.restore();
+  });
+
+  it("should query proper render compatibility info assuming lack of MRT support", () => {
+    overriddenFunctions.overrideCreateContext((ctx: WebGLRenderingContext, pname: number): any => {
+      const dbExt = ctx.getExtension("WEBGL_draw_buffers");
+      if (null === dbExt)
+        return undefined;
+      if (dbExt.MAX_COLOR_ATTACHMENTS_WEBGL === pname)
+        return 0;
+      return undefined;
+    }, false);
+
+    const compatibility = IModelApp.queryRenderCompatibility();
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
+    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.MrtTransparency)).to.not.equal(-1);
+    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.MrtPick)).to.not.equal(-1);
+    overriddenFunctions.restore();
+  });
+
+  it("should query proper render compatibility info assuming lack of uint element index support", () => {
+    const canvas = _createCanvas();
+    expect(canvas).to.not.be.undefined;
+    const context = System.createContext(canvas!);
+    expect(context).to.not.be.undefined;
+
+    const caps = new Capabilities();
+    const compatibility = caps.init(context!, ["OES_element_index_uint"]);
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingRequiredFeatures);
+    expect(compatibility.missingRequiredFeatures.indexOf(WebGLFeature.UintElementIndex)).to.not.equal(-1);
+  });
+
+  it("should query proper render compatibility info assuming lack of depth texture support", () => {
+    const canvas = _createCanvas();
+    expect(canvas).to.not.be.undefined;
+    const context = System.createContext(canvas!);
+    expect(context).to.not.be.undefined;
+
+    const caps = new Capabilities();
+    const compatibility = caps.init(context!, ["WEBGL_depth_texture"]);
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
+    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.DepthTexture)).to.not.equal(-1);
+  });
+
+  it("should query proper render compatibility info assuming lack of instancing support", () => {
+    const canvas = _createCanvas();
+    expect(canvas).to.not.be.undefined;
+    const context = System.createContext(canvas!);
+    expect(context).to.not.be.undefined;
+
+    const caps = new Capabilities();
+    const compatibility = caps.init(context!, ["ANGLE_instanced_arrays"]);
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
+    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.Instancing)).to.not.equal(-1);
+  });
+});
 
 describe("Instancing", () => {
   class TestApp extends MockRender.App {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add IModelApp.queryRenderCompatibility() API to allow querying of any rendering limitations of a client system.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Mark.Schlosser@bentley.com"
+}
