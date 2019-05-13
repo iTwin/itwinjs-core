@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../index.scss";
 
-.context-menu-global {
+.core-context-menu-global {
   position: fixed;
   width: 0px;
   height: 0px;
   z-index: 9999;
 }
 
-.context-menu {
+.core-context-menu {
   color: $buic-foreground-body;
 
   &:hover {
@@ -24,8 +24,20 @@
   position: relative;
   z-index: 9999;
 
-  .context-menu-container {
+  .core-context-menu-container {
     position: absolute;
+    border-radius: 3px;
+    padding: 4px 0;
+    box-shadow: 0px 3px 5px 0 rgba(0, 0, 0, 0.2);
+    background-color: $buic-background-1;
+    text-overflow: ellipsis;
+    min-width: 120px;
+    max-width: 350px;
+    visibility: hidden;
+    transform: scaleY(0);
+    display: table;
+    border: 1px solid $buic-background-control-stroke;
+    box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
 
     &.floating {
       position: fixed;
@@ -73,36 +85,26 @@
       }
     }
 
-    visibility: hidden;
-    transform: scaleY(0);
-    display: table;
-    background-color: $buic-background-panel;
-    border: 1px solid $buic-background-control-stroke;
-    box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
-
-    .context-menu-item {
+    .core-context-menu-item {
       display: flex;
       cursor: default;
       padding: ($uicore-unbordered-padding / 2) $uicore-bordered-padding;
       width: calc(100% - 2 * #{$uicore-bordered-padding});
+      align-items: center;
+
+      &:hover {
+        background-color: $buic-row-hover;
+      }
 
       &.is-selected {
         background-color: $buic-row-selection;
-      }
-
-      &:first-child {
-        padding-top: $uicore-bordered-padding;
-      }
-
-      &:last-child {
-        padding-bottom: $uicore-bordered-padding;
       }
 
       &.disabled {
         color: $buic-foreground-disabled;
       }
 
-      > .context-menu-icon {
+      > .core-context-menu-icon {
         flex-shrink: 0;
         flex-grow: 0;
         width: $uicore-icons-small;
@@ -111,11 +113,13 @@
         line-height: $uicore-line-height;
         text-align: center;
         margin-right: $uicore-unbordered-padding;
+        opacity: 0.85;
       }
 
-      > .context-menu-content {
+      > .core-context-menu-content {
         flex-shrink: 0;
         flex-grow: 1;
+        font-size: 14px;
       }
     }
 
@@ -124,13 +128,14 @@
       box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
       outline: 0px;
 
-      > .context-menu-item.is-selected,
-      > .context-submenu > .context-menu-item.is-selected {
-        background-color: $buic-row-selection;
+      > .core-context-menu-item.is-selected,
+      > .context-submenu > .core-context-menu-item.is-selected {
+        // .is-selected being applied on hover, overriding with hover color
+        background-color: $buic-row-hover;
       }
     }
 
-    .context-submenu {
+    .core-context-submenu {
       display: flex;
 
       &.top {
@@ -173,7 +178,7 @@
         align-items: flex-start;
       }
 
-      .context-submenu-container .context-submenu-arrow {
+      .core-context-submenucontainer .core-context-submenuarrow {
         flex-shrink: 0;
         flex-grow: 0;
         margin-left: $uicore-unbordered-padding;
@@ -186,7 +191,7 @@
     }
   }
 
-  .context-menu-divider {
+  .core-context-menu-divider {
     border-bottom: 1px solid $buic-background-divider;
     height: 0px;
   }

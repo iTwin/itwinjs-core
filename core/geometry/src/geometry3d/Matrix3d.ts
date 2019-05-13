@@ -121,6 +121,7 @@ class PackedMatrix3dOps {
  * * unknown: it is not know if the matrix is invertible.
  * * inverseStored: the matrix has its inverse stored
  * * singular: the matrix is known to be singular.
+ * @public
  */
 export enum InverseMatrixState {
   unknown,
@@ -141,13 +142,25 @@ export enum InverseMatrixState {
  * * Most matrix queries are present with both "column" and "row" variants.
  * * Usage elsewhere in the library is typically "column" based.  For example, in a Transform
  *     that carries a coordinate frame the matrix columns are the unit vectors for the axes.
+ * @public
  */
 export class Matrix3d implements BeJSONFunctions {
+  /** Control flag for whether this class uses cached inverse of matrices. */
   public static useCachedInverse = true;  // cached inverse can be suppressed for testing.
+  /** total number of times a cached inverse was used to avoid recompute */
   public static numUseCache = 0;
+  /** total number of times a cached invese was computed. */
   public static numComputeCache = 0;
+  /** Matrix contents as a flat array of numbers in row-major order.
+   * * DO NOT direclty modify this array.  It will destroy safety of the cached inverse state.
+   */
   public coffs: Float64Array;
+  /** matrix inverse contents.
+   * * DO NOT direclty modify this array.  It will destroy integrity of the cached inverse state.
+   *
+   */
   public inverseCoffs: Float64Array | undefined;
+  /** indicates if inverse is unknown, available, or known singular */
   public inverseState: InverseMatrixState;
   private static _identity: Matrix3d;
 
@@ -224,7 +237,7 @@ export class Matrix3d implements BeJSONFunctions {
         0, 0, 1);
     }
   }
-  /** @returns Return a new Matrix3d constructed from contents of the json value. */
+  /** Return a new Matrix3d constructed from contents of the json value. */
   public static fromJSON(json?: Matrix3dProps): Matrix3d { const result = Matrix3d.createIdentity(); result.setFromJSON(json); return result; }
   /** Test if this Matrix3d and other are within tolerance in all numeric entries.
    * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
@@ -247,7 +260,7 @@ export class Matrix3d implements BeJSONFunctions {
   // !! does not clear supplied result !!
   private static _create(result?: Matrix3d): Matrix3d { return result ? result : new Matrix3d(); }
 
-  /** @returns a Matrix3d populated by numeric values given in row-major order.
+  /** Returns a Matrix3d populated by numeric values given in row-major order.
    *  set all entries in the matrix from call parameters appearing in row - major order.
    * @param axx Row x, column x(0, 0) entry
    * @param axy Row x, column y(0, 1) entry
@@ -291,7 +304,14 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
 
-  // install all matrix entries.
+  /**
+   * create a matrix by distributing vectors to columns in one of 6 orders.
+   * @param axisOrder identifies where the columns are placed.
+   * @param columnA vector to place in the first column named by the axis order.
+   * @param columnB vector to place in the second column named by the axis order.
+   * @param columnC vector to place in the thirde column named by the axis order.
+   * @param result
+   */
   public static createColumnsInAxisOrder(axisOrder: AxisOrder, columnA: Vector3d, columnB: Vector3d, columnC: Vector3d | undefined, result?: Matrix3d) {
     if (!result) result = new Matrix3d();
     if (axisOrder === AxisOrder.YZX) {
@@ -331,26 +351,42 @@ export class Matrix3d implements BeJSONFunctions {
     this.coffs[6] = azx; this.coffs[7] = azy; this.coffs[8] = azz;
     this.inverseState = InverseMatrixState.unknown;
   }
+  /** Set the matrix to an identity. */
   public setIdentity() { this.setRowValues(1, 0, 0, 0, 1, 0, 0, 0, 1); this.setupInverseTranspose(); }
+  /** Set the matrix to all zeros. */
   public setZero() { this.setRowValues(0, 0, 0, 0, 0, 0, 0, 0, 0); this.inverseState = InverseMatrixState.singular; }
-
+  /** copy contents from another matrix. */
   public setFrom(other: Matrix3d) {
     for (let i = 0; i < 9; i++)
       this.coffs[i] = other.coffs[i];
     this.inverseState = InverseMatrixState.unknown; // we don't trust the other .. . .
   }
 
+  /** return a clone of this matrix.
+   * * coefficients are copied.
+   * * inverse coefficients are NOT copied.
+   * * inverse status is set to unknown
+   */
   public clone(result?: Matrix3d): Matrix3d {
     result = result ? result : new Matrix3d();
     result.setFrom(this);
     return result;
   }
-
+  /** create a matrix with all zeros.
+   * * Note that for geometry transformations "all zeros" is not a useful default state.
+   * * Hence almost always use `createIdentity` for graphics transformations.
+   * * "all zeros" is appropriate for summing moment data.
+   */
   public static createZero(): Matrix3d {
     const retVal = new Matrix3d();
     retVal.inverseState = InverseMatrixState.singular;
     return retVal;
   }
+  /** create an identity matrix
+   * * all diagonal entries (xx,yy,zz) are one
+   * * all others are zero.
+   * * This (rather than all zeros) is the useful state for most graphics transformations.
+   */
   public static createIdentity(result?: Matrix3d): Matrix3d {
     result = result ? result : new Matrix3d();
     result.setIdentity();
@@ -425,7 +461,7 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
 
-  /** @returns return a rotation of specified angle around an axis */
+  /** return a rotation of specified angle around an axis */
   public static createRotationAroundVector(axis: Vector3d, angle: Angle, result?: Matrix3d): Matrix3d | undefined {
     const c = angle.cos();
     const s = angle.sin();
@@ -448,7 +484,7 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
 
-  /** @returns return a rotation of specified angle around an axis
+  /** Returns a rotation of specified angle around an axis
    * @param axisIndex index of axis (AxisIndex.X, AxisIndex.Y, AxisIndex.Z) kept fixed by the rotation.
    * @param angle angle of rotation
    * @param result optional result matrix.
@@ -713,7 +749,7 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
   /**
-   * @returns return a matrix that rotates from vectorA to vectorB.
+   * Returns a matrix that rotates from vectorA to vectorB.
    */
   public static createRotationVectorToVector(vectorA: Vector3d, vectorB: Vector3d, result?: Matrix3d): Matrix3d | undefined {
     return this.createPartialRotationVectorToVector(vectorA, 1.0, vectorB, result);
@@ -771,42 +807,42 @@ export class Matrix3d implements BeJSONFunctions {
     }
   }
 
-  /** @returns Return (a copy of) the X column */
+  /** Return (a copy of) the X column */
   public columnX(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[0], this.coffs[3], this.coffs[6], result); }
-  /** @returns Return (a copy of)the Y column */
+  /** Return (a copy of)the Y column */
   public columnY(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[1], this.coffs[4], this.coffs[7], result); }
-  /** @returns Return (a copy of)the Z column */
+  /** Return (a copy of)the Z column */
   public columnZ(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[2], this.coffs[5], this.coffs[8], result); }
 
-  /** @returns Return the X column magnitude squared */
+  /** Return the X column magnitude squared */
   public columnXMagnitudeSquared(): number { return Geometry.hypotenuseSquaredXYZ(this.coffs[0], this.coffs[3], this.coffs[6]); }
-  /** @returns Return the Y column magnitude squared */
+  /** Return the Y column magnitude squared */
   public columnYMagnitudeSquared(): number { return Geometry.hypotenuseSquaredXYZ(this.coffs[1], this.coffs[4], this.coffs[7]); }
-  /** @returns Return the Z column magnitude squared */
+  /** Return the Z column magnitude squared */
   public columnZMagnitudeSquared(): number { return Geometry.hypotenuseSquaredXYZ(this.coffs[2], this.coffs[5], this.coffs[8]); }
 
-  /** @returns Return the X column magnitude */
+  /** Return the X column magnitude */
   public columnXMagnitude(): number { return Math.hypot(this.coffs[0], this.coffs[3], this.coffs[6]); }
-  /** @returns Return the Y column magnitude */
+  /** Return the Y column magnitude */
   public columnYMagnitude(): number { return Math.hypot(this.coffs[1], this.coffs[4], this.coffs[7]); }
-  /** @returns Return the Z column magnitude */
+  /** Return the Z column magnitude */
   public columnZMagnitude(): number { return Math.hypot(this.coffs[2], this.coffs[5], this.coffs[8]); }
 
-  /** @returns Return magntiude of columnX cross columnY. */
+  /** Return magntiude of columnX cross columnY. */
   public columnXYCrossProductMagnitude(): number {
     return Geometry.crossProductMagnitude(
       this.coffs[0], this.coffs[3], this.coffs[6],
       this.coffs[1], this.coffs[4], this.coffs[7]);
   }
 
-  /** @returns Return the X row magnitude d */
+  /** Return the X row magnitude d */
   public rowXMagnitude(): number { return Math.hypot(this.coffs[0], this.coffs[1], this.coffs[2]); }
-  /** @returns Return the Y row magnitude  */
+  /** Return the Y row magnitude  */
   public rowYMagnitude(): number { return Math.hypot(this.coffs[3], this.coffs[4], this.coffs[5]); }
-  /** @returns Return the Z row magnitude  */
+  /** Return the Z row magnitude  */
   public rowZMagnitude(): number { return Math.hypot(this.coffs[6], this.coffs[7], this.coffs[8]); }
-  /** @returns the dot product of column X with column Y */
-  /** @returns the dot product of column X with column Y */
+  /** Return the dot product of column X with column Y */
+  /** Return the dot product of column X with column Y */
   public columnXDotColumnY(): number {
     return this.coffs[0] * this.coffs[1]
       + this.coffs[3] * this.coffs[4]
@@ -819,28 +855,28 @@ export class Matrix3d implements BeJSONFunctions {
   /** Return (a copy of) the Z row */
   public rowZ(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[6], this.coffs[7], this.coffs[8], result); }
 
-  /** @returns Return the dot product of the vector parameter with the X column. */
+  /** Return the dot product of the vector parameter with the X column. */
   public dotColumnX(vector: XYZ): number { return vector.x * this.coffs[0] + vector.y * this.coffs[3] + vector.z * this.coffs[6]; }
-  /** @returns Return the dot product of the vector parameter with the Y column. */
+  /** Return the dot product of the vector parameter with the Y column. */
   public dotColumnY(vector: XYZ): number { return vector.x * this.coffs[1] + vector.y * this.coffs[4] + vector.z * this.coffs[7]; }
-  /** @returns Return the dot product of the vector parameter with the Z column. */
+  /** Return the dot product of the vector parameter with the Z column. */
   public dotColumnZ(vector: XYZ): number { return vector.x * this.coffs[2] + vector.y * this.coffs[5] + vector.z * this.coffs[8]; }
 
-  /** @returns Return the dot product of the vector parameter with the X row. */
+  /** Return the dot product of the vector parameter with the X row. */
   public dotRowX(vector: XYZ): number { return vector.x * this.coffs[0] + vector.y * this.coffs[1] + vector.z * this.coffs[2]; }
-  /** @returns Return the dot product of the vector parameter with the Y row. */
+  /** Return the dot product of the vector parameter with the Y row. */
   public dotRowY(vector: XYZ): number { return vector.x * this.coffs[3] + vector.y * this.coffs[4] + vector.z * this.coffs[5]; }
-  /** @returns Return the dot product of the vector parameter with the Z row. */
+  /** Return the dot product of the vector parameter with the Z row. */
   public dotRowZ(vector: XYZ): number { return vector.x * this.coffs[6] + vector.y * this.coffs[7] + vector.z * this.coffs[8]; }
 
-  /** @returns Return the dot product of the x,y,z with the X row. */
+  /** Return the dot product of the x,y,z with the X row. */
   public dotRowXXYZ(x: number, y: number, z: number): number { return x * this.coffs[0] + y * this.coffs[1] + z * this.coffs[2]; }
-  /** @returns Return the dot product of the x,y,z with the Y row. */
+  /** Return the dot product of the x,y,z with the Y row. */
   public dotRowYXYZ(x: number, y: number, z: number): number { return x * this.coffs[3] + y * this.coffs[4] + z * this.coffs[5]; }
-  /** @returns Return the dot product of the x,y,z with the Z row. */
+  /** Return the dot product of the x,y,z with the Z row. */
   public dotRowZXYZ(x: number, y: number, z: number): number { return x * this.coffs[6] + y * this.coffs[7] + z * this.coffs[8]; }
 
-  /** @returns Return the (vector) cross product of the Z column with the vector parameter. */
+  /** Return the (vector) cross product of the Z column with the vector parameter. */
   public columnZCrossVector(vector: XYZ, result?: Vector3d): Vector3d {
     return Geometry.crossProductXYZXYZ(this.coffs[2], this.coffs[5], this.coffs[8], vector.x, vector.y, vector.z, result);
   }
@@ -1225,7 +1261,8 @@ export class Matrix3d implements BeJSONFunctions {
       (this.coffs[6] * v.x + this.coffs[7] * v.y + this.coffs[8] * v.z));
   }
 
-  public static xyzMinusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYZ, result?: Point3d): Point3d {
+  /** compute `origin - matrix * vector` */
+  public static xyzMinusMatrixTimesXYZ(origin: XYAndZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;
@@ -1236,6 +1273,7 @@ export class Matrix3d implements BeJSONFunctions {
       result);
   }
 
+  /** cmopute  `origin + matrix * vector`  using only the xy parts of the inputs. */
   public static xyPlusMatrixTimesXY(origin: XAndY, matrix: Matrix3d, vector: XAndY, result?: Point2d): Point2d {
     const x = vector.x;
     const y = vector.y;
@@ -1245,6 +1283,7 @@ export class Matrix3d implements BeJSONFunctions {
       result);
   }
 
+  /** cmopute  `origin + matrix * vector`  using all xyz parts of the inputs. */
   public static xyzPlusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
     const x = vector.x;
     const y = vector.y;
@@ -1255,7 +1294,7 @@ export class Matrix3d implements BeJSONFunctions {
       origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z,
       result);
   }
-
+  /** compute `origin + matrix * vector` where the final vector is given as direct x,y,z coordinates */
   public static xyzPlusMatrixTimesCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Point3d): Point3d {
     return Point3d.create(
       origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
@@ -1323,7 +1362,7 @@ export class Matrix3d implements BeJSONFunctions {
     result[2] = origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z;
     return result;
   }
-
+  /** Multiply transpose of this matrix times  avector. */
   public multiplyTransposeVector(vector: Vector3d, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
     const x = vector.x;
@@ -1371,7 +1410,7 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
 
-  // origin + this*[x,y,0].  (no nulls allowed !!)
+  /** compute `origin + this*[x,y,0]`  */
   public originPlusMatrixTimesXY(origin: XYZ, x: number, y: number, result?: Point3d): Point3d {
     return Point3d.create(
       origin.x + this.coffs[0] * x + this.coffs[1] * y,
@@ -1674,7 +1713,7 @@ export class Matrix3d implements BeJSONFunctions {
     return coffA[rowStartA] * coffB[columnStartB] + coffA[rowStartA + 1] * coffB[columnStartB + 3] + coffA[rowStartA + 2] * coffB[columnStartB + 6];
   }
   /**
-   * @returns true if the matrix is singular (i.e. collapses data to a plane, line, or point)
+   * Returns true if the matrix is singular (i.e. collapses data to a plane, line, or point)
    */
   public isSingular(): boolean {
     return !this.computeCachedInverse(true);
@@ -2049,6 +2088,10 @@ export class Matrix3d implements BeJSONFunctions {
     return coff;
   }
 
+  /** create a matrix from a quaternion.
+   * WARNING: There is frequent confusion over whether a "from quaternion" matrix is organized by rows and columns.
+   * WARNING: If you find that the matrix seems to rotate by the opposite angle expect it, transpose it.
+   */
   public static createFromQuaternion(quat: Point4d): Matrix3d {
 
     const qqx = quat.x * quat.x;
@@ -2070,6 +2113,10 @@ export class Matrix3d implements BeJSONFunctions {
       return matrix;
     }
   }
+  /** convert the matrix to a quaternion.
+   * WARNING: There is frequent confusion over whether a "from quaternion" matrix is organized by rows and columns.
+   * WARNING: If you find that the matrix seems to rotate by the opposite angle expect it, transpose it.
+   */
   public toQuaternion(): Point4d {
     const result = Point4d.createZero();
     const props = [[this.coffs[0], this.coffs[3], this.coffs[6]],

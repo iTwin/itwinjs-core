@@ -8,7 +8,9 @@ import * as React from "react";
 import "./Spinner.scss";
 import classnames from "classnames";
 
-/** Size for [[Spinner]] component */
+/** Size for [[Spinner]] component
+ * @public
+ */
 export enum SpinnerSize {
   Small,
   Medium,
@@ -16,7 +18,9 @@ export enum SpinnerSize {
   XLarge,
 }
 
-/** Properties for [[Spinner]] component */
+/** Properties for [[Spinner]] component
+ * @public
+ */
 export interface SpinnerProps {
   /** Size of spinner */
   size?: SpinnerSize;
@@ -26,8 +30,9 @@ export interface SpinnerProps {
 
 /**
  * A spinner component.
+ * @public
  */
-export class Spinner extends React.Component<SpinnerProps> {
+export class Spinner extends React.PureComponent<SpinnerProps> {
 
   public render() {
     let sizeClass = "core-spinner-medium";
@@ -64,5 +69,3 @@ export class Spinner extends React.Component<SpinnerProps> {
     );
   }
 }
-
-export default Spinner;

@@ -88,12 +88,14 @@ class PackedPlanesWriter extends PlanesWriter {
   }
 }
 
-/** A 3D clip volume defined as a texture derived from a set of planes. */
+/** A 3D clip volume defined as a texture derived from a set of planes.
+ * @internal
+ */
 export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.Consumer {
   private _texture?: TextureHandle;
 
-  private constructor(texture?: TextureHandle) {
-    super();
+  private constructor(clip: ClipVector, texture?: TextureHandle) {
+    super(clip);
     this._texture = texture;
   }
 
@@ -105,17 +107,24 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
   public get type(): ClippingType { return ClippingType.Planes; }
   public get texture(): TextureHandle | undefined { return this._texture; }
 
-  /** Create a new ClipPlanesVolume from a ClipVector. */
+  /** Create a new ClipPlanesVolume from a ClipVector.
+   * * The result is undefined if
+   *   * (a) there is more than one clipper
+   *   * (b) the clipper does not have clipPlaneSet (for instance, a pure mask clipper has mask planes but not primary clip planes)
+   */
   public static create(clipVec: ClipVector): ClipPlanesVolume | undefined {
     if (1 !== clipVec.clips.length)
       return undefined;
 
     const clipPrim = clipVec.clips[0];
     const clipPlaneSet = clipPrim.fetchClipPlanesRef();
-    return ClipPlanesVolume.createFromClipPlaneSet(clipPlaneSet);
+    if (clipPlaneSet)
+      return ClipPlanesVolume.createFromClipPlaneSet(clipPlaneSet, clipVec);
+
+    return undefined;
   }
 
-  public static createFromClipPlaneSet(clipPlaneSet: UnionOfConvexClipPlaneSets) {
+  private static createFromClipPlaneSet(clipPlaneSet: UnionOfConvexClipPlaneSets, clip: ClipVector) {
     let numPlanes = 0;
     let numSets = 0;
     for (const set of clipPlaneSet.convexSets) {
@@ -129,7 +138,7 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
       return undefined;
 
     const texture = this.createTexture(clipPlaneSet, numPlanes, numSets);
-    return new ClipPlanesVolume(texture);
+    return new ClipPlanesVolume(clip, texture);
   }
 
   private static createTexture(planeSet: UnionOfConvexClipPlaneSets, numPlanes: number, numConvexSets: number): TextureHandle | undefined {
@@ -182,7 +191,9 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
   }
 }
 
-/** A 2D clip volume defined as a texture derived from a masked set of planes. */
+/** A 2D clip volume defined as a texture derived from a masked set of planes.
+ * @internal
+ */
 export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Consumer {
   public readonly geometry: ClipMaskGeometry;
   public readonly frustum: Frustum;
@@ -190,8 +201,8 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
   private _texture?: TextureHandle;
   private _fbo?: FrameBuffer;
 
-  private constructor(geometry: ClipMaskGeometry) {
-    super();
+  private constructor(geometry: ClipMaskGeometry, clip: ClipVector) {
+    super(clip);
     this.geometry = geometry;
     this.frustum = new Frustum();
     this.rect = new ViewRect(0, 0, 0, 0);
@@ -259,7 +270,7 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
     if (indices.length === 0 || vertices.length === 0)
       return undefined;
 
-    return new ClipMaskVolume(new ClipMaskGeometry(new Uint32Array(indices), vertices));
+    return new ClipMaskVolume(new ClipMaskGeometry(new Uint32Array(indices), vertices), clipVec);
   }
 
   public get texture(): TextureHandle | undefined { return this._texture; }

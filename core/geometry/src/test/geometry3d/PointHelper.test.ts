@@ -14,7 +14,8 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { PolygonOps, Point3dArray, Point2dArray, Vector3dArray, Point4dArray, NumberArray, Point3dArrayCarrier } from "../../geometry3d/PointHelpers";
+import { Point3dArray, Point2dArray, Vector3dArray, Point4dArray, NumberArray, Point3dArrayCarrier } from "../../geometry3d/PointHelpers";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 import { MatrixTests } from "./Point3dVector3d.test";
 import { Checker } from "../Checker";
@@ -23,8 +24,23 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { MomentData } from "../../geometry4d/MomentData";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point4d } from "../../geometry4d/Point4d";
-/* tslint:disable:no-console */
+import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
+import { HalfEdgeGraph } from "../../topology/Graph";
 
+import { Triangulator } from "../../topology/Triangulation";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Loop } from "../../curve/Loop";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Ray3d } from "../../geometry3d/Ray3d";
+/* tslint:disable:no-console */
+/**
+ * Return the radius of a circle with area matching centroidData.a
+ * @param centroidData result of centroid calculation, with "a" property.
+ */
+function equivalentCircleRadius(centroidData: Ray3d): number {
+  return Math.sqrt(centroidData.a === undefined ? 0.0 : centroidData.a / Math.PI);
+}
 describe("FrameBuilder.HelloWorld", () => {
   it("FrameBuilder.HellowWorld", () => {
     const ck = new Checker();
@@ -284,40 +300,133 @@ describe("PolygonOps", () => {
     const ck = new Checker();
     // Coordinates rigged to make it easy to have "exact" hits of x,y lines at 0, 1, or 2 vertices
     const ay = 5;
-    const ax = 8;
+    const ax1 = 8;
+    const ax0 = 0.0;
+    const ax2 = 10.0; // depend on --------ax0--------ax1========ax2---- with edge along the ====
     const points = [
-      Point2d.create(0, 0),
-      Point2d.create(10, 0),
-      Point2d.create(10, ay),
-      Point2d.create(ax, ay),
-      Point2d.create(ax, 8),
-      Point2d.create(0, 8),
-      Point2d.create(0, 0)];
+      Point2d.create(ax0, 0),
+      Point2d.create(ax2, 0),
+      Point2d.create(ax2, ay),
+      Point2d.create(ax1, ay),
+      Point2d.create(ax1, 8),
+      Point2d.create(ax0, 8),
+      Point2d.create(ax0, 0)];
     const q = 0.1;
     const onEdge = Point2d.create(0, 1);
-    const tol = 1.0e-8;
-    ck.testExactNumber(0, PolygonOps.parityVectorTest(onEdge, 1.5, points, tol)!);
+    ck.testExactNumber(0, PolygonOps.classifyPointInPolygon(onEdge.x, onEdge.y, points)!);
     const easyIn = Point2d.create(1, 1);
     const easyOut = Point2d.create(20, 20);
     const xHit = Point2d.create(2, ay);
-    const yHit = Point2d.create(ax, 2);
-    const xyHit = Point2d.create(ax, ay);
-    ck.testExactNumber(1, PolygonOps.parity(easyIn, points), " IN with no vertex hits");
-    ck.testExactNumber(-1, PolygonOps.parity(easyOut, points), "OUT with no vertex hits");
-    ck.testExactNumber(-1, PolygonOps.parityXTest(Point2d.create(-1, 0.5), points, tol)!, "OUT by simple X");
-    ck.testExactNumber(-1, PolygonOps.parityXTest(Point2d.create(20, 0.5), points, tol)!, "OUT by simple X");
-    ck.testExactNumber(-1, PolygonOps.parityXTest(Point2d.create(1, -0.5), points, tol)!, "OUT by simple Y");
-    ck.testExactNumber(-1, PolygonOps.parityXTest(Point2d.create(1, 14.5), points, tol)!, "OUT by simple Y");
+    const yHit = Point2d.create(ax1, 2);
+    const xyHit = Point2d.create(ax1, ay);
+    ck.testExactNumber(1, PolygonOps.classifyPointInPolygon(easyIn.x, easyIn.y, points)!, "IN with no vertex hits");
+    ck.testExactNumber(-1, PolygonOps.classifyPointInPolygon(easyOut.x, easyOut.y, points)!, "OUT with no vertex hits");
+    ck.testExactNumber(-1, PolygonOps.classifyPointInPolygon(-1, 0, points)!, "OUT by simple X");
+    ck.testExactNumber(-1, PolygonOps.classifyPointInPolygon(20, 0.5, points)!, "OUT by simple X");
+    ck.testExactNumber(-1, PolygonOps.classifyPointInPolygon(1, -0.5, points)!, "OUT by simple Y");
+    ck.testExactNumber(-1, PolygonOps.classifyPointInPolygon(1, 14.5, points)!, "OUT by simple Y");
 
-    ck.testExactNumber(1, PolygonOps.parity(xHit, points), "IN with horizontal vertex hits");
-    ck.testExactNumber(1, PolygonOps.parity(yHit, points), "IN with vertical vertex hits");
-    ck.testExactNumber(0, PolygonOps.parity(xyHit, points), "ON with xy vertex hits");
-    ck.testExactNumber(-1, PolygonOps.parityVectorTest(easyOut, 1.5, points, tol)!);
-    // This should have 4 crossings
-    ck.testExactNumber(-1, PolygonOps.parityVectorTest(Point2d.create(ax + q, ay + q), Math.atan(-1.0), points, tol)!);
+    ck.testExactNumber(1, PolygonOps.classifyPointInPolygon(xHit.x, xHit.y, points)!, "IN with horizontal vertex hits");
+    ck.testExactNumber(1, PolygonOps.classifyPointInPolygon(yHit.x, yHit.y, points)!, "IN with vertical vertex hits");
+    ck.testExactNumber(0, PolygonOps.classifyPointInPolygon(xyHit.x, xyHit.y, points)!, "ON with xy vertex hits");
+    ck.testExactNumber(-1, PolygonOps.classifyPointInPolygon(easyOut.x, easyOut.y, points)!);
+    ck.testExactNumber(-1, PolygonOps.classifyPointInPolygon(ax1 + q, ay + q, points)!);
 
     ck.testExactNumber(0, PolygonOps.testXYPolygonTurningDirections([]));
-    ck.checkpoint("FrameBuilder");
+
+    for (let x = -1.5; x < 14; x += 1.0) {
+      const classification = PolygonOps.classifyPointInPolygon(x, ay, points)!;
+      if (x < ax0 || x > ax2)
+        ck.testExactNumber(-1, classification, "Expect OUT " + x);
+      else if (x > ax0 && x < ax1)
+        ck.testExactNumber(1, classification, " expect IN " + x);
+      else if (x >= ax1 && x <= ax2)
+        ck.testExactNumber(0, classification, " expect ON " + x);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("SquareWaveInOut", () => {
+    const ck = new Checker();
+    // Coordinates rigged to make it easy to have "exact" hits of x,y lines at 0, 1, or 2 vertices
+    const dxLow = 4.0;
+    const dxHigh = 1.0;
+    const dyWave = 0.25;
+    const points = Sample.createSquareWave(Point3d.create(0, 0), dxLow, dyWave, dxHigh, 4, 2);
+    const graph = new HalfEdgeGraph();
+    const faceSeed = Triangulator.createFaceLoopFromCoordinates(graph, points, true, false)!;
+
+    // useful tidbit ...if a horizontal edge is short (dxHigh) things just before and after are IN.  Otherwise OUT
+    // if a vertical edge is short (dxWave), we know IN just above and OUT just below
+    // if a vertical edge is long, we know OUT both above and below
+    //
+    const delta = 0.1;
+    for (let i = 0; i + 1 < points.length; i++) {
+      const p0 = points[i];
+      const p1 = points[i + 1];
+      const p = p0.interpolate(0.234234, p1);
+      ck.testExactNumber(0, PolygonOps.classifyPointInPolygon(p.x, p.y, points)!, "mid-edge point");
+
+      if (p0.y === p1.y) {
+        const xA = Math.min(p0.x, p1.x) - delta;
+        const xB = Math.max(p0.x, p1.x) + delta;
+        const expected = Math.abs(p1.x - p0.x) === dxHigh ? 1 : -1;
+        ck.testExactNumber(expected, PolygonOps.classifyPointInPolygon(xA, p.y, points)!, "xA point", xA, p0.y);
+        ck.testExactNumber(expected, HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, xA, p.y)!, "xA point", xA, p0.y);
+        ck.testExactNumber(expected, PolygonOps.classifyPointInPolygon(xB, p.y, points)!, "xB point", xB, p0.y);
+        ck.testExactNumber(expected, HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, xB, p.y)!, "xB point", xB, p0.y);
+      } else if (p0.x === p1.x) {
+        const yA = Math.min(p0.y, p1.y);
+        const yB = Math.max(p0.y, p1.y);
+        const expectAtMax = yB === dyWave ? 1 : -1;
+        ck.testExactNumber(-1, PolygonOps.classifyPointInPolygon(p0.x, yA - delta, points)!, "yA-delta point");
+        ck.testExactNumber(expectAtMax, PolygonOps.classifyPointInPolygon(p0.x, yB + delta, points)!, "yB+delta  point");
+      }
+    }
+    const perpendicularSign = [1, 0, -1];
+    const perpendicularFraction = 0.01;
+
+    for (let node0 = faceSeed; ;) {
+      node0 = node0.faceSuccessor;
+      for (const v of perpendicularSign) {
+        const point = node0.fractionAlongAndPerpendicularToPoint2d(0.3, v * perpendicularFraction);
+        const c0 = PolygonOps.classifyPointInPolygon(point.x, point.y, points)!;
+        const c1 = HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, point.x, point.y)!;
+        ck.testExactNumber(v, c0, "INOUT in point array");
+        ck.testExactNumber(v, c1, "INOUT in graph face");
+      }
+      if (node0 === faceSeed)
+        break;
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  /**
+   * Build a wobbly polygon.
+   * Test lots of to known left and right of edges.
+   * Aside from the number of edges in the polygon, these are pretty easy tests -- there should be no vertex hits.
+   */
+  it("GeneralInOut", () => {
+    const ck = new Checker();
+    const points = Sample.createFractalDiamonConvexPattern(1, 0.34);
+    const graph = new HalfEdgeGraph();
+    const faceSeed = Triangulator.createFaceLoopFromCoordinates(graph, points, true, false)!;
+    // NOTE -- do NOT test true mid edge points -- classifier is fragile on non-principal lines
+    const perpendicularSign = [1, -1];
+    const perpendicularFraction = 0.01;
+
+    for (let node0 = faceSeed; ;) {
+      node0 = node0.faceSuccessor;
+      for (const v of perpendicularSign) {
+        const point = node0.fractionAlongAndPerpendicularToPoint2d(0.3, v * perpendicularFraction);
+        const c0 = PolygonOps.classifyPointInPolygon(point.x, point.y, points)!;
+        const c1 = HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, point.x, point.y)!;
+        ck.testExactNumber(v, c0, "INOUT in point array");
+        ck.testExactNumber(v, c1, "INOUT in graph face");
+      }
+      if (node0 === faceSeed)
+        break;
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -476,21 +585,15 @@ describe("Point3dArray", () => {
       Point2d.create(a, b),
       Point2d.create(a, 6),
       Point2d.create(0, 6)];
-    const tol = 0.01;
-    const theta = Angle.createDegrees(45);
     for (const p of polygon) {
-      ck.testUndefined(PolygonOps.parityYTest(p, polygon, tol));
-      ck.testUndefined(PolygonOps.parityXTest(p, polygon, tol));
-      ck.testUndefined(PolygonOps.parityVectorTest(p, theta.radians, polygon, tol));
-      ck.testExactNumber(0, PolygonOps.parity(p, polygon, tol));
-    }
-    ck.testUndefined(PolygonOps.parityYTest(Point2d.create(1, b), polygon, tol));
-    ck.testUndefined(PolygonOps.parityXTest(Point2d.create(a, 1), polygon, tol));
 
-    const pointA = Point2d.create(1, 2);
-    const pointB = Point2d.create(1.5, 0.2);
-    ck.testExactNumber(0, PolygonOps.parity(pointA, [pointA]));
-    ck.testExactNumber(-1, PolygonOps.parity(pointA, [pointB]));
+      ck.testExactNumber(0, PolygonOps.classifyPointInPolygon(p.x, p.y, polygon)!);
+    }
+
+    // const pointA = Point2d.create(1, 2);
+    // const pointB = Point2d.create(1.5, 0.2);
+    // ck.testExactNumber(0, PolygonOps.oldParity(pointA, [pointA]));
+    // ck.testExactNumber(-1, PolygonOps.oldParity(pointA, [pointB]));
     const radiansQ = 0.276234342921378;
     const vectorQ = Vector2d.create(Math.cos(radiansQ), Math.sin(radiansQ));
     const pointQ = polygon[3].plusScaled(vectorQ, -0.2);
@@ -504,8 +607,8 @@ describe("Point3dArray", () => {
       polygon[3],
       polygon[4],
       polygon[5]];
-    ck.testExactNumber(1, PolygonOps.parity(pointQ, polygonQ, tol));
-    ck.testExactNumber(1, PolygonOps.parity(pointQ, polygonQ, tol));
+    ck.testExactNumber(1, PolygonOps.classifyPointInPolygon(pointQ.x, pointQ.y, polygonQ)!);
+    ck.testExactNumber(1, PolygonOps.classifyPointInPolygon(pointQ.x, pointQ.y, polygonQ)!);
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -708,4 +811,45 @@ describe("PolygonAreas", () => {
     ck.checkpoint("PolygonAreas.TriangleVariants");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("LShape", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const pointA = [
+      Point3d.create(-0.9351812543901677, -7.103406859177103, -14.793064616249996),
+      Point3d.create(0.8399443606226988, 6.380010831659742, -14.793064616249996),
+      Point3d.create(-12.986794582812577, 8.200335547052022, -14.793064616249996),
+      Point3d.create(-13.582645174519337, 3.6744009645259488, -14.793064616249996),
+      Point3d.create(-3.545902502657718, 2.3530387241332935, -14.793064616249996),
+      Point3d.create(-4.725177525963828, -6.604444384177479, -14.793064616249996),
+      Point3d.create(-0.9351812543901677, -7.103406859177103, -14.793064616249996),
+    ];
+    const centroidA = PolygonOps.centroidAreaNormal(pointA)!;
+    GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointA));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidA.origin, centroidA.direction, equivalentCircleRadius (centroidA)));
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(centroidA.origin, centroidA.origin.plus(centroidA.direction)));
+    const a = 2.0;
+    const scaleTransform = Transform.createFixedPointAndMatrix(centroidA.origin, Matrix3d.createScale(a, a, a))!;
+    const pointB = scaleTransform.multiplyPoint3dArray(pointA);
+    const centroidB = PolygonOps.centroidAreaNormal(pointB)!;
+    GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointB));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidB.origin, centroidB.direction, equivalentCircleRadius (centroidB)));
+    ck.testPoint3d(centroidA.origin, centroidB.origin, "origin is invariant after scale around origin");
+    ck.testVector3d(centroidA.direction, centroidB.direction, "origin is invariant after scale around origin");
+    ck.testCoordinate(a * a * centroidA.a!, centroidB.a!, "area scales");
+
+    const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 1, 3), Matrix3d.createRotationAroundVector(Vector3d.create(2, 3, 1), Angle.createDegrees(45.0))!)!;
+    const pointC = rotationTransform.multiplyPoint3dArray(pointA);
+    const centroidC = PolygonOps.centroidAreaNormal(pointC)!;
+    const centroidC1 = centroidA.cloneTransformed(rotationTransform);
+    GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointC));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidC.origin, centroidC.direction, equivalentCircleRadius (centroidC)));
+    ck.testPoint3d(centroidC.origin, centroidC1.origin);
+    ck.testVector3d(centroidC.direction, centroidC1.direction);
+    ck.testCoordinate((centroidA as any).a, (centroidC as any).a);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonAreas", "LShape");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

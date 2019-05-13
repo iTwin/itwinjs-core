@@ -7,6 +7,7 @@ import { FileHandler } from "./FileHandler";
 import { BriefcaseHandler } from "./imodelhub/Briefcases";
 import { IModelsHandler, IModelHandler } from "./imodelhub/iModels";
 import { ChangeSetHandler } from "./imodelhub/ChangeSets";
+import { CheckpointHandler } from "./imodelhub/Checkpoints";
 import { LockHandler } from "./imodelhub/Locks";
 import { CodeHandler } from "./imodelhub/Codes";
 import { UserInfoHandler } from "./imodelhub/Users";
@@ -19,6 +20,7 @@ import { CustomRequestOptions } from "./imodelhub/CustomRequestOptions";
 
 /**
  * Base class that allows access to different iModel related Class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
+ * @public
  */
 export abstract class IModelClient {
   protected _handler: IModelBaseHandler;
@@ -73,52 +75,59 @@ export abstract class IModelClient {
   }
 
   /**
+   * Get the handler for [[Checkpoint]]s.
+   */
+  public get checkpoints(): CheckpointHandler {
+    return new CheckpointHandler(this._handler, this._fileHandler);
+  }
+
+  /**
    * Get the handler for [[Lock]]s.
    */
   public get locks(): LockHandler {
-    return new LockHandler(this._handler);
+  return new LockHandler(this._handler);
   }
 
   /**
    * Get the handler for [Code]($common)s.
    */
   public get codes(): CodeHandler {
-    return new CodeHandler(this._handler);
+  return new CodeHandler(this._handler);
   }
 
   /**
    * Get the handler for [[UserInfo]].
    */
   public get users(): UserInfoHandler {
-    return new UserInfoHandler(this._handler);
+  return new UserInfoHandler(this._handler);
   }
 
   /**
    * Get the handler for [[Version]]s.
    */
   public get versions(): VersionHandler {
-    return new VersionHandler(this._handler);
+  return new VersionHandler(this._handler);
   }
 
   /**
    * Get the handler for [[Thumbnail]]s.
    */
   public get thumbnails(): ThumbnailHandler {
-    return new ThumbnailHandler(this._handler);
+  return new ThumbnailHandler(this._handler);
   }
 
   /**
    * Get the handler for [[IModelHubEvent]]s.
    */
   public get events(): EventHandler {
-    return new EventHandler(this._handler);
+  return new EventHandler(this._handler);
   }
 
   /**
    * Get the handler for [[IModelHubGlobalEvent]]s.
    */
   public get globalEvents(): GlobalEventHandler {
-    return new GlobalEventHandler(this._handler);
+  return new GlobalEventHandler(this._handler);
   }
 
   /**

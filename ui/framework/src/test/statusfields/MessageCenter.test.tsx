@@ -5,6 +5,7 @@
 import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
+import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
 import {
@@ -14,13 +15,13 @@ import {
   ConfigurableUiManager,
   WidgetState,
   ConfigurableCreateInfo,
-  IStatusBar,
-  StatusBarFieldId,
   MessageManager,
   ConfigurableUiControlType,
   WidgetDef,
+  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { FooterPopup } from "@bentley/ui-ninezone";
 
 describe("MessageCenter", () => {
 
@@ -29,10 +30,10 @@ describe("MessageCenter", () => {
       super(info, options);
     }
 
-    public getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode {
+    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <MessageCenterField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
+          <MessageCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
         </>
       );
     }
@@ -98,7 +99,7 @@ describe("MessageCenter", () => {
     wrapper.find("div.nz-balloon").simulate("click");
     wrapper.update();
 
-    const buttons = wrapper.find("div.nz-footer-message-content-dialog-button");
+    const buttons = wrapper.find("div.nz-footer-dialog-button");
     expect(buttons.length).to.eq(2);
 
     buttons.at(1).simulate("click");
@@ -132,6 +133,33 @@ describe("MessageCenter", () => {
     wrapper.update();
 
     wrapper.unmount();
+  });
+
+  it("Message Center should close on outside click", () => {
+    const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
+    const footerPopup = wrapper.find(FooterPopup);
+
+    const statusBarInstance = wrapper.instance();
+    statusBarInstance.setState(() => ({ openWidget: "test-widget" }));
+
+    const outsideClick = new MouseEvent("");
+    sinon.stub(outsideClick, "target").get(() => document.createElement("div"));
+    footerPopup.prop("onOutsideClick")!(outsideClick);
+
+    expect(statusBarInstance.state.openWidget).null;
+  });
+
+  it("Message Center should not close on outside click", () => {
+    const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
+    const footerPopup = wrapper.find(FooterPopup);
+
+    const statusBarInstance = wrapper.instance();
+    statusBarInstance.setState(() => ({ openWidget: "test-widget" }));
+
+    const outsideClick = new MouseEvent("");
+    footerPopup.prop("onOutsideClick")!(outsideClick);
+
+    expect(statusBarInstance.state.openWidget).eq("test-widget");
   });
 
   // nz-footer-messageCenter-tab

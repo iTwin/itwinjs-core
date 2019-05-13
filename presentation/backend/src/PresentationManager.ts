@@ -5,17 +5,19 @@
 /** @module Core */
 
 import * as path from "path";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { EntityProps } from "@bentley/imodeljs-common";
-import { IModelDb, GeometricElement } from "@bentley/imodeljs-backend";
+import { ClientRequestContext, Id64String, Id64, DbResult } from "@bentley/bentleyjs-core";
+import { IModelDb, Element, GeometricElement } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
-  RequestOptions, Paged, KeySet, InstanceKey,
-  SelectionScopeRequestOptions, SelectionScope,
-  NodesResponse, ContentResponse,
+  NodesResponse, ContentResponse, DescriptorOverrides,
+  Paged, KeySet, InstanceKey, LabelRequestOptions,
+  SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
+  compareInstanceKeys,
+  ContentFlags,
 } from "@bentley/presentation-common";
+import { toJSON as keysetToJSON } from "@bentley/presentation-common/lib/KeySet";
 import { listReviver as nodesListReviver } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { listReviver as nodePathElementReviver } from "@bentley/presentation-common/lib/hierarchy/NodePathElement";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
@@ -42,6 +44,16 @@ export interface Props {
    * strings. It can later be changed through [[PresentationManager]].
    */
   activeLocale?: string;
+
+  /**
+   * An identifier which helps separate multiple presentation managers. It's
+   * mostly useful in tests where multiple presentation managers can co-exist
+   * and try to share the same resources, which we don't want. With this identifier
+   * set, managers put their resources into id-named subdirectories.
+   *
+   * @hidden
+   */
+  id?: string;
 
   /** @hidden */
   addon?: NativePlatformDefinition;
@@ -112,7 +124,7 @@ export default class PresentationManager {
     if (this._isDisposed)
       throw new PresentationError(PresentationStatus.UseAfterDisposal, "Attempting to use Presentation manager after disposal");
     if (!this._nativePlatform) {
-      const nativePlatformImpl = createDefaultNativePlatform();
+      const nativePlatformImpl = createDefaultNativePlatform(this._props.id);
       this._nativePlatform = new nativePlatformImpl();
     }
     return this._nativePlatform!;
@@ -131,164 +143,194 @@ export default class PresentationManager {
 
   /**
    * Retrieves nodes and node count
-   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestContext Client request context
    * @param requestOptions Options for the request
    * @param parentKey Key of the parentNode
    * @return A promise object that returns either a node response containing nodes and node count on success or an error string on error
    */
-  public async getNodesAndCount(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: Readonly<NodeKey>): Promise<Readonly<NodesResponse>> {
-    activityLoggingContext.enter();
+  public async getNodesAndCount(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: Readonly<NodeKey>): Promise<Readonly<NodesResponse>> {
+    requestContext.enter();
 
-    const nodesCount = await this.getNodesCount(activityLoggingContext, requestOptions, parentKey);
-    activityLoggingContext.enter();
+    const nodesCount = await this.getNodesCount(requestContext, requestOptions, parentKey);
+    requestContext.enter();
 
-    const nodesList = await this.getNodes(activityLoggingContext, requestOptions, parentKey);
-    activityLoggingContext.enter();
+    const nodesList = await this.getNodes(requestContext, requestOptions, parentKey);
+    requestContext.enter();
 
     return { nodes: nodesList, count: nodesCount };
   }
 
   /**
    * Retrieves nodes
-   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestContext Client request context
    * @param requestOptions options for the request
    * @param parentKey    Key of the parent node if requesting for child nodes.
    * @return A promise object that returns either an array of nodes on success or an error string on error.
    */
-  public async getNodes(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
-    activityLoggingContext.enter();
+  public async getNodes(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
+    requestContext.enter();
     let params;
     if (parentKey)
       params = this.createRequestParams(NativePlatformRequestTypes.GetChildren, requestOptions, { nodeKey: parentKey });
     else
       params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodes, requestOptions);
-    return this.request<Node[]>(activityLoggingContext, requestOptions.imodel, params, nodesListReviver);
+    return this.request<Node[]>(requestContext, requestOptions.imodel, params, nodesListReviver);
   }
 
   /**
    * Retrieves nodes count
-   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestContext Client request context
    * @param requestOptions options for the request
    * @param parentKey Key of the parent node if requesting for child nodes.
    * @return A promise object that returns the number of nodes.
    */
-  public async getNodesCount(activityLoggingContext: ActivityLoggingContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: Readonly<NodeKey>): Promise<number> {
-    activityLoggingContext.enter();
+  public async getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: Readonly<NodeKey>): Promise<number> {
+    requestContext.enter();
     let params;
     if (parentKey)
       params = this.createRequestParams(NativePlatformRequestTypes.GetChildrenCount, requestOptions, { nodeKey: parentKey });
     else
       params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodesCount, requestOptions);
-    return this.request<number>(activityLoggingContext, requestOptions.imodel, params);
+    return this.request<number>(requestContext, requestOptions.imodel, params);
   }
 
   /**
    * Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged.
-   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestContext The client request context
    * @param requestOptions options for the request
    * @param paths Paths from root node to some child node.
    * @param markedIndex Index of the path in `paths` that will be marked.
    * @return A promise object that returns either an array of paths on success or an error string on error.
    */
-  public async getNodePaths(activityLoggingContext: ActivityLoggingContext, requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
-    activityLoggingContext.enter();
+  public async getNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
+    requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetNodePaths, requestOptions, {
       paths,
       markedIndex,
     });
-    return this.request<NodePathElement[]>(activityLoggingContext, requestOptions.imodel, params, nodePathElementReviver);
+    return this.request<NodePathElement[]>(requestContext, requestOptions.imodel, params, nodePathElementReviver);
   }
 
   /**
    * Retrieves paths from root nodes to nodes containing filter text in their label.
-   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestContext The client request context
    * @param requestOptions options for the request
    * @param filterText Text to filter nodes against.
    * @return A promise object that returns either an array of paths on success or an error string on error.
    */
-  public async getFilteredNodePaths(activityLoggingContext: ActivityLoggingContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]> {
-    activityLoggingContext.enter();
+  public async getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]> {
+    requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetFilteredNodePaths, requestOptions, {
       filterText,
     });
-    return this.request<NodePathElement[]>(activityLoggingContext, requestOptions.imodel, params, nodePathElementReviver);
+    return this.request<NodePathElement[]>(requestContext, requestOptions.imodel, params, nodePathElementReviver);
   }
 
   /**
    * Retrieves the content descriptor which can be used to get content.
-   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestContext The client request context
    * @param requestOptions options for the request
    * @param displayType  The preferred display type of the return content.
    * @param keys         Keys of ECInstances to get the content for.
    * @param selection    Optional selection info in case the content is being requested due to selection change.
    * @return A promise object that returns either a descriptor on success or an error string on error.
    */
-  public async getContentDescriptor(activityLoggingContext: ActivityLoggingContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
-    activityLoggingContext.enter();
+  public async getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
+    requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContentDescriptor, requestOptions, {
       displayType,
-      keys,
+      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
       selection,
     });
-    return this.request<Descriptor | undefined>(activityLoggingContext, requestOptions.imodel, params, Descriptor.reviver);
+    return this.request<Descriptor | undefined>(requestContext, requestOptions.imodel, params, Descriptor.reviver);
   }
 
   /**
    * Retrieves the content set size based on the supplied content descriptor override.
-   * @param activityLoggingContext  Logging context holding request's ActivityId
+   * @param requestContext Client request context
    * @param requestOptions          options for the request
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either a number on success or an error string on error.
    * Even if concrete implementation returns content in pages, this function returns the total
    * number of records in the content set.
    */
-  public async getContentSetSize(activityLoggingContext: ActivityLoggingContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<number> {
-    activityLoggingContext.enter();
+  public async getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<number> {
+    requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, requestOptions, {
-      keys,
-      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrDisplayType),
+      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
+      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
-    return this.request<number>(activityLoggingContext, requestOptions.imodel, params);
+    // wip: the try/catch block is a temp workaround until native platform changes
+    // are available for the backend
+    try {
+      return await this.request<number>(requestContext, requestOptions.imodel, params);
+    } catch (e) {
+      // wip: temporary code:
+      // istanbul ignore next
+      return 0;
+    }
   }
 
   /**
    * Retrieves the content based on the supplied content descriptor override.
-   * @param activityLoggingContext  Logging context holding request's ActivityId
+   * @param requestContext Client request context
    * @param requestOptions          options for the request
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either content on success or an error string on error.
    */
-  public async getContent(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
-    activityLoggingContext.enter();
+  public async getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Readonly<Content> | undefined> {
+    requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, requestOptions, {
-      keys,
-      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrDisplayType),
+      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
+      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
-    return this.request<Content>(activityLoggingContext, requestOptions.imodel, params, Content.reviver);
+    // wip: the try/catch block is a temp workaround until native platform changes
+    // are available for the backend
+    try {
+      return await this.request<Content | undefined>(requestContext, requestOptions.imodel, params, Content.reviver);
+    } catch (e) {
+      // wip: temporary code:
+      // istanbul ignore next
+      return undefined;
+    }
   }
 
   /**
    * Retrieves the content and content size based on supplied content descriptor override.
-   * @param activityLoggingContext  Logging context holding request's ActivityId.
+   * @param requestContext Client request context
    * @param requestOptions          Options for thr request.
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for
    * @return A promise object that returns either content and content set size on success or an error string on error.
    */
-  public async getContentAndSize(activityLoggingContext: ActivityLoggingContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>> {
-    activityLoggingContext.enter();
-    const contentSetSize = await this.getContentSetSize(activityLoggingContext, requestOptions, descriptorOrDisplayType, keys);
-    activityLoggingContext.enter();
-    const contentResult = await this.getContent(activityLoggingContext, requestOptions, descriptorOrDisplayType, keys);
-    activityLoggingContext.enter();
-    return { content: contentResult, size: contentSetSize };
+  public async getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>> {
+    requestContext.enter();
+    // wip: the try/catch block is a temp workaround until native platform changes
+    // are available for the backend
+    try {
+      const size = await this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys);
+      requestContext.enter();
+      const content = await this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys);
+      requestContext.enter();
+      return { content, size };
+    } catch (e) {
+      // wip: temporary code:
+      // istanbul ignore next
+      return { content: undefined, size: 0 };
+    }
+  }
+
+  private createContentDescriptorOverrides(descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides): DescriptorOverrides {
+    if (descriptorOrOverrides instanceof Descriptor)
+      return descriptorOrOverrides.createDescriptorOverrides();
+    return descriptorOrOverrides as DescriptorOverrides;
   }
 
   /**
    * Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
-   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestContext The client request context
    * @param requestOptions options for the request
    * @param descriptor           Content descriptor which specifies how the content should be returned.
    * @param keys                 Keys of ECInstances to get the content for.
@@ -296,24 +338,64 @@ export default class PresentationManager {
    * @param maximumValueCount    Maximum numbers of values that can be returned. Unlimited if 0.
    * @return A promise object that returns either distinct values on success or an error string on error.
    */
-  public async getDistinctValues(activityLoggingContext: ActivityLoggingContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
-    activityLoggingContext.enter();
+  public async getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
+    requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetDistinctValues, requestOptions, {
+      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
       descriptorOverrides: descriptor.createDescriptorOverrides(),
-      keys,
       fieldName,
       maximumValueCount,
     });
-    return this.request<string[]>(activityLoggingContext, requestOptions.imodel, params);
+    return this.request<string[]>(requestContext, requestOptions.imodel, params);
+  }
+
+  /**
+   * Retrieves display label of specific item
+   * @param requestContext The client request context
+   * @param requestOptions options for the request
+   * @param key Key of an instance to get label for
+   */
+  public async getDisplayLabel(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<string> {
+    requestContext.enter();
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetDisplayLabel, requestOptions, { key });
+    return this.request<string>(requestContext, requestOptions.imodel, params);
+  }
+
+  /**
+   * Retrieves display labels of specific items
+   * @param requestContext The client request context
+   * @param requestOptions options for the request
+   * @param instanceKeys Keys of instances to get labels for
+   */
+  public async getDisplayLabels(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<string[]> {
+    instanceKeys = instanceKeys.map((k) => {
+      if (k.className === "BisCore:Element")
+        return this.getElementKey(requestOptions.imodel, k.id);
+      return k;
+    }).filter<InstanceKey>((k): k is InstanceKey => (undefined !== k));
+    const rulesetId = "RulesDrivenECPresentationManager_RulesetId_DisplayLabel";
+    const overrides: DescriptorOverrides = {
+      displayType: DefaultContentDisplayTypes.LIST,
+      contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
+      hiddenFieldNames: [],
+    };
+    const content = await this.getContent(requestContext, { ...requestOptions, rulesetId }, overrides, new KeySet(instanceKeys));
+    requestContext.enter();
+    return instanceKeys.map((key) => {
+      const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && compareInstanceKeys(it.primaryKeys[0], key) === 0) : undefined;
+      if (!item)
+        return "";
+      return item.label;
+    });
   }
 
   /**
    * Retrieves available selection scopes.
-   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestContext The client request context
    * @param requestOptions options for the request
    */
-  public async getSelectionScopes(activityLoggingContext: ActivityLoggingContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]> {
-    activityLoggingContext.enter();
+  public async getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]> {
+    requestContext.enter();
     (requestOptions as any);
 
     const createSelectionScope = (scopeId: string, label: string, description: string): SelectionScope => ({
@@ -326,111 +408,127 @@ export default class PresentationManager {
       createSelectionScope("element", "Element", "Select the picked element"),
       createSelectionScope("assembly", "Assembly", "Select parent of the picked element"),
       createSelectionScope("top-assembly", "Top Assembly", "Select the topmost parent of the picked element"),
-      createSelectionScope("category", "Category", "Select all elements in the picked element's category"),
-      createSelectionScope("model", "Model", "Select all elements in the picked element's model"),
+      // WIP: temporarily comment-out "category" and "model" scopes since we can't hilite contents of them fast enough
+      // createSelectionScope("category", "Category", "Select all elements in the picked element's category"),
+      // createSelectionScope("model", "Model", "Select all elements in the picked element's model"),
     ];
   }
 
-  private createContentDescriptorOverrides(descriptorOrDisplayType: Readonly<Descriptor> | string) {
-    if (typeof descriptorOrDisplayType === "string")
-      return {
-        displayType: descriptorOrDisplayType,
-        hiddenFieldNames: [],
-        contentFlags: 0,
-      };
-
-    return descriptorOrDisplayType.createDescriptorOverrides();
-  }
-
-  private getParentInstanceKey(imodel: IModelDb, key: InstanceKey): InstanceKey | undefined {
-    const parentElementProps = imodel.elements.getElement(key.id!).parent;
-    if (!parentElementProps)
-      return undefined;
-    return {
-      className: parentElementProps.relClassName!,
-      id: parentElementProps.id,
-    };
-  }
-
-  private computeAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
-    const parentKeys = new KeySet();
-    keys.forEach((key) => {
-      const thisKey = { className: key.classFullName, id: key.id! };
-      const parentKey = this.getParentInstanceKey(requestOptions.imodel, thisKey);
-      if (parentKey)
-        parentKeys.add(parentKey);
-      else
-        parentKeys.add(thisKey);
+  private getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
+    let key: InstanceKey | undefined;
+    const query = `SELECT ECClassId FROM ${Element.classFullName} e WHERE ECInstanceId = ?`;
+    imodel.withPreparedStatement(query, (stmt) => {
+      stmt.bindId(1, id);
+      if (stmt.step() === DbResult.BE_SQLITE_ROW)
+        key = { className: stmt.getValue(0).getClassNameForClassId().replace(".", ":"), id };
     });
+    return key;
+  }
+
+  private computeElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
+    const keys = new KeySet();
+    ids.forEach(skipTransients((id) => {
+      const key = this.getElementKey(requestOptions.imodel, id);
+      if (key)
+        keys.add(key);
+    }));
+    return keys;
+  }
+
+  private getParentInstanceKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
+    const parentRelProps = imodel.elements.getElementProps(id).parent;
+    if (!parentRelProps)
+      return undefined;
+    return this.getElementKey(imodel, parentRelProps.id);
+  }
+
+  private computeAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
+    const parentKeys = new KeySet();
+    ids.forEach(skipTransients((id) => {
+      const parentKey = this.getParentInstanceKey(requestOptions.imodel, id);
+      if (parentKey) {
+        parentKeys.add(parentKey);
+      } else {
+        const elementKey = this.getElementKey(requestOptions.imodel, id);
+        if (elementKey)
+          parentKeys.add(elementKey);
+      }
+    }));
     return parentKeys;
   }
 
-  private computeTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+  private computeTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const parentKeys = new KeySet();
-    keys.forEach((key) => {
-      let curr = { className: key.classFullName, id: key.id! };
-      let parent = this.getParentInstanceKey(requestOptions.imodel, curr);
+    ids.forEach(skipTransients((id) => {
+      let curr: InstanceKey | undefined;
+      let parent = this.getParentInstanceKey(requestOptions.imodel, id);
       while (parent) {
         curr = parent;
-        parent = this.getParentInstanceKey(requestOptions.imodel, curr);
+        parent = this.getParentInstanceKey(requestOptions.imodel, curr.id);
       }
-      parentKeys.add(curr);
-    });
+      if (!curr)
+        curr = this.getElementKey(requestOptions.imodel, id);
+      if (curr)
+        parentKeys.add(curr);
+    }));
     return parentKeys;
   }
 
-  private computeCategorySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+  private computeCategorySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const categoryKeys = new KeySet();
-    keys.forEach((key) => {
-      const el = requestOptions.imodel.elements.getElement(key.id!);
-      if (el instanceof GeometricElement)
-        categoryKeys.add({ className: "BisCore:Category", id: el.category });
-    });
+    ids.forEach(skipTransients((id) => {
+      const el = requestOptions.imodel.elements.getElement(id);
+      if (el instanceof GeometricElement) {
+        const category = requestOptions.imodel.elements.getElementProps(el.category);
+        categoryKeys.add({ className: category.classFullName, id: category.id! });
+      }
+    }));
     return categoryKeys;
   }
 
-  private computeModelSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[]) {
+  private computeModelSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const modelKeys = new KeySet();
-    keys.forEach((key) => {
-      const el = requestOptions.imodel.elements.getElement(key.id!);
-      modelKeys.add({ className: "BisCore:Model", id: el.model });
-    });
+    ids.forEach(skipTransients((id) => {
+      const el = requestOptions.imodel.elements.getElementProps(id);
+      const model = requestOptions.imodel.models.getModelProps(el.model);
+      modelKeys.add({ className: model.classFullName, id: model.id! });
+    }));
     return modelKeys;
   }
 
   /**
    * Computes selection set based on provided selection scope.
-   * @param activityLoggingContext Logging context holding request's ActivityId
+   * @param requestContext The client request context
    * @param requestOptions Options for the request
    * @param keys Keys of elements to get the content for.
    * @param scopeId ID of selection scope to use for computing selection
    */
-  public async computeSelection(activityLoggingContext: ActivityLoggingContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, keys: EntityProps[], scopeId: string): Promise<KeySet> {
-    activityLoggingContext.enter();
+  public async computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet> {
+    requestContext.enter();
     (requestOptions as any);
 
     switch (scopeId) {
-      case "element": return new KeySet(keys);
-      case "assembly": return this.computeAssemblySelection(requestOptions, keys);
-      case "top-assembly": return this.computeTopAssemblySelection(requestOptions, keys);
-      case "category": return this.computeCategorySelection(requestOptions, keys);
-      case "model": return this.computeModelSelection(requestOptions, keys);
+      case "element": return this.computeElementSelection(requestOptions, ids);
+      case "assembly": return this.computeAssemblySelection(requestOptions, ids);
+      case "top-assembly": return this.computeTopAssemblySelection(requestOptions, ids);
+      case "category": return this.computeCategorySelection(requestOptions, ids);
+      case "model": return this.computeModelSelection(requestOptions, ids);
     }
 
     throw new PresentationError(PresentationStatus.InvalidArgument, "scopeId");
   }
 
-  private async request<T>(activityLoggingContext: ActivityLoggingContext, imodel: IModelDb, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
-    activityLoggingContext.enter();
+  private async request<T>(requestContext: ClientRequestContext, imodel: IModelDb, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
+    requestContext.enter();
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    const serializedResponse = await this.getNativePlatform().handleRequest(activityLoggingContext, imodelAddon, params);
-    activityLoggingContext.enter();
+    const serializedResponse = await this.getNativePlatform().handleRequest(requestContext, imodelAddon, params);
+    requestContext.enter();
     if (!serializedResponse)
       throw new PresentationError(PresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
     return JSON.parse(serializedResponse, reviver);
   }
 
-  private createRequestParams(requestId: string, genericOptions: Paged<RequestOptions<IModelDb>>, additionalOptions?: object): string {
+  private createRequestParams(requestId: string, genericOptions: { imodel: IModelDb, locale?: string }, additionalOptions?: object): string {
     const { imodel, locale, ...genericOptionsStripped } = genericOptions;
 
     let lowerCaseLocale = locale ? locale : this.activeLocale;
@@ -447,4 +545,30 @@ export default class PresentationManager {
     };
     return JSON.stringify(request);
   }
+
+  private getKeysForContentRequest(imodel: IModelDb, keys: Readonly<KeySet>): Readonly<KeySet> {
+    const elementClassName = "BisCore:Element";
+    const instanceKeys = keys.instanceKeys;
+    if (!instanceKeys.has(elementClassName))
+      return keys;
+
+    const elementIds = instanceKeys.get(elementClassName)!;
+    const keyset = new KeySet();
+    keyset.add(keys);
+    elementIds.forEach((elementId) => {
+      const concreteKey = this.getElementKey(imodel, elementId);
+      if (concreteKey) {
+        keyset.delete({ className: elementClassName, id: elementId });
+        keyset.add(concreteKey);
+      }
+    });
+    return keyset;
+  }
 }
+
+const skipTransients = (callback: (id: Id64String) => void) => {
+  return (id: Id64String) => {
+    if (!Id64.isTransient(id))
+      callback(id);
+  };
+};

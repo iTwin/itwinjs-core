@@ -5,28 +5,38 @@
 /** @module Filtering  */
 
 import * as React from "react";
+import classnames from "classnames";
 import "./ResultSelector.scss";
+import { CommonProps } from "@bentley/ui-core";
 
-/** [[ResultSelector]] React Component state */
-export interface ResultSelectorState {
+/** [[ResultSelector]] React Component state
+ * @internal
+ */
+interface ResultSelectorState {
   /** Currently selected result/entry index */
   selectedResultId: number;
   /** Input string */
   selectedResultEdit: string;
-  /** Informs if selectdResult is currently being edited */
+  /** Informs if selectedResult is currently being edited */
   selectedResultInEditMode: boolean;
 }
 
-/** [[ResultSelector]] React Component properties */
-export interface ResultSelectorProps {
+/** [[ResultSelector]] React Component properties
+ * @public
+ */
+export interface ResultSelectorProps extends CommonProps {
   /** Total number of results/entries */
   resultCount: number;
   /** Callback to currently selected result/entry change */
   onSelectedChanged: (index: number) => void;
 }
 
-/** Component for stepping through results/entries */
-export class ResultSelector extends React.Component<ResultSelectorProps, ResultSelectorState> {
+/** Component for stepping through results/entries
+ * @public
+ */
+export class ResultSelector extends React.PureComponent<ResultSelectorProps, ResultSelectorState> {
+
+  /** @internal */
   constructor(props: ResultSelectorProps) {
     super(props);
     this.state = {
@@ -90,25 +100,28 @@ export class ResultSelector extends React.Component<ResultSelectorProps, ResultS
       this._onSelectedResultConfirmed();
   }
 
+  /** @internal */
   public componentDidMount() {
     this.props.onSelectedChanged(this.props.resultCount ? 1 : 0);
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: ResultSelectorProps) {
     if (this.props.resultCount !== prevProps.resultCount) {
       this.props.onSelectedChanged(this.props.resultCount ? 1 : 0);
     }
   }
 
+  /** @internal */
   public render() {
     return (
-      <span className="result-selector">
-        <button className="result-selector-button icon icon-chevron-left"
+      <span className={classnames("components-result-selector", this.props.className)} style={this.props.style}>
+        <button className={classnames("components-result-selector-button", "icon", "icon-chevron-left")}
           onClick={this._onClickPrevious}
           disabled={this.props.resultCount <= 0} />
 
         <span style={{ pointerEvents: this.props.resultCount ? "auto" : "none" }}
-          className="result-selector-current-result"
+          className="components-result-selector-current-result"
           onClick={this._onSelectedResultClick}>
           {this.state.selectedResultInEditMode ?
             <input type="number"
@@ -122,7 +135,7 @@ export class ResultSelector extends React.Component<ResultSelectorProps, ResultS
           <span>{this.props.resultCount}</span>
         </span>
 
-        <button className="result-selector-button icon icon-chevron-right"
+        <button className="components-result-selector-button icon icon-chevron-right"
           onClick={this._onClickNext}
           disabled={this.props.resultCount <= 0} />
       </span>

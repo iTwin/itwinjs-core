@@ -5,56 +5,93 @@
 /** @module Viewport */
 
 import { IModelApp, Viewport, SelectedViewportChangedArgs, StandardViewId } from "@bentley/imodeljs-frontend";
-import { UiEvent } from "@bentley/ui-core";
-import { Matrix3d } from "@bentley/geometry-core";
+import { UiEvent, Face } from "@bentley/ui-core";
+import { Matrix3d, Point3d, Vector3d } from "@bentley/geometry-core";
 
-/** Arguments for [[CubeRotationChangeEvent]] */
-export interface CubeRotationChangeEventArgs {
-  rotMatrix: Matrix3d;
-  animationTime?: number;
+/** Arguments for [[DrawingViewportChangeEvent]]
+ * @public
+ */
+export interface DrawingViewportChangeEventArgs {
+  rotation: Matrix3d;
+  origin: Point3d;
+  complete: boolean;
 }
 
-/** 3d Cube Rotation Change event */
+/** Drawing View Change event
+ * @public
+ */
+export class DrawingViewportChangeEvent extends UiEvent<DrawingViewportChangeEventArgs> { }
+
+/** Arguments for [[CubeRotationChangeEvent]]
+ * @public
+ */
+export interface CubeRotationChangeEventArgs {
+  rotMatrix: Matrix3d;
+  face: Face;
+  complete?: boolean;
+}
+
+/** 3d Cube Rotation Change event
+ * @public
+ */
 export class CubeRotationChangeEvent extends UiEvent<CubeRotationChangeEventArgs> { }
 
-/** Arguments for [[StandardRotationChangeEvent]] */
+/** Arguments for [[StandardRotationChangeEvent]]
+ * @public
+ */
 export interface StandardRotationChangeEventArgs {
   standardRotation: StandardViewId;
 }
 
-/** Standard Rotation Change event */
+/** Standard Rotation Change event
+ * @public
+ */
 export class StandardRotationChangeEvent extends UiEvent<StandardRotationChangeEventArgs> { }
 
-/** Arguments for [[ViewRotationChangeEvent]] */
+/** Arguments for [[ViewRotationChangeEvent]]
+ * @public
+ */
 export interface ViewRotationChangeEventArgs {
   viewport: Viewport;
   animationTime?: number;
 }
 
-/** View Rotation Change event */
+/** View Rotation Change event
+ * @public
+ */
 export class ViewRotationChangeEvent extends UiEvent<ViewRotationChangeEventArgs> { }
 
-/** Arguments for [[ViewClassFullNameChangedEvent]] */
+/** Arguments for [[ViewClassFullNameChangedEvent]]
+ * @public
+ */
 export interface ViewClassFullNameChangedEventArgs {
   viewport: Viewport;
   oldName: string;
   newName: string;
 }
 
-/** View Class Full Name Change event */
+/** View Class Full Name Change event
+ * @public
+ */
 export class ViewClassFullNameChangedEvent extends UiEvent<ViewClassFullNameChangedEventArgs> { }
 
-/** Arguments for [[ViewIdChangedEvent]] */
+/** Arguments for [[ViewIdChangedEvent]]
+ * @public
+ */
 export interface ViewIdChangedEventArgs {
   viewport: Viewport;
   oldId: string;
   newId: string;
 }
 
-/** View Id Change event */
+/** View Id Change event
+ * @public
+ */
 export class ViewIdChangedEvent extends UiEvent<ViewIdChangedEventArgs> { }
 
-/** Viewport Rotation events and methods */
+/** Viewport Rotation events and methods
+ * @public
+ */
 export class ViewportComponentEvents {
   private static _removeListener?: () => void;
 
@@ -66,7 +103,11 @@ export class ViewportComponentEvents {
       this._removeListener = IModelApp.viewManager.onSelectedViewportChanged.addListener(ViewportComponentEvents.handleSelectedViewportChanged);
   }
 
-  public static readonly rMatrix = Matrix3d.createIdentity();
+  public static face = Face.None;
+  public static readonly origin = Point3d.createZero();
+  public static readonly extents = Vector3d.createZero();
+  public static readonly rotationMatrix = Matrix3d.createIdentity();
+  public static readonly onDrawingViewportChangeEvent = new DrawingViewportChangeEvent();
   public static readonly onCubeRotationChangeEvent = new CubeRotationChangeEvent();
   public static readonly onStandardRotationChangeEvent = new StandardRotationChangeEvent();
   public static readonly onViewRotationChangeEvent = new ViewRotationChangeEvent();
@@ -78,9 +119,14 @@ export class ViewportComponentEvents {
       ViewportComponentEvents.setViewMatrix(args.current);
   }
 
-  public static setCubeMatrix(rotMatrix: Matrix3d, animationTime?: number): void {
-    this.rMatrix.setFrom(rotMatrix);
-    this.onCubeRotationChangeEvent.emit({ rotMatrix, animationTime });
+  public static setCubeMatrix(rotMatrix: Matrix3d, face = Face.None, complete: boolean = false): void {
+    this.rotationMatrix.setFrom(rotMatrix);
+    this.face = face;
+    this.onCubeRotationChangeEvent.emit({ rotMatrix, complete, face });
+  }
+
+  public static setDrawingViewportState(origin: Point3d, rotation: Matrix3d, complete: boolean = false): void {
+    this.onDrawingViewportChangeEvent.emit({ origin, rotation, complete });
   }
 
   public static setStandardRotation(standardRotation: StandardViewId): void {
@@ -88,9 +134,14 @@ export class ViewportComponentEvents {
   }
 
   public static setViewMatrix(viewport: Viewport, animationTime?: number): void {
+    if (viewport.view) {
+      this.origin.setFrom(viewport.view.getOrigin());
+      this.extents.setFrom(viewport.view.getExtents());
+    }
+    this.rotationMatrix.setFrom(viewport.rotation);
+
     // When handling onViewChanged, use setTimeout
     setTimeout(() => {
-      this.rMatrix.setFrom(viewport.rotation);
       this.onViewRotationChangeEvent.emit({ viewport, animationTime });
     });
   }

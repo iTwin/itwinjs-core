@@ -7,7 +7,9 @@
 import { Point, PointProps } from "./Point";
 import { Size, SizeProps } from "./Size";
 
-/** Describes [[Rectangle]]. */
+/** Describes [[Rectangle]].
+ * @beta
+ */
 export interface RectangleProps {
   readonly left: number;
   readonly top: number;
@@ -15,7 +17,9 @@ export interface RectangleProps {
   readonly bottom: number;
 }
 
-/** Available corners of [[Rectangle]]. */
+/** Available corners of [[Rectangle]].
+ * @alpha
+ */
 export enum Corner {
   TopLeft,
   TopRight,
@@ -23,7 +27,9 @@ export enum Corner {
   BottomLeft,
 }
 
-/** Available edges of [[Rectangle]]. */
+/** Available edges of [[Rectangle]].
+ * @alpha
+ */
 export enum Edge {
   Left,
   Top,
@@ -31,7 +37,9 @@ export enum Edge {
   Bottom,
 }
 
-/** Describes and provides methods to work with 2d bounds. */
+/** Describes and provides methods to work with 2d bounds.
+ * @internal
+ */
 export class Rectangle implements RectangleProps {
   /** Creates rectangle from [[RectangleProps]]. */
   public static create(props: RectangleProps) {
@@ -177,22 +185,14 @@ export class Rectangle implements RectangleProps {
 
   /** @returns New [[Rectangle]] which is vertically contained in other rectangle. */
   public containVerticallyIn(other: RectangleProps): Rectangle {
-    let contained: Rectangle = this;
-    if (contained.bottom > other.bottom)
-      contained = contained.offsetY(other.bottom - contained.bottom);
-    if (contained.top < other.top)
-      contained = contained.offsetY(other.top - contained.top);
-    return contained;
+    const contained = this.offsetY(Math.min(other.bottom - this.bottom, 0));
+    return contained.offsetY(Math.max(other.top - contained.top, 0));
   }
 
   /** @returns New [[Rectangle]] which is horizontally contained in other rectangle. */
   public containHorizontallyIn(other: RectangleProps): Rectangle {
-    let contained: Rectangle = this;
-    if (contained.right > other.right)
-      contained = contained.offsetX(other.right - contained.right);
-    if (contained.left < other.left)
-      contained = contained.offsetX(other.left - contained.left);
-    return contained;
+    const contained = this.offsetX(Math.min(other.right - this.right, 0));
+    return contained.offsetX(Math.max(other.left - contained.left, 0));
   }
 
   /** @returns [[Corner.TopLeft]] position of this rectangle. */
@@ -218,18 +218,10 @@ export class Rectangle implements RectangleProps {
    * @returns New [[Rectangle]] with merged bounds.
    */
   public outerMergeWith(other: RectangleProps) {
-    let left = this.left;
-    let top = this.top;
-    let right = this.right;
-    let bottom = this.bottom;
-    if (other.left < left)
-      left = other.left;
-    if (other.top < top)
-      top = other.top;
-    if (other.right > right)
-      right = other.right;
-    if (other.bottom > bottom)
-      bottom = other.bottom;
+    const left = Math.min(this.left, other.left);
+    const top = Math.min(this.top, other.top);
+    const right = Math.max(this.right, other.right);
+    const bottom = Math.max(this.bottom, other.bottom);
     return new Rectangle(left, top, right, bottom);
   }
 

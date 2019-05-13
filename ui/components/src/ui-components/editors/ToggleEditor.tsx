@@ -12,15 +12,18 @@ import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { Toggle } from "@bentley/ui-core";
 import "./ToggleEditor.scss";
 
+/** @internal */
 interface ToggleEditorState {
   toggleValue: boolean;
 }
 
-/** ToggleEditor React component that is a property editor with checkbox input  */
+/** ToggleEditor React component that is a property editor with checkbox input
+ * @beta
+ */
 export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
   private _isMounted = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ToggleEditorState> = {
     toggleValue: false,
   };
@@ -66,15 +69,18 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
     }
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // tslint:disable-line:no-floating-promises
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // tslint:disable-line:no-floating-promises
@@ -102,14 +108,16 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
       );
   }
 
+  /** @internal */
   public render() {
-    const className = classnames("cell", "components-cell-editor", "components-toggle-editor");
+    const className = classnames("cell", "components-cell-editor", "components-toggle-editor", this.props.className);
     const inOn = this.state.toggleValue;
 
     return (
       <Toggle
         onBlur={this.props.onBlur}
         className={className}
+        style={this.props.style}
         isOn={inOn}
         onChange={this._updateToggleValue}
         data-testid="components-toggle-editor" />
@@ -117,7 +125,9 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   }
 }
 
-/** TogglePropertyEditor React component that uses the [[ToggleEditor]] property editor. */
+/** TogglePropertyEditor React component that uses the [[ToggleEditor]] property editor.
+ * @beta
+ */
 export class TogglePropertyEditor extends PropertyEditorBase {
 
   public get reactElement(): React.ReactNode {

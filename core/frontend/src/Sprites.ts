@@ -30,27 +30,28 @@ export class Sprite {
   public image?: HTMLImageElement;
   /** The size of this Sprite. If not loaded, value is not meaningful. */
   public readonly size = new Point2d();
+  /** Promise fulfilled when this sprite is loaded. */
+  public loadPromise: Promise<HTMLImageElement>;
   /** The offset to the middle of this Sprite. If not loaded, value is not meaningful. */
   public get offset(): Point2d { return new Point2d(Math.round(this.size.x) / 2, Math.round(this.size.y / 2)); }
   /** Whether this sprite has be successfully loaded. */
   public get isLoaded(): boolean { return undefined !== this.image; }
 
-  private onLoaded(image: HTMLImageElement) { this.image = image; this.size.set(image.naturalWidth, image.naturalHeight); }
-
-  /** Initialize this Sprite from an ImageSource.
-   * @param src The ImageSource holding an image to create the texture for this Sprite.
-   * @note This method creates the image from the ImageSource asynchronously.
+  /** construct a Sprite from an ImageSource or a Url
+   * @param src The ImageSource holding an image to create the texture for this Sprite, or the url of the image
    */
-  public fromImageSource(src: ImageSource): void { imageElementFromImageSource(src).then((image) => this.onLoaded(image)); } // tslint:disable-line:no-floating-promises
-
-  /** Initialize this Sprite from a URL
-   * @param url The url of an image to load for this Sprite.
-   */
-  public fromUrl(url: string): void { imageElementFromUrl(url).then((image) => this.onLoaded(image)); } // tslint:disable-line:no-floating-promises
+  constructor(src: ImageSource | string) {
+    this.loadPromise = (typeof src === "string") ? imageElementFromUrl(src) : imageElementFromImageSource(src);
+    this.loadPromise.then((image) => { // tslint:disable-line:no-floating-promises
+      this.image = image;
+      this.size.set(image.naturalWidth, image.naturalHeight);
+    });
+  }
 }
 
 /** Icon sprites are loaded from .png files in the assets directory of imodeljs-native.
  * They are cached by name, and the cache is cleared when the ToolAdmin is shut down.
+ * @public
  */
 export class IconSprites {
   private static readonly _sprites = new Map<string, Sprite>();
@@ -61,12 +62,12 @@ export class IconSprites {
   public static getSpriteFromUrl(spriteUrl: string): Sprite {
     let sprite = this._sprites.get(spriteUrl);
     if (!sprite) {
-      sprite = new Sprite();
+      sprite = new Sprite(spriteUrl);
       this._sprites.set(spriteUrl, sprite);
-      sprite.fromUrl(spriteUrl);
     }
     return sprite;
   }
+
   /** Empty the cache, disposing all existing Sprites. */
   public static emptyAll() { this._sprites.clear(); }
 }
@@ -88,23 +89,22 @@ export class SpriteLocation implements CanvasDecoration {
   public get isActive(): boolean { return this._viewport !== undefined; }
 
   /** Activate this SpriteLocation to show a Sprite at a location in a single ScreenViewport.
-   * This call does not display the Sprite. Rather, subsequent calls to
-   * [[decorate]] from  will show the Sprite.
+   * This call does not display the Sprite. Rather, subsequent calls to [[decorate]] from  will show the Sprite.
    * This SpriteLocation remains active until [[deactivate]] is called.
-   * @param sprite  The Sprite to draw at this SpriteLocation
+   * @param sprite The Sprite to draw at this SpriteLocation
    * @param viewport The Viewport onto which the Sprite is drawn
    * @param locationWorld The position, in world coordinates
    * @param alpha Optional alpha for the Sprite. Must be a number between 0 (fully transparent) and 1 (fully opaque).
    */
   public activate(sprite: Sprite, viewport: ScreenViewport, locationWorld: XYAndZ, alpha?: number): void {
-    if (!sprite.isLoaded)
-      return;
-
-    viewport.worldToView(locationWorld, this.position);
     this._sprite = sprite;
     this._alpha = alpha;
     this._viewport = viewport;
-    viewport.invalidateDecorations();
+    viewport.worldToView(locationWorld, this.position);
+    sprite.loadPromise.then(() => { // tslint:disable-line:no-floating-promises
+      if (this._viewport === viewport) // was this deactivated while we were loading?
+        viewport.invalidateDecorations();
+    });
   }
 
   /** Turn this SpriteLocation off so it will no longer show. */
@@ -119,11 +119,14 @@ export class SpriteLocation implements CanvasDecoration {
    * @see [[CanvasDecoration.drawDecoration]]
    */
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
+    const sprite = this._sprite!;
+    if (undefined === sprite.image)
+      return;
+
     if (undefined !== this._alpha)
       ctx.globalAlpha = this._alpha;
 
-    const sprite = this._sprite!;
-    ctx.drawImage(sprite.image!, -sprite.offset.x, -sprite.offset.y);
+    ctx.drawImage(sprite.image, -sprite.offset.x, -sprite.offset.y);
   }
 
   /** If this SpriteLocation is active and the supplied DecorateContext is for its Viewport, add the Sprite to decorations. */

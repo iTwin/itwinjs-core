@@ -2,6 +2,78 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/ui-ninezone_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to latest version of icon library."
+          },
+          {
+            "comment": "@beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds."
+          },
+          {
+            "comment": "Fixed AppButton onClick on Firefox and bar color"
+          },
+          {
+            "comment": "CommonProps usage in ui-framework. SvgPath sample in ui-test-app. Added tools/build/tslint-docs.json."
+          },
+          {
+            "comment": "Show/Hide UI enhancements. Widget Opacity enhancements."
+          },
+          {
+            "comment": "Added local snapshot support to ui-test-app. Added specialized div components to ui-core."
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "Fixed Viewport heights & initial navigation aid. Widget transparency."
+          },
+          {
+            "comment": "From hackathon-ui-team: StagePanels, UI Show/Hide, PopupButtons"
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "Require React & React-dom 16.8"
+          },
+          {
+            "comment": "Update icons-generic-webfont version to latest available."
+          },
+          {
+            "comment": "Add TitleBar component for toolsetting instead of using one from footer. Title bas needed to be more compact in toolsettings widget."
+          },
+          {
+            "comment": "Tool Settings: removed minimize tab, added min to title bar, styled title"
+          },
+          {
+            "comment": "Auto close popups when clicking outside."
+          },
+          {
+            "comment": "Move zone components to @beta."
+          },
+          {
+            "comment": "Move tool settings components to @beta."
+          },
+          {
+            "comment": "Remove popover components."
+          },
+          {
+            "comment": "Prevent widget content unmount in 9-Zone demo."
+          },
+          {
+            "comment": "Change start to flex-start to avoid linting warnings from postcss-loader"
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/ui-ninezone_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",
@@ -32,7 +104,7 @@
             "comment": "Use new buildIModelJsBuild script"
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Minor UI Color Theme changes"

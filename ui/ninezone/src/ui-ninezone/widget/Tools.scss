@@ -1,0 +1,64 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "./tools/button/_variables";
+@import "../widgetopacity";
+
+.nz-widget-tools {
+  display: grid;
+  box-sizing: border-box;
+  grid-gap: 20px;
+  align-items: start;
+  justify-items: start;
+  grid-template-rows: minmax($mls-button-height, auto) 1fr;
+
+  &.nz-reduced-gap {
+    grid-gap: 3px;
+  }
+
+  &.nz-no-gap {
+    grid-gap: 0;
+  }
+
+  &.nz-reduced-gap, &.nz-no-gap {
+    grid-template-rows: auto 1fr;
+  }
+
+  &.nz-navigation {
+    justify-items: end;
+    grid-template-areas: "htools button"". vtools";
+    grid-template-columns: 1fr minmax($mls-button-height, auto);
+
+    &.nz-reduced-gap, &.nz-no-gap {
+      grid-template-columns: 1fr auto;
+    }
+  }
+
+  &:not(.nz-navigation) {
+    grid-template-areas: "button htools""vtools .";
+    grid-template-columns: minmax($mls-button-height, auto) 1fr;
+
+    &.nz-reduced-gap, &.nz-no-gap {
+      grid-template-columns: auto 1fr;
+    }
+  }
+
+  > .nz-app-button {
+    grid-area: button;
+    pointer-events: auto;
+    @include nz-widget-opacity;
+  }
+
+  > .nz-horizontal-toolbar {
+    grid-area: htools;
+    pointer-events: auto;
+    @include nz-widget-opacity;
+  }
+
+  > .nz-vertical-toolbar {
+    grid-area: vtools;
+    pointer-events: auto;
+    @include nz-widget-opacity;
+  }
+}

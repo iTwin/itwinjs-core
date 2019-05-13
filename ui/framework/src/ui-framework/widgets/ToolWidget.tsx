@@ -8,13 +8,16 @@ import * as React from "react";
 
 import { ToolWidgetProps, WidgetType } from "./WidgetDef";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
-import { CommandItemDef } from "../shared/Item";
+import { CommandItemDef } from "../shared/CommandItemDef";
 import { Icon } from "../shared/IconComponent";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 import { AppButton, Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 
 /** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
+ * @public
  */
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
   private _appButton: CommandItemDef | undefined;
@@ -29,6 +32,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
   }
 
   public get reactElement(): React.ReactNode {
+    // istanbul ignore else
     if (!this._reactElement)
       this._reactElement = <ToolWidgetWithDef toolWidgetDef={this} />;
 
@@ -52,44 +56,46 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
 }
 
 /** Properties for the [[ToolWidget]] React component.
+ * @public
  */
-export interface ToolWidgetPropsEx extends ToolWidgetProps {
+export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
   button?: React.ReactNode;
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;
 }
 
 /** State for the [[ToolWidget]] React component.
+ * @internal
  */
-export interface ToolWidgetState {
-  toolWidgetProps: ToolWidgetPropsEx;
+interface ToolWidgetState {
   toolWidgetDef: ToolWidgetDef;
 }
 
 /** ToolWidget React component.
+ * @public
  */
 export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ToolWidgetState>;
 
-  constructor(props: ToolWidgetPropsEx, context?: any) {
-    super(props, context);
+  constructor(props: ToolWidgetPropsEx) {
+    super(props);
 
-    this.state = { toolWidgetProps: props, toolWidgetDef: new ToolWidgetDef(props) };
+    this.state = { toolWidgetDef: new ToolWidgetDef(props) };
   }
 
-  public static getDerivedStateFromProps(newProps: ToolWidgetPropsEx, state: ToolWidgetState): ToolWidgetState | null {
-    if (newProps !== state.toolWidgetProps) {
-      return { toolWidgetProps: newProps, toolWidgetDef: new ToolWidgetDef(newProps) };
+  public componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState) {
+    if (this.props !== prevProps) {
+      this.setState({ toolWidgetDef: new ToolWidgetDef(this.props) });
     }
-
-    return null;
   }
 
   public render(): React.ReactNode {
     return (
       <ToolWidgetWithDef
+        className={this.props.className}
+        style={this.props.style}
         toolWidgetDef={this.state.toolWidgetDef}
         button={this.props.button}
         horizontalToolbar={this.props.horizontalToolbar}
@@ -101,7 +107,7 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
 
 /** Properties for the Tool Widget React component.
  */
-interface Props {
+interface Props extends CommonProps {
   toolWidgetDef: ToolWidgetDef;
   button?: React.ReactNode;
   horizontalToolbar?: React.ReactNode;
@@ -139,12 +145,14 @@ class ToolWidgetWithDef extends React.Component<Props> {
 
     return (
       <NZ_ToolsWidget
+        className={this.props.className}
+        style={this.props.style}
         button={button}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
+        preserveSpace={true}
+        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
       />
     );
   }
 }
-
-export default ToolWidget;

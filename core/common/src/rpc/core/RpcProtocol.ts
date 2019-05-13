@@ -4,16 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { RpcRequest } from "./RpcRequest";
-import { RpcInvocation } from "./RpcInvocation";
-import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcOperation } from "./RpcOperation";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import { BeEvent, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcResponseCacheControl, RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
+import { RpcConfiguration } from "./RpcConfiguration";
+import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
+import { RpcInvocation } from "./RpcInvocation";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import { RpcOperation } from "./RpcOperation";
+import { RpcRequest } from "./RpcRequest";
+import { IModelToken } from "../../IModel";
 
-/** A serialized RPC operation descriptor. */
+/** A serialized RPC operation descriptor.
+ * @public
+ */
 export interface SerializedRpcOperation {
   interfaceDefinition: string;
   operationName: string;
@@ -21,11 +24,10 @@ export interface SerializedRpcOperation {
   encodedRequest?: string;
 }
 
-/** A serialized RPC operation request. */
-export interface SerializedRpcRequest {
-  id: string;
-  authorization: string;
-  version: string;
+/** A serialized RPC operation request.
+ * @public
+ */
+export interface SerializedRpcRequest extends SerializedClientRequestContext {
   operation: SerializedRpcOperation;
   method: string;
   path: string;
@@ -33,7 +35,9 @@ export interface SerializedRpcRequest {
   caching: RpcResponseCacheControl;
 }
 
-/** An RPCD operation request fulfillment. */
+/** An RPC operation request fulfillment.
+ * @public
+ */
 export interface RpcRequestFulfillment {
   /** The RPC interface for the request. */
   interfaceName: string;
@@ -51,10 +55,10 @@ export interface RpcRequestFulfillment {
   status: number;
 }
 
-/** @hidden */
+/** @public */
 export namespace RpcRequestFulfillment {
-  export function forUnknownError(request: SerializedRpcRequest, error: any): RpcRequestFulfillment {
-    const result = RpcMarshaling.serialize(request.operation.interfaceDefinition, undefined, error);
+  export async function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment> {
+    const result = await RpcMarshaling.serialize(request.operation.interfaceDefinition, undefined, error);
 
     return {
       interfaceName: request.operation.interfaceDefinition,
@@ -66,10 +70,14 @@ export namespace RpcRequestFulfillment {
   }
 }
 
-/** Handles RPC protocol events. */
+/** Handles RPC protocol events.
+ * @public
+ */
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation) => void;
 
-/** An application protocol for an RPC interface. */
+/** An application protocol for an RPC interface.
+ * @public
+ */
 export abstract class RpcProtocol {
   /** Events raised by all protocols. See [[RpcProtocolEvent]] */
   public static readonly events: BeEvent<RpcProtocolEventHandler> = new BeEvent();
@@ -86,17 +94,37 @@ export abstract class RpcProtocol {
   /** The RPC invocation class for this protocol. */
   public readonly invocationType: typeof RpcInvocation = RpcInvocation;
 
-  /** The name of the request id header. */
-  public requestIdHeaderName: string = "X-RequestId";
+  public serializedClientRequestContextHeaderNames: SerializedClientRequestContext = {
+    /** The name of the request id header. */
+    id: "",
 
-  /** The name of the version header. */
-  public get versionHeaderName() { return this.configuration.applicationVersionKey; }
+    /** The name of the application id header  */
+    applicationId: "",
 
-  /** The name of the authorization header. */
-  public get authorizationHeaderName() { return this.configuration.applicationAuthorizationKey; }
+    /** The name of the version header. */
+    applicationVersion: "",
+
+    /** The name of the session id header  */
+    sessionId: "",
+
+    /** The name of the authorization header. */
+    authorization: "",
+
+    /** The id of the authorized user */
+    userId: "",
+  };
 
   /** If greater than zero, specifies where to break large binary request payloads. */
   public transferChunkThreshold: number = 0;
+
+  /** Used by protocols that can transmit stream values natively. */
+  public preserveStreams: boolean = false;
+
+  /** Used by protocols that can transmit IModelToken values natively. */
+  public checkToken: boolean = false;
+
+  /** If checkToken is true, will be called on the backend to inflate the IModelToken for each request. */
+  public inflateToken(tokenFromBody: IModelToken, _request: SerializedRpcRequest): IModelToken { return tokenFromBody; }
 
   /** Override to supply the status corresponding to a protocol-specific code value. */
   public getStatus(code: number): RpcRequestStatus {
@@ -124,11 +152,10 @@ export abstract class RpcProtocol {
   }
 
   /** Serializes a request. */
-  public serialize(request: RpcRequest): SerializedRpcRequest {
+  public async serialize(request: RpcRequest): Promise<SerializedRpcRequest> {
+    const serializedContext: SerializedClientRequestContext = await RpcConfiguration.requestContext.serialize(request);
     return {
-      id: request.id,
-      authorization: this.configuration.applicationAuthorizationValue || "",
-      version: RpcConfiguration.applicationVersionValue || "",
+      ...serializedContext,
       operation: {
         interfaceDefinition: request.operation.interfaceDefinition.name,
         operationName: request.operation.operationName,
@@ -136,7 +163,7 @@ export abstract class RpcProtocol {
       },
       method: request.method,
       path: request.path,
-      parameters: RpcMarshaling.serialize(request.operation, request.protocol, request.parameters),
+      parameters: await RpcMarshaling.serialize(request.operation, request.protocol, request.parameters),
       caching: RpcResponseCacheControl.None,
     };
   }
@@ -147,15 +174,15 @@ export abstract class RpcProtocol {
     this.events.addListener((type, object) => RpcProtocol.events.raiseEvent(type, object));
   }
 
-  /** @hidden */
+  /** @internal */
   public onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
 
-  /** @hidden */
+  /** @internal */
   public onRpcImplInitialized(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
 
-  /** @hidden */
+  /** @internal */
   public onRpcClientTerminated(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
 
-  /** @hidden */
+  /** @internal */
   public onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
 }

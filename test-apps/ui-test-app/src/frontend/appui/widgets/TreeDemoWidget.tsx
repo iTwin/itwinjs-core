@@ -25,7 +25,7 @@ export class TreeDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <TreeDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
+    this.reactElement = <TreeDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection} />;
   }
 }
 

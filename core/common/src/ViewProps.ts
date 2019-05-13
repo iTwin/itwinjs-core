@@ -9,9 +9,10 @@ import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { ViewFlags, AnalysisStyleProps, HiddenLine, AmbientOcclusion } from "./Render";
+import { ViewFlags, AnalysisStyleProps, HiddenLine, AmbientOcclusion, SolarShadows } from "./Render";
 import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
 import { RenderSchedule } from "./RenderSchedule";
+import { SpatialClassificationProps } from "./SpatialClassificationProps";
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend)
  * @public
@@ -19,9 +20,12 @@ import { RenderSchedule } from "./RenderSchedule";
 export interface ViewStateProps {
   viewDefinitionProps: ViewDefinitionProps;
   categorySelectorProps: CategorySelectorProps;
-  displayStyleProps: DisplayStyleProps;
   modelSelectorProps?: ModelSelectorProps;
+  /** @beta */
+  displayStyleProps: DisplayStyleProps;
+  /** @beta */
   sheetProps?: SheetProps;
+  /** @beta */
   sheetAttachments?: Id64Array;
 }
 
@@ -69,7 +73,7 @@ export interface ViewFlagProps {
   noStyle?: boolean;
   /** If true, don't use transparency. */
   noTransp?: boolean;
-  /** @hidden This doesn't belong here - it is not persistent. */
+  /** @internal This doesn't belong here - it is not persistent. */
   contRend?: boolean;
   /** If true, don't show filled regions. */
   noFill?: boolean;
@@ -99,7 +103,7 @@ export interface ViewFlagProps {
   hlMatColors?: boolean;
   /** If true, show view with monochrome settings. */
   monochrome?: boolean;
-  /** @hidden unused */
+  /** @internal unused */
   edgeMask?: number;
   /** [[RenderMode]] */
   renderMode?: number;
@@ -107,6 +111,13 @@ export interface ViewFlagProps {
   backgroundMap?: boolean;
   /** If true, show ambient occlusion. */
   ambientOcclusion?: boolean;
+  /** Controls whether surface discard is always applied regardless of other ViewFlags.
+   * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
+   * non-planar surfaces always draw in front of those non-planar surfaces.
+   * When this view flag is set to false (the default), then for 3d views if the render mode is wireframe (only edges are displayed) or smooth shader with visible edges turned off (only surfaces are displayed),
+   * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
+   */
+  forceSurfaceDiscard?: boolean;
 }
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
@@ -123,7 +134,7 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
  * @see [[DisplayStyleSettingsProps]]
  * @public
  */
-export const enum BackgroundMapType {
+export enum BackgroundMapType {
   Street = 1,
   Aerial = 2,
   Hybrid = 3,
@@ -159,13 +170,13 @@ export interface GroundPlaneProps {
 /** Enumerates the supported types of [SkyBox]($frontend) images.
  * @public
  */
-export const enum SkyBoxImageType {
+export enum SkyBoxImageType {
   None,
   /** A single image mapped to the surface of a sphere. @see [[SkySphere]] */
   Spherical,
   /** 6 images mapped to the faces of a cube. @see [[SkyCube]] */
   Cube,
-  /** @hidden not yet supported */
+  /** @internal not yet supported */
   Cylindrical,
 }
 
@@ -207,13 +218,13 @@ export interface SkyBoxProps {
   display?: boolean;
   /** For a [[SkyGradient]], if true, a 2-color gradient skybox is used instead of a 4-color. Defaults to false. */
   twoColor?: boolean;
-  /** For a 4-color [[SkyGradient]], the color of the sky at the horizon. For a 2-color [[SkyGradient]], the color of the sky. */
+  /** For a 4-color [[SkyGradient]], the color of the sky at the horizon. */
   skyColor?: ColorDefProps;
-  /** For a 4-color [[SkyGradient]], the color of the ground at the horizon. For a 2-color [[SkyGradient]], the color of the ground. */
+  /** For a 4-color [[SkyGradient]], the color of the ground at the horizon. */
   groundColor?: ColorDefProps;
-  /** For a 4-color [[SkyGradient]], the color of the sky when looking straight up. */
+  /** For a 4-color [[SkyGradient]], the color of the sky when looking straight up. For a 2-color [[SkyGradient]], the color of the sky. */
   zenithColor?: ColorDefProps;
-  /** For a 4-color [[SkyGradient]], the color of the ground when looking straight down. */
+  /** For a 4-color [[SkyGradient]], the color of the ground when looking straight down. For a 2-color [[SkyGradient]], the color of the ground. */
   nadirColor?: ColorDefProps;
   /** For a 4-color [[SkyGradient]], controls speed of change from sky color to zenith color. */
   skyExponent?: number;
@@ -221,6 +232,16 @@ export interface SkyBoxProps {
   groundExponent?: number;
   /** For a [[SkySphere]] or [[SkyCube]], the skybox image(s). */
   image?: SkyBoxImageProps;
+}
+
+/** JSON representation of a solar shadow settings.
+ * @beta
+ */
+export interface SolarShadowProps {
+  /** Shadow color */
+  color?: ColorDefProps;
+  /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects. */
+  bias?: number;
 }
 
 /** JSON representation of the environment setup of a [[DisplayStyle3d]].
@@ -238,6 +259,8 @@ export interface ContextRealityModelProps {
   tilesetUrl: string;
   name?: string;
   description?: string;
+  /** @beta */
+  classifiers?: SpatialClassificationProps.PropertiesProps[];
 }
 
 /** JSON representation of the settings associated with a [[DisplayStyleProps]].
@@ -252,7 +275,9 @@ export interface DisplayStyleSettingsProps {
   backgroundColor?: ColorDefProps;
   /** The color used in monochrome mode. Defaults to white. */
   monochromeColor?: ColorDefProps;
-  /** Settings controlling display of analytical models. */
+  /** Settings controlling display of analytical models.
+   * @alpha
+   */
   analysisStyle?: AnalysisStyleProps;
   /** Schedule script */
   scheduleScript?: RenderSchedule.ElementTimelineProps[];
@@ -260,8 +285,10 @@ export interface DisplayStyleSettingsProps {
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
   /** Settings controlling display of map imagery within views of geolocated models. */
   backgroundMap?: BackgroundMapProps;
-  /** Contexual Reality Models */
+  /** Contextual Reality Models */
   ContextRealityModels?: ContextRealityModelProps[];
+  /** List of IDs of excluded elements */
+  excludedElements?: Id64String[];
 }
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
@@ -275,6 +302,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   hline?: HiddenLine.SettingsProps;
   /** Settings controlling display of ambient occlusion, stored in Props. */
   ao?: AmbientOcclusion.Props;
+  /** Settings controlling display of solar shadoss, stored in Props. */
+  solarShadows?: SolarShadows.Props;
 }
 
 /** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]].
@@ -379,6 +408,7 @@ export class DisplayStyleSettings {
   private readonly _background: ColorDef;
   private readonly _monochrome: ColorDef;
   private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
+  private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -402,6 +432,16 @@ export class DisplayStyleSettings {
           const subCatOvr = SubCategoryOverride.fromJSON(ovrJson);
           if (subCatOvr.anyOverridden)
             this.changeSubCategoryOverride(subCatId, false, subCatOvr);
+        }
+      }
+    }
+
+    const exElemArray = JsonUtils.asArray(this._json.excludedElements);
+    if (undefined !== exElemArray) {
+      for (const exElemStr of exElemArray) {
+        const exElem = Id64.fromJSON(exElemStr);
+        if (Id64.isValid(exElem)) {
+          this._excludedElements.add(exElem);
         }
       }
     }
@@ -437,12 +477,12 @@ export class DisplayStyleSettings {
     this._json.monochromeColor = color.toJSON();
   }
 
-  /** @hidden */
+  /** @internal */
   public get backgroundMap(): BackgroundMapProps | undefined {
     const props = this._json.backgroundMap;
     return undefined !== props ? props : {};
   }
-  /** @hidden */
+  /** @internal */
   public set backgroundMap(map: BackgroundMapProps | undefined) { this._json.backgroundMap = map; }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
@@ -471,6 +511,37 @@ export class DisplayStyleSettings {
 
   /** Returns true if an [[SubCategoryOverride]s are defined by this style. */
   public get hasSubCategoryOverride(): boolean { return this._subCategoryOverrides.size > 0; }
+
+  /** The set of elements that the display style will exclude.
+   * @returns The set of excluded elements.
+   */
+  public get excludedElements(): Set<Id64String> { return this._excludedElements; }
+
+  /** Add an element to the set of excluded elements defined by the display style.
+   * @param id The ID of the element to be excluded.
+   */
+  public addExcludedElements(id: Id64String) {
+    if (Id64.isValid(id)) {
+      if (undefined === this._json.excludedElements)
+        this._json.excludedElements = [];
+      this._json.excludedElements.push(id);
+      this._excludedElements.add(id);
+    }
+  }
+
+  /** Remove an element from the set of excluded elements defined by the display style.
+   * @param id The ID of the element to be removed from the set of excluded elements.
+   */
+  public dropExcludedElement(id: Id64String) {
+    if (this._json.excludedElements !== undefined) {
+      const index = this._json.excludedElements.indexOf(id);
+      if (index > -1)
+        this._json.excludedElements.splice(index, 1);
+      if (this._json.excludedElements.length === 0)
+        this._json.excludedElements = undefined;
+    }
+    this._excludedElements.delete(id);
+  }
 
   public toJSON(): DisplayStyleSettingsProps { return this._json; }
 
@@ -508,8 +579,23 @@ export class DisplayStyleSettings {
       if (updateJson) {
         const index = this.findIndexOfSubCategoryOverrideInJSON(id, true);
         this._json.subCategoryOvr![index] = ovr.toJSON();
+        this._json.subCategoryOvr![index].subCategory = id;
       }
     }
+  }
+
+  /** @internal */
+  public equalSubCategoryOverrides(other: DisplayStyleSettings): boolean {
+    if (this._subCategoryOverrides.size !== other._subCategoryOverrides.size)
+      return false;
+
+    for (const [key, value] of this._subCategoryOverrides.entries()) {
+      const otherValue = other._subCategoryOverrides.get(key);
+      if (undefined === otherValue || !value.equals(otherValue))
+        return false;
+    }
+
+    return true;
   }
 }
 
@@ -520,12 +606,14 @@ export class DisplayStyleSettings {
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _hline: HiddenLine.Settings;
   private _ao: AmbientOcclusion.Settings;
+  private _solarShadows: SolarShadows.Settings;
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
 
   public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }) {
     super(jsonProperties);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
+    this._solarShadows = SolarShadows.Settings.fromJSON(this._json3d.solarShadows);
   }
 
   public toJSON(): DisplayStyle3dSettingsProps { return this._json3d; }
@@ -548,12 +636,20 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._json3d.ao = ao.toJSON();
   }
 
-  /** @hidden */
+  /** The settings that control how solar shadows are displayed.
+   * @note Do not modify the settings in place. Clone them and pass the clone to the setter.
+   */
+  public get solarShadowsSettings(): SolarShadows.Settings { return this._solarShadows; }
+  public set solarShadowsSettings(solarShadows: SolarShadows.Settings) {
+    this._solarShadows = solarShadows;
+    this._json3d.solarShadows = solarShadows.toJSON();
+  }
+  /** @internal */
   public get environment(): EnvironmentProps {
     const env = this._json3d.environment;
     return undefined !== env ? env : {};
   }
 
-  /** @hidden */
+  /** @internal */
   public set environment(environment: EnvironmentProps) { this._json3d.environment = environment; }
 }

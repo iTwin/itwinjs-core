@@ -9,19 +9,22 @@ import * as React from "react";
 import { Range2d } from "@bentley/geometry-core";
 
 import "./Tree.scss";
+import { CommonProps } from "../utils/Props";
 
-/** Properties for the [[Tree]] presentation React component */
-export interface TreeProps {
+/** Properties for the [[Tree]] presentational React component
+ * @public
+ */
+export interface TreeProps extends CommonProps {
   children?: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
   onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
   onMouseMove?: React.MouseEventHandler<HTMLDivElement>;
   onMouseUp?: React.MouseEventHandler<HTMLDivElement>;
 }
 
-/** Presentation React component for a Tree */
-export default class Tree extends React.PureComponent<TreeProps> {
+/** Presentation React component for a Tree
+ * @public
+ */
+export class Tree extends React.PureComponent<TreeProps> {
   private _treeElement: React.RefObject<HTMLDivElement> = React.createRef();
 
   private get _scrollableContainer(): Element | undefined {

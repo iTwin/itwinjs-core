@@ -11,6 +11,7 @@ import { ItemStyle } from "../properties/ItemStyle";
 
 /**
  * A node item which can be displayed in a tree.
+ * @public
  */
 export interface TreeNodeItem {
   id: string;
@@ -30,48 +31,70 @@ export interface TreeNodeItem {
   style?: ItemStyle;
 }
 
-/** A [[TreeNodeItem]] for immediately loaded trees */
+/** A [[TreeNodeItem]] for immediately loaded trees
+ * @public
+ */
 export interface ImmediatelyLoadedTreeNodeItem extends TreeNodeItem {
   children?: TreeNodeItem[];
 }
 
-/** A [[TreeNodeItem]] for delay-loaded trees */
+/** A [[TreeNodeItem]] for delay-loaded trees
+ * @public
+ */
 export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
   hasChildren?: boolean;
 }
 
-/** Array of tree node data elements */
+/** Array of tree node data elements
+ * @public
+ */
 export type TreeDataProviderRaw = ImmediatelyLoadedTreeNodeItem[];
 
-/** A Promise for TreeDataProviderRaw */
+/** A Promise for TreeDataProviderRaw
+ * @public
+ */
 export type TreeDataProviderPromise = Promise<TreeDataProviderRaw>;
 
-/** Signature for a method that returns TreeDataProviderPromise for supplied parent node */
+/** Signature for a method that returns TreeDataProviderPromise for supplied parent node
+ * @public
+ */
 export type TreeDataProviderMethod = (node?: TreeNodeItem) => Promise<DelayLoadedTreeNodeItem[]>;
 
-/** Interface for a tree data provider class */
+/** Interface for a tree data provider class
+ * @public
+ */
 export interface ITreeDataProvider {
   onTreeNodeChanged?: BeEvent<TreeDataChangesListener>;
   getNodesCount(parent?: TreeNodeItem): Promise<number>;
   getNodes(parent?: TreeNodeItem, page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]>;
 }
 
-/** Type definition for all BeInspireTree data providers */
+/** Type definition for all BeInspireTree data providers
+ * @public
+ */
 export type TreeDataProvider = TreeDataProviderRaw | TreeDataProviderPromise | TreeDataProviderMethod | ITreeDataProvider;
 
-/** Checks if [[TreeDataProvider]] is a [[TreeDataProviderRaw]] */
+/** Checks if [[TreeDataProvider]] is a [[TreeDataProviderRaw]]
+ * @public
+ */
 export const isTreeDataProviderRaw = (provider: TreeDataProvider): provider is TreeDataProviderRaw => {
   return Array.isArray(provider);
 };
-/** Checks if [[TreeDataProvider]] is a [[TreeDataProviderPromise]] */
+/** Checks if [[TreeDataProvider]] is a [[TreeDataProviderPromise]]
+ * @public
+ */
 export const isTreeDataProviderPromise = (provider: TreeDataProvider): provider is TreeDataProviderPromise => {
   return (undefined !== (provider as TreeDataProviderPromise).then);
 };
-/** Checks if [[TreeDataProvider]] is a [[TreeDataProviderMethod]] */
+/** Checks if [[TreeDataProvider]] is a [[TreeDataProviderMethod]]
+ * @public
+ */
 export const isTreeDataProviderMethod = (provider: TreeDataProvider): provider is TreeDataProviderMethod => {
   return (typeof provider === "function");
 };
-/** Checks if [[TreeDataProvider]] is an [[ITreeDataProvider]] */
+/** Checks if [[TreeDataProvider]] is an [[ITreeDataProvider]]
+ * @public
+ */
 export const isTreeDataProviderInterface = (provider: TreeDataProvider): provider is ITreeDataProvider => {
   const candidate = provider as ITreeDataProvider;
   return undefined !== candidate.getNodes && undefined !== candidate.getNodesCount;
@@ -80,6 +103,7 @@ export const isTreeDataProviderInterface = (provider: TreeDataProvider): provide
  * Determines whether node has children
  * @param node node to check
  * @returns whether node has children
+ * @public
  */
 export const hasChildren = (node: TreeNodeItem) => {
   const nodeAsImmediate = node as ImmediatelyLoadedTreeNodeItem;
@@ -94,11 +118,13 @@ export const hasChildren = (node: TreeNodeItem) => {
 /**
  * An interface tree data change listeners.
  * Contains a list of nodes that changed or undefined if root level changed.
+ * @public
  */
 export type TreeDataChangesListener = (nodes: Array<TreeNodeItem | undefined>) => void;
 
 /**
  * EditableTreeDataProvider provides cell editing processing for the Tree.
+ * @public
  */
 export interface EditableTreeDataProvider extends ITreeDataProvider {
   updateLabel(nodeItem: TreeNodeItem, newLabel: string): void;
@@ -107,6 +133,7 @@ export interface EditableTreeDataProvider extends ITreeDataProvider {
 /**
  * MutableTreeDataProvider provides manipulation processing for the Tree.
  * Useful for Drag & Drop processing.
+ * @beta
  */
 export interface MutableTreeDataProvider extends ITreeDataProvider {
   insertNode(parent: TreeNodeItem | undefined, child: TreeNodeItem, index?: number): void;

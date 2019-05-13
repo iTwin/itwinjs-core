@@ -2,66 +2,12 @@
 
 exports[`InputFieldMessage should render correctly 1`] = `
 <Portal
-  containerInfo={
-    <body>
-      <button />
-      <div
-        id="context-menu-root"
-      >
-        <div
-          id="context-menu-keyboard-shortcut-menu"
-        >
-          <div
-            class="context-menu-global"
-            style="left: 0px; top: 0px;"
-          >
-            <div
-              class="context-menu"
-              data-testid="context-menu-root"
-            >
-              <div>
-                <div>
-                  <div
-                    class="context-menu-container opened floating bottom right"
-                    data-testid="context-menu-container"
-                    tabindex="0"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          id="context-menu-keyboard-shortcut-menu"
-        >
-          <div
-            class="context-menu-global"
-            style="left: 0px; top: 0px;"
-          >
-            <div
-              class="context-menu"
-              data-testid="context-menu-root"
-            >
-              <div>
-                <div>
-                  <div
-                    class="context-menu-container opened floating bottom right"
-                    data-testid="context-menu-container"
-                    tabindex="0"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </body>
-  }
+  containerInfo={<body />}
 >
   <WithOnOutsideClick
     className="uifw-popup-message-inputField"
   >
-    <WithTheme
+    <Message
       className="uifw-popup-message-inputField"
       icon={
         <i
@@ -72,18 +18,19 @@ exports[`InputFieldMessage should render correctly 1`] = `
     >
       <MessageLayout
         buttons={
-          <WithTheme
+          <MessageButton
             onClick={[Function]}
           >
             <i
               className="icon icon-close"
             />
-          </WithTheme>
+          </MessageButton>
         }
         className="uifw-message-inputField-content"
-        label={<div />}
-      />
-    </WithTheme>
+      >
+        <div />
+      </MessageLayout>
+    </Message>
   </WithOnOutsideClick>
 </Portal>
 `;

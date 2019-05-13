@@ -16,6 +16,7 @@ import GridWidget from "../grid-widget/GridWidget";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import TreeWidget from "../tree-widget/TreeWidget";
 import RulesetSelector from "../ruleset-selector/RulesetSelector";
+import SelectionScopePicker from "../selection-scope-picker/SelectionScopePicker";
 import ViewportContentControl from "../viewport/ViewportContentControl";
 
 import "./App.css";
@@ -81,11 +82,22 @@ export default class App extends React.Component<{}, State> {
     this.setState({ contentRatio: ratio });
   }
 
+  private _selectAllInstances = async (provider: IPresentationTableDataProvider) => {
+    const size = await provider.getRowsCount();
+    const rowPromises = [];
+    for (let i = 0; i < size; ++i)
+      rowPromises.push(provider.getRow(i));
+    const rows = await Promise.all(rowPromises);
+    const keys = rows.map((r) => provider.getRowKey(r!));
+    Presentation.selection.addToSelection("app", provider.imodel, keys);
+  }
+
   private _onFindSimilar = async (provider: IPresentationPropertyDataProvider, record: PropertyRecord) => {
     try {
       const factory = new DataProvidersFactory();
       const similarInstancesProvider = await factory.createSimilarInstancesTableDataProvider(provider,
         record, { displayType: DefaultContentDisplayTypes.LIST });
+      await this._selectAllInstances(similarInstancesProvider);
       this.setState({ similarInstancesProvider });
     } catch (e) {
       console.log(e); // tslint:disable-line:no-console
@@ -109,12 +121,12 @@ export default class App extends React.Component<{}, State> {
         <div className="app-content-left">
           <div className="app-content-left-top">
             <ViewportContentControl imodel={imodel} rulesetId={rulesetId} viewDefinitionId={viewDefinitionId} />
+            <SelectionScopePicker imodel={imodel} />
           </div>
           <div className="app-content-left-bottom">
             {
               <GridWidget imodel={imodel} rulesetId={rulesetId} />
             }
-            <div />
             {
               this.state.similarInstancesProvider ?
                 <FindSimilarWidget dataProvider={this.state.similarInstancesProvider} onDismissed={this._onSimilarInstancesResultsDismissed} />

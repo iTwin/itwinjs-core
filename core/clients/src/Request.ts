@@ -3,19 +3,20 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module BaseClients */
-// import { stringify, IStringifyOptions } from "qs";
-import * as sarequest from "superagent";
+import { BentleyError, ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
-import { stringify, IStringifyOptions } from "qs";
-import { Logger, LogLevel, BentleyError, HttpStatus, GetMetaDataFunction, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { Config } from "./Config";
 import * as https from "https";
+import { IStringifyOptions, stringify } from "qs";
+import * as sarequest from "superagent";
+import { Config } from "./Config";
+import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 
-export const loggingCategory = "imodeljs-clients.Request";
-export const loggingCategoryFullUrl = "imodeljs-clients.Url";
+const loggerCategory: string = ClientsLoggerCategory.Request;
 
+/** @alpha */
 export const requestIdHeaderName = "X-Correlation-Id";
 
+/** @alpha */
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
@@ -24,6 +25,7 @@ export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
 
 /** Typical option to query REST API. Note that services may not quite support these fields,
  * and the interface is only provided as a hint.
+ * @alpha
  */
 export interface RequestQueryOptions {
   /**
@@ -51,12 +53,33 @@ export interface RequestQueryOptions {
   $orderby?: string;
 }
 
+/** @alpha */
 export interface RequestQueryStringifyOptions {
   delimiter?: string;
   encode?: boolean;
   // sep -> delimiter, eq deprecated, encode -> encode
 }
 
+/** Option to control the time outs
+ * Use a short response timeout to detect unresponsive networks quickly, and a long deadline to give time for downloads on slow,
+ * but reliable, networks. Note that both of these timers limit how long uploads of attached files are allowed to take. Use long
+ * timeouts if you're uploading files.
+ * @alpha
+ */
+export interface RequestTimeoutOptions {
+  /** Sets a deadline (in milliseconds) for the entire request (including all uploads, redirects, server processing time) to complete.
+   * If the response isn't fully downloaded within that time, the request will be aborted
+   */
+  deadline?: number;
+
+  /** Sets maximum time (in milliseconds) to wait for the first byte to arrive from the server, but it does not limit how long the entire
+   * download can take. Response timeout should be at least few seconds longer than just the time it takes the server to respond, because
+   * it also includes time to make DNS lookup, TCP/IP and TLS connections, and time to upload request data.
+   */
+  response?: number;
+}
+
+/** @alpha */
 export interface RequestOptions {
   method: string;
   headers?: any; // {Mas-App-Guid, Mas-UUid, User-Agent}
@@ -64,7 +87,7 @@ export interface RequestOptions {
   body?: any;
   qs?: any | RequestQueryOptions;
   responseType?: string;
-  timeout?: number | { deadline?: number, response?: number }; // Optional timeout in milliseconds. If unspecified, an arbitrary default is setup.
+  timeout?: RequestTimeoutOptions; // Optional timeouts. If unspecified, an arbitrary default is setup.
   stream?: any; // Optional stream to read the response to/from (only for NodeJs applications)
   readStream?: any; // Optional stream to read input from (only for NodeJs applications)
   buffer?: any;
@@ -79,8 +102,8 @@ export interface RequestOptions {
   useCorsProxy?: boolean;
 }
 
-/** Response object if the request was successful. Note that the status within the range of 200-299
- * are considered as a success.
+/** Response object if the request was successful. Note that the status within the range of 200-299 are considered as a success.
+ * @public
  */
 export interface Response {
   body: any; // Parsed body of response
@@ -88,18 +111,24 @@ export interface Response {
   status: number; // Status code of response
 }
 
+/** @public */
 export interface ProgressInfo {
   percent?: number;
   total?: number;
   loaded: number;
 }
 
+/** @internal */
 export class RequestGlobalOptions {
-  public static HTTPS_PROXY?: https.Agent = undefined;
+  public static httpsProxy?: https.Agent = undefined;
+  public static timeout: RequestTimeoutOptions = {
+    deadline: 25000,
+    response: 10000,
+  };
 }
 
-/** Error object that's thrown/rejected if the Request fails due to a network error, or
- * if the status is *not* in the range of 200-299 (inclusive)
+/** Error object that's thrown/rejected if the Request fails due to a network error, or if the status is *not* in the range of 200-299 (inclusive)
+ * @public
  */
 export class ResponseError extends BentleyError {
   protected _data?: any;
@@ -186,14 +215,14 @@ export class ResponseError extends BentleyError {
    * Logs this error
    */
   public log(): void {
-    Logger.logError(loggingCategory, this.logMessage(), this.getMetaData());
+    Logger.logError(loggerCategory, this.logMessage(), this.getMetaData());
   }
 }
 
 const logResponse = (req: sarequest.SuperAgentRequest, startTime: number) => (res: sarequest.Response) => {
   const elapsed = new Date().getTime() - startTime;
   const elapsedTime = elapsed + "ms";
-  Logger.logTrace(loggingCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
+  Logger.logTrace(loggerCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
 };
 
 const logRequest = (req: sarequest.SuperAgentRequest) => {
@@ -205,16 +234,16 @@ const logRequest = (req: sarequest.SuperAgentRequest) => {
 // @todo The purpose of this wrapper is to allow us to easily replace this with another
 // module that will rid us of NodeJs dependency.
 
-/**
- * Wrapper around HTTP request utility
+/** Wrapper around HTTP request utility
+ * @param requestContext The client request context
  * @param url Server URL to address the request
  * @param options Options to pass to the request
  * @returns Resolves to the response from the server
- * @throws ResponseError if the request fails due to network issues, or if the
- * returned status is *outside* the range of 200-299 (inclusive)
+ * @throws ResponseError if the request fails due to network issues, or if the returned status is *outside* the range of 200-299 (inclusive)
+ * @public
  */
-export async function request(alctx: ActivityLoggingContext, url: string, options: RequestOptions): Promise<Response> {
-  alctx.enter();
+export async function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response> {
+  requestContext.enter();
   let proxyUrl = "";
   if (options.useCorsProxy === true) {
     proxyUrl = Config.App.get("imjs_dev_cors_proxy_server", "");
@@ -228,14 +257,14 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
   const retries = typeof options.retries === "undefined" ? 4 : options.retries;
   let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(retries, options.retryCallback);
 
-  if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
+  if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
     sareq = sareq.use(logRequest);
 
   if (options.headers)
     sareq = sareq.set(options.headers);
 
-  if (alctx.activityId !== "")
-    sareq.set(requestIdHeaderName, alctx.activityId);
+  if (requestContext.activityId !== "")
+    sareq.set(requestIdHeaderName, requestContext.activityId);
 
   let queryStr: string = "";
   let fullUrl: string = "";
@@ -248,49 +277,40 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
     fullUrl = url;
   }
 
-  Logger.logInfo(loggingCategoryFullUrl, fullUrl);
+  Logger.logInfo(loggerCategory, fullUrl);
 
-  if (options.auth) {
+  if (options.auth)
     sareq = sareq.auth(options.auth.user, options.auth.password);
-  }
 
-  if (options.accept) {
+  if (options.accept)
     sareq = sareq.accept(options.accept);
-  }
 
-  if (options.body) {
+  if (options.body)
     sareq = sareq.send(options.body);
-  }
 
-  if (options.timeout) {
+  if (options.timeout)
     sareq = sareq.timeout(options.timeout);
-  } else {
-    sareq = sareq.timeout(10000);
-  }
+  else
+    sareq = sareq.timeout(RequestGlobalOptions.timeout);
 
-  if (options.responseType) {
+  if (options.responseType)
     sareq = sareq.responseType(options.responseType);
-  }
 
-  if (options.redirects) {
+  if (options.redirects)
     sareq = sareq.redirects(options.redirects);
-  } else {
+  else
     sareq = sareq.redirects(0);
-  }
 
-  if (options.buffer) {
+  if (options.buffer)
     sareq.buffer(options.buffer);
-  }
 
-  if (options.parser) {
+  if (options.parser)
     sareq.parse(options.parser);
-  }
 
-  if (options.agent) {
+  if (options.agent)
     sareq.agent(options.agent);
-  } else if (RequestGlobalOptions.HTTPS_PROXY) {
-    sareq.agent(RequestGlobalOptions.HTTPS_PROXY);
-  }
+  else if (RequestGlobalOptions.httpsProxy)
+    sareq.agent(RequestGlobalOptions.httpsProxy);
 
   if (options.progressCallback) {
     sareq.on("progress", (event: sarequest.ProgressEvent) => {
@@ -307,9 +327,8 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
   const errorCallback = options.errorCallback ? options.errorCallback : ResponseError.parse;
 
   if (options.readStream) {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined")
       throw new Error("This option is not supported on browsers");
-    }
 
     return new Promise<Response>((resolve, reject) => {
       sareq = sareq.type("blob");
@@ -332,9 +351,8 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
   }
 
   if (options.stream) {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined")
       throw new Error("This option is not supported on browsers");
-    }
 
     return new Promise<Response>((resolve, reject) => {
       sareq
@@ -388,25 +406,27 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
 /**
  * fetch array buffer from HTTP request
  * @param url server URL to address the request
+ * @public
  */
-export async function getArrayBuffer(alctx: ActivityLoggingContext, url: string): Promise<any> {
+export async function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "arraybuffer",
   };
-  const data = await request(alctx, url, options);
+  const data = await request(requestContext, url, options);
   return data.body;
 }
 
 /**
  * fetch json from HTTP request
  * @param url server URL to address the request
+ * @public
  */
-export async function getJson(alctx: ActivityLoggingContext, url: string): Promise<any> {
+export async function getJson(requestContext: ClientRequestContext, url: string): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "json",
   };
-  const data = await request(alctx, url, options);
+  const data = await request(requestContext, url, options);
   return data.body;
 }

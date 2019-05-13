@@ -4,8 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
 
-import { IModelHubClient, AccessToken, HubIModel, Version, HubUserInfo, ChangeSet, UserInfoQuery, IModelQuery, ChangeSetQuery, VersionQuery } from "@bentley/imodeljs-clients";
-import { OpenMode, ActivityLoggingContext, GuidString, Guid } from "@bentley/bentleyjs-core";
+import {
+  IModelHubClient, AccessToken, HubIModel, Version,
+  HubUserInfo, ChangeSet, UserInfoQuery, IModelQuery,
+  ChangeSetQuery, VersionQuery, AuthorizedClientRequestContext,
+} from "@bentley/imodeljs-clients";
+import { OpenMode, GuidString } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 // import GatewayProxyApi from "./gatewayProxy";
@@ -36,7 +40,7 @@ class IModelUserInfoImpl implements IModelUserInfo {
 
 /**
  * Provides default [[IModelServices]]
- * @hidden
+ * @internal
  */
 export class DefaultIModelServices implements IModelServices {
   private _hubClient: IModelHubClient;
@@ -48,14 +52,15 @@ export class DefaultIModelServices implements IModelServices {
 
   /** Get all iModels in a project */
   public async getIModels(accessToken: AccessToken, projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const requestContext = new AuthorizedClientRequestContext(accessToken);
+
     const iModelInfos: IModelInfo[] = [];
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(top).skip(skip);
     try {
-      const iModels: HubIModel[] = await this._hubClient.iModels.get(alctx, accessToken, projectInfo.wsgId, queryOptions);
+      const iModels: HubIModel[] = await this._hubClient.iModels.get(requestContext, projectInfo.wsgId, queryOptions);
       for (const imodel of iModels) {
-        const versions: Version[] = await this._hubClient.versions.get(alctx, accessToken, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await this._hubClient.versions.get(requestContext, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           imodel.latestVersionName = versions[0].name;
           imodel.latestVersionChangeSetId = versions[0].changeSetId;
@@ -72,10 +77,10 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Open the specified version of the IModel */
-  public async openIModel(accessToken: AccessToken, projectInfo: ProjectInfo, iModelId: GuidString, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection> {
+  public async openIModel(contextId: string, iModelId: GuidString, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection> {
     try {
       // GatewayProxyApi.setAccessToken(accessToken);
-      const iModelConnection: IModelConnection = await IModelConnection.open(accessToken!, projectInfo.wsgId, iModelId, openMode ? openMode : OpenMode.Readonly, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
+      const iModelConnection: IModelConnection = await IModelConnection.open(contextId, iModelId, openMode ? openMode : OpenMode.Readonly, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
       return iModelConnection;
     } catch (e) {
       alert(JSON.stringify(e));
@@ -85,9 +90,9 @@ export class DefaultIModelServices implements IModelServices {
 
   /** Get the thumbnail for the iModel */
   public async getThumbnail(accessToken: AccessToken, projectId: string, iModelId: GuidString): Promise<string | undefined> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const requestContext = new AuthorizedClientRequestContext(accessToken);
     try {
-      const pngImage = await this._hubClient.thumbnails.download(alctx, accessToken, iModelId, { projectId: projectId!, size: "Small" });
+      const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { projectId: projectId!, size: "Small" });
       return pngImage;
     } catch (err) {
       // No image available
@@ -97,10 +102,10 @@ export class DefaultIModelServices implements IModelServices {
 
   /** Get versions (top 5 for testing) for the iModel */
   public async getVersions(accessToken: AccessToken, iModelId: GuidString): Promise<VersionInfo[]> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const requestContext = new AuthorizedClientRequestContext(accessToken);
     const versionInfos: VersionInfo[] = [];
     try {
-      const versions: Version[] = await this._hubClient.versions.get(alctx, accessToken, iModelId, new VersionQuery().select("*").top(5));
+      const versions: Version[] = await this._hubClient.versions.get(requestContext, iModelId, new VersionQuery().select("*").top(5));
       for (const thisVersion of versions) {
         versionInfos.push(this.createVersionInfo(thisVersion));
       }
@@ -113,10 +118,10 @@ export class DefaultIModelServices implements IModelServices {
 
   /** Get changesets (top 5 for testing) for the iModel */
   public async getChangeSets(accessToken: AccessToken, iModelId: GuidString): Promise<ChangeSetInfo[]> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const requestContext = new AuthorizedClientRequestContext(accessToken);
     const changeSetInfos: ChangeSetInfo[] = [];
     try {
-      const changesets: ChangeSet[] = await this._hubClient.changeSets.get(alctx, accessToken, iModelId, new ChangeSetQuery().top(5).latest());
+      const changesets: ChangeSet[] = await this._hubClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(5).latest());
       for (const thisChangeSet of changesets) {
         changeSetInfos.push(this.createChangeSetInfo(thisChangeSet));
       }
@@ -129,10 +134,10 @@ export class DefaultIModelServices implements IModelServices {
 
   /** Get users that have access to a particular iModel */
   public async getUsers(accessToken: AccessToken, iModelId: GuidString): Promise<IModelUserInfo[]> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const requestContext = new AuthorizedClientRequestContext(accessToken);
     const userInfos: IModelUserInfo[] = [];
     try {
-      const users: HubUserInfo[] = await this._hubClient.users.get(alctx, accessToken, iModelId, new UserInfoQuery().select("*"));
+      const users: HubUserInfo[] = await this._hubClient.users.get(requestContext, iModelId, new UserInfoQuery().select("*"));
       for (const userInfo of users) {
         userInfos.push(this.createUserInfo(userInfo));
       }
@@ -144,10 +149,10 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   public async getUser(accessToken: AccessToken, iModelId: GuidString, userId: string): Promise<IModelUserInfo[]> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const requestContext = new AuthorizedClientRequestContext(accessToken);
     const userInfos: IModelUserInfo[] = [];
     try {
-      const users: HubUserInfo[] = await this._hubClient.users.get(alctx, accessToken, iModelId, new UserInfoQuery().byId(userId));
+      const users: HubUserInfo[] = await this._hubClient.users.get(requestContext, iModelId, new UserInfoQuery().byId(userId));
       for (const userInfo of users) {
         userInfos.push(this.createUserInfo(userInfo));
       }

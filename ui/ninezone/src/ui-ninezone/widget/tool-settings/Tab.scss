@@ -4,17 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "_variables";
+@import "../../widgetopacity";
 
 .nz-widget-toolSettings-tab {
   width: $nz-tab-width;
   height: $nz-tab-height;
-  background-color: $buic-background-tab-inactive;
+  background-color: $nz-tab-background-color;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   position: relative;
   pointer-events: auto;
+  transition: all 500ms ease;
+  color: $nz-tab-color;
+  margin: 0 auto;
+
+  @include nz-widget-opacity;
 
   border: {
     width: $nz-widget-border-width;
@@ -23,28 +29,16 @@
     radius: $nz-widget-border-radius;
   }
 
-  &.nz-is-active {
-    margin-top: -$nz-widget-border-width;
-    background-color: $nz-widget-background-color;
-    color: $active-icon-color;
-    border-top: 0;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    height: $nz-active-tab-height;
+  > * {
+    filter: $nz-tab-shadow;
+  }
 
-    &:after {
-      content: '';
-      position: absolute;
-      background-color: $active-icon-color;
-      border-radius: 2px;
-      width: $nz-tab-width - $nz-tab-strip-margin * 2;
-      height: $nz-tab-strip-width;
-      left: $nz-tab-strip-margin;
-      bottom: $nz-tab-strip-margin;
+  &:hover {
+    color: $nz-hovered-tab-color;
+    transition-duration: 150ms;
+
+    > * {
+      filter: $nz-tab-no-shadow;
     }
   }
-}
-
-.nz-widget-toolSettings-tab.nz-is-active:hover:after {
-  background-color: $hovered-icon-color;
 }

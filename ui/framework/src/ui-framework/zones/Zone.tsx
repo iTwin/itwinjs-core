@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Frontstage */
+/** @module Zone */
 
 import * as React from "react";
 
@@ -12,16 +12,31 @@ import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiContr
 import { FrameworkZone } from "./FrameworkZone";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
 import { WidgetProps } from "../widgets/Widget";
-import { ZoneLocation } from "../frontstage/Frontstage";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
 import { StatusBarZone } from "./StatusBarZone";
 
 import { isStatusZone, ZonePropsBase as NZ_ZoneProps, DropTarget, HorizontalAnchor, VerticalAnchor, RectangleProps, PointProps } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
+
+/** Enum for [[Zone]] Location.
+ * @public
+ */
+export enum ZoneLocation {
+  TopLeft = 1,
+  TopCenter = 2,
+  TopRight = 3,
+  CenterLeft = 4,
+  CenterRight = 6,
+  BottomLeft = 7,
+  BottomCenter = 8,
+  BottomRight = 9,
+}
 
 /** Properties of a [[Zone]] component
+ * @public
  */
-export interface ZoneProps {
+export interface ZoneProps extends CommonProps {
   /** Default Zone state. Controls how the Zone is initially displayed. Defaults to ZoneState.Open. */
   defaultState?: ZoneState;
   /** Indicates if other Zones may be merged with this Zone. Defaults to false.  */
@@ -34,13 +49,15 @@ export interface ZoneProps {
   /** Properties for the Widgets in this Zone. */
   widgets?: Array<React.ReactElement<WidgetProps>>;
 
-  /** @hidden */
+  /** @internal */
   runtimeProps?: ZoneRuntimeProps;
 }
 
 /** Runtime Properties for the [[Zone]] component.
+ * @internal
  */
 export interface ZoneRuntimeProps {
+  contentRef: React.RefObject<HTMLDivElement>;
   zoneDef: ZoneDef;
   zoneProps: NZ_ZoneProps;
   widgetChangeHandler: WidgetChangeHandler;
@@ -53,9 +70,12 @@ export interface ZoneRuntimeProps {
   isDragged: boolean | undefined;
   lastPosition: PointProps | undefined;
   isUnmergeDrag: boolean;
+  isHidden: boolean;
 }
 
-/** ConfigurableUi Zone React component.
+/** Zone React component.
+ * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
+ * @public
  */
 export class Zone extends React.Component<ZoneProps> {
 
@@ -108,14 +128,17 @@ export class Zone extends React.Component<ZoneProps> {
       if (zoneDef.isToolSettings) {
         return (
           <ToolSettingsZone
-            bounds={runtimeProps.zoneProps.bounds} />
+            className={this.props.className}
+            style={this.props.style}
+            bounds={runtimeProps.zoneProps.bounds}
+            isHidden={runtimeProps.isHidden} />
         );
       } else if (zoneDef.isStatusBar) {
         if (!isStatusZone(runtimeProps.zoneProps))
           throw new TypeError();
 
         let widgetControl: StatusBarWidgetControl | undefined;
-        const widgetDef = zoneDef.getOnlyWidgetDef();
+        const widgetDef = zoneDef.getSingleWidgetDef();
 
         // istanbul ignore else
         if (widgetDef)
@@ -123,12 +146,15 @@ export class Zone extends React.Component<ZoneProps> {
 
         return (
           <StatusBarZone
+            className={this.props.className}
+            style={this.props.style}
             widgetControl={widgetControl}
             zoneProps={runtimeProps.zoneProps}
             widgetChangeHandler={runtimeProps.widgetChangeHandler}
             targetChangeHandler={runtimeProps.targetChangeHandler}
             targetedBounds={runtimeProps.ghostOutline}
             dropTarget={runtimeProps.dropTarget}
+            isHidden={runtimeProps.isHidden}
           />
         );
       }
@@ -136,6 +162,9 @@ export class Zone extends React.Component<ZoneProps> {
 
     return (
       <FrameworkZone
+        className={this.props.className}
+        style={this.props.style}
+        contentRef={runtimeProps.contentRef}
         zoneProps={runtimeProps.zoneProps}
         widgetChangeHandler={runtimeProps.widgetChangeHandler}
         targetedBounds={runtimeProps.ghostOutline}
@@ -148,6 +177,7 @@ export class Zone extends React.Component<ZoneProps> {
         lastPosition={runtimeProps.lastPosition}
         isUnmergeDrag={runtimeProps.isUnmergeDrag}
         fillZone={zoneDef.shouldFillZone}
+        isHidden={runtimeProps.isHidden}
       />
     );
   }

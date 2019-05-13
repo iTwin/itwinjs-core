@@ -11,9 +11,9 @@ import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisi
 import { Schema } from "./../Metadata/Schema";
 
 /**
- * @hidden
  * The purpose of this class is to traverse a given schema, allowing clients to hook into
  * the traversal process via Visitors to allow for custom processing of the schema elements.
+ * @internal
  */
 export class SchemaWalker {
   private _visitorHelper: SchemaPartVisitorDelegate;

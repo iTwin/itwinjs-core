@@ -2,37 +2,32 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, BentleyStatus, Guid, GuidString, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { AccessToken, IncludePrefix, AuthorizationToken } from "../Token";
-import { request, Response, RequestOptions } from "../Request";
+import { BentleyStatus, ClientRequestContext, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { Client } from "../Client";
 import { Config } from "../Config";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
-import { LogEntryConverter, UsageLogEntryJson, FeatureLogEntryJson } from "./LogEntryConverter";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
+import { request, RequestOptions, Response } from "../Request";
+import { AccessToken, AuthorizationToken, IncludePrefix } from "../Token";
+import { FeatureLogEntryJson, LogEntryConverter, UsageLogEntryJson } from "./LogEntryConverter";
 
-/**
- * Usage Logging and Analysis Services Client.
- */
+const loggerCategory: string = ClientsLoggerCategory.UlasClient;
 
-/**
- * Logging category for the UlasClient.
- */
-const loggingCategory: string = "ulasclient";
-
-/**
- * Represents one of the potential usage types.
+/** Represents one of the potential usage types.
  * See also
  *  - [[UsageLogEntry]], [[FeatureLogEntry]]
  *  - *UsageType* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
+ * @internal
  */
 export enum UsageType {
   Production, Trial, Beta, HomeUse, PreActivation,
 }
 
-/**
- * Represents the version of the product logging usage or features.
+/** Represents the version of the product logging usage or features.
  * See also [[UsageLogEntry]], [[FeatureLogEntry]].
+ * @internal
  */
 export interface ProductVersion {
   major: number;
@@ -42,52 +37,19 @@ export interface ProductVersion {
 }
 
 /**
- * Information about the user for who usage is tracked with the ULAS Posting Service.
- * See [[UsageLogEntry]] and [[FeatureLogEntry]] for how to use it.
- * > You do not have to pass this to [[UlasClient]], if you have an OIDC access token from
- * > a client registration that includes the ULAS scope in its audiences.
- */
-export interface UsageUserInfo {
-  /** IMS User ID */
-  imsId: GuidString;
-  /** Ultimate ID, i.e. company ID in SAP */
-  ultimateSite: number;
-  /** Identifies the country where the client reporting the usage belongs to. */
-  usageCountryIso: string;
-  /* The user's login name.
-  * > If omitted, the IMS user id will be used.
-  */
-  hostUserName?: string;
-}
-
-/**
  * Usage log entry data that is submitted to the ULAS Posting Service.
  * See also
  *  - [[UlasClient]]
  *  - *UsageLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
+ * @internal
  */
 export class UsageLogEntry {
   /** The GUID of the project that the usage should be associated with. */
   public projectId?: GuidString;
 
-  /** Information about the user for which usage is logged.
-   * > This can be omitted if the OIDC access token includes the information already.
-   * > This means the OIDC client registration must include the ULAS scope in its audiences.
-   */
-  public userInfo?: UsageUserInfo;
-
   /** Name of the client machine from which usage is logged */
   public readonly hostName: string;
-
-  /** The product ID from the Global Product Registry (GPR) for which usage is being submitted. It is a 4-digit number.
-   * > It can be omitted if the access token is an OIDC token which includes the client_id. In that case, ULAS will
-   * > determine the GPR product ID from the client_id.
-   */
-  public productId?: number;
-
-  /** Version of the product for which usage is logged. */
-  public productVersion?: ProductVersion;
 
   /** The type of usage that occurred on the client. It is acting as a filter to eliminate records from log processing that
    * should not count towards a customer’s peak processing.
@@ -114,6 +76,7 @@ export class UsageLogEntry {
 /**
  * Represents arbitrary metadata that can be attached to a
  * [[FeatureLogEntry]] when collecting information about feature usage.
+ * @internal
  */
 export interface FeatureLogEntryAttribute {
   name: string;
@@ -126,6 +89,7 @@ export interface FeatureLogEntryAttribute {
  *  - [[UlasClient]]
  *  - *FeatureLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
+ * @internal
  */
 export class FeatureLogEntry {
   /** The GUID of the project that the usage should be associated with. */
@@ -137,23 +101,8 @@ export class FeatureLogEntry {
   /** Additional user-defined metadata for the feature usage. */
   public usageData: FeatureLogEntryAttribute[];
 
-  /** Information about the user for which usage is logged.
-   * > This can be omitted if the OIDC access token includes the information already.
-   * > This means the OIDC client registration must include the ULAS scope in its audiences.
-   */
-  public userInfo?: UsageUserInfo;
-
   /** Name of the client machine from which usage is logged. */
   public readonly hostName: string;
-
-  /** Version of the product for which the feature is logged. */
-  public productVersion?: ProductVersion;
-
-  /** The product ID from the Global Product Registry (GPR) for which usage is being submitted. It is a 4-digit number.
-   * > It can be omitted if the access token is an OIDC token which includes the client_id. In that case, ULAS will
-   * > determine the GPR product ID from the client_id.
-   */
-  public productId?: number;
 
   /** The type of usage that occurred on the client. It is acting as a filter to eliminate records from log processing that
    * should not count towards a customer’s peak processing.
@@ -187,6 +136,7 @@ export class FeatureLogEntry {
  *  - [[FeatureLogEntry]]
  *  - *FeatureLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
+ * @internal
  */
 export class FeatureStartedLogEntry extends FeatureLogEntry {
   /** ID of this entry which must be passed to the respective [[FeatureEndedLogEntry]] to
@@ -212,6 +162,7 @@ export class FeatureStartedLogEntry extends FeatureLogEntry {
  *  - [[FeatureStartedLogEntry]]
  *  - *FeatureLogEntry* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  *  site (section *Models*)
+ * @internal
  */
 export class FeatureEndedLogEntry extends FeatureLogEntry {
   /* ID of the corresponding [[FeatureStartedLogEntry]].
@@ -240,9 +191,6 @@ export class FeatureEndedLogEntry extends FeatureLogEntry {
 
     endEntry.projectId = startEntry.projectId;
     endEntry.usageData = startEntry.usageData;
-    endEntry.productId = startEntry.productId;
-    endEntry.productVersion = startEntry.productVersion;
-    endEntry.userInfo = startEntry.userInfo;
 
     return endEntry;
   }
@@ -252,6 +200,7 @@ export class FeatureEndedLogEntry extends FeatureLogEntry {
  * Response from posting a [[UsageLogEntry]] or [[FeatureLogEntry]] with the [[UlasClient]].
  * See also *LogPostingResponse* entry on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
  * site (section *Models*)
+ * @internal
  */
 export interface LogPostingResponse {
   /* The overall status of the request. */
@@ -267,15 +216,14 @@ export interface LogPostingResponse {
 /**
  * Client for the Bentley Usage Logging & Analysis Services (ULAS).
  * See also the two `POST` requests on [ULAS Swagger](https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * @internal
  */
 export class UlasClient extends Client {
   private static readonly _buddiSearchKey: string = "UsageLoggingServices.RealtimeLogging.Url";
   private static readonly _configRelyingPartyUri = "imjs_ulas_relying_party_uri";
   private static readonly _configDefaultRelyingPartyUri = "imjs_default_relying_party_uri";
 
-  /**
-   * Creates an instance of UlasClient.
-   */
+  /** Creates an instance of UlasClient. */
   constructor() { super(); }
 
   /**
@@ -302,50 +250,51 @@ export class UlasClient extends Client {
 
   /**
    * Gets the (delegation) access token to access the service
+   * @param requestContext The client request context.
    * @param authTokenInfo Access token.
    * @returns Resolves to the (delegation) access token.
    */
-  public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
+  public async getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     const imsClient = new ImsDelegationSecureTokenClient();
-    return imsClient.getToken(alctx, authorizationToken, this.getRelyingPartyUrl());
+    return imsClient.getToken(requestContext, authorizationToken, this.getRelyingPartyUrl());
   }
 
   /**
    * Logs usage via the ULAS service
-   * @param alctx Activity logging context.
-   * @param token Access token.
-   * @param entry Usage log entry.
+   * @param requestContext The client request context.
+   * @param hostName The client host name.
+   * @param usageType The client usage type
    * @returns Response from the service.
    */
-  public async logUsage(alctx: ActivityLoggingContext, token: AccessToken, entry: UsageLogEntry): Promise<LogPostingResponse> {
-    alctx.enter();
-    const entryJson: UsageLogEntryJson = LogEntryConverter.toUsageLogJson(entry);
-    return this.logEntry(alctx, token, entryJson, false);
+  public async logUsage(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): Promise<LogPostingResponse> {
+    requestContext.enter();
+    const entryJson: UsageLogEntryJson = LogEntryConverter.toUsageLogJson(requestContext, entry);
+    return this.logEntry(requestContext, entryJson, false);
   }
 
   /**
    * Logs one ore more feature entries via the ULAS service
-   * @param alctx Activity logging context.
-   * @param token Access token.
+   * @param requestContext The client request context.
    * @param entries One or more feature log entries.
    * @returns Response from the service.
    */
-  public async logFeature(alctx: ActivityLoggingContext, token: AccessToken, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse> {
-    alctx.enter();
+  public async logFeature(requestContext: AuthorizedClientRequestContext, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse> {
+    requestContext.enter();
     if (entries.length === 0)
       throw new Error("At least one FeatureLogEntry must be passed to UlasClient.logFeatures.");
 
-    const entriesJson: FeatureLogEntryJson[] = LogEntryConverter.toFeatureLogJson(entries);
-    return this.logEntry(alctx, token, entriesJson, true);
+    const entriesJson: FeatureLogEntryJson[] = LogEntryConverter.toFeatureLogJson(requestContext, entries);
+    return this.logEntry(requestContext, entriesJson, true);
   }
 
-  private async logEntry(alctx: ActivityLoggingContext, token: AccessToken, entryJson: UsageLogEntryJson | FeatureLogEntryJson[], isFeatureEntry: boolean): Promise<LogPostingResponse> {
-    alctx.enter();
-    let postUrl: string = (await this.getUrl(alctx));
-    alctx.enter();
+  private async logEntry(requestContext: AuthorizedClientRequestContext, entryJson: UsageLogEntryJson | FeatureLogEntryJson[], isFeatureEntry: boolean): Promise<LogPostingResponse> {
+    requestContext.enter();
+    let postUrl: string = (await this.getUrl(requestContext));
+    requestContext.enter();
     if (isFeatureEntry)
       postUrl += "/featureLog";
 
+    const token = requestContext.accessToken;
     const authString: string = !token.getSamlAssertion() ? token.toTokenString() : "SAML " + token.toTokenString(IncludePrefix.No);
     const options: RequestOptions = {
       method: "POST",
@@ -354,15 +303,15 @@ export class UlasClient extends Client {
     };
 
     await this.setupOptionDefaults(options);
-    alctx.enter();
-    if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
-      Logger.logTrace(loggingCategory, `Sending ${isFeatureEntry ? "Feature" : "Usage"} Log REST request...`, () => ({ url: postUrl, body: entryJson }));
+    requestContext.enter();
+    if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
+      Logger.logTrace(loggerCategory, `Sending ${isFeatureEntry ? "Feature" : "Usage"} Log REST request...`, () => ({ url: postUrl, body: entryJson }));
 
-    const resp: Response = await request(alctx, postUrl, options);
-    alctx.enter();
+    const resp: Response = await request(requestContext, postUrl, options);
+    requestContext.enter();
     const requestDetails = { url: postUrl, body: entryJson, response: resp };
-    if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
-      Logger.logTrace(loggingCategory, `Sent ${isFeatureEntry ? "Feature" : "Usage"} Log REST request.`, () => requestDetails);
+    if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
+      Logger.logTrace(loggerCategory, `Sent ${isFeatureEntry ? "Feature" : "Usage"} Log REST request.`, () => requestDetails);
 
     const respBody: any = resp.body;
     if (!respBody || !respBody.status || respBody.status.toLowerCase() !== "success")

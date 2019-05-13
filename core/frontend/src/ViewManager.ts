@@ -7,14 +7,11 @@ import { BentleyStatus, BeEvent, BeUiEvent } from "@bentley/bentleyjs-core";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { DrawingModelState, SectionDrawingModelState, SheetModelState, SpatialModelState } from "./ModelState";
 import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { DrawingViewState, OrthographicViewState, SpatialViewState } from "./ViewState";
 import { GeometryStreamProps } from "@bentley/imodeljs-common";
-import { SheetViewState } from "./Sheet";
 
 /** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
  * Decorators generate [[Decorations]].
@@ -52,7 +49,9 @@ export interface Decorator {
   getDecorationGeometry?(hit: HitDetail): GeometryStreamProps | undefined;
 }
 
-/** Argument for [[ViewManager.onSelectedViewportChanged]] */
+/** Argument for [[ViewManager.onSelectedViewportChanged]]
+ * @public
+ */
 export interface SelectedViewportChangedArgs {
   current?: ScreenViewport;
   previous?: ScreenViewport;
@@ -77,17 +76,6 @@ export class ViewManager {
 
   /** @internal */
   public onInitialized() {
-    IModelConnection.registerClass(SpatialModelState.getClassFullName(), SpatialModelState);
-    IModelConnection.registerClass("BisCore:PhysicalModel", SpatialModelState);
-    IModelConnection.registerClass("BisCore:SpatialLocationModel", SpatialModelState);
-    IModelConnection.registerClass(DrawingModelState.getClassFullName(), DrawingModelState);
-    IModelConnection.registerClass(SectionDrawingModelState.getClassFullName(), SectionDrawingModelState);
-    IModelConnection.registerClass(SheetModelState.getClassFullName(), SheetModelState);
-    IModelConnection.registerClass(OrthographicViewState.getClassFullName(), OrthographicViewState as any); // the "as any" is to get around problem with abstract base classes
-    IModelConnection.registerClass(SpatialViewState.getClassFullName(), SpatialViewState as any);
-    IModelConnection.registerClass(DrawingViewState.getClassFullName(), DrawingViewState as any);
-    IModelConnection.registerClass(SheetViewState.getClassFullName(), SheetViewState as any);
-
     this.addDecorator(IModelApp.accuSnap);
     this.addDecorator(IModelApp.tentativePoint);
     this.addDecorator(IModelApp.accuDraw);
@@ -267,7 +255,7 @@ export class ViewManager {
   /** Force each registered [[Viewport]] to regenerate its [[Decorations]] on the next frame. */
   public invalidateDecorationsAllViews(): void { this.forEachViewport((vp) => vp.invalidateDecorations()); }
   /** @internal */
-  public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.view.setSelectionSetDirty()); }
+  public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.markSelectionSetDirty()); }
   /** @internal */
   public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.invalidateScene()); }
   /** @internal */

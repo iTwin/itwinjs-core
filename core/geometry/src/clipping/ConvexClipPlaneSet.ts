@@ -6,23 +6,27 @@
 /** @module CartesianGeometry */
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { PolygonOps } from "../geometry3d/PointHelpers";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Arc3d } from "../curve/Arc3d";
 import { ClipPlane } from "./ClipPlane";
 import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { Range3d, Range1d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.
+ * @public
  */
 export class ConvexClipPlaneSet implements Clipper {
+  /** Value acting as "at infinity" for coordinaates along a ray. */
   public static readonly hugeVal = 1e37;
   private _planes: ClipPlane[];
   // private _parity: number;   <--- Not yet used
@@ -65,7 +69,10 @@ export class ConvexClipPlaneSet implements Clipper {
         return false;
     return true;
   }
-
+  /** create from an array of planes.
+   * * Each plane reference in the `planes` array is taken into the result.
+   * * The input array itself is NOT taken into the result.
+   */
   public static createPlanes(planes: ClipPlane[], result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
     for (const plane of planes)
@@ -106,7 +113,7 @@ export class ConvexClipPlaneSet implements Clipper {
 
     return result;
   }
-
+  /** create an empty `ConvexClipPlaneSet` */
   public static createEmpty(result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     if (result) {
       result._planes.length = 0;
@@ -119,6 +126,10 @@ export class ConvexClipPlaneSet implements Clipper {
     for (const plane of this._planes)
       plane.negateInPlace();
   }
+  /** Create a convex clip plane set that clips to `x0 <= x <= x1` and `y0 <= y <= y1`.
+   * * Note that there is no test for the usual ordering `x0 <= x1` or `y0 <= y1`.
+   *    * if the usual ordering is violated, the convex set is an empty set.
+   */
   public static createXYBox(x0: number, y0: number, x1: number, y1: number, result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
     result._planes.length = 0;
@@ -131,7 +142,12 @@ export class ConvexClipPlaneSet implements Clipper {
     }
     return result;
   }
-
+  /** Create a convex set containing a half space for each edge between points of a polyline.
+   * * Caller is responsible for assuring the polyline is convex.
+   * @param points array of points.  Only xy parts are considered.
+   * @param interior array whose boolean value is used as both the `interior` and `invisible` bits of the plane for the succeeding segment.
+   * @param leftIsInside if true, the interior is "to the left" of the segments.  If false, interior is "to the right"
+   */
   public static createXYPolyLine(points: Point3d[], interior: boolean[], leftIsInside: boolean, result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
     result._planes.length = 0;
@@ -174,7 +190,7 @@ export class ConvexClipPlaneSet implements Clipper {
 
     return result;
   }
-
+  /** Deep clone of all planes. */
   public clone(result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
     result._planes.length = 0;
@@ -182,44 +198,74 @@ export class ConvexClipPlaneSet implements Clipper {
       result._planes.push(plane.clone());
     return result;
   }
-
+  /** Return the (reference to the) array of `ClipPlane` */
   public get planes(): ClipPlane[] {
     return this._planes;
   }
 
-  // tNear passed as Float64Array of size 1 to be used as reference
-  public static testRayIntersections(tNear: Float64Array, origin: Point3d, direction: Vector3d, planes: ConvexClipPlaneSet): boolean {
-    tNear[0] = -ConvexClipPlaneSet.hugeVal;
-    let tFar = ConvexClipPlaneSet.hugeVal;
-
-    for (const plane of planes._planes) {
-      const vD = plane.dotProductVector(direction);
-      const vN = plane.evaluatePoint(origin);
+  /** Test if there is any intersection with a ray defined by origin and direction.
+   * * Optionally record the range (null or otherwise) in caller-allocated result.
+   * * If the ray is unbounded inside the clip, result can contain positive or negative "Geometry.hugeCoordinate" values
+   * * If no result is provide, there are no object allocations.
+   * @param result optional Range1d to receive parameters along the ray.
+   */
+  public hasIntersectionWithRay(ray: Ray3d, result?: Range1d): boolean {
+    // form low and high values in locals that do not require allocation.
+    // transfer to caller-supplied result at end
+    let t0 = -Geometry.hugeCoordinate;
+    let t1 = Geometry.hugeCoordinate;
+    if (result)
+      result.setNull();
+    for (const plane of this._planes) {
+      const vD = plane.dotProductVector(ray.direction);
+      const vN = plane.evaluatePoint(ray.origin);
 
       if (vD === 0.0) {
         // Ray is parallel... No need to continue testing if outside halfspace.
         if (vN < 0.0)
-          return false;
+          return false;   // and result is a null range.
       } else {
-        const rayDistance = - vN / vD;
+        const rayFraction = - vN / vD;
         if (vD < 0.0) {
-          if (rayDistance < tFar)
-            tFar = rayDistance;
+          if (rayFraction < t1)
+            t1 = rayFraction;
         } else {
-          if (rayDistance > tNear[0])
-            tNear[0] = rayDistance;
+          if (rayFraction > t0)
+            t0 = rayFraction;
         }
       }
     }
-    return tNear[0] <= tFar;
-  }
-
-  public multiplyPlanesByMatrix(matrix: Matrix4d) {
-    for (const plane of this._planes) {
-      plane.multiplyPlaneByMatrix(matrix);
+    if (t1 < t0)
+      return false;   // and result is a null range.
+    if (result) {
+      result.extendX(t0);
+      result.extendX(t1);
     }
+    return true;
   }
-
+  /**
+   * Multiply all the ClipPlanes DPoint4d by matrix.
+   * @param matrix matrix to apply.
+   * @param invert if true, use in verse of the matrix.
+   * @param transpose if true, use the transpose of the matrix (or inverse, per invert parameter)
+   * * Note that if matrixA is applied to all of space, the matrix to send to this method to get a corresponding effect on the plane is the inverse transpose of matrixA
+   * * Callers that will apply the same matrix to many planes should pre-invert the matrix for efficiency.
+   * * Both params default to true to get the full effect of transforming space.
+   * @param matrix matrix to apply
+   */
+  public multiplyPlanesByMatrix4d(matrix: Matrix4d, invert: boolean = true, transpose: boolean = true): boolean {
+    if (invert) {  // form inverse once here, reuse for all planes
+      const inverse = matrix.createInverse();
+      if (!inverse)
+        return false;
+      return this.multiplyPlanesByMatrix4d(inverse, false, transpose);
+    }
+    for (const plane of this._planes) {
+      plane.multiplyPlaneByMatrix4d(matrix, false, transpose);
+    }
+    return true;
+  }
+  /** Return true if `point` satisfies `point.isPointInside` for all planes */
   public isPointInside(point: Point3d): boolean {
     for (const plane of this._planes) {
       if (!plane.isPointInside(point))  // Defaults to strict inside check. Other clipping classes may use "on or inside" check for the "on" case
@@ -228,6 +274,7 @@ export class ConvexClipPlaneSet implements Clipper {
     return true;
   }
 
+  /** Return true if `point` satisfies `point.isPointOnOrInside` for all planes */
   public isPointOnOrInside(point: Point3d, tolerance: number): boolean {
     const interiorTolerance = Math.abs(tolerance);   // Interior tolerance should always be positive. (TFS# 246598).
     for (const plane of this._planes) {
@@ -236,12 +283,15 @@ export class ConvexClipPlaneSet implements Clipper {
     }
     return true;
   }
-
-  public isSphereInside(point: Point3d, radius: number): boolean {
-    // Note - The sphere logic differ from "PointOnOrInside" only in the handling of interior planes.
-    // For a sphere we don't negate the tolerance on interior planes - we have to look for true containment (TFS# 439212).
+  /**
+   * Test if a sphere is completely inside the convex set.
+   * @param centerPoint center of sphere
+   * @param radius radius of sphere.
+   */
+  public isSphereInside(centerPoint: Point3d, radius: number): boolean {
+    const r1 = Math.abs(radius) + Geometry.smallMetricDistance;
     for (const plane of this._planes) {
-      if (!plane.isPointOnOrInside(point, radius)) {
+      if (!plane.isPointOnOrInside(centerPoint, r1)) {
         return false;
       }
     }
@@ -297,6 +347,9 @@ export class ConvexClipPlaneSet implements Clipper {
   }
 
   private static _clipArcFractionArray = new GrowableFloat64Array();
+  /** Find fractional parts of the arc that are within this ClipPlaneSet, and announce each as
+   * * `announce(fraction, fraction, curve)`
+   */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     const breaks = ConvexClipPlaneSet._clipArcFractionArray;
     breaks.clear();
@@ -315,7 +368,7 @@ export class ConvexClipPlaneSet implements Clipper {
   public clipUnboundedSegment(pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean {
     return this.announceClippedSegmentIntervals(-Number.MAX_VALUE, Number.MAX_VALUE, pointA, pointB, announce);
   }
-
+  /** transform each plane in place. */
   public transformInPlace(transform: Transform) {
     for (const plane of this._planes) {
       plane.transformInPlace(transform);
@@ -389,12 +442,20 @@ export class ConvexClipPlaneSet implements Clipper {
     }
     return result;
   }
-
+  /**
+   * Add a plane to the convex set.
+   * @param plane plane to add
+   */
   public addPlaneToConvexSet(plane: ClipPlane | undefined) {
     if (plane)
       this._planes.push(plane);
   }
-
+  /**
+   * test many points.  Distribute them to arrays depending on in/out result.
+   * @param points points to test
+   * @param inOrOn points tahtare in or on the set
+   * @param out points that are out.
+   */
   public clipPointsOnOrInside(points: Point3d[], inOrOn: Point3d[], out: Point3d[]) {
     inOrOn.length = 0;
     out.length = 0;
@@ -406,17 +467,28 @@ export class ConvexClipPlaneSet implements Clipper {
       }
     }
   }
-
-  public polygonClip(input: Point3d[], output: Point3d[], work: Point3d[]) {
-    output.length = 0;
-    // Copy input array
-    for (const i of input)
-      output.push(i);
+  /**
+   * Clip a polygon to the planes of the clip plane set.
+   * * For a convex input polygon, the output is another convex polygon.
+   * * For a nonconvex input, the output may have double-back edges along plane intersections.  This is still a valid clip in a parity sense.
+   * * The containingPlane parameter allows callers within ConvexClipPlane set to bypass planes known to contain the polygon
+   * @param input input polygon, usually convex.
+   * @param output output polygon
+   * @param work work array.
+   * @param containingPlane if this plane is found inthe convex set, it is NOT applied.
+   */
+  public polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work: GrowableXYZArray, planeToSkip?: ClipPlane) {
+    if (input instanceof GrowableXYZArray)
+      input.clone(output);
+    else
+      GrowableXYZArray.create(input, output);
 
     for (const plane of this._planes) {
+      if (planeToSkip === plane)
+        continue;
       if (output.length === 0)
         break;
-      plane.convexPolygonClipInPlace(output, work);
+      plane.clipConvexPolygonInPlace(output, work);
     }
   }
   /**
@@ -470,69 +542,70 @@ export class ConvexClipPlaneSet implements Clipper {
   }
 
   /**
-   * Returns range if result does not cover a space of infinity, otherwise undefined.
-   * Note: If given a range for output, this will overwrite it, NOT extend it.
+   * Compute intersections among all combinations of 3 planes in the convex set.
+   * * optionally throw out points that are not in the set.
+   * * optionally push the points in the caller-supplied point array.
+   * * optionally extend a caller supplied range.
+   * * In the common case where the convex set is (a) a slab or (b) a view frustum, there will be 8 points and the range is the range of the convex set.
+   * * If the convex set is unbounded, the range only contains the range of the accepted (corner) points, and the range is not a representative of the "range of all points in the set" .
+   * @param transform (optional) transform to apply to the points.
+   * @param points (optional) array to which computed points are to be added.
+   * @param range (optional) range to be extended by the computed points
+   * @param transform (optional) transform to apply to the accepted points.
+   * @param testContainment if true, test each point to see if it is within the convex set.  (Send false if confident that the convex set is rectilinear set such as a slab.  Send true if chiseled corners are possible)
+   * @returns number of points.
    */
-  public getRangeOfAlignedPlanes(transform?: Transform, result?: Range3d): Range3d | undefined {
-    const idMatrix: Matrix3d = Matrix3d.createIdentity();
-    const bigRange: Range3d = Range3d.createXYZXYZ(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+  public computePlanePlanePlaneIntersections(points: Point3d[] | undefined, rangeToExtend: Range3d | undefined, transform?: Transform, testContainment: boolean = true): number {
 
-    const range = bigRange.clone(result);
-    for (const clipPlane of this._planes) {
-      if (transform)
-        clipPlane.transformInPlace(transform);
-
-      // Array of 1-d ranges that will be pieced back together into a Range3d after making adjustments
-      const rangePieces: Range1d[] = [
-        Range1d.createXX(range.low.x, range.high.x),
-        Range1d.createXX(range.low.y, range.high.y),
-        Range1d.createXX(range.low.z, range.high.z)];
-
-      for (let i = 0; i < 3; i++) {
-        // Set values of minP and maxP based on i (we are compensating for pointer arithmetic in native code)
-        let minP;
-        let maxP;
-        minP = rangePieces[i].low;
-        maxP = rangePieces[i].high;
-
-        const direction: Vector3d = idMatrix.getColumn(i);
-        if (clipPlane.inwardNormalRef.isParallelTo(direction, true)) {
-          if (clipPlane.inwardNormalRef.dotProduct(direction) > 0.0) {
-            if (clipPlane.distance > minP)
-              rangePieces[i].low = clipPlane.distance;
-          } else {
-            if (-clipPlane.distance < maxP)
-              rangePieces[i].high = - clipPlane.distance;
+    const normalRows = Matrix3d.createIdentity();
+    const allPlanes = this._planes;
+    const n = allPlanes.length;
+    let numPoints = 0;    // explicityly count points -- can't wait to end for points.length because it may be an optional output.
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++)
+        for (let k = j + 1; k < n; k++) {
+          Matrix3d.createRowValues(
+            allPlanes[i].inwardNormalRef.x, allPlanes[i].inwardNormalRef.y, allPlanes[i].inwardNormalRef.z,
+            allPlanes[j].inwardNormalRef.x, allPlanes[j].inwardNormalRef.y, allPlanes[j].inwardNormalRef.z,
+            allPlanes[k].inwardNormalRef.x, allPlanes[k].inwardNormalRef.y, allPlanes[k].inwardNormalRef.z,
+            normalRows);
+          if (normalRows.computeCachedInverse(false)) {
+            const xyz = normalRows.multiplyInverseXYZAsPoint3d(allPlanes[i].distance, allPlanes[j].distance, allPlanes[k].distance)!;
+            if (!testContainment || this.isPointOnOrInside(xyz, Geometry.smallMetricDistance)) {
+              numPoints++;
+              if (transform)
+                transform.multiplyPoint3d(xyz, xyz);
+              if (points)
+                points.push(xyz);
+              if (rangeToExtend)
+                rangeToExtend.extendPoint(xyz);
+            }
           }
         }
-      }
-      // Reassign to Range3d
-      range.low.x = rangePieces[0].low;
-      range.high.x = rangePieces[0].high;
-      range.low.y = rangePieces[1].low;
-      range.high.y = rangePieces[1].high;
-      range.low.z = rangePieces[2].low;
-      range.high.z = rangePieces[2].high;
     }
-    if (range.isAlmostEqual(bigRange))
-      return undefined;
-    else
-      return range;
+    return numPoints;
   }
-
+  /**
+   * Set the `invisible` property on each plane of the convex set.
+   * @param invisible value to store
+   */
   public setInvisible(invisible: boolean) {
     for (const plane of this._planes) {
       plane.setInvisible(invisible);
     }
   }
-
+  /**
+   * Add planes for z-direction clip between low and high z levels.
+   * @param invisible value to apply to the `invisble` bit for the new planes
+   * @param zLow low z value.  The plane clips out points with z below this.
+   * @param zHigh high z value.  The plane clips out points iwth z above this.
+   */
   public addZClipPlanes(invisible: boolean, zLow?: number, zHigh?: number) {
     if (zLow !== undefined)
       this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, 1), zLow, invisible)!);
     if (zHigh !== undefined)
       this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -zHigh, invisible)!);
   }
-
   /*
     #define CheckAreaXY_not
     // EDL Dec 7 2016.

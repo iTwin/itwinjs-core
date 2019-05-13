@@ -11,12 +11,17 @@ import { Orientation } from "@bentley/ui-core";
 import { TableStructValueRenderer } from "./table/StructValueRenderer";
 import { withContextStyle } from "./WithContextStyle";
 
-/** Default Struct Property Renderer */
+/** Default Struct Property Renderer
+ * @public
+ */
 export class StructPropertyValueRenderer implements IPropertyValueRenderer {
+
+  /** Checks if the renderer can handle given property */
   public canRender(record: PropertyRecord) {
     return record.value.valueFormat === PropertyValueFormat.Struct;
   }
 
+  /** Method that returns a JSX representation of PropertyRecord */
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
     if (context && context.containerType === PropertyContainerType.Table) {
       return withContextStyle(

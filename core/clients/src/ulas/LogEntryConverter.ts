@@ -2,12 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
-import { UsageLogEntry, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, ProductVersion, UsageType, UsageUserInfo } from "./UlasClient";
+import { Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { UsageLogEntry, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, ProductVersion, UsageType } from "./UlasClient";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
+import { UserInfo } from "../UserInfo";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 
-/** @hidden */
+const loggerCategory: string = ClientsLoggerCategory.UlasClient;
+
 /** Specifies the JSON format for a UsageLogEntry as expected by the ULAS REST API
- *  (see https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * (see https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * @internal
  */
 export interface UsageLogEntryJson {
   /** Ultimate ID, i.e. company ID in SAP */
@@ -52,13 +57,15 @@ export interface UsageLogEntryJson {
   uType: string;
 }
 
+/** @internal */
 export interface FeatureLogEntryAttributeJson {
   name: string;
   value: string;
 }
 
 /** Specifies the JSON format for a FeatureLogEntry as expected by the ULAS REST API
- *  (see https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * (see https://qa-connect-ulastm.bentley.com/Bentley.ULAS.SwaggerUI/SwaggerWebApp/?urls.primaryName=ULAS%20Posting%20Service%20v1)
+ * @internal
  */
 export interface FeatureLogEntryJson extends UsageLogEntryJson {
   /** Gets the ID of the feature used (from the Global Feature Registry) */
@@ -71,50 +78,137 @@ export interface FeatureLogEntryJson extends UsageLogEntryJson {
   uData: FeatureLogEntryAttributeJson[];
 }
 
+/** @internal */
 export class LogEntryConverter {
   // for now this is always 1
   private static readonly _logEntryVersion: number = 1;
-  // this is a realtime client, i.e. it sends the requests right away without caching or aggregating.
+  // this is a real-time client, i.e. it sends the requests right away without caching or aggregating.
   private static readonly _logPostingSource: string = "RealTime";
   // fStr argument is empty for now
   private static readonly _featureString: string = "";
   private static readonly _policyFileId: GuidString = Guid.createValue();
   private static readonly _securableId: string = Guid.createValue();
-  private static readonly _correlationId: GuidString = Guid.createValue();
 
-  public static toUsageLogJson(entry: UsageLogEntry): UsageLogEntryJson {
-    const userInfo: UsageUserInfo | undefined = entry.userInfo;
-    const imsID: GuidString | undefined = !!userInfo ? userInfo.imsId : undefined;
-    const ultID: number | undefined = !!userInfo ? userInfo.ultimateSite : undefined;
-    const usageCountry: string | undefined = !!userInfo ? userInfo.usageCountryIso : undefined;
+  /**
+   * Extracts the application version from the supplied request context
+   * @param requestContext The client request context
+   * @returns The application version for the request context
+   */
+  private static getApplicationVersion(requestContext: AuthorizedClientRequestContext): ProductVersion {
+    const applicationVersion = requestContext.applicationVersion;
+    const defaultVersion = { major: 1, minor: 0 };
+    if (!applicationVersion) {
+      Logger.logWarning(loggerCategory, "ApplicationVersion was not specified. Set up IModelApp.applicationVersion for frontend applications, or IModelHost.applicationVersion for agents", () => ({ applicationVersion }));
+      return defaultVersion;
+    }
+
+    const versionSplit = applicationVersion.split(".");
+    const length = versionSplit.length;
+    if (length < 2) {
+      Logger.logWarning(loggerCategory, "ApplicationVersion is not valid", () => ({ applicationVersion }));
+      return defaultVersion;
+    }
+
+    const major = parseInt(versionSplit[0], 10);
+    if (typeof major === "undefined") {
+      Logger.logWarning(loggerCategory, "ApplicationVersion is not valid", () => ({ applicationVersion }));
+      return defaultVersion;
+    }
+
+    const minor = parseInt(versionSplit[1], 10);
+    if (typeof minor === "undefined") {
+      Logger.logWarning(loggerCategory, "ApplicationVersion is not valid", () => ({ applicationVersion }));
+      return { major, minor: 0 };
+    }
+
+    let sub1: number | undefined;
+    let sub2: number | undefined;
+    if (length > 2) {
+      sub1 = parseInt(versionSplit[2], 10) || undefined;
+      if (length > 3 && sub1) {
+        sub2 = parseInt(versionSplit[3], 10) || undefined;
+      }
+    }
+
+    return { major, minor, sub1, sub2 };
+  }
+
+  /**
+   * Extracts the application id from the supplied request context
+   * @param requestContext The client request context
+   * @returns The application id for the request context
+   */
+  private static getApplicationId(requestContext: AuthorizedClientRequestContext): number {
+    const defaultId = 2686; // iModel.js
+    if (!requestContext.applicationId) {
+      Logger.logWarning(loggerCategory, "ApplicationId was not specified. Set up IModelApp.applicationId for frontend applications, or IModelHost.applicationId for agents");
+      return defaultId;
+    }
+
+    return parseInt(requestContext.applicationId, 10) || defaultId;
+  }
+
+  /**
+   * Extracts the session id from the supplied request context
+   * @param requestContext The client request context
+   * @returns The session id for the request context
+   */
+  private static getSessionId(requestContext: AuthorizedClientRequestContext): GuidString {
+    const defaultId = "00000000-0000-0000-0000-000000000000";
+    if (!requestContext.sessionId) {
+      Logger.logWarning(loggerCategory, "SessionId was not specified. Set up IModelApp.sessionId for frontend applications, or IModelHost.sessionId for agents");
+      return defaultId;
+    }
+
+    return requestContext.sessionId || defaultId;
+  }
+
+  public static toUsageLogJson(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): UsageLogEntryJson {
+    const productId: number = LogEntryConverter.getApplicationId(requestContext);
+    const productVersion: ProductVersion = LogEntryConverter.getApplicationVersion(requestContext);
+    const sessionId: GuidString = LogEntryConverter.getSessionId(requestContext);
+
+    const userInfo: UserInfo | undefined = requestContext.accessToken.getUserInfo();
+    const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
+
+    const imsID: GuidString | undefined = !!userInfo ? userInfo.id : undefined;
+    const ultID: number | undefined = !!featureTrackingInfo ? parseInt(featureTrackingInfo.ultimateSite, 10) : undefined;
+    const usageCountry: string | undefined = !!featureTrackingInfo ? featureTrackingInfo.usageCountryIso : undefined;
 
     const hID: string = LogEntryConverter.prepareMachineName(entry.hostName);
-    const uID: string | undefined = !userInfo || !userInfo.hostUserName ? imsID : LogEntryConverter.prepareUserName(userInfo.hostUserName, entry.hostName);
+    const hostUserName = userInfo && userInfo.email ? userInfo.email.id : undefined;
+    const uID: string | undefined = !!hostUserName ? LogEntryConverter.prepareUserName(hostUserName, entry.hostName) : imsID;
 
-    const ver: number | undefined = LogEntryConverter.toVersionNumber(entry.productVersion);
+    const ver: number | undefined = LogEntryConverter.toVersionNumber(productVersion);
     const uType: string = LogEntryConverter.usageTypeToString(entry.usageType);
 
     return {
       ultID, pid: imsID, // Principal ID for now is IMS Id (eventually should be pulled from policy files)
-      imsID, hID, uID, polID: LogEntryConverter._policyFileId, secID: LogEntryConverter._securableId, prdid: entry.productId,
-      fstr: LogEntryConverter._featureString, ver, projID: entry.projectId, corID: LogEntryConverter._correlationId,
+      imsID, hID, uID, polID: LogEntryConverter._policyFileId, secID: LogEntryConverter._securableId, prdid: productId,
+      fstr: LogEntryConverter._featureString, ver, projID: entry.projectId, corID: sessionId,
       evTimeZ: entry.timestamp, lVer: LogEntryConverter._logEntryVersion, lSrc: LogEntryConverter._logPostingSource,
       country: usageCountry, uType,
     };
   }
 
-  public static toFeatureLogJson(entries: FeatureLogEntry[]): FeatureLogEntryJson[] {
+  public static toFeatureLogJson(requestContext: AuthorizedClientRequestContext, entries: FeatureLogEntry[]): FeatureLogEntryJson[] {
     const json: FeatureLogEntryJson[] = [];
+    const productId: number = LogEntryConverter.getApplicationId(requestContext);
+    const productVersion: ProductVersion = LogEntryConverter.getApplicationVersion(requestContext);
+    const sessionId: GuidString = LogEntryConverter.getSessionId(requestContext);
+
+    const userInfo: UserInfo | undefined = requestContext.accessToken.getUserInfo();
+    const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
+
+    const imsID: GuidString | undefined = !!userInfo ? userInfo.id : undefined;
+    const ultID: number | undefined = !!featureTrackingInfo ? parseInt(featureTrackingInfo.ultimateSite, 10) : undefined;
+    const usageCountry: string | undefined = !!featureTrackingInfo ? featureTrackingInfo.usageCountryIso : undefined;
+    const hostUserName = userInfo && userInfo.email ? userInfo.email.id : undefined;
+    const ver: number | undefined = LogEntryConverter.toVersionNumber(productVersion);
+
     for (const entry of entries) {
-      const userInfo: UsageUserInfo | undefined = entry.userInfo;
-      const imsID: GuidString | undefined = !!userInfo ? userInfo.imsId : undefined;
-      const ultID: number | undefined = !!userInfo ? userInfo.ultimateSite : undefined;
-      const usageCountry: string | undefined = !!userInfo ? userInfo.usageCountryIso : undefined;
-
       const hID: string = LogEntryConverter.prepareMachineName(entry.hostName);
-      const uID: string | undefined = !userInfo || !userInfo.hostUserName ? imsID : LogEntryConverter.prepareUserName(userInfo.hostUserName, entry.hostName);
-
-      const ver: number | undefined = LogEntryConverter.toVersionNumber(entry.productVersion);
+      const uID: string | undefined = !!hostUserName ? LogEntryConverter.prepareUserName(hostUserName, entry.hostName) : imsID;
 
       const evTimeZ: string = entry.timestamp;
       let sDateZ: string;
@@ -134,7 +228,7 @@ export class LogEntryConverter {
       } else {
         sDateZ = evTimeZ;
         eDateZ = evTimeZ;
-        corID = LogEntryConverter._correlationId;
+        corID = sessionId;
       }
 
       const uType: string = LogEntryConverter.usageTypeToString(entry.usageType);
@@ -147,7 +241,7 @@ export class LogEntryConverter {
       const entryJson: FeatureLogEntryJson = {
         ultID, pid: imsID, // Principal ID for now is IMS Id (eventually should be pulled from policy files)
         imsID, hID, uID, polID: LogEntryConverter._policyFileId, secID: LogEntryConverter._securableId,
-        prdid: entry.productId, fstr: LogEntryConverter._featureString, ver, projID: entry.projectId, corID,
+        prdid: productId, fstr: LogEntryConverter._featureString, ver, projID: entry.projectId, corID,
         evTimeZ, lVer: LogEntryConverter._logEntryVersion, lSrc: LogEntryConverter._logPostingSource,
         country: usageCountry, uType, ftrID: entry.featureId, sDateZ, eDateZ, uData,
       };

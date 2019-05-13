@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Direction, DirectionHelpers } from "../../ui-ninezone";
+import { OrthogonalDirection } from "../../ui-ninezone/utilities/Direction";
 
 describe("Direction", () => {
   it("should get css class name for bottom direction", () => {
@@ -19,6 +20,10 @@ describe("Direction", () => {
 
   it("should get css class name for right direction", () => {
     DirectionHelpers.getCssClassName(Direction.Right).should.eq(DirectionHelpers.RIGHT_CLASS_NAME);
+  });
+
+  it("should get orthogonal direction for top direction", () => {
+    DirectionHelpers.getOrthogonalDirection(Direction.Top).should.eq(OrthogonalDirection.Vertical);
   });
 
   it("bottom class name should be direction-bottom", () => {

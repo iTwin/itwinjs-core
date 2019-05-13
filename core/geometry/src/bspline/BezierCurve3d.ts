@@ -24,9 +24,12 @@ import { Range3d } from "../geometry3d/Range";
 /** 3d Bezier curve class.
  * * Use BezierCurve3dH if the curve has weights.
  * * The control points (xyz) are managed as the _packedData buffer in the _polygon member of BezierCurveBase.
+ * @public
  */
 export class BezierCurve3d extends BezierCurveBase {
+  /** test if `other` is also a BezierCurve3d. */
   public isSameGeometryClass(other: any): boolean { return other instanceof BezierCurve3d; }
+  /** apply the transform to the control points. */
   public tryTransformInPlace(transform: Transform): boolean {
     const data = this._workData0;
     for (let i = 0; i < this._polygon.order; i++) {
@@ -105,9 +108,11 @@ export class BezierCurve3d extends BezierCurveBase {
   public loadSpanPoles(data: Float64Array, spanIndex: number) {
     this._polygon.loadSpanPoles(data, spanIndex);
   }
+  /** Clone as a bezier 3d. */
   public clone(): BezierCurve3d {
     return new BezierCurve3d(this._polygon.clonePolygon());
   }
+  /** Clone the interval from f0 to f1. */
   public clonePartialCurve(f0: number, f1: number): BezierCurve3d | undefined {
     const partialCurve = new BezierCurve3d(this._polygon.clonePolygon());
     partialCurve._polygon.subdivideToIntervalInPlace(f0, f1);
@@ -152,6 +157,7 @@ export class BezierCurve3d extends BezierCurveBase {
     Vector3d.createAdd2Scaled(ray0.direction, -a, ray1.direction, a, result.vectorV);
     return result;
   }
+  /** Near-equality test on poles. */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof BezierCurve3d) {
       return this._polygon.isAlmostEqual(other._polygon);
@@ -159,7 +165,7 @@ export class BezierCurve3d extends BezierCurveBase {
     return false;
   }
   /**
-   * Assess legnth and turn to determine a stroke count.
+   * Assess length and turn to determine a stroke count.
    * @param options stroke options structure.
    */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
@@ -186,14 +192,14 @@ export class BezierCurve3d extends BezierCurveBase {
     const numPerSpan = StrokeOptions.applyAngleTol(options, StrokeOptions.applyMaxEdgeLength(options, 1, sumLength), sweepRadians, 0.2);
     return numPerSpan;
   }
-  /**
-   * convert to bspline curve and dispatch to handler
-   * @param handler handelr to receive strongly typed geometry
-   */
+  /** Second step of double dispatch:  call `handler.handleBezierCurve3d(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBezierCurve3d(this);
   }
-
+/** Extend `rangeToExtend`, using candidate extrema at
+ * * both end points
+ * * any interal extrema in x,y,z
+ */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const order = this.order;
     if (!transform) {

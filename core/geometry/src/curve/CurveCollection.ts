@@ -155,15 +155,17 @@ class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
 
 /**
  * * A `CurveCollection` is an abstract (non-instantiable) class for various sets of curves with particular structures:
- * * * `Path` - a sequence of `CurvePrimitive` joining head-to-tail (but not required to close, and not enclosing a planar area)
- * * * `Loop` - a sequence of coplanar `CurvePrimitive` joining head-to-tail, and closing from last to first so that they enclose a planar area.
- * * * `ParityRegion` -- a colletion of coplanar `Loop`s, with "in/out" classification by parity rules
- * * * `UnionRegion` -- a colletion of coplanar `Loop`s, with "in/out" classification by union rules
- * * * `BagOfCurves` -- a collection of `AnyCurve` with no implied structure.
+ *   * `CurveChain` is a (non-instantiable) intermediate class for a sequence of `CurvePrimitive ` joining head-to-tail.  The two instantiable forms of `CurveChain` are
+ *     * `Path` - A chain not required to close, and not enclosing a planar area
+ *     * `Loop` - A chain required to close from last to first so that a planar area is enclosed.
+ *   * `ParityRegion` -- a colletion of coplanar `Loop`s, with "in/out" classification by parity rules
+ *   * `UnionRegion` -- a colletion of coplanar `Loop`s, with "in/out" classification by union rules
+ *   * `BagOfCurves` -- a collection of `AnyCurve` with no implied structure.
+ * @public
  */
 export abstract class CurveCollection extends GeometryQuery {
   /* tslint:disable:variable-name no-empty*/
-  // Only used by the Loop class, which is needed during a check in DGNJS writing
+  /**  Flag for inner loop status. Only used by `Loop`. */
   public isInner: boolean = false;
   /** Return the sum of the lengths of all contained curves. */
   public sumLengths(): number { return SumLengthsContext.sumLengths(this); }
@@ -176,10 +178,13 @@ export abstract class CurveCollection extends GeometryQuery {
   public maxGap(): number { return GapSearchContext.maxGap(this); }
   /** return true if the curve collection has any primitives other than LineSegment3d and LineString3d  */
   public checkForNonLinearPrimitives(): boolean { return CountLinearPartsSearchContext.hasNonLinearPrimitives(this); }
+  /** Apply transform recursively to children */
   public tryTransformInPlace(transform: Transform): boolean { return TransformInPlaceContext.tryTransformInPlace(this, transform); }
+  /** Return a deep copy. */
   public clone(): CurveCollection | undefined {
     return CloneCurvesContext.clone(this);
   }
+  /** Create a deep copy of transformed curves. */
   public cloneTransformed(transform: Transform): CurveCollection | undefined {
     return CloneCurvesContext.clone(this, transform);
   }
@@ -208,7 +213,9 @@ export abstract class CurveCollection extends GeometryQuery {
   public abstract announceToCurveProcessor(processor: RecursiveCurveProcessor): void;
   /** clone an empty collection. */
   public abstract cloneEmptyPeer(): CurveCollection;
-  // return the BOUNDARY_TYPE integer from DGN CurveVector representations ...
+  /** Return the boundary type of a corresponding  Microstation CurveVector.
+   * * Derived class must implement.
+   */
   public abstract dgnBoundaryType(): number;
   /**
    * Try to add a child.
@@ -216,9 +223,9 @@ export abstract class CurveCollection extends GeometryQuery {
    * @return true if child is an acceptable type for this collection.
    */
   public abstract tryAddChild(child: AnyCurve): boolean;
+  /** Return a child identified by by index */
   public abstract getChild(i: number): AnyCurve | undefined;
-  /** Extend (increase) `rangeToExtend` as needed to include these curves (optionally transformed)
-   */
+  /** Extend (increase) `rangeToExtend` as needed to include these curves (optionally transformed) */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     const children = this.children;
     if (children) {
@@ -229,13 +236,16 @@ export abstract class CurveCollection extends GeometryQuery {
   }
 }
 /** Shared base class for use by both open and closed paths.
- * A curveChain contains only curvePrimitives.  No other paths, loops, or regions allowed.
+ * * A `CurveChain` contains only curvePrimitives.  No other paths, loops, or regions allowed.
+ * * The specific derived classes are `Path` and `Loop`
+ * * `CurveChain` is an intermediate class.   It is not instantiable on its own.
+ * @public
  */
 export abstract class CurveChain extends CurveCollection {
 
   protected _curves: CurvePrimitive[];
   protected constructor() { super(); this._curves = []; }
-  // _curves should be initialized in ctor.  But it doesn't happen.
+  /** Return the array of `CurvePrimitive` */
   public get children(): CurvePrimitive[] {
     if (this._curves === undefined)
       this._curves = [];
@@ -249,7 +259,9 @@ export abstract class CurveChain extends CurveCollection {
    * @param index index to array
    */
   public abstract cyclicCurvePrimitive(index: number): CurvePrimitive | undefined;
-
+  /** Stroke the chain into a simple xyz array.
+   * @param options tolerance parameters controlling the stroking.
+   */
   public getPackedStrokes(options?: StrokeOptions): GrowableXYZArray | undefined {
     const tree = this.cloneStroked(options);
     if (tree instanceof CurveChain) {
@@ -262,12 +274,16 @@ export abstract class CurveChain extends CurveCollection {
     }
     return undefined;
   }
+  /** Return a structural clone, with CurvePrimitive objects stroked. */
   public cloneStroked(options?: StrokeOptions): AnyCurve {
     const strokes = LineString3d.create();
     for (const curve of this.children)
       curve.emitStrokes(strokes, options);
     return strokes;
   }
+  /** add a child curve.
+   * * Returns fale if the given child is not a CurvePrimitive.
+   */
   public tryAddChild(child: AnyCurve): boolean {
     if (child instanceof CurvePrimitive) {
       this._curves.push(child);
@@ -275,10 +291,12 @@ export abstract class CurveChain extends CurveCollection {
     }
     return false;
   }
+  /** Return a child by index */
   public getChild(i: number): CurvePrimitive | undefined {
     if (i < this._curves.length) return this._curves[i];
     return undefined;
   }
+  /** invoke `curve.extendRange(range, transfrom)` for each child  */
   public extendRange(range: Range3d, transform?: Transform): void {
     for (const curve of this._curves)
       curve.extendRange(range, transform);
@@ -296,13 +314,18 @@ export abstract class CurveChain extends CurveCollection {
 
 /**
  * * A `BagOfCurves` object is a collection of `AnyCurve` objects.
- * * A `BagOfCurves` is not a planar region.
+ * * A `BagOfCurves` has no implied properties such as being planar.
+ * @public
  */
 export class BagOfCurves extends CurveCollection {
+  /** test if `other` is an instance of `BagOfCurves` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof BagOfCurves; }
   protected _children: AnyCurve[];
+  /** Construct an empty `BagOfCurves` */
   public constructor() { super(); this._children = []; }
+  /** Return the (reference to) array of children */
   public get children(): AnyCurve[] { return this._children; }
+  /** create with given curves. */
   public static create(...data: AnyCurve[]): BagOfCurves {
     const result = new BagOfCurves();
     for (const child of data) {
@@ -310,10 +333,13 @@ export class BagOfCurves extends CurveCollection {
     }
     return result;
   }
+  /** Return the boundary type (0) of a corresponding  Microstation CurveVector */
   public dgnBoundaryType(): number { return 0; }
+  /** invoke `processor.announceBagOfCurves(this, indexInParent);` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceBagOfCurves(this, indexInParent);
   }
+  /** Clone all children in stroked form. */
   public cloneStroked(options?: StrokeOptions): BagOfCurves {
     const clone = new BagOfCurves();
     let child;
@@ -331,16 +357,20 @@ export class BagOfCurves extends CurveCollection {
     }
     return clone;
   }
+  /** Return an empty `BagOfCurves` */
   public cloneEmptyPeer(): BagOfCurves { return new BagOfCurves(); }
+  /** Add a child  */
   public tryAddChild(child: AnyCurve): boolean {
     this._children.push(child);
     return true;
   }
+  /** Get a child by index */
   public getChild(i: number): AnyCurve | undefined {
     if (i < this._children.length)
       return this._children[i];
     return undefined;
   }
+  /** Second step of double dispatch:  call `handler.handleBagOfCurves(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBagOfCurves(this);
   }

@@ -5,12 +5,17 @@
 /** @module Color */
 
 import * as React from "react";
-import "./HueSlider.scss";
 import classnames from "classnames";
-import { HSVColor } from "@bentley/imodeljs-common";
 
-/** Properties for the [[HueSlider]] React component */
-export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement> {
+import { HSVColor } from "@bentley/imodeljs-common";
+import { CommonProps } from "@bentley/ui-core";
+
+import "./HueSlider.scss";
+
+/** Properties for the [[HueSlider]] React component
+ * @beta
+ */
+export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
   /** true if slider is oriented horizontal, else vertical orientation is assumed */
   isHorizontal?: boolean;
   /** function to run when user selects color swatch */
@@ -19,27 +24,31 @@ export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement> {
   hsv: HSVColor;
 }
 
-/** HueSlider component used to set the hue value. */
+/** HueSlider component used to set the hue value.
+ * @beta
+ */
 export class HueSlider extends React.PureComponent<HueSliderProps> {
   private _container: HTMLDivElement | null = null;
 
+  /** @internal */
   constructor(props: HueSliderProps) {
     super(props);
   }
 
   private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isHorizontal: boolean, hsv: HSVColor, container: HTMLDivElement): HSVColor | undefined => {
     e.preventDefault();
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
+    const { width: containerWidth, height: containerHeight } = container.getBoundingClientRect();
 
     let x = 0;
     if ("pageX" in e) {
       x = (e as React.MouseEvent<HTMLDivElement>).pageX;
     } else {
+      // istanbul ignore if
       if (undefined === e.touches)
         return undefined;
       x = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageX;
     }
+    // istanbul ignore if
     if (undefined === x)
       return undefined;
 
@@ -47,10 +56,12 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     if ("pageY" in e) {
       y = (e as React.MouseEvent<HTMLDivElement>).pageY;
     } else {
+      // istanbul ignore if
       if (undefined === e.touches)
         return;
       y = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageY;
     }
+    // istanbul ignore if
     if (undefined === y)
       return undefined;
 
@@ -60,6 +71,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
 
     if (!isHorizontal) {
       let h;
+      // istanbul ignore next
       if (top < 0) {
         h = 360;
       } else if (top > containerHeight) {
@@ -75,6 +87,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
       }
     } else {  // horizontal
       let h;
+      // istanbul ignore next
       if (left < 0) {
         h = 0;
       } else if (left > containerWidth) {
@@ -84,14 +97,17 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
         h = ((360 * percent) / 100);
       }
 
+      // istanbul ignore else
       if (hsv.h !== h) {
         newColor.h = h;
         return newColor;
       }
     }
+    // istanbul ignore next
     return undefined;
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._unbindEventListeners();
   }
@@ -105,6 +121,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
 
   private _onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     this._onChange(e);
+    // istanbul ignore else
     if (this._container)
       this._container.focus();
     window.addEventListener("mousemove", this._onChange as any);
@@ -128,11 +145,15 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
       newHue = 360;
     }
 
+    // istanbul ignore else
     if (undefined !== newHue) {
       const newColor = this.props.hsv.clone();
+      // istanbul ignore if
       if (newHue > 360) newHue = 360;
+      // istanbul ignore if
       if (newHue < 0) newHue = 0;
       newColor.h = newHue;
+      // istanbul ignore else
       if (this.props.onHueChange)
         this.props.onHueChange(newColor);
     }
@@ -147,9 +168,11 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     window.removeEventListener("mouseup", this._onMouseUp);
   }
 
+  /** @internal */
   public render(): React.ReactNode {
     const containerClasses = classnames(
       this.props.isHorizontal ? "components-hue-container-horizontal" : "components-hue-container-vertical",
+      this.props.className,
     );
 
     const pointerStyle: React.CSSProperties = this.props.isHorizontal ? {
@@ -160,7 +183,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
       };
 
     return (
-      <div className={containerClasses} data-testid="hue-container">
+      <div className={containerClasses} style={this.props.style} data-testid="hue-container">
         <div
           data-testid="hue-slider"
           role="slider" aria-label="Hue"

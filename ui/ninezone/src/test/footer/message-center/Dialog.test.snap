@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<MessageCenterDialog /> renders correctly 1`] = `
+<Dialog
+  className="nz-footer-messageCenter-dialog"
+  titleBar={
+    <TitleBar
+      title={undefined}
+    />
+  }
+>
+  <div
+    className="nz-tabs"
+  />
+  <div
+    className="nz-messages"
+  />
+  <span
+    className="nz-message-prompt"
+  />
+  <div
+    className="nz-gradient"
+  />
+</Dialog>
+`;

@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
 
-import { HitSource, HitDetail, HitList, HitPriority } from "./HitDetail";
-import { Point3d, Point2d } from "@bentley/geometry-core";
-import { Viewport, ViewRect, ScreenViewport } from "./Viewport";
+import { Id64 } from "@bentley/bentleyjs-core";
+import { Point2d, Point3d } from "@bentley/geometry-core";
+import { HitDetail, HitList, HitPriority, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
 import { InputSource, InteractiveTool } from "./tools/Tool";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { ScreenViewport, Viewport, ViewRect } from "./Viewport";
 
 /** The possible actions for which a locate filter can be called.
  * @public
  */
-export const enum LocateAction {
+export enum LocateAction {
   Identify = 0,
   AutoLocate = 1,
 }
@@ -24,13 +24,13 @@ export const enum LocateAction {
  * Return `Reject` to indicate the element is unacceptable.
  * @public
  */
-export const enum LocateFilterStatus {
+export enum LocateFilterStatus {
   Accept = 0,
   Reject = 1,
 }
 
 /** @public */
-export const enum SnapStatus {
+export enum SnapStatus {
   Success = 0,
   Aborted = 1,
   NoElements = 2,
@@ -71,16 +71,19 @@ export class LocateOptions {
   public init() { this.allowDecorations = this.allowNonLocatable = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
 }
 
+/** @public */
 export class LocateResponse {
   public snapStatus = SnapStatus.Success;
   public reason?: string;
   public explanation = "";
 }
 
+/** @public */
 export interface HitListHolder {
   setHitList(list: HitList<HitDetail> | undefined): void;
 }
 
+/** @public */
 export class ElementPicker {
   public viewport?: Viewport;
   public readonly pickPointWorld = new Point3d();
@@ -207,6 +210,7 @@ export class ElementPicker {
   }
 }
 
+/** @public */
 export class ElementLocateManager {
   public hitList?: HitList<HitDetail>;
   public currHit?: HitDetail;
@@ -250,7 +254,7 @@ export class ElementLocateManager {
     }
 
     if (undefined !== hit.subCategoryId) {
-      const appearance = hit.viewport.view.getSubCategoryAppearance(hit.subCategoryId);
+      const appearance = hit.viewport.getSubCategoryAppearance(hit.subCategoryId);
       if (appearance.dontLocate) {
         out.reason = ElementLocateManager.getFailureMessageKey("NotLocatable");
         return LocateFilterStatus.Reject;

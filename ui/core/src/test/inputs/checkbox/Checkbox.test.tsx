@@ -6,7 +6,7 @@ import * as React from "react";
 import { render } from "react-testing-library";
 import { expect } from "chai";
 import { Checkbox } from "../../../ui-core/inputs/checkbox/Checkbox";
-import InputStatus from "../../../ui-core/inputs/InputStatus";
+import { InputStatus } from "../../../ui-core/inputs/InputStatus";
 
 describe("Checkbox", () => {
   it("renders", () => {

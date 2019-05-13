@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, MobileRpcManager } from "@bentley/imodeljs-common";
+import { IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, MobileRpcManager } from "@bentley/imodeljs-common";
 import { initializeBackend } from "./backend";
 // tslint:disable:no-console
 
 export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
+  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 }
 
 // Initialize the backend

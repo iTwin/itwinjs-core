@@ -4,17 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-/** Provide paging option for the queries. */
+/** Provide paging option for the queries.
+ * @public
+ */
 export interface PageOptions {
   /** Zero base page number */
   start?: number;
   /** Number of rows per page */
   size?: number;
-  /** In case some error occure number of retries */
-  retries?: number;
+  /** load on main loop */
+  stepsPerTick?: number;
 }
-/** Default option used when caller does not provide one */
-export const kPagingDefaultOptions: PageOptions = { start: 0, size: 512 };
+/** Default option used when caller does not provide one
+ * @beta Remove nonstandard "k" prefix?
+ */
+export const kPagingDefaultOptions: PageOptions = { start: 0, size: 512, stepsPerTick: 20 };
+
+/** @public */
 export interface PageableECSql {
   /** Compute number of rows that would be returned by the ECSQL. */
   queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;

@@ -18,7 +18,12 @@ import {
   WidgetControl,
   ZoneLocation,
   CoreTools,
+  StatusBarWidgetControl,
+  MessageCenterField,
+  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
+
+// tslint:disable: completed-docs
 
 export class TestContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -32,7 +37,33 @@ export class TestWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <div />;
+    this.reactElement = <TestWidgetElement />;
+  }
+}
+
+export class TestWidgetElement extends React.Component {
+  public componentDidMount() {
+  }
+
+  public componentWillUnmount() {
+  }
+
+  public render() {
+    return <div />;
+  }
+}
+
+export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+  }
+
+  public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+    return (
+      <>
+        <MessageCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+      </>
+    );
   }
 }
 
@@ -81,10 +112,25 @@ export class TestFrontstage extends FrontstageProvider {
             ]}
           />
         }
+        centerLeft={
+          <Zone defaultState={ZoneState.Open} allowsMerging={true}
+            widgets={[
+              <Widget id="widget3" defaultState={WidgetState.Open} control={TestWidget} />,
+            ]}
+          />
+        }
         centerRight={
           <Zone defaultState={ZoneState.Open}
             widgets={[
               <Widget id="widget1" defaultState={WidgetState.Open} element={<div />} />,
+              <Widget id="widget6_2" element={<div />} />,
+            ]}
+          />
+        }
+        bottomLeft={
+          <Zone defaultState={ZoneState.Open} allowsMerging={true}
+            widgets={[
+              <Widget id="widget4" defaultState={WidgetState.Open} control={TestWidget} />,
             ]}
           />
         }
@@ -92,7 +138,7 @@ export class TestFrontstage extends FrontstageProvider {
           <Zone
             widgets={[
               <Widget id="statusBar" isStatusBar={true} iconSpec="icon-placeholder" labelKey="App:widgets.StatusBar"
-                control={TestWidget} applicationData={{ key: "value" }} />,
+                control={AppStatusBarWidgetControl} applicationData={{ key: "value" }} />,
             ]}
           />
         }

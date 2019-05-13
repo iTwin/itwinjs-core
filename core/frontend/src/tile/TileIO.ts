@@ -8,6 +8,8 @@ import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { MeshList } from "../render/primitives/mesh/MeshPrimitives";
 
+// tslint:disable:no-const-enum
+
 /** Provides facilities for deserializing 3d tiles.
  * @internal
  */

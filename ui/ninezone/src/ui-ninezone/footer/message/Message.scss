@@ -1,0 +1,55 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+
+.nz-footer-message-message {
+  $min-width: 370px;
+  $min-height: 40px;
+  $border-width: 1px;
+  $icon-width: 45px;
+
+  min-width: $min-width;
+  min-height: $min-height;
+  display: flex;
+  background-color: $buic-background-control;
+  overflow: hidden;
+  border: {
+    style: solid;
+    width: $border-width;
+    radius: 5px;
+  };
+
+  > .nz-icon {
+    color: $buic-foreground-accessory;
+    width: $icon-width;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.nz-status-information {
+    border-color: $buic-accessory-primary;
+
+    > .nz-icon {
+      background-color: $buic-accessory-primary;
+    }
+  }
+
+  &.nz-status-success {
+    border-color: $buic-accessory-success;
+
+    > .nz-icon {
+      background-color: $buic-accessory-success;
+    }
+  }
+
+  &.nz-status-error {
+    border-color: $buic-accessory-alert;
+
+    > .nz-icon {
+      background-color: $buic-accessory-alert;
+    }
+  }
+}

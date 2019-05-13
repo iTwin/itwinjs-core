@@ -17,7 +17,8 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, BaseNodeKey, ECInstanceNodeKey } from "@bentley/presentation-common";
 import {
   Presentation,
-  SelectionHandler, SelectionManager, SelectionChangeEvent, ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType,
+  SelectionHandler, SelectionManager, SelectionChangeEvent,
+  ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/presentation-frontend";
 import { Tree, TreeProps, TreeNodeItem, UiComponents } from "@bentley/ui-components";
 import { I18N } from "@bentley/imodeljs-i18n";
@@ -85,7 +86,7 @@ describe("Tree withUnifiedSelection", () => {
     const component = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
-    />).instance() as any as IUnifiedSelectionComponent;
+    />).dive().instance() as any as IUnifiedSelectionComponent;
 
     expect(component.imodel).to.equal(imodelMock.object);
     expect(component.rulesetId).to.equal(testRulesetId);
@@ -98,7 +99,7 @@ describe("Tree withUnifiedSelection", () => {
 
     const tree = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
-    />).instance() as any as IUnifiedSelectionComponent;
+    />).dive().instance() as any as IUnifiedSelectionComponent;
 
     expect(tree.selectionHandler).to.not.be.undefined;
     expect(tree.selectionHandler!.name).to.not.be.undefined;
@@ -110,14 +111,14 @@ describe("Tree withUnifiedSelection", () => {
     expect(shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
-    />)).to.matchSnapshot();
+    />).dive()).to.matchSnapshot();
   });
 
   it("disposes selection handler when unmounts", () => {
     const tree = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
-    />);
+    />).dive();
     tree.unmount();
     selectionHandlerMock.verify((x) => x.dispose(), moq.Times.once());
   });
@@ -126,7 +127,7 @@ describe("Tree withUnifiedSelection", () => {
     const tree = shallow<TreeProps>(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
-    />);
+    />).dive();
 
     const imodelMock2 = moq.Mock.ofType<IModelConnection>();
     const rulesetId2 = faker.random.word();
@@ -145,7 +146,7 @@ describe("Tree withUnifiedSelection", () => {
     const component = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
-    />, { disableLifecycleMethods: true });
+    />, { disableLifecycleMethods: true }).dive();
     component.unmount();
   });
 
@@ -153,7 +154,7 @@ describe("Tree withUnifiedSelection", () => {
     const component = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
-    />, { disableLifecycleMethods: true });
+    />, { disableLifecycleMethods: true }).dive();
     component.instance().componentDidUpdate!(component.props(), component.state()!);
   });
 
@@ -168,7 +169,7 @@ describe("Tree withUnifiedSelection", () => {
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-        />, { disableLifecycleMethods: true });
+        />, { disableLifecycleMethods: true }).dive();
 
         const propCallback = tree.find(Tree).prop("selectedNodes") as ((node: TreeNodeItem) => boolean);
         const result = propCallback(node);
@@ -184,7 +185,7 @@ describe("Tree withUnifiedSelection", () => {
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-        />);
+        />).dive();
 
         const propCallback = tree.find(Tree).prop("selectedNodes") as ((node: TreeNodeItem) => boolean);
         const result = propCallback(node);
@@ -200,7 +201,7 @@ describe("Tree withUnifiedSelection", () => {
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-        />);
+        />).dive();
 
         const propCallback = tree.find(Tree).prop("selectedNodes") as ((node: TreeNodeItem) => boolean);
         const result = propCallback(node);
@@ -219,7 +220,7 @@ describe("Tree withUnifiedSelection", () => {
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-        />);
+        />).dive();
 
         const propCallback = tree.find(Tree).prop("selectedNodes") as ((node: TreeNodeItem) => boolean);
         const result = propCallback(node);
@@ -239,7 +240,7 @@ describe("Tree withUnifiedSelection", () => {
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           onNodesSelected={callback.object}
-        />);
+        />).dive();
 
         tree.find(Tree).prop("onNodesSelected")!(nodes, false);
 
@@ -257,7 +258,7 @@ describe("Tree withUnifiedSelection", () => {
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           onNodesSelected={callback.object}
-        />);
+        />).dive();
 
         tree.find(Tree).prop("onNodesSelected")!(nodes, true);
 
@@ -270,7 +271,7 @@ describe("Tree withUnifiedSelection", () => {
         const nodes = [createRandomTreeNodeItem()];
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
-        />, { disableLifecycleMethods: true });
+        />, { disableLifecycleMethods: true }).dive();
 
         tree.find(Tree).prop("onNodesSelected")!(nodes, true);
 
@@ -286,7 +287,7 @@ describe("Tree withUnifiedSelection", () => {
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-        />);
+        />).dive();
 
         tree.find(Tree).prop("onNodesSelected")!(nodes, true);
 
@@ -310,7 +311,7 @@ describe("Tree withUnifiedSelection", () => {
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           onNodesDeselected={callback.object}
-        />);
+        />).dive();
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);
 
@@ -327,7 +328,7 @@ describe("Tree withUnifiedSelection", () => {
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
           onNodesDeselected={callback.object}
-        />);
+        />).dive();
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);
 
@@ -339,7 +340,7 @@ describe("Tree withUnifiedSelection", () => {
         const nodes = [createRandomTreeNodeItem()];
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
-        />, { disableLifecycleMethods: true });
+        />, { disableLifecycleMethods: true }).dive();
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);
 
@@ -354,7 +355,7 @@ describe("Tree withUnifiedSelection", () => {
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-        />);
+        />).dive();
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);
 
@@ -386,7 +387,7 @@ describe("Tree withUnifiedSelection", () => {
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-        />);
+        />).dive();
         const s = sinon.spy(tree.instance(), "render");
         triggerSelectionChange(0);
         expect(s).to.be.calledOnce;
@@ -396,7 +397,7 @@ describe("Tree withUnifiedSelection", () => {
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
-        />);
+        />).dive();
         const s = sinon.spy(tree.instance(), "render");
         triggerSelectionChange(1);
         expect(s).to.not.be.called;

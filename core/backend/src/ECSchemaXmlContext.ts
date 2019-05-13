@@ -5,13 +5,16 @@
 /** @module Schema */
 
 import { IModelError } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "./IModelJsNative";
 import { IModelHost } from "./IModelHost";
+import { IModelJsNative } from "./IModelJsNative";
 
+/** @internal */
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
+
+/** @internal */
 export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
 
-/** @hidden */
+/** @internal */
 export class ECSchemaXmlContext {
   private _nativeContext: IModelJsNative.ECSchemaXmlContext | undefined;
 

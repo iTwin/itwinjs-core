@@ -2,12 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import * as React from "react";
 import { expect } from "chai";
+import { render, cleanup } from "react-testing-library";
+
 import { HierarchyBuilder, initialize, terminate } from "@bentley/presentation-testing";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import TestUtils from "../TestUtils";
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
+
+import TestUtils from "../TestUtils";
+import { ModelSelectorWidget, ModelSelectorWidgetControl, WidgetProps, WidgetDef, ConfigurableUiControlType } from "../../ui-framework";
 
 describe("ModelSelector", () => {
 
@@ -26,12 +31,12 @@ describe("ModelSelector", () => {
   });
 
   beforeEach(async () => {
-    imodel = await IModelConnection.openStandalone(testIModelPath);
+    imodel = await IModelConnection.openSnapshot(testIModelPath);
     hierarchyBuilder = new HierarchyBuilder(imodel);
   });
 
   afterEach(async () => {
-    await imodel.closeStandalone();
+    await imodel.closeSnapshot();
   });
 
   describe("Model", () => {
@@ -75,6 +80,30 @@ describe("ModelSelector", () => {
       expect(hierarchy).to.matchSnapshot();
     });
 
+  });
+
+  describe("ModelSelectorWidget", () => {
+    afterEach(cleanup);
+
+    it("should render", async () => {
+      const component = render(<ModelSelectorWidget iModelConnection={imodel} />);
+      const widget = component.getByTestId("model-selector-widget");
+      expect(widget).to.exist;
+    });
+  });
+
+  describe("ModelSelectorWidgetControl", () => {
+    const widgetProps: WidgetProps = {
+      id: "test-widget",
+      classId: ModelSelectorWidgetControl,
+      applicationData: { iModelConnection: imodel },
+    };
+
+    it("widgetDef and getWidgetControl", () => {
+      const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+      const widgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.Widget);
+      expect(widgetControl).to.not.be.undefined;
+    });
   });
 
 });

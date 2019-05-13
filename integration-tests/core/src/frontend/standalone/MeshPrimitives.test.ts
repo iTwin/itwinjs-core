@@ -29,15 +29,15 @@ describe("MeshPrimitive Tests", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    imodel = await IModelConnection.openStandalone(iModelLocation);
+    MockRender.App.startup();
+    imodel = await IModelConnection.openSnapshot(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
-    MockRender.App.startup();
   });
 
   after(async () => {
+    if (imodel) await imodel.closeSnapshot();
     MockRender.App.shutdown();
-    if (imodel) await imodel.closeStandalone();
   });
 
   it("constructor", () => {

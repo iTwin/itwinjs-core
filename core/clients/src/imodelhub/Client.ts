@@ -4,21 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { AccessToken, AuthorizationToken } from "../Token";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelClient } from "../IModelClient";
 import { FileHandler } from "../imodeljs-clients";
+import { AccessToken, AuthorizationToken } from "../Token";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /**
  * Class that allows access to different iModelHub class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
+ * @public
  */
 export class IModelHubClient extends IModelClient {
   /**
    * Create an instance of IModelHubClient.
    * @param fileHandler File handler to handle file upload/download and file system operations.
-   * @param iModelBaseHandler WSG Client for iModel Hub operations. See [[IModelBaseHandler]]
+   * @param iModelBaseHandler WSG Client for iModel Hub operations.
    */
   public constructor(fileHandler?: FileHandler, iModelBaseHandler: IModelBaseHandler = new IModelBaseHandler()) {
     super(iModelBaseHandler, fileHandler);
@@ -26,14 +27,15 @@ export class IModelHubClient extends IModelClient {
 
   /**
    * Get the (delegation) access token to access the service
+   * @param requestContext The client request context
    * @param authorizationToken Authorization token.
    * @returns Resolves to the (delegation) access token.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if authorizationToken is undefined.
    * @throws [[ResponseError]] if request to delegation service failed.
    * @throws Error if failed to parse response.
    */
-  public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
+  public async getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     ArgumentCheck.defined("authorizationToken", authorizationToken);
-    return this._handler.getAccessToken(alctx, authorizationToken);
+    return this._handler.getAccessToken(requestContext, authorizationToken);
   }
 }

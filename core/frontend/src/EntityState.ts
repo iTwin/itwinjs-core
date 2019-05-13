@@ -12,11 +12,21 @@ import { IModelConnection } from "./IModelConnection";
  * @public
  */
 export class EntityState implements EntityProps {
+  /** The BIS schema name for this EntityState.
+   * @note Subclasses from other than the BisCore domain must override the static member "schemaName" with their schema name.
+   */
+  public static get schemaName() { return "BisCore"; }
+  /** The BIS class name for this EntityState.
+   * @note Every subclass of EntityState **MUST** override this method to identify its BIS class.
+   * Failure to do so will ordinarily result in an error when the class is registered, since there may only
+   * be one JavaScript class for a given BIS class (usually the errant class will collide with its superclass.)
+   */
+  public static get className() { return "Entity"; }
+
   public readonly id: Id64String;
   public readonly iModel: IModelConnection;
   public readonly classFullName: string;
   public readonly jsonProperties: { [key: string]: any };
-  public static schemaName = "BisCore";
 
   /** Constructor for EntityState
    * @param props the properties of the Entity for this EntityState
@@ -45,24 +55,17 @@ export class EntityState implements EntityProps {
   /** Make an independent copy of this EntityState */
   public clone(iModel?: IModelConnection): this { return new (this.constructor as typeof EntityState)(this.toJSON(), iModel ? iModel : this.iModel, this) as this; }
 
-  /** Get full class name of this Entity in the form "SchemaName:ClassName".
-   * @note Subclasses from other than the BisCore domain should override their static member "schemaName" with their schema name.
-   */
-  public static getClassFullName(): string { return this.schemaName + ":" + this.className; }
-
-  public static get sqlName(): string { return this.schemaName + "." + this.className; }
-
-  /** Get the ECClass name for this EntityState.
-   * @note This default implementation relies on all EntityState subclasses using their ECClass name as their JavaScript class name, <em>with "State" appended to the end </em>.
-   * If this is not true, you must override this method.
-   */
-  public static get className(): string { return this.name.slice(0, this.name.lastIndexOf("State")); }
+  /** Get full BIS class name of this Entity in the form "SchemaName:ClassName".  */
+  public static get classFullName(): string { return this.schemaName + ":" + this.className; }
 }
 
 /** The "state" of an Element as represented in a web browser.
  * @public
  */
 export class ElementState extends EntityState implements ElementProps {
+  /** The name of the associated ECClass */
+  public static get className() { return "Element"; }
+
   public readonly model: Id64String;
   public readonly code: Code;
   public readonly parent?: RelatedElement;

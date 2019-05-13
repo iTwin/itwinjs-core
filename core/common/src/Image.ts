@@ -9,7 +9,7 @@
  * @see [[ImageBuffer.getNumBytesPerPixel]]
  * @public
  */
-export const enum ImageBufferFormat {
+export enum ImageBufferFormat {
   /** RGBA format - 4 bytes per pixel. */
   Rgba = 0,
   /** RGB format - 3 bytes per pixel. */
@@ -55,18 +55,18 @@ export class ImageBuffer {
     return this.isValidData(data, format, width) ? new ImageBuffer(data, format, width) : undefined;
   }
 
-  /** @hidden */
+  /** @internal */
   protected static isValidData(data: Uint8Array, format: ImageBufferFormat, width: number): boolean {
     const height = this.computeHeight(data, format, width);
     return width > 0 && height > 0 && Math.floor(width) === width && Math.floor(height) === height;
   }
 
-  /** @hidden */
+  /** @internal */
   protected static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number {
     return data.length / (width * this.getNumBytesPerPixel(format));
   }
 
-  /** @hidden */
+  /** @internal */
   protected constructor(data: Uint8Array, format: ImageBufferFormat, width: number) {
     this.data = data;
     this.format = format;
@@ -95,18 +95,23 @@ export function nextHighestPowerOfTwo(num: number): number {
 /** The format of an ImageSource.
  * @public
  */
-export const enum ImageSourceFormat {
+export enum ImageSourceFormat {
   /** Image data is stored with JPEG compression. */
   Jpeg = 0,
   /** Image data is stored with PNG compression. */
   Png = 2,
+  /** Image is stored as an Svg stream.
+   * @note SVG is only valid for ImageSources in JavaScript. It *may not* be used for persistent textures.
+   */
+  Svg = 3,
 }
 
-/** @hidden */
+/** @internal */
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean {
   switch (format) {
     case ImageSourceFormat.Jpeg:
     case ImageSourceFormat.Png:
+    case ImageSourceFormat.Svg:
       return true;
     default:
       return false;
@@ -118,12 +123,12 @@ export function isValidImageSourceFormat(format: ImageSourceFormat): boolean {
  */
 export class ImageSource {
   /** The content of the image, compressed */
-  public readonly data: Uint8Array;
+  public readonly data: Uint8Array | string;
   /** The compression type. */
   public readonly format: ImageSourceFormat;
 
   /** Construct a new ImageSource, which takes ownership of the Uint8Array. */
-  public constructor(data: Uint8Array, format: ImageSourceFormat) {
+  public constructor(data: Uint8Array | string, format: ImageSourceFormat) {
     this.data = data;
     this.format = format;
   }

@@ -7,21 +7,15 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import { UiEvent } from "@bentley/ui-core";
+import { UiEvent, CommonProps } from "@bentley/ui-core";
+import { Tooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
 import { XAndY } from "@bentley/geometry-core";
 import { ToolTipOptions } from "@bentley/imodeljs-frontend";
 
-import { ToolSettingsTooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
-
-/** [[ElementTooltip]] Props. */
-export interface ElementTooltipProps {
-  className?: string;
-  style?: React.CSSProperties;
-}
-
 /** [[ElementTooltip]] State.
+ * @internal
  */
-export interface ElementTooltipState {
+interface ElementTooltipState {
   isVisible: boolean;
   message: HTMLElement | string;
   position: PointProps;
@@ -29,6 +23,7 @@ export interface ElementTooltipState {
 }
 
 /** [[ElementTooltipChangedEvent]] arguments.
+ * @public
  */
 export interface ElementTooltipChangedEventArgs {
   isTooltipVisible: boolean;
@@ -38,15 +33,15 @@ export interface ElementTooltipChangedEventArgs {
   options?: ToolTipOptions;
 }
 
-const adjustPosition = offsetAndContainInContainer({ x: 8, y: 8 });
-
 /** ElementTooltip Changed Event class.
+ * @public
  */
 export class ElementTooltipChangedEvent extends UiEvent<ElementTooltipChangedEventArgs> { }
 
 /** ElementTooltip React component.
+ * @public
  */
-export class ElementTooltip extends React.Component<ElementTooltipProps, ElementTooltipState> {
+export class ElementTooltip extends React.Component<CommonProps, ElementTooltipState> {
   private static _elementTooltipChangedEvent: ElementTooltipChangedEvent = new ElementTooltipChangedEvent();
   private static _isTooltipVisible: boolean;
 
@@ -70,7 +65,7 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
   private _element?: HTMLElement;
   private _position?: PointProps;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ElementTooltipState> = {
     message: "",
     isVisible: false,
@@ -79,6 +74,10 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
       y: 0,
     },
   };
+
+  constructor(props: CommonProps) {
+    super(props);
+  }
 
   public render() {
     if (!this.state.isVisible)
@@ -95,14 +94,16 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
       message = <div dangerouslySetInnerHTML={{ __html: this.state.message.outerHTML }} />;
 
     return (
-      <ToolSettingsTooltip
-        className={className}
-        style={this.props.style}
-        position={this.state.position}
-        onSizeChanged={this._handleSizeChanged}
-      >
-        {message}
-      </ToolSettingsTooltip>
+      <div className="uifw-element-tooltip-container">
+        <Tooltip
+          className={className}
+          style={this.props.style}
+          position={this.state.position}
+          onSizeChanged={this._handleSizeChanged}
+        >
+          {message}
+        </Tooltip>
+      </div>
     );
   }
 
@@ -138,10 +139,8 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
 
       const containerBounds = Rectangle.create(this._element.getBoundingClientRect());
       const relativeBounds = Rectangle.createFromSize(this._size).offset(this._position);
-      const viewportOffset = new Point().getOffsetTo(containerBounds.topLeft());
-
-      const adjustedPosition = adjustPosition(relativeBounds, containerBounds.getSize());
-      const position = adjustedPosition.offset(viewportOffset);
+      const adjustedPosition = offsetAndContainInContainer(relativeBounds, containerBounds.getSize(), { x: 8, y: 8 });
+      const position = adjustedPosition.offset(containerBounds.topLeft());
 
       if (Point.create(position).equals(prevState.position))
         return null;

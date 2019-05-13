@@ -10,7 +10,7 @@ While the focus of this article is on backend and RpcInterface design, in many c
 
 Log all Errors that you throw. Be sure to define the logging-related arguments to the [IModelError]($common) constructor.
 
-Maintain the ActivityLoggingContext so that logging emitted by backend and common code is correlated with frontend requests. See [the learning article](./ManagingActivityLoggingContext.md).
+Maintain the ClientRequestContext so that logging emitted by backend and common code is correlated with frontend requests. See [the learning article](./ManagingClientRequestContext.md).
 
 ## Do not Block Too Long
 
@@ -19,6 +19,7 @@ Use async functions when an operation is inherently asynchronous. Example: reque
 Break up a long-running synchronous operation into small increments, yielding back to the libuv event loop at regular intervals. You might say that your server must "come up for air" often to remain responsive. The operation becomes a series of asynchronous operations.
 
 Here is some pseudo-code to illustrate yielding.
+
 ``` ts
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

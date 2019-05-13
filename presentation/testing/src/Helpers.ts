@@ -6,6 +6,7 @@
 import * as path from "path";
 import * as rimraf from "rimraf";
 // common includes
+import { Guid } from "@bentley/bentleyjs-core";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 // backend includes
 import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
@@ -15,13 +16,13 @@ import { Props as PresentationBackendProps } from "@bentley/presentation-backend
 import { Props as PresentationFrontendProps } from "@bentley/presentation-frontend/lib/PresentationManager";
 // frontend includes
 import {
-  StandaloneIModelRpcInterface,
+  SnapshotIModelRpcInterface,
   IModelReadRpcInterface,
   RpcConfiguration,
   RpcInterfaceDefinition,
   RpcDefaultConfiguration,
 } from "@bentley/imodeljs-common";
-import { NoRenderApp } from "@bentley/imodeljs-frontend";
+import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 import { Presentation as PresentationFrontend } from "@bentley/presentation-frontend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
@@ -48,38 +49,46 @@ export const initialize = (backendProps?: PresentationBackendProps, frontendProp
   if (isInitialized)
     return;
 
-  // clean up temp directory to make sure we start from scratch
-  rimraf.sync(path.join(KnownLocations.tmpdir, "ecpresentation"));
+  // make sure backend gets assigned an id which puts its resources into a unique directory
+  backendProps = backendProps || {};
+  if (!backendProps.id)
+    backendProps.id = `test-${Guid.createValue()}`;
 
   // init backend
   IModelHost.startup();
   PresentationBackend.initialize(backendProps);
 
   // set up rpc interfaces
-  initializeRpcInterfaces([StandaloneIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
 
   // init frontend
   frontendApp.startup();
 
   const defaultFrontendProps: PresentationFrontendProps = {
-    activeLocale: frontendApp.i18n.languageList()[0],
+    activeLocale: IModelApp.i18n.languageList()[0],
   };
   PresentationFrontend.initialize({ ...defaultFrontendProps, ...frontendProps });
 
   isInitialized = true;
 };
 
-export const terminate = (frontendApp = NoRenderApp) => {
+export const terminate = () => {
   if (!isInitialized)
     return;
+
+  // store directory that needs to be cleaned-up
+  const tempDirectory = (PresentationBackend.initProps && PresentationBackend.initProps.id)
+    ? path.join(KnownLocations.tmpdir, "ecpresentation", PresentationBackend.initProps.id) : undefined;
 
   // terminate backend
   PresentationBackend.terminate();
   IModelHost.shutdown();
+  if (tempDirectory)
+    rimraf.sync(tempDirectory);
 
   // terminate frontend
   PresentationFrontend.terminate();
-  frontendApp.shutdown();
+  IModelApp.shutdown();
 
   isInitialized = false;
 };

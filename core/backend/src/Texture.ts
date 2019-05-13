@@ -5,27 +5,22 @@
 /** @module Elements */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import {
-  BisCodeSpec,
-  Code,
-  CodeScopeProps,
-  CodeSpec,
-  TextureProps,
-  TextureFlags,
-  ImageSourceFormat,
-} from "@bentley/imodeljs-common";
+import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ImageSourceFormat, TextureFlags, TextureProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
-/** Defines a rendering texture which is associated with a Material and applied to surface geometry. */
+/** Defines a rendering texture which is associated with a Material and applied to surface geometry.
+ * @public
+ */
 export class Texture extends DefinitionElement implements TextureProps {
+  public static get className(): string { return "Texture"; }
   public format: ImageSourceFormat;
   public data: string;
   public width: number;
   public height: number;
   public flags: TextureFlags;
   public description?: string;
-  /** @hidden */
+  /** @internal */
   constructor(props: TextureProps, iModel: IModelDb) {
     super(props, iModel);
     this.format = props.format;
@@ -35,7 +30,7 @@ export class Texture extends DefinitionElement implements TextureProps {
     this.flags = props.flags;
     this.description = props.description;
   }
-  /** @hidden */
+  /** @internal */
   public toJSON(): TextureProps {
     const val = super.toJSON() as TextureProps;
     val.format = this.format;

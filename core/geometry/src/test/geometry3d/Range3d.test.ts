@@ -516,4 +516,46 @@ describe("Range3d", () => {
     ck.checkpoint("Range3d.WorldToLocal3d");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("ScalarQueries3d", () => {
+    const ck = new Checker();
+    const rangeA = Range3d.createXYZXYZ(1, 2, 4, 10, 21, 31);
+    const rangeB = Range3d.createXYZXYZ(rangeA.xLow, rangeA.yLow, rangeA.zLow, rangeA.xHigh, rangeA.yHigh, rangeA.zHigh);
+    ck.testRange3d(rangeA, rangeB, "Range scalar queries");
+    ck.testTrue(rangeA.containsPoint(rangeB.center));
+
+    const npcToWorld = rangeA.getNpcToWorldRangeTransform();
+    const centerA = npcToWorld.multiplyXYZ(0.5, 0.5, 0.5);
+    ck.testPoint3d(centerA, rangeA.center);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ScalarQueries2d", () => {
+    const ck = new Checker();
+    const rangeA = Range2d.createXYXY(1, 2, 10, 21);
+    const rangeB = Range2d.createXYXY(rangeA.xLow, rangeA.yLow, rangeA.xHigh, rangeA.yHigh);
+    ck.testRange2d(rangeA, rangeB, "Range scalar queries");
+    ck.testTrue(rangeA.containsPoint(rangeB.center));
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("EnsureMinLengths", () => {
+    const ck = new Checker();
+    /** This has lengths of 1 in each direction . . . */
+    const rangeA = Range3d.createXYZXYZ(1, 2, 3, 2, 3, 4);
+    ck.testFalse(rangeA.xLength() >= 2.0);
+    ck.testFalse(rangeA.yLength() >= 2.0);
+    ck.testFalse(rangeA.zLength() >= 2.0);
+    rangeA.ensureMinLengths(2.000000001);
+    ck.testTrue(rangeA.xLength() >= 2.0);
+    ck.testTrue(rangeA.yLength() >= 2.0);
+    ck.testTrue(rangeA.zLength() >= 2.0);
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("ZeroCases", () => {
+    const ck = new Checker();
+    ck.testTrue(RangeBase.isExtremeValue(RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)));
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

@@ -1,0 +1,52 @@
+{
+  "name": "@bentley/imodeljs-markup",
+  "entries": [
+    {
+      "version": "0.191.0",
+      "tag": "@bentley/imodeljs-markup_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add semver of imodeljs-markup to module/version map"
+          },
+          {
+            "comment": "Fix .npmignore"
+          },
+          {
+            "comment": "Preserve relative z order when grouping markup. Change default arrow direction."
+          },
+          {
+            "comment": "documentation cleanup"
+          },
+          {
+            "comment": "allow editing of existing markups"
+          },
+          {
+            "comment": "allow editing of boxed text"
+          },
+          {
+            "comment": "Added markup distance measure tool. Fixed groupAll."
+          },
+          {
+            "comment": "Add beta release tags for markup package."
+          },
+          {
+            "comment": "Don't use ctrl+f for bring to front shortcut"
+          },
+          {
+            "comment": "Can now sub-class Markup SelectTool, test code to start redline tools from key event moved to display-test-app. Added place markup symbol tool."
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          }
+        ],
+        "major": [
+          {
+            "comment": "publish markup package"
+          }
+        ]
+      }
+    }
+  ]
+}

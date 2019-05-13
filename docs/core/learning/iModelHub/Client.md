@@ -4,7 +4,7 @@ To work with iModelHub API directly, you have to create an instance of [IModelHu
 > You should try to reuse [IModelHubClient]($clients) instances, as performance sending multiple requests to iModelHub will be better on the same client instance. It's not necessary to reuse handler instances.
 
 ## iModelHub Client on backend
-If you're working on a backend and require downloading and uploading files, you have to specify an implementation of [FileHandler]($clients). For iModelHub that should be [AzureFileHandler]($clients)
+If you're working on a backend and require downloading and uploading files, you have to specify an implementation of [FileHandler]($clients). For iModelHub that should be [AzureFileHandler]($clients-backend)
 
 Example:
 ```ts

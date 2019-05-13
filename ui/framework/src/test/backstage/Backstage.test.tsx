@@ -10,7 +10,6 @@ import {
   Backstage,
   CommandLaunchBackstageItem,
   FrontstageLaunchBackstageItem,
-  SeparatorBackstageItem,
   TaskLaunchBackstageItem,
   FrontstageManager,
   FrontstageActivatedEventArgs,
@@ -20,12 +19,14 @@ import {
   FrontstageProvider,
   Frontstage,
   FrontstageProps,
+  BackstageItemState,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import { BackstageItemState } from "../../ui-framework/backstage/Backstage";
+import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator";
+import { WorkflowManager } from "../../ui-framework/workflow/Workflow";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
@@ -38,11 +39,13 @@ describe("Backstage", () => {
 
   describe("<Backstage />", () => {
     it("should render - isVisible", () => {
-      mount(<Backstage isVisible={true} />);
+      const wrapper = mount(<Backstage isVisible={true} />);
+      wrapper.unmount();
     });
 
     it("should render - !isVisible", () => {
-      mount(<Backstage isVisible={false} />);
+      const wrapper = mount(<Backstage isVisible={false} />);
+      wrapper.unmount();
     });
 
     it("renders correctly - isVisible", () => {
@@ -66,6 +69,57 @@ describe("Backstage", () => {
       ).should.matchSnapshot();
     });
 
+    it("should show", () => {
+      const wrapper = mount(<Backstage isVisible={false} />);
+      expect(Backstage.isBackstageVisible).to.be.false;
+      Backstage.show();
+      expect(Backstage.isBackstageVisible).to.be.true;
+      wrapper.unmount();
+    });
+
+    it("should hide", () => {
+      const wrapper = mount(<Backstage isVisible={true} />);
+      expect(Backstage.isBackstageVisible).to.be.true;
+      Backstage.hide();
+      expect(Backstage.isBackstageVisible).to.be.false;
+      wrapper.unmount();
+    });
+
+    it("should toggle", () => {
+      const wrapper = mount(<Backstage isVisible={false} />);
+      expect(Backstage.isBackstageVisible).to.be.false;
+
+      const toggleCommand = Backstage.backstageToggleCommand;
+      toggleCommand.execute();
+      expect(Backstage.isBackstageVisible).to.be.true;
+
+      toggleCommand.execute();
+      expect(Backstage.isBackstageVisible).to.be.false;
+
+      wrapper.unmount();
+    });
+
+    it("should show by updating isVisible prop", () => {
+      const wrapper = mount(<Backstage isVisible={false} />);
+      expect(Backstage.isBackstageVisible).to.be.false;
+      wrapper.setProps({ isVisible: true });
+      expect(Backstage.isBackstageVisible).to.be.true;
+      wrapper.unmount();
+    });
+
+    it("should close when clicking the overlay", () => {
+      const spyMethod = sinon.spy();
+      const wrapper = mount(<Backstage isVisible={true} onClose={spyMethod} />);
+      expect(Backstage.isBackstageVisible).to.be.true;
+      const overlay = wrapper.find("div.nz-backstage-backstage_overlay");
+      overlay.simulate("click");
+      expect(Backstage.isBackstageVisible).to.be.false;
+      expect(spyMethod.calledOnce).to.be.true;
+      wrapper.unmount();
+    });
+  });
+
+  describe("<SeparatorBackstageItem />", () => {
     it("SeparatorBackstageItem should render", () => {
       mount(<SeparatorBackstageItem />);
     });
@@ -73,7 +127,9 @@ describe("Backstage", () => {
     it("SeparatorBackstageItem renders correctly", () => {
       shallow(<SeparatorBackstageItem />).should.matchSnapshot();
     });
+  });
 
+  describe("<CommandLaunchBackstageItem />", () => {
     it("CommandLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
       let stateFuncRun = false;
@@ -116,10 +172,14 @@ describe("Backstage", () => {
 
     it("CommandLaunchBackstageItem renders correctly", () => {
       const commandHandler = () => { };
-      shallow(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />).should.matchSnapshot();
+      const wrapper = shallow(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />);
+      wrapper.should.matchSnapshot();
+      wrapper.unmount();
     });
+  });
 
-    it("FrontstageLaunchBackstageItem should render & execute", () => {
+  describe("<FrontstageLaunchBackstageItem />", () => {
+    it("FrontstageLaunchBackstageItem should render & execute", async () => {
       const spyMethod = sinon.stub();
       let stateFuncRun = false;
       const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => {
@@ -154,18 +214,35 @@ describe("Backstage", () => {
 
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
-      setImmediate(() => {
-        expect(spyMethod.calledOnce).to.be.true;
-        remove();
+
+      await TestUtils.flushAsyncOperations();
+      expect(spyMethod.calledOnce).to.be.true;
+      remove();
+      wrapper.unmount();
+    });
+
+    it("FrontstageLaunchBackstageItem renders correctly when inactive", async () => {
+      await FrontstageManager.setActiveFrontstageDef(undefined);
+      const wrapper = shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+      wrapper.should.matchSnapshot();
+      wrapper.unmount();
+    });
+
+    it("FrontstageLaunchBackstageItem renders correctly when active", async () => {
+      const frontstageDef = FrontstageManager.findFrontstageDef("Test1");
+      expect(frontstageDef).to.not.be.undefined;
+
+      if (frontstageDef) {
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+        const wrapper = shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+        wrapper.should.matchSnapshot();
         wrapper.unmount();
-      });
+      }
     });
+  });
 
-    it("FrontstageLaunchBackstageItem renders correctly", () => {
-      shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
-    });
-
-    it("TaskLaunchBackstageItem should render & execute", () => {
+  describe("<TaskLaunchBackstageItem />", () => {
+    it("TaskLaunchBackstageItem should render & execute", async () => {
       class Frontstage1 extends FrontstageProvider {
         public get frontstage(): React.ReactElement<FrontstageProps> {
           return (
@@ -224,15 +301,34 @@ describe("Backstage", () => {
       expect(stateFunc.calledOnce).to.be.true;
 
       backstageItem.find(".nz-backstage-item").simulate("click");
-      setImmediate(() => {
-        expect(spyMethod.calledOnce).to.be.true;
-        remove();
-        wrapper.unmount();
-      });
+      await TestUtils.flushAsyncOperations();
+      expect(spyMethod.calledOnce).to.be.true;
+      remove();
+      wrapper.unmount();
     });
 
-    it("TaskLaunchBackstageItem renders correctly", () => {
-      shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
+    it("TaskLaunchBackstageItem renders correctly when inactive", () => {
+      WorkflowManager.setActiveWorkflow(undefined);
+      const wrapper = shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+      wrapper.should.matchSnapshot();
+      wrapper.unmount();
+    });
+
+    it("TaskLaunchBackstageItem renders correctly when active", async () => {
+      const workflow = WorkflowManager.findWorkflow("ExampleWorkflow");
+      expect(workflow).to.not.be.undefined;
+
+      if (workflow) {
+        const task1 = workflow.getTask("Task1");
+        expect(task1).to.not.be.undefined;
+
+        if (task1) {
+          await WorkflowManager.setActiveWorkflowAndTask(workflow, task1);
+          const wrapper = shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+          wrapper.should.matchSnapshot();
+          wrapper.unmount();
+        }
+      }
     });
 
   });

@@ -16,11 +16,15 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { Target } from "./Target";
 import { BranchStack, BatchState } from "./BranchState";
-import { GraphicList, Decorations, RenderGraphic, AnimationBranchState } from "../System";
+import { GraphicList, Decorations, RenderGraphic, AnimationBranchState, ClippingType } from "../System";
 import { TechniqueId } from "./TechniqueId";
 import { SurfaceType } from "../primitives/VertexTable";
 import { MeshGraphic } from "./Mesh";
+import { ClipPlanesVolume } from "./ClipVolume";
 
+// tslint:disable:no-const-enum
+
+/** @internal */
 export class ShaderProgramParams {
   private _target?: Target;
   private _renderPass: RenderPass = RenderPass.None;
@@ -52,6 +56,7 @@ export class ShaderProgramParams {
 
 const _scratchTransform = Transform.createIdentity();
 
+/** @internal */
 export class DrawParams {
   private _programParams?: ShaderProgramParams;
   private _geometry?: CachedGeometry;
@@ -61,6 +66,8 @@ export class DrawParams {
   public get geometry(): CachedGeometry { assert(undefined !== this._geometry); return this._geometry!; }
   public get programParams(): ShaderProgramParams { assert(undefined !== this._programParams); return this._programParams!; }
   public get modelViewMatrix() { return this._modelViewMatrix; }
+
+  // Used strictly by planar classification shaders - otherwise not necessarily initialized!
   public get modelMatrix() { return this._modelMatrix; }
 
   public get target() { return this.programParams.target; }
@@ -79,7 +86,6 @@ export class DrawParams {
       assert(pass === this.programParams.renderPass);
 
     this._geometry = geometry;
-    Matrix4.fromTransform(modelMatrix, this._modelMatrix);
     if (this.isViewCoords) {
       // Zero out Z for silly clipping tools...
       const tf = modelMatrix.clone(_scratchTransform);
@@ -87,13 +93,25 @@ export class DrawParams {
       Matrix4.fromTransform(tf, this._modelViewMatrix);
     } else {
       let modelViewMatrix = this.target.viewMatrix.clone(_scratchTransform);
-      modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
+
+      // For instanced geometry, the "model view" matrix is really a transform from center of instanced geometry range to view.
+      // Shader will compute final model-view matrix based on this and the per-instance transform.
+      const instancedGeom = geometry.asInstanced;
+      if (undefined !== instancedGeom) {
+        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(instancedGeom.getRtcTransform(modelMatrix), modelViewMatrix);
+      } else {
+        Matrix4.fromTransform(modelMatrix, this._modelMatrix);
+        modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
+      }
+
       Matrix4.fromTransform(modelViewMatrix, this._modelViewMatrix);
     }
   }
 }
 
-/** Defines operation associated with pushing or popping a branch */
+/** Defines operation associated with pushing or popping a branch
+ * @internal
+ */
 export const enum PushOrPop {
   Push,
   Pop,
@@ -103,6 +121,7 @@ export const enum PushOrPop {
  * Represents a command to be executed within a RenderPass. The most common command is
  * to draw a primitive; others involve state changes such as pushing/popping transforms
  * and symbology overrides, which require that commands be executed in order.
+ * @internal
  */
 export const enum OmitStatus {
   Neutral = 0,
@@ -110,6 +129,7 @@ export const enum OmitStatus {
   End = -1,
 }
 
+/** @internal */
 export abstract class DrawCommand {
   public preExecute(_exec: ShaderProgramExecutor): void { }
   public abstract execute(_exec: ShaderProgramExecutor): void;
@@ -174,8 +194,8 @@ class BranchCommand extends DrawCommand {
           branchTransform = prevWorldToLocal.multiplyTransformTransform(branchTransform.multiplyTransformTransform(prevLocalToWorld));
         this._branch.localToWorldTransform = branchTransform;
       }
-      if (animationBranch.clip)
-        this._branch.clips = animationBranch.clip;
+      if (animationBranch.clip !== undefined && animationBranch.clip.type === ClippingType.Planes)
+        this._branch.clips = animationBranch.clip as ClipPlanesVolume;
     }
   }
 
@@ -199,10 +219,15 @@ class PrimitiveCommand extends DrawCommand {
 
   public get primitive(): Primitive { return this._primitive; }
 
-  public execute(exec: ShaderProgramExecutor): void { this._primitive.draw(exec); }
+  public execute(exec: ShaderProgramExecutor): void {
+    if (!System.instance.options.cullAgainstActiveVolume || !exec.target.isGeometryOutsideActiveVolume(this._primitive.cachedGeometry))
+      this._primitive.draw(exec);
+  }
 }
 
-/** Draw a batch primitive, possibly with symbology overridden per-feature */
+/** Draw a batch primitive, possibly with symbology overridden per-feature
+ * @internal
+ */
 export class BatchPrimitiveCommand extends PrimitiveCommand {
   private readonly _batch: Batch;
 
@@ -232,10 +257,14 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
   }
 }
 
-/** For a single RenderPass, an ordered list of commands to be executed during that pass. */
+/** For a single RenderPass, an ordered list of commands to be executed during that pass.
+ * @internal
+ */
 export type DrawCommands = DrawCommand[];
 
-/** A list of DrawCommands to be rendered, ordered by render pass. */
+/** A list of DrawCommands to be rendered, ordered by render pass.
+ * @internal
+ */
 export class RenderCommands {
   private _frustumPlanes?: FrustumPlanes;
   private readonly _scratchFrustum = new Frustum();
@@ -263,7 +292,7 @@ export class RenderCommands {
     if (this.hasCommands(RenderPass.Translucent))
       flags |= CompositeFlags.Translucent;
 
-    if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteClassification))
+    if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteClassification) || this.hasCommands(RenderPass.HilitePlanarClassification))
       flags |= CompositeFlags.Hilite;
 
     if (this.target.wantAmbientOcclusion)
@@ -453,6 +482,7 @@ export class RenderCommands {
     assert(RenderPass.None !== pass);
 
     this._stack.pushBranch(branch);
+    if (branch.planarClassifier) branch.planarClassifier.pushBatchState(this._batchState);
     const cmds = this.getCommands(pass);
     cmds.push(DrawCommand.createForBranch(branch, PushOrPop.Push));
 
@@ -467,6 +497,7 @@ export class RenderCommands {
 
   public pushAndPopBranch(branch: Branch, func: () => void): void {
     this._stack.pushBranch(branch);
+    if (branch.planarClassifier) branch.planarClassifier.pushBatchState(this._batchState);
 
     let cmds: DrawCommands;
     const emptyRenderPass = RenderPass.None === this._forcedRenderPass,
@@ -571,19 +602,15 @@ export class RenderCommands {
   }
 
   public addPrimitive(prim: Primitive): void {
+    // ###TODO Would be nice if we could detect outside active volume here, but active volume only applies to specific render passes
+    // if (this.target.isGeometryOutsideActiveVolume(prim.cachedGeometry))
+    //   return;
+
     if (undefined !== this._frustumPlanes) { // See if we can cull this primitive.
       if (RenderPass.Classification === prim.getRenderPass(this.target)) {
-        const geom = prim.cachedGeometry.asSurface;
+        const geom = prim.cachedGeometry.asLUT;
         if (undefined !== geom) {
-          this._scratchRange.setNull();
-          const lowX = geom.qOrigin[0];
-          const lowY = geom.qOrigin[1];
-          const lowZ = geom.qOrigin[2];
-          const hiX = 0xffff * geom.qScale[0] + lowX;
-          const hiY = 0xffff * geom.qScale[1] + lowY;
-          const hiZ = 0xffff * geom.qScale[2] + lowZ;
-          this._scratchRange.setXYZ(lowX, lowY, lowZ);
-          this._scratchRange.extendXYZ(hiX, hiY, hiZ);
+          geom.computeRange(this._scratchRange);
           let frustum = Frustum.fromRange(this._scratchRange, this._scratchFrustum);
           frustum = frustum.transformBy(this.target.currentTransform, frustum);
           if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
@@ -613,13 +640,13 @@ export class RenderCommands {
     let pass = RenderPass.Hilite;
     if (batch.graphic instanceof MeshGraphic) {
       const mg = batch.graphic as MeshGraphic;
-      if (SurfaceType.Classifier === mg.surfaceType)
+      if (SurfaceType.VolumeClassifier === mg.surfaceType)
         pass = RenderPass.HiliteClassification;
     } else if (batch.graphic instanceof GraphicsArray) {
       const ga = batch.graphic as GraphicsArray;
       if (ga.graphics[0] instanceof MeshGraphic) {
         const mg = ga.graphics[0] as MeshGraphic;
-        if (SurfaceType.Classifier === mg.surfaceType)
+        if (SurfaceType.VolumeClassifier === mg.surfaceType)
           pass = RenderPass.HiliteClassification;
       }
     }
@@ -639,11 +666,17 @@ export class RenderCommands {
     if (overrides.allHidden)
       return;
 
-    if (undefined !== this._frustumPlanes && !batch.range.isNull) {
-      let frustum = Frustum.fromRange(batch.range, this._scratchFrustum);
-      frustum = frustum.transformBy(this.target.currentTransform, frustum);
-      if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
-        return;
+    if (!batch.range.isNull) {
+      // ###TODO Would be nice if we could detect outside active volume here, but active volume only applies to specific render passes
+      // if (this.target.isRangeOutsideActiveVolume(batch.range))
+      //   return;
+
+      if (undefined !== this._frustumPlanes) {
+        let frustum = Frustum.fromRange(batch.range, this._scratchFrustum);
+        frustum = frustum.transformBy(this.target.currentTransform, frustum);
+        if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
+          return;
+        }
       }
     }
 
@@ -659,9 +692,9 @@ export class RenderCommands {
 
     // If the batch contains hilited features, need to render them in the hilite pass
     const anyHilited = overrides.anyHilited;
-    if (anyHilited) {
-      (batch.graphic as Graphic).addHiliteCommands(this, batch, this.computeBatchHiliteRenderPass(batch));
-    }
+    const planarClassifierHilited = this._stack.top.planarClassifier && this._stack.top.planarClassifier.anyHilited;
+    if (anyHilited || planarClassifierHilited)
+      (batch.graphic as Graphic).addHiliteCommands(this, batch, planarClassifierHilited ? RenderPass.HilitePlanarClassification : this.computeBatchHiliteRenderPass(batch));
 
     this._opaqueOverrides = this._translucentOverrides = false;
   }

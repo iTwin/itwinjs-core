@@ -10,6 +10,10 @@ import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point4d, Point4dProps } from "./Point4d";
+/**
+ * Coordinate data with `Point4d` numeric data as an array `[x,y,z,w]`
+ * @public
+ */
 export type Matrix4dProps = Point4dProps[];
 
 /**
@@ -18,13 +22,14 @@ export type Matrix4dProps = Point4dProps[];
  * * The 4 columns may be described as the x,y,z,w columns.
  * * The matrix is physically stored as a FLoat64Array with 16 numbers.
  * * The layout in the Float64Array is "by row"
- * * * indices 0,1,2,3 are the "x row".   They may be called the xx,xy,xz,xw entries
- * * * indices 4,5,6,7 are the "y row"    They may be called the yx,yy,yz,yw entries
- * * * indices 8,9,10,11 are the "z row"  They may be called the zx,zy,zz,zw entries
- * * * indices 12,13,14,15 are the "w row".  They may be called the wx,wy,wz,ww entries
+ *   * indices 0,1,2,3 are the "x row".   They may be called the xx,xy,xz,xw entries
+ *   * indices 4,5,6,7 are the "y row"    They may be called the yx,yy,yz,yw entries
+ *   * indices 8,9,10,11 are the "z row"  They may be called the zx,zy,zz,zw entries
+ *   * indices 12,13,14,15 are the "w row".  They may be called the wx,wy,wz,ww entries
  * * If "w row" contains numeric values 0,0,0,1, the Matrix4d is equivalent to a Transform with
- * * * The upper right 3x3 matrix (entries 0,1,2,4,5,6,8,9,10) are the 3x3 matrix part of the transform
- * * * The far right column entries xw,yw,zw are the "origin" (sometimes called "translation") part of the transform.
+ *  * The upper right 3x3 matrix (entries 0,1,2,4,5,6,8,9,10) are the 3x3 matrix part of the transform
+ *  * The far right column entries xw,yw,zw are the "origin" (sometimes called "translation") part of the transform.
+ * @public
  */
 export class Matrix4d implements BeJSONFunctions {
   private _coffs: Float64Array;
@@ -177,6 +182,7 @@ export class Matrix4d implements BeJSONFunctions {
     }
     return undefined;
   }
+  /** Set from nested array json e.g. `[[1,2,3,4],[0,1,2,4],[0,2,5,1],[0,0,1,2]]` */
   public setFromJSON(json?: Matrix4dProps) {
     if (Geometry.isArrayOfNumberArray(json, 4, 4))
       for (let i = 0; i < 4; ++i) {
@@ -219,6 +225,7 @@ export class Matrix4d implements BeJSONFunctions {
     }
     return value;
   }
+  /** Create from nested array json e.g. `[[1,2,3,4],[0,1,2,4],[0,2,5,1],[0,0,1,2]]` */
   public static fromJSON(json?: Matrix4dProps) {
     const result = new Matrix4d();
     result.setFromJSON(json);
@@ -239,24 +246,24 @@ export class Matrix4d implements BeJSONFunctions {
   public getSteppedPoint(i0: number, step: number, result?: Point4d): Point4d {
     return Point4d.create(this._coffs[i0], this._coffs[i0 + step], this._coffs[i0 + 2 * step], this._coffs[i0 + 3 * step], result);
   }
-  /** @returns Return column 0 as Point4d. */
+  /** Return column 0 as Point4d. */
   public columnX(): Point4d { return this.getSteppedPoint(0, 4); }
-  /** @returns Return column 1 as Point4d. */
+  /** Return column 1 as Point4d. */
   public columnY(): Point4d { return this.getSteppedPoint(1, 4); }
-  /** @returns Return column 2 as Point4d. */
+  /** Return column 2 as Point4d. */
   public columnZ(): Point4d { return this.getSteppedPoint(2, 4); }
-  /** @returns Return column 3 as Point4d. */
+  /** Return column 3 as Point4d. */
   public columnW(): Point4d { return this.getSteppedPoint(3, 4); }
-  /** @returns Return row 0 as Point4d. */
+  /** Return row 0 as Point4d. */
   public rowX(): Point4d { return this.getSteppedPoint(0, 1); }
-  /** @returns Return row 1 as Point4d. */
+  /** Return row 1 as Point4d. */
   public rowY(): Point4d { return this.getSteppedPoint(4, 1); }
-  /** @returns Return row 2 as Point4d. */
+  /** Return row 2 as Point4d. */
   public rowZ(): Point4d { return this.getSteppedPoint(8, 1); }
-  /** @returns Return row 3 as Point4d. */
+  /** Return row 3 as Point4d. */
   public rowW(): Point4d { return this.getSteppedPoint(12, 1); }
   /**
-   * @returns true if the 2 row has content other than [0,0,0,1]
+   * Returns true if the w row has content other than [0,0,0,1]
    */
   public get hasPerspective(): boolean {
     return this._coffs[12] !== 0.0
@@ -363,7 +370,7 @@ export class Matrix4d implements BeJSONFunctions {
     result = result ? result : Point4d.createZero();
     return result.set(this._coffs[0] * x + this._coffs[4] * y + this._coffs[8] * z + this._coffs[12] * w, this._coffs[1] * x + this._coffs[5] * y + this._coffs[9] * z + this._coffs[13] * w, this._coffs[2] * x + this._coffs[6] * y + this._coffs[10] * z + this._coffs[14] * w, this._coffs[3] * x + this._coffs[7] * y + this._coffs[11] * z + this._coffs[15] * w);
   }
-  /** @returns dot product of row rowIndex of this with column columnIndex of other.
+  /** Returns dot product of row rowIndex of this with column columnIndex of other.
    */
   public rowDotColumn(rowIndex: number, other: Matrix4d, columnIndex: number): number {
     const i = rowIndex * 4;
@@ -373,7 +380,7 @@ export class Matrix4d implements BeJSONFunctions {
       + this._coffs[i + 2] * other._coffs[j + 8]
       + this._coffs[i + 3] * other._coffs[j + 12];
   }
-  /** @returns dot product of row rowIndexThis of this with row rowIndexOther of other.
+  /** Returns dot product of row rowIndexThis of this with row rowIndexOther of other.
    */
   public rowDotRow(rowIndexThis: number, other: Matrix4d, rowIndexOther: number): number {
     const i = rowIndexThis * 4;
@@ -383,7 +390,7 @@ export class Matrix4d implements BeJSONFunctions {
       + this._coffs[i + 2] * other._coffs[j + 2]
       + this._coffs[i + 3] * other._coffs[j + 3];
   }
-  /** @returns dot product of row rowIndexThis of this with row rowIndexOther of other.
+  /** Returns dot product of row rowIndexThis of this with row rowIndexOther of other.
    */
   public columnDotColumn(columnIndexThis: number, other: Matrix4d, columnIndexOther: number): number {
     const i = columnIndexThis;
@@ -393,7 +400,7 @@ export class Matrix4d implements BeJSONFunctions {
       + this._coffs[i + 8] * other._coffs[j + 8]
       + this._coffs[i + 12] * other._coffs[j + 12];
   }
-  /** @returns dot product of column columnIndexThis of this with row rowIndexOther other.
+  /** Returns dot product of column columnIndexThis of this with row rowIndexOther other.
    */
   public columnDotRow(columnIndexThis: number, other: Matrix4d, rowIndexOther: number): number {
     const i = columnIndexThis;
@@ -403,7 +410,7 @@ export class Matrix4d implements BeJSONFunctions {
       + this._coffs[i + 8] * other._coffs[j + 2]
       + this._coffs[i + 12] * other._coffs[j + 3];
   }
-  /** @returns return a matrix entry by row and column index.
+  /** Return a matrix entry by row and column index.
    */
   public atIJ(rowIndex: number, columnIndex: number): number {
     return this._coffs[rowIndex * 4 + columnIndex];
@@ -548,7 +555,7 @@ export class Matrix4d implements BeJSONFunctions {
     // console.log("descaled", inverse.rowArrays());
     return inverse;
   }
-  /** @returns Restructure the matrix rows as separate arrays. (Useful for printing)
+  /** Returns an array-of-arrays of the matrix rows, optionally passing each value through a function.
    * @param f optional function to provide alternate values for each entry (e.g. force fuzz to zero.)
    */
   public rowArrays(f?: (value: number) => any): any {

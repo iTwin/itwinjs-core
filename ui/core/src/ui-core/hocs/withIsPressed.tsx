@@ -6,7 +6,9 @@
 
 import * as React from "react";
 
-/** Properties for [[withIsPressed]] React higher-order component */
+/** Properties for [[withIsPressed]] React higher-order component
+ * @public
+ */
 export interface WithIsPressedProps {
   /** initial value for pressed status */
   isPressed?: boolean;
@@ -14,12 +16,14 @@ export interface WithIsPressedProps {
   onIsPressedChange?: (isPressed: boolean) => void;
 }
 
-/** withIsPressed is a React higher-order component that adds pointer and mouse events. */
+/** withIsPressed is a React higher-order component that adds pointer and mouse events.
+ * @public
+ */
 export const withIsPressed = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
 ) => {
-  return class WithIsPressed extends React.Component<ComponentProps & WithIsPressedProps> {
+  return class WithIsPressed extends React.PureComponent<ComponentProps & WithIsPressedProps> {
     public handleOnPointerDown = () => {
       this.changeIsPressed(true);
     }
@@ -55,5 +59,3 @@ export const withIsPressed = <ComponentProps extends {}>(
     }
   };
 };
-
-export default withIsPressed;

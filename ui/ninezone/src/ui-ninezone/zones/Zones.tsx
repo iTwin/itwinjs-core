@@ -6,24 +6,34 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Zones.scss";
 
-/** Properties of [[Zones]] component. */
+/** Properties of [[Zones]] component.
+ * @beta
+ */
 export interface ZonesProps extends CommonProps {
-  /** Actual zones here (i.e. [[FooterZone]], [[Zone]]) */
+  /** Actual zones. I.e. [[Zone]] */
   children?: React.ReactNode;
+  /** Describes if the zones component is hidden. */
+  isHidden?: boolean;
 }
 
-/** Zones component of 9-zone UI app. */
+/** Zones container component of 9-Zone UI app.
+ * @beta
+ */
 export class Zones extends React.PureComponent<ZonesProps> {
   public render() {
+    const { isHidden } = this.props;
     const className = classnames(
       "nz-zones-zones",
+      isHidden && "nz-hidden",
       this.props.className);
-
     return (
-      <div className={className} style={this.props.style}>
+      <div
+        className={className}
+        style={this.props.style}
+      >
         {this.props.children}
       </div>
     );

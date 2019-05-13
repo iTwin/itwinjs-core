@@ -1,6 +1,30 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Added ViewportSelectionHandler to the barrel file
+- Adds parameter for api-extractor to validate missing release tags
+- Fix broken links
+- Put sourcemap in npm package.
+- Forward React.Ref from TreeWithUnifiedSelection HOC
+- Fix marshaling class instances through RPC by removing use of Readonly
+- Add APIs to retrieve instance labels
+- Avoid making a backend request when we know there will be no content
+- Do not load property grid data if more than 100 (configurable) elements are selected
+- Fix a warning in `propertyGridWithUnifiedSelection` due to state being set after unmounting component
+- Add `IPresentationTableDataProvider.getRowKey` method
+- `viewWithUnifiedSelection` was refactored to only do 1 way synchronization: logical selection -> iModel hilite list
+- Supply default presentation ruleset for the viewports hilite list when using the `viewWithUnifiedSelection` HOC
+- Avoid making a descriptor request when requesting content for property grid and hilite list
+- Require React & React-dom 16.8
+- remove IModelApp subclasses
+- Temporarily disable hiliting model and category elements until a more performant way to do that exists
+- Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -18,7 +42,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
 - Exported ContentBuilder and ContentDataProvider
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Expose presentation-specific content request methods through IContentDataProvider so they're available for provider consumers
 - Save BUILD_SEMVER to globally accessible map
 - Change `DataProvidersFactory.createSimilarInstancesTableDataProvider` to return data provider that also has a description

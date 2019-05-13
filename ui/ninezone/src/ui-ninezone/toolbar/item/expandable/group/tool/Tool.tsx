@@ -6,10 +6,12 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Tool.scss";
 
-/** Properties of [[GroupTool]] component. */
+/** Properties of [[GroupTool]] component.
+ * @alpha
+ */
 export interface GroupToolProps extends CommonProps {
   /** Additional content, besides icon and label. */
   children?: React.ReactNode;
@@ -27,14 +29,16 @@ export interface GroupToolProps extends CommonProps {
   onClick?: () => void;
 }
 
-/** Tool entry of tool group panel. Used in [[GroupColumn]]. */
+/** Tool entry of tool group panel. Used in [[GroupColumn]].
+ * @alpha
+ */
 export class GroupTool extends React.PureComponent<GroupToolProps> {
   public render() {
     const itemClassName = classnames(
       "nz-toolbar-item-expandable-group-tool-item",
-      this.props.isActive && "nz-is-active",
-      this.props.isFocused && "nz-is-focused",
-      this.props.isDisabled && "nz-is-disabled",
+      this.props.isActive && "nz-active",
+      this.props.isFocused && "nz-focused",
+      this.props.isDisabled && "nz-disabled",
       this.props.className);
 
     return (

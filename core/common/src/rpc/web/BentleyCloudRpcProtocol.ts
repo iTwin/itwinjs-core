@@ -4,24 +4,49 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import { OpenAPIParameter } from "./OpenAPI";
-import { SerializedRpcOperation } from "../core/RpcProtocol";
-import { RpcOperation } from "../core/RpcOperation";
-import { RpcRequest } from "../core/RpcRequest";
-import { IModelError } from "../../IModelError";
-import { BentleyStatus, OpenMode, Logger, assert } from "@bentley/bentleyjs-core";
+import { assert, BentleyStatus, Logger, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { URL } from "url";
+import { IModelError } from "../../IModelError";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { RpcOperation } from "../core/RpcOperation";
+import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
+import { RpcRequest } from "../core/RpcRequest";
+import { OpenAPIParameter } from "./OpenAPI";
+import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import { IModelToken } from "../../IModel";
+import { RpcConfiguration } from "../core/RpcConfiguration";
 
 enum AppMode {
   MilestoneReview = "1",
   WorkGroupEdit = "2",
 }
 
-/** An http protocol for Bentley cloud RPC interface deployments. */
+/** An http protocol for Bentley cloud RPC interface deployments.
+ * @public
+ */
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
-  /** The name of the HTTP request header  */
-  public requestIdHeaderName = "X-Correlation-Id";
+  public checkToken = true;
+
+  /** The name of various HTTP request headers based on client's request context */
+  public serializedClientRequestContextHeaderNames: SerializedClientRequestContext = {
+    /** The name of the HTTP request id header. */
+    id: "X-Correlation-Id",
+
+    /** The name of the HTTP application id header. */
+    applicationId: "X-Application-Id",
+
+    /** The name of the HTTP application version header. */
+    applicationVersion: "X-Application-Version",
+
+    /** The name of the HTTP session id header. */
+    sessionId: "X-Session-Id",
+
+    /** The name of the HTTP authorization header. */
+    authorization: "Authorization",
+
+    /** The id of the authorized user */
+    userId: "X-User-Id",
+  };
 
   /** Returns the operation specified by an OpenAPI-compatible URI path. */
   public getOperationFromPath(path: string): SerializedRpcOperation {
@@ -64,10 +89,10 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       routeChangeSetId = "{changeSetId}";
     } else {
       const token = operation.policy.token(request);
-      if (!token || !token.contextId || !token.iModelId)
-        throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, "imodeljs-frontend.BentleyCloudRpcProtocol");
+      if (!token || (!token.contextId && !RpcConfiguration.developmentMode) || !token.iModelId)
+        throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend);
 
-      contextId = encodeURIComponent(token.contextId);
+      contextId = encodeURIComponent(token.contextId || "");
       iModelId = encodeURIComponent(token.iModelId);
 
       if (token.openMode === OpenMode.Readonly) {
@@ -82,7 +107,43 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${contextId}/imodel/${iModelId}${!!routeChangeSetId ? "/changeset/" + routeChangeSetId : ""}/${operationId}`;
   }
 
-  /** Returns the OpenAPI-compatible URI path parameters for an RPC operation. */
+  /**
+   * Inflates the IModelToken from the URL path for each request on the backend.
+   * @note This function updates the IModelToken value supplied in the request body.
+   */
+  public inflateToken(tokenFromBody: IModelToken, request: SerializedRpcRequest): IModelToken {
+    const urlPathComponents = request.path.split("/");
+
+    const iModelKey = tokenFromBody.key;
+    let openMode = tokenFromBody.openMode;
+    let iModelId = tokenFromBody.iModelId;
+    let contextId = tokenFromBody.contextId;
+    let changeSetId = tokenFromBody.changeSetId;
+
+    for (let i = 0; i <= urlPathComponents.length; ++i) {
+      const key = urlPathComponents[i];
+      const value = urlPathComponents[i + 1];
+      if (key === "mode") {
+        openMode = (value === AppMode.WorkGroupEdit) ? OpenMode.ReadWrite : OpenMode.Readonly;
+        ++i;
+      } else if (key === "context") {
+        contextId = value;
+        ++i;
+      } else if (key === "imodel") {
+        iModelId = value;
+        ++i;
+      } else if (key === "changeset") {
+        changeSetId = (value === "0") ? "" : value;
+        ++i;
+      }
+    }
+
+    return new IModelToken(iModelKey, contextId, iModelId, changeSetId, openMode);
+  }
+
+  /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.
+   * @internal
+   */
   public supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[] {
     return [
       { name: "modeId", in: "path", required: true, schema: { type: "string" } },

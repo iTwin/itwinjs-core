@@ -6,18 +6,22 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Message.scss";
 
-/** Properties of [[MessageCenterMessage]] component. */
-export interface MessageCenterMessageProps extends CommonProps, NoChildrenProps {
-  /** Icon of message entry. */
+/** Properties of [[MessageCenterMessage]] component.
+ * @beta
+ */
+export interface MessageCenterMessageProps extends CommonProps {
+  /** Message content. */
+  children?: React.ReactNode;
+  /** Message icon. */
   icon?: React.ReactNode;
-  /** Actual message. */
-  content?: React.ReactNode;
 }
 
-/** Message entry in [[MessageCenter]] component. */
+/** Message entry in [[MessageCenterDialog]] component.
+ * @beta
+ */
 export class MessageCenterMessage extends React.PureComponent<MessageCenterMessageProps> {
   public render() {
     const className = classnames(
@@ -34,9 +38,9 @@ export class MessageCenterMessage extends React.PureComponent<MessageCenterMessa
             {this.props.icon}
           </div>
         }
-        {this.props.content &&
+        {this.props.children &&
           <div className="nz-content">
-            {this.props.content}
+            {this.props.children}
           </div>
         }
       </div>

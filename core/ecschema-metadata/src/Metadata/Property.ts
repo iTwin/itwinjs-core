@@ -23,6 +23,7 @@ import { Schema } from "./Schema";
 
 /**
  * A common abstract class for all ECProperty types.
+ * @beta
  */
 export abstract class Property implements CustomAttributeContainerProps {
   protected _name: ECName;
@@ -165,9 +166,7 @@ export abstract class Property implements CustomAttributeContainerProps {
   }
 }
 
-/**
- *
- */
+/** @beta */
 export abstract class PrimitiveOrEnumPropertyBase extends Property {
   protected _extendedTypeName?: string;
   protected _minLength?: number;
@@ -228,6 +227,7 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
   }
 }
 
+/** @beta */
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
   get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
 
@@ -254,6 +254,7 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
   }
 }
 
+/** @beta */
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   protected _enumeration?: LazyLoadedEnumeration;
 
@@ -295,6 +296,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
 
 }
 
+/** @beta */
 export class StructProperty extends Property {
   protected _structClass: StructClass;
 
@@ -322,6 +324,7 @@ export class StructProperty extends Property {
   }
 }
 
+/** @beta */
 export class NavigationProperty extends Property {
   protected _relationshipClass: LazyLoadedRelationshipClass;
   protected _direction: StrengthDirection;
@@ -352,8 +355,9 @@ export class NavigationProperty extends Property {
   }
 }
 
-export type Constructor<T> = new (...args: any[]) => T;
+type Constructor<T> = new (...args: any[]) => T;
 
+/** @beta */
 export abstract class ArrayProperty extends Property {
   protected _minOccurs: number = 0;
   protected _maxOccurs?: number;
@@ -402,31 +406,41 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
   } as Constructor<Property> as typeof Base & Constructor<ArrayProperty>;
 };
 
+/** @beta */
 export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty) {
   constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
     super(ecClass, name, primitiveType);
   }
 }
 
+/** @beta */
 export class EnumerationArrayProperty extends ArrayPropertyMixin(EnumerationProperty) {
   constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration) {
     super(ecClass, name, type);
   }
 }
+
+/** @beta */
 export class StructArrayProperty extends ArrayPropertyMixin(StructProperty) {
   constructor(ecClass: ECClass, name: string, type: StructClass) {
     super(ecClass, name, type);
   }
 }
 
+/** @beta */
 export type AnyArrayProperty = PrimitiveArrayProperty | EnumerationArrayProperty | StructArrayProperty;
+/** @beta */
 export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
+/** @beta */
 export type AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty;
+/** @beta */
 export type AnyStructProperty = StructProperty | StructArrayProperty;
+/** @beta */
 export type AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty;
 
-/** @hidden
+/**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
+ * @internal
  */
 export abstract class MutableProperty extends Property {
   public abstract addCustomAttribute(customAttribute: CustomAttribute): void;

@@ -12,7 +12,6 @@ import { IModelDb } from "../../IModelDb";
 import { DbResult, Id64String, Id64, using } from "@bentley/bentleyjs-core";
 import { XAndY, XYAndZ, Point2d, Point3d, Range3d } from "@bentley/geometry-core";
 import { KnownTestLocations } from "../KnownTestLocations";
-
 describe("ECSqlStatement", () => {
   const _outDir = KnownTestLocations.outputDir;
   const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
@@ -30,15 +29,10 @@ describe("ECSqlStatement", () => {
         assert.isTrue(ecdb.isOpen);
 
         const r: ECSqlInsertResult = await ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
-          return stmt.stepForInsertAsync();
+          return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         assert.equal(r.id, "0x1");
-
-        const s: DbResult = await ecdb.withPreparedStatement("SELECT n, dt, fooId FROM ts.Foo", async (stmt: ECSqlStatement) => {
-          return stmt.stepAsync();
-        });
-        assert.equal(s, DbResult.BE_SQLITE_ROW);
       });
   });
   it("Primary Key Binding through array", async () => {
@@ -53,7 +47,7 @@ describe("ECSqlStatement", () => {
         for (const rowId of rowIds) {
           const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(ECInstanceId) values(?)`, async (stmt: ECSqlStatement) => {
             stmt.bindId(1, rowId);
-            return stmt.stepForInsertAsync();
+            return stmt.stepForInsert();
           });
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
@@ -84,7 +78,7 @@ describe("ECSqlStatement", () => {
         // insert test rows
         for (let i = 1; i <= ROW_COUNT; i++) {
           const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
-            return stmt.stepForInsertAsync();
+            return stmt.stepForInsert();
           });
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
@@ -122,7 +116,7 @@ describe("ECSqlStatement", () => {
         // insert test rows
         for (let i = 1; i <= ROW_COUNT; i++) {
           const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
-            return stmt.stepForInsertAsync();
+            return stmt.stepForInsert();
           });
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
@@ -1220,7 +1214,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("BindRange3d for parameter in spatial SQL function", () => {
-    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("bindrange3d.imodel", { rootSubject: { name: "test" } });
+    const iModel: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("ECSqlStatement", "BindRange3d.bim"), { rootSubject: { name: "BindRange3d" } });
     try {
       iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
         (stmt: ECSqlStatement) => {
@@ -1235,7 +1229,7 @@ describe("ECSqlStatement", () => {
         });
 
     } finally {
-      iModel.closeStandalone();
+      iModel.closeSnapshot();
     }
   });
 

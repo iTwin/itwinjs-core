@@ -9,8 +9,8 @@ import { Box, LineString3d, Point3d, Range2d, Vector3d, YawPitchRollAngles, Poin
 import { CodeScopeSpec, ColorDef, FontType, GeometricElement2dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, SubCategoryAppearance, Code, GeometricElement3dProps, CategorySelectorProps, SubjectProps, SpatialViewDefinitionProps, ModelSelectorProps, AuxCoordSystem2dProps } from "@bentley/imodeljs-common";
 import {
   AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
-  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, IModelDb, IModelImporter, IModelJsFs, InformationPartitionElement,
-  ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
+  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, IModelDb, IModelImporter, IModelJsFs, InformationPartitionElement, InformationRecordModel,
+  ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject, GroupModel,
 } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -26,13 +26,13 @@ class TestDataManager {
     const createdOutputFile: string = path.join(outputDir, "TestIModelImporter-Source.bim");
     if (IModelJsFs.existsSync(createdOutputFile))
       IModelJsFs.removeSync(createdOutputFile);
-    this.sourceDb = IModelDb.createStandalone(createdOutputFile, { rootSubject: { name: "TestIModelImporter-Source" } });
+    this.sourceDb = IModelDb.createSnapshot(createdOutputFile, { rootSubject: { name: "TestIModelImporter-Source" } });
     assert.isTrue(IModelJsFs.existsSync(createdOutputFile));
     // Target IModelDb
     const importedOutputFile: string = path.join(outputDir, "TestIModelImporter-Target.bim");
     if (IModelJsFs.existsSync(importedOutputFile))
       IModelJsFs.removeSync(importedOutputFile);
-    this.targetDb = IModelDb.createStandalone(importedOutputFile, { rootSubject: { name: "TestIModelImporter-Target" } });
+    this.targetDb = IModelDb.createSnapshot(importedOutputFile, { rootSubject: { name: "TestIModelImporter-Target" } });
     assert.isTrue(IModelJsFs.existsSync(importedOutputFile));
     // insert some elements to avoid getting same IDs for sourceDb and targetDb
     const subjectId = Subject.insert(this.targetDb, IModel.rootSubjectId, "Only in Target");
@@ -60,6 +60,10 @@ class TestDataManager {
     assert.isTrue(Id64.isValidId64(sourceOnlySubjectId));
     const definitionModelId = DefinitionModel.insert(this.sourceDb, subjectId, "Definition");
     assert.isTrue(Id64.isValidId64(definitionModelId));
+    const informationModelId = InformationRecordModel.insert(this.sourceDb, subjectId, "Information");
+    assert.isTrue(Id64.isValidId64(informationModelId));
+    const groupModelId = GroupModel.insert(this.sourceDb, subjectId, "Group");
+    assert.isTrue(Id64.isValidId64(groupModelId));
     const physicalModelId = PhysicalModel.insert(this.sourceDb, subjectId, "Physical");
     assert.isTrue(Id64.isValidId64(physicalModelId));
     const documentListModelId = DocumentListModel.insert(this.sourceDb, subjectId, "Document");
@@ -195,9 +199,13 @@ class TestDataManager {
     assert.isTrue(Id64.isValidId64(targetOnlySubjectId));
     // Partitions / Models
     const definitionModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Definition"))!;
+    const informationModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Information"))!;
+    const groupModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Group"))!;
     const physicalModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Physical"))!;
     const documentListModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Document"))!;
     assert.isTrue(Id64.isValidId64(definitionModelId));
+    assert.isTrue(Id64.isValidId64(informationModelId));
+    assert.isTrue(Id64.isValidId64(groupModelId));
     assert.isTrue(Id64.isValidId64(physicalModelId));
     assert.isTrue(Id64.isValidId64(documentListModelId));
     // SpatialCategory

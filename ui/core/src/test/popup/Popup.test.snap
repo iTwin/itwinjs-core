@@ -1,31 +1,31 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Popup renders renders correctly with few props 1`] = `
+exports[`Popup /> renders renders correctly with few props 1`] = `
 <div>
   <Popup
-    hideTime={300}
-    isShown={true}
+    isOpen={true}
+    left={-1}
+    offset={4}
     position={5}
     showArrow={false}
-    showOnHover={false}
     showShadow={true}
-    showTime={300}
+    top={-1}
   />
 </div>
 `;
 
-exports[`Popup renders renders correctly with many props 1`] = `
+exports[`Popup /> renders renders correctly with many props 1`] = `
 <div>
   <Popup
-    hideTime={2000}
-    isShown={true}
+    isOpen={true}
+    left={-1}
+    offset={4}
     onClose={[Function]}
     onOpen={[Function]}
     position={3}
     showArrow={true}
-    showOnHover={true}
     showShadow={true}
-    showTime={2000}
+    top={-1}
   />
 </div>
 `;

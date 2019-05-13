@@ -230,4 +230,45 @@ describe("Rectangle", () => {
     merged.right.should.eq(10);
     merged.bottom.should.eq(30);
   });
+
+  it("should return new positioned rectangle", () => {
+    const sut = new Rectangle(0, 5, 10, 20);
+    const positioned = sut.setPosition({ x: 10, y: 1 });
+
+    sut.should.not.eq(positioned);
+    positioned.left.should.eq(10);
+    positioned.top.should.eq(1);
+    positioned.right.should.eq(20);
+    positioned.bottom.should.eq(16);
+  });
+
+  it("should contain vertically in rectangle", () => {
+    const sut = new Rectangle(1, 5, 11, 17);
+    const contained = sut.containVerticallyIn({
+      left: 2,
+      top: 8,
+      right: 10,
+      bottom: 12,
+    });
+
+    contained.left.should.eq(1);
+    contained.right.should.eq(11);
+    contained.top.should.eq(8);
+    contained.bottom.should.eq(20);
+  });
+
+  it("should contain horizontally in rectangle", () => {
+    const sut = new Rectangle(1, 5, 11, 17);
+    const contained = sut.containHorizontallyIn({
+      left: 2,
+      top: 8,
+      right: 10,
+      bottom: 12,
+    });
+
+    contained.left.should.eq(2);
+    contained.right.should.eq(12);
+    contained.top.should.eq(5);
+    contained.bottom.should.eq(17);
+  });
 });

@@ -6,6 +6,7 @@
 
 /**
  * Enumeration for sorting direction.
+ * @public
  */
 export enum SortDirection {
   NoSort,

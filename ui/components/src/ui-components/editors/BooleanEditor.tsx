@@ -11,16 +11,19 @@ import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManag
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./BooleanEditor.scss";
 
+/** @internal */
 interface BooleanEditorState {
   checkboxValue: boolean;
 }
 
-/** BooleanEditor React component that is a property editor with checkbox input  */
+/** BooleanEditor React component that is a property editor with checkbox input
+ * @beta
+ */
 export class BooleanEditor extends React.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
   private _checkboxElement: HTMLInputElement | null = null;
   private _isMounted = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BooleanEditorState> = {
     checkboxValue: false,
   };
@@ -118,7 +121,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
   }
 
   public render() {
-    const className = classnames("cell", "components-cell-editor", "components-boolean-editor");
+    const className = classnames("cell", "components-cell-editor", "components-boolean-editor", this.props.className);
     const checked = this.state.checkboxValue;
 
     return (
@@ -127,6 +130,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
         ref={(node) => this._checkboxElement = node}
         onBlur={this.props.onBlur}
         className={className}
+        style={this.props.style}
         checked={checked}
         onChange={this._updateCheckboxValue}
         data-testid="components-checkbox-editor">
@@ -135,7 +139,9 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
   }
 }
 
-/** BooleanPropertyEditor React component that uses the [[BooleanEditor]] property editor. */
+/** BooleanPropertyEditor React component that uses the [[BooleanEditor]] property editor.
+ * @beta
+ */
 export class BooleanPropertyEditor extends PropertyEditorBase {
 
   public get reactElement(): React.ReactNode {

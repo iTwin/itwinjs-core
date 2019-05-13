@@ -16,11 +16,12 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   PresentationError, ValuesDictionary, Content,
   DefaultContentDisplayTypes, Descriptor, Item,
-  SortDirection as ContentSortDirection,
+  SortDirection as ContentSortDirection, KeySet,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PresentationTableDataProvider } from "../../table/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
+import { RowItem } from "@bentley/ui-components";
 
 /**
  * This is just a helper class to provide public access to
@@ -49,6 +50,7 @@ describe("TableDataProvider", () => {
   beforeEach(() => {
     presentationManagerMock.reset();
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
+    provider.keys = new KeySet([createRandomECInstanceKey()]);
     memoizedCacheSpies = {
       getColumns: sinon.spy(provider.getColumns.cache, "clear"),
     };
@@ -84,6 +86,20 @@ describe("TableDataProvider", () => {
     it("sets default sorting properties", () => {
       expect(provider.sortColumnKey).to.be.undefined;
       expect(provider.sortDirection).to.eq(SortDirection.NoSort);
+    });
+
+  });
+
+  describe("getRowKey", () => {
+
+    it("returns valid deserialized InstanceKey", () => {
+      const key = createRandomECInstanceKey();
+      const row: RowItem = {
+        key: JSON.stringify(key),
+        cells: [],
+      };
+      const result = provider.getRowKey(row);
+      expect(result).to.deep.eq(key);
     });
 
   });
@@ -250,18 +266,6 @@ describe("TableDataProvider", () => {
     it("returns undefined when no sorting column is set", async () => {
       expect(await provider.sortColumn).to.be.undefined;
     });
-
-    /*it("throws when sorting column key is invalid", async () => {
-      const source = createRandomDescriptor();
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
-        .returns(async () => source);
-      await provider.sort(0, SortDirection.Ascending);
-      provider.getColumns.cache.clear();
-      (provider as any).getDefaultContentDescriptor.cache.clear();
-      (provider as any).getContentDescriptor.cache.clear();
-      source.fields.splice(0, 1);
-      await expect(provider.sortColumn).to.eventually.be.rejectedWith("Assert");
-    });*/
 
     it("returns valid sorting column", async () => {
       const source = createRandomDescriptor();

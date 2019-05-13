@@ -3,24 +3,33 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "./Token";
 import { UserInfo } from "./UserInfo";
 import { Project } from "./ConnectClients";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 
-/** @hidden How to discover "contexts". A context corresponds roughly to a "project" in Connect. */
+/** How to discover "contexts". A context corresponds roughly to a "project" in Connect.
+ * @internal
+ */
 export interface ContextManagerClient {
-  queryContextByName(alctx: ActivityLoggingContext, accessToken: AccessToken, name: string): Promise<Project>;
+  queryContextByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project>;
 }
 
-/** @hidden User-authorization service. */
+/** User-authorization service.
+ * @internal
+ */
 export interface IModelAuthorizationClient {
-  authorizeUser(alctx: ActivityLoggingContext, userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken>;
+  authorizeUser(requestContext: ClientRequestContext, userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken>;
 }
 
-/** @hidden All of the services that a frontend or other client app needs to find and access iModels. */
+/** All of the services that a frontend or other client app needs to find and access iModels.
+ * @internal
+ */
 export interface IModelCloudEnvironment {
   readonly isIModelHub: boolean;
   readonly authorization: IModelAuthorizationClient;
   readonly contextMgr: ContextManagerClient;
+  startup(): Promise<void>;
+  shutdown(): Promise<number>;
 }

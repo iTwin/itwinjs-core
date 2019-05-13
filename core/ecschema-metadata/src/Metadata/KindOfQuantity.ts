@@ -14,10 +14,16 @@ import { KindOfQuantityProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "./../Interfaces";
-import { formatStringRgx } from "./../utils/FormatEnums";
+
+/**
+ * @internal Don't know if this really needs to be exported.  Currently the format strings are parsed twice
+ * this should be changed.
+ */
+export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
 
 /**
  * A Typescript class representation of a KindOfQuantity.
+ * @beta
  */
 export class KindOfQuantity extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.KindOfQuantity; // tslint:disable-line

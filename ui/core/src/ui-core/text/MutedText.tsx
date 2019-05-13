@@ -5,18 +5,12 @@
 /** @module Text */
 
 import * as React from "react";
-import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
+import { StyledText } from "./StyledText";
 
-/** Styled muted/gray text */
-
-export class MutedText extends React.Component<TextProps> {
-  public render(): JSX.Element {
-    return (
-      <span {...this.props} className={classnames("uicore-text-muted", this.props.className)}>
-        {this.props.children}
-      </span>
-    );
-  }
-}
-export default MutedText;
+/** Styled muted/gray text
+ * @beta
+ */
+export const MutedText: React.FunctionComponent<TextProps> = (props) => {  // tslint:disable-line:variable-name
+  return <StyledText {...props} mainClassName="uicore-text-muted" />;
+};

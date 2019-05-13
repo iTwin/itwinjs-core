@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { FragmentShaderBuilder, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { FragmentShaderBuilder, VariableType, FragmentShaderComponent, SourceBuilder } from "../ShaderBuilder";
 import { GLSLDecode } from "./Decode";
 import { System } from "../System";
 
+/** @internal */
 export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
   const windowCoordsToTexCoords = `\nvec2 windowCoordsToTexCoords(vec2 wc) { return wc * u_invScreenSize; }\n`;
   frag.addFunction(windowCoordsToTexCoords);
@@ -21,22 +21,24 @@ export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
   });
 }
 
+/** @internal */
 export function addWhiteOnWhiteReversal(frag: FragmentShaderBuilder) {
   frag.addUniform("u_reverseWhiteOnWhite", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_reverseWhiteOnWhite", (uniform, params) => {
-      const bgColor: ColorDef = params.target.bgColor.clone();
-      bgColor.setAlpha(255);
-      const doReversal = (bgColor.equals(ColorDef.white) && params.geometry.wantWoWReversal(params.programParams)) ? 1.0 : 0.0;
+      const bgColor = params.target.bgColor;
+      const doReversal = (bgColor.isWhite && params.geometry.wantWoWReversal(params.programParams)) ? 1.0 : 0.0;
       uniform.setUniform1f(doReversal);
     });
   });
   frag.set(FragmentShaderComponent.ReverseWhiteOnWhite, reverseWhiteOnWhite);
 }
 
-// For techniques which by default use MRT, on devices which don't support MRT we fall back to
-// multi-pass rendering. The same shader is used each pass, with a uniform supplied indicating
-// which value to output to gl_FragColor. It's specified as an index - the same one that would be
-// used to index into gl_FragData[] in MRT context.
+/** For techniques which by default use MRT, on devices which don't support MRT we fall back to
+ * multi-pass rendering. The same shader is used each pass, with a uniform supplied indicating
+ * which value to output to gl_FragColor. It's specified as an index - the same one that would be
+ * used to index into gl_FragData[] in MRT context.
+ * @internal
+ */
 export function addRenderTargetIndex(frag: FragmentShaderBuilder) {
   frag.addUniform("u_renderTargetIndex", VariableType.Int, (prog) => {
     prog.addProgramUniform("u_renderTargetIndex", (uniform, params) => {
@@ -65,13 +67,13 @@ const computePickBufferOutputs = `
   vec4 output2 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
 `;
 
-const assignPickBufferOutputsMRT = computePickBufferOutputs + `
+const assignPickBufferOutputsMRT = `
   FragColor0 = output0;
   FragColor1 = output1;
   FragColor2 = output2;
 `;
 
-const assignPickBufferOutputsMP = computePickBufferOutputs + `
+const assignPickBufferOutputsMP = `
   if (0 == u_renderTargetIndex)
     FragColor = output0;
   else if (1 == u_renderTargetIndex)
@@ -79,19 +81,32 @@ const assignPickBufferOutputsMP = computePickBufferOutputs + `
   else
     FragColor = output2;
 `;
+const reassignFeatureId = "output1 = overrideFeatureId(output1);";
 
+/** @internal */
 export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
   frag.addFunction(GLSLDecode.encodeDepthRgb);
   frag.addFunction(GLSLFragment.computeLinearDepth);
+
+  const prelude = new SourceBuilder();
+  const overrideFeatureId = frag.get(FragmentShaderComponent.OverrideFeatureId);
+  if (undefined !== overrideFeatureId) {
+    frag.addFunction("vec4 overrideFeatureId(vec4 currentId)", overrideFeatureId);
+    prelude.add(computePickBufferOutputs);
+    prelude.addline(reassignFeatureId);
+  } else
+    prelude.add(computePickBufferOutputs);
+
   if (System.instance.capabilities.supportsMRTPickShaders) {
     frag.addDrawBuffersExtension();
-    frag.set(FragmentShaderComponent.AssignFragData, assignPickBufferOutputsMRT);
+    frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
   } else {
     addRenderTargetIndex(frag);
-    frag.set(FragmentShaderComponent.AssignFragData, assignPickBufferOutputsMP);
+    frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMP);
   }
 }
 
+/** @internal */
 export namespace GLSLFragment {
   export const assignFragColor = "FragColor = baseColor;";
 

@@ -8,14 +8,14 @@ import * as sinon from "sinon";
 import { render, cleanup } from "react-testing-library";
 import ReactTestUtils from "react-dom/test-utils";
 import { Table } from "../../../ui-components";
-import withDragDrop from "../../../ui-components/table/hocs/withDragDrop";
+import { withTableDragDrop } from "../../../ui-components/table/hocs/withDragDrop";
 import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../ui-components/dragdrop/DragDropDef";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem, TableDataChangeEvent } from "../../../ui-components/table/TableDataProvider";
 import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord } from "@bentley/imodeljs-frontend";
 
 describe("Table withDragDrop HOC", () => {
 
-  const DragDropTable = withDragDrop(Table); // tslint:disable-line:variable-name
+  const DragDropTable = withTableDragDrop(Table); // tslint:disable-line:variable-name
 
   afterEach(cleanup);
 

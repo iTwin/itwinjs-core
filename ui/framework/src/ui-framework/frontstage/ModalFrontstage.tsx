@@ -5,14 +5,17 @@
 /** @module Frontstage */
 
 import * as React from "react";
+import classnames from "classnames";
 
 import { BackButton } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 import "./ModalFrontstage.scss";
 
 /**
  * Properties for the [[ModalFrontstage]] React component
+ * @public
  */
-export interface ModalFrontstageProps {
+export interface ModalFrontstageProps extends CommonProps {
   /** Title displayed at the top of the modal Frontstage */
   title: string;
   /** Indicates whether the modal Frontstage is open */
@@ -27,20 +30,29 @@ export interface ModalFrontstageProps {
 
 /**
  * ModalFrontstage React component
+ * @public
  */
 export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
+  constructor(props: ModalFrontstageProps) {
+    super(props);
+  }
+
   private _onGoBack = () => {
     this.props.navigateBack();
     this.props.closeModal();
   }
 
   public render() {
-    const openClass = (this.props.isOpen) ? " open" : "";
+    const classNames = classnames(
+      "uifw-modal-frontstage",
+      this.props.isOpen && "uifw-modal-open",
+      this.props.className,
+    );
 
     return (
       <>
-        <div className={"uifw-modal-frontstage" + openClass}>
-          <div className="app-bar">
+        <div className={classNames} style={this.props.style}>
+          <div className="uifw-modal-app-bar">
             <BackButton className="nz-toolbar-button-app"
               onClick={this._onGoBack}
               icon={
@@ -49,10 +61,10 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
             />
             <span className="uicore-text-headline">{this.props.title}</span>
             {this.props.appBarRight &&
-              <span className="app-bar-right">{this.props.appBarRight}</span>
+              <span className="uifw-modal-app-bar-right">{this.props.appBarRight}</span>
             }
           </div>
-          <div className="modal-content">
+          <div className="uifw-modal-content">
             {this.props.children}
           </div>
         </div>

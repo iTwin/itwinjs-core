@@ -7,8 +7,9 @@ import { RpcRequest } from "../core/RpcRequest";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 
+/** @beta */
 export class MobileRpcRequest extends RpcRequest {
-  private _response: (value: number) => void = () => undefined;
+  private _res: (value: number) => void = () => undefined;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;
 
   /** Convenience access to the protocol of this request. */
@@ -17,9 +18,9 @@ export class MobileRpcRequest extends RpcRequest {
   /** Sends the request. */
   protected async send(): Promise<number> {
     this.protocol.requests.set(this.id, this);
-    const parts = MobileRpcProtocol.encodeRequest(this);
+    const parts = await MobileRpcProtocol.encodeRequest(this);
     this.protocol.sendToBackend(parts);
-    return new Promise<number>((resolve) => { this._response = resolve; });
+    return new Promise<number>((resolve) => { this._res = resolve; });
   }
 
   /** Loads the request. */
@@ -37,9 +38,9 @@ export class MobileRpcRequest extends RpcRequest {
     // No implementation
   }
 
-  /** @hidden */
+  /** @internal */
   public notifyResponse(fulfillment: RpcRequestFulfillment) {
     this._fulfillment = fulfillment;
-    this._response(fulfillment.status);
+    this._res(fulfillment.status);
   }
 }

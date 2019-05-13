@@ -7,7 +7,7 @@ import { AbstractParser } from "./AbstractParser";
 import {
   ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps,
   MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps, PropertyCategoryProps,
-  PropertyProps, RelationshipClassProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructPropertyProps, UnitProps,
+  PropertyProps, RelationshipClassProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructPropertyProps, UnitProps, StructClassProps, UnitSystemProps,
 } from "./JsonProps";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECName } from "../SchemaKey";
@@ -18,7 +18,7 @@ function isObject(x: unknown): x is UnknownObject {
   return typeof (x) === "object";
 }
 
-/** @hidden */
+/** @internal */
 export class JsonParser extends AbstractParser<UnknownObject> {
   private _rawSchema: UnknownObject;
   private _schemaName?: string;
@@ -264,14 +264,14 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     return jsonObj as CustomAttributeClassProps;
   }
 
-  public parseStructClass(jsonObj: UnknownObject): CustomAttributeClassProps {
+  public parseStructClass(jsonObj: UnknownObject): StructClassProps {
     this.checkClassProps(jsonObj);
-    return jsonObj as CustomAttributeClassProps;
+    return jsonObj as StructClassProps;
   }
 
-  public parseUnitSystem(jsonObj: UnknownObject): CustomAttributeClassProps {
+  public parseUnitSystem(jsonObj: UnknownObject): UnitSystemProps {
     this.checkSchemaItemProps(jsonObj);
-    return jsonObj as CustomAttributeClassProps;
+    return jsonObj as UnitSystemProps;
   }
 
   /**

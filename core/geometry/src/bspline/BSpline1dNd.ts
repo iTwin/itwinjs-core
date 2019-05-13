@@ -11,22 +11,42 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { KnotVector, BSplineWrapMode } from "./KnotVector";
 import { Geometry } from "../Geometry";
 
-/** Bspline knots and poles for 1d-to-Nd. */
+/** Bspline knots and poles for 1d-to-Nd.
+ * * The "pole" (aka control point) of this class is a block of `poleLength` numbers.
+ * * Derived classes (not this class) assign meaning such as x,y,z,w.
+ * * for instance, an instance of this class with `poleLength===3` does not know if its poles are x,y,z or weighed 2D x,y,w
+ * @public
+ */
 export class BSpline1dNd {
+  /** knots of the bspline */
   public knots: KnotVector;
+  /** poles, packed in blocks of `poleLength` doubles. */
   public packedData: Float64Array;
+  /** (property accessor) Return the number of numeric values per pole. */
   public poleLength: number;
+  /** (property accessor) Return the degree of the polynomials. */
   public get degree(): number { return this.knots.degree; }
+  /** (property accessor) Return the number of order (one more than degree) of the polynomials */
   public get order(): number { return this.knots.degree + 1; }
+  /** (property accessor) Return the number of bezier spans (including null spans at multiple knots)*/
   public get numSpan(): number { return this.numPoles - this.knots.degree; }
+  /** (property accessor)  Return the number of poles*/
   public get numPoles(): number { return this.packedData.length / this.poleLength; }
+  /** copy 3 values of pole `i` into a point.
+   * * The calling clas sis responsible for knowing if this is an appropriate access to the blocked data.
+   */
   public getPoint3dPole(i: number, result?: Point3d): Point3d | undefined { return Point3d.createFromPacked(this.packedData, i, result); }
-
+  /** preallocated array (length === `order`) used as temporary in evaluations */
   public basisBuffer: Float64Array; // one set of basis function values.   ALLOCATED BY CTOR FOR FREQUENT REUSE
+  /** preallocated array (length === `poleLength`) used as temporary in evaluations */
   public poleBuffer: Float64Array; // one set of target values.  ALLOCATED BY CTOR FOR FREQUENT REUSE
+  /** preallocated array (length === `order`) used as temporary in evaluations */
   public basisBuffer1: Float64Array; // one set of basis function values.   ALLOCATED BY CTOR FOR FREQUENT REUSE
+  /** preallocated array (length === `order`) used as temporary in evaluations */
   public basisBuffer2: Float64Array; // one set of basis function values.   ALLOCATED BY CTOR FOR FREQUENT REUSE
+  /** preallocated array (length === `poleLength`) used as temporary in evaluations */
   public poleBuffer1: Float64Array; // one set of target values.  ALLOCATED BY CTOR FOR FREQUENT REUSE
+  /** preallocated array (length === `poleLength`) used as temporary in evaluations */
   public poleBuffer2: Float64Array; // one set of target values.  ALLOCATED BY CTOR FOR FREQUENT REUSE
 
   /**
@@ -46,15 +66,18 @@ export class BSpline1dNd {
     this.poleBuffer1 = new Float64Array(poleLength);
     this.poleBuffer2 = new Float64Array(poleLength);
   }
-
+/** Create a  bspline 1d with given count and knots.
+ * * The blocked pole data (`blockedData`) is uninitialized.
+*/
   public static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd | undefined {
     return new BSpline1dNd(numPoles, poleLength, order, knots);
   }
+  /** map a fraction within an indexed span to a knot value. */
   public spanFractionToKnot(span: number, localFraction: number): number {
     return this.knots.spanFractionToKnot(span, localFraction);
   }
 
-  // ASSUME f is sized for {order} basis funtions !!!
+  /** Evaluate the `order` basis functions (and optionally one or two derivatives) at a given fractional position within indexed span. */
   public evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array) {
     if (spanIndex < 0) spanIndex = 0;
     if (spanIndex >= this.numSpan) spanIndex = this.numSpan - 1;
@@ -64,16 +87,28 @@ export class BSpline1dNd {
       this.knots.evaluateBasisFunctions1(knotIndex0, globalKnot, f, df, ddf) :
       this.knots.evaluateBasisFunctions(knotIndex0, globalKnot, f);
   }
+  /**
+   * * Evaluate the basis functions at spanIndex and fraction.
+   *   * Evaluations are stored in the preallocated `this.basisBuffer`
+   * * Immediately do the summations of the basis values times the respective control points
+   *   * Summations are stored in the preallocated `this.poleBuffer`
+   * */
   public evaluateBuffersInSpan(spanIndex: number, spanFraction: number) {
     this.evaluateBasisFunctionsInSpan(spanIndex, spanFraction, this.basisBuffer);
     this.sumPoleBufferForSpan(spanIndex);
   }
+  /**
+   * * Evaluate the basis functions and one derivative at spanIndex and fraction.
+   *   * Evaluations are stored in the preallocated `this.basisBuffer`
+   * * Immediately do the summations of the basis values times the respective control points
+   *   * Summations are stored in the preallocated `this.poleBuffer` and `this.poleBuffer`
+   * */
   public evaluateBuffersInSpan1(spanIndex: number, spanFraction: number) {
     this.evaluateBasisFunctionsInSpan(spanIndex, spanFraction, this.basisBuffer, this.basisBuffer1);
     this.sumPoleBufferForSpan(spanIndex);
     this.sumPoleBuffer1ForSpan(spanIndex);
   }
-  /** sum poles by the weights in the basisBuffer, using poles for given span */
+  /** sum poles at span `spanIndex` by the weights in the `poleBuffer` */
   public sumPoleBufferForSpan(spanIndex: number) {
     this.poleBuffer.fill(0);
     let k = spanIndex * this.poleLength;
@@ -81,7 +116,7 @@ export class BSpline1dNd {
       for (let j = 0; j < this.poleLength; j++) { this.poleBuffer[j] += f * this.packedData[k++]; }
     }
   }
-  /** sum poles by the weights in the basisBuffer, using poles for given span */
+  /** sum poles at span `spanIndex` by the weights in the `poleBuffer1`, i.e. form first derivatives */
   public sumPoleBuffer1ForSpan(spanIndex: number) {
     this.poleBuffer1.fill(0);
     let k = spanIndex * this.poleLength;
@@ -91,7 +126,7 @@ export class BSpline1dNd {
       }
     }
   }
-  /** sum poles by the weights in the basisBuffer, using poles for given span */
+  /** sum poles at span `spanIndex` by the weights in the `poleBuffer2`, i.e. form second derivatives */
   public sumPoleBuffer2ForSpan(spanIndex: number) {
     this.poleBuffer2.fill(0);
     let k = spanIndex * this.poleLength;
@@ -101,6 +136,7 @@ export class BSpline1dNd {
       }
     }
   }
+  /** Evaluate the function values and 1 or 2 derivatives into `this.poleBuffer`, `this.poleBuffer1` and `this.poleBuffer2` */
   public evaluateBuffersAtKnot(u: number, numDerivative: number = 0) {
     const knotIndex0 = this.knots.knotToLeftKnotIndex(u);
     if (numDerivative < 1) {
@@ -117,7 +153,9 @@ export class BSpline1dNd {
       this.sumPoleBuffer2ForSpan(knotIndex0 - this.degree + 1);
     }
   }
-
+/**
+ * Reverse the (blocked) poles (in `this.packedData` in place.
+ */
   public reverseInPlace(): void {
     // reverse poles in blocks ...
     const b = this.poleLength;

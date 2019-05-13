@@ -85,7 +85,7 @@ const computePosition = `
   float perpDist = weight / 2.0;
   float alongDist = 0.0;
 
-  perpDist *= sign(0.5 - float(g_quadIndex == 1.0 || g_quadIndex == 2.0)); // negate for index 1 and 2
+  perpDist *= sign(0.5 - float(g_quadIndex == 0.0 || g_quadIndex == 3.0)); // negate for index 0 and 3
   alongDist += distance(rawPos, other) * float(g_quadIndex >= 2.0); // index 2 and 3 correspond to 'far' endpoint of segment
 
   pos.x += perp.x * perpDist * 2.0 * pos.w / u_viewport.z;
@@ -109,8 +109,10 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   vert.addGlobal("g_otherIndex", VariableType.Float);
 
   vert.addInitializer(decodeEndPointAndQuadIndices);
-  if (isAnimated)
+  if (isAnimated) {
+    addAnimation(vert, false);
     vert.addInitializer(animateEndPoint);
+  }
 
   vert.addGlobal("lineCodeEyePos", VariableType.Vec4);
   vert.addGlobal("lineCodeDist", VariableType.Float, "0.0");
@@ -124,9 +126,6 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
 
   addViewport(vert);
   addModelViewMatrix(vert);
-
-  if (isAnimated)
-    addAnimation(vert, false);
 
   vert.addAttribute("a_endPointAndQuadIndices", VariableType.Vec4, (shaderProg) => {
     shaderProg.addAttribute("a_endPointAndQuadIndices", (attr, params) => {
@@ -156,6 +155,7 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   return builder;
 }
 
+/** @internal */
 export function createEdgeBuilder(isSilhouette: boolean, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
   const builder = createBase(isSilhouette, instanced, isAnimated);
   addShaderFlags(builder);

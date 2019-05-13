@@ -19,7 +19,7 @@ import {
   FrontstageManager,
 } from "../../ui-framework";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
-import ConfigurableUiManager from "../../ui-framework/configurableui/ConfigurableUiManager";
+import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager";
 import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
@@ -96,6 +96,22 @@ describe("NavigationWidget", () => {
         verticalToolbar={verticalToolbar}
       />,
     ).should.matchSnapshot();
+  });
+
+  it("NavigationWidget should support update", () => {
+    const wrapper = mount(
+      <NavigationWidget
+        horizontalToolbar={horizontalToolbar}
+        verticalToolbar={verticalToolbar}
+      />,
+    );
+    expect(wrapper.find(ToolButton).length).to.eq(4);
+
+    wrapper.setProps({ verticalToolbar: undefined });
+    wrapper.update();
+    expect(wrapper.find(ToolButton).length).to.eq(2);
+
+    wrapper.unmount();
   });
 
   class TestContentControl extends ContentControl {

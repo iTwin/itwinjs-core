@@ -7,10 +7,10 @@
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  RpcRequestsHandler,
+  RpcRequestsHandler, DescriptorOverrides,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  Paged, RequestOptions, KeySet, InstanceKey, NodesResponse, ContentResponse,
+  Paged, KeySet, InstanceKey, NodesResponse, ContentResponse, LabelRequestOptions,
 } from "@bentley/presentation-common";
 import RulesetVariablesManager from "./RulesetVariablesManager";
 import RulesetManager from "./RulesetManager";
@@ -97,7 +97,7 @@ export default class PresentationManager implements IDisposable {
     return this._rulesetVars.get(rulesetId)!;
   }
 
-  private toIModelTokenOptions<TOptions extends RequestOptions<IModelConnection>>(options: TOptions) {
+  private toIModelTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string }>(options: TOptions) {
     // 1. put default `locale`
     // 2. put all `options` members (if `locale` is set, it'll override the default put at #1)
     // 3. put `imodel` of type `IModelToken` which overwrites the `imodel` from `options` put at #2
@@ -112,7 +112,7 @@ export default class PresentationManager implements IDisposable {
    * @param parentKey    Key of the parent node.
    * @return A promise object that returns either a nodes response object with nodes and nodes count on success or an error string on error.
    */
-  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: Readonly<NodeKey>): Promise<Readonly<NodesResponse>> {
+  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey): Promise<NodesResponse> {
     return this._requestsHandler.getNodesAndCount(this.toIModelTokenOptions(requestOptions), parentKey);
   }
 
@@ -122,7 +122,7 @@ export default class PresentationManager implements IDisposable {
    * @param parentKey    Key of the parent node if requesting for child nodes
    * @return A promise object that returns either an array of nodes on success or an error string on error.
    */
-  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
+  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey): Promise<Node[]> {
     return this._requestsHandler.getNodes(this.toIModelTokenOptions(requestOptions), parentKey);
   }
 
@@ -132,7 +132,7 @@ export default class PresentationManager implements IDisposable {
    * @param parentKey Key of the parent node if requesting for child nodes count.
    * @return A promise object that returns the number of nodes.
    */
-  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: Readonly<NodeKey>): Promise<number> {
+  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: NodeKey): Promise<number> {
     return this._requestsHandler.getNodesCount(this.toIModelTokenOptions(requestOptions), parentKey);
   }
 
@@ -165,7 +165,7 @@ export default class PresentationManager implements IDisposable {
    * @param selection    Optional selection info in case the content is being requested due to selection change.
    * @return A promise object that returns either a descriptor on success or an error string on error.
    */
-  public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
+  public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined> {
     const descriptor = await this._requestsHandler.getContentDescriptor(this.toIModelTokenOptions(requestOptions), displayType, keys, selection);
     if (descriptor)
       descriptor.rebuildParentship();
@@ -175,43 +175,48 @@ export default class PresentationManager implements IDisposable {
   /**
    * Retrieves the content set size based on the supplied content descriptor override.
    * @param requestOptions          options for the request
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either a number on success or an error string on error.
    * Even if concrete implementation returns content in pages, this function returns the total
    * number of records in the content set.
    */
-  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<number> {
-    const descriptorParam = (typeof descriptorOrDisplayType === "string") ? descriptorOrDisplayType : descriptorOrDisplayType.createStrippedDescriptor();
-    return this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(requestOptions), descriptorParam, keys);
+  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number> {
+    return this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys);
   }
 
   /**
    * Retrieves the content based on the supplied content descriptor override.
    * @param requestOptions          options for the request
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either content on success or an error string on error.
    */
-  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<Content>> {
-    const descriptorParam = (typeof descriptorOrDisplayType === "string") ? descriptorOrDisplayType : descriptorOrDisplayType.createStrippedDescriptor();
-    const content = await this._requestsHandler.getContent(this.toIModelTokenOptions(requestOptions), descriptorParam, keys);
-    content.descriptor.rebuildParentship();
+  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined> {
+    const content = await this._requestsHandler.getContent(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys);
+    if (content)
+      content.descriptor.rebuildParentship();
     return content;
   }
 
   /**
    * Retrieves the content and content set size based on the supplied content descriptor override.
    * @param requestOptions          Options for the request.
-   * @param descriptorOrDisplayType Content descriptor which specifies how the content should be returned or preferred display type of the content
+   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for.
    * @returns A promise object that returns either content and content set size on success or an error string on error.
    */
-  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrDisplayType: Readonly<Descriptor> | string, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>> {
-    const descriptorParam = (typeof descriptorOrDisplayType === "string") ? descriptorOrDisplayType : descriptorOrDisplayType.createStrippedDescriptor();
-    const contentResponse = await this._requestsHandler.getContentAndSize(this.toIModelTokenOptions(requestOptions), descriptorParam, keys);
-    contentResponse.content.descriptor.rebuildParentship();
-    return contentResponse;
+  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<ContentResponse> {
+    const response = await this._requestsHandler.getContentAndSize(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys);
+    if (response.content)
+      response.content.descriptor.rebuildParentship();
+    return response;
+  }
+
+  private createDescriptorParam(descriptorOrOverrides: Descriptor | DescriptorOverrides) {
+    if (descriptorOrOverrides instanceof Descriptor)
+      return descriptorOrOverrides.createStrippedDescriptor();
+    return descriptorOrOverrides;
   }
 
   /**
@@ -223,8 +228,25 @@ export default class PresentationManager implements IDisposable {
    * @param maximumValueCount    Maximum numbers of values that can be returned. Unlimited if 0.
    * @return A promise object that returns either distinct values on success or an error string on error.
    */
-  public async getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
+  public async getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
     return this._requestsHandler.getDistinctValues(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys, fieldName, maximumValueCount);
+  }
+
+  /**
+   * Retrieves display label of specific item
+   * @param requestOptions options for the request
+   * @param key Key of instance to get label for
+   */
+  public async getDisplayLabel(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<string> {
+    return this._requestsHandler.getDisplayLabel(this.toIModelTokenOptions(requestOptions), key);
+  }
+  /**
+   * Retrieves display label of specific items
+   * @param requestOptions options for the request
+   * @param keys Keys of instances to get labels for
+   */
+  public async getDisplayLabels(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<string[]> {
+    return this._requestsHandler.getDisplayLabels(this.toIModelTokenOptions(requestOptions), keys);
   }
 
 }

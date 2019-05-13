@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-webserver
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Fix broken links
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -14,7 +23,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - upgrade to TypeScript 3.2.2
 
 ## 0.188.0

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-.column-drag-layer {
+.components-column-drag-layer {
   border: 1px solid $buic-foreground-disabled;
   border-radius: $uicore-border-radius;
   padding: 0px;
@@ -14,7 +14,7 @@
   font-weight: bold;
 }
 
-.table-header-drag-drop {
+.components-table-header-drag-drop {
   &.dragging .react-grid-HeaderCell {
     background: $buic-background-table-header;
   }
@@ -26,7 +26,7 @@
   }
 }
 
-.table-drop-target {
+.components-table-drop-target {
   border-top: solid transparent 1px;
   border-bottom: solid transparent 1px;
 

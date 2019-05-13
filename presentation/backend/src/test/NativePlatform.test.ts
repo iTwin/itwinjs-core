@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import * as faker from "faker";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelHost, IModelDb, IModelJsNative } from "@bentley/imodeljs-backend";
 import { PresentationError, VariableValueTypes } from "@bentley/presentation-common";
 import "./IModelHostSetup";
@@ -55,7 +55,7 @@ describe("default NativePlatform", () => {
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ result: "0" }); })
       .verifiable();
-    expect(await nativePlatform.handleRequest(ActivityLoggingContext.current, undefined, "")).to.equal("0");
+    expect(await nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.equal("0");
     addonMock.verifyAll();
   });
 
@@ -63,21 +63,21 @@ describe("default NativePlatform", () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb(undefined as any); });
-    await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, undefined, "")).to.be.rejectedWith(PresentationError);
+    await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError);
   });
 
   it("throws on handleRequest error response", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }); });
-    await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, undefined, "")).to.be.rejectedWith(PresentationError, "test");
+    await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError, "test");
   });
 
   it("throws on handleRequest success response without result", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))
       .callback((_db, _options, cb) => { cb({ result: undefined }); });
-    await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, undefined, "")).to.be.rejectedWith(PresentationError);
+    await expect(nativePlatform.handleRequest(ClientRequestContext.current, undefined, "")).to.be.rejectedWith(PresentationError);
   });
 
   it("calls addon's setupRulesetDirectories", async () => {

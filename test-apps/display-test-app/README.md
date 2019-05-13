@@ -78,3 +78,15 @@ Debugging display-test-app can be accomplished using the following procedures, d
   * If defined, the minimum logging level will be set to this value. Log messages are output to the terminal from which display-test-app was run. Example log levels include "debug", "error", "warning", etc - see Logger.ParseLogLevel() for the complete list.
 * SVT_DISABLE_DIAGNOSTICS
   * By default, all debug-only code paths are enabled. These include assertions, console output, and potentially-expensive WebGL state checks like checkFramebufferStatus(). If this environment variable is defined (value does not matter), all of these debug-only code paths will be disabled. Note that this *only* affects assertions and console output produced within the rendering code.
+* SVT_DISABLED_EXTENSIONS
+  * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
+* SVT_DISABLE_INSTANCING
+  * If defined, instanced geometry will not be generated for tiles.
+* SVT_ENABLE_BACKFACE_CULLING
+  * If defined, back-facing triangles will be culled.
+* SVT_DISABLE_ACTIVE_VOLUME_CULLING
+  * If defined, geometry will not be culled against the active volume before drawing. Useful only for testing the feature gate and the performance differences.
+* SVT_PRESERVE_SHADER_SOURCE_CODE
+  * If defined, shader source code will be preserved as internal strings, useful for debugging purposes.
+* SVT_OMIT_EDGES
+  * If defined, when requesting tiles if edge display is off then the response will not include edges in the binary tile data.

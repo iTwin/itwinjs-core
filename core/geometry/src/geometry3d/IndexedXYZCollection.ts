@@ -17,7 +17,8 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
  * ** Point3dArrayCarrier carries a (reference to) a Point3d[] and implements the methods with calls on that array reference.
  * * In addition to "point by point" accessors, there abstract members compute commonly useful vector data "between points".
  * * Methods that create vectors among multiple indices allow callers to avoid creating temporaries.
-*/
+ * @public
+ */
 export abstract class IndexedXYZCollection {
   /**
    * @param index index of point within the array

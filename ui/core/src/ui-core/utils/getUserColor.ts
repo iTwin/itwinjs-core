@@ -18,7 +18,9 @@ const COLORS = [
   "#a47854",
 ];
 
-/** Gets a color based on a given email address. This color is usually displayed in an avatar component. */
+/** Gets a color based on a given email address. This color is usually displayed in an avatar component.
+ * @internal
+ */
 export function getUserColor(email: string): string {
   const cleanString = email.trim().toLowerCase();
 
@@ -29,4 +31,3 @@ export function getUserColor(email: string): string {
   }
   return COLORS[hash];
 }
-export default getUserColor;

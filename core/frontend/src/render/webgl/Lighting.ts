@@ -8,6 +8,7 @@ import { Point3d, Vector3d } from "@bentley/geometry-core";
 
 const lightSize = 12; // number of floats in a ShaderLight definition
 
+/** @internal */
 export class ShaderLight {
   private _data: Float32Array;
   public constructor(data: Float32Array, ndx: number) {
@@ -22,6 +23,7 @@ export class ShaderLight {
   public setCosHPhi(cosHPhi: number): void { this._data[7] = cosHPhi; }
 }
 
+/** @internal */
 export class ShaderLights {
   private _data: Float32Array;
   constructor(numLights: number) {

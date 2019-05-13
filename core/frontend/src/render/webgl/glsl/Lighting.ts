@@ -53,7 +53,7 @@ const applyLighting = `
     computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(-0.3, 0.0, 0.3)), .30, specularExp);
 
     const float directionalIntensity = 0.92;
-    const float ambientIntensity = 0.08;
+    const float ambientIntensity = 0.2;
     litColor += directionalIntensity * diffuseWeight * diffuseIntensity * baseColor.rgb + specularIntensity * specularWeight * specularColor;
     litColor.rgb += ambientIntensity * baseColor.rgb;
 
@@ -69,6 +69,7 @@ const applyLighting = `
   return baseColor;
 `;
 
+/** @internal */
 export function addLighting(builder: ProgramBuilder) {
   addFrustum(builder);
 

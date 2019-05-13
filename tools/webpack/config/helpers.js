@@ -31,7 +31,7 @@ const createBentleySourceMapsIncludePaths = (resource) => {
   }
 
   const dir = path.dirname(resource);
-  const matches = glob.sync(path.resolve(dir, "**/*.map"));
+  const matches = glob.sync(path.join(dir, "{!(module)/**/*.map,*.map}"));
   if (matches && matches.length > 0) {
     knownSourceMapPaths.push(dir);
     return true;

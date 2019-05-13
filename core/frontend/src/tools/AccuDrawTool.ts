@@ -5,9 +5,8 @@
 /** @module Tools */
 
 import { AccuDraw, AccuDrawFlags, RotationMode, ContextMode, LockedStates, ThreeAxes, ItemField, KeyinStatus, CompassMode } from "../AccuDraw";
-import { CoordinateLockOverrides } from "./ToolAdmin";
 import { TentativeOrAccuSnap, AccuSnap } from "../AccuSnap";
-import { BeButtonEvent, InputCollector, EventHandled } from "./Tool";
+import { BeButtonEvent, InputCollector, EventHandled, CoordinateLockOverrides } from "./Tool";
 import { DecorateContext } from "../ViewContext";
 import { Vector3d, Point3d, Matrix3d, Geometry, Transform } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
@@ -21,6 +20,7 @@ function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): 
 /**
  * A shortcut may require no user input  (immediate) or it may install a viewing tool.Tool implementors should not use
  * this class to setup AccuDraw, instead use AccuDraw.setContext to provide hints.
+ * @internal
  */
 export class AccuDrawShortcuts {
   public static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean {
@@ -437,12 +437,8 @@ export class AccuDrawShortcuts {
       accudraw.locked &= ~LockedStates.XY_BM;
       accudraw.setFieldLock(ItemField.X_Item, false);
       accudraw.setFieldLock(ItemField.Y_Item, false);
-
       if (accudraw.getFieldLock(ItemField.Z_Item) && accudraw.delta.z === 0.0 && !accudraw.stickyZLock)
         accudraw.setFieldLock(ItemField.Z_Item, false);
-    } else if (!accudraw.indexed && accudraw.getFieldLock(ItemField.Z_Item) && !accudraw.stickyZLock) {
-      accudraw.clearTentative();
-      accudraw.setFieldLock(ItemField.Z_Item, false);
     } else { // lock to nearest axis
       if (accudraw.clearTentative()) {
         if (Math.abs(accudraw.delta.x) >= Geometry.smallAngleRadians && Math.abs(accudraw.delta.y) >= Geometry.smallAngleRadians) {
@@ -979,6 +975,62 @@ export class AccuDrawShortcuts {
     if (accudraw.isEnabled)
       accudraw.unlockAllFields();
   }
+
+  /** @internal Temporary keyboard shortcuts. */
+  public static processShortcutKey(keyEvent: KeyboardEvent): boolean {
+    switch (keyEvent.key.toLowerCase()) {
+      case "enter":
+        AccuDrawShortcuts.lockSmart();
+        return true;
+      case "x":
+        AccuDrawShortcuts.lockX();
+        return true;
+      case "y":
+        AccuDrawShortcuts.lockY();
+        return true;
+      case "z":
+        AccuDrawShortcuts.lockZ();
+        return true;
+      case "a":
+        AccuDrawShortcuts.lockAngle();
+        return true;
+      case "d":
+        AccuDrawShortcuts.lockDistance();
+        return true;
+      case "m":
+        AccuDrawShortcuts.changeCompassMode();
+        return true;
+      case "t":
+        AccuDrawShortcuts.setStandardRotation(RotationMode.Top);
+        return true;
+      case "f":
+        AccuDrawShortcuts.setStandardRotation(RotationMode.Front);
+        return true;
+      case "s":
+        AccuDrawShortcuts.setStandardRotation(RotationMode.Side);
+        return true;
+      case "v":
+        AccuDrawShortcuts.setStandardRotation(RotationMode.View);
+        return true;
+      case "o":
+        AccuDrawShortcuts.setOrigin();
+        return true;
+      case "c":
+        AccuDrawShortcuts.rotateCycle(false);
+        return true;
+      case "q":
+        AccuDrawShortcuts.rotateAxes(true);
+        return true;
+      case "e":
+        AccuDrawShortcuts.rotateToElement(false);
+        return true;
+      case "r":
+        AccuDrawShortcuts.defineACSByPoints();
+        return true;
+      default:
+        return false;
+    }
+  }
 }
 
 class AccuDrawShortcutsTool extends InputCollector {
@@ -995,6 +1047,7 @@ class AccuDrawShortcutsTool extends InputCollector {
   public exitTool() { super.exitTool(); AccuDrawShortcuts.requestInputFocus(); } // re-grab focus when auto-focus tool setting set...
 }
 
+/** @internal */
 export abstract class AccuDrawTool {
   public doManipulationStart() {
     if (this.activateAccuDrawOnStart())

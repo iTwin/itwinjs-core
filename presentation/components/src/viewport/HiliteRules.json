@@ -1,0 +1,45 @@
+{
+  "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "id": "presentation-components/HiliteRules",
+  "rules": [
+    {
+      "ruleType": "Content",
+      "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"Model\", \"BisCore\")",
+      "onlyIfNotHandled": true,
+      "specifications": []
+    },
+    {
+      "ruleType": "Content",
+      "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"Category\", \"BisCore\")",
+      "onlyIfNotHandled": true,
+      "specifications": []
+    },
+    {
+      "ruleType": "Content",
+      "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"Element\", \"BisCore\")",
+      "onlyIfNotHandled": true,
+      "specifications": [
+        {
+          "specType": "ContentRelatedInstances",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementOwnsChildElements"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Element"
+            ]
+          },
+          "isRecursive": true
+        },
+        {
+          "specType": "SelectedNodeInstances"
+        }
+      ]
+    }
+  ]
+}

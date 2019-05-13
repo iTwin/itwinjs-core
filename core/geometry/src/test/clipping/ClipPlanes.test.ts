@@ -9,12 +9,12 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Transform } from "../../geometry3d/Transform";
-import { PolygonOps } from "../../geometry3d/PointHelpers";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -30,9 +30,41 @@ import { Sample } from "../../serialization/GeometrySamples";
 
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Loop } from "../../curve/Loop";
+import { prettyPrint } from "../testFunctions";
+import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { Ray3d } from "../../geometry3d/Ray3d";
 /* tslint:disable:no-console no-trailing-whitespace */
 
 Checker.noisy.clipPlane = false;
+/**
+ * Verify that a (convex) polygon (a) is within a range (b) tight to the range.
+ * @param ck checker
+ * @param range range
+ * @param xyz post-clip polygon
+ */
+function testPolygonClippedToRange(ck: Checker, range: Range3d, polygon: GrowableXYZArray): boolean {
+  const expandedRange = range.clone();
+  const convexXYZ = polygon.getPoint3dArray();
+  expandedRange.expandInPlace(Geometry.smallMetricDistance);
+  // every point must be in . . .
+  for (const xyz of convexXYZ) {
+    {
+      if (!ck.testTrue(expandedRange.containsPoint(xyz)))
+        return false;
+    }
+  }
+  // extension of every interior edge is out.  (But only test a subset . ..l.)
+  for (let i = 0; i < XYZ.length; i++) {
+    const i1 = (i + 1) % XYZ.length;
+    if (convexXYZ[i].isAlmostEqual(convexXYZ[i1])) continue;
+    if (!ck.testFalse(range.containsPoint(convexXYZ[i].interpolate(1.1, convexXYZ[i + 1]))))
+      return false;
+    if (!ck.testFalse(range.containsPoint(convexXYZ[i1].interpolate(-0.1, convexXYZ[i + 1]))))
+      return false;
+  }
+  return true;
+}
 
 function testConvexClipXY(x0: number, y0: number, ux: number, uy: number, xyz: Point3d[], ck: Checker) {
   const plane0 = Plane3dByOriginAndUnitNormal.create(Point3d.create(x0, y0, 0.0), Vector3d.create(ux, uy, 0.0));
@@ -298,53 +330,31 @@ describe("ClipPlaneSet", () => {
     for (let i = -0.5; i < 2; i++) {
       // Rotate rays 360 degrees around x and y axis
       for (let theta = 0; theta < 2 * Math.PI; theta += (Math.PI / 4)) {
-        const xAlignedOrigin = Point3d.create(xyMiddleOfCube, xyMiddleOfCube, i);
-        const xAlignedDirection = Vector3d.create(Math.cos(theta), 0, Math.sin(theta));
-        const yAlignedOrigin = Point3d.create(xyMiddleOfCube, xyMiddleOfCube, i);
-        const yAlignedDirection = Vector3d.create(0, Math.cos(theta), Math.sin(theta));
+        const xAlignedRay = Ray3d.create(Point3d.create(xyMiddleOfCube, xyMiddleOfCube, i), Vector3d.create(Math.cos(theta), 0, Math.sin(theta)));
+        const yAlignedRay = Ray3d.create(Point3d.create(xyMiddleOfCube, xyMiddleOfCube, i), Vector3d.create(0, Math.cos(theta), Math.sin(theta)));
+        const xAlignedRange = Range1d.createNull();
+        const yAlignedRange = Range1d.createNull();
+        set.hasIntersectionWithRay(xAlignedRay, xAlignedRange);
+        set.hasIntersectionWithRay(yAlignedRay, yAlignedRange);
 
-        const xAlignedResult = set.getRayIntersection(xAlignedOrigin, xAlignedDirection);
-        const yAlignedResult = set.getRayIntersection(yAlignedOrigin, yAlignedDirection);
-
-        if (Checker.noisy.clipPlane === true) {
-          console.log("Theta: " + (theta * 180 / Math.PI) + " degrees");
-          console.log("X Aligned Ray intersects at: " + xAlignedResult);
-          console.log("Y Aligned Ray intersects at: " + yAlignedResult);
-        }
-
-        if (xAlignedResult === undefined || yAlignedResult === undefined) {
-          ck.testUndefined(yAlignedResult, "Ray intersections are undefined");
-          ck.testFalse(set.testRayIntersect(xAlignedOrigin, xAlignedDirection));
-          ck.testFalse(set.testRayIntersect(yAlignedOrigin, yAlignedDirection));
+        if (xAlignedRange.isNull || yAlignedRange.isNull) {
+          ck.testFalse(set.hasIntersectionWithRay(xAlignedRay));
+          ck.testFalse(set.hasIntersectionWithRay(yAlignedRay));
           continue;
         }
 
-        ck.testCoordinate(xAlignedResult, yAlignedResult, "Intersections are equal for similar rays");
-        ck.testTrue(set.testRayIntersect(xAlignedOrigin, xAlignedDirection));
-        ck.testTrue(set.testRayIntersect(yAlignedOrigin, yAlignedDirection));
+        ck.testBoolean(set.hasIntersectionWithRay(xAlignedRay), !xAlignedRange.isNull);
+        ck.testBoolean(set.hasIntersectionWithRay(yAlignedRay), !yAlignedRange.isNull);
 
         if (i > -0.5 && i < 1) {
           // Ray began inside the region
-          ck.testCoordinate(xAlignedResult, 0, "Distance is zero");
+          ck.testFalse(xAlignedRange.isNull, "known containment");
+          ck.testTrue(xAlignedRange.containsX(0));
           continue;
-        }
-
-        // Check distances
-        if (theta % (Math.PI / 2) !== 0) {
-          // Dealing with an angle multiple of 45 degrees
-          ck.testCoordinate(Math.abs(xAlignedResult), Math.sqrt(2 * xyMiddleOfCube * xyMiddleOfCube), "Distance of ray origin to intersection");
-        } else {
-          // Dealing with angle parallel to z-axis.. if negative, ensure you account for ray direction, which would have it intersect
-          // the OPPOSITE side of the box
-          if (xAlignedResult < 0)
-            ck.testCoordinate(xAlignedResult, (sideLength + xyMiddleOfCube) * -1, "Distance of ray origin to intersection");
-          else
-            ck.testCoordinate(xAlignedResult, xyMiddleOfCube, "Distance of ray origin to intersection");
         }
       }
     }
 
-    ck.checkpoint("GetRayIntersections");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -633,7 +643,7 @@ describe("CurveClips", () => {
 
       const curvePrimitiveAnnouncer = (fraction0: number, fraction1: number, cp: CurvePrimitive) => {
         const point1 = cp.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
-        ck.testTrue(activeClipper.isPointInside(point1), "interval midpoint is IN");
+        ck.testTrue(activeClipper.isPointOnOrInside(point1), "interval midpoint is IN");
       };
 
       const segmentAnnouncer = (fraction0: number, fraction1: number) => {
@@ -741,10 +751,10 @@ describe("CurveClips", () => {
     const ck = new Checker();
     const ax = 1;
     const ay = 2;
-    const range = Range3d.createXYZXYZ(ax, ay, 3, 6, 7, 4);
-    const convexA = ConvexClipPlaneSet.createRange3dPlanes(range, true, false, true, false, false)!;
     const bx = 4;
-    const by = 8;
+    const by = 5;
+    const range = Range3d.createXYZXYZ(ax, ay, -1, bx + 1, by + 1, 4);
+    const convexA = ConvexClipPlaneSet.createRange3dPlanes(range, true, false, true, false, false)!;
     const rectangle0 = [
       Point3d.create(-1, -1, 0),
       Point3d.create(bx, - 1, 0),
@@ -752,8 +762,8 @@ describe("CurveClips", () => {
       Point3d.create(-1, by, 0)];
 
     // const area0 = PolygonOps.sumTriangleAreas(rectangle0);
-    const splitA: Point3d[] = [];
-    const work: Point3d[] = [];
+    const splitA = new GrowableXYZArray();
+    const work = new GrowableXYZArray();
     convexA.polygonClip(rectangle0, splitA, work);
     const areaA = PolygonOps.sumTriangleAreas(splitA);
 
@@ -777,8 +787,8 @@ describe("CurveClips", () => {
     const clipper = ConvexClipPlaneSet.createSweptPolyline(triangle0, upVector, tiltAngle);
     if (ck.testPointer(clipper, "createSweptPolygon") && clipper) {
       // const area0 = PolygonOps.sumTriangleAreas(rectangle0);
-      const splitA: Point3d[] = [];
-      const work: Point3d[] = [];
+      const splitA = new GrowableXYZArray();
+      const work = new GrowableXYZArray();
       clipper.polygonClip(rectangle0, splitA, work);
       const areaA = PolygonOps.sumTriangleAreas(splitA);
       ck.testCoordinate(area0, areaA);
@@ -857,4 +867,123 @@ describe("CurveClips", () => {
     ck.checkpoint("QuickClipStatus");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("ClipToRange", () => {
+    const ck = new Checker();
+    const range = Range3d.createXYZXYZ(-2, -1, -3, 4, 5, 2);
+    const allGeometry: GeometryQuery[] = [];
+    let dy = 0.0;
+    // obviously inside ...
+    for (const clipPlane of [
+      ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0)!,
+      ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 0, 0, 0)!,
+      ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0.1)!,
+      ClipPlane.createNormalAndPointXYZXYZ(-2, 4, 1, 0.3, 0.2, 1.1)!,
+      ClipPlane.createNormalAndPointXYZXYZ(1, 1, 1.1, 0.3, 0.2, 1.1)!,
+      ClipPlane.createNormalAndPointXYZXYZ(-2, 6, 3, 0.3, 0.2, 1.1)!,
+      ClipPlane.createNormalAndPointXYZXYZ(0.2, 0, 1, 0, 0, 0)!]) {
+      const clipped = clipPlane.intersectRange(range, true);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, dy, 0);
+      if (ck.testPointer(clipped) && clipped) {
+        testPolygonClippedToRange(ck, range, clipped);
+        GeometryCoreTestIO.captureGeometry(allGeometry, Loop.create(LineString3d.create(clipped)), 0, dy, 0);
+      }
+      dy += 10.0;
+    }
+    // obviously outside
+    const big = 20.0;
+    for (const clipPlane of [
+      ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, big)!,
+      ClipPlane.createNormalAndPointXYZXYZ(0, 1, 0, 0, big, 0)!,
+      ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, big, 0, 0)!,
+      ClipPlane.createNormalAndPointXYZXYZ(1, 1, 1, big, big, big)!]) {
+      const clipped = clipPlane.intersectRange(range, true);
+      ck.testUndefined(clipped, prettyPrint(clipPlane), prettyPrint(range));
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "ClipToRange");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("RangeFaces", () => {
+    const ck = new Checker();
+    const range = Range3d.createXYZXYZ(-2, -1, -3, 4, 5, 2);
+    const allGeometry: GeometryQuery[] = [];
+    const corners = range.corners();
+    for (let i = 0; i < 6; i++) {
+      const indices = Range3d.faceCornerIndices(i);
+      const lineString = LineString3d.createIndexedPoints(corners, indices);
+      testPolygonClippedToRange(ck, range, lineString.packedPoints);
+      GeometryCoreTestIO.captureGeometry(allGeometry, Loop.create(lineString), 0, 0, 0);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "RangeFaces");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ClipConvexSetToRange", () => {
+    const ck = new Checker();
+    const range = Range3d.createXYZXYZ(-2, -1, -3, 4, 5, 4.5);
+    const rangeB = Range3d.createXYZXYZ(0, 0, 0, 6, 1, 2);
+    const allGeometry: GeometryQuery[] = [];
+    let dy = 0.0;
+    // obviously inside ...
+    const transforms = Sample.createInvertibleTransforms();
+    transforms.reverse();
+    for (const transform of transforms) {
+      const matrix = Matrix4d.createTransform(transform);
+      const cornerB = rangeB.corners();
+      transform.multiplyPoint3dArrayInPlace(cornerB);
+      const convexSetB = ConvexClipPlaneSet.createRange3dPlanes(rangeB);
+      convexSetB.multiplyPlanesByMatrix4d(matrix, true, true);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, dy, 0);
+      // We happen to know that the convexSet planes are in rangeB faces.
+      // So we can clip the faces directly.
+      for (let i = 0; i < 6; i++) {
+        const indices = Range3d.faceCornerIndices(i);
+        const linestring = LineString3d.createIndexedPoints(cornerB, indices, true);
+        GeometryCoreTestIO.captureGeometry(allGeometry, linestring.clone(), 0, dy, 0);
+        const clippedPoints = linestring.packedPoints.clone();
+        clippedPoints.pop(); // get rid of closure
+        ClipPlane.intersectRangeConvexPolygonInPlace(range, clippedPoints);
+        if (clippedPoints && clippedPoints.length > 0)
+          GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(clippedPoints), 0, dy, 0);
+      }
+
+      // Now we forget about rangeB.  We just know that convexSetB is there.
+      // Remove planes to make it unbounded
+      // Clip each of its planes to the range (which is bounded and hence produces bounded clip)
+      // then clip to the clip plane set.  (which is not bounded)
+      let xB = 30.0;
+
+      for (const hide of [-1, 0, 2, 3, 4]) {
+        if (hide > 0 && hide < convexSetB.planes.length)
+          convexSetB.planes[hide].setInvisible(true);
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, xB, dy, 0);
+        let intersectionFaces = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(convexSetB, range, true, true, true);
+        if (hide < 0) {
+          // ensure that the intersection range for the full plane set matches the range of loops.
+          const rangeA = ClipUtilities.rangeOfConvexClipPlaneSetIntersectionWithRange(convexSetB, range);
+          if (intersectionFaces !== undefined && !rangeA.isNull) {
+            const rangeC = Range3d.createNull();
+            for (const f of intersectionFaces) {
+              f.extendRange(rangeC);
+            }
+            ck.testRange3d(rangeA, rangeC);
+          }
+        }
+        GeometryCoreTestIO.captureGeometry(allGeometry, intersectionFaces, xB, dy, 0);
+        xB += 20.0;
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, xB, dy, 0);
+        intersectionFaces = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(convexSetB, range, true, false, true);
+        GeometryCoreTestIO.captureGeometry(allGeometry, intersectionFaces, xB, dy, 0);
+        xB += 20.0;
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, xB, dy, 0);
+        intersectionFaces = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(convexSetB, range, false, true, true);
+        GeometryCoreTestIO.captureGeometry(allGeometry, intersectionFaces, xB, dy, 0);
+        xB += 40;
+      }
+      dy += 20.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "ClipConvexSetToRange");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+
 });

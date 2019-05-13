@@ -14,6 +14,7 @@ import { AuxChannelTable, AuxChannel, AuxDisplacementChannel, AuxParamChannel } 
 
 type ChannelPropName = "normals" | "displacements" | "params";
 
+/** @internal */
 export class AuxChannelLUT implements IDisposable {
   public readonly texture: TextureHandle;
   public readonly numVertices: number;
@@ -58,7 +59,9 @@ export class AuxChannelLUT implements IDisposable {
   }
 }
 
-/** Represents the finished lookup table ready for submittal to GPU. */
+/** Represents the finished lookup table ready for submittal to GPU.
+ * @internal
+ */
 export class VertexLUT implements IDisposable {
   public readonly texture: TextureHandle; // Texture containing vertex data
   public readonly numVertices: number;

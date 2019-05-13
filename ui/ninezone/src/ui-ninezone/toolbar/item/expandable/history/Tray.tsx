@@ -6,14 +6,19 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 import { Direction, DirectionHelpers } from "../../../../utilities/Direction";
-import { CommonProps, NoChildrenProps, FlattenChildren } from "../../../../utilities/Props";
+import { NoChildrenProps, FlattenChildren } from "../../../../utilities/Props";
 import "./Tray.scss";
 
-/** Key to identify history item. */
+/** Key to identify history item.
+ * @alpha
+ */
 export type HistoryKey = number | string;
 
-/** A single entry in items history. */
+/** A single entry in items history.
+ * @alpha
+ */
 export interface HistoryEntry<TItem> {
   /** Entry key. */
   key: HistoryKey;
@@ -21,10 +26,14 @@ export interface HistoryEntry<TItem> {
   item: TItem;
 }
 
-/** History defines actual structure of history items. */
+/** History defines actual structure of history items.
+ * @alpha
+ */
 export type History<TItem> = Array<HistoryEntry<TItem>>;
 
-/** Helper to manage history entries. */
+/** Helper to manage history entries.
+ * @alpha
+ */
 export class HistoryManager {
   public constructor(public readonly maxItemCount: number) {
   }
@@ -50,11 +59,15 @@ export class HistoryManager {
   }
 }
 
-/** History manager as defined by 9-Zone UI specification. */
+/** History manager as defined by 9-Zone UI specification.
+ * @alpha
+ */
 // tslint:disable-next-line:variable-name
 export const DefaultHistoryManager = new HistoryManager(4);
 
-/** Properties of [[HistoryTray]] component. */
+/** Properties of [[HistoryTray]] component.
+ * @alpha
+ */
 export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
   /** Extend direction of tray. */
   direction?: Direction;
@@ -66,7 +79,9 @@ export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
   onIsHistoryExtendedChange?: (isExtended: boolean) => void;
 }
 
-/** History tray used in [[ExpandableItem]] component. */
+/** History tray used in [[ExpandableItem]] component.
+ * @alpha
+ */
 export class HistoryTray extends React.PureComponent<HistoryTrayProps> {
   public render() {
     const items = FlattenChildren(this.props.items);
@@ -75,8 +90,8 @@ export class HistoryTray extends React.PureComponent<HistoryTrayProps> {
     const className = classnames(
       "nz-toolbar-item-expandable-history-tray",
       DirectionHelpers.getCssClassName(this.props.direction || Direction.Left),
-      isExtendIndicatorVisible && "nz-extend-is-visible",
-      this.props.isExtended && "nz-is-extended",
+      isExtendIndicatorVisible && "nz-extend-visible",
+      this.props.isExtended && "nz-extended",
       this.props.className);
 
     return (

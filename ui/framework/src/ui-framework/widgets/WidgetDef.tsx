@@ -11,27 +11,45 @@ import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { CommandItemDef } from "../shared/Item";
+import { CommandItemDef } from "../shared/CommandItemDef";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { StringGetter } from "../shared/ItemProps";
 
 import { Direction } from "@bentley/ui-ninezone";
 import { ItemList } from "../shared/ItemMap";
-
-// -----------------------------------------------------------------------------
-// WidgetDef and sub-interfaces
-// -----------------------------------------------------------------------------
+import { UiEvent } from "@bentley/ui-core";
 
 /** Widget state enum.
+ * @public
  */
 export enum WidgetState {
-  Open,     // widgetTab is visible and active and its contents are visible.
-  Closed,   // widgetTab is visible but its contents are not visible.
-  Hidden,   // widgetTab nor its contents are visible
-  Floating, // widgetTab is in a 'floating' state and is not docked in zone's tab stack.
+  /** Widget tab is visible and active and its contents are visible */
+  Open,
+  /** Widget tab is visible but its contents are not visible */
+  Closed,
+  /** Widget tab nor its contents are visible */
+  Hidden,
+  /** Widget tab is in a 'floating' state and is not docked in zone's tab stack */
+  Floating,
+  /** Widget tab is visible but its contents are not loaded */
+  Unloaded,
 }
 
+/** Widget State Changed Event Args interface.
+ * @public
+ */
+export interface WidgetStateChangedEventArgs {
+  widgetDef: WidgetDef;
+  widgetState: WidgetState;
+}
+
+/** Widget State Changed Event class.
+ * @public
+ */
+export class WidgetStateChangedEvent extends UiEvent<WidgetStateChangedEventArgs> { }
+
 /** Widget type enum.
+ * @public
  */
 export enum WidgetType {
   Tool,
@@ -43,6 +61,7 @@ export enum WidgetType {
 }
 
 /** Properties for a Toolbar Widget.
+ * @public
  */
 export interface ToolbarWidgetProps extends WidgetProps {
   horizontalDirection?: Direction;
@@ -53,26 +72,28 @@ export interface ToolbarWidgetProps extends WidgetProps {
 }
 
 /** Properties for a Tool Widget.
+ * @public
  */
 export interface ToolWidgetProps extends ToolbarWidgetProps {
   appButton?: CommandItemDef;
 }
 
 /** Properties for a Navigation Widget.
+ * @public
  */
 export interface NavigationWidgetProps extends ToolbarWidgetProps {
   navigationAidId?: string;
 }
 
 /** Union of all Widget properties.
+ * @public
  */
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
 // -----------------------------------------------------------------------------
-// Widget and subclasses
-// -----------------------------------------------------------------------------
 
 /** A Widget Definition in the 9-Zone Layout system.
+ * @public
  */
 export class WidgetDef {
   private static _sId = 0;
@@ -81,11 +102,10 @@ export class WidgetDef {
   private _widgetReactNode: React.ReactNode;
   private _widgetControl!: WidgetControl;
 
-  public state: WidgetState = WidgetState.Closed;
+  public state: WidgetState = WidgetState.Unloaded;
   public id: string;
   public classId: string | ConfigurableUiControlConstructor | undefined = undefined;
   public priority: number = 0;
-  public featureId: string = "";
   public isFreeform: boolean = false;
   public isFloatingStateSupported: boolean = false;
   public isFloatingStateWindowResizable: boolean = true;
@@ -110,16 +130,15 @@ export class WidgetDef {
     }
   }
 
-  constructor(widgetProps?: WidgetProps) {
-    if (widgetProps && widgetProps.id !== undefined)
+  constructor(widgetProps: WidgetProps) {
+    if (widgetProps.id !== undefined)
       this.id = widgetProps.id;
     else {
       WidgetDef._sId++;
       this.id = "Widget-" + WidgetDef._sId;
     }
 
-    if (widgetProps)
-      WidgetDef.initializeFromWidgetProps(widgetProps, this);
+    WidgetDef.initializeFromWidgetProps(widgetProps, this);
   }
 
   public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) {
@@ -144,8 +163,6 @@ export class WidgetDef {
     if (widgetProps.defaultState !== undefined)
       me.state = widgetProps.defaultState;
 
-    if (widgetProps.featureId !== undefined)
-      me.featureId = widgetProps.featureId;
     if (widgetProps.isFreeform !== undefined) {
       me.isFreeform = widgetProps.isFreeform;
       me.widgetType = me.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
@@ -222,21 +239,27 @@ export class WidgetDef {
 
   public getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined {
     if (!this._widgetControl && this.classId) {
+      let usedClassId: string = "";
+
       if (typeof this.classId === "string") {
-        if (this.classId) {
+        // istanbul ignore else
+        if (this.classId)
           this._widgetControl = ConfigurableUiManager.createControl(this.classId, this.id, this.applicationData) as WidgetControl;
-          if (this._widgetControl.getType() !== type) {
-            throw Error("WidgetDef.widgetControl error: classId '" + this.classId + "' is registered to a control that is NOT a Widget");
-          }
-          this._widgetControl.initialize();
-        }
+        usedClassId = this.classId;
       } else {
         const info = new ConfigurableCreateInfo(this.classId.name, this.id, this.id);
+        usedClassId = this.classId.name;
         this._widgetControl = new this.classId(info, this.applicationData) as WidgetControl;
       }
 
+      // istanbul ignore else
       if (this._widgetControl) {
+        if (this._widgetControl.getType() !== type) {
+          throw Error("WidgetDef.widgetControl error: '" + usedClassId + "' is NOT a " + type + "; it is a " + this._widgetControl.getType());
+        }
+
         this._widgetControl.widgetDef = this;
+        this._widgetControl.initialize();
       }
     }
 
@@ -247,6 +270,7 @@ export class WidgetDef {
     if (!this._widgetReactNode) {
       const widgetControl = this.getWidgetControl(ConfigurableUiControlType.Widget);
 
+      // istanbul ignore else
       if (widgetControl && widgetControl.reactElement)
         this._widgetReactNode = widgetControl.reactElement;
     }
@@ -259,8 +283,11 @@ export class WidgetDef {
   }
 
   public setWidgetState(newState: WidgetState): void {
+    if (this.state === newState)
+      return;
     this.state = newState;
-    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this });
+    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: newState });
+    this.widgetControl && this.widgetControl.onWidgetStateChanged();
   }
 
   public canOpen(): boolean {
@@ -268,7 +295,7 @@ export class WidgetDef {
   }
 
   public get isVisible(): boolean {
-    return (WidgetState.Hidden !== this.state);
+    return WidgetState.Hidden !== this.state;
   }
 
   public get activeState(): WidgetState {

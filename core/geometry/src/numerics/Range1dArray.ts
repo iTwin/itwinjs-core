@@ -7,8 +7,10 @@
 
 import { Range1d } from "../geometry3d/Range";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { Geometry } from "../Geometry";
 /**
  * A Range1d array is a set of intervals, such as occur when a line is clipped to a (nonconvex) polygon
+ * @internal
  */
 export class Range1dArray {
   /** Internal step: Caller supplies rangeA = interval from left operand of set difference {A - B}
@@ -275,9 +277,9 @@ export class Range1dArray {
    * @param sort optionally request immediate sort.
    * @param compress optionally request removal of duplicates.
    */
-  public static getBreaks(data: Range1d[], result?: GrowableFloat64Array, sort: boolean = false, compress: boolean = false): GrowableFloat64Array {
+  public static getBreaks(data: Range1d[], result?: GrowableFloat64Array, sort: boolean = false, compress: boolean = false, clear: boolean = true): GrowableFloat64Array {
     if (!result) result = new GrowableFloat64Array(2 * data.length);
-    result.clear();
+    if (clear) result.clear();
     for (const range of data) {
       result.push(range.low);
       result.push(range.high);
@@ -288,6 +290,42 @@ export class Range1dArray {
       result.compressAdjcentDuplicates();
 
     return result;
+  }
+
+  /**  evaluate a point at an array of given fraction values
+   * @param data array of ranges.
+   * @param initialRangeFraction fraction coordinate applied only to first range. (typically negative)
+   * @param rangeFraction fraction within each range.
+   * @param includeDegenerateRange if false, skip rangeFraction for 0-length ranges.
+   * @param gapFraction fraction within interval from each range high to successor low
+   * @param includeDegenerateGap if false, skip rangeFraction for 0-length gaps.
+   * @param finalRangeFraction fraction coordinate applied only to last range (typically an extrapolation above)
+   * @param result array to receive values
+   */
+  public static appendFractionalPoints(data: Range1d[], initialRangeFraction: number | undefined, rangeFraction: number | undefined, includeDegenerateRange: boolean,
+    gapFraction: number | undefined, includeDegenerateGap: boolean,
+    finalRangeFraction: number | undefined, result: GrowableFloat64Array | number[]): GrowableFloat64Array | number[] {
+    const numRange = data.length;
+    if (numRange > 0) {
+      if (undefined !== initialRangeFraction)
+        result.push(data[0].fractionToPoint(initialRangeFraction));
+      for (let i = 0; i < numRange; i++) {
+        if (rangeFraction !== undefined && (includeDegenerateRange || data[i].low !== data[i].high))
+          result.push(data[i].fractionToPoint(rangeFraction));
+        if (i > 1 && gapFraction !== undefined && (includeDegenerateGap || data[i].low !== data[i].high))
+          result.push(Geometry.interpolate(data[i - 1].high, gapFraction, data[i].low));
+      }
+      if (undefined !== finalRangeFraction)
+        result.push(data[numRange - 1].fractionToPoint(finalRangeFraction));
+    }
+    return result;
+  }
+
+  /** Return a single range constructed with the low of range 0 and high of final range in the set.  */
+  public static firstLowToLastHigh(data: Range1d[]): Range1d {
+    if (data.length === 0)
+      return Range1d.createNull();
+    return Range1d.createXX(data[0].low, data[data.length - 1].high);
   }
   /** sum the lengths of all ranges */
   public static sumLengths(data: Range1d[]): number {
@@ -320,7 +358,9 @@ export class Range1dArray {
   }
 }
 
-/** Checks low's first, then high's */
+/** Checks low's first, then high's
+ * @internal
+ */
 export function compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number {
   if (a.low < b.low) return -1;
   if (a.low > b.low) return 1;

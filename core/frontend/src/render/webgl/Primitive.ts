@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { FeatureIndexType } from "@bentley/imodeljs-common";
-import { Target } from "./Target";
+import { Target, PrimitiveVisibility } from "./Target";
 import { Graphic, Batch } from "./Graphic";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
@@ -15,8 +15,9 @@ import { TechniqueId } from "./TechniqueId";
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { System } from "./System";
 import { InstancedGraphicParams, RenderMemory } from "../System";
-import { InstancedGeometry } from "./InstancedGeometry";
+import { InstancedGeometry, InstanceBuffers } from "./InstancedGeometry";
 
+/** @internal */
 export class Primitive extends Graphic {
   public cachedGeometry: CachedGeometry;
   public isPixelMode: boolean = false;
@@ -24,13 +25,21 @@ export class Primitive extends Graphic {
   protected constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
 
   public static create(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams): Primitive | undefined {
+    const instanceBuffers = undefined !== instances ? InstanceBuffers.create(instances, false) : undefined;
+    if (undefined === instanceBuffers && undefined !== instances)
+      return undefined;
+
+    return this.createShared(createGeom, instanceBuffers);
+  }
+
+  public static createShared(createGeom: () => CachedGeometry | undefined, instances?: InstanceBuffers): Primitive | undefined {
     let geom = createGeom();
     if (undefined === geom)
       return undefined;
 
     if (undefined !== instances) {
       assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
-      geom = InstancedGeometry.create(geom as LUTGeometry, true, instances);
+      geom = new InstancedGeometry(geom as LUTGeometry, true, instances);
     }
 
     return undefined !== geom ? new this(geom) : undefined;
@@ -47,6 +56,18 @@ export class Primitive extends Graphic {
   public getRenderPass(target: Target) {
     if (this.isPixelMode)
       return RenderPass.ViewOverlay;
+
+    switch (target.primitiveVisibility) {
+      case PrimitiveVisibility.Uninstanced:
+        if (this.cachedGeometry.isInstanced)
+          return RenderPass.None;
+        break;
+      case PrimitiveVisibility.Instanced:
+        if (!this.cachedGeometry.isInstanced)
+          return RenderPass.None;
+        break;
+    }
+
     return this.cachedGeometry.getRenderPass(target);
   }
 
@@ -94,7 +115,8 @@ export class Primitive extends Graphic {
   public getTechniqueId(target: Target): TechniqueId { return this.cachedGeometry.getTechniqueId(target); }
 }
 
-export class SkyBoxPrimitive extends Primitive {
+/** @internal */
+export class SkyCubePrimitive extends Primitive {
   public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
 
   public draw(shader: ShaderProgramExecutor): void {
@@ -109,5 +131,14 @@ export class SkyBoxPrimitive extends Primitive {
     super.draw(shader); // Draw the skybox cubemap
 
     System.instance.context.viewport(0, 0, vw, vh); // Restore viewport
+  }
+}
+
+/** @internal */
+export class SkySpherePrimitive extends Primitive {
+  public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
+
+  public draw(shader: ShaderProgramExecutor): void {
+    super.draw(shader); // Draw the skybox sphere
   }
 }

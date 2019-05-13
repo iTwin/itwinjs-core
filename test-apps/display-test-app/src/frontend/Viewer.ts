@@ -2,23 +2,23 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
-import { imageBufferToPngDataUrl, IModelApp, IModelConnection, ScreenViewport, Viewport, ViewState, PluginAdmin } from "@bentley/imodeljs-frontend";
+import { imageBufferToPngDataUrl, IModelApp, IModelConnection, PluginAdmin, ScreenViewport, Viewport, ViewState, ViewClipDecorationProvider } from "@bentley/imodeljs-frontend";
+import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AnimationPanel } from "./AnimationPanel";
-import { CategoryPicker } from "./CategoryPicker";
+import { CategoryPicker, ModelPicker } from "./IdPicker";
 import { DebugPanel } from "./DebugPanel";
+import { emphasizeSelectedElements, FeatureOverridesPanel } from "./FeatureOverrides";
 import { IncidentMarkerDemo } from "./IncidentMarkerDemo";
-import { ModelPicker } from "./ModelPicker";
 import { toggleProjectExtents } from "./ProjectExtents";
 import { RealityModelPicker } from "./RealityModelPicker";
 import { addSnapModes } from "./SnapModes";
 import { StandardRotations } from "./StandardRotations";
 import { TileLoadIndicator } from "./TileLoadIndicator";
-import { FeatureOverridesPanel, emphasizeSelectedElements } from "./FeatureOverrides";
-import { ToolBar, ToolBarDropDown, createImageButton, createToolButton } from "./ToolBar";
-import { ViewList, ViewPicker } from "./ViewPicker";
+import { createImageButton, createToolButton, ToolBar, ToolBarDropDown } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
+import { ViewList, ViewPicker } from "./ViewPicker";
 
 // ###TODO: I think the picker populates correctly, but I have no way to test - and if no reality models are available,
 // the button doesn't disappear until you click on it. Revisit when Alain has something useful for us.
@@ -50,6 +50,28 @@ class DebugTools extends ToolBarDropDown {
     this._element.className = "toolMenu";
     this._element.style.display = "flex";
     this._element.style.cssFloat = "left";
+    this._element.style.width = "440px";
+
+    const wantClipTools = true;
+    if (wantClipTools) {
+      this._element.appendChild(createToolButton({
+        className: "bim-icon-viewtop",
+        click: () => IModelApp.tools.run("ViewClip.ByPlane", ViewClipDecorationProvider.create()),
+        tooltip: "View Clip Create",
+      }));
+
+      this._element.appendChild(createToolButton({
+        className: "bim-icon-viewisoleft",
+        click: () => ViewClipDecorationProvider.create().toggleDecoration(IModelApp.viewManager.selectedView!),
+        tooltip: "Toggle View Clip Handles",
+      }));
+
+      this._element.appendChild(createToolButton({
+        className: "bim-icon-cancel",
+        click: () => IModelApp.tools.run("ViewClip.Clear", ViewClipDecorationProvider.create()),
+        tooltip: "View Clip Clear",
+      }));
+    }
 
     this._element.appendChild(createImageButton({
       src: "Warning_sign.svg",
@@ -70,8 +92,8 @@ class DebugTools extends ToolBarDropDown {
     }));
 
     this._element.appendChild(createToolButton({
-      className: "rd-icon-measure-distance",
-      click: () => IModelApp.tools.run("DrawingAidTest.Points", IModelApp.viewManager.selectedView!), // ###TODO Fix the drop-down...
+      className: "bim-icon-measure-tool",
+      click: () => IModelApp.tools.run("DrawingAidTest.Points", IModelApp.viewManager.selectedView!),
       tooltip: "Test drawing aid tools",
     }));
 
@@ -86,7 +108,7 @@ class DebugTools extends ToolBarDropDown {
 
     this._element.appendChild(createImageButton({
       src: "Markup.svg",
-      click: async () => PluginAdmin.loadPlugin("MarkupPlugin.js"),
+      click: async () => this.doMarkup(),
       tooltip: "Create Markup for View",
     }));
     this._element.appendChild(createToolButton({
@@ -95,6 +117,25 @@ class DebugTools extends ToolBarDropDown {
       tooltip: "Start Web Worker Test",
     }));
     parent.appendChild(this._element);
+  }
+
+  private async doMarkup() {
+    if (MarkupApp.isActive) {
+      // NOTE: Because we don't have separate START and STOP buttons in the test app, exit markup mode only when the Markup Select tool is active, otherwise start the Markup Select tool...
+      const startMarkupSelect = IModelApp.toolAdmin.defaultToolId === MarkupApp.markupSelectToolId && (undefined === IModelApp.toolAdmin.activeTool || MarkupApp.markupSelectToolId !== IModelApp.toolAdmin.activeTool.toolId);
+      if (startMarkupSelect) {
+        IModelApp.toolAdmin.startDefaultTool();
+        return;
+      }
+      MarkupApp.props.result.maxWidth = 1500;
+      const markupData = await MarkupApp.stop();
+      // tslint:disable:no-console
+      window.open(markupData.image, "Markup");
+    } else {
+      MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
+      MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events
+      await MarkupApp.start(IModelApp.viewManager.selectedView!);
+    }
   }
 
   public get isOpen(): boolean { return "none" !== this._element.style.display; }
@@ -197,7 +238,11 @@ export class Viewer {
 
     this.toolBar.addDropDown({
       className: "bim-icon-settings",
-      createDropDown: async (container: HTMLElement) => Promise.resolve(new ViewAttributesPanel(this.viewport, container)),
+      createDropDown: async (container: HTMLElement) => {
+        const picker = new ViewAttributesPanel(this.viewport, container);
+        await picker.populate();
+        return picker;
+      },
     });
 
     this.toolBar.addItem(createImageButton({
@@ -235,6 +280,12 @@ export class Viewer {
     this.toolBar.addItem(createToolButton({
       className: "bim-icon-redo",
       click: () => IModelApp.tools.run("View.Redo", this.viewport),
+    }));
+
+    this.toolBar.addItem(createToolButton({
+      className: "rd-icon-measure-distance",
+      click: () => IModelApp.tools.run("Measure.Distance", IModelApp.viewManager.selectedView!),
+      tooltip: "Measure distance",
     }));
 
     this.toolBar.addDropDown({
@@ -288,13 +339,12 @@ export class Viewer {
   }
 
   private async clearViews(): Promise<void> {
-    await this._imodel.closeStandalone();
-
+    await this._imodel.closeSnapshot();
     this.views.clear();
   }
 
   private async openIModel(filename: string): Promise<void> {
-    this._imodel = await IModelConnection.openStandalone(filename, OpenMode.Readonly);
+    this._imodel = await IModelConnection.openSnapshot(filename);
   }
 
   private async buildViewList(): Promise<void> {

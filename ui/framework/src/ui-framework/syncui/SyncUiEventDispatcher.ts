@@ -10,18 +10,21 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { Backstage } from "../backstage/Backstage";
 import { WorkflowManager } from "../workflow/Workflow";
 import { ContentViewManager } from "../content/ContentViewManager";
-import { AppStateActionId } from "../AppState";
-import { UiFramework } from "../UiFramework";
+import { SessionStateActionId } from "../SessionState";
+import { UiFramework, PresentationSelectionScope } from "../UiFramework";
 import { IModelConnection, SelectEventType, IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
-import { getInstancesCount } from "@bentley/presentation-common";
+import { SelectionScope, getInstancesCount } from "@bentley/presentation-common";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
 // cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged
-/** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control. */
-export const enum SyncUiEventId {
+
+/** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control.
+ * @public
+ */
+export enum SyncUiEventId {
   /** The active content as maintained by the ContentViewManager has changed. */
   ActiveContentChanged = "activecontentchanged",
   /** The active view maintained by the ViewManager has changed. */
@@ -55,17 +58,20 @@ export const enum SyncUiEventId {
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
+ * @public
  */
 export interface SyncUiEventArgs {
   eventIds: Set<string>;
 }
 
 /** SyncUi Event class.
+ * @public
  */
 export class SyncUiEvent extends UiEvent<SyncUiEventArgs> { }
 
 /** SyncUi Event Dispatcher class. This class is used to send eventIds to interested Ui components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
+ * @public
  */
 export class SyncUiEventDispatcher {
   private static _syncEventTimerId: number | undefined;
@@ -75,7 +81,7 @@ export class SyncUiEventDispatcher {
   private static _timeoutPeriod: number = 200;
   private static _unregisterListenerFunc?: () => void;
 
-  /** @hidden - used for testing only */
+  /** @internal - used for testing only */
   public static setTimeoutPeriod(period: number): void {
     SyncUiEventDispatcher._timeoutPeriod = period;
   }
@@ -140,7 +146,7 @@ export class SyncUiEventDispatcher {
     }
 
     /* istanbul ignore else */
-    if (SyncUiEventDispatcher._syncEventTimerId) clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
+    if (SyncUiEventDispatcher._syncEventTimerId) window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
     SyncUiEventDispatcher._eventIdAdded = false;
     // if events have been added before the initial timer expired wait half that time to see if events are still being added.
     SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod / 2);
@@ -188,7 +194,7 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
     });
 
-    Backstage.onBackstageCloseEventEvent.addListener(() => {
+    Backstage.onBackstageCloseEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageCloseEvent);
     });
 
@@ -238,8 +244,25 @@ export class SyncUiEventDispatcher {
       }
       const selection = provider.getSelection(args.imodel, args.level);
       const numSelected = getInstancesCount(selection);
-      UiFramework.dispatchActionToStore(AppStateActionId.SetNumItemsSelected, numSelected);
+      UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, numSelected);
     });
+
+    Presentation.selection.scopes.getSelectionScopes(iModelConnection).then((availableScopes: SelectionScope[]) => { // tslint:disable-line:no-floating-promises
+      if (availableScopes) {
+        const presentationScopes: PresentationSelectionScope[] = [];
+        availableScopes.map((scope) => presentationScopes.push(scope));
+        UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, presentationScopes);
+      }
+    });
+
+    const activeSelectionScope = Presentation.selection.scopes.activeScope;
+    if (activeSelectionScope) {
+      if (typeof (activeSelectionScope) === "object") {
+        UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, (activeSelectionScope as SelectionScope).id);
+      } else {
+        UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, activeSelectionScope);
+      }
+    }
   }
 
 }

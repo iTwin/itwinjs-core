@@ -31,7 +31,7 @@ import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 
 /**
- *
+ * @beta
  */
 export class Schema implements CustomAttributeContainerProps {
   private _context: SchemaContext;
@@ -61,7 +61,7 @@ export class Schema implements CustomAttributeContainerProps {
    * Constructs an empty Schema (without a SchemaKey) in the provided context.
    * This should only be used when the schema name and version will be deserialized (via `fromJson()`) immediately after this Schema is instantiated.
    * @param context The SchemaContext that will control the lifetime of the schema
-   * @hidden
+   * @internal
    */
   constructor(context: SchemaContext);
   constructor(context: SchemaContext, nameOrKey?: SchemaKey | string, readVer?: SchemaContext | number, writeVer?: number, minorVer?: number) {
@@ -496,10 +496,11 @@ export class Schema implements CustomAttributeContainerProps {
 
 }
 
-/** @hidden
+/**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
  * We cannot put this into Helper.ts and make it non-export, because we are importing Helper.ts from this file, and the circular import
  * would prevent this class from extending Schema.
+ * @internal
  */
 export abstract class MutableSchema extends Schema {
   public abstract addCustomAttribute(customAttribute: CustomAttribute): void;

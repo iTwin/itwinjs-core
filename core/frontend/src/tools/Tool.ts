@@ -4,24 +4,81 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Point3d, Point2d, PolygonOps } from "@bentley/geometry-core";
-import { Viewport, ScreenViewport } from "../Viewport";
-import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { HitDetail } from "../HitDetail";
+import { BeDuration } from "@bentley/bentleyjs-core";
+import { Point2d, Point3d, PolygonOps, Angle, Constant } from "@bentley/geometry-core";
+import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { IModelApp } from "../IModelApp";
-import { IModelError, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
-import { CoordinateLockOverrides } from "./ToolAdmin";
-import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
-import { ToolSettingsPropertySyncItem, ToolSettingsPropertyRecord } from "../properties/ToolSettingsValue";
+import { HitDetail } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
+import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
+import { DecorateContext, DynamicsContext } from "../ViewContext";
+import { ScreenViewport, Viewport } from "../Viewport";
 
+/** Settings that control the behavior of built-in tools. Applications may modify these values.
+ * @public
+ */
+export class ToolSettings {
+  /** Duration of animations of viewing operations. */
+  public static animationTime = BeDuration.fromMilliseconds(260);
+  /** Two tap must be within this period to be a double tap. */
+  public static doubleTapTimeout = BeDuration.fromMilliseconds(250);
+  /** Two clicks must be within this period to be a double click. */
+  public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
+  /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
+  public static doubleClickToleranceInches = 0.05;
+  /** Duration without movement before a no-motion event is generated. */
+  public static noMotionTimeout = BeDuration.fromMilliseconds(10);
+  /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
+  public static preserveWorldUp = true;
+  /** Delay with a touch on the surface before a move operation begins. */
+  public static touchMoveDelay = BeDuration.fromMilliseconds(50);
+  /** Delay with the mouse down before a drag operation begins. */
+  public static startDragDelay = BeDuration.fromMilliseconds(110);
+  /** Distance in screen inches a touch point must move before being considered motion. */
+  public static touchMoveDistanceInches = 0.15;
+  /** Distance in screen inches the cursor must move before a drag operation begins. */
+  public static startDragDistanceInches = 0.15;
+  /** Radius in screen inches to search for elements that anchor viewing operations. */
+  public static viewToolPickRadiusInches = 0.20;
+  /** Camera angle enforced for walk tool. */
+  public static walkCameraAngle = Angle.createDegrees(75.6);
+  /** Whether the walk tool enforces worldZ be aligned with screenY */
+  public static walkEnforceZUp = false;
+  /** Speed, in meters per second, for the walk tool. */
+  public static walkVelocity = 3.5;
+  /** Scale factor applied for wheel events with "per-line" modifier. */
+  public static wheelLineFactor = 40;
+  /** Scale factor applied for wheel events with "per-page" modifier. */
+  public static wheelPageFactor = 120;
+  /** When the zoom-with-wheel tool (with camera enabled) gets closer than this distance to an obstacle, it "bumps" through. */
+  public static wheelZoomBumpDistance = Constant.oneCentimeter;
+  /** Scale factor for zooming with mouse wheel. */
+  public static wheelZoomRatio = 1.75;
+}
+
+/** @public */
 export type ToolType = typeof Tool;
-export type ToolList = ToolType[];
-export const enum BeButton { Data = 0, Reset = 1, Middle = 2 }
 
-/** The *source* that generated an event. */
-export const enum InputSource {
+/** @public */
+export type ToolList = ToolType[];
+
+/** @public */
+export enum BeButton { Data = 0, Reset = 1, Middle = 2 }
+
+/** @public */
+export enum CoordinateLockOverrides {
+  None = 0,
+  ACS = 1 << 1,
+  Grid = 1 << 2,     // also overrides unit lock
+  All = 0xffff,
+}
+
+/** The *source* that generated an event.
+ * @public
+ */
+export enum InputSource {
   /** Source not defined */
   Unknown = 0,
   /** From a mouse or other pointing device */
@@ -30,8 +87,10 @@ export const enum InputSource {
   Touch = 2,
 }
 
-/** The *source* that generated a coordinate. */
-export const enum CoordSource {
+/** The *source* that generated a coordinate.
+ * @public
+ */
+export enum CoordSource {
   /** Event was created by an action from the user */
   User = 0,
   /** Event was created by a program or by a precision keyin */
@@ -42,9 +101,12 @@ export const enum CoordSource {
   ElemSnap = 3,
 }
 
-/** Numeric mask for a set of modifier keys (control, shift, and alt). */
-export const enum BeModifierKeys { None = 0, Control = 1 << 0, Shift = 1 << 1, Alt = 1 << 2 }
+/** Numeric mask for a set of modifier keys (control, shift, and alt).
+ * @public
+ */
+export enum BeModifierKeys { None = 0, Control = 1 << 0, Shift = 1 << 1, Alt = 1 << 2 }
 
+/** @public */
 export class BeButtonState {
   private readonly _downUorPt: Point3d = new Point3d();
   private readonly _downRawPt: Point3d = new Point3d();
@@ -70,6 +132,7 @@ export class BeButtonState {
   }
 }
 
+/** @public */
 export class BeButtonEvent {
   private readonly _point: Point3d = new Point3d();
   private readonly _rawPoint: Point3d = new Point3d();
@@ -131,7 +194,9 @@ export class BeButtonEvent {
   }
 }
 
-/** Specialization of ButtonEvent for touch input. */
+/** Specialization of ButtonEvent for touch input.
+ * @public
+ */
 export class BeTouchEvent extends BeButtonEvent {
   public get touchCount(): number { return this.touchInfo.targetTouches.length; }
   public get isSingleTouch(): boolean { return 1 === this.touchCount; }
@@ -188,7 +253,9 @@ export class BeTouchEvent extends BeButtonEvent {
   }
 }
 
-/** Information about movement of the mouse wheel. */
+/** Information about movement of the mouse wheel.
+ * @public
+ */
 export class BeWheelEvent extends BeButtonEvent {
   public constructor(public wheelDelta: number = 0) { super(); }
   public setFrom(src: BeWheelEvent): void {
@@ -202,10 +269,10 @@ export class BeWheelEvent extends BeButtonEvent {
   }
 }
 
-/**
- * Base Tool class for writing an immediate tool that executes it's assigned task immediately without further input.
+/** Base Tool class for writing an immediate tool that executes it's assigned task immediately without further input.
  * @see [[InteractiveTool]] for a base Tool class to handle user input events from a Viewport.
  * @see [Tools]($docs/learning/frontend/tools.md)
+ * @public
  */
 export class Tool {
   /** If true, this Tool will not appear in the list from [[ToolRegistry.getToolList]]. This should be overridden in subclasses to hide them. */
@@ -272,11 +339,12 @@ export class Tool {
   public run(..._arg: any[]): boolean { return true; }
 }
 
+/** @public */
 export enum EventHandled { No = 0, Yes = 1 }
 
-/**
- * A Tool that may be installed, via [[ToolAdmin]], to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
+/** A Tool that may be installed, via [[ToolAdmin]], to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
  * InputCollector, and IdleTool. Each must derive from this class and there may only be one of each type installed at a time.
+ * @public
  */
 export abstract class InteractiveTool extends Tool {
 
@@ -503,22 +571,27 @@ export abstract class InteractiveTool extends Tool {
     this.changeLocateState(enableLocate, enableSnap, cursor, coordLockOvr);
   }
 
-  /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed */
+  /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed
+   * @beta
+   */
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined { return undefined; }
 
-  /** Used to receive property changes from UI. Return false if there was an error applying updatedValue. */
+  /** Used to receive property changes from UI. Return false if there was an error applying updatedValue.
+   * @beta
+   */
   public applyToolSettingPropertyChange(_updatedValue: ToolSettingsPropertySyncItem): boolean { return true; }
 
   /** Called by tool to synchronize the UI with property changes made by tool. This is typically used to provide user feedback during tool dynamics.
    * If the syncData contains a quantity value and if the displayValue is not defined, the displayValue will be generated in the UI layer before displaying the value.
+   * @beta
    */
   public syncToolSettingsProperties(syncData: ToolSettingsPropertySyncItem[]) {
     IModelApp.toolAdmin.syncToolSettingsProperties(this.toolId, syncData);
   }
 }
 
-/**
- * The InputCollector class can be used to implement a command for gathering input (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
+/** The InputCollector class can be used to implement a command for gathering input (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
+ * @public
  */
 export abstract class InputCollector extends InteractiveTool {
   public run(): boolean {
@@ -536,9 +609,9 @@ export abstract class InputCollector extends InteractiveTool {
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
 }
 
-/**
- * The ToolRegistry holds a mapping between toolIds and their corresponding Tool class. This provides the mechanism to
+/** The ToolRegistry holds a mapping between toolIds and their corresponding Tool class. This provides the mechanism to
  * find Tools by their toolId, and also a way to iterate over the set of Tools available.
+ * @public
  */
 export class ToolRegistry {
   public readonly tools = new Map<string, ToolType>();

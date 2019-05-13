@@ -6,13 +6,13 @@
 
 export * from "./EC";
 export { PresentationError, PresentationStatus } from "./Error";
-export { default as KeySet, Keys } from "./KeySet";
+export { default as KeySet, Keys, Key } from "./KeySet";
 export { default as PersistentKeysContainer } from "./PersistentKeysContainer";
 export * from "./content/Value";
 export * from "./PresentationManagerOptions";
 export {
-  default as PresentationRpcInterface,
-  RpcRequestOptions, ClientStateSyncRequestOptions, ContentRpcRequestOptions,
+  default as PresentationRpcInterface, RpcRequestOptions,
+  LabelRpcRequestOptions, ClientStateSyncRequestOptions, ContentRpcRequestOptions,
   HierarchyRpcRequestOptions, SelectionScopeRpcRequestOptions,
   RpcResponse, PresentationRpcResponse, NodesResponse, ContentResponse,
 } from "./PresentationRpcInterface";
@@ -29,7 +29,7 @@ export * from "./selection/SelectionScope";
 /** @module Content */
 export { default as CategoryDescription } from "./content/Category";
 export { default as Content, ContentJSON } from "./content/Content";
-export { default as Descriptor, DescriptorJSON, SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SortDirection, ContentFlags } from "./content/Descriptor";
+export { default as Descriptor, DescriptorJSON, DescriptorOverrides, SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SortDirection, ContentFlags } from "./content/Descriptor";
 export { default as DefaultContentDisplayTypes } from "./content/DisplayTypes";
 export { default as EditorDescription } from "./content/Editor";
 export { BaseFieldJSON, Field, FieldJSON, PropertiesField, PropertiesFieldJSON, NestedContentField, NestedContentFieldJSON } from "./content/Fields";

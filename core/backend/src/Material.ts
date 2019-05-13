@@ -5,28 +5,24 @@
 /** @module Elements */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import {
-  BisCodeSpec,
-  Code,
-  CodeSpec,
-  CodeScopeProps,
-  TextureMapProps,
-  RenderMaterialProps,
-} from "@bentley/imodeljs-common";
+import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, RenderMaterialProps, TextureMapProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
-/** Defines a rendering material. */
-export class RenderMaterial extends DefinitionElement implements RenderMaterialProps {
+/** Defines a rendering material.
+ * @public
+ */
+export class RenderMaterialElement extends DefinitionElement implements RenderMaterialProps {
+  public static get className(): string { return "RenderMaterial"; }
   public paletteName: string;
   public description?: string;
-  /** @hidden */
+  /** @internal */
   constructor(props: RenderMaterialProps, iModel: IModelDb) {
     super(props, iModel);
     this.paletteName = props.paletteName;
     this.description = props.description;
   }
-  /** @hidden */
+  /** @internal */
   public toJSON(): RenderMaterialProps {
     const val = super.toJSON() as RenderMaterialProps;
     val.paletteName = this.paletteName;
@@ -51,7 +47,7 @@ export class RenderMaterial extends DefinitionElement implements RenderMaterialP
    * @returns The newly constructed RenderMaterial element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterial.Params): RenderMaterial {
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): RenderMaterialElement {
     const map = undefined !== params.patternMap ? { Pattern: params.patternMap } : undefined;
     const renderMaterialProps: RenderMaterialProps = {
       classFullName: this.classFullName,
@@ -84,7 +80,7 @@ export class RenderMaterial extends DefinitionElement implements RenderMaterialP
       model: definitionModelId,
       isPrivate: false,
     };
-    return new RenderMaterial(renderMaterialProps, iModelDb);
+    return new RenderMaterialElement(renderMaterialProps, iModelDb);
   }
   /**
    * Insert a new RenderMaterial into a model.
@@ -95,13 +91,14 @@ export class RenderMaterial extends DefinitionElement implements RenderMaterialP
    * @returns The Id of the newly inserted RenderMaterial element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterial.Params): Id64String {
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): Id64String {
     const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
     return iModelDb.elements.insertElement(renderMaterial);
   }
 }
 
-export namespace RenderMaterial {
+/** @public */
+export namespace RenderMaterialElement {
   /** Parameters used to construct a [[RenderMaterial]]. */
   export class Params {
     /** The palette name which categorizes this RenderMaterial */

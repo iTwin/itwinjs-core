@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { ColorDef } from "@bentley/imodeljs-common";
 import {
   ProgramBuilder,
   FragmentShaderBuilder,
@@ -14,14 +13,13 @@ import {
   ShaderBuilder,
   ShaderBuilderFlags,
 } from "../ShaderBuilder";
-import { IsInstanced, IsAnimated, FeatureMode } from "../TechniqueFlags";
+import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable } from "../TechniqueFlags";
 import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
-import { FloatPreMulRgba } from "../FloatRGBA";
 import { addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
 import { addShaderFlags, GLSLCommon } from "./Common";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
@@ -29,6 +27,10 @@ import { Texture } from "../Texture";
 import { Material } from "../Material";
 import { System } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
+import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
+import { addSolarShadowMap } from "./SolarShadowMapping";
+import { MutableFloatRgb, FloatRgba } from "../FloatRGBA";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 const sampleSurfaceTexture = `
   vec4 sampleSurfaceTexture() {
@@ -49,6 +51,7 @@ const applyMaterialOverrides = `
   return mix(matColor, g_surfaceTexel, textureWeight);
 `;
 
+/** @internal */
 export function addMaterial(frag: FragmentShaderBuilder): void {
   // ###TODO: We could pack rgb, alpha, and override flags into two floats.
   frag.addFunction(GLSLFragment.revertPreMultipliedAlpha);
@@ -81,12 +84,16 @@ const computePosition = `
   return u_proj * pos;
 `;
 
-function createCommon(instanced: IsInstanced, animated: IsAnimated): ProgramBuilder {
+function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: IsClassified, shadowable: IsShadowable): ProgramBuilder {
   const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
 
   if (animated)
     addAnimation(vert, true);
+  if (classified)
+    addColorPlanarClassifier(builder);
+  if (shadowable)
+    addSolarShadowMap(builder);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -96,12 +103,19 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated): ProgramBuil
   return builder;
 }
 
-export function createSurfaceHiliter(instanced: IsInstanced): ProgramBuilder {
-  const builder = createCommon(instanced, IsAnimated.No);
+/** @internal */
+export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified): ProgramBuilder {
+  const builder = createCommon(instanced, IsAnimated.No, classified, IsShadowable.No);
 
   addSurfaceFlags(builder, true);
   addTexture(builder, IsAnimated.No);
-  addSurfaceHiliter(builder);
+  if (classified) {
+    addHilitePlanarClassifier(builder);
+    builder.vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
+    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  } else
+    addSurfaceHiliter(builder);
+
   return builder;
 }
 
@@ -152,6 +166,7 @@ const computeSurfaceFlags = `
   return flags;
 `;
 
+/** @internal */
 export const octDecodeNormal = `
 vec3 octDecodeNormal(vec2 e) {
   e = e / 255.0 * 2.0 - 1.0;
@@ -277,8 +292,12 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
   });
 }
 
-export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
-  const builder = createCommon(isInstanced, isAnimated);
+const scratchBgColor: MutableFloatRgb = MutableFloatRgb.fromColorDef(ColorDef.white);
+const blackColor = FloatRgba.fromColorDef(ColorDef.black);
+
+/** @internal */
+export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced, isAnimated: IsAnimated, isClassified: IsClassified, isShadowable: IsShadowable): ProgramBuilder {
+  const builder = createCommon(isInstanced, isAnimated, isClassified, isShadowable);
   addShaderFlags(builder);
 
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
@@ -290,9 +309,9 @@ export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced
   builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
   builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_bgColor", (uniform, params) => {
-      const bgColor: ColorDef = params.target.bgColor;
-      const rgbColor: FloatPreMulRgba = FloatPreMulRgba.fromColorDef(bgColor);
-      uniform.setUniform3fv(new Float32Array([rgbColor.red, rgbColor.green, rgbColor.blue]));
+      const bgColor = params.target.bgColor.alpha === 0.0 ? blackColor : params.target.bgColor;
+      scratchBgColor.setRgbValues(bgColor.red, bgColor.green, bgColor.blue);
+      scratchBgColor.bind(uniform);
     });
   });
 
@@ -321,6 +340,8 @@ export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced
   if (FeatureMode.None === feat) {
     builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   } else {
+    if (isClassified)
+      addFeaturePlanarClassifier(builder);
     builder.frag.addFunction(GLSLDecode.depthRgb);
     addPickBufferOutputs(builder.frag);
   }
@@ -336,6 +357,7 @@ export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced
 // non-transparent pixel of it.
 const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) && alpha == 0.0;`;
 
+/** @internal */
 export function addSurfaceDiscardByAlpha(frag: FragmentShaderBuilder): void {
   frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
 }

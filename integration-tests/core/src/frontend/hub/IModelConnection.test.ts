@@ -3,13 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode, Logger, LogLevel, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
+import { ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
 import { BisCodeSpec, CodeSpec, NavigationValue, RelatedElement, IModelVersion } from "@bentley/imodeljs-common";
-import { TestData } from "./TestData";
+import { TestUtility } from "./TestUtility";
+import { TestUsers } from "./TestUsers";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection,
-  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, MockRender,
+  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, MockRender, IModelApp,
 } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 
@@ -30,13 +32,19 @@ describe("IModelConnection (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    await TestData.load();
-    iModel = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId);
+    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
+    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
+    IModelApp.authorizationClient = imsTestAuthorizationClient;
+
+    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
+
+    iModel = await IModelConnection.open(testProjectId, testIModelId);
   });
 
   after(async () => {
     if (iModel)
-      await iModel.close(TestData.accessToken);
+      await iModel.close();
     MockRender.App.shutdown();
   });
 
@@ -78,9 +86,9 @@ describe("IModelConnection (#integration)", () => {
     assert.isAtLeast(viewDefinitions.length, 1);
     let viewState: ViewState = await iModel.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
-    assert.equal(viewState.classFullName, OrthographicViewState.getClassFullName());
-    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
-    assert.equal(viewState.displayStyle.classFullName, DisplayStyle3dState.getClassFullName());
+    assert.equal(viewState.classFullName, OrthographicViewState.classFullName);
+    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.classFullName);
+    assert.equal(viewState.displayStyle.classFullName, DisplayStyle3dState.classFullName);
     assert.instanceOf(viewState, OrthographicViewState);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle3dState);
@@ -92,8 +100,8 @@ describe("IModelConnection (#integration)", () => {
     assert.exists(viewState);
     assert.equal(viewState.code.getValue(), viewDefinitions[0].name);
     assert.equal(viewState.classFullName, viewDefinitions[0].class);
-    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.getClassFullName());
-    assert.equal(viewState.displayStyle.classFullName, DisplayStyle2dState.getClassFullName());
+    assert.equal(viewState.categorySelector.classFullName, CategorySelectorState.classFullName);
+    assert.equal(viewState.displayStyle.classFullName, DisplayStyle2dState.classFullName);
     assert.instanceOf(viewState, DrawingViewState);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
@@ -123,29 +131,29 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to open an IModel with no versions", async () => {
-    const projectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsIntegrationTest");
-    const iModelId = await TestData.getTestIModelId(TestData.accessToken, projectId, "NoVersionsTest");
-    const noVersionsIModel = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    const iModelId = await TestUtility.getTestIModelId(projectId, "NoVersionsTest");
+    const noVersionsIModel = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.isNotNull(noVersionsIModel);
 
-    const noVersionsIModel2 = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
+    const noVersionsIModel2 = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
     assert.isNotNull(noVersionsIModel2);
 
-    const noVersionsIModel3 = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(""));
+    const noVersionsIModel3 = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(""));
     assert.isNotNull(noVersionsIModel3);
   });
 
   it("should be able to open the same IModel many times", async () => {
-    const projectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsIntegrationTest");
-    const iModelId = await TestData.getTestIModelId(TestData.accessToken, projectId, "ReadOnlyTest");
+    const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    const iModelId = await TestUtility.getTestIModelId(projectId, "ReadOnlyTest");
 
-    const readOnlyTest = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    const readOnlyTest = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.isNotNull(readOnlyTest);
 
     const promises = new Array<Promise<void>>();
     let n = 0;
     while (++n < 25) {
-      const promise = IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.latest())
+      const promise = IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest())
         .then((readOnlyTest2: IModelConnection) => {
           assert.isNotNull(readOnlyTest2);
           assert.isTrue(readOnlyTest.iModelToken.key === readOnlyTest2.iModelToken.key);
@@ -160,17 +168,19 @@ describe("IModelConnection (#integration)", () => {
     // Repeatedly opening a Readonly or ReadWrite connection should result in the same briefcase
     // Note that the IModelDb is opened with OpenParams.FixedVersion(AccessMode.Shared) in the case of ReadOnly connections, and
     // OpenParams.PullAndPush(AccessMode.Exclusive) in the case of ReadWrite connections.
+    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
     const openModes: OpenMode[] = [OpenMode.Readonly, OpenMode.ReadWrite];
     for (const openMode of openModes) {
-      const iModel1 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId, openMode, IModelVersion.latest());
+      const iModel1 = await IModelConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
       assert.isNotNull(iModel1);
       let n = 0;
       while (++n < 5) {
-        const iModel2 = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId, openMode, IModelVersion.latest());
+        const iModel2 = await IModelConnection.open(testProjectId, testIModelId, openMode, IModelVersion.latest());
         assert.isNotNull(iModel2);
         assert.equal(iModel2.iModelToken.key, iModel1.iModelToken.key);
       }
-      await iModel1.close(TestData.accessToken);
+      await iModel1.close();
     }
   });
 

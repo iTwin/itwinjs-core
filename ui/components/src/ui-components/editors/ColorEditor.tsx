@@ -5,6 +5,7 @@
 /** @module PropertyEditors */
 
 import * as React from "react";
+import classnames from "classnames";
 import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes, ColorEditorParams } from "@bentley/imodeljs-frontend"; //
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { ColorDef } from "@bentley/imodeljs-common";
@@ -12,20 +13,23 @@ import { ColorPickerButton } from "../color/ColorPickerButton";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import "./ColorEditor.scss";
 
+/** @internal */
 interface ColorEditorState {
   colorValue: number;
   readonly: boolean;
   isDisabled?: boolean;
 }
 
-/** ColorEditor React component that is a property editor with text input  */
+/** ColorEditor React component that is a property editor with text input
+ * @beta
+ */
 export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
   private _control: any | null = null;
   private _isMounted = false;
   private _availableColors: ColorDef[] = [];
   private _numColumns = 4;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ColorEditorState> = {
     colorValue: 0,
     readonly: false,
@@ -137,7 +141,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
   public render() {
     const colorDef = new ColorDef(this.state.colorValue);
     return (
-      <div className="components-color-editor">
+      <div className={classnames("components-color-editor", this.props.className)} style={this.props.style}>
         <ColorPickerButton ref={(control) => this._control = control}
           activeColor={colorDef}
           colorDefs={this._availableColors.length > 0 ? this._availableColors : undefined}
@@ -150,7 +154,9 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
   }
 }
 
-/** ColorPropertyEditor returns React component [[ColorEditor]] to select a  color value. */
+/** ColorPropertyEditor returns React component [[ColorEditor]] to select a  color value.
+ * @beta
+ */
 export class ColorPropertyEditor extends PropertyEditorBase {
   public get reactElement(): React.ReactNode {
     return <ColorEditor />;

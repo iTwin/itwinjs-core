@@ -2,7 +2,7 @@
 Every [ChangeSet]($clients) pushed to iModelHub creates a new Version of iModel. To distinguish a specific ChangeSet in iModel's timeline, that represents an important milestone or significant event for that iModel, its Version can be given a unique human-readable name, creating a Named [Version]($clients). It will allow Version to be easier to recognize and access. Named Versions can be queried separately from ChangeSets and they get [Thumbnail]($clients)s rendered.
 
 ## Creating Named Versions
-Named Version can be created by calling [VersionHandler.create]($clients). To create a Named Version a ChangeSet id has to be specified. [BriefcaseEntry.changeSetId]($backend) provides latest ChangeSet id applied to the briefcase file. It's also possible to query all ChangeSets through [ChangeSetHandler.get]($clients).
+Named Version can be created by calling [VersionHandler.create]($clients). To create a Named Version a ChangeSet id has to be specified. You can get ChangeSet ids by querying ChangeSets through [ChangeSetHandler.get]($clients).
 
 To create a Named Version from a ChangeSet query:
 ``` ts

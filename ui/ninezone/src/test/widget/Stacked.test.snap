@@ -2,13 +2,157 @@
 
 exports[`<Stacked /> renders correctly 1`] = `
 <div
-  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-is-closed"
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed"
 >
   <div
-    className="nz-content-area"
+    className="nz-content-container"
   >
-    <WidgetContent
-      anchor={1}
+    <div
+      className="nz-content"
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-content-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-tabs-grip-container"
+    >
+      <ResizeGrip
+        className="nz-tabs-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <div
+    className="nz-height-expander"
+  />
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;
+
+exports[`<Stacked /> renders correctly to fill zone 1`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed nz-fill-zone"
+>
+  <div
+    className="nz-content-container"
+  >
+    <div
+      className="nz-content"
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-content-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-tabs-grip-container"
+    >
+      <ResizeGrip
+        className="nz-tabs-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <div
+    className="nz-height-expander"
+  />
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;
+
+exports[`<Stacked /> renders dragged correctly 1`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed nz-dragged"
+>
+  <div
+    className="nz-content-container"
+  >
+    <div
+      className="nz-content"
+    />
+    <ResizeGrip
+      className="nz-bottom-grip"
+      direction={1}
+      onResize={[Function]}
+    />
+    <ResizeGrip
+      className="nz-content-grip"
+      direction={0}
+      onResize={[Function]}
+    />
+  </div>
+  <div
+    className="nz-tabs-column"
+  >
+    <div
+      className="nz-tabs"
+    />
+    <div
+      className="nz-tabs-grip-container"
+    >
+      <ResizeGrip
+        className="nz-tabs-grip"
+        direction={0}
+        onResize={[Function]}
+      />
+    </div>
+  </div>
+  <div
+    className="nz-height-expander"
+  />
+  <ResizeGrip
+    className="nz-top-grip"
+    direction={1}
+    onResize={[Function]}
+  />
+</div>
+`;
+
+exports[`<Stacked /> renders floating correctly 1`] = `
+<div
+  className="nz-widget-stacked nz-right-anchor nz-middle-anchor nz-closed nz-floating"
+>
+  <div
+    className="nz-content-container"
+  >
+    <div
+      className="nz-content"
     />
     <ResizeGrip
       className="nz-bottom-grip"

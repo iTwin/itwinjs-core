@@ -13,11 +13,13 @@ import {
   MessageBoxType,
   MessageBoxIconType,
   MessageBoxValue,
+  OutputMessageType,
+  OutputMessageAlert,
 } from "@bentley/imodeljs-frontend";
 import { UiEvent, MessageContainer, MessageSeverity } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
-import { ModalDialogManager } from "../ModalDialogManager";
-import { StandardMessageBox } from "./StandardMessageBox";
+import { ModalDialogManager } from "../dialog/ModalDialogManager";
+import { StandardMessageBox } from "../dialog/StandardMessageBox";
 import { ConfigurableUiActionId } from "../configurableui/state";
 
 class MessageBoxCallbacks {
@@ -32,12 +34,14 @@ class MessageBoxCallbacks {
 }
 
 /** [[MessageAddedEvent]] arguments.
+ * @public
  */
 export interface MessageAddedEventArgs {
   message: NotifyMessageDetails;
 }
 
 /** Activity Message Event Args class.
+ * @public
  */
 export interface ActivityMessageEventArgs {
   message: string;
@@ -47,6 +51,7 @@ export interface ActivityMessageEventArgs {
 }
 
 /** Input Field Message Event Args class.
+ * @public
  */
 export interface InputFieldMessageEventArgs {
   target: Element;
@@ -54,22 +59,27 @@ export interface InputFieldMessageEventArgs {
 }
 
 /** Message Added Event class.
+ * @public
  */
 export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> { }
 
 /** Activity Message Added Event class.
+ * @public
  */
 export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArgs> { }
 
 /** Activity Message Cancelled Event class.
+ * @public
  */
 export class ActivityMessageCancelledEvent extends UiEvent<{}> { }
 
 /** Input Field Message Added Event class
+ * @public
  */
 export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventArgs> { }
 
 /** Input Field Message Removed Event class.
+ * @public
  */
 export class InputFieldMessageRemovedEvent extends UiEvent<{}> { }
 
@@ -87,6 +97,7 @@ class OngoingActivityMessage {
 }
 
 /** The MessageManager class manages messages and prompts. It is used by the [[AppNotificationManager]] class.
+ * @public
  */
 export class MessageManager {
   private static _maxCachedMessages = 500;
@@ -125,6 +136,13 @@ export class MessageManager {
     if (this._messages.length > this._maxCachedMessages) {
       const numToErase = this._maxCachedMessages / 4;
       this._messages.splice(0, numToErase);
+    }
+
+    if (message.msgType === OutputMessageType.Alert) {
+      if (message.openAlert === OutputMessageAlert.Balloon)
+        message.msgType = OutputMessageType.Sticky; // Note: Changing the message.msgType here for Balloon
+      else
+        this.showAlertMessageBox(message);
     }
 
     this.onMessageAddedEvent.emit({ message });
@@ -244,6 +262,28 @@ export class MessageManager {
     return severity;
   }
 
+  /** Gets a MessageBoxIconType based on a given NotifyMessageDetails. */
+  public static getIconType(details: NotifyMessageDetails): MessageBoxIconType {
+    let iconType = MessageBoxIconType.NoSymbol;
+
+    switch (details.priority) {
+      case OutputMessagePriority.Info:
+        iconType = MessageBoxIconType.Information;
+        break;
+      case OutputMessagePriority.Warning:
+        iconType = MessageBoxIconType.Warning;
+        break;
+      case OutputMessagePriority.Error:
+        iconType = MessageBoxIconType.Critical;
+        break;
+      case OutputMessagePriority.Fatal:
+        iconType = MessageBoxIconType.Critical;
+        break;
+    }
+
+    return iconType;
+  }
+
   /** Output a MessageBox and wait for response from the user.
    * @param mbType       The MessageBox type.
    * @param message      The message to display.
@@ -255,20 +295,40 @@ export class MessageManager {
 
     return new Promise((onFulfilled: (result: MessageBoxValue) => void, onRejected: (reason: any) => void) => {
       const messageBoxCallbacks = new MessageBoxCallbacks(onFulfilled, onRejected);
-      ModalDialogManager.openModalDialog(this.standardMessageBox(mbType, icon, title, message, messageBoxCallbacks));
+      const messageElement = <span dangerouslySetInnerHTML={{ __html: message }} />;
+      ModalDialogManager.openDialog(this.standardMessageBox(mbType, icon, title, messageElement, messageBoxCallbacks));
     });
   }
 
-  private static standardMessageBox(mbType: MessageBoxType, iconType: MessageBoxIconType, title: string, message: string, callbacks: MessageBoxCallbacks): React.ReactNode {
+  private static showAlertMessageBox(messageDetails: NotifyMessageDetails): void {
+    const title = UiFramework.i18n.translate("UiFramework:general.alert");
+    const iconType = this.getIconType(messageDetails);
+    const content = (
+      <>
+        <span dangerouslySetInnerHTML={{ __html: messageDetails.briefMessage }} />
+        {
+          messageDetails.detailedMessage && (
+            <p>
+              <span dangerouslySetInnerHTML={{ __html: messageDetails.detailedMessage }} />
+            </p>
+          )
+        }
+      </>
+    );
+    ModalDialogManager.openDialog(this.standardMessageBox(MessageBoxType.Ok, iconType, title, content));
+  }
+
+  private static standardMessageBox(mbType: MessageBoxType, iconType: MessageBoxIconType, title: string, messageElement: React.ReactNode, callbacks?: MessageBoxCallbacks): React.ReactNode {
+    const onResult = (callbacks !== undefined) ? callbacks.handleMessageBoxResult : undefined;
     return (
       <StandardMessageBox
         opened={true}
         messageBoxType={mbType}
         iconType={iconType}
         title={title}
-        onResult={callbacks.handleMessageBoxResult}
+        onResult={onResult}
       >
-        {message}
+        {messageElement}
       </StandardMessageBox>
     );
   }

@@ -1,8 +1,50 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`<GroupTool /> renders active correctly 1`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-item nz-active"
+  onClick={[Function]}
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
 exports[`<GroupTool /> renders correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-group-tool-item"
+  onClick={[Function]}
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<GroupTool /> renders disabled correctly 1`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-item nz-disabled"
+  onClick={[Function]}
+>
+  <div
+    className="nz-icon"
+  />
+  <div
+    className="nz-label"
+  />
+</div>
+`;
+
+exports[`<GroupTool /> renders focused correctly 1`] = `
+<div
+  className="nz-toolbar-item-expandable-group-tool-item nz-focused"
   onClick={[Function]}
 >
   <div

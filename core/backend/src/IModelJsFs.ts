@@ -10,7 +10,9 @@
 import * as fs from "fs-extra";
 
 /* TODO: define File Mode Constants: S_IWUSR, et al. */
-/** Information about a file. See [[IModelJsFs.lstatSync]] */
+/** Information about a file. See [[IModelJsFs.lstatSync]]
+ * @public
+ */
 export class IModelJsFsStats {
   constructor(
     public size: number,
@@ -25,7 +27,9 @@ export class IModelJsFsStats {
   ) { }
 }
 
-/** File system operations that are defined on all platforms. See also [[Platform]] and [[KnownLocations]] */
+/** File system operations that are defined on all platforms. See also [[Platform]] and [[KnownLocations]]
+ * @public
+ */
 export class IModelJsFs {
 
   /** Does file or directory exist? */
@@ -44,7 +48,7 @@ export class IModelJsFs {
   public static rmdirSync(path: string): void { fs.rmdirSync(path); }
 
   /** Write to a file. */
-  public static writeFileSync(path: string, str: string, wflag: string = "w"): void { fs.writeFileSync(path, str, { flag: wflag }); }
+  public static writeFileSync(path: string, data: string | Uint8Array, wflag: string = "w"): void { fs.writeFileSync(path, data, { flag: wflag }); }
 
   /** Append to a file. */
   public static appendFileSync(path: string, str: string): void { fs.appendFileSync(path, str); }

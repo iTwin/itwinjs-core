@@ -14,26 +14,34 @@ import { NavigationPropertyValueRenderer } from "./renderers/value/NavigationPro
 import { DoublePropertyValueRenderer } from "./renderers/value/DoublePropertyValueRenderer";
 import { MergedPropertyValueRenderer } from "./renderers/value/MergedPropertyValueRenderer";
 
-/** Types of property containers */
+/** Types of property containers
+ * @public
+ */
 export enum PropertyContainerType {
   PropertyPane = "pane",
   Table = "table",
   Tree = "tree",
 }
 
-/** State of the Dialog component in a container which renders properties */
+/** State of the Dialog component in a container which renders properties
+ * @public
+ */
 export interface PropertyDialogState {
   title: string;
   content: React.ReactNode;
 }
 
-/** State of the Popup component in a container which renders properties */
+/** State of the Popup component in a container which renders properties
+ * @public
+ */
 export interface PropertyPopupState {
   fixedPosition: { top: number, left: number };
   content: React.ReactNode;
 }
 
-/** Additional parameters to the renderer */
+/** Additional parameters to the renderer
+ * @public
+ */
 export interface PropertyValueRendererContext {
   /** Type of container that holds the property */
   containerType?: string;
@@ -51,7 +59,9 @@ export interface PropertyValueRendererContext {
   decoratedTextElement?: React.ReactNode;
 }
 
-/** Custom property value renderer interface */
+/** Custom property value renderer interface
+ * @public
+ */
 export interface IPropertyValueRenderer {
   /** Checks if the renderer can handle given property */
   canRender: (record: PropertyRecord, context?: PropertyValueRendererContext) => boolean;
@@ -59,7 +69,9 @@ export interface IPropertyValueRenderer {
   render: (record: PropertyRecord, context?: PropertyValueRendererContext) => React.ReactNode | Promise<React.ReactNode>;
 }
 
-/** Default implementation of property value renderer manager */
+/** Default implementation of property value renderer manager
+ * @public
+ */
 export class PropertyValueRendererManager {
   private static _defaultRendererManager: PropertyValueRendererManager;
 

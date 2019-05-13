@@ -21,7 +21,7 @@ describe("CurveLocationDetail", () => {
     detailA0.setCurve(segmentA);
     detailA1.setCurve(segmentA);
     ck.testTrue(detailA0.isIsolated);
-    const pairA = CurveLocationDetailPair.createDetailRef(detailA0, detailA1);
+    const pairA = CurveLocationDetailPair.createCapture(detailA0, detailA1);
     const pairAClone = pairA.clone();
     ck.testPointer(pairAClone);
 

@@ -8,6 +8,9 @@ import { SchemaItem } from "./SchemaItem";
 import { PropertyCategoryProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 
+/**
+ * @beta
+ */
 export class PropertyCategory extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.PropertyCategory; // tslint:disable-line
   protected _priority: number;

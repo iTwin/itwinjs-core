@@ -156,13 +156,16 @@
  */
 // @todo Update example with property type conversions once that's available.
 
-import { Logger, assert } from "@bentley/bentleyjs-core";
+import { assert, Logger } from "@bentley/bentleyjs-core";
+import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 
+/** @internal */
 export type ConstructorType = new () => any;
 
-const loggingCategory = "ECJson";
+const loggerCategory: string = ClientsLoggerCategory.ECJson;
 const className = "className";
 
+/** @internal */
 export interface ClassKeyMapInfo {
   /** The key of the JSON property that stores the schema name - e.g., set to"schemaName" in the case of JSON consumed/supplied by WSG */
   schemaPropertyName?: string;
@@ -237,7 +240,9 @@ class ClassEntry {
 
 type ClassesByTypedName = Map<ConstructorType, ClassEntry>;
 
-/** Manages the mapping between TypeScript and EC Classes/Properties */
+/** Manages the mapping between TypeScript and EC Classes/Properties
+ * @internal
+ */
 export class ECJsonTypeMap {
   private static _classesByTypedName: ClassesByTypedName = new Map<ConstructorType, ClassEntry>();
 
@@ -304,14 +309,14 @@ export class ECJsonTypeMap {
   public static fromJson<T extends ECInstance>(typedConstructor: new () => T, applicationKey: string, ecJsonInstance: any): T | undefined {
     const mappedClassEntry: ClassEntry | undefined = ECJsonTypeMap.getClassByType(typedConstructor);
     if (!mappedClassEntry) {
-      Logger.logError(loggingCategory, `Type ${typedConstructor.name} is not mapped to an ECClass. Supply the appropriate class decorator`);
+      Logger.logError(loggerCategory, `Type ${typedConstructor.name} is not mapped to an ECClass. Supply the appropriate class decorator`);
       return undefined;
     }
 
     const lowCaseApplicationKey = applicationKey.toLowerCase();
     const mappedApplicationEntry: ApplicationEntry | undefined = mappedClassEntry.getApplicationByKey(lowCaseApplicationKey);
     if (!mappedApplicationEntry) {
-      Logger.logError(loggingCategory, `Type ${typedConstructor.name} is not mapped for the supplied application.`);
+      Logger.logError(loggerCategory, `Type ${typedConstructor.name} is not mapped for the supplied application.`);
       return undefined;
     }
 
@@ -326,7 +331,7 @@ export class ECJsonTypeMap {
     }
 
     if (mappedApplicationEntry.classKey !== ecJsonClassKey) {
-      Logger.logError(loggingCategory, `The ClassKey ${mappedApplicationEntry.classKey} was specified to map with ${typedConstructor.name}, but does not match that specified in the JSON: ${ecJsonClassKey} `);
+      Logger.logError(loggerCategory, `The ClassKey ${mappedApplicationEntry.classKey} was specified to map with ${typedConstructor.name}, but does not match that specified in the JSON: ${ecJsonClassKey} `);
       return undefined;
     }
 
@@ -561,7 +566,9 @@ export class ECJsonTypeMap {
   }
 }
 
-/** Base class for all typed instances mapped to ECInstance-s in an ECDb */
+/** Base class for all typed instances mapped to ECInstance-s in an ECDb
+ * @internal
+ */
 export abstract class ECInstance {
   @ECJsonTypeMap.propertyToJson("ecdb", "id")
   public ecId: string;
@@ -569,9 +576,12 @@ export abstract class ECInstance {
   [index: string]: any;
 }
 
+/** @internal */
 export type ChangeState = "new" | "modified" | "deleted";
 
-/** Base class for all typed instances mapped to ECInstance-s in both an ECDb, and the WSG repository */
+/** Base class for all typed instances mapped to ECInstance-s in both an ECDb, and the WSG repository
+ * @internal
+ */
 export abstract class WsgInstance extends ECInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
   @ECJsonTypeMap.propertyToJson("ecdb", "wsgId")

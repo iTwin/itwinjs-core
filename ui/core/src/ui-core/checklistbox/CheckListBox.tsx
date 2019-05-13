@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module CheckBoxList */
+/** @module CheckListBox */
 
 import * as React from "react";
 import * as classnames from "classnames";
@@ -10,23 +10,27 @@ import { Checkbox } from "../inputs/checkbox/Checkbox";
 import { CommonProps } from "../utils/Props";
 import "./CheckListBox.scss";
 
-/** Properties for the [[CheckListBoxItem]] component */
+/** Properties for the [[CheckListBoxItem]] component
+ * @beta
+ */
 export interface CheckListBoxItemProps extends CommonProps {
   /** Label */
   label: string;
-  /** Determine if the item is checked or not */
+  /** Indicates whether the item is checked or not */
   checked?: boolean;
-  /** Determine if the item is disabled or not */
+  /** Indicates whether the item is disabled or not */
   disabled?: boolean;
   /** Function called when item is clicked. */
   onClick?: () => any;
 }
 
-/** Item with a checkbox added to a [[CheckListBox]]. */
-export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
+/** Item with a checkbox added to a [[CheckListBox]].
+ * @beta
+ */
+export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps> {
 
-  constructor(props: CheckListBoxItemProps, context?: any) {
-    super(props, context);
+  constructor(props: CheckListBoxItemProps) {
+    super(props);
   }
 
   private _onClick = () => {
@@ -37,35 +41,36 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
   }
 
   public render() {
-    const className = classnames("chk-listboxitem-checkbox");
+    const className = classnames("core-chk-listboxitem-checkbox", this.props.className);
+
     return (
       <li>
-        <Checkbox checked={this.props.checked} disabled={this.props.disabled} className={className} label={this.props.label} onClick={this._onClick} />
+        <Checkbox checked={this.props.checked} disabled={this.props.disabled}
+          inputClassName={className} style={this.props.style}
+          label={this.props.label} onClick={this._onClick} />
       </li>
     );
   }
 }
 
-/** Separator added to a [[CheckListBox]]. */
+/** Separator added to a [[CheckListBox]].
+ * @beta
+ */
 // tslint:disable-next-line:variable-name
 export const CheckListBoxSeparator: React.StatelessComponent = () => {
   return (
-    <div className="chk-listboxseparator" />
+    <div className="core-chk-listbox-separator" />
   );
 };
 
-/** Properties for the [[CheckListBox]] component */
-export interface CheckListBoxProps {
-  /** CSS class name */
-  className?: string;
-}
-
-/** React component showing a list of Checkbox items. */
-export class CheckListBox extends React.Component<CheckListBoxProps> {
+/** React component showing a list of Checkbox items.
+ * @beta
+ */
+export class CheckListBox extends React.PureComponent<CommonProps> {
   public render() {
-    const className = classnames("chk-listbox", this.props.className);
+    const className = classnames("core-chk-listbox", this.props.className);
     return (
-      <ul className={className}>
+      <ul className={className} style={this.props.style}>
         {this.props.children}
       </ul>
     );

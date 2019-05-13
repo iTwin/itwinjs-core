@@ -4,23 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { ActivityLoggingContext, assert, BeEvent, BentleyStatus, DbResult, Guid, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, BentleyStatus, DbResult, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range3dProps, XYAndZ } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, ImageSourceFormat, IModel, IModelError,
   IModelNotFoundResponse, IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface, kPagingDefaultOptions,
   ModelProps, ModelQueryParams, PageOptions, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
-  StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
+  SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { ModelState } from "./ModelState";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
+import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
+import { SubCategoriesCache } from "./SubCategoriesCache";
+import { TileTreeState } from "./tile/TileTree";
 
-const loggingCategory = "imodeljs-frontend.IModelConnection";
+const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
 /** A connection to an iModel database hosted on the backend.
  * @public
@@ -41,20 +44,36 @@ export class IModelConnection extends IModel {
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
   /** The set of Tiles for this IModelConnection.
-   * @hidden
+   * @internal
    */
   public readonly tiles: IModelConnection.Tiles;
+  /** A cache of information about SubCategories chiefly used for rendering.
+   * @internal
+   */
+  public readonly subcategories: SubCategoriesCache;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
-  /** The Geographic location services available for this iModelConnection */
+  /** The Geographic location services available for this iModelConnection
+   * @internal
+   */
   public readonly geoServices: GeoServices;
-  /** @hidden Whether it has already been determined that this iModelConnection does not have a map projection. */
+  /** @internal Whether it has already been determined that this iModelConnection does not have a map projection. */
   protected _noGcsDefined?: boolean;
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
+
+  /** Check if the IModelConnection is still open. Returns false after [[IModelConnection.close]] has been called.
+   * @alpha
+   */
+  public get isOpen(): boolean { return undefined !== (this._token as any); }
+
+  /** Check if the IModelConnection has been closed. Returns true after [[IModelConnection.close]] has been called.
+   * @alpha
+   */
+  public get isClosed(): boolean { return !this.isOpen; }
 
   /** Event called immediately before an IModelConnection is closed.
    * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
@@ -70,13 +89,21 @@ export class IModelConnection extends IModel {
   public async loadFontMap(): Promise<FontMap> {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken))));
   }
-
-  /** Registry of className to EntityState class */
-  private static _registry = new Map<string, typeof EntityState>();
-
-  /** Register a class by classFullName */
-  public static registerClass(className: string, classType: typeof EntityState) { this._registry.set(className.toLowerCase(), classType); }
-  private static lookupClass(className: string) { return this._registry.get(className.toLowerCase()); }
+  /** The set of Context Reality Model tile trees for this IModelConnection.
+   * @internal
+   */
+  private _contextRealityModelTileTrees = new Map<string, TileTreeState>();
+  /** Get the context reality model tile tree for a URL.
+   * @internal
+   */
+  public getContextRealityModelTileTree(url: string): TileTreeState {
+    const found = this._contextRealityModelTileTrees.get(url);
+    if (found !== undefined)
+      return found;
+    const tileTree = new TileTreeState(this, true, this.transientIds.next);
+    this._contextRealityModelTileTrees.set(url, tileTree);
+    return tileTree;
+  }
 
   /** Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.
    * @param className The full name of the class of interest.
@@ -84,7 +111,7 @@ export class IModelConnection extends IModel {
    * @note this method is async since it may have to query the server to get the class hierarchy.
    */
   public async findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined> {
-    let ctor = IModelConnection.lookupClass(className) as T | undefined;
+    let ctor = IModelApp.lookupEntityClass(className) as T | undefined;
     if (undefined !== ctor)
       return ctor;
 
@@ -95,12 +122,12 @@ export class IModelConnection extends IModel {
     const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.iModelToken, className);
     // walk through the list until we find a registered base class
     baseClasses.some((baseClass: string) => {
-      const test = IModelConnection.lookupClass(baseClass) as T | undefined;
+      const test = IModelApp.lookupEntityClass(baseClass) as T | undefined;
       if (test === undefined)
         return false; // nope, not registered
 
       ctor = test; // found it, save it
-      IModelConnection.registerClass(className, ctor); // and register the fact that our starting class is handled by this subclass.
+      IModelApp.registerEntityState(className, ctor); // and register the fact that our starting class is handled by this subclass.
       return true; // stop
     });
     return ctor; // either the baseClass handler or defaultClass if we didn't find a registered baseClass
@@ -117,24 +144,35 @@ export class IModelConnection extends IModel {
     this.hilited = new HilitedSet(this);
     this.selectionSet = new SelectionSet(this);
     this.tiles = new IModelConnection.Tiles(this);
+    this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
   }
 
   /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
-  public static async open(accessToken: AccessToken, contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
+  public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call IModelApp.startup() before calling open");
 
-    const actx = new ActivityLoggingContext(Guid.createValue());
-    const changeSetId: string = await version.evaluateChangeSet(actx, accessToken, iModelId, IModelApp.iModelClient);
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
+
+    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
+    requestContext.enter();
+
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
-    const openResponse: IModel = await IModelConnection.callOpen(accessToken, iModelToken, openMode);
+
+    const openResponse: IModel = await IModelConnection.callOpen(requestContext, iModelToken, openMode);
+    requestContext.enter();
+
     const connection = new IModelConnection(openResponse, openMode);
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
+
     return connection;
   }
 
-  private static async callOpen(accessToken: AccessToken, iModelToken: IModelToken, openMode: OpenMode): Promise<IModel> {
+  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelToken, openMode: OpenMode): Promise<IModel> {
+    requestContext.enter();
+
     // Try opening the iModel repeatedly accommodating any pending responses from the backend.
     // Waits for an increasing amount of time (but within a range) before checking on the pending request again.
     const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
@@ -154,8 +192,8 @@ export class IModelConnection extends IModel {
       openForWriteOperation.policy.retryInterval = () => connectionRetryInterval;
     }
 
-    Logger.logTrace(loggingCategory, `Received open request in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
-    Logger.logTrace(loggingCategory, `Setting open connection retry interval to ${connectionRetryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+    Logger.logTrace(loggerCategory, `Received open request in IModelConnection.open`, () => iModelToken);
+    Logger.logTrace(loggerCategory, `Setting retry interval in IModelConnection.open`, () => ({ ...iModelToken, connectionRetryInterval }));
 
     const startTime = Date.now();
 
@@ -165,35 +203,39 @@ export class IModelConnection extends IModel {
       if (!(openForReadOperation && request.operation === openForReadOperation) && !(openForWriteOperation && request.operation === openForWriteOperation))
         return;
 
-      Logger.logTrace(loggingCategory, "Received pending open notification in IModelConnection.open", () => ({ ...iModelToken, openMode }));
+      requestContext.enter();
+      Logger.logTrace(loggerCategory, "Received pending open notification in IModelConnection.open", () => iModelToken);
 
       const connectionTimeElapsed = Date.now() - startTime;
       if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
-        Logger.logError(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
+        Logger.logError(loggerCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => iModelToken);
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
       connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
       if (request.retryInterval !== connectionRetryInterval) {
         request.retryInterval = connectionRetryInterval;
-        Logger.logTrace(loggingCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => ({ ...iModelToken, openMode }));
+        Logger.logTrace(loggerCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => iModelToken);
       }
     });
 
+    let openPromise: Promise<IModel>;
+    requestContext.useContextForRpc = true;
+    if (openMode === OpenMode.ReadWrite)
+      openPromise = IModelWriteRpcInterface.getClient().openForWrite(iModelToken);
+    else
+      openPromise = IModelReadRpcInterface.getClient().openForRead(iModelToken);
+
     let openResponse: IModel;
     try {
-      if (openMode === OpenMode.ReadWrite)
-        openResponse = await IModelWriteRpcInterface.getClient().openForWrite(accessToken, iModelToken);
-      else
-        openResponse = await IModelReadRpcInterface.getClient().openForRead(accessToken, iModelToken);
+      openResponse = await openPromise;
     } finally {
+      requestContext.enter();
+      Logger.logTrace(loggerCategory, "Completed open request in IModelConnection.open", () => iModelToken);
       removeListener();
     }
 
-    IModelApp.accessToken = accessToken; // ###TODO to be refactored later...
-
-    Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ ...iModelToken, openMode }));
-    return openResponse!;
+    return openResponse;
   }
 
   private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: IModelNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => {
@@ -204,17 +246,21 @@ export class IModelConnection extends IModel {
     if (this._token.key !== iModelToken.key)
       return; // The handler is called for a different connection than this
 
+    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create(request.id); // Reuse activityId
+    requestContext.enter();
+
+    Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelToken);
+
     try {
-      Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-      const accessToken = IModelApp.accessToken;
-      assert(undefined !== accessToken);
-      const openResponse: IModel = await IModelConnection.callOpen(accessToken!, iModelToken, this.openMode);
+      const openResponse: IModel = await IModelConnection.callOpen(requestContext, iModelToken, this.openMode);
       this._token = openResponse.iModelToken;
     } catch (error) {
       reject(error.message);
+    } finally {
+      requestContext.enter();
     }
 
-    Logger.logTrace(loggingCategory, "Resubmitting original request after reopening connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
+    Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", () => iModelToken);
     request.parameters[0] = this._token; // Modify the token of the original request before resubmitting it.
     resubmit();
   }
@@ -223,39 +269,51 @@ export class IModelConnection extends IModel {
    * In the case of ReadWrite connections ensure all changes are pushed to the iModelHub before making this call -
    * any un-pushed changes are lost after the close.
    */
-  public async close(accessToken: AccessToken): Promise<void> {
+  public async close(): Promise<void> {
     if (!this.iModelToken)
       return;
+
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
+
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     IModelConnection.onClose.raiseEvent(this);
     this.models.onIModelConnectionClose();  // free WebGL resources if rendering
+
+    requestContext.useContextForRpc = true;
+    const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken); // Ensure the method isn't await-ed right away.
     try {
-      await IModelReadRpcInterface.getClient().close(accessToken, this.iModelToken);
+      await closePromise;
     } finally {
       (this._token as any) = undefined; // prevent closed connection from being reused
+      this.subcategories.onIModelConnectionClose();
     }
   }
 
-  /** Open an IModelConnection to a standalone iModel (not managed by iModelHub) from a file name that is resolved by the backend.
+  /** Open an IModelConnection to a read-only iModel *snapshot* (not managed by iModelHub) from a file name that is resolved by the backend.
    * This method is intended for desktop or mobile applications and should not be used for web applications.
+   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
    */
-  public static async openStandalone(fileName: string, openMode = OpenMode.Readonly): Promise<IModelConnection> {
-    const openResponse: IModel = await StandaloneIModelRpcInterface.getClient().openStandalone(fileName, openMode);
-    Logger.logTrace(loggingCategory, "IModelConnection.openStandalone", () => ({ fileName, openMode }));
-    return new IModelConnection(openResponse, openMode);
+  public static async openSnapshot(fileName: string): Promise<IModelConnection> {
+    const openResponse: IModel = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
+    Logger.logTrace(loggerCategory, "IModelConnection.openSnapshot", () => ({ fileName }));
+    return new IModelConnection(openResponse, OpenMode.Readonly);
   }
 
-  /** Close this standalone IModelConnection */
-  public async closeStandalone(): Promise<void> {
+  /** Close this IModelConnection to a read-only iModel *snapshot*.
+   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   */
+  public async closeSnapshot(): Promise<void> {
     if (!this.iModelToken)
       return;
 
     IModelConnection.onClose.raiseEvent(this);
     this.models.onIModelConnectionClose();  // free WebGL resources if rendering
     try {
-      await StandaloneIModelRpcInterface.getClient().closeStandalone(this.iModelToken);
+      await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.iModelToken);
     } finally {
       (this._token as any) = undefined; // prevent closed connection from being reused
+      this.subcategories.onIModelConnectionClose();
     }
   }
 
@@ -275,11 +333,11 @@ export class IModelConnection extends IModel {
    * @throws [IModelError]($common) If the statement is invalid
    */
   public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
-    Logger.logTrace(loggingCategory, "IModelConnection.queryRowCount", () => ({ iModelId: this.iModelToken.iModelId, ecsql, bindings }));
+    Logger.logTrace(loggerCategory, "IModelConnection.queryRowCount", () => ({ ...this.iModelToken, ecsql, bindings }));
     return IModelReadRpcInterface.getClient().queryRowCount(this.iModelToken, ecsql, bindings);
   }
 
-  /** Execute a query agaisnt this ECDb
+  /** Execute a query against this ECDb
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -299,7 +357,7 @@ export class IModelConnection extends IModel {
    * @throws [IModelError]($common) If the statement is invalid
    */
   public async queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
-    Logger.logTrace(loggingCategory, "IModelConnection.queryPage", () => ({ iModelId: this.iModelToken.iModelId, ecsql, options, bindings }));
+    Logger.logTrace(loggerCategory, "IModelConnection.queryPage", () => ({ ...this.iModelToken, ecsql, options, bindings }));
     return IModelReadRpcInterface.getClient().queryPage(this.iModelToken, ecsql, bindings, options);
   }
 
@@ -358,7 +416,7 @@ export class IModelConnection extends IModel {
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem updating the extents.
    */
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
-    Logger.logTrace(loggingCategory, "IModelConnection.updateProjectExtents", () => ({ iModelId: this.iModelToken.iModelId, newExtents }));
+    Logger.logTrace(loggerCategory, "IModelConnection.updateProjectExtents", () => ({ ...this.iModelToken, newExtents }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
     return IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
@@ -369,7 +427,7 @@ export class IModelConnection extends IModel {
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem saving changes.
    */
   public async saveChanges(description?: string): Promise<void> {
-    Logger.logTrace(loggingCategory, "IModelConnection.saveChanges", () => ({ iModelId: this.iModelToken.iModelId, description }));
+    Logger.logTrace(loggerCategory, "IModelConnection.saveChanges", () => ({ ...this.iModelToken, description }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
     return IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
@@ -378,7 +436,7 @@ export class IModelConnection extends IModel {
   /** WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
-   * @hidden
+   * @internal
    */
   public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
 
@@ -386,7 +444,7 @@ export class IModelConnection extends IModel {
    * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @throws [IModelError]($common) if a Change Cache file has already been attached before.
-   * @hidden
+   * @internal
    */
   public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
 
@@ -394,7 +452,7 @@ export class IModelConnection extends IModel {
    * > You do not have to check whether a Change Cache file had been attached before. The
    * > method does not do anything, if no Change Cache is attached.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
-   * @hidden
+   * @internal
    */
   public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
 
@@ -517,7 +575,7 @@ export namespace IModelConnection {
     /** The set of loaded models for this IModelConnection, indexed by Id. */
     public loaded = new Map<string, ModelState>();
 
-    /** @hidden */
+    /** @internal */
     constructor(private _iModel: IModelConnection) { }
 
     /** The Id of the [RepositoryModel]($backend). */
@@ -560,7 +618,7 @@ export namespace IModelConnection {
     /** Query for a set of ModelProps of the specified ModelQueryParams. */
     public async queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
       const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
-      params.from = queryParams.from || ModelState.sqlName; // use "BisCore.Model" as default class name
+      params.from = queryParams.from || ModelState.classFullName; // use "BisCore:Model" as default class name
       params.where = queryParams.where || "";
       if (!queryParams.wantPrivate) {
         if (params.where.length > 0) params.where += " AND ";
@@ -583,7 +641,7 @@ export namespace IModelConnection {
 
   /** The collection of Elements for an [[IModelConnection]]. */
   export class Elements {
-    /** @hidden */
+    /** @internal */
     public constructor(private _iModel: IModelConnection) { }
 
     /** The Id of the [root subject element]($docs/bis/intro/glossary.md#subject-root) for this iModel. */
@@ -607,7 +665,7 @@ export namespace IModelConnection {
   export class CodeSpecs {
     private _loaded?: CodeSpec[];
 
-    /** @hidden */
+    /** @internal */
     constructor(private _iModel: IModelConnection) { }
 
     /** Loads all CodeSpec from the remote IModelDb. */
@@ -629,12 +687,12 @@ export namespace IModelConnection {
      */
     public async getById(codeSpecId: Id64String): Promise<CodeSpec> {
       if (!Id64.isValid(codeSpecId))
-        return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory, () => ({ codeSpecId })));
+        return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggerCategory, () => ({ codeSpecId })));
 
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
       if (!found)
-        return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggingCategory));
+        return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory));
 
       return found;
     }
@@ -648,7 +706,7 @@ export namespace IModelConnection {
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.name === name);
       if (!found)
-        return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggingCategory));
+        return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory));
 
       return found;
     }
@@ -656,7 +714,7 @@ export namespace IModelConnection {
 
   /** The collection of views for an [[IModelConnection]]. */
   export class Views {
-    /** @hidden */
+    /** @internal */
     constructor(private _iModel: IModelConnection) { }
 
     /** Query for an array of ViewDefinitionProps
@@ -664,7 +722,7 @@ export namespace IModelConnection {
      */
     public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
       const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy
-      params.from = queryParams.from || ViewState.sqlName; // use "BisCore.ViewDefinition" as default class name
+      params.from = queryParams.from || ViewState.classFullName; // use "BisCore:ViewDefinition" as default class name
       params.where = queryParams.where || "";
       if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
         if (params.where.length > 0) params.where += " AND ";
@@ -706,7 +764,7 @@ export namespace IModelConnection {
       const className = viewProps.viewDefinitionProps.classFullName;
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
       if (undefined === ctor)
-        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggingCategory, () => viewProps));
+        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps));
 
       const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector
@@ -743,15 +801,11 @@ export namespace IModelConnection {
   }
 
   /** Provides access to tiles associated with an IModelConnection
-   * @hidden
+   * @internal
    */
   export class Tiles {
-    /** @hidden */
     private _iModel: IModelConnection;
-
-    /** @hidden */
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
-
     public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id); }
     public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId); }
   }

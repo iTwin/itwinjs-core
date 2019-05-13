@@ -5,7 +5,7 @@
 @import "../../../_geometry";
 @import "_variables";
 
-.nz-toolbar-button-expandable {
+.nz-widget-tools-button-expandable {
   $triangle-width: 6px;
   $triangle-height: $triangle-width;
   $shadow-vertical-offset: 1px;
@@ -14,30 +14,28 @@
 
   position: relative;
 
-  >.nz-button {
-    >.nz-triangle {
-      border-radius: 0;
-      position: absolute;
-      right: $margin-from-triangle-to-stroke;
-      bottom: $margin-from-triangle-to-stroke;
-      filter: $arrow-shadow;
-      pointer-events: none;
-
-      @include triangle-bottom-right($width: $triangle-width, $height: $triangle-height, $color: $buic-icon-color);
+  &:hover {
+    > .nz-triangle {
+      @include triangle-bottom-right-color($hovered-icon-color);
     }
+  }
 
-    &:hover {
-      >.nz-triangle {
-        @include triangle-bottom-right-color($hovered-icon-color);
-      }
+  &:active {
+    > .nz-triangle {
+      filter: $no-shadow;
+
+      @include triangle-bottom-right-color($pressed-icon-color);
     }
+  }
 
-    &:active {
-      >.nz-triangle {
-        filter: $no-shadow;
+  > .nz-triangle {
+    border-radius: 0;
+    position: absolute;
+    right: $margin-from-triangle-to-stroke;
+    bottom: $margin-from-triangle-to-stroke;
+    filter: $arrow-shadow;
+    pointer-events: none;
 
-        @include triangle-bottom-right-color($pressed-icon-color);
-      }
-    }
+    @include triangle-bottom-right($width: $triangle-width, $height: $triangle-height, $color: $buic-icon-color);
   }
 }

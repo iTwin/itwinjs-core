@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StagePanel renders correctly 1`] = `
+<div
+  className="uifw-stagepanel"
+  style={Object {}}
+/>
+`;

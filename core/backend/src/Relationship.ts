@@ -4,38 +4,45 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Relationships */
 
+import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { Id64, Id64String, Logger, DbOpcode, DbResult } from "@bentley/bentleyjs-core";
-import { ECSqlStatement } from "./ECSqlStatement";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
-/** @hidden */
-const loggingCategory = "imodeljs-backend.Relationship";
+const loggerCategory = BackendLoggerCategory.Relationship;
 
-/** Specifies the source and target elements of a [[Relationship]] instance. */
+/** Specifies the source and target elements of a [[Relationship]] instance.
+ * @public
+ */
 export interface SourceAndTarget {
   sourceId: Id64String;
   targetId: Id64String;
 }
 
-/** Properties that are common to all types of link table ECRelationships */
+/** Properties that are common to all types of link table ECRelationships
+ * @public
+ */
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
-/** Base class for all link table ECRelationships */
+/** Base class for all link table ECRelationships
+ * @public
+ */
 export class Relationship extends Entity implements RelationshipProps {
+  public static get className(): string { return "Relationship"; }
   public readonly sourceId: Id64String;
   public readonly targetId: Id64String;
 
-  /** @hidden */
+  /** @internal */
   constructor(props: RelationshipProps, iModel: IModelDb) {
     super(props, iModel);
     this.sourceId = Id64.fromJSON(props.sourceId);
     this.targetId = Id64.fromJSON(props.targetId);
   }
 
-  /** @hidden */
+  /** @internal */
   public toJSON(): RelationshipProps {
     const val = super.toJSON() as RelationshipProps;
     val.sourceId = this.sourceId;
@@ -63,10 +70,11 @@ export class Relationship extends Entity implements RelationshipProps {
   public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode); }
 }
 
-/**
- * A Relationship where one Element refers to another Element
+/**A Relationship where one Element refers to another Element
+ * @public
  */
 export class ElementRefersToElements extends Relationship {
+  public static get className(): string { return "ElementRefersToElements"; }
   /** Create an instance of the Relationship.
    * @param iModel The iModel that will contain the relationship
    * @param sourceId The sourceId of the relationship, that is, the driver element
@@ -88,19 +96,25 @@ export class ElementRefersToElements extends Relationship {
   }
 }
 
-/** Relates a [[DrawingGraphic]] to the [[Element]] that it represents */
+/** Relates a [[DrawingGraphic]] to the [[Element]] that it represents
+ * @public
+ */
 export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
+  public static get className(): string { return "DrawingGraphicRepresentsElement"; }
 }
 
-/** Properties that are common to all types of link table ECRelationships */
+/** Properties that are common to all types of link table ECRelationships
+ * @public
+ */
 export interface ElementGroupsMembersProps extends RelationshipProps {
   memberPriority: number;
 }
 
-/**
- * An ElementRefersToElements relationship where one Element *groups* a set of other Elements.
+/** An ElementRefersToElements relationship where one Element *groups* a set of other Elements.
+ * @public
  */
 export class ElementGroupsMembers extends ElementRefersToElements {
+  public static get className(): string { return "ElementGroupsMembers"; }
   public memberPriority: number;
 
   constructor(props: ElementGroupsMembersProps, iModel: IModelDb) {
@@ -114,20 +128,23 @@ export class ElementGroupsMembers extends ElementRefersToElements {
   }
 }
 
-/** Properties that are common to all types of ElementDrivesElements */
+/** Properties that are common to all types of ElementDrivesElements
+ * @beta
+ */
 export interface ElementDrivesElementProps extends RelationshipProps {
   status: number;
   priority: number;
 }
 
-/**
- * A Relationship where one Element *drives* another Element
+/** A Relationship where one Element *drives* another Element
+ * @beta
  */
 export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
+  public static get className(): string { return "ElementDrivesElement"; }
   public status: number;
   public priority: number;
 
-  /** @hidden */
+  /** @internal */
   constructor(props: ElementDrivesElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.status = props.status;
@@ -140,22 +157,22 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
   }
 }
 
-/** Manages [[Relationship]]s. */
+/** Manages [[Relationship]]s.
+ * @public
+ */
 export class Relationships {
   private _iModel: IModelDb;
 
-  /** @hidden */
+  /** @internal */
   constructor(iModel: IModelDb) { this._iModel = iModel; }
 
-  /**
-   * Create a new instance of a Relationship.
+  /** Create a new instance of a Relationship.
    * @param props The properties of the new Relationship.
    * @throws [[IModelError]] if there is a problem creating the Relationship.
    */
   public createInstance(props: RelationshipProps): Relationship { return this._iModel.constructEntity<Relationship>(props); }
 
-  /**
-   * Insert a new relationship instance into the iModel.
+  /** Insert a new relationship instance into the iModel.
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
@@ -164,32 +181,30 @@ export class Relationships {
   public insertInstance(props: RelationshipProps): Id64String {
     const val = this._iModel.briefcase.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
     if (val.error)
-      throw new IModelError(val.error.status, "Problem inserting relationship instance", Logger.logWarning, loggingCategory);
+      throw new IModelError(val.error.status, "Problem inserting relationship instance", Logger.logWarning, loggerCategory);
 
     props.id = Id64.fromJSON(val.result);
     return props.id;
   }
 
-  /**
-   * Update the properties of an existing relationship instance in the iModel.
+  /** Update the properties of an existing relationship instance in the iModel.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
    * @throws [[IModelError]] if unable to update the relationship instance.
    */
   public updateInstance(props: RelationshipProps): void {
     const error = this._iModel.briefcase.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+      throw new IModelError(error, "", Logger.logWarning, loggerCategory);
   }
 
-  /**
-   * Delete an Relationship instance from this iModel.
+  /** Delete an Relationship instance from this iModel.
    * @param id The Id of the Relationship to be deleted
    * @throws [[IModelError]]
    */
   public deleteInstance(props: RelationshipProps): void {
     const error = this._iModel.briefcase.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_DONE)
-      throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+      throw new IModelError(error, "", Logger.logWarning, loggerCategory);
   }
 
   /** Get the props of a Relationship instance */
@@ -199,7 +214,7 @@ export class Relationships {
       props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassSqlName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggingCategory);
+          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
         return stmt.getRow() as T;
       });
     } else {
@@ -207,7 +222,7 @@ export class Relationships {
         stmt.bindId(1, criteria.sourceId);
         stmt.bindId(2, criteria.targetId);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggingCategory);
+          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
         return stmt.getRow() as T;
       });
     }

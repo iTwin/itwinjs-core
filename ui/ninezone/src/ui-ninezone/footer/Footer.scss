@@ -5,92 +5,47 @@
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "@bentley/ui-core/lib/ui-core/_z-index";
 @import "_variables";
-
-@mixin nz-footer-separator {
-  >*:not(:last-child) {
-    $separator-width: 1px;
-
-    position: relative;
-
-    &:after {
-      content: '';
-      width: $separator-width;
-      height: calc(100% - #{$nz-footer-vertical-padding-height});
-      top: $nz-footer-vertical-padding;
-      background-color: $buic-foreground-disabled;
-      filter: drop-shadow(1px 0 $buic-foreground-body-reverse);
-      position: absolute;
-      right: 0;
-    }
-  }
-}
+@import "../widgetopacity";
 
 .nz-footer-footer {
-  background-color: $buic-background-statusbar;
-  border-width: 0;
-  border-top-width: 1px;
-  border-color: $buic-background-widget-stroke;
-  border-style: solid;
-  pointer-events: auto;
   position: relative;
+  height: 100%;
 
-  >.nz-message {
+  > div {
+    background-color: $buic-background-statusbar;
+    border: {
+      width: 0;
+      top-width: 1px;
+      color: $buic-background-widget-stroke;
+      style: solid;
+    }
+    box-sizing: border-box;
     position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-100%);
-
-    @include uicore-z-index(status-message);
-  }
-
-  >.nz-indicators {
+    bottom: 0;
+    width: 100%;
     height: $footer-height;
-    display: flex;
-    flex-direction: row;
+    pointer-events: auto;
 
-    @include nz-footer-separator;
-  }
+    > .nz-messages {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100%);
 
-  &.nz-widget-mode {
-    >.nz-indicators {
-      >*:not(:last-child) {
-        &:after {
-          display: none;
-        }
-      }
+      @include uicore-z-index(status-message);
+    }
+
+    > .nz-indicators {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
     }
   }
-}
 
-.nz-statusbar-space-between {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  &:not(.nz-footer-mode) {
+    > div {
+      @include nz-widget-opacity;
+    }
+  }
 
-  @include nz-footer-separator;
-}
-
-.nz-statusbar-left {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-
-  @include nz-footer-separator;
-}
-
-.nz-statusbar-center {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-
-  @include nz-footer-separator;
-}
-
-.nz-statusbar-right {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-
-  @include nz-footer-separator;
 }

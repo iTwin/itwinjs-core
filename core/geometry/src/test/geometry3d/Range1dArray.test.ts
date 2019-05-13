@@ -10,7 +10,24 @@ import { expect } from "chai";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 // import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
-
+/**
+ *
+ * @param numRange number of ranges
+ * @param firstLow low value of first range
+ * @param rangeSize function which returns the size for range i
+ * @param gapSize function which returns the size for gap i
+ */
+function constructRangesByStepFunction(numRange: number, firstLow: number, rangeSize: (i: number) => number, gapSize: (i: number) => number): Range1d[] {
+  let a = firstLow;
+  let b = firstLow;
+  const ranges = [];
+  for (let i = 0; i < numRange; i++) {
+    b = a + rangeSize(i);
+    ranges.push(Range1d.createXX(a, b));
+    a = b + gapSize(i);
+  }
+  return ranges;
+}
 /**
  * Return an array consisting of:
  * * an optional value to the left of data[0]
@@ -230,17 +247,20 @@ describe("Range1dArray", () => {
     // Call the four types of sort methods
     const diffResult = Range1dArray.differenceSorted(range0, range1);
     const intersectResult = Range1dArray.intersectSorted(range0, range1);
+    const intersectResult1 = Range1dArray.intersectSorted(range1, range0);
     const unionResult = Range1dArray.unionSorted(range0, range1);
     const parityResult = Range1dArray.paritySorted(range0, range1);
 
     for (const i of overlapData) {
       ck.testFalse(Range1dArray.testUnion(diffResult, i));
       ck.testTrue(Range1dArray.testUnion(intersectResult, i));
+      ck.testTrue(Range1dArray.testUnion(intersectResult1, i));
       ck.testTrue(Range1dArray.testUnion(unionResult, i));
     }
     for (const i of singleData) {
       ck.testTrue(Range1dArray.testUnion(diffResult, i));
       ck.testFalse(Range1dArray.testUnion(intersectResult, i));
+      ck.testFalse(Range1dArray.testUnion(intersectResult1, i));
       ck.testTrue(Range1dArray.testUnion(unionResult, i));
       ck.testTrue(Range1dArray.testUnion(parityResult, i));
     }
@@ -271,6 +291,137 @@ describe("Range1dArray", () => {
     ]) {
       testUnionSimplify(ck, allRanges);
       testParitySimplify(ck, allRanges);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("SortTests", () => {
+    const ck = new Checker();
+    const strongOverlap = [Range1d.createXX(0, 3), Range1d.createXX(2, 4)];
+    const pointOverlap = [Range1d.createXX(0, 3), Range1d.createXX(3, 4)];
+    const noOverlap = [Range1d.createXX(0, 2), Range1d.createXX(3, 4)];
+    ck.testFalse(Range1dArray.isSorted(strongOverlap, false));
+    ck.testFalse(Range1dArray.isSorted(strongOverlap, true));
+
+    ck.testFalse(Range1dArray.isSorted(pointOverlap, true));
+    ck.testTrue(Range1dArray.isSorted(pointOverlap, false));
+
+    ck.testTrue(Range1dArray.isSorted(noOverlap, false));
+    ck.testTrue(Range1dArray.isSorted(noOverlap, true));
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Test_isSorted", () => {
+    const ck = new Checker();
+    const strongOverlap = [Range1d.createXX(0, 3), Range1d.createXX(2, 4)];
+    const pointOverlap = [Range1d.createXX(0, 3), Range1d.createXX(3, 4)];
+    const noOverlap = [Range1d.createXX(0, 2), Range1d.createXX(3, 4)];
+    ck.testFalse(Range1dArray.isSorted(strongOverlap, false));
+    ck.testFalse(Range1dArray.isSorted(strongOverlap, true));
+
+    ck.testFalse(Range1dArray.isSorted(pointOverlap, true));
+    ck.testTrue(Range1dArray.isSorted(pointOverlap, false));
+
+    ck.testTrue(Range1dArray.isSorted(noOverlap, false));
+    ck.testTrue(Range1dArray.isSorted(noOverlap, true));
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Test_booleans", () => {
+    const ck = new Checker();
+    const arrays = [];
+    const breaks = [];
+    for (const insideSize of [1.0, 3.0, 8.0]) {
+      for (const gapSize of [0.5, 1.0, 10.0]) {
+        for (const leftStart of [0, 0.1, 20, 50]) {
+          for (const count of [1, 2, 5]) {
+            const data1 = constructRangesByStepFunction(count, leftStart, (_i: number) => insideSize, (_i: number) => gapSize);
+            arrays.push(data1);
+            const break1 = new GrowableFloat64Array(2 * count + 2);
+            break1.push(data1[0].low - 1);
+            Range1dArray.getBreaks(data1, break1, false, false);
+            break1.push(data1[data1.length - 1].high + 1);
+            breaks.push(break1);
+            ck.testTrue(Range1dArray.isSorted(data1));
+          }
+        }
+      }
+    }
+    for (const arrayA of arrays) {
+      for (const arrayB of arrays) {
+        const union = Range1dArray.unionSorted(arrayA, arrayB);
+        for (const r of union) {
+          const x = r.fractionToPoint(0.5);
+          ck.testTrue(Range1dArray.countContainingRanges(arrayA, x) + Range1dArray.countContainingRanges(arrayB, x) > 0);
+        }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("TestSimple", () => {
+    const ck = new Checker();
+    ck.testTrue(Range1dArray.firstLowToLastHigh([]).isNull, "firstLowToLastHigh should return null range for empty interval");
+    for (const n of [1, 3, 10]) {
+      //                --------------------      -----------------
+      //  --------------------       ---------------------
+      const forwardRangesForUnion = constructRangesByStepFunction(n, 1, (_i: number) => 3, (_i: number) => -1);
+
+      const originalMidpoints = Range1dArray.appendFractionalPoints(forwardRangesForUnion, undefined, 0.5, true, undefined, false, undefined, []) as number[];
+      const originalOutsidePoints = Range1dArray.appendFractionalPoints(forwardRangesForUnion, -0.5, undefined, true, undefined, false, 1.5, []) as number[];
+      const originalGapPoints = Range1dArray.appendFractionalPoints(forwardRangesForUnion, undefined, undefined, true, 0.5, false, undefined, []) as number[];
+
+      const forwardRange = Range1dArray.firstLowToLastHigh(forwardRangesForUnion);
+      Range1dArray.simplifySortUnion(forwardRangesForUnion, true);
+
+      const forwardUnionRange = Range1dArray.firstLowToLastHigh(forwardRangesForUnion);
+      ck.testExactNumber(1, forwardRangesForUnion.length);
+      ck.testTrue(forwardRange.isAlmostEqual(forwardUnionRange));
+
+      const reverseRangesForUnion = constructRangesByStepFunction(n, forwardRange.high - 3, (_i: number) => 3, (_i: number) => -1);
+      Range1dArray.simplifySortUnion(reverseRangesForUnion);
+      const reverseUnionRange = Range1dArray.firstLowToLastHigh(forwardRangesForUnion);
+      ck.testExactNumber(1, reverseRangesForUnion.length);
+      ck.testTrue(forwardRange.isAlmostEqual(reverseUnionRange));
+
+      const forwardRangesForParity = constructRangesByStepFunction(n, 1, (_i: number) => 3, (_i: number) => -1);
+      Range1dArray.simplifySortParity(forwardRangesForParity, true);
+      ck.testExactNumber(n, forwardRangesForParity.length);
+
+      for (const x of originalMidpoints) {
+        ck.testExactNumber(1, Range1dArray.countContainingRanges(forwardRangesForUnion, x));
+        ck.testExactNumber(1, Range1dArray.countContainingRanges(forwardRangesForParity, x));
+      }
+
+      for (const x of originalOutsidePoints) {
+        ck.testExactNumber(0, Range1dArray.countContainingRanges(forwardRangesForUnion, x));
+        ck.testExactNumber(0, Range1dArray.countContainingRanges(forwardRangesForParity, x));
+      }
+      // due to the overlap construction, "gap" points are inside the union, NOT in parity
+      for (const x of originalGapPoints) {
+        ck.testExactNumber(1, Range1dArray.countContainingRanges(forwardRangesForUnion, x));
+        ck.testExactNumber(0, Range1dArray.countContainingRanges(forwardRangesForParity, x));
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("TestPointOverlap", () => {
+    const ck = new Checker();
+    for (const n of [2, 3, 10]) {
+      const forwardOverlaps = constructRangesByStepFunction(n, 1, (_i: number) => 3, (_i: number) => 0);
+      const forwardRange = Range1dArray.firstLowToLastHigh(forwardOverlaps);
+      Range1dArray.simplifySortUnion(forwardOverlaps, true);
+      const forwardUnionRange = Range1dArray.firstLowToLastHigh(forwardOverlaps);
+      ck.testExactNumber(1, forwardOverlaps.length);
+      ck.testTrue(forwardRange.isAlmostEqual(forwardUnionRange));
+
+      const forwardForParityA = constructRangesByStepFunction(n, 1, (_i: number) => 3, (_i: number) => 0);
+      Range1dArray.simplifySortParity(forwardForParityA, false);
+      ck.testExactNumber(n, forwardForParityA.length, "simplifySortParity (false)with abutting intervals has no effect.");
+      const forwardForParityB = constructRangesByStepFunction(n, 1, (_i: number) => 3, (_i: number) => 0);
+      Range1dArray.simplifySortParity(forwardForParityB, true);
+      ck.testExactNumber(1, forwardForParityB.length, "simplifySortParity(true) with abutting intervals compresses to single interval.");
+
     }
     expect(ck.getNumErrors()).equals(0);
   });

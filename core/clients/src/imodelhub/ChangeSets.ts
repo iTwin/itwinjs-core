@@ -4,19 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-import { IModelHubClientError, ArgumentCheck } from "./Errors";
-import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
-import { addSelectFileAccessKey, StringIdQuery } from "./Query";
+import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { FileHandler } from "../FileHandler";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ProgressInfo } from "../Request";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
+import { ArgumentCheck, IModelHubClientError } from "./Errors";
+import { addSelectFileAccessKey, StringIdQuery } from "./Query";
 
-const loggingCategory = "imodeljs-clients.imodelhub";
+const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
-/** Specifies types of changes in a [[ChangeSet]]. */
-export const enum ChangesType {
+/**
+ * Specifies types of changes in a [[ChangeSet]].
+ * @public
+ */
+export enum ChangesType {
   /** [[ChangeSet]] contains regular file changes (e.g. changes to elements or models). */
   Regular,
   /** [[ChangeSet]] only contains schema changes. */
@@ -25,6 +29,7 @@ export const enum ChangesType {
 
 /**
  * [ChangeSet]($docs/learning/Glossary.md#changeset) represents a file containing changes to the iModel. A single ChangeSet contains changes made on a single [[Briefcase]] file and pushed as a single file. ChangeSets form a linear change history of the iModel. If a user wants to push their changes to iModelHub, they first have to merge all ChangeSet they do not have yet. Only a single briefcase is allowed to push their changes at a time.
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.ChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class ChangeSet extends WsgInstance {
@@ -48,7 +53,7 @@ export class ChangeSet extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Index")
   public index?: string;
 
-  /** Id of this ChangeSet's parent ChangeSet. It has to be set during the push. See [BriefcaseEntry.reversedChangeSetId]($backend). */
+  /** Id of this ChangeSet's parent ChangeSet. It has to be set during the push. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ParentId")
   public parentId?: string;
 
@@ -90,6 +95,7 @@ export class ChangeSet extends WsgInstance {
 
 /**
  * Query object for getting [[ChangeSet]]s. You can use this to modify the query. See [[ChangeSetHandler.get]].
+ * @public
  */
 export class ChangeSetQuery extends StringIdQuery {
 
@@ -102,7 +108,7 @@ export class ChangeSetQuery extends StringIdQuery {
     return this;
   }
 
-  /** @hidden */
+  /** @internal */
   protected checkValue(id: string) {
     ArgumentCheck.validChangeSetId("id", id);
   }
@@ -212,9 +218,9 @@ export class ChangeSetQuery extends StringIdQuery {
 
   /**
    * Query changeSets by the seed file id. Should be obsolete, because seed file replacement is deprecated.
-   * @hidden
    * @param seedFileId Id of the seed file.
    * @returns This query.
+   * @internal
    */
   public bySeedFileId(seedFileId: GuidString) {
     ArgumentCheck.validGuid("seedFileId", seedFileId);
@@ -223,10 +229,7 @@ export class ChangeSetQuery extends StringIdQuery {
   }
 }
 
-/**
- * Queue for limiting number of promises executed in parallel.
- * @hidden
- */
+/** Queue for limiting number of promises executed in parallel. */
 class ParallelQueue {
   private _queue: Array<() => Promise<void>> = [];
   private _parallelDownloads = 10;
@@ -264,7 +267,8 @@ class ParallelQueue {
 }
 
 /**
- * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [IModelDb]($backend) or [BriefcaseManager]($backend) methods instead.
+ * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [IModelDb]($backend) methods instead.
+ * @public
  */
 export class ChangeSetHandler {
   private _handler: IModelBaseHandler;
@@ -272,44 +276,42 @@ export class ChangeSetHandler {
 
   /**
    * Constructor for ChangeSetHandler. Should use [[IModelClient]] instead of directly constructing this.
-   * @hidden
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
+   * @internal
    */
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = handler;
     this._fileHandler = fileHandler;
   }
 
-  /**
-   * Get relative url for ChangeSet requests.
-   * @hidden
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+  /** Get relative url for ChangeSet requests.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param changeSetId Id of the ChangeSet.
+   * @internal
    */
-  private getRelativeUrl(imodelId: GuidString, changeSetId?: string) {
-    return `/Repositories/iModel--${imodelId}/iModelScope/ChangeSet/${changeSetId || ""}`;
+  private getRelativeUrl(iModelId: GuidString, changeSetId?: string) {
+    return `/Repositories/iModel--${iModelId}/iModelScope/ChangeSet/${changeSetId || ""}`;
   }
 
-  /**
-   * Get the [[ChangeSet]]s for the iModel.
-   * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+  /** Get the [[ChangeSet]]s for the iModel.
+   * @param requestContext The client request context
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried ChangeSets or select different data from them.
    * @returns ChangeSets that match the query.
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[ChangeSet]] with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
-    alctx.enter();
-    Logger.logInfo(loggingCategory, `Querying changesets for iModel ${imodelId}`);
-    ArgumentCheck.defined("token", token);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
+    requestContext.enter();
+    Logger.logInfo(loggerCategory, `Started querying ChangeSets`, () => ({ iModelId }));
+    ArgumentCheck.defined("requestContext", requestContext);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
     const id = query.getId();
-    const changeSets = await this._handler.getInstances<ChangeSet>(alctx, ChangeSet, token, this.getRelativeUrl(imodelId, id), query.getQueryOptions());
-    alctx.enter();
-    Logger.logTrace(loggingCategory, `Queried ${changeSets.length} changesets for iModel ${imodelId}`);
+    const changeSets = await this._handler.getInstances<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId, id), query.getQueryOptions());
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, `Finished querying ChangeSets`, () => ({ iModelId, count: changeSets.length }));
 
     return changeSets;
   }
@@ -318,16 +320,16 @@ export class ChangeSetHandler {
    * Download the specified [[ChangeSet]]s. If you want to [pull]($docs/learning/Glossary.md#pull) and [merge]($docs/learning/Glossary.md#merge) ChangeSets from iModelHub to your [[Briefcase]], you should use [IModelDb.pullAndMergeChanges]($backend) instead.
    *
    * This method creates the directory containing the ChangeSets if necessary. If there is an error in downloading some of the ChangeSets, all partially downloaded ChangeSets are deleted from disk.
-   * @param alctx The activity logging context
+   * @param requestContext The client request context
    * @param changeSets ChangeSets to download. These need to include a download link. See [[ChangeSetQuery.selectDownloadUrl]].
    * @param path Path of directory where the ChangeSets should be downloaded.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley), if one of the required arguments is undefined or empty.
    * @param progressCallback Callback for tracking progress.
    * @throws [[ResponseError]] if the download fails.
    */
-  public async download(alctx: ActivityLoggingContext, changeSets: ChangeSet[], path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
-    alctx.enter();
-    Logger.logInfo(loggingCategory, `Downloading ${changeSets.length} changesets`);
+  public async download(requestContext: AuthorizedClientRequestContext, changeSets: ChangeSet[], path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+    requestContext.enter();
+    Logger.logInfo(loggerCategory, `Downloading ${changeSets.length} changesets`);
     ArgumentCheck.nonEmptyArray("changeSets", changeSets);
     ArgumentCheck.defined("path", path);
 
@@ -359,20 +361,20 @@ export class ChangeSetHandler {
           previouslyDownloaded = progress.loaded;
           progressCallback!({ loaded: downloadedSize, total: totalSize, percent: downloadedSize / totalSize });
         };
-        return fileHandler.downloadFile(alctx, downloadUrl, downloadPath, parseInt(changeSet.fileSize!, 10), progressCallback ? callback : undefined);
+        return fileHandler.downloadFile(requestContext, downloadUrl, downloadPath, parseInt(changeSet.fileSize!, 10), progressCallback ? callback : undefined);
       }));
 
     await queue.waitAll();
-    alctx.enter();
-    Logger.logTrace(loggingCategory, `Downloaded ${changeSets.length} changesets`);
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, `Downloaded ${changeSets.length} changesets`);
   }
 
   /**
    * Upload a [[ChangeSet]] file. If you want to [push]($docs/learning/Glossary.md#push) your changes to iModelHub, use [IModelDb.pushChanges]($backend) instead. This method is only a part of that workflow.
    *
    * ChangeSets have to be uploaded in a linear order. If another user is uploading, or changeSet.parentId does not point to the latest ChangeSet on iModelHub, this method will fail. User will have to download all of the newer ChangeSets, merge them into their [[Briefcase]] and calculate a new ChangeSet id.
-   * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+   * @param requestContext The client request context
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param changeSet Information of the ChangeSet to be uploaded.
    * @param path Path of the ChangeSet file to be uploaded.
    * @param progressCallback Callback for tracking upload progress.
@@ -383,11 +385,11 @@ export class ChangeSetHandler {
    * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId is not set to the correct file id. That file id should match to the value written to the Briefcase file. See [IModelDb.setGuid]($backend).
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
-    alctx.enter();
-    Logger.logInfo(loggingCategory, `Uploading changeset ${changeSet.id} to iModel ${imodelId}`);
-    ArgumentCheck.defined("token", token);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
+    requestContext.enter();
+    Logger.logInfo(loggerCategory, "Started uploading ChangeSet", () => ({ iModelId, ...changeSet }));
+    ArgumentCheck.defined("requestContext", requestContext);
+    ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.defined("changeSet", changeSet);
     ArgumentCheck.defined("path", path);
 
@@ -400,21 +402,21 @@ export class ChangeSetHandler {
     if (!this._fileHandler.exists(path) || this._fileHandler.isDirectory(path))
       return Promise.reject(IModelHubClientError.fileNotFound());
 
-    const postChangeSet = await this._handler.postInstance<ChangeSet>(alctx, ChangeSet, token, this.getRelativeUrl(imodelId), changeSet);
+    const postChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId), changeSet);
 
-    await this._fileHandler.uploadFile(alctx, postChangeSet.uploadUrl!, path, progressCallback);
-    alctx.enter();
+    await this._fileHandler.uploadFile(requestContext, postChangeSet.uploadUrl!, path, progressCallback);
+    requestContext.enter();
 
     postChangeSet.uploadUrl = undefined;
     postChangeSet.downloadUrl = undefined;
     postChangeSet.isUploaded = true;
 
-    const confirmChangeSet = await this._handler.postInstance<ChangeSet>(alctx, ChangeSet, token, this.getRelativeUrl(imodelId, postChangeSet.id!), postChangeSet);
-    alctx.enter();
+    const confirmChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId, postChangeSet.id!), postChangeSet);
+    requestContext.enter();
 
     changeSet.isUploaded = true;
 
-    Logger.logTrace(loggingCategory, `Uploaded changeset ${changeSet.id} to iModel ${imodelId}`);
+    Logger.logInfo(loggerCategory, "Finished uploading ChangeSet", () => ({ iModelId, ...changeSet }));
 
     return confirmChangeSet;
   }

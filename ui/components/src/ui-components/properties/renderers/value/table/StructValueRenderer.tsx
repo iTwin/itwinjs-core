@@ -8,7 +8,9 @@ import * as React from "react";
 import { TableNonPrimitiveValueRenderer as TableValueRenderer, TableSpecificValueRendererProps } from "./NonPrimitiveValueRenderer";
 import { NonPrimitivePropertyRenderer } from "../../NonPrimitivePropertyRenderer";
 
-/** A react component which renders struct property value as a button with text */
+/** A react component which renders struct property value as a button with text
+ * @public
+ */
 export class TableStructValueRenderer extends React.PureComponent<TableSpecificValueRendererProps> {
   private getButtonLabel(props: TableSpecificValueRendererProps) {
     return `{${props.propertyRecord.property.typename}}`;
@@ -24,6 +26,7 @@ export class TableStructValueRenderer extends React.PureComponent<TableSpecificV
     );
   }
 
+  /** @internal */
   public render() {
     return (
       <TableValueRenderer

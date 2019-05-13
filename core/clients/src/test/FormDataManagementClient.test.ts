@@ -3,34 +3,31 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { AuthorizationToken, AccessToken } from "../Token";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AuthorizationToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { FormDataManagementClient, FormDefinition, FormInstanceData } from "../FormDataManagementClient";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
 chai.should();
 
 describe.skip("FormDataManagementClient", () => {
-
-  let accessToken: AccessToken;
-  let actx: ActivityLoggingContext;
+  let requestContext: AuthorizedClientRequestContext;
   const formDataManagementClient: FormDataManagementClient = new FormDataManagementClient();
   const projectId: string = "0f4cf9a5-5b69-4189-b7a9-60f6a5a369a7";
 
   before(async function (this: Mocha.IHookCallbackContext) {
-
-    this.enableTimeouts(false);
-    actx = new ActivityLoggingContext("");
     if (TestConfig.enableMocks)
       return;
+    this.enableTimeouts(false);
 
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authToken: AuthorizationToken = await TestConfig.login();
-    accessToken = await formDataManagementClient.getAccessToken(actx, authToken);
+    const accessToken = await formDataManagementClient.getAccessToken(new ClientRequestContext(), authToken);
+    requestContext = new AuthorizedClientRequestContext(accessToken);
   });
 
   it("should be able to retrieve Form Definitions (#integration)", async function (this: Mocha.ITestCallbackContext) {
-    const formDefinitions: FormDefinition[] = await formDataManagementClient.getFormDefinitions(accessToken, actx, projectId);
+    const formDefinitions: FormDefinition[] = await formDataManagementClient.getFormDefinitions(requestContext, projectId);
     chai.assert(formDefinitions);
   });
 
@@ -38,7 +35,7 @@ describe.skip("FormDataManagementClient", () => {
     if (TestConfig.enableMocks)
       this.skip();
 
-    const formDefinitions: FormDefinition[] = await formDataManagementClient.getRiskIssueFormDefinitions(accessToken, actx, projectId);
+    const formDefinitions: FormDefinition[] = await formDataManagementClient.getRiskIssueFormDefinitions(requestContext, projectId);
     chai.assert(formDefinitions);
   });
 
@@ -46,7 +43,7 @@ describe.skip("FormDataManagementClient", () => {
     if (TestConfig.enableMocks)
       this.skip();
 
-    const definitions: FormDefinition[] = await formDataManagementClient.getFormDefinitions(accessToken, actx, projectId);
+    const definitions: FormDefinition[] = await formDataManagementClient.getFormDefinitions(requestContext, projectId);
     const formDef = definitions[0];
     const formId = formDef.formId!;
 
@@ -66,7 +63,7 @@ describe.skip("FormDataManagementClient", () => {
       },
     } as FormInstanceData;
 
-    const newFromData: FormInstanceData = await formDataManagementClient.postFormData(accessToken, actx, formData, projectId, "Issue");
+    const newFromData: FormInstanceData = await formDataManagementClient.postFormData(requestContext, formData, projectId, "Issue");
     chai.assert(newFromData);
   });
 
@@ -74,7 +71,7 @@ describe.skip("FormDataManagementClient", () => {
     if (TestConfig.enableMocks)
       this.skip();
 
-    const definitions: FormDefinition[] = await formDataManagementClient.getRiskIssueFormDefinitions(accessToken, actx, projectId);
+    const definitions: FormDefinition[] = await formDataManagementClient.getRiskIssueFormDefinitions(requestContext, projectId);
     const formDef = definitions[0];
 
     const formId = formDef.formId!;
@@ -89,7 +86,7 @@ describe.skip("FormDataManagementClient", () => {
       AssignedToId: "Test AssignedToId",
     };
 
-    const newFromData: FormInstanceData = await formDataManagementClient.postRiskIssueFormData(accessToken, actx, properties, projectId, iModelId, elementId, formId, "Issue");
+    const newFromData: FormInstanceData = await formDataManagementClient.postRiskIssueFormData(requestContext, properties, projectId, iModelId, elementId, formId, "Issue");
     chai.assert(newFromData);
   });
 
@@ -97,7 +94,7 @@ describe.skip("FormDataManagementClient", () => {
     if (TestConfig.enableMocks)
       this.skip();
 
-    const formData: FormInstanceData[] = await formDataManagementClient.getFormData(accessToken, actx, projectId, "Issue");
+    const formData: FormInstanceData[] = await formDataManagementClient.getFormData(requestContext, projectId, "Issue");
     chai.assert(formData);
   });
 
@@ -106,7 +103,7 @@ describe.skip("FormDataManagementClient", () => {
       this.skip();
 
     const iModelId = "b702d44e-d8c0-4978-9a41-b6cdddcb5619";
-    const formData: FormInstanceData[] = await formDataManagementClient.getRiskIssueFormData(accessToken, actx, projectId, iModelId, "Issue");
+    const formData: FormInstanceData[] = await formDataManagementClient.getRiskIssueFormData(requestContext, projectId, iModelId, "Issue");
     chai.assert(formData);
   });
 

@@ -5,18 +5,12 @@
 /** @module Text */
 
 import * as React from "react";
-import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
+import { StyledText } from "./StyledText";
 
-/** Styled subheading text */
-
-export class Subheading extends React.Component<TextProps> {
-  public render(): JSX.Element {
-    return (
-      <span {...this.props} className={classnames("uicore-text-subheading", this.props.className)}>
-        {this.props.children}
-      </span>
-    );
-  }
-}
-export default Subheading;
+/** Styled subheading text
+ * @beta
+ */
+export const Subheading: React.FunctionComponent<TextProps> = (props) => {  // tslint:disable-line:variable-name
+  return <StyledText {...props} mainClassName="uicore-text-subheading" />;
+};

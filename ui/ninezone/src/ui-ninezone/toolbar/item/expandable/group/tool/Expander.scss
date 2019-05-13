@@ -12,7 +12,7 @@
     filter: $shadow;
   }
 
-  &:active:not(.nz-is-disabled) {
+  &:active:not(.nz-disabled) {
     > .nz-expansion-indicator {
       filter: $no-shadow;
     }

@@ -7,7 +7,9 @@ import * as React from "react";
 import { DropTarget, DropTargetMonitor, ConnectDropTarget, DropTargetConnector, DndComponentClass } from "react-dnd";
 import { DropTargetArguments, DragSourceArguments, DropTargetProps } from "./DragDropDef";
 
-/** React properties for withDropTarget Higher-Order Component */
+/** React properties for withDropTarget Higher-Order Component
+ * @beta
+ */
 export interface WithDropTargetProps<DragDropObject = any> {
   /** Properties and callbacks for DropTarget */
   dropProps: DropTargetProps<DragDropObject>;
@@ -15,21 +17,23 @@ export interface WithDropTargetProps<DragDropObject = any> {
   shallow?: boolean;
   /** Style properties for dropTarget wrapper element */
   dropStyle?: React.CSSProperties;
-  /** @hidden */
+
+  /** @internal */
   connectDropTarget?: ConnectDropTarget;
-  /** @hidden */
+  /** @internal */
   isOver?: boolean;
-  /** @hidden */
+  /** @internal */
   canDrop?: boolean;
-  /** @hidden */
+  /** @internal */
   item?: DragDropObject;
-  /** @hidden */
+  /** @internal */
   type?: string | symbol;
 }
 
 /**
  * HOC (Higher-Order Component) that transforms wrapped component into a DropTarget.
  * @param Component component to wrap.
+ * @beta
  */
 export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
   // tslint:disable-next-line:variable-name

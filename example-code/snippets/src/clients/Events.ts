@@ -6,27 +6,30 @@
 import {
   IModelHubClient, AccessToken, EventSubscription,
   ImsActiveSecureTokenClient, IModelHubEvent, EventSAS, AuthorizationToken,
+  AuthorizedClientRequestContext, ImsUserCredentials,
 } from "@bentley/imodeljs-clients";
 
-import { ActivityLoggingContext, GuidString, Guid, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, Guid, Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
 
 class MockAccessToken extends AccessToken {
-  public constructor() { super(""); }
+  public constructor() { super(); this._samlAssertion = ""; }
   public toTokenString() { return ""; }
 }
 
 const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
 const imodelHubClient: IModelHubClient = new IModelHubClient();
 const imodelId: GuidString = Guid.createValue();
-const username: string = "";
-const password: string = "";
+const userCredentials: ImsUserCredentials = {
+  email: "",
+  password: "",
+};
 
 // __PUBLISH_EXTRACT_START__ EventHandler.createListener.authenticate.example-code
 async function authenticate(): Promise<AccessToken> {
-  const alctx: ActivityLoggingContext = new ActivityLoggingContext(Guid.createValue());
+  const requestContext = new ClientRequestContext();
   const authorizationToken: AuthorizationToken = await authorizationClient
-    .getToken(alctx, username, password);
-  return imodelHubClient.getAccessToken(alctx, authorizationToken);
+    .getToken(requestContext, userCredentials);
+  return imodelHubClient.getAccessToken(requestContext, authorizationToken);
 }
 // __PUBLISH_EXTRACT_END__
 
@@ -37,24 +40,25 @@ function processEvent(event: IModelHubEvent): void {
 // __PUBLISH_EXTRACT_END__
 
 async () => {
-  const alctx: ActivityLoggingContext = new ActivityLoggingContext("b0f0808d-e76f-4615-acf4-95aa1b78eba5");
   const accessToken = new MockAccessToken();
+  const requestContext = new ClientRequestContext("b0f0808d-e76f-4615-acf4-95aa1b78eba5");
+  const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken, "b0f0808d-e76f-4615-acf4-95aa1b78eba5");
   // __PUBLISH_EXTRACT_START__ EventSubscriptionsHandler.create.example-code
   const subscription: EventSubscription = await imodelHubClient.events
-    .subscriptions.create(alctx, accessToken, imodelId, ["ChangeSetPostPushEvent", "VersionEvent"]);
+    .subscriptions.create(authorizedRequestContext, imodelId, ["ChangeSetPostPushEvent", "VersionEvent"]);
   // __PUBLISH_EXTRACT_END__
   // __PUBLISH_EXTRACT_START__ EventHandler.getSASToken.example-code
-  const sasToken: EventSAS = await imodelHubClient.events.getSASToken(alctx, accessToken, imodelId);
+  const sasToken: EventSAS = await imodelHubClient.events.getSASToken(authorizedRequestContext, imodelId);
   // __PUBLISH_EXTRACT_END__
   // __PUBLISH_EXTRACT_START__ EventHandler.getEvent.example-code
   const event: IModelHubEvent | undefined = await imodelHubClient.events
-    .getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 60);
+    .getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 60);
   // __PUBLISH_EXTRACT_END__
   if (!event)
     return;
   // __PUBLISH_EXTRACT_START__ EventHandler.createListener.create.example-code
   const deleteCallback = await imodelHubClient.events  // tslint:disable-line:await-promise
-    .createListener(alctx, authenticate, subscription.wsgId, imodelId, processEvent);
+    .createListener(requestContext, authenticate, subscription.wsgId, imodelId, processEvent);
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ EventHandler.createListener.delete.example-code

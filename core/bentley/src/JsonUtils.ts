@@ -63,6 +63,22 @@ export namespace JsonUtils {
    */
   export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean) { if (val === defaultVal) delete json[key]; else json[key] = val; }
 
+  /** Determine if a Javascript object is equivalent to `{}`.
+   * @param json The JSON object to test.
+   * @returns true if `json` is an Object with no keys.
+   */
+  export function isEmptyObject(json: any): boolean {
+    return "object" === typeof json && 0 === Object.keys(json).length;
+  }
+
+  /** Determine if the input is undefined or an empty Javascript object.
+   * @param json The JSON object to test.
+   * @returns true if `json` is undefined or is an Object with no keys (equivalent to `{}`).
+   */
+  export function isEmptyObjectOrUndefined(json: any): boolean {
+    return undefined === json || isEmptyObject(json);
+  }
+
   function isNullOrUndefined(json: any): boolean { return null === json || undefined === json; }
 
   /**

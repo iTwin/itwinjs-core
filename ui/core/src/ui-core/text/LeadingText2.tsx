@@ -5,18 +5,12 @@
 /** @module Text */
 
 import * as React from "react";
-import * as classnames from "classnames";
 import { TextProps } from "./TextProps";
+import { StyledText } from "./StyledText";
 
-/** Styled leading text */
-
-export class LeadingText2 extends React.Component<TextProps> {
-  public render(): JSX.Element {
-    return (
-      <span {...this.props} className={classnames("uicore-text-leading-2", this.props.className)}>
-        {this.props.children}
-      </span>
-    );
-  }
-}
-export default LeadingText2;
+/** Styled leading text
+ * @beta
+ */
+export const LeadingText2: React.FunctionComponent<TextProps> = (props) => {  // tslint:disable-line:variable-name
+  return <StyledText {...props} mainClassName="uicore-text-leading-2" />;
+};

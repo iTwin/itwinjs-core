@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
+import * as sinon from "sinon";
 
 import { HistoryTray, DefaultHistoryManager } from "../../../../../ui-ninezone";
 
@@ -22,6 +23,30 @@ describe("<HistoryTray />", () => {
 
   it("renders items", () => {
     shallow(<HistoryTray items={<><br /><br /></>}></HistoryTray>).should.matchSnapshot();
+  });
+
+  it("renders items", () => {
+    shallow(<HistoryTray items={<><br /><br /></>}></HistoryTray>).should.matchSnapshot();
+  });
+
+  it("should invoke onIsHistoryExtendedChange when mouse enters", () => {
+    const spy = sinon.spy();
+    const sut = mount(<HistoryTray onIsHistoryExtendedChange={spy} />);
+    sut.simulate("mouseEnter");
+    spy.calledOnceWithExactly(true).should.true;
+  });
+
+  it("should invoke onIsHistoryExtendedChange when mouse leaves", () => {
+    const spy = sinon.spy();
+    const sut = mount(<HistoryTray onIsHistoryExtendedChange={spy} />);
+    sut.simulate("mouseLeave");
+    spy.calledOnceWithExactly(false).should.true;
+  });
+
+  it("should not invoke if onIsHistoryExtendedChange is not provided", () => {
+    const sut = mount(<HistoryTray />);
+    sut.simulate("mouseEnter");
+    sut.simulate("mouseLeave");
   });
 
   it("Max item count of default history manager should eq 4", () => {

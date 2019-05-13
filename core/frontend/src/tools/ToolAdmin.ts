@@ -5,11 +5,13 @@
 /** @module Tools */
 
 import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
-import { Angle, Constant, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
+import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
+import { LocateOptions } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
+import { ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 import { CanvasDecoration } from "../render/System";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
@@ -17,64 +19,18 @@ import { linePlaneIntersect, ScreenViewport, Viewport } from "../Viewport";
 import { ViewState3d, ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
+import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool, CoordinateLockOverrides, ToolSettings } from "./Tool";
 import { ViewTool } from "./ViewTool";
-import { ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
-import { LocateOptions } from "../ElementLocateManager";
 
-export const enum CoordinateLockOverrides {
-  None = 0,
-  ACS = 1 << 1,
-  Grid = 1 << 2,     // also overrides unit lock
-  All = 0xffff,
-}
+/** @public */
+export enum StartOrResume { Start = 1, Resume = 2 }
 
-export const enum StartOrResume { Start = 1, Resume = 2 }
-export const enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
+/** @public */
+export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
 
-/** Settings that control the behavior of built-in tools. Applications may modify these values. */
-export class ToolSettings {
-  /** Duration of animations of viewing operations. */
-  public static animationTime = BeDuration.fromMilliseconds(260);
-  /** Two tap must be within this period to be a double tap. */
-  public static doubleTapTimeout = BeDuration.fromMilliseconds(250);
-  /** Two clicks must be within this period to be a double click. */
-  public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
-  /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
-  public static doubleClickToleranceInches = 0.05;
-  /** Duration without movement before a no-motion event is generated. */
-  public static noMotionTimeout = BeDuration.fromMilliseconds(10);
-  /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
-  public static preserveWorldUp = true;
-  /** Delay with a touch on the surface before a move operation begins. */
-  public static touchMoveDelay = BeDuration.fromMilliseconds(50);
-  /** Delay with the mouse down before a drag operation begins. */
-  public static startDragDelay = BeDuration.fromMilliseconds(110);
-  /** Distance in screen inches a touch point must move before being considered motion. */
-  public static touchMoveDistanceInches = 0.15;
-  /** Distance in screen inches the cursor must move before a drag operation begins. */
-  public static startDragDistanceInches = 0.15;
-  /** Radius in screen inches to search for elements that anchor viewing operations. */
-  public static viewToolPickRadiusInches = 0.20;
-  /** Camera angle enforced for walk tool. */
-  public static walkCameraAngle = Angle.createDegrees(75.6);
-  /** Whether the walk tool enforces worldZ be aligned with screenY */
-  public static walkEnforceZUp = false;
-  /** Speed, in meters per second, for the walk tool. */
-  public static walkVelocity = 3.5;
-  /** Scale factor applied for wheel events with "per-line" modifier. */
-  public static wheelLineFactor = 40;
-  /** Scale factor applied for wheel events with "per-page" modifier. */
-  public static wheelPageFactor = 120;
-  /** When the zoom-with-wheel tool (with camera enabled) gets closer than this distance to an obstacle, it "bumps" through. */
-  public static wheelZoomBumpDistance = Constant.oneCentimeter;
-  /** Scale factor for zooming with mouse wheel. */
-  public static wheelZoomRatio = 1.75;
-}
-
-/** @hidden */
+/** @internal */
 export class ToolState {
   public coordLockOvr = CoordinateLockOverrides.None;
   public locateCircleOn = false;
@@ -82,7 +38,7 @@ export class ToolState {
   public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
 }
 
-/** @hidden */
+/** @internal */
 export class SuspendedToolState {
   private readonly _toolState: ToolState;
   private readonly _accuSnapState: AccuSnap.ToolState;
@@ -120,7 +76,7 @@ export class SuspendedToolState {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class CurrentInputState {
   private _rawPoint: Point3d = new Point3d();
   private _uorPoint: Point3d = new Point3d();
@@ -297,12 +253,14 @@ interface ToolEvent {
   vp?: ScreenViewport; // Viewport is optional - keyboard events aren't associated with a Viewport.
 }
 
-/** Controls operation of Tools. Administers the current view, primitive, and idle tools. Forwards events to the appropriate tool. */
+/** Controls operation of Tools. Administers the current view, primitive, and idle tools. Forwards events to the appropriate tool.
+ * @public
+ */
 export class ToolAdmin {
   public markupView?: ScreenViewport;
-  /** @hidden */
+  /** @internal */
   public readonly currentInputState = new CurrentInputState();
-  /** @hidden */
+  /** @internal */
   public readonly toolState = new ToolState();
   private _canvasDecoration?: CanvasDecoration;
   private _suspendedByViewTool?: SuspendedToolState;
@@ -319,23 +277,23 @@ export class ToolAdmin {
   private _modifierKey = BeModifierKeys.None;
   /** Return the name of the [[PrimitiveTool]] to use as the default tool, if any.
    * @see [[startDefaultTool]]
-   * @hidden
+   * @internal
    */
   public get defaultToolId(): string { return this._defaultToolId; }
   /** Set the name of the [[PrimitiveTool]] to use as the default tool, if any.
    * @see [[startDefaultTool]]
-   * @hidden
+   * @internal
    */
   public set defaultToolId(toolId: string) { this._defaultToolId = toolId; }
   /** Return the default arguments to pass in when starting the default tool, if any.
    * @see [[startDefaultTool]]
-   * @hidden
+   * @internal
    */
   public get defaultToolArgs(): any[] | undefined { return this._defaultToolArgs; }
 
   /** Set the default arguments to pass in when starting the default tool, if any.
    * @see [[startDefaultTool]]
-   * @hidden
+   * @internal
    */
   public set defaultToolArgs(args: any[] | undefined) { this._defaultToolArgs = args; }
   /** Apply operations such as transform, copy or delete to all members of an assembly. */
@@ -354,17 +312,17 @@ export class ToolAdmin {
   private static _keysCurrentlyDown = new Set<string>(); // The (small) set of keys that are currently pressed.
 
   /** Handler that wants to process synching latest tool setting properties with UI.
-   *  @hidden
+   *  @internal
    */
   private _toolSettingsChangeHandler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined = undefined;
 
-  /** @hidden */
+  /** @internal */
   /** Set by object that will be provide UI for tool settings properties. */
   public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined) {
     this._toolSettingsChangeHandler = handler;
   }
 
-  /** @hidden */
+  /** @internal */
   public get toolSettingsChangeHandler() { return this._toolSettingsChangeHandler; }
 
   /** Handler for keyboard events. */
@@ -385,7 +343,7 @@ export class ToolAdmin {
     IModelApp.toolAdmin.addEvent(ev);
   }
 
-  /** @hidden */
+  /** @internal */
   public onInitialized() {
     if (typeof document === "undefined")
       return;    // if document isn't defined, we're probably running in a test environment. At any rate, we can't have interactive tools.
@@ -402,7 +360,7 @@ export class ToolAdmin {
     ToolAdmin._removals.push(() => { window.onfocus = null; });
   }
 
-  /** @hidden */
+  /** @internal */
   public startEventLoop() {
     if (!ToolAdmin._wantEventLoop) {
       ToolAdmin._wantEventLoop = true;
@@ -410,7 +368,7 @@ export class ToolAdmin {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   public onShutDown() {
     this._idleTool = undefined;
     IconSprites.emptyAll(); // clear cache of icon sprites
@@ -436,7 +394,7 @@ export class ToolAdmin {
   }
 
   /** Called from HTML event listeners. Events are processed in the order they're received in ToolAdmin.eventLoop
-   * @hidden
+   * @internal
    */
   public addEvent(ev: Event, vp?: ScreenViewport): void {
     const event = { ev, vp };
@@ -470,6 +428,9 @@ export class ToolAdmin {
 
   private async onWheel(event: ToolEvent): Promise<EventHandled> {
     const ev = event.ev as WheelEvent;
+    const vp = event.vp!;
+    if (this.filterViewport(vp))
+      return EventHandled.Yes;
     const current = this.currentInputState;
     current.setKeyQualifiers(ev);
 
@@ -489,7 +450,6 @@ export class ToolAdmin {
         break;
     }
 
-    const vp = event.vp!;
     const pt2d = this.getMousePosition(event);
 
     vp.removeAnimator();
@@ -692,9 +652,9 @@ export class ToolAdmin {
     return (undefined !== tool ? !tool.isCompatibleViewport(vp, false) : false);
   }
 
-  /** @hidden */
+  /** @internal */
   public onInstallTool(tool: InteractiveTool) { this.currentInputState.onInstallTool(); return tool.onInstall(); }
-  /** @hidden */
+  /** @internal */
   public onPostInstallTool(tool: InteractiveTool) { tool.onPostInstall(); }
 
   public get viewTool(): ViewTool | undefined { return this._viewTool; }
@@ -725,7 +685,7 @@ export class ToolAdmin {
 
   private async onMouseEnter(vp: ScreenViewport): Promise<void> { this.currentInputState.viewport = vp; }
 
-  /** @hidden */
+  /** @internal */
   public async onMouseLeave(vp: ScreenViewport): Promise<void> {
     IModelApp.accuSnap.clear();
     this.currentInputState.clearViewport(vp);
@@ -733,7 +693,7 @@ export class ToolAdmin {
     vp.invalidateDecorations(); // stop drawing locate circle...
   }
 
-  /** @hidden */
+  /** @internal */
   public updateDynamics(ev?: BeButtonEvent, useLastData?: boolean, adjustPoint?: boolean): void {
     if (!IModelApp.viewManager.inDynamicsMode || undefined === this.activeTool)
       return;
@@ -759,7 +719,7 @@ export class ToolAdmin {
   }
 
   /** This is invoked on a timer to update  input state and forward events to tools.
-   * @hidden
+   * @internal
    */
   private async onTimerEvent(): Promise<void> {
     const tool = this.activeTool;
@@ -995,7 +955,7 @@ export class ToolAdmin {
       snap.adjustedPoint.setFrom(point);
   }
 
-  /** @hidden */
+  /** @internal */
   public async sendButtonEvent(ev: BeButtonEvent): Promise<any> {
     const overlayHit = this.pickCanvasDecoration(ev);
     if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(ev))
@@ -1076,11 +1036,11 @@ export class ToolAdmin {
   }
 
   private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {
-    if (this.filterViewport(vp))
-      return;
-
+    const filtered = this.filterViewport(vp);
     if (undefined === this._viewTool && button === BeButton.Data)
       IModelApp.viewManager.setSelectedView(vp);
+    if (filtered)
+      return;
 
     vp.removeAnimator();
     const ev = new BeButtonEvent();
@@ -1197,7 +1157,7 @@ export class ToolAdmin {
     this.activeToolChanged.raiseEvent(tool, StartOrResume.Resume);
   }
 
-  /** @hidden */
+  /** @internal */
   public setInputCollector(newTool?: InputCollector) {
     if (undefined !== this._inputCollector) {
       this._inputCollector.onCleanup();
@@ -1206,7 +1166,7 @@ export class ToolAdmin {
     this._inputCollector = newTool;
   }
 
-  /** @hidden */
+  /** @internal */
   public exitInputCollector() {
     if (undefined === this._inputCollector)
       return;
@@ -1226,7 +1186,7 @@ export class ToolAdmin {
     this.updateDynamics();
   }
 
-  /** @hidden */
+  /** @internal */
   public startInputCollector(newTool: InputCollector): void {
     IModelApp.notifications.outputPrompt("");
     IModelApp.accuDraw.onInputCollectorInstall();
@@ -1247,7 +1207,7 @@ export class ToolAdmin {
     this.setInputCollector(newTool);
   }
 
-  /** @hidden */
+  /** @internal */
   public setViewTool(newTool?: ViewTool) {
     if (undefined !== this._viewTool) {
       this._viewTool.onCleanup();
@@ -1256,7 +1216,7 @@ export class ToolAdmin {
     this._viewTool = newTool;
   }
 
-  /** @hidden */
+  /** @internal */
   public exitViewTool() {
     if (undefined === this._viewTool)
       return;
@@ -1276,7 +1236,7 @@ export class ToolAdmin {
     this.updateDynamics();
   }
 
-  /** @hidden */
+  /** @internal */
   public startViewTool(newTool: ViewTool) {
 
     IModelApp.notifications.outputPrompt("");
@@ -1304,7 +1264,7 @@ export class ToolAdmin {
     this.setViewTool(newTool);
   }
 
-  /** @hidden */
+  /** @internal */
   public setPrimitiveTool(newTool?: PrimitiveTool) {
     if (undefined !== this._primitiveTool) {
       this._primitiveTool.onCleanup();
@@ -1313,7 +1273,7 @@ export class ToolAdmin {
     this._primitiveTool = newTool;
   }
 
-  /** @hidden */
+  /** @internal */
   public startPrimitiveTool(newTool?: PrimitiveTool) {
     IModelApp.notifications.outputPrompt("");
     this.exitViewTool();
@@ -1342,7 +1302,9 @@ export class ToolAdmin {
     this.setPrimitiveTool(newTool);
   }
 
-  /** Method used by interactive tools to send updated values to UI components, typically showing tool settings. */
+  /** Method used by interactive tools to send updated values to UI components, typically showing tool settings.
+   * @beta
+   */
   public syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
     if (this.toolSettingsChangeHandler)
       this.toolSettingsChangeHandler(toolId, syncProperties);
@@ -1352,7 +1314,7 @@ export class ToolAdmin {
    * Starts the default tool, if any. Generally invoked automatically when other tools exit, so shouldn't be called directly.
    * @note The default tool is expected to be a subclass of [[PrimitiveTool]]. A call to startDefaultTool is required to terminate
    * an active [[ViewTool]] or [[InputCollector]] and replace or clear the current [[PrimitiveTool]].
-   * @hidden
+   * @internal
    */
   public startDefaultTool() {
     if (!IModelApp.tools.run(this.defaultToolId, this.defaultToolArgs))
@@ -1366,13 +1328,13 @@ export class ToolAdmin {
       this._saveCursor = cursor;
   }
 
-  /** @hidden */
+  /** @internal */
   public testDecorationHit(id: string): boolean { return this.currentTool.testDecorationHit(id); }
 
-  /** @hidden */
+  /** @internal */
   public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined { return this.currentTool.getDecorationGeometry(hit); }
 
-  /** @hidden */
+  /** @internal */
   public decorate(context: DecorateContext): void {
     const tool = this.activeTool;
     if (undefined !== tool) {
@@ -1398,25 +1360,25 @@ export class ToolAdmin {
 
   public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse && this._canvasDecoration === undefined; }
 
-  /** @hidden */
+  /** @internal */
   public beginDynamics(): void {
     IModelApp.accuDraw.onBeginDynamics();
     IModelApp.viewManager.beginDynamicsMode();
     this.setCursor(IModelApp.viewManager.dynamicsCursor);
   }
 
-  /** @hidden */
+  /** @internal */
   public endDynamics(): void {
     IModelApp.accuDraw.onEndDynamics();
     IModelApp.viewManager.endDynamicsMode();
     this.setCursor(IModelApp.viewManager.crossHairCursor);
   }
 
-  /** @hidden */
+  /** @internal */
   public fillEventFromCursorLocation(ev: BeButtonEvent) { this.currentInputState.toEvent(ev, true); }
-  /** @hidden */
+  /** @internal */
   public fillEventFromLastDataButton(ev: BeButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
-  /** @hidden */
+  /** @internal */
   public setAdjustedDataPoint(ev: BeButtonEvent) { this.currentInputState.adjustLastDataPoint(ev); }
 
   /** Can be called by tools that wish to emulate mouse button down/up events for onTouchTap. */
@@ -1451,7 +1413,7 @@ export class ToolAdmin {
     return this.onMotion(ev.viewport!, ev.getDisplayPoint(), InputSource.Touch);
   }
 
-  /** @hidden */
+  /** @internal */
   public setIncompatibleViewportCursor(restore: boolean) {
     if (restore) {
       if (undefined === this._saveCursor)
@@ -1480,7 +1442,7 @@ export class ToolAdmin {
     return EventHandled.Yes;
   }
 
-  /** @hidden */
+  /** @internal */
   public onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void {
     IModelApp.accuDraw.onSelectedViewportChanged(previous, current);
 
@@ -1513,7 +1475,7 @@ export class ToolAdmin {
     viewManager.invalidateDecorationsAllViews();
   }
 
-  /** @hidden */
+  /** @internal */
   public callOnCleanup(): void {
     this.exitViewTool();
     this.exitInputCollector();
@@ -1524,7 +1486,7 @@ export class ToolAdmin {
 
 /**
  * Default processor to handle wheel events.
- * @hidden
+ * @internal
  */
 export class WheelEventProcessor {
   public static async process(ev: BeWheelEvent, doUpdate: boolean): Promise<void> {

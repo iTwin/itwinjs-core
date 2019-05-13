@@ -22,6 +22,7 @@
  * additional (non-lazily-loaded) "nested" properties can be added.
  *
  * [!alert text="*Remember:* Unlike regular Promises in JavaScript, DelayedPromises represent processes that **may not** already be happening." kind="warning"]
+ * @internal
  */
 export class DelayedPromise<T> implements Promise<T> {
 
@@ -63,9 +64,21 @@ export class DelayedPromise<T> implements Promise<T> {
   public async catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult> {
     return this.start().catch(onrejected);
   }
+
+  /**
+   * Attaches a callback for only the finally clause of the Promise.
+   * @param onrejected The callback to execute when the Promise is finalized.
+   * @return A Promise for the completion of the callback.
+   */
+  public async finally(onFinally?: (() => void) | undefined | null): Promise<T> {
+    return this.start().finally(onFinally);
+  }
 }
 
 // This keeps us from accidentally overriding one of DelayedPromise's methods in the DelayedPromiseWithProps constructor
+/**
+ * @beta
+ */
 export interface NoDelayedPromiseMethods {
   [propName: string]: any;
   start?: never;
@@ -74,6 +87,9 @@ export interface NoDelayedPromiseMethods {
 }
 
 // See definition of DelayedPromiseWithProps below
+/**
+ * @beta
+ */
 export interface DelayedPromiseWithPropsConstructor {
 
   /**
@@ -91,6 +107,9 @@ export interface DelayedPromiseWithPropsConstructor {
 
 // Because the property getters that wrap `props` are dynamically added, TypeScript isn't aware of them.
 // So by defining this as a class _expression_, we can cast the constructed type to Readonly<TProps> & DelayedPromise<TPayload>
+/**
+ * @beta
+ */
 // tslint:disable-next-line:variable-name
 export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMethods, TPayload> extends DelayedPromise<TPayload> {
   constructor(props: TProps, cb: () => Promise<TPayload>) {

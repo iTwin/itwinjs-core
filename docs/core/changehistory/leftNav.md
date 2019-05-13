@@ -2,6 +2,8 @@
 ---
 
 ### Versions
+- [0.191.0](./0.191.0.md)
+
 - [0.189.0](./0.189.0.md)
 
 - [0.187.0](./0.187.0.md)
@@ -11,7 +13,7 @@
 - [0.163.0](./0.163.0.md)
 
 ---
-### [link_to changelogs docSite=changehistory text="Change Logs"]
+### [Change Logs](./ChangeLogs.md)
 - [imodeljs-backend](../reference/imodeljs-backend/changelog)
 
 - [imodeljs-frontend](../reference/imodeljs-frontend/changelog)

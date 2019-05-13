@@ -15,7 +15,7 @@ import { Path } from "../curve/Path";
 import { CurveCollection } from "../curve/CurveCollection";
 import { LineString3d } from "../curve/LineString3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
-import { PolygonOps } from "../geometry3d/PointHelpers";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { SweepContour } from "./SweepContour";
 import { SolidPrimitive } from "./SolidPrimitive";
@@ -24,6 +24,7 @@ import { SolidPrimitive } from "./SolidPrimitive";
  *
  * * A planar contour (any Loop, Path, or parityRegion)
  * * A sweep vector
+ * @public
  */
 export class LinearSweep extends SolidPrimitive {
   private _contour: SweepContour;
@@ -34,6 +35,12 @@ export class LinearSweep extends SolidPrimitive {
     this._contour = contour;
     this._direction = direction;
   }
+  /**
+   * Create a sweep of a starting contour.
+   * @param contour contour to be swept
+   * @param direction sweep vector.  The contour is swept the full length of the vector.
+   * @param capped true to include end caps
+   */
   public static create(contour: CurveCollection, direction: Vector3d, capped: boolean): LinearSweep | undefined {
     const sweepable = SweepContour.createForLinearSweep(contour, direction);
     if (!sweepable)

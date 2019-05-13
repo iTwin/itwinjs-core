@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { mount, shallow } from "enzyme";
+import { mount } from "enzyme";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import { DragDropLayerManager, DragDropLayerRenderer } from "../../ui-framework";
@@ -29,13 +29,6 @@ describe("DragDropLayerManager", () => {
         <DragDropLayerRenderer />
       </BeDragDropContext>);
     wrapper.unmount();
-  });
-
-  it("DragDropLayerRenderer renders correctly", () => {
-    shallow(
-      <BeDragDropContext>
-        <DragDropLayerRenderer />
-      </BeDragDropContext>).should.matchSnapshot();
   });
 
   // NEEDSWORK: setType, registerTypeLayer, DragDropLayerRenderer

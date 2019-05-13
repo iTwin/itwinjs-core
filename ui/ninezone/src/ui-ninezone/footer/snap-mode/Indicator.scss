@@ -6,52 +6,19 @@
 @import "../_variables";
 
 .nz-footer-snapMode-indicator {
-  height: calc(100% - #{$nz-footer-vertical-padding-height});
-  top: $nz-footer-vertical-padding;
-  display: flex;
-  align-items: center;
-  position: relative;
-  padding-left: $nz-footer-indicator-horizontal-padding;
-  padding-right: $nz-footer-indicator-horizontal-padding;
-  color: $buic-foreground-body;
-
-  /* small devices (phones, 600px and down) */
-  @media only screen and (max-width: 600px) {
-    padding-left: $nz-footer-indicator-horizontal-padding-small;
-    padding-right: $nz-footer-indicator-horizontal-padding-small;
-  }
-
-  /* Medium devices (landscape tablets, 768px and up) */
-  @media only screen and (max-width: 768px) {
-    padding-left: $nz-footer-indicator-horizontal-padding-medium;
-    padding-right: $nz-footer-indicator-horizontal-padding-medium;
-  }
-
-  >.nz-indicator {
-    position: relative;
+  > .nz-indicator {
+    height: 100%;
     display: flex;
     align-items: center;
 
-    >.nz-label {
+    > .nz-label {
       margin-right: $space-between-text-and-icon;
-      display: none;
       font-size: $text-font-size;
+    }
 
-      &.nz-is-visible {
-        display: block;
-      }
+    &:hover {
+      color: $buic-foreground-primary;
+      cursor: pointer;
     }
   }
-
-  >.nz-dialog {
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 100%;
-  }
-}
-
-.nz-footer-snapMode-indicator:hover {
-  color: $buic-foreground-primary;
-  cursor: pointer;
 }

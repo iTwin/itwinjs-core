@@ -4,36 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-/** Describes [[Cell]]. */
+/** Describes [[Cell]].
+ * @internal
+ */
 export interface CellProps {
-  row: number;
-  col: number;
+  /** Cell column. */
+  readonly col: number;
+  /** Cell row. */
+  readonly row: number;
 }
 
-/** Provides methods to work with cells. */
+/** Provides methods to work with [[CellProps]].
+ * @internal
+ */
 export class Cell implements CellProps {
   /** Creates cell from [[CellProps]]. */
   public static create(props: CellProps) {
     return new Cell(props.row, props.col);
   }
 
-  private _row: number;
-  private _col: number;
-
-  /** @returns Row of this cell. */
-  public get row() {
-    return this._row;
-  }
-
-  /** @returns Column of this cell. */
-  public get col() {
-    return this._col;
-  }
-
   /** Creates a new cell. */
-  public constructor(row: number, col: number) {
-    this._row = row;
-    this._col = col;
+  public constructor(public readonly row: number, public readonly col: number) {
   }
 
   /** @returns True if this and other cells are equal.  */
@@ -58,7 +49,7 @@ export class Cell implements CellProps {
   }
 
   /** @returns Column aligned cells between this and other cells. */
-  public getVerticallyAlignedCellsTo(other: CellProps) {
+  public getVerticallyAlignedCellsTo(other: CellProps): CellProps[] {
     const cells: CellProps[] = [];
 
     if (!this.isColumnAlignedWith(other))
@@ -73,7 +64,7 @@ export class Cell implements CellProps {
   }
 
   /** @returns Row aligned cells between this and other cells. */
-  public getHorizontallyAlignedCellsTo(other: CellProps) {
+  public getHorizontallyAlignedCellsTo(other: CellProps): CellProps[] {
     const cells: CellProps[] = [];
 
     if (!this.isRowAlignedWith(other))
@@ -88,7 +79,7 @@ export class Cell implements CellProps {
   }
 
   /** @returns Row or column aligned cells between this and other cells. */
-  public getAlignedCellsTo(other: CellProps) {
+  public getAlignedCellsTo(other: CellProps): CellProps[] {
     const cells = this.getHorizontallyAlignedCellsTo(other);
     if (cells.length > 0)
       return cells;
@@ -98,26 +89,26 @@ export class Cell implements CellProps {
 
   /** @returns True if this cell is between cell1 and cell2 on vertical axis. */
   public isVerticallyBetween(cell1: CellProps, cell2: CellProps) {
-    if (this.isColumnAlignedWith(cell1) && this.isColumnAlignedWith(cell2))
-      if ((this.row < cell1.row && this.row > cell2.row) || this.row > cell1.row && this.row < cell2.row)
-        return true;
+    if (!this.isColumnAlignedWith(cell1) || !this.isColumnAlignedWith(cell2))
+      return false;
 
-    return false;
+    const min = Math.min(cell1.row, cell2.row);
+    const max = Math.max(cell1.row, cell2.row);
+    return this.row > min && this.row < max;
   }
 
   /** @returns True if this cell is between cell1 and cell2 on horizontal axis. */
   public isHorizontallyBetween(cell1: CellProps, cell2: CellProps) {
-    if (this.isRowAlignedWith(cell1) && this.isRowAlignedWith(cell2))
-      if ((this.col < cell1.col && this.col > cell2.col) || this.col > cell1.col && this.col < cell2.col)
-        return true;
+    if (!this.isRowAlignedWith(cell1) || !this.isRowAlignedWith(cell2))
+      return false;
 
-    return false;
+    const min = Math.min(cell1.col, cell2.col);
+    const max = Math.max(cell1.col, cell2.col);
+    return this.col > min && this.col < max;
   }
 
   /** @returns True if this cell is between cell1 and cell2 (column aligned or row aligned).  */
   public isBetween(cell1: CellProps, cell2: CellProps) {
-    if (this.isVerticallyBetween(cell1, cell2))
-      return true;
-    return this.isHorizontallyBetween(cell1, cell2);
+    return this.isVerticallyBetween(cell1, cell2) || this.isHorizontallyBetween(cell1, cell2);
   }
 }

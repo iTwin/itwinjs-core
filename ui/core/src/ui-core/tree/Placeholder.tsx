@@ -8,22 +8,23 @@ import * as classnames from "classnames";
 import * as React from "react";
 import { LEVEL_OFFSET } from "./Node";
 import "./Placeholder.scss";
+import { CommonProps } from "../utils/Props";
 
-/** Properties for the [[Placeholder]] React component */
-export interface PlaceholderProps {
+/** Properties for the [[TreeNodePlaceholder]] React component
+ * @public
+ */
+export interface TreeNodePlaceholderProps extends CommonProps {
   level: number;
   minWidth?: number;
   maxWidth?: number;
-  className?: string;
-  style?: React.CSSProperties;
   ["data-testid"]?: string;
 }
 
 /**
- * Presentation React component for a placeholder to be displayed instead of
- * a node while it's being loaded
+ * Presentation React component for a placeholder to be displayed instead of a node while it's being loaded
+ * @public
  */
-export default class Placeholder extends React.PureComponent<PlaceholderProps> {
+export class TreeNodePlaceholder extends React.PureComponent<TreeNodePlaceholderProps> {
   public render() {
     const className = classnames("core-tree-placeholder", this.props.className);
     const offset = this.props.level * LEVEL_OFFSET;

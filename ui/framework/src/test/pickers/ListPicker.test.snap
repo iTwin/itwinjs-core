@@ -1,14 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ListPicker should render correctly 1`] = `
-<ListPickerBase
-  items={Array []}
-  setEnabled={[Function]}
-  title="Test"
-/>
-`;
-
-exports[`ListPickerBase should render correctly 1`] = `
+exports[`ListPicker ListPickerBase should render correctly 1`] = `
 <ExpandableItem
   items={Array []}
   setEnabled={[Function]}
@@ -26,7 +18,7 @@ exports[`ListPickerBase should render correctly 1`] = `
 </ExpandableItem>
 `;
 
-exports[`ListPickerItem should render correctly 1`] = `
+exports[`ListPicker ListPickerItem should render correctly 1`] = `
 <div
   className="ListPicker-item"
 >
@@ -34,4 +26,12 @@ exports[`ListPickerItem should render correctly 1`] = `
     className="label"
   />
 </div>
+`;
+
+exports[`ListPicker rendering should render correctly 1`] = `
+<ListPickerBase
+  items={Array []}
+  setEnabled={[Function]}
+  title="Test"
+/>
 `;

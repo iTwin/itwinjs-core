@@ -15,4 +15,8 @@ describe("<MessageCenterTab />", () => {
   it("renders correctly", () => {
     shallow(<MessageCenterTab />).should.matchSnapshot();
   });
+
+  it("renders active correctly", () => {
+    shallow(<MessageCenterTab isActive />).should.matchSnapshot();
+  });
 });

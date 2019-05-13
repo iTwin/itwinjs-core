@@ -3,11 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { TestData } from "./TestData";
+import { OpenMode, Logger, LogLevel, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
+import { TestUtility } from "./TestUtility";
+import { TestUsers } from "./TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
+import { IModelConnection, MockRender, IModelApp } from "@bentley/imodeljs-frontend";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
@@ -19,7 +20,6 @@ async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: 
 
 describe("ChangeSummary (#integration)", () => {
   let iModel: IModelConnection;
-  let accessToken: AccessToken;
   let testProjectId: string;
   let testIModelId: string;
 
@@ -29,16 +29,22 @@ describe("ChangeSummary (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    accessToken = await TestData.getTestUserAccessToken();
-    testProjectId = await TestData.getTestProjectId(accessToken, "iModelJsIntegrationTest");
-    testIModelId = await TestData.getTestIModelId(accessToken, testProjectId, "ReadWriteTest");
+    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
+    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
+    IModelApp.authorizationClient = imsTestAuthorizationClient;
 
-    iModel = await IModelConnection.open(accessToken, testProjectId, testIModelId);
+    assert(IModelApp.authorizationClient);
+    assert(IModelApp.authorizationClient);
+
+    testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    testIModelId = await TestUtility.getTestIModelId(testProjectId, "ReadWriteTest");
+
+    iModel = await IModelConnection.open(testProjectId, testIModelId);
   });
 
   after(async () => {
     if (iModel)
-      await iModel.close(accessToken);
+      await iModel.close();
     MockRender.App.shutdown();
   });
 
@@ -58,12 +64,12 @@ describe("ChangeSummary (#integration)", () => {
   it.skip("Change cache file generation during change summary extraction", async () => {
     assert.exists(iModel);
     // for now, imodel must be open readwrite for changesummary extraction
-    await iModel.close(accessToken);
+    await iModel.close();
 
-    const testIModel: IModelConnection = await IModelConnection.open(accessToken, testProjectId, testIModelId, OpenMode.ReadWrite);
+    const testIModel: IModelConnection = await IModelConnection.open(testProjectId, testIModelId, OpenMode.ReadWrite);
     try {
       await TestRpcInterface.getClient().deleteChangeCache(testIModel.iModelToken);
-      await TestRpcInterface.getClient().extractChangeSummaries(accessToken, testIModel.iModelToken, { currentChangeSetOnly: true });
+      await TestRpcInterface.getClient().extractChangeSummaries(testIModel.iModelToken, { currentChangeSetOnly: true });
       await testIModel.attachChangeCache();
 
       const changeSummaryRows: any[] = await executeQuery(testIModel, "SELECT count(*) cnt FROM change.ChangeSummary");
@@ -72,7 +78,7 @@ describe("ChangeSummary (#integration)", () => {
       assert.equal(changeSetRows.length, 1);
       assert.equal(changeSetRows[0].cnt, changeSummaryRows[0].cnt);
     } finally {
-      await testIModel.close(accessToken);
+      await testIModel.close();
     }
   }); // .timeout(99999);
 });

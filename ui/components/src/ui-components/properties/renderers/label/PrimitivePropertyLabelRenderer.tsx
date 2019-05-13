@@ -9,7 +9,9 @@ import { PropertyLabelRendererProps, PropertyLabelRenderer } from "./PropertyLab
 
 import "./PropertyLabelRenderer.scss";
 
-/** Properties of a [[PrimitivePropertyLabelRenderer]] React component */
+/** Properties of a [[PrimitivePropertyLabelRenderer]] React component
+ * @public
+ */
 export interface PrimitivePropertyLabelRendererProps extends PropertyLabelRendererProps {
   /** Additional class name for the label wrapper */
   className?: string;
@@ -17,7 +19,9 @@ export interface PrimitivePropertyLabelRendererProps extends PropertyLabelRender
   offset?: number;
 }
 
-/** A React component that renders a primitive property label */
+/** A React component that renders a primitive property label
+ * @public
+ */
 export class PrimitivePropertyLabelRenderer extends React.PureComponent<PrimitivePropertyLabelRendererProps> {
   public render() {
     return (

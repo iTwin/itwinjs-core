@@ -5,12 +5,18 @@
 /** @module Table */
 
 import * as React from "react";
+import classnames from "classnames";
 import { DragLayerProps } from "../../dragdrop/DragDropDef";
 
 /**
  * React component used to portray a column being dragged during Table column reordering.
+ * @public
  */
 export class ColumnDragLayer extends React.Component<DragLayerProps> {
+  constructor(props: DragLayerProps) {
+    super(props);
+  }
+
   public render(): React.ReactNode {
     const args = this.props.args!;
     const spos = args.sourceClientOffset || { x: -1000, y: -1000 };
@@ -29,9 +35,10 @@ export class ColumnDragLayer extends React.Component<DragLayerProps> {
       transform: translate,
       WebkitTransform: translate,
       width,
+      ...this.props.style,
     };
     return (
-      <div className="column-drag-layer" style={dragLayerStyle}>
+      <div className={classnames("components-column-drag-layer", this.props.className)} style={dragLayerStyle}>
         {column.name}
       </div>
     );

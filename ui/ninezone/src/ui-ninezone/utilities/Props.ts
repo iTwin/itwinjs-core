@@ -7,28 +7,21 @@
 import * as React from "react";
 import { Omit } from "@bentley/ui-core";
 
-/**
- * Common props used by all components.
- * @note Every 9-Zone component has these props.
+/** Props used by components that do not expect children to be passed in.
+ * @alpha Move to ui-core
  */
-export interface CommonProps extends ClassNameProps {
-  style?: React.CSSProperties;
-}
-
-/** Props used by components that expect class name to be passed in. */
-export interface ClassNameProps {
-  className?: string;
-}
-
-/** Props used by components that do not expect children to be passed in. */
 export interface NoChildrenProps {
   children?: undefined;
 }
 
-/** Omit children property from T. */
+/** Omit children property from T.
+ * @internal
+ */
 export type OmitChildrenProp<T extends { children?: React.ReactNode; }> = Omit<T, "children">;
 
-/** @returns Children with react fragments flattened. */
+/** Flattens react fragments.
+ * @internal
+ */
 // tslint:disable-next-line:variable-name
 export const FlattenChildren = (children: React.ReactNode): React.ReactNode => {
   const items = React.Children.map(children, (child) => {

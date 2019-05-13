@@ -3,11 +3,18 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, ArrayValue, StructValue, PropertyEditorParamTypes } from "@bentley/imodeljs-frontend";
+import {
+  PropertyRecord, PrimitiveValue, PropertyValueFormat,
+  PropertyDescription, ArrayValue, StructValue, PropertyEditorParamTypes,
+  ParseResults,
+} from "@bentley/imodeljs-frontend";
 import { UiComponents } from "../ui-components";
 import { UiCore } from "@bentley/ui-core";
+import { ColorByName } from "@bentley/imodeljs-common";
 
-export default class TestUtils {
+// tslint:disable: completed-docs
+
+export class TestUtils {
   private static _i18n?: I18N;
   private static _uiComponentsInitialized = false;
 
@@ -167,4 +174,104 @@ export default class TestUtils {
     return propertyRecord;
   }
 
+  public static createColorProperty(propertyName: string, colorValue: number) {
+
+    const value: PrimitiveValue = {
+      displayValue: "",
+      value: colorValue,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      name: propertyName,
+      displayLabel: propertyName,
+      typename: "number",
+      editor: {
+        name: "color-picker",
+        params: [
+          {
+            type: PropertyEditorParamTypes.ColorData,
+            colorValues: [
+              ColorByName.blue as number,
+              ColorByName.red as number,
+              ColorByName.green as number,
+              ColorByName.yellow as number,
+              ColorByName.black as number,
+              ColorByName.gray as number,
+              ColorByName.purple as number,
+              ColorByName.pink as number,
+            ],
+            numColumns: 2,
+          },
+        ],
+      },
+    };
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+    return propertyRecord;
+  }
+
+  public static createWeightProperty(propertyName: string, weight: number) {
+
+    const value: PrimitiveValue = {
+      displayValue: "",
+      value: weight,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      name: propertyName,
+      displayLabel: propertyName,
+      typename: "number",
+      editor: {
+        name: "weight-picker",
+      },
+    };
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+    return propertyRecord;
+  }
+
+  private static _formatLength = (numberValue: number): string => numberValue.toFixed(2);
+
+  public static createCustomNumberProperty(propertyName: string, numVal: number, displayVal?: string) {
+
+    const value: PrimitiveValue = {
+      displayValue: displayVal,
+      value: numVal,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      name: propertyName,
+      displayLabel: propertyName,
+      typename: "number",
+      editor: {
+        name: "number-custom",
+        params: [
+          {
+            type: PropertyEditorParamTypes.CustomFormattedNumber,
+            formatFunction: TestUtils._formatLength,
+            parseFunction: (stringValue: string): ParseResults => {
+              const rtnValue = Number.parseFloat(stringValue);
+              if (Number.isNaN(rtnValue)) {
+                return { parseError: `Unable to parse ${stringValue} into a valid length` };
+              } else {
+                return { value: rtnValue };
+              }
+            },
+          },
+        ],
+      },
+    };
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+    return propertyRecord;
+  }
+
 }
+
+export default TestUtils;   // tslint:disable-line: no-default-export

@@ -21,9 +21,18 @@ import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 
-/** Type for callback function which announces a pair of numbers, such as a fractional interval, along with a containing CurvePrimitive. */
+/** function signature for callback which announces a pair of numbers, such as a fractional interval, along with a containing CurvePrimitive.
+ * @public
+ */
 export type AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: CurvePrimitive) => void;
+/** Function signature for a callback which announces a pair of numbers
+ * @public
+ */
+
 export type AnnounceNumberNumber = (a0: number, a1: number) => void;
+/** Function signature for a callback which announces a curve primitive
+ * @public
+ */
 export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
 
 /**
@@ -38,6 +47,7 @@ export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
  * * A BsplineCurve3d is only proportional for special cases.
  *
  * For fractions outside 0..1, the curve primitive class may either (a) return the near endpoint or (b) evaluate an extended curve.
+ * @public
  */
 export abstract class CurvePrimitive extends GeometryQuery {
   protected constructor() { super(); }
@@ -61,10 +71,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
    */
   public abstract fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
   /**
-   *
+   * Returns a ray whose origin is the curve point and direction is the unit tangent.
    * @param fraction fractional position on the curve
-   * @param result optional receiver for the result.
-   * @returns Returns a ray whose origin is the curve point and direction is the unit tangent.
+   * @param result optional preallocated ray.
    */
   public fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d {
     const ray = this.fractionToPointAndDerivative(fraction, result);
@@ -110,10 +119,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
   }
 
   /**
-   *
+   * return the length of the curve.
    * * Curve length is always positive.
-   * @returns Returns a (high accuracy) length of the curve.
-   * @returns Returns the length of the curve.
    */
   public curveLength(): number {
     const context = new CurveLengthContext();
@@ -121,9 +128,10 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return context.getSum();
   }
   /**
-   *
+   * Returns a (high accuracy) length of the curve between fractional positions
    * * Curve length is always positive.
-   * @returns Returns a (high accuracy) length of the curve between fractional positions
+   * * Default implementation applies a generic gaussian integration.
+   * * Most curve classes (certainly LineSegment, LineString, Arc) are expected to provide efficient implementations.
    */
   public curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
     if (fraction0 === fraction1)
@@ -371,7 +379,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public abstract isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
   /** return the start point of the primitive.  The default implementation returns fractionToPoint (0.0) */
   public startPoint(result?: Point3d): Point3d { return this.fractionToPoint(0.0, result); }
-  /** @returns return the end point of the primitive. The default implementation returns fractionToPoint(1.0) */
+  /** return the end point of the primitive. The default implementation returns fractionToPoint(1.0) */
   public endPoint(result?: Point3d): Point3d { return this.fractionToPoint(1.0, result); }
   /** Add strokes to caller-supplied linestring */
   public abstract emitStrokes(dest: LineString3d, options?: StrokeOptions): void;

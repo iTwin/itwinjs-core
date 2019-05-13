@@ -8,6 +8,7 @@ import { IndexMap, assert, compareWithTolerance } from "@bentley/bentleyjs-core"
 import { Point2d } from "@bentley/geometry-core";
 import { QPoint3d, OctEncodedNormal } from "@bentley/imodeljs-common";
 
+/** @internal */
 export interface VertexKeyProps {
   position: QPoint3d;
   fillColor: number;
@@ -15,6 +16,7 @@ export interface VertexKeyProps {
   uvParam?: Point2d;
 }
 
+/** @internal */
 export class VertexKey {
   public readonly position: QPoint3d;
   public readonly octEncodedNormal: number = 0;
@@ -75,6 +77,7 @@ export class VertexKey {
   }
 }
 
+/** @internal */
 export class VertexMap extends IndexMap<VertexKey> {
   public constructor() { super((lhs, rhs) => lhs.compare(rhs)); }
 

@@ -10,13 +10,13 @@ import { SizeProps } from "../../utilities/Size";
 import { ResizeHandle } from "../../widget/rectangular/ResizeHandle";
 import { NineZone, NineZoneProps, WidgetZoneIndex, ZonesType } from "./NineZone";
 import { Widget } from "./Widget";
-import { WidgetZone, StatusZone, StatusZoneProps, ZonePropsBase } from "./Zone";
+import { WidgetZone, StatusZoneManager, StatusZoneManagerProps, ZonePropsBase } from "./Zone";
 import { TargetType, TargetZoneProps } from "./Target";
 
-/** @hidden */
+/** @alpha */
 export type NineZoneFactory = (props: NineZoneProps) => NineZone;
 
-/** @hidden */
+/** @alpha */
 export class StateManager {
   private _lastStackId = 1;
   private _nineZoneFactory: NineZoneFactory;
@@ -44,6 +44,9 @@ export class StateManager {
     const isClosing = !isOpening;
 
     if (isClosing && zone.isFloating())
+      return state;
+
+    if (isClosing && widget.props.tabIndex !== tabIndex)
       return state;
 
     // Close all widgets
@@ -175,7 +178,7 @@ export class StateManager {
           acc[id] = {
             ...model.props.zones[id],
             bounds,
-            ...(id === StatusZone.id && { isInFooterMode } as StatusZoneProps),
+            ...(id === StatusZoneManager.id && { isInFooterMode } as StatusZoneManagerProps),
           };
 
           return acc;
@@ -491,5 +494,6 @@ const defaultFactory = (props: NineZoneProps): NineZone => {
   return new NineZone(props);
 };
 
+/** @alpha */
 // tslint:disable-next-line:variable-name
 export const DefaultStateManager = new StateManager(defaultFactory);

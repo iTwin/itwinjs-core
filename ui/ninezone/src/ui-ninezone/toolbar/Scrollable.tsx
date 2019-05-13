@@ -8,27 +8,23 @@ import * as classnames from "classnames";
 import * as React from "react";
 import { Direction, OrthogonalDirection, DirectionHelpers, OrthogonalDirectionHelpers } from "../utilities/Direction";
 import { FlattenChildren } from "../utilities/Props";
-import { Indicator } from "./scroll/Indicator";
-import { Toolbar, ToolbarProps, getToolbarDirection, ToolbarPanelAlignmentHelpers, PanelsProvider } from "./Toolbar";
+import { ScrollIndicator } from "./scroll/Indicator";
+import { ToolbarProps, getToolbarDirection, ToolbarPanelAlignmentHelpers, PanelsProvider, Toolbar } from "./Toolbar";
 import { Items } from "./Items";
 import "./Scrollable.scss";
 
-/** Properties of [[Scrollable]] component. See [[ScrollableDefaultProps]] */
+/** Properties of [[Scrollable]] component.
+ * @alpha
+ */
 export interface ScrollableProps extends ToolbarProps {
   /** Describes number of visible elements. Should not be lower than 3. */
-  visibleItemThreshold?: number;
+  visibleItemThreshold: number;
   /** Function called when component scrolls. */
   onScroll?: () => void;
 }
 
-/** Default properties of [[ScrollableProps]] used in [[Scrollable]] component. */
-export interface ScrollableDefaultProps extends ScrollableProps {
-  /** Defaults to 5. */
-  visibleItemThreshold: number;
-}
-
 /** State of [[Scrollable]] component. */
-export interface ScrollableState {
+interface ScrollableState {
   /** Describes component scroll offset. */
   scrollOffset: number;
 }
@@ -38,7 +34,14 @@ const getItemCount = (props: ToolbarProps) => {
   return React.Children.count(items);
 };
 
-/** A [[Toolbar]] with scroll overflow strategy. */
+/** Default properties of [[Scrollable]] component.
+ * @alpha
+ */
+export type ScrollableDefaultProps = Pick<ScrollableProps, "visibleItemThreshold">;
+
+/** A [[Toolbar]] with scroll overflow strategy.
+ * @alpha
+ */
 export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableState> {
   private static readonly _DESKTOP_ITEM_WIDTH = 40;
   private static readonly _DESKTOP_ITEM_HEIGHT = Scrollable._DESKTOP_ITEM_WIDTH;
@@ -48,7 +51,7 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
   private _histories = React.createRef<HTMLDivElement>();
   private _panels = React.createRef<HTMLDivElement>();
 
-  public static readonly defaultProps: Partial<ScrollableDefaultProps> = {
+  public static readonly defaultProps: ScrollableDefaultProps = {
     ...Toolbar.defaultProps,
     visibleItemThreshold: 5,
   };
@@ -265,11 +268,11 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
 
     const leftIndicatorClassName = classnames(
       "nz-left",
-      isLeftScrollIndicatorVisible && "nz-is-visible",
+      isLeftScrollIndicatorVisible && "nz-visible",
     );
     const rightIndicatorClassName = classnames(
       "nz-right",
-      isRightScrollIndicatorVisible && "nz-is-visible",
+      isRightScrollIndicatorVisible && "nz-visible",
     );
 
     const viewportStyle = this.getViewportStyle(direction);
@@ -311,12 +314,12 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
           >
             {items}
           </Items>
-          <Indicator
+          <ScrollIndicator
             className={leftIndicatorClassName}
             direction={direction === OrthogonalDirection.Vertical ? Direction.Top : Direction.Left}
             onClick={this._handleLeftScroll}
           />
-          <Indicator
+          <ScrollIndicator
             className={rightIndicatorClassName}
             direction={direction === OrthogonalDirection.Vertical ? Direction.Bottom : Direction.Right}
             onClick={this._handleRightScroll}

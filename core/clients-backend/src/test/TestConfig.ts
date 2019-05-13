@@ -5,16 +5,20 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, LogLevel, ActivityLoggingContext, GuidString, Guid } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, GuidString, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, AccessToken, HubIModel, IModelHubClient, IModelClient, ConnectClient, Project, Config, IModelQuery } from "@bentley/imodeljs-clients";
-import { loggingCategoryFullUrl } from "@bentley/imodeljs-clients/lib/Request";
+import {
+  ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, AccessToken, HubIModel,
+  IModelHubClient, IModelClient, ConnectClient, Project, Config, IModelQuery, AuthorizedClientRequestContext,
+  ImsUserCredentials, ClientsLoggerCategory,
+} from "@bentley/imodeljs-clients";
+import { TestUsers } from "./TestUsers";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
-const actx = new ActivityLoggingContext(Guid.createValue());
-
-const logFileStream = fs.createWriteStream(path.join(__dirname, "./iModelClientsTests.log"), { flags: "a" });
+const logFilePath = path.join(__dirname, "./iModelClientsTests.log");
+const logFileStream = fs.createWriteStream(logFilePath, { flags: "a" });
+console.log("Log File created at: " + logFilePath);
 
 // The Request URLs are captured separate. The log file is used by the Hub URL whitelist validation.
 export const urlLogPath = path.join(__dirname, "./requesturls.log");
@@ -22,7 +26,7 @@ const urlLogFileStream = fs.createWriteStream(urlLogPath, { flags: "a" });
 console.log("URL Log file created at: " + urlLogPath);
 
 function logFunction(logLevel: string, category: string, message: string) {
-  if (category === loggingCategoryFullUrl)
+  if (category === ClientsLoggerCategory.Request)
     urlLogFileStream.write(message + "\n");
   else
     logFileStream.write(logLevel + "|" + category + "|" + message + "\n");
@@ -38,20 +42,14 @@ Logger.initialize(
 // Note: Turn this off unless really necessary - it causes Error messages on the
 // console with the existing suite of tests, and this is quite misleading,
 // especially when diagnosing CI job failures.
-const loggingConfigFile: string | undefined = process.env.imjs_test_logging_config;
+const loggingConfigFile: string = Config.App.get("imjs_test_logging_config", "");
 if (!!loggingConfigFile) {
   // tslint:disable-next-line:no-var-requires
   Logger.configureLevels(require(loggingConfigFile));
 }
 
 // log all request URLs as this will be the input to the Hub URL whitelist test
-Logger.setLevel(loggingCategoryFullUrl, LogLevel.Trace);
-
-/** Credentials for test users */
-export interface UserCredentials {
-  email: string;
-  password: string;
-}
+Logger.setLevel(ClientsLoggerCategory.Request, LogLevel.Trace);
 
 function isOfflineSet(): boolean {
   const index = process.argv.indexOf("--offline");
@@ -62,90 +60,50 @@ function isOfflineSet(): boolean {
  */
 export class TestConfig {
   /** Name of project used by most tests */
-  public static readonly projectName: string = "iModelJsTest";
+  public static readonly projectName: string = Config.App.get("imjs_test_project_name", "iModelJsTest");
   public static readonly enableMocks: boolean = isOfflineSet();
+  public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank_run_orchestrator");
 
   /** Login the specified user and return the AuthorizationToken */
-  public static async login(user: UserCredentials = TestUsers.regular): Promise<AuthorizationToken> {
+  public static async login(user: ImsUserCredentials = TestUsers.regular): Promise<AuthorizationToken> {
     if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== 0)
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Dev requires that SSL certificate checks be bypassed
-
-    const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient()).getToken(actx, user.email, user.password);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(new ClientRequestContext(), user);
     expect(authToken);
-
     return authToken;
   }
 
   /** Login the specified user and return the AccessToken */
-  public static async getAccessToken(user: UserCredentials = TestUsers.regular): Promise<AccessToken> {
-    const authToken: AuthorizationToken | undefined = await TestConfig.login(user);
-
-    const accessToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(actx, authToken);
+  public static async getAccessToken(user: ImsUserCredentials = TestUsers.regular): Promise<AccessToken> {
+    const authToken: AuthorizationToken = await TestConfig.login(user);
+    const accessToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(new ClientRequestContext(), authToken);
     expect(accessToken);
-
     return accessToken;
   }
 
   /** Query for the specified project */
-  public static async queryProjectId(accessToken: AccessToken, projectName: string): Promise<string> {
+  public static async queryProjectId(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
     const connectClient = new ConnectClient();
-    const project: Project | undefined = await connectClient.getProject(actx, accessToken, {
+    const project: Project | undefined = await connectClient.getProject(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,
     });
-    if (!project || !project.wsgId)
-      throw new Error(`Project ${projectName} not found for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
+    if (!project || !project.wsgId) {
+      const userInfo = requestContext.accessToken.getUserInfo();
+      throw new Error(`Project ${projectName} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);
+    }
     return project.wsgId;
   }
 
   /** Query for the specified iModel */
-  public static async queryIModelId(accessToken: AccessToken, iModelName: string, projectId: GuidString): Promise<string> {
+  public static async queryIModelId(requestContext: AuthorizedClientRequestContext, iModelName: string, projectId: GuidString): Promise<string> {
     const imodelHubClient: IModelClient = new IModelHubClient();
-    const iModel: HubIModel = (await imodelHubClient.iModels.get(actx, accessToken, projectId, new IModelQuery().byName(iModelName)))[0];
-    if (!iModel || !iModel.wsgId || iModel.name !== iModelName)
-      throw new Error(`iModel ${iModelName} not found for project ${projectId} for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
+    const iModel: HubIModel = (await imodelHubClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName)))[0];
+    if (!iModel || !iModel.wsgId || iModel.name !== iModelName) {
+      const userInfo = requestContext.accessToken.getUserInfo();
+      throw new Error(`iModel ${iModelName} not found for project ${projectId} for user ${!userInfo ? "n/a" : userInfo.email}.`);
+    }
+
     return iModel.wsgId;
   }
-}
-
-/** Test users with various permissions */
-export class TestUsers {
-  /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static get regular(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_regular_user_name"),
-      password: Config.App.getString("imjs_test_regular_user_password"),
-    };
-  }
-
-  /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
-  public static get manager(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_manager_user_name"),
-      password: Config.App.getString("imjs_test_manager_user_password"),
-    };
-  }
-
-  /** User with the typical permissions of the connected services administrator - Co-Admin: No, Connect-Services-Admin: Yes */
-  public static get super(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_super_user_name"),
-      password: Config.App.getString("imjs_test_super_user_password"),
-    };
-  }
-
-  /** User with the typical permissions of the connected services administrator - Co-Admin: Yes, Connect-Services-Admin: Yes */
-  public static get superManager(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_super_manager_user_name"),
-      password: Config.App.getString("imjs_test_super_manager_user_password"),
-    };
-  }
-  public static get serviceAccount1(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_serviceAccount1_user_name"),
-      password: Config.App.getString("imjs_test_serviceAccount1_user_password"),
-    };
-  }
-
 }

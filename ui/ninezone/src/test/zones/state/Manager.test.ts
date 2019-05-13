@@ -49,6 +49,14 @@ describe("StateManager", () => {
     });
   });
 
+  describe("handleWidgetStateChange", () => {
+    it("should not update if tab is already closed", () => {
+      const state = DefaultStateManager.handleWidgetStateChange(6, 13, false, TestProps.openedZone6);
+      state.zones[6].widgets[0].tabIndex.should.eq(14);
+      state.should.eq(TestProps.openedZone6);
+    });
+  });
+
   describe("handleWidgetTabDragEnd", () => {
     it("should merge zones", () => {
       const props: NineZoneProps = {

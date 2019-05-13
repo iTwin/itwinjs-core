@@ -1,15 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Title2 /> content renders correctly 1`] = `
-<span
-  className="uicore-text-title-2"
+<StyledText
+  mainClassName="uicore-text-title-2"
 >
   Test content
-</span>
+</StyledText>
 `;
 
 exports[`<Title2 /> renders correctly 1`] = `
-<span
-  className="uicore-text-title-2"
+<StyledText
+  mainClassName="uicore-text-title-2"
 />
 `;

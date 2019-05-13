@@ -10,14 +10,18 @@ import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { withContextStyle } from "./WithContextStyle";
 import { withLinks } from "../../LinkHandler";
 
-/** Default Double Property Renderer */
+/** Default Double Property Renderer
+ * @public
+ */
 export class DoublePropertyValueRenderer implements IPropertyValueRenderer {
 
+  /** Checks if the renderer can handle given property */
   public canRender(record: PropertyRecord) {
     return record.value.valueFormat === PropertyValueFormat.Primitive
       && record.property.typename === "double";
   }
 
+  /** Method that returns a JSX representation of PropertyRecord */
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
     const primitive = record.value as PrimitiveValue;
 

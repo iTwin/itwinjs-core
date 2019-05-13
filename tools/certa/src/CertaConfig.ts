@@ -17,6 +17,8 @@ export interface CertaMochaOpts {
   fgrep?: string;
   /** Whether `grep` and `fgrep` matches should be inverted. */
   invert: boolean;
+  /** Causes tests marked `only` to fail the suite. */
+  forbidOnly: boolean;
   /** The name of a (built-in) mocha reporter to use. */
   reporter: string;
   /** Mocha reporter-specific options. */

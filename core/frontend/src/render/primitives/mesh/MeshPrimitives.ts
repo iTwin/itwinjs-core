@@ -35,7 +35,9 @@ import { InstancedGraphicParams, RenderGraphic, RenderSystem } from "../../Syste
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 
-/* Information needed to draw a set of indexed polylines using a shared vertex buffer. */
+/* Information needed to draw a set of indexed polylines using a shared vertex buffer.
+ * @internal
+ */
 export class PolylineArgs {
   public colors = new ColorIndex();
   public features = new FeatureIndex();
@@ -100,7 +102,9 @@ export class PolylineArgs {
   }
 }
 
-// The vertices of the edges are shared with those of the surface
+/** The vertices of the edges are shared with those of the surface
+ * @internal
+ */
 export class MeshArgsEdges {
   public edges = new EdgeArgs();
   public silhouettes = new SilhouetteEdgeArgs();
@@ -118,7 +122,9 @@ export class MeshArgsEdges {
   public get isValid(): boolean { return this.edges.isValid || this.silhouettes.isValid || this.polylines.isValid; }
 }
 
-/* A carrier of information needed to describe a triangle mesh and its edges. */
+/* A carrier of information needed to describe a triangle mesh and its edges.
+ * @internal
+ */
 export class MeshArgs {
   public edges = new MeshArgsEdges();
   public vertIndices?: number[];
@@ -133,7 +139,7 @@ export class MeshArgs {
   public isPlanar = false;
   public is2d = false;
   public hasBakedLighting = false;
-  public asClassifier = false;
+  public isVolumeClassifier = false;
 
   public clear() {
     this.edges.clear();
@@ -146,7 +152,7 @@ export class MeshArgs {
     this.features.reset();
     this.material = undefined;
     this.fillFlags = FillFlags.None;
-    this.isPlanar = this.is2d = this.hasBakedLighting = this.asClassifier = false;
+    this.isPlanar = this.is2d = this.hasBakedLighting = this.isVolumeClassifier = false;
   }
   public init(mesh: Mesh): boolean {
     this.clear();
@@ -175,7 +181,7 @@ export class MeshArgs {
     this.isPlanar = mesh.isPlanar;
     this.is2d = mesh.is2d;
     this.hasBakedLighting = (true === mesh.hasBakedLighting);
-    this.asClassifier = (true === mesh.asClassifier);
+    this.isVolumeClassifier = (true === mesh.isVolumeClassifier);
 
     this.edges.width = mesh.displayParams.width;
     this.edges.linePixels = mesh.displayParams.linePixels;
@@ -199,11 +205,13 @@ export class MeshArgs {
   }
 }
 
+/** @internal */
 export class MeshGraphicArgs {
   public polylineArgs = new PolylineArgs();
   public meshArgs: MeshArgs = new MeshArgs();
 }
 
+/** @internal */
 export class Mesh {
   private readonly _data: TriangleList | MeshPolylineList;
   public readonly points: QPoint3dList;
@@ -217,7 +225,7 @@ export class Mesh {
   public readonly is2d: boolean;
   public readonly isPlanar: boolean;
   public readonly hasBakedLighting: boolean;
-  public readonly asClassifier: boolean;
+  public readonly isVolumeClassifier: boolean;
   public displayParams: DisplayParams;
 
   private constructor(props: Mesh.Props) {
@@ -229,7 +237,7 @@ export class Mesh {
     this.is2d = is2d;
     this.isPlanar = isPlanar;
     this.hasBakedLighting = (true === props.hasBakedLighting);
-    this.asClassifier = (true === props.asClassifier);
+    this.isVolumeClassifier = (true === props.isVolumeClassifier);
     this.points = new QPoint3dList(QParams3d.fromRange(range));
   }
 
@@ -306,8 +314,9 @@ export class Mesh {
   }
 }
 
+/** @internal */
 export namespace Mesh {
-  export const enum PrimitiveType {
+  export const enum PrimitiveType { // tslint:disable-line:no-const-enum
     Mesh,
     Polyline,
     Point,
@@ -372,10 +381,11 @@ export namespace Mesh {
     is2d: boolean;
     isPlanar: boolean;
     hasBakedLighting?: boolean;
-    asClassifier?: boolean;
+    isVolumeClassifier?: boolean;
   }
 }
 
+/** @internal */
 export class MeshList extends Array<Mesh> {
   public readonly features?: FeatureTable;
   constructor(features?: FeatureTable) {

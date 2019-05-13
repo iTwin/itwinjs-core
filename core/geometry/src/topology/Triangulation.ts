@@ -11,7 +11,10 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-
+/**
+ * (static) mehods for triangulating polygons
+ * * @internal
+ */
 export class Triangulator {
 
   /** Given the six nodes that make up two bordering triangles, "pinch" and relocate the nodes to flip them
@@ -149,12 +152,12 @@ export class Triangulator {
         const mate = seed.vertexSuccessor;
         seed.setMaskAroundFace(mask);
         mate.setMaskAroundFace(mask);
-        const area = Math.abs(seed.signedFaceArea());
+        const signedFaceArea = seed.signedFaceArea();
+        const area = Math.abs(signedFaceArea);
+        holeSeeds.push(signedFaceArea >= 0 ? seed : mate);
         if (i === 0 || area > maxArea) {
           maxArea = area;
           maxAreaIndex = i;
-        } else {
-          holeSeeds.push(area >= 0 ? seed : mate);
         }
       }
     }
@@ -177,7 +180,7 @@ export class Triangulator {
     return graph;
   }
   /**
-   * Triangulate all faces of a graph.
+   * Triangulate all positive area faces of a graph.
    */
   public triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph) {
     const seeds = graph.collectFaceLoops();
@@ -193,10 +196,10 @@ export class Triangulator {
 
   /**
    * Triangulate the polygon made up of by a series of points.
-   * * To triangulate a polygon with holes, use earcutFromOuterAndInnerLoops
    * * The loop may be either CCW or CW -- CCW order will be used for triangles.
+   * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops
    */
-  public static createTriangulatedGraphFromSingleLoop(data: XAndY[]): HalfEdgeGraph {
+  public static createTriangulatedGraphFromSingleLoop(data: XAndY[] | GrowableXYZArray): HalfEdgeGraph {
     const graph = new HalfEdgeGraph();
     const startingNode = Triangulator.createFaceLoopFromCoordinates(graph, data, true, true);
 
@@ -271,7 +274,7 @@ export class Triangulator {
    * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
    * * If start and end are both zero, use the whole array.
    */
-  private static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: XAndY[] | GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+  public static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: XAndY[] | GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
     const base = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
     return Triangulator.maskAndOrientNewFaceLoop(graph, base, returnPositiveAreaLoop, markExterior);
   }

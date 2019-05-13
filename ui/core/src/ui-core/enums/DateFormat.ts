@@ -6,8 +6,9 @@
 
 /**
  * Enumeration of date formats.
+ * @public
  */
-export const enum DateFormat {
+export enum DateFormat {
   None = 0,
   Short,
   Medium,

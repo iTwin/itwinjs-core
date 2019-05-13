@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Common */
 
-/** Paging options. */
+/** Paging options.
+ * @public
+ */
 export interface PageOptions {
   size?: number;
   start?: number;

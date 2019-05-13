@@ -1,6 +1,33 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Update to latest version of icon library.
+- @beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds.
+- Fixed AppButton onClick on Firefox and bar color
+- CommonProps usage in ui-framework. SvgPath sample in ui-test-app. Added tools/build/tslint-docs.json.
+- Show/Hide UI enhancements. Widget Opacity enhancements.
+- Added local snapshot support to ui-test-app. Added specialized div components to ui-core.
+- Fix broken links
+- Fixed Viewport heights & initial navigation aid. Widget transparency.
+- From hackathon-ui-team: StagePanels, UI Show/Hide, PopupButtons
+- Put sourcemap in npm package.
+- Require React & React-dom 16.8
+- Update icons-generic-webfont version to latest available.
+- Add TitleBar component for toolsetting instead of using one from footer. Title bas needed to be more compact in toolsettings widget.
+- Tool Settings: removed minimize tab, added min to title bar, styled title
+- Auto close popups when clicking outside.
+- Move zone components to @beta.
+- Move tool settings components to @beta.
+- Remove popover components.
+- Prevent widget content unmount in 9-Zone demo.
+- Change start to flex-start to avoid linting warnings from postcss-loader
+- Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -18,7 +45,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 
 - UI documentation fixes
 - Use new buildIModelJsBuild script
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Minor UI Color Theme changes
 - Support for including CSS files in published UI packages
 - Added styling capability ot messages

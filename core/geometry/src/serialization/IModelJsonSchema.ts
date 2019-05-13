@@ -48,15 +48,24 @@ import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BSplineWrapMode } from "../bspline/KnotVector";
 
 /* tslint:disable: object-literal-key-quotes no-console*/
-
+/**
+ * `ImodelJson` namespace has classes for serializing and deserialization json objects
+ * @public
+ */
 export namespace IModelJson {
-
+  /**
+   * Property rules for json objects that can be deserialized to various Curve and Solid objects
+   * @public
+   */
   export interface GeometryProps extends CurvePrimitiveProps, SolidPrimitiveProps, CurveCollectionProps {
     indexedMesh?: IndexedMeshProps;
     point?: XYZProps;
     bsurf?: BSplineSurfaceProps;
   }
-
+  /**
+   * Property rules for json objects that can be deserialized to various CurvePrimitives
+   * @public
+   */
   export interface CurvePrimitiveProps {
     lineSegment?: [XYZProps, XYZProps];
     lineString?: XYZProps[];
@@ -65,13 +74,17 @@ export namespace IModelJson {
     arc?: ArcByVectorProps | [XYZProps, XYZProps, XYZProps];
   }
 
+  /**
+   * Property rules for json objects that can be deserialized to single point
+   * @public
+   */
   export interface PointProps {
     point?: XYZProps;
   }
 
   /**
-   * Right side (content) properties for {bsurf: BSplineSurfaceProps}
-   *
+   * Property rules for json objects that can be deserialized to a BsplineSurface
+   * @public
    */
   export interface BSplineSurfaceProps {
     orderU: number;
@@ -83,7 +96,7 @@ export namespace IModelJson {
 
   /**
    * Interface for a collection of curves, eg. as used as a swept contour.
-   *
+   * @public
    */
   export interface CurveCollectionProps extends PlanarRegionProps {
     /** A sequence of curves joined head to tail: */
@@ -94,7 +107,7 @@ export namespace IModelJson {
 
   /**
    * Interface for a collection of curves that bound a planar region
-   *
+   * @public
    */
   export interface PlanarRegionProps {
     /** A sequence of curves which connect head to tail, with the final connecting back to the first */
@@ -107,6 +120,7 @@ export namespace IModelJson {
   }
   /**
    * Interface for solid primitives: box, sphere, cylinder, cone, torusPipe, linear sweep, rotational sweep, ruled sweep.
+   * @public
    */
   export interface SolidPrimitiveProps {
     cylinder?: CylinderProps;
@@ -130,10 +144,12 @@ export namespace IModelJson {
    * * * In most cases, users supply a normalized x and the actual normalized y vector.
    * * zxVectors uses a z vector and another vector into the positive zx plane.
    * * * In most cases, users supply a normalized z and the actual normalized x vector.
+   * @public
    */
   export interface AxesProps {
     /**
      * See YawPitchAngles class for further information about using 3 rotations to specify orientation.
+     * @public
      */
     yawPitchRollAngles?: YawPitchRollProps;
     /**
@@ -158,6 +174,7 @@ export namespace IModelJson {
 
   /**
    * Interface for Arc3d value defined by center, vectorX, vectorY and sweepStartEnd.
+   * @public
    */
   export interface ArcByVectorProps {
     center: XYZProps;
@@ -168,6 +185,7 @@ export namespace IModelJson {
 
   /**
    * Interface for Cone value defined by centers, radii, and (optional) vectors for circular section planes.
+   * @public
    */
   export interface ConeProps extends AxesProps {
     start: XYZProps;
@@ -190,6 +208,7 @@ export namespace IModelJson {
 
   /**
    * Interface for cylinder defined by a radius and axis start and end centers.
+   * @public
    */
   export interface CylinderProps {
     /** axis point at start */
@@ -203,6 +222,7 @@ export namespace IModelJson {
 
   /**
    * Interface for a linear sweep of a base curve or region.
+   * @public
    */
   export interface LinearSweepProps {
     /** The swept curve or region.  Any curve collection */
@@ -215,6 +235,7 @@ export namespace IModelJson {
 
   /**
    * Interface for a rotational sweep of a base curve or region around an axis.
+   * @public
    */
   export interface RotationalSweepProps {
     /** The swept curve or region.  Any curve collection */
@@ -231,6 +252,7 @@ export namespace IModelJson {
 
   /**
    * Interface for a surface with ruled sweeps between corresponding curves on successvie contours
+   * @public
    */
   export interface RuledSweepProps {
     /** The swept curve or region.  An array of curve collections.  */
@@ -245,6 +267,7 @@ export namespace IModelJson {
    *       may be defined.
    * * In radius data, zero radius indicates straight line (infinite radius)
    * * Note that the inherited AxesProps allows multiple ways to specify orientation of the placement..
+   * @public
    */
   export interface TransitionSpiralProps extends AxesProps {
 
@@ -267,6 +290,7 @@ export namespace IModelJson {
 
   /**
    * Interface for bspline curve (aka bcurve)
+   * @public
    */
   export interface BcurveProps {
     /** control points */
@@ -298,6 +322,7 @@ export namespace IModelJson {
    * * * `topOrigin` overrides given `height`
    * * * on the z axis at distance `height`
    * * * If both `topOrigin` and `height` are omitted, `height` defaults to `baseX`
+   * @public
    */
   export interface BoxProps extends AxesProps {
     /** Origin of the box coordinate system  (required) */
@@ -331,6 +356,7 @@ export namespace IModelJson {
   /**
    * Interface for Sphere (with optionally different radius to pole versus equator)
    * * Orientation may be given in any `AxesProp`s way (yawPitchRoll, xyVectors, zxVectors)
+   * @public
    */
   export interface SphereProps extends AxesProps {
     /** Center of the sphere coordinate system */
@@ -361,6 +387,7 @@ export namespace IModelJson {
    * * xy plane contains the major circle
    * * x axis points from donut hole center to flow center at start of pipe.
    * * z axis points through the hole.
+   * @public
    */
   export interface TorusPipeProps extends AxesProps {
     /** Center of the full torus coordinate system. (donut hole center) */
@@ -379,8 +406,8 @@ export namespace IModelJson {
   }
 
   /**
-   * Interface for a ruleds sweep.
-   *
+   * Interface for a ruled sweep.
+   * @public
    */
   export interface RuledSweepProps {
     countour: [CurveCollectionProps];
@@ -396,7 +423,7 @@ export namespace IModelJson {
    * * Although negative indices are not allowed for normalIndex, colorIndex, or paramIndex, the "one based" style
    *     is used for them so that all indices within the indexedMesh json object are handled similarly.
    * * In all index arrays, a ZERO indicates "end of facet".
-   * *
+   * @public
    */
   export interface IndexedMeshProps {
     /** vertex coordinates */
@@ -420,6 +447,7 @@ export namespace IModelJson {
   /** parser servoces for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`
    * * 2: parse json fragment to strongly typed geometry: `const g = reader.parse (fragment)`
+   * @public
    */
   export class Reader {
 
@@ -615,7 +643,7 @@ export namespace IModelJson {
         return CoordinateXYZ.create(point);
       return undefined;
     }
-
+    /** @alpha */
     public static parseTransitionSpiral(data?: any): TransitionSpiral3d | undefined {
       const axes = Reader.parseOrientation(data, true)!;
       const origin = Reader.parsePoint3dProperty(data, "origin");
@@ -1108,6 +1136,10 @@ export namespace IModelJson {
   // ISSUE: is arc clear?
   // ISSUE: label center, vectorX, vector90 on arc?
   // ISSUE: sweep data on arc -- serialize as AngleSweep?
+  /**
+   * Class to deserialize json objects into GeometryQuery objects
+   * @public
+   */
   export class Writer extends GeometryHandler {
     public handleLineSegment3d(data: LineSegment3d): any {
       return { "lineSegment": [data.point0Ref.toJSON(), data.point1Ref.toJSON()] };
@@ -1175,7 +1207,7 @@ export namespace IModelJson {
       }
       data.xyVectors = [vectorU.toJSON(), vectorV.toJSON()];
     }
-
+  /** @alpha */
     public handleTransitionSpiral(data: TransitionSpiral3d): any {
       // TODO: HANDLE NONRIGID TRANSFORM !!
       // the spiral may have indication of how it was defined.  If so, use defined/undefined state of the orignial data

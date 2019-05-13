@@ -5,14 +5,18 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import { ToolAssistanceIndicator } from "../../../ui-ninezone";
+import { ToolAssistance } from "../../../ui-ninezone";
 
-describe("<ToolAssistanceIndicator />", () => {
+describe("<ToolAssistance />", () => {
   it("should render", () => {
-    mount(<ToolAssistanceIndicator />);
+    mount(<ToolAssistance />);
   });
 
   it("renders correctly", () => {
-    shallow(<ToolAssistanceIndicator />).should.matchSnapshot();
+    shallow(<ToolAssistance />).should.matchSnapshot();
+  });
+
+  it("renders correctly with label", () => {
+    shallow(<ToolAssistance>Start Point</ToolAssistance>).should.matchSnapshot();
   });
 });

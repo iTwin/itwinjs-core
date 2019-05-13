@@ -2,6 +2,129 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/ui-components_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to latest version of icon library."
+          },
+          {
+            "comment": "@beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds."
+          },
+          {
+            "comment": "#84584 Add support for a view overlay component. This will provide ability to show animation timeline control in viewport."
+          },
+          {
+            "comment": "Update Timeline interfaces."
+          },
+          {
+            "comment": "Update CSS for ColorSwatch."
+          },
+          {
+            "comment": "Add Unit test for ColorEditor and ColorPickerButton"
+          },
+          {
+            "comment": "Added CommonProps to many component Props in ui-core & ui-components"
+          },
+          {
+            "comment": "Added 'Register' link back to SignIn component. Added ExternalIModel test widget. Made AppBackstage in ui-test-app Redux connected again."
+          },
+          {
+            "comment": "Added missing package prefix to some CSS class names in ui-core, ui-components & ui-framework"
+          },
+          {
+            "comment": "Reverted CubeNavigationAid changes"
+          },
+          {
+            "comment": "Added viewport synchronization for 2d drawing navigation aid"
+          },
+          {
+            "comment": "Added local snapshot support to ui-test-app. Added specialized div components to ui-core."
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "Fix failing CustomNumberPropertyEditor test"
+          },
+          {
+            "comment": "Add WeightEditor line weight type editor."
+          },
+          {
+            "comment": "Add components to show and select a line weight."
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "Locked react-data-grid at 6.0.1 and @types/react-data-grid at 4.0.2"
+          },
+          {
+            "comment": "#96348 Improve default rotate point for navigation cube"
+          },
+          {
+            "comment": "Fix to SignIn constructor in ui-components"
+          },
+          {
+            "comment": "Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option."
+          },
+          {
+            "comment": "Require React & React-dom 16.8"
+          },
+          {
+            "comment": "remove IModelApp subclasses"
+          },
+          {
+            "comment": "Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags."
+          },
+          {
+            "comment": "Update icons-generic-webfont version to latest available."
+          },
+          {
+            "comment": "Clean up WeightPickerButton test code."
+          },
+          {
+            "comment": "Introduce timeline animation interfaces."
+          },
+          {
+            "comment": "Move timeline components from ui-test-app to ui-components package"
+          },
+          {
+            "comment": "Added release tags to ui-framework, ui-components and ui-core."
+          },
+          {
+            "comment": "Property Grid: Show loading spinner only after half a second delay"
+          },
+          {
+            "comment": "Fix indefinite Tree component rendering when used with `checkboxInfo` prop"
+          },
+          {
+            "comment": "Tree: Fix nodes not being re-rendered in some async workflows"
+          },
+          {
+            "comment": "Fix tree being marked as dirty when selected nodes predicate changes, but returns the same results (actual selection doesn't change)"
+          },
+          {
+            "comment": "Add Tree.getLoadedNode(nodeId) function"
+          },
+          {
+            "comment": "Add ability to set tooltips on tree node checkboxes"
+          },
+          {
+            "comment": "Unit tests and fixed ColorEditor alignment"
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          },
+          {
+            "comment": "Added test coverage for ViewportComponent"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/ui-components_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",
@@ -41,7 +164,7 @@
             "comment": "Use new buildIModelJsBuild script"
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Added EnumEditor & BooleanEditor type editors"

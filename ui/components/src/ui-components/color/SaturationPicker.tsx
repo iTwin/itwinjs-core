@@ -5,37 +5,48 @@
 /** @module Color */
 
 import * as React from "react";
-import "./SaturationPicker.scss";
-import { HSVColor } from "@bentley/imodeljs-common";
+import classnames from "classnames";
 
-/** Properties for the [[SaturationPicker]] React component */
-export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement> {
+import { HSVColor } from "@bentley/imodeljs-common";
+import { CommonProps } from "@bentley/ui-core";
+
+import "./SaturationPicker.scss";
+
+/** Properties for the [[SaturationPicker]] React component
+ * @beta
+ */
+export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
   /** function to run when user selects location in saturation region */
   onSaturationChange?: ((saturation: HSVColor) => void) | undefined;
   /** HSV Color Value */
   hsv: HSVColor;
 }
 
-/** SaturationPicker component used to set the saturation value. */
+/** SaturationPicker component used to set the saturation value.
+ * @beta
+ */
 export class SaturationPicker extends React.PureComponent<SaturationPickerProps> {
   private _container: HTMLDivElement | null = null;
 
+  /** @internal */
   constructor(props: SaturationPickerProps) {
     super(props);
   }
 
   private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, hsv: HSVColor, container: HTMLDivElement): HSVColor | undefined => {
     e.preventDefault();
-    const { width: containerWidth, height: containerHeight } = container.getBoundingClientRect();
+    const { width: containerWidth, height: containerHeight, top: containerTop, left: containerLeft } = container.getBoundingClientRect();
 
     let x = 0;
     if ("pageX" in e) {
       x = (e as React.MouseEvent<HTMLDivElement>).pageX;
     } else {
+      // istanbul ignore if
       if (undefined === e.touches)
         return undefined;
       x = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageX;
     }
+    // istanbul ignore if
     if (undefined === x)
       return undefined;
 
@@ -43,16 +54,19 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     if ("pageY" in e) {
       y = (e as React.MouseEvent<HTMLDivElement>).pageY;
     } else {
+      // istanbul ignore if
       if (undefined === e.touches)
         return;
       y = (e as React.TouchEvent<HTMLDivElement>).touches[0].pageY;
     }
+    // istanbul ignore if
     if (undefined === y)
       return undefined;
 
-    let left = x - (container.getBoundingClientRect().left + window.pageXOffset);
-    let top = y - (container.getBoundingClientRect().top + window.pageYOffset);
+    let left = x - (containerLeft + window.pageXOffset);
+    let top = y - (containerTop + window.pageYOffset);
 
+    // istanbul ignore next
     if (left < 0) {
       left = 0;
     } else if (left > containerWidth) {
@@ -66,9 +80,13 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     let saturation = (left * 100) / containerWidth;
     let value = -((top * 100) / containerHeight) + 100;
 
+    // istanbul ignore if
     if (saturation < 0) saturation = 0;
+    // istanbul ignore if
     if (saturation > 100) saturation = 100;
+    // istanbul ignore if
     if (value < 0) value = 0;
+    // istanbul ignore if
     if (value > 100) value = 100;
 
     const newColor = new HSVColor();
@@ -78,6 +96,7 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     return newColor;
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._unbindEventListeners();
   }
@@ -91,6 +110,7 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
 
   private _onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     this._onChange(e);
+    // istanbul ignore else
     if (this._container)
       this._container.focus();
     window.addEventListener("mousemove", this._onChange as any);
@@ -117,11 +137,16 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
       newColor.s = 100;
     }
 
+    // istanbul ignore if
     if (newColor.s < 0) newColor.s = 0;
+    // istanbul ignore if
     if (newColor.s > 100) newColor.s = 100;
+    // istanbul ignore if
     if (newColor.v < 0) newColor.v = 0;
+    // istanbul ignore if
     if (newColor.v > 100) newColor.v = 100;
 
+    // istanbul ignore else
     if (this.props.onSaturationChange)
       this.props.onSaturationChange(newColor);
   }
@@ -135,6 +160,7 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     window.removeEventListener("mouseup", this._onMouseUp);
   }
 
+  /** @internal */
   public render(): React.ReactNode {
 
     const pointerStyle: React.CSSProperties = {
@@ -147,7 +173,7 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     };
 
     return (
-      <div className="components-saturation-container" data-testid="saturation-container">
+      <div className={classnames("components-saturation-container", this.props.className)} style={this.props.style} data-testid="saturation-container">
         <div
           data-testid="saturation-region"
           role="slider" aria-label="Saturation"

@@ -16,11 +16,13 @@ import { TreeNodeProps, TreeNode } from "../component/Node";
 
 /**
  * Type for drag and drop,
+ * @beta
  */
 export type TreeDragDropType = {} | TreeNodeItem | TreeDataProvider;
 
 /**
  * Props that are injected to the HOC component.
+ * @beta
  */
 export interface TreeDragDropProps<DragDropObject = any> {
   dragProps?: DragSourceProps<DragDropObject>;
@@ -30,6 +32,7 @@ export interface TreeDragDropProps<DragDropObject = any> {
 /**
  * A HOC component that adds drag and drop functionality to the supplied
  * tree component.
+ * @beta
  */
 // tslint:disable-next-line: variable-name naming-convention
 export function withTreeDragDrop<P extends TreeProps, DragDropObject extends TreeDragDropType>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeDragDropProps<DragDropObject>> {
@@ -178,4 +181,3 @@ export function withTreeDragDrop<P extends TreeProps, DragDropObject extends Tre
 
   };
 }
-export default withTreeDragDrop;

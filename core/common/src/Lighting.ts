@@ -5,13 +5,13 @@
 /** @module Views */
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Angle, AngleProps } from "@bentley/geometry-core";
+import { ColorDef, ColorDefProps } from "./ColorDef";
 
 /** The type of a [[Light]]
- * @hidden
+ * @internal
  */
-export const enum LightType {
+export enum LightType {
   Invalid = 0,
   Solar = 1,     // Sunlight
   Ambient = 2,   // ambient light
@@ -25,7 +25,7 @@ export const enum LightType {
 }
 
 /** Parameters to create a [[Light]]
- * @hidden
+ * @internal
  */
 export interface LightProps {
   lightType?: LightType;  // the type of light from LightType enum
@@ -40,7 +40,7 @@ export interface LightProps {
 }
 
 /** A light to illuminate the contents of a scene.
- * @hidden
+ * @internal
  */
 export class Light {
   public lightType: LightType;
@@ -73,7 +73,7 @@ export class Light {
 }
 
 /** Properties of a [[LightType.Spot]] light.
- * @hidden
+ * @internal
  */
 export interface SpotProps extends LightProps {
   inner?: AngleProps;
@@ -81,7 +81,7 @@ export interface SpotProps extends LightProps {
 }
 
 /** A light from a single location.
- * @hidden
+ * @internal
  */
 export class Spot extends Light {
   public inner: Angle;

@@ -5,7 +5,8 @@
 
 import { assert, BentleyError } from "@bentley/bentleyjs-core";
 
-export const enum ECObjectsStatus {
+/** @internal */
+export enum ECObjectsStatus {
   ECOBJECTS_ERROR_BASE = 0x88EC,
   Success = 0,
   DuplicateItem = ECOBJECTS_ERROR_BASE + 1,
@@ -34,6 +35,7 @@ export const enum ECObjectsStatus {
   DifferentSchemaContexts = ECOBJECTS_ERROR_BASE + 24,
 }
 
+/** @internal */
 export class ECObjectsError extends BentleyError {
   public constructor(public readonly errorNumber: number, message?: string) {
     super(errorNumber, message);

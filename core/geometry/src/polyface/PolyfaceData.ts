@@ -22,8 +22,8 @@ import { Geometry } from "../Geometry";
  *
  * * IndexedPolyface carries a PolyfaceData as a member. (NOT as a base class -- it already has GeometryQuery as base)
  * * IndexedPolyfaceVisitor uses PolyfaceData as a base class.
+ * @public
  */
-
 export class PolyfaceData {
   // <ul
   // <li>optional arrays (normal, uv, color) must be indicated at constructor time.
@@ -226,7 +226,9 @@ export class PolyfaceData {
     }
   }
   private static trimArray(data: any[] | undefined, length: number) { if (data && length < data.length) data.length = length; }
-
+/** Trim all index arrays to stated length.
+ * * This is called by PolyfaceBuilder to clean up after an aborted construction sequence.
+ */
   public trimAllIndexArrays(length: number): void {
     PolyfaceData.trimArray(this.pointIndex, length);
     PolyfaceData.trimArray(this.paramIndex, length);
@@ -241,7 +243,7 @@ export class PolyfaceData {
       }
     }
   }
-
+/** Resize all data arrays to specified length */
   public resizeAllDataArrays(length: number): void {
     if (length > this.point.length) {
       while (this.point.length < length) this.point.push(Point3d.create());
@@ -276,6 +278,7 @@ export class PolyfaceData {
       }
     }
   }
+  /** Return the range of the point array (optionally transfomred) */
   public range(result?: Range3d, transform?: Transform): Range3d {
     result = result ? result : Range3d.createNull();
     result.extendArray(this.point, transform);
@@ -297,6 +300,7 @@ export class PolyfaceData {
       PolyfaceData.reverseIndices(facetStartIndex, this.edgeVisible, false);
     }
   }
+  /** Scale all the normals by -1 */
   public reverseNormals() {
     if (this.normal)
       this.normal.scaleInPlace(-1.0);

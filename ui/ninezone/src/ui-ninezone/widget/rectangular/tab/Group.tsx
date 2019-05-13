@@ -6,35 +6,63 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import { HorizontalAnchor, HorizontalAnchorHelpers } from "../../Stacked";
 import "./Group.scss";
 
-/** Describes how handle visibility is controlled. */
-export enum VisibilityMode {
-  OnHover,
+/** Available handle modes.
+ * @alpha
+ */
+export enum HandleMode {
+  Hovered,
   Visible,
-  Timeout,
+  Timedout,
 }
 
-/** Properties of [[TabGroup]] component. */
+/** Helpers for [[HandleMode]].
+ * @alpha
+ */
+export class HandleModeHelpers {
+  /** Class name of [[HandleMode.Hovered]] */
+  public static readonly HOVERED_CLASS_NAME = "nz-handle-hovered";
+  /** Class name of [[HandleMode.Visible]] */
+  public static readonly VISIBLE_CLASS_NAME = "nz-handle-visible";
+  /** Class name of [[HandleMode.Timedout]] */
+  public static readonly TIMEDOUT_CLASS_NAME = "nz-handle-timedout";
+
+  /** @returns Class name of specified [[HandleMode]] */
+  public static getCssClassName(mode: HandleMode): string {
+    switch (mode) {
+      case HandleMode.Hovered:
+        return HandleModeHelpers.HOVERED_CLASS_NAME;
+      case HandleMode.Visible:
+        return HandleModeHelpers.VISIBLE_CLASS_NAME;
+      case HandleMode.Timedout:
+        return HandleModeHelpers.TIMEDOUT_CLASS_NAME;
+    }
+  }
+}
+
+/** Properties of [[TabGroup]] component.
+ * @alpha
+ */
 export interface TabGroupProps extends CommonProps {
   /** Describes to which side the widget of this tab is anchored. */
   anchor: HorizontalAnchor;
-  /** Actual tabs. See: [[Draggable]], [[TabSeparator]], [[Tab]] */
+  /** Actual tabs. See: [[Tab]], [[TabSeparator]] */
   children?: React.ReactNode;
-  /** Describes if the group handle is visible. */
-  handleMode: VisibilityMode;
+  /** Describes handle mode of this tab group. */
+  handle: HandleMode;
 }
 
-/** Tab group component for stacked widget. */
+/** Tab group component for stacked widget.
+ * @alpha
+ */
 export class TabGroup extends React.PureComponent<TabGroupProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-tab-group",
-      this.props.handleMode === VisibilityMode.OnHover && "nz-handle-hover",
-      this.props.handleMode === VisibilityMode.Visible && "nz-handle-visible",
-      this.props.handleMode === VisibilityMode.Timeout && "nz-handle-timeout",
+      HandleModeHelpers.getCssClassName(this.props.handle),
       HorizontalAnchorHelpers.getCssClassName(this.props.anchor),
       this.props.className);
 

@@ -2,6 +2,207 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/ui-framework_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to when active tool properties are cached for toolsettings."
+          },
+          {
+            "comment": "Fixed NotificationManager.openMessageBox amd OutputMessageAlert.Dialog implementations to support HTML tags"
+          },
+          {
+            "comment": "@beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds."
+          },
+          {
+            "comment": "Fixed AppButton onClick on Firefox and bar color"
+          },
+          {
+            "comment": "Removed Redux from AppState in ui-test-app and made Backstage stateful"
+          },
+          {
+            "comment": "Refactor category/model picker"
+          },
+          {
+            "comment": "CommonProps usage in ui-framework. SvgPath sample in ui-test-app. Added tools/build/tslint-docs.json."
+          },
+          {
+            "comment": "Added 'Register' link back to SignIn component. Added ExternalIModel test widget. Made AppBackstage in ui-test-app Redux connected again."
+          },
+          {
+            "comment": "Added missing package prefix to some CSS class names in ui-core, ui-components & ui-framework"
+          },
+          {
+            "comment": "Reverted CubeNavigationAid changes"
+          },
+          {
+            "comment": "Added 2D drawing navigation aid"
+          },
+          {
+            "comment": "Added 100% coverage to DrawingNavigationAid, fixed snapshot leaks for InputField.test.snap"
+          },
+          {
+            "comment": "Show/Hide UI enhancements. Widget Opacity enhancements."
+          },
+          {
+            "comment": "Added local snapshot support to ui-test-app. Added specialized div components to ui-core."
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "Fixed Viewport heights & initial navigation aid. Widget transparency."
+          },
+          {
+            "comment": "Added StagePanel support to the Frontstage"
+          },
+          {
+            "comment": "From hackathon-ui-team: StagePanels, UI Show/Hide, PopupButtons"
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "Correctly align ElementTooltip in subsequent Viewports."
+          },
+          {
+            "comment": "Render ElementTooltip above ViewportDialog."
+          },
+          {
+            "comment": "Add unmount component test."
+          },
+          {
+            "comment": "Move AnalysisAnimation Tool to ui-test-app. To be replaced by new timeline animation component."
+          },
+          {
+            "comment": "Fixed navigation aid bugs"
+          },
+          {
+            "comment": "Fixes to OidcBrowserClient. "
+          },
+          {
+            "comment": "Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option."
+          },
+          {
+            "comment": "Require React & React-dom 16.8"
+          },
+          {
+            "comment": "remove IModelApp subclasses"
+          },
+          {
+            "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
+          },
+          {
+            "comment": "Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags."
+          },
+          {
+            "comment": "Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s. "
+          },
+          {
+            "comment": "Rename AppState to SessionState to avoid collision with acutal App's state. Add AvailableSectionScopes to SessionState."
+          },
+          {
+            "comment": "Move SelectionScope status field from test app to ui-framework. Update icons-generic-webfont version to latest available."
+          },
+          {
+            "comment": "Remove need to sync SelectionMethod since it is not changed within tool code."
+          },
+          {
+            "comment": "Move timeline components from ui-test-app to ui-components package"
+          },
+          {
+            "comment": "Tool Settings: removed minimize tab, added min to title bar, styled title"
+          },
+          {
+            "comment": "Auto close popups when clicking outside."
+          },
+          {
+            "comment": "Return rulset promises in Category/Model picker _initialize()"
+          },
+          {
+            "comment": "Use GlobalContextMenu in category picker and modify to better follow UX standards."
+          },
+          {
+            "comment": "Added ui-framework release tags and common/api/ui-framework.api.md"
+          },
+          {
+            "comment": "UI documentation - added to Learning section"
+          },
+          {
+            "comment": "Fix hidden tabs issue."
+          },
+          {
+            "comment": "Added ModelessDialog & ModelessDialogManager"
+          },
+          {
+            "comment": "In Category picker show only categories with elements"
+          },
+          {
+            "comment": "Check for ruleset before removing"
+          },
+          {
+            "comment": "Wait for category/model rulsets to load before creating groups."
+          },
+          {
+            "comment": "Manage category picker tree nodes via id instead of node"
+          },
+          {
+            "comment": "Fix Model Selector's ruleset. It contained invalid ECExpression for LabelOverride rule which caused labels in some cases to be incorrect and ECExpression parsing errors in our logs."
+          },
+          {
+            "comment": "Prevent widget content unmount."
+          },
+          {
+            "comment": "Removed IStatusBar and fixed incorrect Toast animateOuTo prop value."
+          },
+          {
+            "comment": "Visibility Tree: Use per-model category display overrides"
+          },
+          {
+            "comment": "Visibility Tree: Show tooltips explaining why checkbox status is what it is"
+          },
+          {
+            "comment": "Visibility Tree: Fix some subjects not being displayed in the hierarchy"
+          },
+          {
+            "comment": "Visibility Tree: Do not show nodes for reference subjects with no children"
+          },
+          {
+            "comment": "Visibility Tree: Set correct icons"
+          },
+          {
+            "comment": "Visibility Tree: Update hierarchy to hide specific kinds of nodes"
+          },
+          {
+            "comment": "Visibility Tree: When changing assembly display state, also change its children state"
+          },
+          {
+            "comment": "Visibility Tree: Update checkbox states when activeView prop is changed"
+          },
+          {
+            "comment": "Visibility Tree: Set paging size on the data provider to avoid excessive backend requests"
+          },
+          {
+            "comment": "Update tests for better coverage and move certain components to test app that should not be in framework."
+          },
+          {
+            "comment": "Unit tests and fixed ColorEditor alignment"
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          },
+          {
+            "comment": "Add ListPickerBase test to trigger item expansion."
+          },
+          {
+            "comment": "Changed props for CubeRotationChangeEvents"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/ui-framework_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",
@@ -62,7 +263,7 @@
             "comment": "Updated view query in ViewSelector to exclude private views"
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Support for including CSS files in published UI packages"

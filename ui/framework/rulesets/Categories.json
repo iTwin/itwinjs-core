@@ -19,6 +19,7 @@
                 }
               ],
               "arePolymorphic": true,
+              "instanceFilter": "this.HasRelatedInstance(\"BisCore:GeometricElement3dIsInCategory\", \"Backward\", \"BisCore:Element\")",
               "groupByClass": false,
               "groupByLabel": false
             }
@@ -38,6 +39,7 @@
                 }
               ],
               "arePolymorphic": true,
+              "instanceFilter": "this.HasRelatedInstance(\"BisCore:GeometricElement2dIsInCategory\", \"Backward\", \"BisCore:Element\")",
               "groupByClass": false,
               "groupByLabel": false
             }

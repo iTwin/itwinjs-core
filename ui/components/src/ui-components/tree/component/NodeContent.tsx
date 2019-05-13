@@ -6,22 +6,23 @@
 
 import * as React from "react";
 import classnames from "classnames";
+
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
-import HighlightingEngine, { HighlightableTreeNodeProps } from "../HighlightingEngine";
+import { HighlightingEngine, HighlightableTreeNodeProps } from "../HighlightingEngine";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
 import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";
 import { CellEditingEngine } from "../CellEditingEngine";
-import { TreeNodePlaceholder, shallowDiffers, isPromiseLike } from "@bentley/ui-core";
+import { TreeNodePlaceholder, shallowDiffers, isPromiseLike, CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../../UiComponents";
 import { ItemStyleProvider, ItemStyle } from "../../properties/ItemStyle";
 
 import "./NodeContent.scss";
 
 /** Properties for [[TreeNodeContent]] component
- * @hidden
+ * @internal
  */
-export interface TreeNodeContentProps {
+export interface TreeNodeContentProps extends CommonProps {
   node: BeInspireTreeNode<TreeNodeItem>;
   showDescription?: boolean;
   highlightProps?: HighlightableTreeNodeProps;
@@ -43,20 +44,24 @@ export interface TreeNodeContentProps {
   renderId?: string;
 }
 
-/** @hidden */
+/** @internal */
 export interface TreeNodeContentState {
   label: React.ReactNode;
+  renderTimestamp?: number;
 }
 
 /** React component for displaying [[TreeNode]] label
- * @hidden
+ * @internal
  */
 export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeNodeContentState> {
-  public readonly state: TreeNodeContentState = {
-    label: <TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />,
-  };
-
   private _isMounted = false;
+
+  public constructor(props: TreeNodeContentProps) {
+    super(props);
+    this.state = {
+      label: <TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />,
+    };
+  }
 
   private getStyle(style?: ItemStyle, isSelected?: boolean): React.CSSProperties {
     return ItemStyleProvider.createStyle(style ? style : {}, isSelected);
@@ -114,22 +119,30 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
   public componentDidMount() {
     this._isMounted = true;
 
-    this.updateLabel(this.props); // tslint:disable-line:no-floating-promises
+    // tslint:disable-next-line:no-floating-promises
+    this.updateLabel(this.props);
+    this.setState({ renderTimestamp: this.props.node.itree!.dirtyTimestamp });
   }
 
-  private doPropsDiffer(props1: TreeNodeContentProps, props2: TreeNodeContentProps) {
+  private static doPropsDiffer(props1: TreeNodeContentProps, props2: TreeNodeContentProps) {
     return shallowDiffers(props1.highlightProps, props2.highlightProps)
       || props1.valueRendererManager !== props2.valueRendererManager
       || props1.cellEditing !== props2.cellEditing
       || props1.showDescription !== props2.showDescription;
   }
 
-  public componentDidUpdate(prevProps: TreeNodeContentProps) {
-    if (this.props.node.isDirty() || this.doPropsDiffer(prevProps, this.props)) {
-      this.props.node.setDirty(false);
+  private static needsLabelUpdate(state: TreeNodeContentState, prevProps: TreeNodeContentProps, nextProps: TreeNodeContentProps) {
+    return this.doPropsDiffer(prevProps, nextProps)
+      || nextProps.node.itree!.dirtyTimestamp && (!state.renderTimestamp || state.renderTimestamp < nextProps.node.itree!.dirtyTimestamp!);
+  }
 
-      this.updateLabel(this.props); // tslint:disable-line:no-floating-promises
+  public componentDidUpdate(prevProps: TreeNodeContentProps) {
+    if (TreeNodeContent.needsLabelUpdate(this.state, prevProps, this.props)) {
+      // tslint:disable-next-line:no-floating-promises
+      this.updateLabel(this.props);
     }
+
+    this.setState({ renderTimestamp: this.props.node.itree!.dirtyTimestamp });
   }
 
   public componentWillUnmount() {
@@ -137,7 +150,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
   }
 
   public shouldComponentUpdate(nextProps: TreeNodeContentProps, nextState: TreeNodeContentState) {
-    if (this.state.label !== nextState.label || nextProps.node.isDirty() || this.doPropsDiffer(this.props, nextProps))
+    if (this.state.label !== nextState.label || TreeNodeContent.needsLabelUpdate(nextState, this.props, nextProps))
       return true;
 
     if (nextState.label) {
@@ -154,13 +167,11 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
   }
 
   public render() {
-    let editor: JSX.Element | undefined;
-
     // handle cell editing
+    let editor: JSX.Element | undefined;
     if (this.props.cellEditing && this.props.cellEditing.isEditingEnabled(this.props.node)) {
       // if cell editing is enabled, return editor instead of the label
       const style = this.props.node.payload ? this.getStyle(this.props.node.payload.style, this.props.node.selected()) : undefined;
-
       editor = this.props.cellEditing.renderEditor(this.props.node, style);
     }
 
@@ -169,6 +180,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     const containerClassName = classnames(
       "components-tree-node-content",
       isDescriptionEnabled ? "with-description" : undefined,
+      this.props.className,
     );
 
     const descriptionClassName = classnames(
@@ -177,7 +189,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     );
 
     return (
-      <div className={containerClassName}>
+      <div className={containerClassName} style={this.props.style}>
         {editor ? editor : this.state.label}
         {isDescriptionEnabled ?
           <div className={descriptionClassName}>

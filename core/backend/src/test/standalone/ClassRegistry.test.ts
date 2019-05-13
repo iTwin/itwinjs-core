@@ -4,24 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Code, EntityMetaData } from "@bentley/imodeljs-common";
-import { DefinitionElement, IModelDb, RepositoryLink, SpatialViewDefinition, ViewDefinition3d, UrlLink } from "../../imodeljs-backend";
+import {
+  DefinitionElement, IModelDb, RepositoryLink, SpatialViewDefinition,
+  ViewDefinition3d, UrlLink, BackendRequestContext,
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Class Registry", () => {
   let imodel: IModelDb;
-  const actx = new ActivityLoggingContext("");
+  const requestContext = new BackendRequestContext();
 
   before(() => {
-    imodel = IModelTestUtils.openIModel("test.bim");
+    imodel = IModelDb.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("ClassRegistry", "ClassRegistryTest.bim"),
+      IModelTestUtils.resolveAssetFile("test.bim"),
+    );
     assert.exists(imodel);
   });
 
   after(() => {
     if (imodel)
-      IModelTestUtils.closeIModel(imodel);
+      imodel.closeSnapshot();
   });
 
   it("should verify the Entity metadata of known element subclasses", () => {
@@ -68,7 +73,7 @@ describe("Class Registry", () => {
 
   it("should verify Entity metadata with both base class and mixin properties", async () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
-    await imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
+    await imodel.importSchema(requestContext, schemaPathname); // will throw an exception if import fails
 
     const testDomainClass = imodel.getMetaData("TestDomain:TestDomainClass"); // will throw on failure
 

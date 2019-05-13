@@ -56,15 +56,10 @@ import { KnotVector, BSplineWrapMode } from "../bspline/KnotVector";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 
 /* tslint:disable:no-console */
-
-/** Access the last point in the array. push another shifted by dx,dy,dz */
-function pushMove(data: Point3d[], dx: number, dy: number, dz: number = 0.0) {
-  if (data.length > 0) {
-    const back = data[data.length - 1];
-    data.push(Point3d.create(back.x + dx, back.y + dy, back.z + dz));
-  }
-}
-
+/**
+ * `Sample` has static methods to create a variety of geometry samples useful in testing.
+ * @alpha
+ */
 export class Sample {
   public static readonly point2d: Point2d[] = [
     Point2d.create(0, 0),
@@ -157,6 +152,23 @@ export class Sample {
       Point3d.create(x0, y0, z),
     ];
   }
+  /** Access the last point in the array. push another shifted by dx,dy,dz.
+   * * No push if all are 0.
+   * * If array is empty, push a leading 000
+   */
+  public static pushMove(data: Point3d[], dx: number, dy: number, dz: number = 0.0) {
+    if (data.length === 0)
+      data.push(Point3d.create(0, 0, 0));
+    const back = data[data.length - 1];
+    if (dx !== 0 || dy !== 0 || dz !== 0)
+      data.push(Point3d.create(back.x + dx, back.y + dy, back.z + dz));
+  }
+  /** push a clone of the data[0] */
+  public static pushClosure(data: Point3d[]) {
+    if (data.length > 0)
+      data.push(data[data.length - 1].clone());
+  }
+
   public static createUnitCircle(numPoints: number): Point3d[] {
     const points: Point3d[] = [];
     const dTheta = Geometry.safeDivideFraction(Math.PI * 2, numPoints - 1, 0.0);
@@ -561,17 +573,31 @@ export class Sample {
       fixedPoint ? fixedPoint : Point3d.create(1, 2, 3),
       Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
   }
+  /** Return various rigid matrices:
+   * * identity
+   * * small rotations around x, y, z
+   * * small rotation around (1,2,3)
+   */
   public static createRigidAxes(): Matrix3d[] {
     return [
       Matrix3d.createIdentity(),
       Matrix3d.createRotationAroundVector(
+        Vector3d.unitX(), Angle.createDegrees(10)) as Matrix3d,
+      Matrix3d.createRotationAroundVector(
         Vector3d.unitY(), Angle.createDegrees(10)) as Matrix3d,
+      Matrix3d.createRotationAroundVector(
+        Vector3d.unitZ(), Angle.createDegrees(10)) as Matrix3d,
       Matrix3d.createRotationAroundVector(
         Vector3d.create(1, 2, 3), Angle.createDegrees(10)) as Matrix3d,
     ];
   }
 
-  // promote each transform[] to a Matrix4d.
+ /**
+  * Return various Matrix4d
+  * * Simple promotion of each Sample.createInvertibleTransforms ()
+  * * optional nasty [1,2,3,4...15] row order
+  * @param includeIrregular if true, include [1,2,..15] row major
+  */ // promote each transform[] to a Matrix4d.
   public static createMatrix4ds(includeIrregular: boolean = false): Matrix4d[] {
     const result = [];
     let transform;
@@ -586,6 +612,9 @@ export class Sample {
     }
     return result;
   }
+  /**
+   * Create full Map4d for each `Sample.createInvertibleTransforms ()`
+   */
   public static createMap4ds(): Map4d[] {
     const result = [];
     let transform;
@@ -675,18 +704,70 @@ export class Sample {
   public static createSquareWave(origin: Point3d, dx0: number, dy: number, dx1: number, numPhase: number, dyReturn: number): Point3d[] {
     const result = [origin.clone()];
     for (let i = 0; i < numPhase; i++) {
-      pushMove(result, dx0, 0);
-      pushMove(result, 0, dy);
-      pushMove(result, dx1, 0);
-      pushMove(result, 0, -dy);
+      this.pushMove(result, dx0, 0);
+      this.pushMove(result, 0, dy);
+      this.pushMove(result, dx1, 0);
+      this.pushMove(result, 0, -dy);
     }
-    pushMove(result, dx0, 0);
+    this.pushMove(result, dx0, 0);
     if (dyReturn !== 0.0) {
-      pushMove(result, 0, dyReturn);
-      result.push(Point3d.create(0, dyReturn));
+      this.pushMove(result, 0, dyReturn);
+      result.push(Point3d.create(origin.x, origin.y + dyReturn));
       result.push(result[0].clone());
     }
     return result;
+  }
+  /**
+   * Append numPhase teeth.  Each tooth starts with dxLow dwell at inital y, then sloped rise, then dwell at top, then sloped fall
+   * If no points are present, start with 000.  (this happends in pushMove) Otherwise start from final point.
+   * @param points point array to receive points
+   * @param dxLow starting step along x direction
+   * @param riseX width of rising and falling parts
+   * @param riseY height of rise
+   * @param dxHigh width at top
+   * @param numPhase number of phases.
+   */
+  public static appendSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number) {
+    for (let i = 0; i < numPhase; i++) {
+      this.pushMove(points, dxLow, 0, 0);
+      this.pushMove(points, riseX, riseY, 0);
+      this.pushMove(points, dxHigh, 0, 0);
+      this.pushMove(points, riseX, -riseY, 0);
+    }
+  }
+  /**
+   * Create a pair of sawtooth patterns, one (nominally) outbound and up, the other inbound and down.
+   * * return phase count adjusted to end at start x
+   * * enter return dx values as lengths -- sign will be negated in construction.
+   * @param origin start of entire path.
+   * @param dxLow low outbound dwell
+   * @param riseX x part of outbound rise and fall
+   * @param riseY y part of outbound rise and fall
+   * @param dxHigh high outbound dwell
+   * @param numPhaseOutbound number of phases outbuond.  Final phase followed by dxLow dwell.
+   * @param dyFinal rise after final dwell.
+   * @param dxLowReturn dwell at return high
+   * @param riseXReturn rise x part of return
+   * @param riseYReturn rise y part of return
+   * @param dxHighReturn  dwell at return high
+   */
+  public static createBidirectionalSawtooth(origin: Point3d, dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhaseOutbound: number,
+    dyFinal: number,
+    dxLowReturn: number, riseXReturn: number, riseYReturn: number, dxHighReturn: number): Point3d[] {
+    const data = [origin.clone()];
+    const x0 = data[0].x;
+    this.appendSawTooth(data, dxLow, riseX, riseY, dxHigh, numPhaseOutbound);
+    this.pushMove(data, dxLow, 0, 0);
+    this.pushMove(data, 0, dyFinal);
+    const x1 = data[data.length - 1].x;
+    const returnPhase = Math.abs(dxLowReturn + 2 * riseXReturn + dxHighReturn);
+    const totalDX = Math.abs(x1 - x0);
+    const numReturnPhase = Math.floor(Math.abs(totalDX / returnPhase));
+    this.appendSawTooth(data, -dxLowReturn, -riseXReturn, riseYReturn, -dxHighReturn, numReturnPhase);
+    const x2 = data[data.length - 1].x;
+    this.pushMove(data, x0 - x2, 0, 0);
+    data.push(data[0].clone());
+    return data;
   }
   /** append to a linestring, taking steps along given vector directions
    * If the linestring is empty, a 000 point is added.
@@ -1845,5 +1926,51 @@ export class Sample {
     if (forceClosure && n > 1 && !points[0].isAlmostEqual(points[n - 1]))
       segments.push(LineSegment3d.create(points[n - 1], points[0]));
     return segments;
+  }
+  /**
+   * Create a star by alternating radii (with equal anguar steps)
+   * @param r0 first point radius
+   * @param r1 second point radius
+   * @param numPoint number of points
+   * @param close true to add closure edge.
+   */
+  public static createStar(cx: number, cy: number, cz: number, r0: number, r1: number, numPoint: number, close: boolean): Point3d[] {
+    const points = [];
+    const angleStepRadians = Math.PI / numPoint;
+    let radians;
+    for (let i = 0; i < numPoint; i++) {
+      radians = 2 * i * angleStepRadians;
+      points.push(Point3d.create(cx + r0 * Math.cos(radians), cy + r0 * Math.sin(radians), cz));
+      radians = (2 * i + 1) * angleStepRadians;
+      points.push(Point3d.create(cx + r1 * Math.cos(radians), cy + r1 * Math.sin(radians), cz));
+    }
+    if (close)
+      points.push(points[0].clone());
+    return points;
+  }
+  /**
+   * Create an outer star A
+   * Place multiple inner stars B with centers on circle C
+   * @param rA0 radius to star tips on starA
+   * @param rA1 radius to star tips on starA
+   * @param numAPoint number of points on starA
+   * @param rB0 radius to star B tips
+   * @param rB1 radius to star B  tips
+   * @param numBPoint
+   * @param rC radius for inner star centers
+   * @param numC number of inner stars
+   */
+  public static createStarsInStars(rA0: number, rA1: number, numAPoint: number, rB0: number, rB1: number, numBPoint: number, rC: number, numC: number, close: boolean): Point3d[][] {
+    const loops: Point3d[][] = [];
+    loops.push(this.createStar(0, 0, 0, rA0, rA1, numAPoint, close));
+    if (numC > 0) {
+      const radiansStep = Math.PI * 2.0 / numC;
+      for (let i = 0; i < numC; i++) {
+        const radians = i * radiansStep;
+        loops.push(
+          this.createStar(rC * Math.cos(radians), rC * Math.sin(radians), 0.0, rB0, rB1, numBPoint, close));
+      }
+    }
+    return loops;
   }
 }

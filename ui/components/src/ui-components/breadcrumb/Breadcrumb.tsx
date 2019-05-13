@@ -10,18 +10,20 @@ import classnames from "classnames";
 import "./Breadcrumb.scss";
 import * as _ from "lodash";
 import { using } from "@bentley/bentleyjs-core";
-import { SplitButton, withOnOutsideClick, MessageSeverity, DialogButtonType, MessageBox, ContextMenu, ContextMenuItem } from "@bentley/ui-core";
+import { SplitButton, withOnOutsideClick, MessageSeverity, DialogButtonType, MessageBox, ContextMenu, ContextMenuItem, CommonProps } from "@bentley/ui-core";
 import { TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/component/BeInspireTree";
-import UiComponents from "../UiComponents";
+import { UiComponents } from "../UiComponents";
 
-/** @hidden */
+/** @internal */
 export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode;
 
-/** Property interface for [[Breadcrumb]] component */
-export interface BreadcrumbProps {
-  /** Manager to coordinate state between Breadcrumb element and BreadrcumbDetails element. */
+/** Properties for [[Breadcrumb]] component
+ * @beta
+ */
+export interface BreadcrumbProps extends CommonProps {
+  /** Manager to coordinate state between Breadcrumb element and BreadcrumbDetails element. */
   path?: BreadcrumbPath;
   /** Data provider for tree content  */
   dataProvider: TreeDataProvider;
@@ -47,20 +49,23 @@ export interface BreadcrumbProps {
   onChildrenLoaded?: (parent: TreeNodeItem, children: TreeNodeItem[]) => void;
   /** Callback triggered when root nodes are loaded with an asynchronous dataProvider. */
   onRootNodesLoaded?: (nodes: TreeNodeItem[]) => void;
-  /** @hidden */
+
+  /** @internal */
   renderNode?: BreadcrumbNodeRenderer;
-  /** @hidden */
+  /** @internal */
   onRender?: () => void;
 }
 
-/** @hidden */
+/** Enum for Breadcrumb Mode
+ * @beta
+ */
 export enum BreadcrumbMode {
   Dropdown = "dropdown",
   Input = "input",
 }
 
-/** @hidden */
-export interface BreadcrumbState {
+/** @internal */
+interface BreadcrumbState {
   prev: {
     dataProvider: TreeDataProvider;
     modelReady: boolean;
@@ -77,11 +82,12 @@ export interface BreadcrumbState {
  * Breadcrumb navigation component, with two discrete modes: text mode, and dropdown mode.
  * Text mode includes autocomplete suggestions.
  * Both dropdown and text mode support arrow and tab navigation.
+ * @beta
  */
 export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState> {
   private _mounted: boolean = false;
 
-  /** @hidden */
+  /** @internal */
   public static defaultProps: Partial<BreadcrumbProps> = {
     delimiter: "\\",
     background: true,
@@ -91,9 +97,10 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     width: "",
   };
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BreadcrumbState>;
 
+  /** @internal */
   constructor(props: BreadcrumbProps) {
     super(props);
 
@@ -118,6 +125,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     });
   }
 
+  /** @internal */
   public static getDerivedStateFromProps(props: BreadcrumbProps, state: BreadcrumbState): BreadcrumbState | null {
     const providerChanged = (props.dataProvider !== state.prev.dataProvider);
 
@@ -140,7 +148,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     return derivedState;
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidMount() {
     this._mounted = true;
     this.assignModelListeners(this.state.model);
@@ -156,7 +164,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
       this.props.onRender();
   }
 
-  /** @hidden */
+  /** @internal */
   public componentWillUnmount() {
     if (this.props.path)
       this.props.path.BreadcrumbUpdateEvent.removeListener(this._handleUpdate);
@@ -165,7 +173,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     this._mounted = false;
   }
 
-  /** @hidden */
+  /** @internal */
   public shouldComponentUpdate(nextProps: BreadcrumbProps, nextState: BreadcrumbState): boolean {
     if (this.state.modelReady !== nextState.modelReady || this.state.model !== nextState.model) {
       // always render when modelReady or model changes
@@ -190,7 +198,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
       || this.state.model.visible().some((n) => n.isDirty());
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidUpdate(prevProps: BreadcrumbProps, prevState: BreadcrumbState) {
     if (this.state.model !== prevState.model) {
       this.dropModelListeners(prevState.model);
@@ -301,18 +309,21 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     return node;
   }
 
+  /** @internal */
   public render(): React.ReactNode {
+    const classNames = classnames("components-breadcrumb", this.props.background && "background", this.props.className);
+
     if (!this.state.modelReady) {
       return (
-        <div className={classnames("breadcrumb", { background: this.props.background })} />
+        <div className={classNames} style={this.props.style} />
       );
     }
     const node = this.state.current ? this.state.model.node(this.state.current.id) : undefined;
     return (
       <div
-        className={classnames("breadcrumb", { background: this.props.background })}>
-        <div className="breadcrumb-head"
-          data-testid="breadcrumb-dropdown-input-parent">
+        className={classNames} style={this.props.style}>
+        <div className="components-breadcrumb-head"
+          data-testid="components-breadcrumb-dropdown-input-parent">
           {this.props.dropdownOnly || this.props.staticOnly ?
             <BreadcrumbDropdown
               tree={this.state.model}
@@ -364,7 +375,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 }
 
-/** @hidden */
+/** @internal */
 export interface InputSwitchProps {
   tree: BeInspireTree<TreeNodeItem>;
   node?: BeInspireTreeNode<TreeNodeItem>;
@@ -380,7 +391,7 @@ export interface InputSwitchProps {
   delimiter: string;
 }
 
-/** @hidden */
+/** @internal */
 export class InputSwitchComponent extends React.PureComponent<InputSwitchProps> {
   public render(): React.ReactNode {
     const { currentMode, tree, node, onInputStart, onInputCancel, onNodeChange, renderNode, width, showUpDir, delimiter } = this.props;
@@ -390,14 +401,14 @@ export class InputSwitchComponent extends React.PureComponent<InputSwitchProps> 
       case BreadcrumbMode.Input:
         return <BreadcrumbInput tree={tree} node={node} onNodeChange={onNodeChange} onCancel={onInputCancel} parentsOnly={this.props.parentsOnly} delimiter={delimiter} width={width} pathString={this.props.pathString} />;
       default:
-        return <div data-testid="breadcrumb-error-unknown-mode">{UiComponents.i18n.translate("UiComponents:breadcrumb.errorUnknownMode")}</div>;
+        return <div data-testid="components-breadcrumb-error-unknown-mode">{UiComponents.i18n.translate("UiComponents:breadcrumb.errorUnknownMode")}</div>;
     }
   }
 }
-/** @hidden */
+/** @internal */
 const InputSwitch = withOnOutsideClick(InputSwitchComponent); // tslint:disable-line:variable-name
 
-/** @hidden */
+/** @internal */
 export interface BreadcrumbInputProps {
   width: number | string;
   delimiter?: string;
@@ -412,20 +423,20 @@ export interface BreadcrumbInputProps {
   pathString: string;
 }
 
-/** @hidden */
+/** @internal */
 export interface BreadcrumbInputState {
   autocompleting: boolean;
   autocompleteList: string[];
   messageBoxOpened: boolean;
 }
 
-/** @hidden */
+/** @internal */
 export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, BreadcrumbInputState> {
   private _inputElement: HTMLInputElement | null = null;
   private _autocomplete: ContextMenu | null = null;
   private _mounted: boolean = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BreadcrumbInputState> = {
     autocompleting: false,
     autocompleteList: [],
@@ -434,17 +445,17 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
   public render(): JSX.Element {
     return (
-      <div className="breadcrumb-input-root" data-testid="breadcrumb-input-root">
+      <div className="components-breadcrumb-input-root" data-testid="components-breadcrumb-input-root">
         <input
-          className="breadcrumb-input"
-          data-testid="breadcrumb-input"
+          className="components-breadcrumb-input"
+          data-testid="components-breadcrumb-input"
           type="text"
           ref={(e) => { this._inputElement = e; }}
           style={{ width: this.props.width }}
           onKeyDown={this._handleKeyDown} onKeyUp={this._handleKeyUp}
           onChange={this._handleChange} onPaste={this._handleChange} onCut={this._handleChange} onFocus={this._handleChange} onClick={this._handleChange}
           spellCheck={false}></input>
-        <div className="breadcrumb-close icon icon-close" data-testid="breadcrumb-input-close" onClick={this._handleClose} />
+        <div className="components-breadcrumb-close icon icon-close" data-testid="components-breadcrumb-input-close" onClick={this._handleClose} />
         <ContextMenu
           ref={(el) => { this._autocomplete = el; }}
           style={{ width: "100%" }}
@@ -485,7 +496,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
                     event.stopPropagation();
                   }
                 }}>
-                <span className="breadcrumb-selected">{listItem.substr(0, l)}</span>{listItem.substr(l)}
+                <span className="components-breadcrumb-selected">{listItem.substr(0, l)}</span>{listItem.substr(l)}
               </ContextMenuItem>
             );
           })}
@@ -501,7 +512,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     this.setState({ messageBoxOpened: false });
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidMount() {
     this._mounted = true;
     window.addEventListener("click", this._handleClick);
@@ -512,7 +523,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
     }
   }
 
-  /** @hidden */
+  /** @internal */
   public componentWillUnmount() {
     window.removeEventListener("click", this._handleClick);
     this._mounted = false;
@@ -658,8 +669,8 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   }
 }
 
-/** @hidden */
-export interface BreadcrumbDropdownProps {
+/** @internal */
+interface BreadcrumbDropdownProps {
   tree: BeInspireTree<TreeNodeItem>;
   node?: BeInspireTreeNode<TreeNodeItem>;
   onInputStart?: () => void;
@@ -672,16 +683,16 @@ export interface BreadcrumbDropdownProps {
   renderNode?: BreadcrumbNodeRenderer;
 }
 
-/** @hidden */
-export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
+/** @internal */
+class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
 
-  /** @hidden */
+  /** @internal */
   public componentDidMount() {
     this.props.tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     this.props.tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
   }
 
-  /** @hidden */
+  /** @internal */
   public componentWillUnmount() {
     this.props.tree.removeListener(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     this.props.tree.removeListener(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
@@ -695,7 +706,7 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
     this.forceUpdate();
   }
 
-  /** @hidden */
+  /** @internal */
   public shouldComponentUpdate(nextProps: BreadcrumbDropdownProps) {
     return this.props.tree !== nextProps.tree ||
       this.props.node !== nextProps.node ||
@@ -716,16 +727,16 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
     }
     return (
       <div
-        className="breadcrumb-dropdown"
-        data-testid="breadcrumb-dropdown-background"
+        className="components-breadcrumb-dropdown"
+        data-testid="components-breadcrumb-dropdown-background"
         style={{ width: this.props.width! }}
         onClick={this._focusInput}>
-        {!this.props.staticOnly && this.props.showUpDir ? <div data-testid="breadcrumb-up-dir" className={classnames("breadcrumb-up-dir", "icon", "icon-sort-up", {
+        {!this.props.staticOnly && this.props.showUpDir ? <div data-testid="components-breadcrumb-up-dir" className={classnames("components-breadcrumb-up-dir", "icon", "icon-sort-up", {
           root: this.props.node === undefined,
         })
         } onClick={this._handleUpClick} /> : undefined}
-        <div className="breadcrumb-crumb-list"
-          data-testid="breadcrumb-crumb-list">
+        <div className="components-breadcrumb-crumb-list"
+          data-testid="components-breadcrumb-crumb-list">
           <BreadcrumbDropdownNode
             key={-1}
             tree={this.props.tree}
@@ -769,8 +780,8 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
   }
 }
 
-/** @hidden */
-export interface BreadcrumbDropdownNodeProps {
+/** @internal */
+interface BreadcrumbDropdownNodeProps {
   tree: BeInspireTree<TreeNodeItem>;
   node?: BeInspireTreeNode<TreeNodeItem>;
   onNodeSelected: (node: TreeNodeItem | undefined) => void;
@@ -780,8 +791,8 @@ export interface BreadcrumbDropdownNodeProps {
   renderNode?: BreadcrumbNodeRenderer;
 }
 
-/** @hidden */
-export class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps> {
+/** @internal */
+class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps> {
   constructor(props: BreadcrumbDropdownNodeProps) {
     super(props);
   }
@@ -805,14 +816,14 @@ export class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNo
       nodeChildren = nodeChildren.filter((child) => child.hasOrWillHaveChildren());
     if (nodeChildren.length > 0) {
       if (this.props.staticOnly) {
-        return <span data-testid="breadcrumb-static-button" className="breadcrumb-split-button static">
+        return <span data-testid="components-breadcrumb-static-button" className="components-breadcrumb-split-button static">
           {renderNode({ label, icon }, n, parent)}
           {!this.props.last ? <span className="static-arrow-icon icon icon-chevron-right" /> : undefined}
         </span>;
       }
       return (
         <SplitButton
-          className="breadcrumb-split-button"
+          className="components-breadcrumb-split-button"
           onClick={(event) => {
             event.stopPropagation();
             this.props.onNodeSelected(n);
@@ -835,7 +846,7 @@ export class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNo
       );
     } else {
       return (
-        <span className={classnames("breadcrumb-end-node", { static: this.props.staticOnly })}>
+        <span className={classnames("components-breadcrumb-end-node", { static: this.props.staticOnly })}>
           {renderNode({ label, icon }, n, parent)}
         </span>
       );
@@ -848,21 +859,29 @@ export class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNo
   }
 }
 
-/** Property interface for [[BreadcrumbNode]] */
+/** Properties for [[BreadcrumbNode]] component
+ * @beta
+ */
 export interface BreadcrumbNodeProps {
   /** Icon class string */
   icon: string;
   /** Node label */
   label: string;
-  /** @hidden */
+  /** @internal */
   onRender?: () => void;
 }
 
-/** Default BreadcrumbNode component */
+/** Default BreadcrumbNode component
+ * @beta
+ */
 export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
+  constructor(props: BreadcrumbNodeProps) {
+    super(props);
+  }
+
   public render(): React.ReactNode {
     const { icon, label } = this.props;
-    return <span data-testid="breadcrumb-node"><span className={classnames("icon", icon)} /> {label}</span>;
+    return <span data-testid="components-breadcrumb-node"><span className={classnames("icon", icon)} /> {label}</span>;
   }
 
   public componentDidMount() {

@@ -59,15 +59,16 @@ describe("KeyboardShortcutMenu", () => {
     KeyboardShortcutManager.displayShortcutsMenu();
     wrapper.update();
 
-    expect(wrapper.find("div.context-menu").length).to.not.eq(0);
+    expect(wrapper.find("div.core-context-menu").length).to.not.eq(0);
 
-    wrapper.find("div.context-menu").at(0).simulate("keyUp", { keyCode: 27 /* <Esc> */ });
+    wrapper.find("div.core-context-menu").at(0).simulate("keyUp", { keyCode: 27 /* <Esc> */ });
     wrapper.update();
 
-    expect(wrapper.find("div.context-menu-item").length).to.eq(0);
+    expect(wrapper.find("div.core-context-menu-item").length).to.eq(0);
+    wrapper.unmount();
   });
 
-  it("Should render shortcuts and execute item on click", () => {
+  it("Should render shortcuts and execute item on click", async () => {
     KeyboardShortcutManager.loadKeyboardShortcuts(keyboardShortcutList);
 
     const wrapper = enzyme.mount(
@@ -77,15 +78,15 @@ describe("KeyboardShortcutMenu", () => {
     KeyboardShortcutManager.displayShortcutsMenu();
     wrapper.update();
 
-    expect(wrapper.find("div.context-menu-item").length).to.not.eq(0);
+    expect(wrapper.find("div.core-context-menu-item").length).to.not.eq(0);
 
-    wrapper.find("div.context-menu-item").at(0).simulate("click");
+    wrapper.find("div.core-context-menu-item").at(0).simulate("click");
     wrapper.update();
 
-    expect(wrapper.find("div.context-menu-item").length).to.eq(0);
+    expect(wrapper.find("div.core-context-menu-item").length).to.eq(0);
 
-    setImmediate(() => {
-      expect(testSpyMethod.calledOnce).to.be.true;
-    });
+    await TestUtils.flushAsyncOperations();
+    expect(testSpyMethod.calledOnce).to.be.true;
+    wrapper.unmount();
   });
 });

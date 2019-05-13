@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Outline /> renders correctly 1`] = `
+<div
+  className="nz-zones-outline"
+  style={
+    Object {
+      "height": -5,
+      "left": 0,
+      "top": 5,
+      "width": 5,
+    }
+  }
+/>
+`;

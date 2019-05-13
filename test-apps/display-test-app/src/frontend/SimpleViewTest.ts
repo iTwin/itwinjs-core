@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { OpenMode } from "@bentley/bentleyjs-core";
 import {
   BentleyCloudRpcManager,
   ElectronRpcConfiguration,
@@ -12,22 +12,27 @@ import {
   IModelToken,
   RpcConfiguration,
   RpcOperation,
-  StandaloneIModelRpcInterface,
+  SnapshotIModelRpcInterface,
   MobileRpcConfiguration,
   MobileRpcManager,
 } from "@bentley/imodeljs-common";
-import { AccessToken, Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import {
   IModelApp,
   IModelConnection,
   OidcClientWrapper,
   RenderDiagnostics,
+  RenderSystem,
+  FrontendRequestContext,
+  WebGLExtensionName,
 } from "@bentley/imodeljs-frontend";
 import { SimpleViewState } from "./SimpleViewState";
 import { showStatus } from "./Utils";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import { DisplayTestApp } from "./App";
 import { Viewer } from "./Viewer";
+
+RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
 
 const activeViewState: SimpleViewState = new SimpleViewState();
 const configuration = {} as SVTConfiguration;
@@ -41,7 +46,7 @@ async function retrieveConfiguration(): Promise<void> {
       resolve();
     } else {
       const request: XMLHttpRequest = new XMLHttpRequest();
-      request.open("GET", "configuration.json", false);
+      request.open("GET", "configuration.json");
       request.setRequestHeader("Cache-Control", "no-cache");
       request.onreadystatechange = ((_event: Event) => {
         if (request.readyState === XMLHttpRequest.DONE) {
@@ -58,65 +63,90 @@ async function retrieveConfiguration(): Promise<void> {
 }
 
 // opens the configured iModel from disk
-async function openStandaloneIModel(state: SimpleViewState, filename: string) {
+async function openSnapshotIModel(state: SimpleViewState, filename: string) {
   configuration.standalone = true;
-  state.iModelConnection = await IModelConnection.openStandalone(filename, OpenMode.Readonly);
+  state.iModelConnection = await IModelConnection.openSnapshot(filename);
   configuration.iModelName = state.iModelConnection.name;
-  IModelApp.accessToken = state.accessToken;
 }
 
 // If we are using a browser, close the current iModel before leaving
 window.onbeforeunload = () => {
   if (activeViewState.iModelConnection !== undefined)
     if (configuration.standalone)
-      activeViewState.iModelConnection.closeStandalone(); // tslint:disable-line:no-floating-promises
-    else
-      activeViewState.iModelConnection.close(activeViewState.accessToken!); // tslint:disable-line:no-floating-promises
+      activeViewState.iModelConnection.closeSnapshot(); // tslint:disable-line:no-floating-promises
+    else {
+      activeViewState.iModelConnection.close(); // tslint:disable-line:no-floating-promises
+    }
 };
 
-async function initializeOidc(actx: ActivityLoggingContext) {
-  actx.enter();
+async function initializeOidc(requestContext: FrontendRequestContext) {
+  if (OidcClientWrapper.oidcClient)
+    return;
 
-  const clientId = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_client_id" : "imjs_browser_test_client_id");
-  const redirectUri = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_redirect_uri" : "imjs_browser_test_redirect_uri");
+  const clientId = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_client_id") : Config.App.get("imjs_browser_test_client_id");
+  const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
   const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read" };
 
-  await OidcClientWrapper.initialize(actx, oidcConfig);
-  actx.enter();
+  await OidcClientWrapper.initialize(requestContext, oidcConfig);
+  IModelApp.authorizationClient = OidcClientWrapper.oidcClient;
+}
 
-  OidcClientWrapper.oidcClient.onUserStateChanged.addListener((accessToken: AccessToken | undefined) => {
-    activeViewState.accessToken = accessToken;
-  });
+// Wraps the signIn process
+// - called the first time to start the signIn process - resolves to false
+// - called the second time as the Authorization provider redirects to cause the application to refresh/reload - resolves to false
+// - called the third time as the application redirects back to complete the authorization - finally resolves to true
+// @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
+async function signIn(): Promise<boolean> {
+  const requestContext = new FrontendRequestContext();
+  await initializeOidc(requestContext);
 
-  activeViewState.accessToken = await OidcClientWrapper.oidcClient.getAccessToken(actx);
-  actx.enter();
+  if (!OidcClientWrapper.oidcClient.hasSignedIn) {
+    await OidcClientWrapper.oidcClient.signIn(new FrontendRequestContext());
+    return false;
+  }
+
+  activeViewState.accessToken = await OidcClientWrapper.oidcClient!.getAccessToken(requestContext);
+  return true;
 }
 
 // main entry point.
 async function main() {
-  const actx = new ActivityLoggingContext(Guid.createValue());
-  actx.enter();
   // retrieve, set, and output the global configuration variable
   await retrieveConfiguration(); // (does a fetch)
   console.log("Configuration", JSON.stringify(configuration)); // tslint:disable-line:no-console
+
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
-  DisplayTestApp.startup();
+  const renderSystemOptions: RenderSystem.Options = {
+    disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
+    backfaceCulling: configuration.enableBackfaceCulling,
+    cullAgainstActiveVolume: !configuration.disableActiveVolumeCulling,
+    preserveShaderSourceCode: configuration.preserveShaderSourceCode,
+    displaySolarShadows: configuration.displaySolarShadows,
+  };
+
+  if (configuration.disableInstancing)
+    DisplayTestApp.tileAdminProps.enableInstancing = false;
+
+  if (configuration.omitEdges)
+    DisplayTestApp.tileAdminProps.requestTilesWithoutEdges = true;
+
+  DisplayTestApp.startup({ renderSys: renderSystemOptions });
   if (configuration.enableDiagnostics)
-    DisplayTestApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+    IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
-    rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
-    rpcConfiguration = MobileRpcManager.initializeClient([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    rpcConfiguration = MobileRpcManager.initializeClient([IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   } else {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
-    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
+    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findParameterOfType(IModelToken) || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
   }
 
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
@@ -128,25 +158,16 @@ async function main() {
 
   // while the browser is loading stuff, start work on logging in and downloading the imodel, etc.
   try {
-    if (configuration.standalone && !configuration.signInForStandalone) {
-      await openStandaloneIModel(activeViewState, configuration.iModelName!);
-      await uiReady; // Now wait for the HTML UI to finish loading.
-      await initView();
-      return;
+    if ((!configuration.standalone || configuration.signInForStandalone) && !MobileRpcConfiguration.isMobileFrontend) {
+      const signedIn: boolean = await signIn();
+      if (!signedIn)
+        return;
     }
 
-    if (!MobileRpcConfiguration.isMobileFrontend) {
-      await initializeOidc(actx);
-      actx.enter();
+    await openSnapshotIModel(activeViewState, configuration.iModelName!);
+    await uiReady; // Now wait for the HTML UI to finish loading.
+    await initView();
 
-      if (!activeViewState.accessToken)
-        OidcClientWrapper.oidcClient.signIn(actx);
-      else {
-        await openStandaloneIModel(activeViewState, configuration.iModelName!);
-        await uiReady; // Now, wait for the HTML UI to finish loading.
-        await initView();
-      }
-    }
   } catch (reason) {
     alert(reason);
     return;

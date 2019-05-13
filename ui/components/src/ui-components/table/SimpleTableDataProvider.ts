@@ -10,6 +10,7 @@ import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { Primitives, PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 /**
  * A Table Data Provider using an array of items.
+ * @beta
  */
 export class SimpleTableDataProvider implements MutableTableDataProvider {
   private _items: RowItem[];

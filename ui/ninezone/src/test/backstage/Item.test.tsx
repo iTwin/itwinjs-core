@@ -22,4 +22,12 @@ describe("<Item />", () => {
   it("should set is-active class", () => {
     shallow(<BackstageItem isActive />).should.matchSnapshot();
   });
+
+  it("should set is-disabled class", () => {
+    shallow(<BackstageItem isDisabled />).should.matchSnapshot();
+  });
+
+  it("should render subtitle", () => {
+    shallow(<BackstageItem subtitle="custom subtitle" />).should.matchSnapshot();
+  });
 });

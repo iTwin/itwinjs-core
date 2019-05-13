@@ -5,7 +5,15 @@
 
 /** @module ArraysAndInterfaces */
 
+/**
+ * Type for a OptionalGrowableFloat64Array or undefined.
+ * @public
+ */
 export type OptionalGrowableFloat64Array = GrowableFloat64Array | undefined;
+/**
+ * Signature for a function which does lexical comparison of `blockSize` consecutive values as 2 starting indices.
+ * @public
+ */
 export type BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number;
 /**
  * A `GrowableFloat64Array` is Float64Array accompanied by a count of how many of the array's entries are considered in use.
@@ -14,7 +22,7 @@ export type BlockComparisonFunction = (data: Float64Array, blockSize: number, in
  * * The reallocations leave unused space to accept further additional entries without reallocation.
  * * The `length` property returns the number of entries in use.
  * * the `capacity` property returns the (usually larger) length of the (overallocated) Float64Array.
- *
+ * @public
  */
 export class GrowableFloat64Array {
   private _data: Float64Array;

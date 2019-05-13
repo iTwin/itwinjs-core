@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WireFormats */
 
-import { Id64, Id64String, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { AngleProps, LowAndHighXY, LowAndHighXYZ, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
-import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core";
-import { IModelError, IModelStatus } from "./IModelError";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
+import { IModelError, IModelStatus } from "./IModelError";
+import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { Rank, SubCategoryAppearance } from "./SubCategoryAppearance";
 
 /** Properties of a NavigationProperty.
@@ -56,7 +57,7 @@ export class RelatedElement implements RelatedElementProps {
     if ((typeof json === "object") && ("id" in json)) {
       const r = RelatedElement.fromJSON(json);
       if (r === undefined)
-        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json", Logger.logWarning);
+        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json", Logger.logWarning, CommonLoggerCategory.ElementProps);
       return r.id;
     }
     return Id64.fromJSON(json);

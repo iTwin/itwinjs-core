@@ -1,6 +1,20 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Add XmlParser for direct consumption of Xml Schemas
+- Adds parameter for api-extractor to validate missing release tags
+- Adds ignoreMissingTags flag
+- Fix broken links
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Added ability to suppress rule violations from being reported during schema validation.
+- Upgrade TypeDoc dependency to 0.14.2
+- Updated BIS and EC schema validation documentation and adjusted diagnostic codes to match documentation.
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT

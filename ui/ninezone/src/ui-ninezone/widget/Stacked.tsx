@@ -6,26 +6,32 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { Edge } from "../utilities/Rectangle";
-import { WidgetContent } from "./rectangular/Content";
+import { CommonProps } from "@bentley/ui-core";
+import { Edge, RectangleProps, Rectangle } from "../utilities/Rectangle";
 import { ResizeGrip, ResizeDirection } from "./rectangular/ResizeGrip";
 import { ResizeHandle } from "./rectangular/ResizeHandle";
-import { CommonProps, NoChildrenProps } from "../utilities/Props";
+import { NoChildrenProps } from "../utilities/Props";
 import "./Stacked.scss";
 
-/** Available [[Stacked]] widget horizontal anchors. */
+/** Available [[Stacked]] widget horizontal anchors.
+ * @alpha
+ */
 export enum HorizontalAnchor {
   Left,
   Right,
 }
 
-/** Available [[Stacked]] widget vertical anchors. */
+/** Available [[Stacked]] widget vertical anchors.
+ * @alpha
+ */
 export enum VerticalAnchor {
   Middle,
   Bottom,
 }
 
-/** Helpers for [[HorizontalAnchor]]. */
+/** Helpers for [[HorizontalAnchor]].
+ * @alpha
+ */
 export class HorizontalAnchorHelpers {
   /** Class name of [[HorizontalAnchor.Left]] */
   public static readonly LEFT_CLASS_NAME = "nz-left-anchor";
@@ -43,7 +49,9 @@ export class HorizontalAnchorHelpers {
   }
 }
 
-/** Helpers for [[VerticalAnchor]]. */
+/** Helpers for [[VerticalAnchor]].
+ * @alpha
+ */
 export class VerticalAnchorHelpers {
   /** Class name of [[VerticalAnchor.Middle]] */
   public static readonly MIDDLE_CLASS_NAME = "nz-middle-anchor";
@@ -61,10 +69,14 @@ export class VerticalAnchorHelpers {
   }
 }
 
-/** Properties of [[Stacked]] component. */
+/** Properties of [[Stacked]] component.
+ * @alpha
+ */
 export interface StackedProps extends CommonProps, NoChildrenProps {
-  /** Content of this widget. */
+  /** Content of this widget. I.e. [[WidgetContent]] */
   content?: React.ReactNode;
+  /** Content ref of this widget. */
+  contentRef?: React.Ref<HTMLDivElement>;
   /** Describes if the widget should fill the zone. */
   fillZone?: boolean;
   /** Describes to which side the widget is horizontally anchored. */
@@ -77,23 +89,89 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
   isOpen?: boolean;
   /** Function called when resize action is performed. */
   onResize?: (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
-  /** Widget tabs. See: [[Draggable]], [[TabSeparator]], [[Tab]], [[Group]] */
+  /** Widget tabs. See: [[Tab]], [[TabSeparator]], [[Group]] */
   tabs?: React.ReactNode;
-  /** Describes to which side the widget is vertically anchored. Defaults to [[VerticalAnchor.Middle]] */
-  verticalAnchor?: VerticalAnchor;
+  /** Describes to which side the widget is vertically anchored. */
+  verticalAnchor: VerticalAnchor;
+  /** Handler for mouse enter */
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  /** Handler for mouse leave */
+  onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
-/**
- * Stacked widget is used to display multiple tabs and some content.
+/** Stacked widget is used to display multiple tabs and some content.
  * @note Should be placed in [[Zone]] component.
+ * @alpha
  */
 export class Stacked extends React.PureComponent<StackedProps> {
   private _widget = React.createRef<HTMLDivElement>();
 
-  private _getFilledHeightDiff(): number {
-    if (this.props.fillZone)
-      return 0;
+  public getBounds(): RectangleProps {
+    if (!this._widget.current)
+      return new Rectangle();
+    return this._widget.current.getBoundingClientRect();
+  }
 
+  public render() {
+    const className = classnames(
+      "nz-widget-stacked",
+      HorizontalAnchorHelpers.getCssClassName(this.props.horizontalAnchor),
+      VerticalAnchorHelpers.getCssClassName(this.props.verticalAnchor),
+      !this.props.isOpen && "nz-closed",
+      this.props.isDragged && "nz-dragged",
+      this.props.isFloating && "nz-floating",
+      this.props.fillZone && "nz-fill-zone",
+      this.props.className);
+
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+        ref={this._widget}
+        onMouseEnter={this.props.onMouseEnter}
+        onMouseLeave={this.props.onMouseLeave}
+      >
+        <div className="nz-content-container">
+          <div
+            className="nz-content"
+            ref={this.props.contentRef}
+          >
+            {this.props.content}
+          </div>
+          <ResizeGrip
+            className="nz-bottom-grip"
+            direction={ResizeDirection.NorthSouth}
+            onResize={this._handleBottomGripResize}
+          />
+          <ResizeGrip
+            className="nz-content-grip"
+            direction={ResizeDirection.EastWest}
+            onResize={this._handleContentGripResize}
+          />
+        </div>
+        <div className="nz-tabs-column">
+          <div className="nz-tabs">
+            {this.props.tabs}
+          </div>
+          <div className="nz-tabs-grip-container">
+            <ResizeGrip
+              className="nz-tabs-grip"
+              direction={ResizeDirection.EastWest}
+              onResize={this._handleTabsGripResize}
+            />
+          </div>
+        </div>
+        <div className="nz-height-expander" />
+        <ResizeGrip
+          className="nz-top-grip"
+          direction={ResizeDirection.NorthSouth}
+          onResize={this._handleTopGripResize}
+        />
+      </div>
+    );
+  }
+
+  private _getFilledHeightDiff(): number {
     const widget = this._widget.current;
     if (!widget)
       return 0;
@@ -146,60 +224,5 @@ export class Stacked extends React.PureComponent<StackedProps> {
   private _handleBottomGripResize = (_x: number, y: number) => {
     const filledHeightDiff = this._getFilledHeightDiff();
     this.props.onResize && this.props.onResize(0, y, Edge.Bottom, filledHeightDiff);
-  }
-
-  public render() {
-    const className = classnames(
-      "nz-widget-stacked",
-      HorizontalAnchorHelpers.getCssClassName(this.props.horizontalAnchor),
-      VerticalAnchorHelpers.getCssClassName(this.props.verticalAnchor === undefined ? VerticalAnchor.Middle : this.props.verticalAnchor),
-      !this.props.isOpen && "nz-is-closed",
-      this.props.isDragged && "nz-is-dragged",
-      this.props.isFloating && "nz-is-floating",
-      this.props.fillZone && "nz-fill-zone",
-      this.props.className);
-
-    return (
-      <div
-        className={className}
-        style={this.props.style}
-        ref={this._widget}
-      >
-        <div className="nz-content-area">
-          <WidgetContent
-            anchor={this.props.horizontalAnchor}
-            content={this.props.content}
-          />
-          <ResizeGrip
-            className="nz-bottom-grip"
-            direction={ResizeDirection.NorthSouth}
-            onResize={this._handleBottomGripResize}
-          />
-          <ResizeGrip
-            className="nz-content-grip"
-            direction={ResizeDirection.EastWest}
-            onResize={this._handleContentGripResize}
-          />
-        </div>
-        <div className="nz-tabs-column">
-          <div className="nz-tabs">
-            {this.props.tabs}
-          </div>
-          <div className="nz-tabs-grip-container">
-            <ResizeGrip
-              className="nz-tabs-grip"
-              direction={ResizeDirection.EastWest}
-              onResize={this._handleTabsGripResize}
-            />
-          </div>
-        </div>
-        <div className="nz-height-expander" />
-        <ResizeGrip
-          className="nz-top-grip"
-          direction={ResizeDirection.NorthSouth}
-          onResize={this._handleTopGripResize}
-        />
-      </div>
-    );
   }
 }

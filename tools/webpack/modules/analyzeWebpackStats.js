@@ -58,7 +58,7 @@ function moduleNameFromId(moduleId) {
   if (typeof moduleId !== "string")
     return undefined;
 
-  const nmLoc = moduleId.indexOf("node_modules");
+  const nmLoc = moduleId.lastIndexOf("node_modules");
   if (-1 == nmLoc)
     return undefined;
   const endName = moduleId.indexOf("/", nmLoc + 13);
@@ -112,7 +112,7 @@ function main() {
   // this might need to be changed if this script is moved.
   const rootDir = path.resolve("../../../");
 
-  const pathToJsonFile = "lib/module/dev/webpackStats.json";
+  const pathToJsonFile = "lib/module/dev/webpackStats0.json";
 
   const directories = ["core/bentley", "core/geometry", "core/common", "core/clients", "core/i18n", "core/quantity", "core/frontend", "ui/core",
     "ui/components", "ui/ninezone", "ui/framework", "presentation/common", "presentation/components", "presentation/frontend"]

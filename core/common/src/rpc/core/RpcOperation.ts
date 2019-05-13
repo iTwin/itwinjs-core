@@ -4,28 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { IModelError } from "../../IModelError";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelToken } from "../../IModel";
-import { BentleyStatus, Guid } from "@bentley/bentleyjs-core";
+import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcRegistry, OPERATION, POLICY, builtins } from "./RpcRegistry";
-import {
-  RpcRequestTokenSupplier_T,
-  RpcRequestIdSupplier_T,
-  RpcRequestInitialRetryIntervalSupplier_T,
-  RpcRequestCallback_T,
-  RpcResponseCachingCallback_T,
-} from "./RpcRequest";
+import { RpcRegistry, OPERATION, POLICY } from "./RpcRegistry";
 import { RpcInvocationCallback_T } from "./RpcInvocation";
+import { RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T } from "./RpcRequest";
 import { RpcResponseCacheControl } from "./RpcConstants";
 
-/** The policy for an RPC operation. */
+/** The policy for an RPC operation.
+ * @public
+ */
 export class RpcOperationPolicy {
   /** Supplies the IModelToken for an operation request. */
   public token: RpcRequestTokenSupplier_T = (request) => request.findParameterOfType(IModelToken);
-
-  /** Supplies the unique identifier for an operation request.  */
-  public requestId: RpcRequestIdSupplier_T = (_request) => Guid.createValue();
 
   /** Supplies the initial retry interval for an operation request. */
   public retryInterval: RpcRequestInitialRetryIntervalSupplier_T = (configuration) => configuration.pendingOperationRetryInterval;
@@ -44,24 +37,25 @@ export class RpcOperationPolicy {
    * @note Not all RPC protocols support caching.
    */
   public allowResponseCaching: RpcResponseCachingCallback_T = (_request) => RpcResponseCacheControl.None;
+
+  /** Forces RpcConfiguration.strictMode for this operation. */
+  public forceStrictMode: boolean = false;
+
+  /** Whether the IModelToken in the operation parameter list is allowed to differ from the token in the request URL. */
+  public allowTokenMismatch: boolean = false;
 }
 
-/** An RPC operation descriptor. */
+/** An RPC operation descriptor.
+ * @public
+ */
 export class RpcOperation {
-  /** A fallback token to use for RPC system management requests like RpcManager.describeAvailableEndpoints. */
+  /** A fallback token to use for RPC requests that do not semantically depend on an iModel. */
   public static fallbackToken: IModelToken | undefined = undefined;
 
   /** Looks up an RPC operation by name. */
   public static lookup(target: string | RpcInterfaceDefinition, operationName: string): RpcOperation {
     const definition = typeof (target) === "string" ? RpcRegistry.instance.lookupInterfaceDefinition(target) : target;
-
-    let propertyName: string | symbol = RpcOperation.computeOperationName(operationName);
-    for (const builtin of builtins) {
-      if (builtin === propertyName) {
-        propertyName = Symbol.for(builtin);
-        break;
-      }
-    }
+    const propertyName: string | symbol = RpcOperation.computeOperationName(operationName);
 
     const proto = (definition.prototype as any);
     if (!proto.hasOwnProperty(propertyName))
@@ -79,12 +73,6 @@ export class RpcOperation {
       const propertyName = RpcOperation.computeOperationName(operationName);
       callback((definition.prototype as any)[propertyName][OPERATION]);
     });
-
-    Object.getOwnPropertySymbols(definition.prototype).forEach((builtinSymbol) => {
-      const builtin = (definition.prototype as any)[builtinSymbol][OPERATION];
-      if (builtin)
-        callback(builtin);
-    });
   }
 
   /** The RPC interface definition for this operation. */
@@ -99,14 +87,14 @@ export class RpcOperation {
   /** The policy for this operation. */
   public policy: RpcOperationPolicy;
 
-  /** @hidden */
+  /** @internal */
   public constructor(definition: RpcInterfaceDefinition, operation: string, policy: RpcOperationPolicy) {
     this.interfaceDefinition = definition;
     this.operationName = operation;
     this.policy = policy;
   }
 
-  /** @hidden */
+  /** @internal */
   public static computeOperationName(identifier: string): string {
     const c = identifier.indexOf(":");
     if (c === -1)
@@ -116,11 +104,25 @@ export class RpcOperation {
   }
 }
 
+/** @public */
+export type RpcOperationPolicyProps = Partial<RpcOperationPolicy>;
+
+/** @public */
 export namespace RpcOperation {
+  function obtainInstance(obj: RpcOperationPolicy | RpcOperationPolicyProps) {
+    if (obj instanceof RpcOperationPolicy) {
+      return obj;
+    } else {
+      const instance = new RpcOperationPolicy();
+      Object.assign(instance, obj);
+      return instance;
+    }
+  }
+
   /** Decorator for setting the policy for an RPC operation function. */
-  export function setPolicy(policy: RpcOperationPolicy) {
+  export function setPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps) {
     return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
-      descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, policy);
+      descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, obtainInstance(policy));
     };
   }
 
@@ -134,9 +136,9 @@ export namespace RpcOperation {
   }
 
   /** Decorator for setting the default policy for an RPC interface definition class. */
-  export function setDefaultPolicy(policy: RpcOperationPolicy) {
+  export function setDefaultPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps) {
     return <T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) => {
-      (definition as any)[POLICY] = policy;
+      (definition as any)[POLICY] = obtainInstance(policy);
     };
   }
 }

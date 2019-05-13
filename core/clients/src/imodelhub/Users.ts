@@ -4,17 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
+import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
+import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
-
-import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
-import { Query } from "./Query";
-import { ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
+import { ArgumentCheck } from "./Errors";
+import { Query } from "./Query";
 
-const loggingCategory = "imodeljs-clients.imodelhub";
+const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
-/** Information about the user, allowing to identify them based on their id. */
+/** Information about the user, allowing to identify them based on their id.
+ * @alpha
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.UserInfo", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubUserInfo extends WsgInstance {
   /** Id of the user. */
@@ -34,7 +36,9 @@ export class HubUserInfo extends WsgInstance {
   public email?: string;
 }
 
-/** Statistics of user created and owned instances on the iModel. */
+/** Statistics of user created and owned instances on the iModel.
+ * @alpha
+ */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.UserInfo", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class UserStatistics extends HubUserInfo {
   /** Number of [[Briefcase]]s the user currently owns. */
@@ -56,16 +60,17 @@ export class UserStatistics extends HubUserInfo {
 
 /**
  * Query object for getting User Statistics. You can use this to modify the [[UserStatisticsHandler.get]] results.
+ * @alpha
  */
 export class UserStatisticsQuery extends Query {
-  /** @hidden */
+  /** @internal */
   protected _byId?: string;
 
   private _statisticsPrefix = "HasStatistics-forward-Statistics";
   private _queriedByIds = false;
   /**
    * Constructor for UserStatisticsQuery.
-   * @hidden
+   * @internal
    */
   constructor() {
     super();
@@ -86,7 +91,7 @@ export class UserStatisticsQuery extends Query {
 
   /**
    * Used by iModelHub handlers to get the id that is queried.
-   * @hidden
+   * @internal
    */
   public getId() {
     return this._byId;
@@ -142,7 +147,7 @@ export class UserStatisticsQuery extends Query {
 
   /**
    * Returns whether was object queried by ids or no
-   * @hidden
+   * @internal
    */
   public get isQueriedByIds() {
     return this._queriedByIds;
@@ -151,42 +156,40 @@ export class UserStatisticsQuery extends Query {
 
 /**
  * Handler for querying [[UserStatistics]]. Use [[UserInfoHandler.Statistics]] to get an instance of this class.
+ * @alpha
  */
 export class UserStatisticsHandler {
   private _handler: IModelBaseHandler;
   /**
    * Constructor for UserStatistics. Should use @see IModelClient instead of directly constructing this.
-   * @hidden
    * @param handler Handler for WSG requests.
+   * @internal
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;
   }
 
-  /**
-   * Get relative url for UserStatistics requests.
-   * @hidden
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+  /** Get relative url for UserStatistics requests.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param userId Id of the user.
    */
-  private getRelativeUrl(imodelId: GuidString, userId?: string) {
-    return `/Repositories/iModel--${imodelId}/iModelScope/UserInfo/${userId ? userId : ""}`;
+  private getRelativeUrl(iModelId: GuidString, userId?: string) {
+    return `/Repositories/iModel--${iModelId}/iModelScope/UserInfo/${userId ? userId : ""}`;
   }
 
-  /**
-   * Get [[UserStatistics]].
-   * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+  /** Get [[UserStatistics]].
+   * @param requestContext The client request context.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried [[UserStatistics]] or select different data from them.
    * @returns Array of [[UserStatistics]] for users matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString,
+  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString,
     query: UserStatisticsQuery = new UserStatisticsQuery()): Promise<UserStatistics[]> {
-    alctx.enter();
-    Logger.logInfo(loggingCategory, `Querying user statistics for iModel ${imodelId}`);
-    ArgumentCheck.defined("token", token);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+    requestContext.enter();
+    Logger.logInfo(loggerCategory, "Querying user statistics for iModel", () => ({ iModelId }));
+    ArgumentCheck.defined("requestContext", requestContext);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
     // if there are no specific selects defined, select all statistics
     if (query.getQueryOptions().$select === "*") {
@@ -195,28 +198,27 @@ export class UserStatisticsHandler {
 
     let userStatistics: UserStatistics[];
     if (query.isQueriedByIds) {
-      userStatistics = await this._handler.postQuery<UserStatistics>(alctx, UserStatistics, token,
-        this.getRelativeUrl(imodelId), query.getQueryOptions());
+      userStatistics = await this._handler.postQuery<UserStatistics>(requestContext, UserStatistics,
+        this.getRelativeUrl(iModelId), query.getQueryOptions());
     } else {
-      userStatistics = await this._handler.getInstances<UserStatistics>(alctx, UserStatistics, token,
-        this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
+      userStatistics = await this._handler.getInstances<UserStatistics>(requestContext, UserStatistics,
+        this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
     }
-    alctx.enter();
-    Logger.logTrace(loggingCategory, `Queried ${userStatistics.length} user statistics for iModel ${imodelId}`);
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, `Queried ${userStatistics.length} user statistics for iModel`, () => ({ iModelId }));
     return userStatistics;
   }
 }
 
-/**
- * Query object for getting [[HubUserInfo]]. You can use this to modify the [[UserInfoHandler.get]] results.
+/** Query object for getting [[HubUserInfo]]. You can use this to modify the [[UserInfoHandler.get]] results.
+ * @alpha
  */
 export class UserInfoQuery extends Query {
   private _queriedByIds = false;
-  /** @hidden */
+  /** @internal */
   protected _byId?: string;
 
-  /**
-   * Query UserInfo by user ids.
+  /** Query UserInfo by user ids.
    * @param ids Ids of the users.
    * @returns This query.
    * @throws [[IModelHubClientError]] if ids array is empty.
@@ -239,13 +241,12 @@ export class UserInfoQuery extends Query {
     return this;
   }
 
-  /** @hidden */
+  /** @internal */
   public get isQueriedByIds() {
     return this._queriedByIds;
   }
 
-  /**
-   * Query single instance by its id.
+  /** Query single instance by its id.
    * @param id Id of the instance to query.
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [GuidString]($bentley) value.
@@ -256,69 +257,61 @@ export class UserInfoQuery extends Query {
     return this;
   }
 
-  /**
-   * Used by iModelHub handlers to get the id that is queried.
-   * @hidden
+  /** Used by iModelHub handlers to get the id that is queried.
+   * @internal
    */
   public getId() {
     return this._byId;
   }
 }
 
-/**
- * Handler for querying [[HubUserInfo]]. Use [[IModelClient.Users]] to get an instance of this class.
+/** Handler for querying [[HubUserInfo]]. Use [[IModelClient.Users]] to get an instance of this class.
+ * @alpha
  */
 export class UserInfoHandler {
   private _handler: IModelBaseHandler;
 
-  /**
-   * Constructor for UserInfoHandler.
-   * @hidden
+  /** Constructor for UserInfoHandler.
    * @param handler Handler for WSG requests.
+   * @internal
    */
   constructor(handler: IModelBaseHandler) {
     this._handler = handler;
   }
 
-  /**
-   * Get the handler for querying [[UserStatistics]].
-   */
+  /** Get the handler for querying [[UserStatistics]]. */
   public get statistics(): UserStatisticsHandler {
     return new UserStatisticsHandler(this._handler);
   }
 
-  /**
-   * Get relative url for UserInfo requests.
-   * @hidden
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+  /** Get relative url for UserInfo requests.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param userId Id of the user.
    */
-  private getRelativeUrl(imodelId: GuidString, userId?: string) {
-    return `/Repositories/iModel--${imodelId}/iModelScope/UserInfo/${userId || ""}`;
+  private getRelativeUrl(iModelId: GuidString, userId?: string) {
+    return `/Repositories/iModel--${iModelId}/iModelScope/UserInfo/${userId || ""}`;
   }
 
-  /**
-   * Get the information on users who have accessed the iModel.
-   * @param token Delegation token of the authorized user.
-   * @param imodelId Id of the iModel. See [[HubIModel]].
+  /** Get the information on users who have accessed the iModel.
+   * @param requestContext The client request context.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried users or select different data from them.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query: UserInfoQuery = new UserInfoQuery()): Promise<HubUserInfo[]> {
-    alctx.enter();
-    Logger.logInfo(loggingCategory, `Querying users for iModel ${imodelId}`);
-    ArgumentCheck.defined("token", token);
-    ArgumentCheck.validGuid("imodelId", imodelId);
+  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: UserInfoQuery = new UserInfoQuery()): Promise<HubUserInfo[]> {
+    requestContext.enter();
+    Logger.logInfo(loggerCategory, "Querying users for iModel", () => ({ iModelId }));
+    ArgumentCheck.defined("requestContext", requestContext);
+    ArgumentCheck.validGuid("iModelId", iModelId);
 
     let users: HubUserInfo[];
     if (query.isQueriedByIds) {
-      users = await this._handler.postQuery<HubUserInfo>(alctx, HubUserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
+      users = await this._handler.postQuery<HubUserInfo>(requestContext, HubUserInfo, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
     } else {
-      users = await this._handler.getInstances<HubUserInfo>(alctx, HubUserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
+      users = await this._handler.getInstances<HubUserInfo>(requestContext, HubUserInfo, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
     }
-    alctx.enter();
-    Logger.logTrace(loggingCategory, `Queried users for iModel ${imodelId}`);
-
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, "Queried users for iModel", () => ({ iModelId }));
     return users;
   }
 }

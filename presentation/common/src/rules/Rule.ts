@@ -44,7 +44,7 @@ export interface ConditionContainer {
 }
 
 /** Used for serializing [[Rule]] objects to JSON. */
-export const enum RuleTypes {
+export enum RuleTypes {
   // hierarchy rules
   RootNodes = "RootNodes",
   ChildNodes = "ChildNodes",

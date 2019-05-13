@@ -39,7 +39,7 @@
     transition-duration: 150ms;
   }
 
-  &:active:not(.nz-is-disabled) > * {
+  &:active:not(.nz-disabled) > * {
     color: $pressed-icon-color;
     filter: $no-shadow;
 
@@ -48,8 +48,8 @@
     }
   }
 
-  &.nz-is-active {
-    &:not(:active):not(.nz-is-disabled) {
+  &.nz-active {
+    &:not(:active):not(.nz-disabled) {
       > * {
         color: $active-icon-color;
         filter: $no-shadow;
@@ -64,7 +64,7 @@
     }
   }
 
-  &.nz-is-disabled > * {
+  &.nz-disabled > * {
     color: $disabled-icon-color;
   }
 }

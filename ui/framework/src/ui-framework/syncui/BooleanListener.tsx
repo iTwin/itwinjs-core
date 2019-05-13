@@ -9,6 +9,7 @@ import { SyncUiEventDispatcher, SyncUiEventArgs } from "./SyncUiEventDispatcher"
 
 /**
  * Properties supported by [[BooleanSyncUiListener]] component.
+ * @public
  */
 export interface BooleanListenerProps {
   /** One or more SyncUi event Ids that will trigger the function to be called. */
@@ -25,22 +26,25 @@ export interface BooleanListenerProps {
 
 /**
  * State for the [[BooleanSyncUiListener]] component.
+ * @internal
  */
-export interface BooleanListenerState {
+interface BooleanListenerState {
   boolValue: boolean;
 }
+
 // cSpell:Ignore Unmounting
 /**
  * A component that expect its children to be a function that will be passed the current boolValue state.
+ * @public
  */
 export class BooleanSyncUiListener extends React.Component<BooleanListenerProps, BooleanListenerState> {
   private _componentUnmounting = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: BooleanListenerState;
 
-  constructor(props?: any, context?: any) {
-    super(props, context);
+  constructor(props: BooleanListenerProps) {
+    super(props);
     this.state = {
       boolValue: undefined !== props.defaultValue ? props.defaultValue : true,
     };

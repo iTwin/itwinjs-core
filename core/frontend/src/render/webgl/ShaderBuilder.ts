@@ -13,7 +13,11 @@ import { GLSLVertex, addPosition } from "./glsl/Vertex";
 import { addInstancedModelMatrix } from "./glsl/Instancing";
 import { addClipping } from "./glsl/Clipping";
 
-/** Describes the data type of a shader program variable. */
+// tslint:disable:no-const-enum
+
+/** Describes the data type of a shader program variable.
+ * @internal
+ */
 export const enum VariableType {
   Boolean, // bool
   Int, // int
@@ -29,7 +33,9 @@ export const enum VariableType {
   COUNT,
 }
 
-/** Describes the qualifier associated with a shader program variable. */
+/** Describes the qualifier associated with a shader program variable.
+ * @internal
+ */
 export const enum VariableScope {
   Global, // no qualifier
   Varying, // varying
@@ -39,7 +45,9 @@ export const enum VariableScope {
   COUNT,
 }
 
-/** Describes the declared or undeclared precision of a shader program variable. */
+/** Describes the declared or undeclared precision of a shader program variable.
+ * @internal
+ */
 export const enum VariablePrecision {
   Default, // undeclared precision - variable uses the explicit or implicit precision default for its type
   Low, // lowp
@@ -49,6 +57,7 @@ export const enum VariablePrecision {
   COUNT,
 }
 
+/** @internal */
 namespace Convert {
   export function typeToString(type: VariableType): string {
     switch (type) {
@@ -91,10 +100,13 @@ namespace Convert {
  * Function invoked by ShaderVariable::AddBinding() to bind the variable to the compiled program.
  * The implementation should call ShaderProgram::AddShaderUniform or ShaderProgram::AddGraphicUniform/Attribute to register a function
  * which can be used to bind the value of the variable when program is used.
+ * @internal
  */
 export type AddVariableBinding = (prog: ShaderProgram) => void;
 
-/** Represents a variable within a fragment or vertex shader. */
+/** Represents a variable within a fragment or vertex shader.
+ * @internal
+ */
 export class ShaderVariable {
   private readonly _addBinding?: AddVariableBinding;
   public readonly name: string;
@@ -161,6 +173,7 @@ export class ShaderVariable {
 /**
  * Represents the set of variables defined and used within a fragment or vertex shader.
  * If the same variable is used in both the fragment and vertex shader (e.g., a varying variable), it should be defined in both ShaderBuilders' ShaderVariables object.
+ * @internal
  */
 export class ShaderVariables {
   public readonly list: ShaderVariable[] = new Array<ShaderVariable>();
@@ -277,7 +290,9 @@ export class ShaderVariables {
   }
 }
 
-/** Convenience API for assembling glsl source code. */
+/** Convenience API for assembling glsl source code.
+ * @internal
+ */
 export class SourceBuilder {
   public source: string = "";
 
@@ -317,6 +332,7 @@ export class SourceBuilder {
   public addMain(implementation: string): void { this.addFunction("void main()", implementation); }
 }
 
+/** @internal */
 export const enum ShaderBuilderFlags {
   // No special flags. Vertex data comes from attributes, geometry is not instanced.
   None = 0,
@@ -330,6 +346,7 @@ export const enum ShaderBuilderFlags {
 /*
  * Represents a fragment or vertex shader under construction. The shader consists of a set of defined variables,
  * plus a set of code snippets which can be concatenated together to form the shader source.
+ * @internal
  */
 export class ShaderBuilder extends ShaderVariables {
   public readonly components = new Array<string | undefined>();
@@ -415,7 +432,7 @@ export class ShaderBuilder extends ShaderVariables {
     let needMultiDrawBuffers = false;
     for (const ext of this.extensions) {
       if (ext === "GL_EXT_draw_buffers") {
-        assert(System.instance.capabilities.supportsDrawBuffers, "GL_EXT_draw_bufers unsupported");
+        assert(System.instance.capabilities.supportsDrawBuffers, "GL_EXT_draw_buffers unsupported");
         needMultiDrawBuffers = true;
       }
 
@@ -431,14 +448,13 @@ export class ShaderBuilder extends ShaderVariables {
     src.add(this.buildDeclarations());
 
     if (!isFrag) {
+      src.addline("#define MAT_NORM g_nmx");
       if (!this.usesInstancedGeometry) {
         src.addline("#define MAT_MV u_mv");
         src.addline("#define MAT_MVP u_mvp");
-        src.addline("#define MAT_NORM u_nmx");
       } else {
         src.addline("#define MAT_MV g_mv");
         src.addline("#define MAT_MVP g_mvp");
-        src.addline("#define MAT_NORM g_nmx");
       }
     } else {
       src.addline("#define FragColor gl_FragColor");
@@ -465,7 +481,9 @@ export class ShaderBuilder extends ShaderVariables {
   }
 }
 
-// Describes the optional and required components which can be assembled into complete
+/** Describes the optional and required components which can be assembled into complete
+ * @internal
+ */
 export const enum VertexShaderComponent {
   // (Optional) Adjust the result of unquantizeVertexPosition().
   // vec4 adjustRawPosition(vec4 rawPosition)
@@ -490,7 +508,9 @@ export const enum VertexShaderComponent {
   COUNT,
 }
 
-/** Assembles the source code for a vertex shader from a set of modular components. */
+/** Assembles the source code for a vertex shader from a set of modular components.
+ * @internal
+ */
 export class VertexShaderBuilder extends ShaderBuilder {
   private _computedVarying: string[] = new Array<string>();
   private _initializers: string[] = new Array<string>();
@@ -577,7 +597,9 @@ export class VertexShaderBuilder extends ShaderBuilder {
   }
 }
 
-// Describes the optional and required components which can be assembled into complete
+/** Describes the optional and required components which can be assembled into complete
+ * @internal
+ */
 export const enum FragmentShaderComponent {
   // (Optional) Return true to immediately discard this fragment.
   // bool checkForEarlyDiscard()
@@ -615,17 +637,27 @@ export const enum FragmentShaderComponent {
   // (Optional) Apply flash hilite to lit base color
   // vec4 applyFlash(vec4 baseColor)
   ApplyFlash,
+  // (Optional) Apply planar classifier.
+  // vec4 applyPlanarClassification(vec4)
+  ApplyPlanarClassifier,
+  // (Optional) Apply solar shadow map.
+  // vec4 applySolarShadowMap(vec4)
+  ApplySolarShadowMap,
   // (Optional) Apply a debug color
   // vec4 applyDebugColor(vec4 baseColor)
   ApplyDebugColor,
   // (Required) Assign the final color to gl_FragColor or gl_FragData
   // void assignFragData(vec4 baseColor)
   AssignFragData,
-
+  // (Optional) Override current featureId
+  // vec4 overrideFeatureId(vec4 currentId)
+  OverrideFeatureId,
   COUNT,
 }
 
-/** Assembles the source code for a fragment shader from a set of modular components. */
+/** Assembles the source code for a fragment shader from a set of modular components.
+ * @internal
+ */
 export class FragmentShaderBuilder extends ShaderBuilder {
   public maxClippingPlanes: number = 0;
 
@@ -674,6 +706,16 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       main.addline("  baseColor = applyMaterialOverrides(baseColor);");
     }
 
+    const applyPlanarClassifier = this.get(FragmentShaderComponent.ApplyPlanarClassifier);
+    if (undefined !== applyPlanarClassifier) {
+      prelude.addFunction("vec4 applyPlanarClassifications(vec4 baseColor)", applyPlanarClassifier);
+      main.addline("  baseColor = applyPlanarClassifications(baseColor);");
+    }
+    const applySolarShadowMap = this.get(FragmentShaderComponent.ApplySolarShadowMap);
+    if (undefined !== applySolarShadowMap) {
+      prelude.addFunction("vec4 applySolarShadowMap(vec4 baseColor)", applySolarShadowMap);
+      main.addline("  baseColor = applySolarShadowMap(baseColor);");
+    }
     const applyFeatureColor = this.get(FragmentShaderComponent.ApplyFeatureColor);
     if (undefined !== applyFeatureColor) {
       prelude.addFunction("vec4 applyFeatureColor(vec4 baseColor)", applyFeatureColor);
@@ -744,7 +786,9 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   }
 }
 
-/** A collection of shader programs with clipping that vary based on the max number of clipping planes each supports. */
+/** A collection of shader programs with clipping that vary based on the max number of clipping planes each supports.
+ * @internal
+ */
 export class ClippingShaders {
   public builder: ProgramBuilder;
   public shaders: ShaderProgram[] = [];
@@ -760,10 +804,13 @@ export class ClippingShaders {
     assert(this.maskShader !== undefined);
   }
 
-  private static roundUpToNearesMultipleOf(value: number, factor: number): number {
+  public compileShaders(): boolean {
+    return undefined === this.maskShader || this.maskShader.compile();
+  }
+
+  private static roundUpToNearestMultipleOf(value: number, factor: number): number {
     const maxPlanes = Math.ceil(value / factor) * factor;
-    assert(maxPlanes > 0);
-    assert(maxPlanes <= value);
+    assert(maxPlanes >= value);
     return maxPlanes;
   }
 
@@ -775,9 +822,9 @@ export class ClippingShaders {
     else if (minPlanes <= 6)
       return 6;           // cuboid volume
     else if (minPlanes <= 120)
-      return this.roundUpToNearesMultipleOf(minPlanes, 20);
+      return this.roundUpToNearestMultipleOf(minPlanes, 20);
     else
-      return this.roundUpToNearesMultipleOf(minPlanes, 50);
+      return this.roundUpToNearestMultipleOf(minPlanes, 50);
   }
 
   public getProgram(clipDef: ClipDef): ShaderProgram | undefined {
@@ -801,6 +848,7 @@ export class ClippingShaders {
   }
 }
 
+/** @internal */
 export const enum ShaderType {
   Fragment = 1 << 0,
   Vertex = 1 << 1,
@@ -810,6 +858,7 @@ export const enum ShaderType {
 /**
  * Assembles vertex and fragment shaders from a set of modular components to produce a compiled ShaderProgram.
  * Be very careful with components which use samplers to ensure that no conflicts exist with texture units used by other components (see TextureUnit enum).
+ * @internal
  */
 export class ProgramBuilder {
   public readonly vert: VertexShaderBuilder;

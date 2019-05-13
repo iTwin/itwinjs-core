@@ -36,7 +36,9 @@ export interface GeometryAppearanceProps {
   transparency?: number;
   /** Optional display priority (2d only), 0 if undefined. Effective display priority is a combination of this value and [[SubCategoryAppearance.priority]]. */
   displayPriority?: number;
-  /** Optional GeometryClass (for DGN compatibility, subCategories preferred), [[GeometryClass.Primary]] if undefined. */
+  /** Optional GeometryClass (for DGN compatibility, subCategories preferred), [[GeometryClass.Primary]] if undefined.
+   * @alpha
+   */
   geometryClass?: GeometryClass;
 }
 
@@ -54,7 +56,9 @@ export interface AreaFillProps {
   backgroundFill?: BackgroundFill;
   /** Set fill color to a specific color. If the fill color the same as the line color, it is an opaque fill, otherwise it is an outline fill */
   color?: ColorDefProps;
-  /** Set fill using gradient properties */
+  /** Set fill using gradient properties
+   * @beta
+   */
   gradient?: Gradient.SymbProps;
 }
 
@@ -65,18 +69,18 @@ export interface AreaFillProps {
 export interface MaterialProps {
   /** Material id to use, specify an invalid [[Id64]] to override [[SubCategoryAppearance.materialId]] with no material. */
   materialId?: Id64String;
-  /** @hidden */
+  /** @internal */
   origin?: XYZProps;
-  /** @hidden */
+  /** @internal */
   size?: XYZProps;
-  /** @hidden */
+  /** @internal */
   rotation?: YawPitchRollProps;
 }
 
 /** @beta */
 export namespace BRepEntity {
   /** Enum for type of solid kernel entity this represents */
-  export const enum Type {
+  export enum Type {
     /** Body consisting of at least one solid region */
     Solid = 0,
     /** Body consisting of connected sets of faces having edges that are shared by a maximum of two faces */
@@ -137,6 +141,7 @@ export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   material?: MaterialProps;
   geomPart?: GeometryPartInstanceProps;
   textString?: TextStringProps;
+  /** @beta */
   brep?: BRepEntity.DataProps;
   subRange?: LowAndHighXYZ;
 }
@@ -304,7 +309,9 @@ export class GeometryStreamBuilder {
     return true;
   }
 
-  /** Append [[BRepEntity.DataProps]] supplied in either local or world coordinates to the [[GeometryStreamProps]] array */
+  /** Append [[BRepEntity.DataProps]] supplied in either local or world coordinates to the [[GeometryStreamProps]] array
+   * @beta
+   */
   public appendBRepData(brep: BRepEntity.DataProps): boolean {
     if (undefined === this._worldToLocal) {
       this.geometryStream.push({ brep });
@@ -323,7 +330,7 @@ export class GeometryStreamBuilder {
   }
 }
 
-/** Hold current state information for [[GeometryStreamIterator]]
+/** Holds current state information for [[GeometryStreamIterator]]
  * @public
  */
 export class GeometryStreamIteratorEntry {
@@ -341,7 +348,9 @@ export class GeometryStreamIteratorEntry {
   public geometryQuery?: GeometryQuery;
   /** Current iterator entry is a [[TextString]] when textString is not undefined */
   public textString?: TextString;
-  /** Current iterator entry is a [[BRepEntity.DataProps]] when brep is not undefined */
+  /** Current iterator entry is a [[BRepEntity.DataProps]] when brep is not undefined
+   * @beta
+   */
   public brep?: BRepEntity.DataProps;
 
   public constructor(category?: Id64String) {

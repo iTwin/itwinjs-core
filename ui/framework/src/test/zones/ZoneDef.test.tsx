@@ -21,7 +21,7 @@ describe("ZoneDef", () => {
     expect(zoneDef.applicationData).to.be.undefined;
     expect(zoneDef.widgetDefs).to.have.lengthOf(1);
     expect(zoneDef.widgetCount).to.eq(1);
-    expect(zoneDef.getOnlyWidgetDef()).to.not.be.undefined;
+    expect(zoneDef.getSingleWidgetDef()).to.not.be.undefined;
     expect(zoneDef.isToolSettings).to.be.false;
     expect(zoneDef.isStatusBar).to.be.false;
     expect(zoneDef.allowsMerging).to.be.false;
@@ -47,7 +47,7 @@ describe("ZoneDef", () => {
     expect(zoneDef.allowsMerging).to.be.true;
   });
 
-  it("addWidgetDef, widgetDefs & getOnlyWidgetDef", () => {
+  it("addWidgetDef, widgetDefs & getSingleWidgetDef", () => {
     const zoneDef = new ZoneDef();
     zoneDef.zoneState = ZoneState.Open;
     zoneDef.allowsMerging = false;
@@ -64,7 +64,7 @@ describe("ZoneDef", () => {
     }));
 
     expect(zoneDef.widgetDefs).to.have.lengthOf(2);
-    expect(zoneDef.getOnlyWidgetDef()).to.be.undefined;
+    expect(zoneDef.getSingleWidgetDef()).to.be.undefined;
     expect(zoneDef.isToolSettings).to.be.false;
     expect(zoneDef.isStatusBar).to.be.false;
     expect(zoneDef.findWidgetDef("IdTest")).to.not.be.undefined;

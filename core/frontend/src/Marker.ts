@@ -13,10 +13,18 @@ import { BeButtonEvent } from "./tools/Tool";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { ToolTipOptions } from "./NotificationManager";
 
-/** The types that may be used  */
+/** The types that may be used for Markers
+ * @public
+ */
 export type MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap;
+
+/** @public */
 export type MarkerFillStyle = string | CanvasGradient | CanvasPattern;
+
+/** @public */
 export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
+
+/** @public */
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
 /** A Marker is a [[CanvasDecoration]], whose position follows a fixed location in world space.
@@ -240,14 +248,14 @@ export class Cluster<T extends Marker> {
   }
 }
 
-/** A *set* of Markers that are logically related, such that they *cluster* when they overlap. In that case, a *cluster marker*
- * is drawn instead of the overlapping Markers.
+/** A *set* of Markers that are logically related, such that they *cluster* when they overlap one another in screen space.
+ * In that case, a *cluster marker* is drawn instead of the overlapping Markers.
  * @public
  */
 export abstract class MarkerSet<T extends Marker> {
-  /** @hidden */
+  /** @internal */
   protected _entries: Array<T | Cluster<T>> = []; // this is an array that holds either Markers or a cluster of markers.
-  /** @hidden */
+  /** @internal */
   protected readonly _worldToViewMap = Matrix4d.createZero();
 
   /** The minimum number of Markers that must overlap before they are clustered. Otherwise they are each drawn individually. Default is 1 (always create a cluster.) */
@@ -299,7 +307,7 @@ export abstract class MarkerSet<T extends Marker> {
       }
     }
 
-    // we now have an arry of Markers and Clusters, add them to context
+    // we now have an array of Markers and Clusters, add them to context
     for (const entry of entries) {
       if (entry instanceof Cluster) { // is this entry a Cluster?
         if (entry.markers.length <= this.minimumClusterSize) { // yes, does it have more than the minimum number of entries?

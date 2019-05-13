@@ -1,6 +1,21 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Adds parameter for api-extractor to validate missing release tags
+- Fix broken links
+- Put sourcemap in npm package.
+- Fix creating a KeySet from EntityProps which have a `type` property
+- Fix marshaling class instances through RPC by removing use of Readonly
+- Add APIs to retrieve instance labels
+- Changed `PresentationRpcInterface.computeSelection` to take `Id64String[]` instead of `EntityProps[]`
+- Allow sending content descriptor overrides instead of descriptor when requesting content. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content
+- Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -18,7 +33,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Added RpcResponse and PresentationRpcResponse interfaces and changed PresentationRpcInterface to return PresentationRpcResponses instead of raw values.
 - Use new buildIModelJsBuild script
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Create RulesetFactory API for creating presentation rulesets targeted towards specific cases, like 'find similar', etc.
 - Save BUILD_SEMVER to globally accessible map
 - Change `RulesetsFactory.createSimilarInstancesRuleset` return type from a `Ruleset` to `{ ruleset: Ruleset, description: string }`

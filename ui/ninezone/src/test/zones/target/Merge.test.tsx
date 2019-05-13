@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Merge } from "../../../ui-ninezone";
+import { MergeTarget } from "../../../ui-ninezone";
 
-describe("<Merge />", () => {
+describe("<MergeTarget />", () => {
   it("should render", () => {
-    mount(<Merge />);
+    mount(<MergeTarget />);
   });
 
   it("renders correctly", () => {
-    shallow(<Merge />).should.matchSnapshot();
+    shallow(<MergeTarget />).should.matchSnapshot();
   });
 });

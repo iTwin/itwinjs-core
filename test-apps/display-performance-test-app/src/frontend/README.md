@@ -21,10 +21,12 @@ The default configuration file allows you to specify the following:
 * what you want the test file(s) created to be named
 * where the imodels you want to use are located (i.e. using a local file path or using the iModelHub)
 * what size you want the view screen to be
-* what type of test you wish to perform (either a timing test or saving an image of what has been rendered)
+* what type of test you wish to perform: timing, image, both, or readPixels (timing - take timing data from a renderFrame call; image - save an image of what has been rendered; both - take normal timing data from a renderFrame call and save an image; readPixels - take timing data from a readPixels call & save 3 images contining visual representations of the element Ids, type/order, and distance/depth)
 * what models to use for testing
 * what display style to use
 * what view flags to use
+* what render options to use
+* what tile admin properties to use
 
 The types of view flags that can be specified are as follows:
 * renderMode
@@ -49,6 +51,9 @@ The types of view flags that can be specified are as follows:
 * backgroundMap
 * hLineMaterialColors
 * edgeMask
+
+The types of render options that can be specified are as follows:
+* disabledExtensions - This should contain an array of all the WebGL extensions that you wish to disable. The program will restart the IModelApp every time this value changes, to ensure that the render system is changed appropriately (so it is better to group things that use the same render options). The extensions that may be disabled are found in WebGLExtensionName, and they currently include the following: "WEBGL_draw_buffers", "OES_element_index_uint", "OES_texture_float", "OES_texture_half_float", "WEBGL_depth_texture", "EXT_color_buffer_float", "EXT_shader_texture_lod", and "ANGLE_instanced_arrays".
 
 If any settings are not specified, the program will not change these settings. For example: if no view flags were specified, the program will not specifically alter the view flags. (though the view flags may be altered depending on what settings the chosen view has applied or if a specific display style has been chosen that affects the view flags).
 
@@ -78,6 +83,16 @@ Below is an example json config file:
         {
           "testType": "timing",
           "viewName": "V0",
+          "renderOptions": {
+		      "disabledExtensions": ["WEBGL_draw_buffers", "OES_texture_half_float"]
+		      },
+          "tileProps": {
+            "disableThrottling": false,
+            "elideEmptyChildContentRequests": false,
+            "enableInstancing": true,
+            "maxActiveRequests": 15,
+            "retryInterval": 5
+          },
           "viewFlags": {
             "renderMode": "SmoothShade",
             "dimensions": true,
@@ -121,7 +136,7 @@ Below is an example json config file:
         "width": 500,
         "height": 500
       },
-      "testType": "image"
+      "testType": "image",
       "tests": [
         {
           "viewName": "V0",
@@ -135,6 +150,28 @@ Below is an example json config file:
         },
         {
           "viewName": "V1",
+          "viewFlags": {
+            "renderMode": "Wireframe"
+          }
+        }
+      ]
+    },
+    {
+      "outputPath": "D:/output/performanceData/",
+      "view": {
+        "width": 100,
+        "height": 500
+      },
+      "testType": "readPixels",
+      "tests": [
+        {
+          "iModelName": "Wraith.ibim",
+          "viewName": "V0",
+          "displayStyle": "Smooth"
+        },
+        {
+          "iModelName": "Wraith_MultiMulti.ibim",
+          "viewName": "V0",
           "viewFlags": {
             "renderMode": "Wireframe"
           }
@@ -154,8 +191,10 @@ The performance data file should always contain the following column headers:
 * Display Style - the name of the display style used
 * Render Mode - the name of the render mode used
 * View Flags - a string representation of view flag specifications that differ from those defaults found in the ViewFlags class
+* Disabled Exts - a string representation of all the WebGL extensions that have been disabled
 
 The performance data file may also contain any or all of the following column headers:
+* ReadPixels Selector - a string representation of the Pixel.Selector used in the readPixels call; this will be blank if readPixels is not called
 * Tile Loading Time - the time it takes to load all of the tiles for this model (in ms)
 * Scene Time - the time it takes to load the scene, i.e. the time it takes to do everything in the renderFrame() function except for the drawFrame() call (in ms)
 * Begin Paint - the time it takes to call the _beginPaint() function (in ms)
@@ -171,10 +210,10 @@ The performance data file may also contain any or all of the following column he
 * Composite - the time it takes to call the composite() function (in ms)
 * Overlay Draws - the time it takes to finish the compositor.draw() function until you finish the decorations (in ms); this includes the Compositor's _target.popActiveVolume() function, the _stack.pushState() function, the drawPass() function for WorldOverlay and ViewOverlay, and the _stack.pop() function
 * End Paint - the time it takes to call the _endPaint() function
-* Total RenderFrame Time - the time it takes to call everything in the renderFrame() function (in ms); this is the sum of all of the previous times (excluding the Tile Loading Time)
+* Total Render Time - the time it takes to render everything (in ms); this is the sum of all of the previous times (excluding the Tile Loading Time); if you are running a 'timing' test, this value is the time it takes to call everything in the renderFrame() function; if you are running a 'readPixels' test, this value is the time it takes to render the stuff that you will then read when calling the SceneCompositor's readPixels() function
 * Finish GPU Queue - the time it takes to call the gl.readPixels() function (in ms); i.e. the time it takes the GPU to finish all of the tasks currently in its queue
-* Total Time w/ GPU - the time it takes to call everything in the renderFrame() function and for the GPU to finish all of the tasks currently in its queue (in ms); i.e. the sum of the 'Total RenderFrame Time' and the 'Finish GPU Queue' times
-* Effective FPS - the average effective FPS (frames per second) value based on the calculated 'total time w/ gpu'. Keep in mind that this is the FPS rate when forcing the GPU to finish all of it's current tasks before the CPU recieves the next frame to draw. Therefore, the actual FPS value when running the program outside of this testing environment may be slightly different (it should generally be faster, as the CPU normally starts rendering the next frame while the GPU finishes up; however, it may be slower if the rendering system intentionally throttles back the fps to a set maximum--for example, 60fps)
+* Total Time - The sum of 'Total Render Time', 'Finish GPU Queue', and 'Read Pixels' (in ms); 'Read Pixels' will be 0 if you are running a 'timing' test, as it will not call the readPixels function
+* Effective FPS - the average effective FPS (frames per second) value based on the calculated 'total time w/ gpu'. Keep in mind that this is the FPS rate when forcing the GPU to finish all of it's current tasks either before the CPU recieves the next frame to draw (if running a 'timing' test) or before the SceneCompositor's readPixels function is called (if running a 'readPixels' test). Therefore, the actual FPS value when running the program outside of this testing environment may be slightly different (it should generally be faster, as the CPU normally starts rendering the next frame while the GPU finishes up; however, it may be slower if the rendering system intentionally throttles back the fps to a set maximum--for example, 60fps)
 
 The 'View Flags' column contains a string representation of view flag specifications that differ from those defaults found in the ViewFlags class. This string representation may consist of any or all of the following:
 * -dim  - dimensions are hidden
@@ -199,3 +238,18 @@ The 'View Flags' column contains a string representation of view flag specificat
 * +hln  - use material colors for hidden lines
 * +genM - generate mask (i.e. edgeMask view flag was set to 1)
 * +useM - use mask (i.e. edgeMask view flag was set to 2)
+
+The 'Disabled Exts' column contains a string representation of the WebGL extensions that have been disabled. This string representation may consist of any or all of the following:
+* -drawBuf      - WEBGL_draw_buffers has been disabled, so the fragment shader will not be able to write to several textures
+* -unsignedInt  - OES_element_index_uint has been disabled, so gl.UNSIGNED_INT will not be supported for WebGLRenderingContext.drawElements()
+* -texFloat     - OES_texture_float has been disabled, so floating-point pixel types for textures will not be exposed
+* -texHalfFloat - OES_texture_half_float has been disabled, so texture formats with 16- (aka half float) and 32-bit floating-point components will not be available
+* -depthTex     - WEBGL_depth_texture has been disabled, so 2D depth and depth-stencil textures will not be defined
+* -float        - EXT_color_buffer_float has been disabled, so the ability to render a variety of floating point formats will not be available
+* -texLoad      - EXT_shader_texture_lod has been disabled, so additional texture functions to the OpenGL ES SHading Language which provide the shader writer with explicit control of LOD (Loevel of detail) will not be available
+* -instArrays   - ANGLE_instanced_arrays has been disabled, so the program will not be allowed to draw the same object or groups of similar objects multiple times, even if they share the same vertex data, primitive count, and type
+
+The 'ReadPixels Selector' column contains a string representation of the Pixel.Selector that has been chosen for the readPixels call. The column entry will be blank if readPixels was not tested. The string representation may be any of the following:
+* +feature - Pixel.Selector.Feature is used; this reads the feature information for each pixel
+* *geom+dist - Pixel.Selector.GeometryAndDistance is used; this reads the geometry information (i.e. if an element is linear, planar, surface, etc.) and the distance (i.e. depth) information
+* +feature+geom+dist - Pixel.Selector.All is used; this reads both the Feature and the GeometryAndDistance information

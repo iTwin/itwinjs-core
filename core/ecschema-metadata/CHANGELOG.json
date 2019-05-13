@@ -2,6 +2,39 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/ecschema-metadata_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add XmlParser for direct consumption of Xml Schemas"
+          },
+          {
+            "comment": "Adds parameter for api-extractor to validate missing release tags"
+          },
+          {
+            "comment": "Adds ignoreMissingTags flag"
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
+          },
+          {
+            "comment": "Added ability to suppress rule violations from being reported during schema validation."
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          },
+          {
+            "comment": "Updated BIS and EC schema validation documentation and adjusted diagnostic codes to match documentation."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/ecschema-metadata_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",

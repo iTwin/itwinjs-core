@@ -30,16 +30,17 @@ export interface ExportGraphicsInfo {
   elementId: Id64String;
   /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
   color: number;
+  /** If defined, ID for the [Texture]($imodeljs-backend) for these graphics  */
+  textureId?: Id64String;
   /** The mesh for these graphics */
   mesh: ExportGraphicsMesh;
 }
 
 /** A callback function that receives generated graphics.
- * Return true to continue exporting graphics or false to abort.
  * See [IModelDb.exportGraphics]($imodeljs-backend)
  * @beta Waiting for feedback from community before finalizing.
  */
-export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => boolean;
+export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
 /** Parameters for [IModelDb.exportGraphics]($imodeljs-backend)
  * @beta Waiting for feedback from community before finalizing.
@@ -47,7 +48,7 @@ export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => boolean;
 export interface ExportGraphicsProps {
   /** The source elements for the exported graphics */
   elementIdArray: Id64Array;
-  /** A function to call for each unique element ID and color combination */
+  /** A function to call for each unique element ID, color and texture combination */
   onGraphics: ExportGraphicsFunction;
   /** Max distance from a face to the original geometry, see [StrokeOptions]($geometry-core) */
   chordTol?: number;

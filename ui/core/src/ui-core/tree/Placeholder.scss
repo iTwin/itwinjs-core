@@ -10,11 +10,11 @@
   display: block;
   box-sizing: border-box;
   height: 24px;
-  margin-left: $uicore-l;
   padding-top: 3px;
   padding-bottom: 3px;
   > .contents {
+    margin-left: 24px; // offset for expander
     height: 18px;
-    background-color: $buic-background-control;
+    background-color: $buic-background-placeholder;
   }
 }

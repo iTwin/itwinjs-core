@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
 import { Footer } from "../../ui-ninezone";
 
 describe("<Footer />", () => {
@@ -14,5 +13,9 @@ describe("<Footer />", () => {
 
   it("renders correctly", () => {
     shallow(<Footer />).should.matchSnapshot();
+  });
+
+  it("renders correctly in footer mode", () => {
+    shallow(<Footer isInFooterMode />).should.matchSnapshot();
   });
 });

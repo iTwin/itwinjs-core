@@ -3,11 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { utf8ToString } from "../bentleyjs-core";
+import { utf8ToString, utf8ToStringPolyfill } from "../bentleyjs-core";
 
 function expectString(utf8: number[], expected: string) {
   const bytes = new Uint8Array(utf8);
-  const result = utf8ToString(bytes);
+  let result = utf8ToString(bytes);
+  expect(result).not.to.be.undefined;
+  expect(result).to.equal(expected);
+
+  result = utf8ToStringPolyfill(bytes);
   expect(result).not.to.be.undefined;
   expect(result).to.equal(expected);
 }
@@ -15,6 +19,7 @@ function expectString(utf8: number[], expected: string) {
 function expectUndefined(utf8: number[]) {
   const bytes = new Uint8Array(utf8);
   expect(utf8ToString(bytes)).to.be.undefined;
+  expect(utf8ToStringPolyfill(bytes)).to.be.undefined;
 }
 
 describe("utf8ToString", () => {

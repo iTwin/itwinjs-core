@@ -1,6 +1,31 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Adds parameter for api-extractor to validate missing release tags
+- Allowed setup of global Request timeouts. 
+- Added initial iModelHub Checkpoint API.
+- Added 'query' method for Config, which combines the functions of 'has' and 'get'
+- Fix broken links
+- LoggerCategory -> ClientsLoggerCategory
+- Enhance Config so that it can contain nested properties - used by Design Review
+- add support for imodelbank use in clients-backend
+- Introduce LoggerCategory enum to advertise logger categories used by this package.
+- Put sourcemap in npm package.
+- Fixes to OidcBrowserClient. 
+- Added Reality Data creation/delete/update and relationship support.
+- remove .only from test
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s. 
+- Upgrade TypeDoc dependency to 0.14.2
+- add sessionId to usage logging
+- remove redundant usage and feature log properties
+- VSTS#114189 Reality data shown as Model and picker
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -20,7 +45,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Use new buildIModelJsBuild script
 - Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package. 
 - Fixed expansion of config variables. 
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Fix error parsing
 - Documentation improvements
 - Create iModel from empty template if seed file path not defined.

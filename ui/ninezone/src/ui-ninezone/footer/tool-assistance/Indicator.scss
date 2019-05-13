@@ -6,70 +6,45 @@
 @import "../_variables";
 
 .nz-footer-toolAssistance-indicator {
-  $indicator-height: 30px;
-  $margin-from-triangle-to-stroke: 2px;
   $triangle-width: 5px;
-  $padding-ltb: $margin-from-triangle-to-stroke;
-  $padding-r: $margin-from-triangle-to-stroke * 2 + $triangle-width;
+  $padding: 2px;
 
-  height: 100%;
-  display: flex;
-  align-items: center;
-  position: relative;
-  padding-left: $nz-footer-indicator-horizontal-padding;
-  padding-right: $nz-footer-indicator-horizontal-padding;
-  color: $buic-foreground-body;
-
-  /* small devices (phones, 600px and down) */
-  @media only screen and (max-width: 600px) {
-    padding-left: $nz-footer-indicator-horizontal-padding-small;
-    padding-right: $nz-footer-indicator-horizontal-padding-small;
-  }
-
-  /* Medium devices (landscape tablets, 768px and up) */
-  @media only screen and (max-width: 768px) {
-    padding-left: $nz-footer-indicator-horizontal-padding-medium;
-    padding-right: $nz-footer-indicator-horizontal-padding-medium;
-  }
-
-  >.nz-indicator {
-    height: $indicator-height;
+  > .nz-indicator {
+    height: 30px;
     border: 2px solid $buic-foreground-body;
     min-width: 20px;
     position: relative;
-    padding-left: $padding-ltb;
-    padding-top: $padding-ltb;
-    padding-bottom: $padding-ltb;
-    padding-right: $padding-r;
+    padding: {
+      top: $padding;
+      right: $padding * 2 + $triangle-width;
+      bottom: $padding;
+      left: $padding;
+    };
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     cursor: pointer;
-    box-sizing: border-box;
-    color: $buic-foreground-body;
 
-    >.nz-icons {
+    > .nz-icons {
       color: $icon-color;
       font-size: $icon-size;
       filter: $icon-shadow;
+      display: flex;
+      align-items: center;
     }
 
-    >.nz-step-string {
+    > .nz-content {
       margin-left: 10px;
-      display: none;
       font-size: $text-font-size;
-
-      &.nz-is-visible {
-        display: block;
-      }
     }
 
-    >.nz-triangle {
+    > .nz-triangle {
       position: absolute;
-      right: $margin-from-triangle-to-stroke;
-      bottom: $margin-from-triangle-to-stroke;
+      right: $padding;
+      bottom: $padding;
       filter: $icon-shadow;
 
-      @include triangle-bottom-right($width: $triangle-width, $color: $text-font-color);
+      @include triangle-bottom-right($width: $triangle-width, $color: $buic-foreground-body);
     }
   }
 }

@@ -4,10 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Geometry */
 
-import { Angle, Point3d, Vector3d, XYZ, XYAndZ, Range1d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
+import { Angle, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ } from "@bentley/geometry-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
+
+/** @public */
 export interface LatAndLong { longitude: number; latitude: number; }
+
+/** @public */
 export interface LatLongAndHeight extends LatAndLong { height: number; }
 
 /** A position on the earth defined by longitude, latitude, and height above the WSG84 ellipsoid.
@@ -21,8 +25,7 @@ export class Cartographic implements LatLongAndHeight {
    */
   constructor(public longitude: number = 0, public latitude: number = 0, public height: number = 0) { }
 
-  /**
-   * Create a new Cartographic from longitude and latitude specified in radians.
+  /** Create a new Cartographic from longitude and latitude specified in radians.
    * @param longitude longitude, in radians.
    * @param latitude latitude, in radians.
    * @param height The height, in meters, above the ellipsoid.
@@ -38,9 +41,7 @@ export class Cartographic implements LatLongAndHeight {
     return result;
   }
 
-  /**
-   * Create a new Cartographic from longitude and latitude specified in degrees. The values in the resulting object will
-   * be in radians.
+  /** Create a new Cartographic from longitude and latitude specified in degrees. The values in the resulting object will be in radians.
    * @param longitude longitude, in degrees.
    * @param latitude latitude, in degrees.
    * @param height The height, in meters, above the ellipsoid.
@@ -50,9 +51,7 @@ export class Cartographic implements LatLongAndHeight {
     return Cartographic.fromRadians(Angle.degreesToRadians(longitude), Angle.degreesToRadians(latitude), height, result);
   }
 
-  /**
-   * Create a new Cartographic from longitude and latitude in [Angle]($geometry)s. The values in the resulting object will
-   * be in radians.
+  /** Create a new Cartographic from longitude and latitude in [Angle]($geometry)s. The values in the resulting object will be in radians.
    * @param longitude longitude.
    * @param latitude latitude.
    * @param height The height, in meters, above the ellipsoid.
@@ -72,8 +71,7 @@ export class Cartographic implements LatLongAndHeight {
   private static _scratchN = new Vector3d();
   private static _scratchK = new Vector3d();
 
-  /**
-   * Creates a new Cartographic from an [ECEF](https://en.wikipedia.org/wiki/ECEF) position.
+  /** Creates a new Cartographic from an [ECEF](https://en.wikipedia.org/wiki/ECEF) position.
    * @param cartesian The position, in ECEF, to convert to cartographic representation.
    * @param [result] The object onto which to store the result.
    * @returns The modified result parameter, new Cartographic instance if none was provided, or undefined if the cartesian is at the center of the ellipsoid.
@@ -317,8 +315,7 @@ export class CartographicRange {
     return false;
   }
 
-  /**
-   * This method returns the raw latitude / longitude for the range in a Range2d object.
+  /** This method returns the raw latitude / longitude for the range in a Range2d object.
    * The X value represents the longitude and the Y value the latitudes.
    * Y values are kepts conscribed between -PI and +PI while
    * longitude values can be expressed in any range between -2PI to +2PI

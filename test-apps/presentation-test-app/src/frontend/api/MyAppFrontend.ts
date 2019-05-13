@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, OpenMode, Guid } from "@bentley/bentleyjs-core";
+import { Logger, Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
@@ -18,7 +18,7 @@ export class MyAppFrontend {
   }
 
   public static async openIModel(path: string): Promise<IModelConnection> {
-    this.iModel = await IModelConnection.openStandalone(path, OpenMode.Readonly);
+    this.iModel = await IModelConnection.openSnapshot(path);
     Logger.logInfo("presentation", "Opened: " + this.iModel.name);
     return this.iModel;
   }

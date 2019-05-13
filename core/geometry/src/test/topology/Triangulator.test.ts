@@ -24,7 +24,6 @@ import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GraphChecker } from "./Graph.test";
 import { HalfEdgeMask } from "../../topology/Graph";
-import { prettyPrint } from "../testFunctions";
 
 function rotateArray(data: Point3d[], index0: number) {
   const out = [];
@@ -38,7 +37,7 @@ describe("Triangulation", () => {
 
   it("TriangulateLoops", () => {
     let yShift = 0;
-    const dx = 20.0;
+    const dx = 40.0;
     const dy = 30.0;
     const allGeometry: GeometryQuery[] = [];
     for (const myLoops of [
@@ -68,8 +67,18 @@ describe("Triangulation", () => {
       // rectangle with 2 holes, duplicate points here and there
       [[Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)],
       [Point3d.create(1, 1, 0), Point3d.create(2, 2, 0), Point3d.create(2, 1, 0), Point3d.create(2, 1, 0)],
-      [Point3d.create(3, 1.5, 0), Point3d.create(4, 3, 0), Point3d.create(4, 1.5, 0), Point3d.create(3, 1.5, 0)]]]) {
+      [Point3d.create(3, 1.5, 0), Point3d.create(4, 3, 0), Point3d.create(4, 1.5, 0), Point3d.create(3, 1.5, 0)]],
+      Sample.createStarsInStars(11, 8, 5, 2, 1, 4, 3, 3, false),
+      Sample.createStarsInStars(10, 10, 2, 2, 2, 4, 3, 3, false),
+      Sample.createStarsInStars(14, 8, 6, 2, 0.4, 5, 3, 4, false)]) {
+
       let xShift = 0;
+      for (const loop of myLoops) {
+        const g = LineString3d.create(loop);
+        g.tryTranslateInPlace(xShift, yShift, 0);
+        allGeometry.push(g);
+      }
+      xShift += dx;
       // triangulate and flip in the outer loop only . . .
       const graph1 = Triangulator.createTriangulatedGraphFromSingleLoop(myLoops[0]);
       const unflippedOuter = PolyfaceBuilder.graphToPolyface(graph1);
@@ -215,9 +224,6 @@ describe("MonotoneFaces", () => {
       // Sample.creatVerticalStaggerPolygon(7, 0, 0, -6, ax, ay, -0.5, 0),
     ]) {
       const segmentA = Sample.convertPointsToSegments(loopA);
-      console.log("hello");
-      const s = prettyPrint(loopA);
-      console.log("loopA", s);
       testGraphFromSegments(ck, id * 30, segmentA, true, "LoopA" + id++, false);
     }
     expect(ck.getNumErrors()).equals(0);
@@ -279,7 +285,7 @@ describe("MonotoneFaces", () => {
 });
 
 describe("Triangulation", () => {
-  it("LargeCountTriangulation", () => {
+  it("TriangulateFractals", () => {
     const baseVectorA = Vector3d.create(0, 0, 0);
     const allGeometry = [];
     // REMARK
@@ -304,32 +310,36 @@ describe("Triangulation", () => {
           Sample.createFractalLReversingPatterh,
           Sample.createFractalHatReversingPattern,
           Sample.createFractalLMildConcavePatter]) {
-          const points = generatorFunction(numRecursion, perpendicularFactor);
-          const range = Range3d.createArray(points);
-          const dy = range.yLength();
-          yMax = Math.max(yMax, dy);
-          const transform = Transform.createTranslation(baseVectorB);
-          transform.multiplyPoint3dArray(points, points);
-          baseVectorB.addInPlace(Vector3d.create(2 * range.xLength(), 0, 0));
-          allGeometry.push(Loop.create(LineString3d.create(points)));
-          const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
-          if (graph) {
-            const pfA = PolyfaceBuilder.graphToPolyface(graph);
-            pfA.tryTranslateInPlace(0, 2.0 * dy, 0);
-            allGeometry.push(pfA);
-            Triangulator.flipTriangles(graph);
-            const pfB = PolyfaceBuilder.graphToPolyface(graph);
-            pfB.tryTranslateInPlace(0, 4.0 * dy, 0);
-            allGeometry.push(pfB);
+          for (const degrees of [0, 10, 79]) {
+            const points = generatorFunction(numRecursion, perpendicularFactor);
+            const transform0 = Transform.createFixedPointAndMatrix(points[0], Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
+            transform0.multiplyPoint3dArrayInPlace(points);
+            const range = Range3d.createArray(points);
+            const dy = range.yLength();
+            yMax = Math.max(yMax, dy);
+            const transform = Transform.createTranslation(baseVectorB);
+            transform.multiplyPoint3dArray(points, points);
+            baseVectorB.addInPlace(Vector3d.create(2 * range.xLength(), 0, 0));
+            allGeometry.push(Loop.create(LineString3d.create(points)));
+            const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+            if (graph) {
+              const pfA = PolyfaceBuilder.graphToPolyface(graph);
+              pfA.tryTranslateInPlace(0, 2.0 * dy, 0);
+              allGeometry.push(pfA);
+              Triangulator.flipTriangles(graph);
+              const pfB = PolyfaceBuilder.graphToPolyface(graph);
+              pfB.tryTranslateInPlace(0, 4.0 * dy, 0);
+              allGeometry.push(pfB);
+            }
           }
+          baseVectorA.addInPlace(Vector3d.create(0, 8.0 * yMax, 0));
         }
-        baseVectorA.addInPlace(Vector3d.create(0, 8.0 * yMax, 0));
       }
       baseVectorA.x += 100;
       baseVectorA.y = 0.0;
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "LargeCountTriangulation");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "TriangulateFractals");
   });
   /* These cases had problems -- but maybe only due to bad input?
     it.only("ProblemTriangulation", () => {

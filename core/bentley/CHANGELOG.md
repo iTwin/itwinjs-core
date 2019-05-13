@@ -1,6 +1,25 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Adds parameter for api-extractor to validate missing release tags
+- Add a Dictionary-based least-recently-used cache.
+- Fix broken links
+- LoggerCategory -> BentleyLoggerCategory
+- Logged the fields in ClientRequestContext
+- Logging fixes. 
+- Put sourcemap in npm package.
+- Fixed logger to not mutate incoming objects. 
+- Improved performance logging
+- Added functions for iterating and obtaining the number of elements of a collection of Id64s represented as an Id64Arg.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Use TextDecoder to decode binary utf-8 strings if supported.
+- Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -15,7 +34,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
 - Add release tags to indicate API stability
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Save BUILD_SEMVER to globally accessible map
 - upgrade to TypeScript 3.2.2
 

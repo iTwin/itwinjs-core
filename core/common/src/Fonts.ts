@@ -7,7 +7,7 @@
 /** The type of a font.
  * @public
  */
-export const enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
+export enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
 
 /** The properties of a Font. This includes a iModel local id, the font type, and the font name.
  * @public

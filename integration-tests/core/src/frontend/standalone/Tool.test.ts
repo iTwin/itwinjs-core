@@ -14,10 +14,10 @@ describe("Tools", () => {
 
   before(async () => {
     MockRender.App.startup();
-    imodel = await IModelConnection.openStandalone(iModelLocation);
+    imodel = await IModelConnection.openSnapshot(iModelLocation);
   });
   after(async () => {
-    if (imodel) await imodel.closeStandalone();
+    if (imodel) await imodel.closeSnapshot();
     MockRender.App.shutdown();
   });
 

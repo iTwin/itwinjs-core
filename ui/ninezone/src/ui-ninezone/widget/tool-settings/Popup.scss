@@ -1,0 +1,25 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "@bentley/ui-core/lib/ui-core/_z-index";
+@import "_variables";
+
+.nz-widget-toolSettings-popup {
+  border: {
+    color: $nz-widget-border-color;
+    radius: $nz-widget-border-radius;
+    style: solid;
+    width: $nz-widget-border-width;
+  }
+  color: $buic-background-control-stroke;
+  background-color: $nz-widget-background-color;
+  padding: $nz-tool-settings-content-padding;
+
+  @include uicore-z-index(status-popup);
+
+  > .nz-content {
+    color: $buic-text-color;
+  }
+}

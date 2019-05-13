@@ -2,5 +2,6 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
+!lib/module/dev/bentleyjs-core.js.map
 test
 !*.md

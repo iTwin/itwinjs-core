@@ -10,7 +10,7 @@ import { Light } from "./Lighting";
 import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor, Range1d } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
-import { CameraProps, ViewFlagProps, GroundPlaneProps } from "./ViewProps";
+import { CameraProps, ViewFlagProps, GroundPlaneProps, SolarShadowProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
@@ -36,7 +36,7 @@ export enum FillFlags {
   Background = 1 << 3,
 }
 
-/** @hidden */
+/** @internal */
 export enum PolylineTypeFlags {
   Normal = 0,      // Just an ordinary polyline
   Edge = 1 << 0, // A polyline used to define the edges of a planar region.
@@ -44,7 +44,7 @@ export enum PolylineTypeFlags {
 }
 
 /** Flags describing a polyline. A polyline may represent a continuous line string, or a set of discrete points.
- * @hidden
+ * @internal
  */
 export class PolylineFlags {
   public isDisjoint: boolean;
@@ -101,7 +101,7 @@ export class PolylineFlags {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class PolylineData {
   public vertIndices: number[];
   public numIndices: number;
@@ -118,7 +118,7 @@ export class PolylineData {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class MeshPolyline {
   public readonly indices: number[];
   public constructor(indices: number[] = []) {
@@ -132,10 +132,10 @@ export class MeshPolyline {
   public clear() { this.indices.length = 0; }
 }
 
-/** @hidden */
+/** @internal */
 export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args: MeshPolyline[]) { super(...args); } }
 
-/** @hidden */
+/** @internal */
 export class MeshEdge {
   public indices = [0, 0];
   public constructor(index0?: number, index1?: number) {
@@ -151,7 +151,7 @@ export class MeshEdge {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class MeshEdges {
   public visible: MeshEdge[] = [];
   public silhouette: MeshEdge[] = [];
@@ -160,7 +160,7 @@ export class MeshEdges {
   public constructor() { }
 }
 
-/** @hidden */
+/** @internal */
 export class EdgeArgs {
   public edges?: MeshEdge[];
 
@@ -177,7 +177,7 @@ export class EdgeArgs {
   public get numEdges() { return undefined !== this.edges ? this.edges.length : 0; }
 }
 
-/** @hidden */
+/** @internal */
 export class SilhouetteEdgeArgs extends EdgeArgs {
   public normals?: OctEncodedNormalPair[];
 
@@ -194,7 +194,7 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
   public clear() { this.normals = undefined; super.clear(); }
 }
 
-/** @hidden */
+/** @internal */
 export class PolylineEdgeArgs {
   public lines?: PolylineData[];
 
@@ -251,7 +251,7 @@ export abstract class RenderTexture implements IDisposable {
  */
 export namespace RenderTexture {
   /** Enumerates the types of [[RenderTexture]]s. */
-  export const enum Type {
+  export const enum Type { // tslint:disable-line:no-const-enum
     /** An image applied to a surface, with support for mip-mapping and repeating. */
     Normal,
     /** An image containing any number of text glyphs, used for efficiently rendering readable small text. */
@@ -349,7 +349,7 @@ export namespace RenderMaterial {
 }
 Object.freeze(RenderMaterial.Params.defaults);
 
-/** @hidden */
+/** @internal */
 export namespace ImageLight {
   export class Solar {
     constructor(public direction: Vector3d = new Vector3d(),
@@ -407,7 +407,8 @@ export class GraphicParams {
   }
 }
 
-export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
+/** @internal */
+export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 } // tslint:disable-line:no-const-enum
 
 /** Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
  * Generally speaking,
@@ -421,7 +422,7 @@ export const enum AntiAliasPref { Detect = 0, On = 1, Off = 2 }
  * [[HiddenLine.Settings]] allow aspects of edge and surface symbology to be overridden within a view.
  * @public
  */
-export const enum RenderMode {
+export enum RenderMode {
   /** Render only edges, no surfaces, with exceptions for planar regions with [[FillFlags]] set up to render the surface in wireframe mode. */
   Wireframe = 0,
   /** Render only surfaces, no edges, with lighting. */
@@ -455,7 +456,7 @@ export class Camera implements CameraProps {
   public get isValid() { return this.isLensValid && this.isFocusValid; }
   public equals(other: Camera) { return this.lens === other.lens && this.focusDist === other.focusDist && this.eye.isExactEqual(other.eye); }
   public clone() { return new Camera(this); }
-  public copyFrom(rhs: Camera) {
+  public setFrom(rhs: Camera) {
     this.lens.setFrom(rhs.lens);
     this.focusDist = rhs.focusDist;
     this.eye.setFrom(rhs.eye);
@@ -493,7 +494,7 @@ export class ViewFlags {
   public styles: boolean = true;
   /** Controls whether element transparency is used (e.g. control whether elements with transparency draw normally, or as opaque). */
   public transparency: boolean = true;
-  /** @hidden This doesn't belong here - it is not persistent. */
+  /** @internal This doesn't belong here - it is not persistent. */
   public continuousRendering: boolean = false;
   /** Controls whether the fills on filled elements are displayed. */
   public fill: boolean = true;
@@ -523,16 +524,23 @@ export class ViewFlags {
   public constructions: boolean = false;
   /** Draw all graphics in a single color */
   public monochrome: boolean = false;
-  /** @hidden unused Ignore geometry maps */
+  /** @internal unused Ignore geometry maps */
   public noGeometryMap: boolean = false;
   /** Display background map */
   public backgroundMap: boolean = false;
   /** Use material colors for hidden lines */
   public hLineMaterialColors: boolean = false;
-  /** @hidden 0=none, 1=generate mask, 2=use mask */
+  /** @internal 0=none, 1=generate mask, 2=use mask */
   public edgeMask: number = 0;
   /** Controls whether ambient occlusion is used. */
   public ambientOcclusion: boolean = false;
+  /** Controls whether surface discard is always applied regardless of other ViewFlags.
+   * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
+   * non-planar surfaces always draw in front of those non-planar surfaces.
+   * When this view flag is set to false (the default), then for 3d views if the render mode is wireframe (only edges are displayed) or smooth shader with visible edges turned off (only surfaces are displayed),
+   * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
+   */
+  public forceSurfaceDiscard: boolean = false;
 
   public clone(out?: ViewFlags): ViewFlags { return ViewFlags.createFrom(this, out); }
   public static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags {
@@ -564,11 +572,12 @@ export class ViewFlags {
       val.backgroundMap = other.backgroundMap;
       val.edgeMask = other.edgeMask;
       val.ambientOcclusion = other.ambientOcclusion;
+      val.forceSurfaceDiscard = other.forceSurfaceDiscard;
     }
     return val;
   }
 
-  /** @hidden */
+  /** @internal */
   public hiddenEdgesVisible(): boolean {
     switch (this.renderMode) {
       case RenderMode.SolidFill:
@@ -579,7 +588,7 @@ export class ViewFlags {
     }
     return true;
   }
-  /** @hidden */
+  /** @internal */
   public edgesRequired(): boolean {
     switch (this.renderMode) {
       case RenderMode.SolidFill:
@@ -617,6 +626,7 @@ export class ViewFlags {
     if (this.backgroundMap) out.backgroundMap = true;
     if (this.edgeMask !== 0) out.edgeMask = this.edgeMask;
     if (this.ambientOcclusion) out.ambientOcclusion = true;
+    if (this.forceSurfaceDiscard) out.forceSurfaceDiscard = true;
 
     out.renderMode = this.renderMode;
     return out;
@@ -651,6 +661,7 @@ export class ViewFlags {
     val.hLineMaterialColors = JsonUtils.asBool(json.hlMatColors);
     val.backgroundMap = JsonUtils.asBool(json.backgroundMap);
     val.ambientOcclusion = JsonUtils.asBool(json.ambientOcclusion);
+    val.forceSurfaceDiscard = JsonUtils.asBool(json.forceSurfaceDiscard);
 
     const renderModeValue = JsonUtils.asInt(json.renderMode);
     if (renderModeValue < RenderMode.HiddenLine)
@@ -689,14 +700,15 @@ export class ViewFlags {
       && this.hLineMaterialColors === other.hLineMaterialColors
       && this.backgroundMap === other.backgroundMap
       && this.edgeMask === other.edgeMask
-      && this.ambientOcclusion === other.ambientOcclusion;
+      && this.ambientOcclusion === other.ambientOcclusion
+      && this.forceSurfaceDiscard === other.forceSurfaceDiscard;
   }
 }
 
-/** @hidden */
+/** @internal */
 export namespace ViewFlag {
-  /** @hidden */
-  export const enum PresenceFlag {
+  /** @internal */
+  export const enum PresenceFlag { // tslint:disable-line:no-const-enum
     kRenderMode,
     kText,
     kDimensions,
@@ -721,10 +733,11 @@ export namespace ViewFlag {
     kHlineMaterialColors,
     kEdgeMask,
     kBackgroundMap,
+    kForceSurfaceDiscard,
   }
 
   /** Overrides a subset of ViewFlags.
-   * @hidden
+   * @internal
    */
   export class Overrides {
     private _present = 0;
@@ -774,10 +787,18 @@ export namespace ViewFlag {
     public setIgnoreGeometryMap(val: boolean) { this._values.noGeometryMap = val; this.setPresent(PresenceFlag.kGeometryMap); }
     public setShowBackgroundMap(val: boolean) { this._values.backgroundMap = val; this.setPresent(PresenceFlag.kBackgroundMap); }
     public setUseHlineMaterialColors(val: boolean) { this._values.hLineMaterialColors = val; this.setPresent(PresenceFlag.kHlineMaterialColors); }
+    public setForceSurfaceDiscard(val: boolean) { this._values.forceSurfaceDiscard = val; this.setPresent(PresenceFlag.kForceSurfaceDiscard); }
     public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(PresenceFlag.kEdgeMask); }
     public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(PresenceFlag.kRenderMode); }
     public anyOverridden() { return 0 !== this._present; }
     public clear() { this._present = 0; }
+
+    /** If ViewFlags.clipVolume is overridden, return the override value; else return undefined.
+     * @internal
+     */
+    public get clipVolumeOverride(): boolean | undefined {
+      return this.isPresent(PresenceFlag.kClipVolume) ? this._values.clipVolume : undefined;
+    }
 
     /** Apply these overrides to the supplied ViewFlags */
     public apply(base: ViewFlags): ViewFlags {
@@ -804,6 +825,7 @@ export namespace ViewFlag {
       if (this.isPresent(PresenceFlag.kGeometryMap)) base.noGeometryMap = this._values.noGeometryMap;
       if (this.isPresent(PresenceFlag.kBackgroundMap)) base.backgroundMap = this._values.backgroundMap;
       if (this.isPresent(PresenceFlag.kHlineMaterialColors)) base.hLineMaterialColors = this._values.hLineMaterialColors;
+      if (this.isPresent(PresenceFlag.kForceSurfaceDiscard)) base.forceSurfaceDiscard = this._values.forceSurfaceDiscard;
       if (this.isPresent(PresenceFlag.kEdgeMask)) base.edgeMask = this._values.edgeMask;
       if (this.isPresent(PresenceFlag.kRenderMode)) base.renderMode = this._values.renderMode;
       return base;
@@ -812,25 +834,38 @@ export namespace ViewFlag {
 }
 
 /** Enumerates the available patterns for drawing patterned lines.
- * Each is a 32-bit pattern in which each bit specifies the on- or off-state of a pixel.
+ * Each is a 32-bit pattern in which each bit specifies the on- or off-state of a pixel along the line. The pattern repeats along the length of the entire line.
+ * @public
  */
-export const enum LinePixels {
+export enum LinePixels {
+  /** A solid line. */
   Solid = 0,
+  /** A solid line. */
   Code0 = Solid,
+  /** 1 lit pixel followed by 7 unlit pixels: =&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= */
   Code1 = 0x80808080,
+  /** 5 lit pixels followed by 3 unlit pixels: =====&nbsp;&nbsp;&nbsp;=====&nbsp;&nbsp;&nbsp;===== */
   Code2 = 0xf8f8f8f8,
+  /** 11 lit pixels followed by 5 unlit pixels: ===========&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=========== */
   Code3 = 0xffe0ffe0,
+  /** 7 lit pixels followed by 4 unlit pixels followed by 1 lit pixel followed by 1 lit pixel: =======&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;&nbsp;=======&nbsp;&nbsp;&nbsp;&nbsp;= */
   Code4 = 0xfe10fe10,
+  /** 3 lit pixels followed by 5 unlit pixels: ===&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;===&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=== */
   Code5 = 0xe0e0e0e0,
+  /** 5 lit pixels followed by 3 unlit followed by 1 lit followed by 3 unlit followed by 1 lit followed by 3 unlit: =====&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;===== */
   Code6 = 0xf888f888,
+  /** 8 lit pixels followed by 3 unlit followed by 2 lit followed by 3 unlit: ========&nbsp;&nbsp;&nbsp;==&nbsp;&nbsp;&nbsp;======== */
   Code7 = 0xff18ff18,
+  /** 2 lit pixels followed by 2 unlit pixels - default style for drawing hidden edges: ==&nbsp;&nbsp;==&nbsp;&nbsp;==&nbsp;&nbsp;== */
   HiddenLine = 0xcccccccc,
+  /** Barely visible - 1 lit pixel followed by 31 unlit pixels. */
   Invisible = 0x00000001,
+  /** Indicates no valid line style or none specified, depending on context. */
   Invalid = -1,
 }
 
 /** Represents a bounding sphere.  Optional optimization for FrustumPlane containment test.
- * @hidden
+ * @internal
  */
 export class BoundingSphere {
   public center: Point3d;
@@ -845,7 +880,7 @@ export class BoundingSphere {
 }
 
 /** Represents a frustum as 6 planes and provides containment and intersection testing
- * @hidden
+ * @internal
  */
 export class FrustumPlanes {
   private _planes?: ClipPlane[];
@@ -940,16 +975,16 @@ export class FrustumPlanes {
   }
 }
 
-/** @hidden */
+/** @internal */
 export namespace FrustumPlanes {
-  /** @hidden */
-  export const enum Containment {
+  /** @internal */
+  export const enum Containment { // tslint:disable-line:no-const-enum
     Outside = 0,
     Partial = 1,
     Inside = 2,
   }
 
-  /** @hidden */
+  /** @internal */
   export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance: number = 1.0e-6): void {
     const normal = Vector3d.createCrossProductToPoints(points[i2], points[i1], points[i0]);
     normal.normalizeInPlace();
@@ -1037,7 +1072,7 @@ export namespace AmbientOcclusion {
 export namespace HiddenLine {
   /** Describes the symbology with which edges should be drawn. */
   export interface StyleProps {
-    /** @hidden
+    /** @internal
      * This JSON representation is awkward, but it must match that used in the db.
      * If the JSON came from the db then all members are present and:
      *  - color is overridden only if ovrColor = true.
@@ -1063,7 +1098,7 @@ export namespace HiddenLine {
 
   /** Describes the symbology with which edges should be drawn. */
   export class Style implements StyleProps {
-    /** @hidden */
+    /** @internal */
     public get ovrColor(): boolean { return undefined !== this.color; }
     /** If defined, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
     public readonly color?: ColorDef;
@@ -1074,17 +1109,24 @@ export namespace HiddenLine {
      */
     public readonly width?: number;
 
-    private constructor(json?: StyleProps) {
-      if (undefined === json)
-        return;
+    private constructor(json?: StyleProps, hidden?: true) {
+      if (JsonUtils.isEmptyObjectOrUndefined(json)) {
+        if (hidden)
+          this.pattern = LinePixels.HiddenLine;
 
+        return;
+      }
+
+      json = json as StyleProps; // per JsonUtils.isEmptyObjectOrUndefined()
       if (undefined !== json.color && false !== json.ovrColor)
         this.color = ColorDef.fromJSON(json.color);
 
       if (undefined !== json.pattern) {
-        const pattern = JsonUtils.asInt(json.pattern, LinePixels.Invalid);
+        const pattern = JsonUtils.asInt(json.pattern, hidden ? LinePixels.HiddenLine : LinePixels.Invalid);
         if (LinePixels.Invalid !== pattern)
           this.pattern = pattern;
+      } else if (hidden) {
+        this.pattern = LinePixels.HiddenLine;
       }
 
       if (undefined !== json.width) {
@@ -1096,9 +1138,15 @@ export namespace HiddenLine {
       }
     }
 
-    public static defaults = new Style({});
+    public static readonly defaultVisible = new Style({});
+    public static readonly defaultHidden = new Style({}, true);
 
-    public static fromJSON(json?: StyleProps): Style { return undefined !== json ? new Style(json) : this.defaults; }
+    public static fromJSON(json?: StyleProps, hidden?: true): Style {
+      if (undefined !== json)
+        return new Style(json, hidden);
+
+      return hidden ? this.defaultHidden : this.defaultVisible;
+    }
 
     /** Create a Style equivalent to this one but with the specified color override. */
     public overrideColor(color: ColorDef): Style {
@@ -1170,12 +1218,12 @@ export namespace HiddenLine {
 
     /** Create a DisplaySettings from its JSON representation. */
     public static fromJSON(json?: SettingsProps): Settings {
-      if (undefined === json)
+      if (JsonUtils.isEmptyObjectOrUndefined(json))
         return this.defaults;
       else if (json instanceof Settings)
         return json;
       else
-        return new Settings(json);
+        return new Settings(json!);
     }
 
     public toJSON(): SettingsProps {
@@ -1188,7 +1236,7 @@ export namespace HiddenLine {
 
     private constructor(json: SettingsProps) {
       this.visible = Style.fromJSON(json.visible);
-      this.hidden = Style.fromJSON(json.hidden);
+      this.hidden = Style.fromJSON(json.hidden, true);
       this.transparencyThreshold = JsonUtils.asDouble(json.transThreshold, 1.0);
     }
   }
@@ -1197,7 +1245,7 @@ export namespace HiddenLine {
 /** @beta */
 export namespace Gradient {
   /** Flags applied to a [[Gradient.Symb]]. */
-  export const enum Flags {
+  export enum Flags {
     /** No flags. */
     None = 0,
     /** Reverse the order of the gradient keys. */
@@ -1207,27 +1255,27 @@ export namespace Gradient {
   }
 
   /** Enumerates the modes by which a [[Gradient.Symb]]'s keys are applied to create an image. */
-  export const enum Mode {
+  export enum Mode {
     None = 0,
     Linear = 1,
     Curved = 2,
     Cylindrical = 3,
     Spherical = 4,
     Hemispherical = 5,
-    /** @hidden */
+    /** @beta */
     Thematic = 6,
   }
 
-  /** @hidden */
-  export const enum ThematicMode {
+  /** @beta */
+  export enum ThematicMode {
     Smooth = 0,
     Stepped = 1,
     SteppedWithDelimiter = 2,
     IsoLines = 3,
   }
 
-  /** @hidden */
-  export const enum ThematicColorScheme {
+  /** @internal */
+  export enum ThematicColorScheme {
     BlueRed = 0,
     RedBlue = 1,
     Monochrome = 2,
@@ -1236,7 +1284,7 @@ export namespace Gradient {
     Custom = 5,
   }
 
-  /** @hidden */
+  /** @beta */
   export interface ThematicSettingsProps {
     mode: ThematicMode;
     stepCount: number;
@@ -1246,7 +1294,9 @@ export namespace Gradient {
     rangeHigh: number;
   }
 
-  /** @hidden Gradient settings specific to thematic mesh display */
+  /** Gradient settings specific to thematic mesh display
+   * @beta
+   */
   export class ThematicSettings implements ThematicSettingsProps {
     public mode: ThematicMode = ThematicMode.Smooth;
     public stepCount: number = 10;
@@ -1321,7 +1371,9 @@ export namespace Gradient {
     shift?: number;
     /** Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum */
     keys: KeyColorProps[];
-    /** @hidden Settings applicable to meshes and Gradient.Mode.Thematic only */
+    /** Settings applicable to meshes and Gradient.Mode.Thematic only
+     * @beta
+     */
     thematicSettings?: ThematicSettingsProps;
   }
 
@@ -1335,6 +1387,7 @@ export namespace Gradient {
     public angle?: Angle;
     public tint?: number;
     public shift: number = 0;
+    /** @beta */
     public thematicSettings?: ThematicSettings;
     public keys: KeyColor[] = [];
 
@@ -1354,7 +1407,7 @@ export namespace Gradient {
       return result;
     }
 
-    /** @hidden */
+    /** @beta */
     public static createThematic(settings: ThematicSettings) {
       const result = new Symb();
       result.mode = Mode.Thematic;
@@ -1671,7 +1724,7 @@ export namespace Gradient {
 /** Whether a closed region should be drawn for wireframe display with its internal area filled or not.
  * @public
  */
-export const enum FillDisplay {
+export enum FillDisplay {
   /** don't fill, even if fill attribute is on for the viewport */
   Never = 0,
   /** fill if the fill attribute is on for the viewport */
@@ -1685,7 +1738,7 @@ export const enum FillDisplay {
 /** Describes how a view's background color affects the interior area of a closed region.
  * @public
  */
-export const enum BackgroundFill {
+export enum BackgroundFill {
   /** single color fill uses the fill color and line color to draw either a solid or outline fill */
   None = 0,
   /** single color fill uses the view's background color to draw a solid fill */
@@ -1700,7 +1753,7 @@ export const enum BackgroundFill {
  * @see [[Feature]].
  * @alpha Confusion with ECClass?
  */
-export const enum GeometryClass {
+export enum GeometryClass {
   /** Used to classify the "real" geometry within a model. Most geometry falls within this class. */
   Primary = 0,
   /** Used to classify geometry used as a drawing aid in constructing the Primary geometry. For example, grid lines. */
@@ -1711,7 +1764,7 @@ export const enum GeometryClass {
   Pattern = 3,
 }
 
-/** @hidden */
+/** @internal */
 export class SceneLights {
   private _list: Light[] = [];
   public get isEmpty(): boolean { return this._list.length === 0; }
@@ -1768,6 +1821,7 @@ export class GeometryParams {
   public fillTransparency?: number;
   /** Optional geometry classification that can be toggled off with a [[ViewFlags]] independent of [[SubCategoryAppearance.invisible]].
    * Default is [[GeometryClass.Primary]].
+   * @alpha
    */
   public geometryClass?: GeometryClass;
   /** Optional line style to override [[SubCategoryAppearance.styleId]] plus modifiers to override the line style definition.
@@ -1776,6 +1830,7 @@ export class GeometryParams {
   public styleInfo?: LineStyle.Info;
   /** Optional gradient fill settings for region interiors.
    * Valid when [[fillDisplay]] is not [[FillDisplay.Never]].
+   * @beta
    */
   public gradient?: Gradient.Symb;
   /** Optional area pattern settings for region interiors.
@@ -1914,7 +1969,7 @@ export namespace Hilite {
   /**  Describes the width of the outline applied to hilited geometry. The outline is drawn around the union of all hilited geometry and is visible behind non-hilited geometry.
    * @see [[Hilite.Settings]]
    */
-  export const enum Silhouette {
+  export enum Silhouette {
     /** No outline. */
     None,
     /** 1-pixel-wide outline. */
@@ -1976,6 +2031,7 @@ export namespace Hilite {
 export class Feature {
   public readonly elementId: string;
   public readonly subCategoryId: string;
+  /** @alpha */
   public readonly geometryClass: GeometryClass;
 
   public constructor(elementId: Id64String = Id64.invalid, subCategoryId: Id64String = Id64.invalid, geometryClass: GeometryClass = GeometryClass.Primary) {
@@ -2009,15 +2065,21 @@ export class Feature {
  * Classifier type.
  * @beta
  */
-export const enum BatchType {
+export enum BatchType {
   /** This batch contains graphics derived from a model's visible geometry. */
   Primary,
   /**
-   * This batch contains graphics which are used to classify a model's visible geometry.
+   * This batch contains colod volumes which are used to classify a model's visible geometry.
    * The graphics themselves are not rendered to the screen; instead they are rendered to the stencil buffer
    * to resymbolize the primary geometry.
    */
-  Classifier,
+  VolumeClassifier,
+  /**
+   * This batch contains planar graphics which are used to classify a model's visible geometry.
+   * The graphics themselves are not rendered to the screen; instead they are rendered to a texture buffer
+   * to resymbolize the primary geometry.
+   */
+  PlanarClassifier,
 }
 
 /** Defines a look-up table for [[Feature]]s within a batched [[RenderGraphic]]. Consecutive 32-bit
@@ -2041,14 +2103,16 @@ export class FeatureTable extends IndexMap<Feature> {
 
   /** Returns the maximum number of [[Feature]]s this FeatureTable can contain. */
   public get maxFeatures(): number { return this._maximumSize; }
-  /** @hidden */
+  /** @internal */
   public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this._array[0].value.isDefined); }
   /** Returns true if this FeatureTable contains exactly one [[Feature]]. */
   public get isUniform(): boolean { return 1 === this.length; }
   /** If this FeatureTable contains exactly one [[Feature]], returns that Feature; otherwise returns undefined. */
   public get uniform(): Feature | undefined { return 1 === this.length ? this._array[0].value : undefined; }
-  /** Returns true if this FeatureTable is associated with [[BatchType.Classifier]] geometry. */
-  public get isClassifier(): boolean { return BatchType.Classifier === this.type; }
+  /** Returns true if this FeatureTable is associated with [[BatchType.VolumeClassifier]] geometry. */
+  public get isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
+  /** Returns true if this FeatureTable is associated with [[BatchType.PlanarClassifier]] geometry. */
+  public get isPlanarClassifier(): boolean { return BatchType.PlanarClassifier === this.type; }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
   public findFeature(index: number): Feature | undefined {
@@ -2059,7 +2123,7 @@ export class FeatureTable extends IndexMap<Feature> {
     return undefined;
   }
 
-  /** @hidden */
+  /** @internal */
   public insertWithIndex(feature: Feature, index: number): void {
     const bound = this.lowerBound(feature);
     assert(!bound.equal);
@@ -2068,7 +2132,7 @@ export class FeatureTable extends IndexMap<Feature> {
     this._array.splice(bound.index, 0, entry);
   }
 
-  /** @hidden */
+  /** @internal */
   public getArray(): Array<IndexedValue<Feature>> { return this._array; }
 }
 
@@ -2087,7 +2151,7 @@ export class TextureMapping {
     this.params = params;
   }
 
-  /** @hidden */
+  /** @internal */
   public computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
     return this.params.computeUVParams(visitor as IndexedPolyfaceVisitor, transformToImodel);
   }
@@ -2096,22 +2160,22 @@ export class TextureMapping {
 /** @beta */
 export namespace TextureMapping {
   /** Enumerates the possible texture mapping modes. */
-  export const enum Mode {
+  export enum Mode {
     None = -1,
     Parametric = 0,
     ElevationDrape = 1,
     Planar = 2,
-    /** @hidden */
+    /** @internal */
     DirectionalDrape = 3,
-    /** @hidden */
+    /** @internal */
     Cubic = 4,
-    /** @hidden */
+    /** @internal */
     Spherical = 5,
-    /** @hidden */
+    /** @internal */
     Cylindrical = 6,
-    /** @hidden */
+    /** @internal */
     Solid = 7,
-    /** @hidden Only valid for lights */
+    /** @internal Only valid for lights */
     FrontProject = 8,
   }
 
@@ -2154,7 +2218,7 @@ export namespace TextureMapping {
      * @note Defaults to [[TextureMapping.Mode.Parametric]].
      */
     mapMode?: TextureMapping.Mode;
-    /** @hidden */
+    /** @internal */
     worldMapping?: boolean;
   }
 
@@ -2168,7 +2232,7 @@ export namespace TextureMapping {
     public weight: number;
     /** The mode by which to map the image to a surface. */
     public mode: TextureMapping.Mode;
-    /** @hidden */
+    /** @internal */
     public worldMapping: boolean;
 
     constructor(props = {} as TextureMapping.ParamProps) {
@@ -2178,7 +2242,7 @@ export namespace TextureMapping {
 
     /**
      * Generates UV parameters for textured surfaces. Returns undefined on failure.
-     * @hidden
+     * @internal
      */
     public computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
       switch (this.mode) {
@@ -2383,7 +2447,7 @@ export class GroundPlane implements GroundPlaneProps {
 
   /** Returns and locally stores gradient symbology for the ground plane texture depending on whether we are looking from above or below.
    * Will store the ground colors used in the optional ColorDef array provided.
-   * @hidden
+   * @internal
    */
   public getGroundPlaneGradient(aboveGround: boolean): Gradient.Symb {
     let gradient = aboveGround ? this._aboveSymb : this._belowSymb;
@@ -2410,5 +2474,43 @@ export class GroundPlane implements GroundPlaneProps {
       this._belowSymb = gradient;
 
     return gradient;
+  }
+}
+/** Namespace containing types controlling how solar shadows should be drawn.
+ * @beta
+ */
+export namespace SolarShadows {
+  /** JSON representation of a solar shadow settings.
+   * @beta
+   */
+  export interface Props {
+    /** Shadow color */
+    color?: ColorDefProps;
+    /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects. */
+    bias?: number;
+  }
+  /** Solar shadows are imposed as a color scaling on geometry that is occluded from solar lighting.  Shadows are imposed independently
+   * of solar lighting and is applied to unlit geometry such as reality models and map tiles.
+   * @beta
+   */
+  export class Settings implements Props {
+    private static readonly _defaultBias = .001;
+    /** Shadow color */
+    public color: ColorDef;
+    /** Shadow bias - a nonzero bias is required to avoid self-shadowing effects. */
+    public bias: number;
+
+    public constructor(props?: SolarShadowProps) {
+      this.bias = props ? JsonUtils.asDouble(props.bias, SolarShadows.Settings._defaultBias) : SolarShadows.Settings._defaultBias;
+      this.color = (props !== undefined && props.color !== undefined) ? ColorDef.fromJSON(props.color) : new ColorDef(ColorByName.grey);
+    }
+    public clone() { return new SolarShadows.Settings(this); }
+    public static fromJSON(props?: Props): Settings { return new Settings(props); }
+    public toJSON(): Props {
+      return {
+        bias: this.bias,
+        color: this.color,
+      };
+    }
   }
 }

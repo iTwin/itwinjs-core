@@ -8,6 +8,7 @@ import { QParams3d } from "@bentley/imodeljs-common";
 import { Range3d } from "@bentley/geometry-core";
 import { Geometry } from "./GeometryPrimitives";
 
+/** @internal */
 export class GeometryList {
   private _list: Geometry[] = [];
 

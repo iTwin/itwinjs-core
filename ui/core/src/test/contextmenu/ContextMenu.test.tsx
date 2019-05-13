@@ -22,41 +22,41 @@ describe("ContextMenu", () => {
   describe("<ContextMenu />", () => {
     it("renders open correctly", () => {
       const component = render(<ContextMenu opened={true} />);
-      expect(component.getByTestId("context-menu-container")).to.exist;
-      expect(component.getByTestId("context-menu-container").className).to.contain("opened");
+      expect(component.getByTestId("core-context-menu-container")).to.exist;
+      expect(component.getByTestId("core-context-menu-container").className).to.contain("opened");
     });
     it("renders close correctly", () => {
       const component = render(<ContextMenu opened={false} />);
-      expect(component.getByTestId("context-menu-container").className).to.not.contain("opened");
+      expect(component.getByTestId("core-context-menu-container").className).to.not.contain("opened");
     });
     it("renders with ContextMenuItem correctly", () => {
       const component = render(
         <ContextMenu opened={true}>
           <ContextMenuItem> Test </ContextMenuItem>
         </ContextMenu>);
-      expect(component.getByTestId("context-menu-item")).to.exist;
+      expect(component.getByTestId("core-context-menu-item")).to.exist;
     });
     it("renders with text children correctly", () => {
       const component = render(
         <ContextMenu opened={true}>
           Test
         </ContextMenu>);
-      expect(component.queryByTestId("context-menu-item")).to.not.exist;
+      expect(component.queryByTestId("core-context-menu-item")).to.not.exist;
       expect(component.getByText("Test")).to.exist;
     });
     it("renders with non MenuItem children correctly", () => {
       const component = render(
         <ContextMenu opened={true}>
-          <div data-testid="context-menu-test-div">Test</div>
+          <div data-testid="core-context-menu-test-div">Test</div>
         </ContextMenu>);
-      expect(component.getByTestId("context-menu-test-div")).to.exist;
+      expect(component.getByTestId("core-context-menu-test-div")).to.exist;
     });
     describe("Keyboard navigation", () => {
       it("should handle Escape press", () => {
         const handleEsc = sinon.fake();
         const component = render(
           <ContextMenu opened={true} onEsc={handleEsc} />);
-        const root = component.getByTestId("context-menu-root");
+        const root = component.getByTestId("core-context-menu-root");
         root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 27 /* <Esc> */ }));
         expect(handleEsc).to.be.calledOnce;
       });
@@ -64,7 +64,7 @@ describe("ContextMenu", () => {
         const handleEsc = sinon.fake();
         const component = render(
           <ContextMenu opened={true} onEsc={handleEsc} />);
-        const root = component.getByTestId("context-menu-root");
+        const root = component.getByTestId("core-context-menu-root");
         root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 37 /* <Left> */ }));
         expect(handleEsc).to.be.calledOnce;
       });
@@ -74,7 +74,7 @@ describe("ContextMenu", () => {
           <ContextMenu opened={true} onSelect={handleSelect}>
             <ContextMenuItem>Item 1</ContextMenuItem>
           </ContextMenu>);
-        const root = component.getByTestId("context-menu-root");
+        const root = component.getByTestId("core-context-menu-root");
         root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
         root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
         expect(handleSelect).to.be.calledOnce;
@@ -86,7 +86,7 @@ describe("ContextMenu", () => {
             <ContextMenuItem>Item 1</ContextMenuItem>
             <ContextMenuItem>Item 2</ContextMenuItem>
           </ContextMenu>);
-        const root = component.getByTestId("context-menu-root");
+        const root = component.getByTestId("core-context-menu-root");
         root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
         root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
         root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
@@ -100,7 +100,7 @@ describe("ContextMenu", () => {
             <ContextMenuItem>Item 1</ContextMenuItem>
             <ContextMenuItem>Item 2</ContextMenuItem>
           </ContextMenu>);
-        const root = component.getByTestId("context-menu-root");
+        const root = component.getByTestId("core-context-menu-root");
         root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 38 /* <Up> */ }));
         root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 38 /* <Up> */ }));
         root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 38 /* <Up> */ }));
@@ -116,8 +116,8 @@ describe("ContextMenu", () => {
               <ContextMenuItem>Item 1.2</ContextMenuItem>
             </ContextSubMenu>
           </ContextMenu>);
-        const root1 = component.getAllByTestId("context-menu-root")[0];
-        const root2 = component.getAllByTestId("context-menu-root")[1];
+        const root1 = component.getAllByTestId("core-context-menu-root")[0];
+        const root2 = component.getAllByTestId("core-context-menu-root")[1];
         root1.dispatchEvent(createBubbledEvent("keyup", { keyCode: 39 /* <Right> */ }));
         root2.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
         root2.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
@@ -133,8 +133,8 @@ describe("ContextMenu", () => {
             </ContextSubMenu>
             <ContextMenuItem>Item 2</ContextMenuItem>
           </ContextMenu>);
-        const root1 = component.getAllByTestId("context-menu-root")[0];
-        const root2 = component.getAllByTestId("context-menu-root")[1];
+        const root1 = component.getAllByTestId("core-context-menu-root")[0];
+        const root2 = component.getAllByTestId("core-context-menu-root")[1];
         root1.dispatchEvent(createBubbledEvent("keyup", { keyCode: 39 /* <Right> */ }));
         root2.dispatchEvent(createBubbledEvent("keyup", { keyCode: 37 /* <Left> */ }));
         root1.dispatchEvent(createBubbledEvent("keyup", { keyCode: 40 /* <Down> */ }));
@@ -149,7 +149,7 @@ describe("ContextMenu", () => {
             <ContextMenuItem onSelect={onSelectFake}>~First item</ContextMenuItem>
             <ContextMenuItem>~Second item</ContextMenuItem>
           </ContextMenu>);
-        const root = component.getAllByTestId("context-menu-root")[0];
+        const root = component.getAllByTestId("core-context-menu-root")[0];
         root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
         expect(onSelectFake).to.have.been.calledOnce;
       });
@@ -163,7 +163,7 @@ describe("ContextMenu", () => {
             </ContextSubMenu>
             <ContextMenuItem>~Second item</ContextMenuItem>
           </ContextMenu>);
-        const root = component.getAllByTestId("context-menu-root")[0];
+        const root = component.getAllByTestId("core-context-menu-root")[0];
         root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
         expect(onSelectFake).to.have.been.calledOnce;
       });
@@ -173,9 +173,9 @@ describe("ContextMenu", () => {
             <ContextMenuItem>~First item</ContextMenuItem>
             <ContextMenuItem>~Second item</ContextMenuItem>
           </ContextMenu>);
-        const root = component.getAllByTestId("context-menu-root")[0];
+        const root = component.getAllByTestId("core-context-menu-root")[0];
         root.dispatchEvent(createBubbledEvent("keyup", { key: "s" }));
-        const items = component.getAllByTestId("context-menu-item");
+        const items = component.getAllByTestId("core-context-menu-item");
         const idx = items.findIndex((value) => value.className.indexOf("is-selected") !== -1);
         expect(idx).to.equal(1);
       });
@@ -188,9 +188,9 @@ describe("ContextMenu", () => {
             </ContextSubMenu>
             <ContextMenuItem>~Second item</ContextMenuItem>
           </ContextMenu>);
-        const root = component.getAllByTestId("context-menu-root")[0];
+        const root = component.getAllByTestId("core-context-menu-root")[0];
         root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
-        const items = component.getAllByTestId("context-menu-item");
+        const items = component.getAllByTestId("core-context-menu-item");
         const idx = items.findIndex((value) => value.className.indexOf("is-selected") !== -1);
         expect(idx).to.equal(0);
       });
@@ -202,10 +202,10 @@ describe("ContextMenu", () => {
             <ContextMenuItem>~Third item</ContextMenuItem>
             <ContextMenuItem>~Fourth item</ContextMenuItem>
           </ContextMenu>);
-        const root = component.getAllByTestId("context-menu-root")[0];
+        const root = component.getAllByTestId("core-context-menu-root")[0];
         root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
         root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
-        const items = component.getAllByTestId("context-menu-item");
+        const items = component.getAllByTestId("core-context-menu-item");
         const idx = items.findIndex((value) => value.className.indexOf("is-selected") !== -1);
         expect(idx).to.equal(3);
       });
@@ -217,11 +217,11 @@ describe("ContextMenu", () => {
             <ContextMenuItem>~Third item</ContextMenuItem>
             <ContextMenuItem>~Fourth item</ContextMenuItem>
           </ContextMenu>);
-        const root = component.getAllByTestId("context-menu-root")[0];
+        const root = component.getAllByTestId("core-context-menu-root")[0];
         root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
         root.dispatchEvent(createBubbledEvent("keyup", { key: "f" }));
         root.dispatchEvent(createBubbledEvent("keyup", { key: "s" }));
-        const items = component.getAllByTestId("context-menu-item");
+        const items = component.getAllByTestId("core-context-menu-item");
         const idx = items.findIndex((value) => value.className.indexOf("is-selected") !== -1);
         expect(idx).to.equal(1);
       });
@@ -231,7 +231,7 @@ describe("ContextMenu", () => {
   describe("<GlobalContextMenu />", () => {
     it("renders correctly", () => {
       const component = render(<GlobalContextMenu opened={true} identifier="test" x="0" y="0" />);
-      expect(component.getByTestId("context-menu-root")).to.exist;
+      expect(component.getByTestId("core-context-menu-root")).to.exist;
     });
     it("mounts and unmounts correctly", () => {
       const wrapper = render(<GlobalContextMenu opened={true} identifier="test" x="0" y="0" />);
@@ -241,7 +241,7 @@ describe("ContextMenu", () => {
   describe("<ContextMenuDivider />", () => {
     it("renders correctly", () => {
       const component = render(<ContextMenuDivider />);
-      expect(component.getByTestId("context-menu-divider")).to.exist;
+      expect(component.getByTestId("core-context-menu-divider")).to.exist;
     });
   });
   describe("<ContextMenuItem />", () => {
@@ -252,21 +252,21 @@ describe("ContextMenu", () => {
 
     it("focuses correctly", () => {
       const component = render(<ContextMenuItem>Test</ContextMenuItem>);
-      const item = component.getByTestId("context-menu-item");
+      const item = component.getByTestId("core-context-menu-item");
       item.dispatchEvent(createBubbledEvent("focus"));
     });
 
     it("onClick handled correctly", () => {
       const handleClick = sinon.fake();
       const component = render(<ContextMenuItem onClick={handleClick}>Test</ContextMenuItem>);
-      const item = component.getByTestId("context-menu-item");
+      const item = component.getByTestId("core-context-menu-item");
       item.dispatchEvent(createBubbledEvent("click"));
       handleClick.should.have.been.calledOnce;
     });
     it("onSelect handled correctly", () => {
       const handleSelect = sinon.fake();
       const component = render(<ContextMenuItem onSelect={handleSelect}>Test</ContextMenuItem>);
-      const item = component.getByTestId("context-menu-item");
+      const item = component.getByTestId("core-context-menu-item");
       item.dispatchEvent(createBubbledEvent("click"));
       handleSelect.should.have.been.calledOnce;
     });

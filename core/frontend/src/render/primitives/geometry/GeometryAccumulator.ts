@@ -16,6 +16,7 @@ import { GeometryList } from "./GeometryList";
 import { assert } from "@bentley/bentleyjs-core";
 import { FeatureTable } from "@bentley/imodeljs-common";
 
+/** @internal */
 export class GeometryAccumulator {
   private _transform: Transform;
   private _surfacesOnly: boolean;

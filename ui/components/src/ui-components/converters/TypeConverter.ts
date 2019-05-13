@@ -16,12 +16,13 @@ import {
   PrimitiveValue,
 } from "@bentley/imodeljs-frontend";
 
-import * as ConvertedPrimitives from "./valuetypes/ConvertedTypes";
+import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
 
 /**
  * StandardTypeConverterTypeNames.
+ * @beta
  */
-export const enum StandardTypeConverterTypeNames {
+export enum StandardTypeConverterTypeNames {
   Text = "text",
   String = "string",
   ShortDate = "shortdate",
@@ -34,18 +35,24 @@ export const enum StandardTypeConverterTypeNames {
   Point3d = "point3d",
 }
 
-/** Sort compare method for types that support sorting */
+/** Sort compare method for types that support sorting
+ * @public
+ */
 export interface SortComparer {
   sortCompare(valueA: Primitives.Value, valueB: Primitives.Value, ignoreCase?: boolean): number;
 }
 
-/** Operators for all filterable types */
+/** Operators for all filterable types
+ * @public
+ */
 export interface OperatorProcessor {
   isEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
   isNotEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
-/** Operators for Numeric types, DateTime, TimeSpan, or  any type that supports these comparisons */
+/** Operators for Numeric types, DateTime, TimeSpan, or  any type that supports these comparisons
+ * @public
+ */
 export interface LessGreaterOperatorProcessor {
   isLessThan(a: Primitives.Value, b: Primitives.Value): boolean;
   isLessThanOrEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
@@ -53,13 +60,17 @@ export interface LessGreaterOperatorProcessor {
   isGreaterThanOrEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
-/** Operators for all filterable null-able types */
+/** Operators for all filterable null-able types
+ * @public
+ */
 export interface NullableOperatorProcessor {
   isNull(value: Primitives.Value): boolean;
   isNotNull(value: Primitives.Value): boolean;
 }
 
-/** Asynchronous Error Message returned as part of [[AsyncValueProcessingResult]] */
+/** Asynchronous Error Message returned as part of [[AsyncValueProcessingResult]]
+ * @beta
+ */
 export interface AsyncErrorMessage {
   briefMsg: string;
   detailedMsg?: string;
@@ -70,7 +81,9 @@ export interface AsyncErrorMessage {
   displayTime?: number;
 }
 
-/** Asynchronous Value Process Result */
+/** Asynchronous Value Process Result
+ * @beta
+ */
 export interface AsyncValueProcessingResult {
   returnValue?: PropertyValue;
   encounteredError: boolean;
@@ -79,6 +92,7 @@ export interface AsyncValueProcessingResult {
 
 /**
  * Type Converter base class.
+ * @public
  */
 export abstract class TypeConverter implements SortComparer, OperatorProcessor {
   public convertToString(value?: Primitives.Value): string | Promise<string> {

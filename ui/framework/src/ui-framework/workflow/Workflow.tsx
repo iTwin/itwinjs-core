@@ -10,11 +10,8 @@ import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
 import { Task, TaskManager } from "./Task";
 
-// -----------------------------------------------------------------------------
-//  WorkflowDef and WorkflowsDef
-// -----------------------------------------------------------------------------
-
 /** Properties for a [[Workflow]].
+ * @public
  */
 export interface WorkflowProps extends ItemProps {
   id: string;
@@ -24,17 +21,17 @@ export interface WorkflowProps extends ItemProps {
 }
 
 /** Workflow Properties List definition.
+ * @public
  */
 export interface WorkflowPropsList {
   defaultWorkflowId: string;
   workflows: WorkflowProps[];
 }
-
-// -----------------------------------------------------------------------------
-// Workflow class
 // -----------------------------------------------------------------------------
 
 /** Workflow class.
+ * A Workflow is a defined sequence of tasks used to accomplish a goal.
+ * @public
  */
 export class Workflow extends ItemDefBase {
   /** Id of the Workflow */
@@ -59,6 +56,7 @@ export class Workflow extends ItemDefBase {
 
     this._taskIds.map((taskId: string, _index: number) => {
       const task = TaskManager.findTask(taskId);
+      // istanbul ignore else
       if (task)
         this._tasks.set(taskId, task);
     });
@@ -115,7 +113,7 @@ export class Workflow extends ItemDefBase {
   public setActiveTask(task: Task) {
     this.activeTaskId = task.taskId;
     task.onActivated(); // tslint:disable-line:no-floating-promises
-    WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id });
+    WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id, workflow: this, workflowId: this.id });
   }
 
   /** Gets an array of sorted Tasks in the Workflow. */
@@ -124,6 +122,7 @@ export class Workflow extends ItemDefBase {
 
     for (const key of this._tasks.keys()) {
       const task: Task | undefined = this._tasks.get(key);
+      // istanbul ignore else
       if (task && task.isVisible)
         sortedTasks.push(task);
     }
@@ -138,36 +137,42 @@ export class Workflow extends ItemDefBase {
 }
 
 /** Workflow Activated Event Args class.
+ * @public
  */
 export interface WorkflowActivatedEventArgs {
-  workflowId: string;
-  workflow: Workflow;
+  workflowId?: string;
+  workflow?: Workflow;
 }
 
 /** Workflow Activated Event class.
+ * @public
  */
 export class WorkflowActivatedEvent extends UiEvent<WorkflowActivatedEventArgs> { }
 
 /** Task Activated Event Args class.
+ * @public
  */
 export interface TaskActivatedEventArgs {
-  taskId: string;
-  task: Task;
+  taskId?: string;
+  task?: Task;
+
+  workflowId: string;
+  workflow: Workflow;
 }
 
 /** Task Activated Event class.
+ * @public
  */
 export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> { }
 
 // -----------------------------------------------------------------------------
-// WorkflowManager class
-// -----------------------------------------------------------------------------
 
 /** Workflow Manager class.
+ * @public
  */
 export class WorkflowManager {
   private static _workflows: Map<string, Workflow> = new Map<string, Workflow>();
-  private static _activeWorkflow: Workflow;
+  private static _activeWorkflow: Workflow | undefined;
   private static _defaultWorkflowId: string;
 
   /** Get Workflow Activated event. */
@@ -216,9 +221,9 @@ export class WorkflowManager {
   /** Sets the active Workflow
    * @param workflow  The Workflow to set as active
    */
-  public static setActiveWorkflow(workflow: Workflow): void {
+  public static setActiveWorkflow(workflow: Workflow | undefined): void {
     this._activeWorkflow = workflow;
-    WorkflowManager.onWorkflowActivatedEvent.emit({ workflow, workflowId: workflow.id });
+    WorkflowManager.onWorkflowActivatedEvent.emit({ workflow, workflowId: workflow ? workflow.id : undefined });
   }
 
   /** Sets the active Workflow and Task
@@ -226,16 +231,45 @@ export class WorkflowManager {
    * @param task      The Task to set as active
    */
   public static async setActiveWorkflowAndTask(workflow: Workflow, task: Task): Promise<void> {
+    // istanbul ignore else
     if (!workflow.isActive)
       this.setActiveWorkflow(workflow);
 
+    // istanbul ignore else
     if (!task.isActive)
       workflow.setActiveTask(task);
   }
 
   /** Gets the active Workflow */
-  public static get activeWorkflow(): Workflow {
+  public static get activeWorkflow(): Workflow | undefined {
     return this._activeWorkflow;
+  }
+
+  /** Gets the active Workflow id */
+  public static get activeWorkflowId(): string {
+    // istanbul ignore else
+    if (this._activeWorkflow !== undefined)
+      return this._activeWorkflow.id;
+    return "";
+  }
+
+  /** Gets the active Task */
+  public static get activeTask(): Task | undefined {
+    // istanbul ignore else
+    if (this._activeWorkflow !== undefined)
+      return this._activeWorkflow.activeTask;
+    return undefined;
+  }
+
+  /** Gets the active Task id */
+  public static get activeTaskId(): string {
+    // istanbul ignore else
+    if (this._activeWorkflow !== undefined) {
+      // istanbul ignore else
+      if (this._activeWorkflow.activeTask)
+        return this._activeWorkflow.activeTask.id;
+    }
+    return "";
   }
 
   /** Gets the Id of the default Workflow */

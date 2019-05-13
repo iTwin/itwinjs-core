@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { GL } from "../render/webgl/GL";
 import { RenderState } from "../render/webgl/RenderState";
 import { System, DepthType } from "../render/webgl/System";
@@ -17,7 +17,10 @@ function withinTolerance(x: number, y: number): boolean {
   return z >= -tol && z <= tol;
 }
 
-describe("RenderState API", () => {
+describe("RenderState", () => {
+  before(() => WebGLTestContext.startup());
+  after(() => WebGLTestContext.shutdown());
+
   it("should compare as expected", () => {
     // Test equality
     let a = new RenderState();
@@ -47,7 +50,7 @@ describe("RenderState API", () => {
 
     b.depthFunc = GL.DepthFunc.NotEqual;
     assert.isFalse(a.equals(b), "expected different depthFunc to compare as !equal");
-    b.depthFunc = GL.DepthFunc.Less;
+    b.depthFunc = GL.DepthFunc.LessOrEqual;
     assert.isTrue(a.equals(b), "expected same depthFunc to compare as equal");
 
     // Test flags
@@ -240,11 +243,60 @@ describe("RenderState API", () => {
     a.copyFrom(b);
     assert.isTrue(a.equals(b), "expected copyFrom non-default RenderState to compare as equal");
   });
-});
 
-describe("RenderState.apply()", () => {
-  before(() => WebGLTestContext.startup());
-  after(() => WebGLTestContext.shutdown());
+  it("should have expected initial WebGL context state", () => {
+    if (!IModelApp.hasRenderSystem) {
+      return;
+    }
+
+    // A default-constructed RenderState object should match the initial state of a newly-created WebGLRenderingContext.
+    const gl: WebGLRenderingContext = System.instance.context;
+    const rs = new RenderState();
+
+    type TestCase = [number, number | boolean];
+    const testCases: TestCase[] = [
+      [GL.Capability.FrontFace, rs.frontFace],
+      [GL.Capability.CullFaceMode, rs.cullFace],
+      [GL.Capability.DepthFunc, rs.depthFunc],
+      [GL.Capability.StencilWriteMask, rs.stencilMask],
+      [GL.Capability.CullFace, rs.flags.cull],
+      [GL.Capability.DepthTest, rs.flags.depthTest],
+      [GL.Capability.Blend, rs.flags.blend],
+      [GL.Capability.StencilTest, rs.flags.stencilTest],
+      [GL.Capability.DepthWriteMask, rs.flags.depthMask],
+
+      [GL.Capability.BlendEquationRGB, rs.blend.equationRgb],
+      [GL.Capability.BlendEquationAlpha, rs.blend.equationAlpha],
+      [GL.Capability.BlendSrcRgb, rs.blend.functionSourceRgb],
+      [GL.Capability.BlendSrcAlpha, rs.blend.functionSourceAlpha],
+      [GL.Capability.BlendDstRgb, rs.blend.functionDestRgb],
+      [GL.Capability.BlendDstAlpha, rs.blend.functionDestAlpha],
+
+      [GL.Capability.StencilFrontFunc, rs.stencil.frontFunction.function],
+      [GL.Capability.StencilFrontRef, rs.stencil.frontFunction.ref],
+      [GL.Capability.StencilFrontWriteMask, rs.stencil.frontFunction.mask],
+      [GL.Capability.StencilFrontOpFail, rs.stencil.frontOperation.fail],
+      [GL.Capability.StencilFrontOpZFail, rs.stencil.frontOperation.zFail],
+      [GL.Capability.StencilFrontOpZPass, rs.stencil.frontOperation.zPass],
+
+      [GL.Capability.StencilBackFunc, rs.stencil.backFunction.function],
+      [GL.Capability.StencilBackRef, rs.stencil.backFunction.ref],
+      [GL.Capability.StencilBackWriteMask, rs.stencil.backFunction.mask],
+      [GL.Capability.StencilBackOpFail, rs.stencil.backOperation.fail],
+      [GL.Capability.StencilBackOpZFail, rs.stencil.backOperation.zFail],
+      [GL.Capability.StencilBackOpZPass, rs.stencil.backOperation.zPass],
+    ];
+
+    for (const testCase of testCases) {
+      const actualValue = gl.getParameter(testCase[0]);
+      expect(testCase[1]).to.equal(actualValue);
+    }
+
+    const glBlendColor = gl.getParameter(GL.Capability.BlendColor);
+    const rsBlendColor = rs.blend.color;
+    for (let i = 0; i < 4; i++)
+      expect(rsBlendColor[i]).to.equal(glBlendColor[i]);
+  });
 
   it("should apply state", () => {
     if (!IModelApp.hasRenderSystem) {
@@ -253,44 +305,6 @@ describe("RenderState.apply()", () => {
 
     const gl: WebGLRenderingContext = System.instance.context;
 
-    // Test default state of WebGL.
-    assert.isTrue(gl.getParameter(GL.Capability.FrontFace) === GL.FrontFace.CounterClockwise, "FrontFace should be CounterClockwise by default");
-    assert.isTrue(gl.getParameter(GL.Capability.CullFaceMode) === GL.CullFace.Back, "CullFaceMode should be Back by default");
-    assert.isTrue(gl.getParameter(GL.Capability.DepthFunc) === GL.DepthFunc.Less, "DepthFunc should be Less by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilWriteMask) === 0xFFFFFFFF, "StencilWriteMask should be all 1's by default");
-
-    assert.isTrue(gl.getParameter(GL.Capability.CullFace) === false, "CullFace should be false by default");
-    assert.isTrue(gl.getParameter(GL.Capability.DepthTest) === false, "DepthTest should be false by default");
-    assert.isTrue(gl.getParameter(GL.Capability.Blend) === false, "Blend should be false by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilTest) === false, "StencilTest should be false by default");
-    assert.isTrue(gl.getParameter(GL.Capability.DepthWriteMask) === true, "DepthWriteMask should be true by default");
-
-    let blendColor = gl.getParameter(GL.Capability.BlendColor);
-    assert.isTrue(blendColor[0] === 0.0, "blendColor[0] should be 0 by default");
-    assert.isTrue(blendColor[1] === 0.0, "blendColor[1] should be 0 by default");
-    assert.isTrue(blendColor[2] === 0.0, "blendColor[2] should be 0 by default");
-    assert.isTrue(blendColor[3] === 0.0, "blendColor[3] should be 0 by default");
-    assert.isTrue(gl.getParameter(GL.Capability.BlendEquationRGB) === GL.BlendEquation.Add, "BlendEquationRGB should be Add by default");
-    assert.isTrue(gl.getParameter(GL.Capability.BlendEquationAlpha) === GL.BlendEquation.Add, "BlendEquationAlpha should be Add by default");
-    assert.isTrue(gl.getParameter(GL.Capability.BlendSrcRgb) === GL.BlendFactor.One, "BlendSrcRGB should be One by default");
-    assert.isTrue(gl.getParameter(GL.Capability.BlendSrcAlpha) === GL.BlendFactor.One, "BlendSrcAlpha should be One by default");
-    assert.isTrue(gl.getParameter(GL.Capability.BlendDstRgb) === GL.BlendFactor.Zero, "BlendDstRGB should be Zero by default");
-    assert.isTrue(gl.getParameter(GL.Capability.BlendDstAlpha) === GL.BlendFactor.Zero, "BlendDstAlpha should be Zero by default");
-
-    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontFunc) === GL.StencilFunction.Always, "StencilFrontFunc should be Always by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontRef) === 0, "StencilFrontRef should be 0 by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontWriteMask) === 0xFFFFFFFF, "StencilFrontWriteMask should be 0xFFFFFFFF by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontOpFail) === GL.StencilOperation.Keep, "StencilFrontOpFail should be Keep by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontOpZFail) === GL.StencilOperation.Keep, "StencilFrontOpZFail should be Keep by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilFrontOpZPass) === GL.StencilOperation.Keep, "StencilFrontOpZPass should be Keep by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilBackFunc) === GL.StencilFunction.Always, "StencilBackFunc should be Always by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilBackRef) === 0, "StencilBackRef should be 0 by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilBackWriteMask) === 0xFFFFFFFF, "StencilBackWriteMask should be 0xFFFFFFFF by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilBackOpFail) === GL.StencilOperation.Keep, "StencilBackOpFail should be Keep by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilBackOpZFail) === GL.StencilOperation.Keep, "StencilBackOpZFail should be Keep by default");
-    assert.isTrue(gl.getParameter(GL.Capability.StencilBackOpZPass) === GL.StencilOperation.Keep, "StencilBackOpZPass should be Keep by default");
-
-    // Test setting WebGL state via RenderState apply.
     const prevState = new RenderState();
     const newState = new RenderState();
 
@@ -343,7 +357,7 @@ describe("RenderState.apply()", () => {
     prevState.copyFrom(newState);
     newState.blend.setColor([0.1, 0.2, 0.3, 0.4]);
     newState.apply(prevState);
-    blendColor = gl.getParameter(GL.Capability.BlendColor);
+    const blendColor = gl.getParameter(GL.Capability.BlendColor);
     assert.isTrue(withinTolerance(blendColor[0], 0.1), "blendColor[0] should now be 0.1");
     assert.isTrue(withinTolerance(blendColor[1], 0.2), "blendColor[1] should now be 0.2");
     assert.isTrue(withinTolerance(blendColor[2], 0.3), "blendColor[2] should now be 0.3");

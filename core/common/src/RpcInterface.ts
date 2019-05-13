@@ -7,9 +7,12 @@
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
 import * as semver from "semver";
+import { RpcRequest } from "./rpc/core/RpcRequest";
 
-// tslint:disable-next-line:ban-types
-export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T; name: string; version: string; types: () => Function[]; }
+/** @public */
+export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T; name: string; version: string; types: () => Function[]; } // tslint:disable-line:ban-types
+
+/** @public */
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
 /** An RPC interface is a set of operations exposed by a service that a client can call, using configurable protocols,
@@ -35,13 +38,15 @@ export abstract class RpcInterface {
   /** Obtains the implementation result for an RPC operation. */
   public async forward<T = any>(parameters: IArguments): Promise<T> {
     const parametersCompat = (arguments.length === 1 && typeof (parameters) === "object") ? parameters : arguments;
-    const request = new (this.configuration.protocol.requestType as any)(this, parametersCompat[0], Array.prototype.slice.call(parametersCompat, 1));
-    request.submit();
+    const parametersArray = Array.isArray(parametersCompat) ? parametersCompat : Array.prototype.slice.call(parametersCompat);
+    const operationName = parametersArray.pop();
+    const request = new (this.configuration.protocol.requestType as any)(this, operationName, parametersArray) as RpcRequest;
+    request.submit(); // tslint:disable-line:no-floating-promises
     (this as any)[CURRENT_REQUEST] = request;
     return request.response;
   }
 
-  /** @hidden */
+  /** @internal */
   public configurationSupplier: RpcConfigurationSupplier | undefined;
 }
 

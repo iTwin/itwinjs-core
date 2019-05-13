@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../inputs/index.scss";
 
-.chk-listbox {
+.core-chk-listbox {
   margin: 0;
   padding: 0;
   list-style: none;
   position: relative;
 
-  > li > .chk-listboxitem-checkbox {
+  > li > .core-chk-listboxitem-checkbox {
     @include uicore-inputs-checkbox;
     margin: 4px 0;
   }
 
-  > .chk-listboxseparator {
+  > .core-chk-listbox-separator {
     height: 1px;
-    background: $buic-background-divider; /* #ccc; */
+    background: $buic-background-divider;
     margin: 4px 0;
     pointer-events: none;
   }

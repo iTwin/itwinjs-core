@@ -69,12 +69,12 @@ exports[`<Scrollable /> renders vertical with overflow scrolled left correctly 1
         }
       }
     />
-    <Indicator
-      className="nz-left nz-is-visible"
+    <ScrollIndicator
+      className="nz-left nz-visible"
       direction={0}
       onClick={[Function]}
     />
-    <Indicator
+    <ScrollIndicator
       className="nz-right"
       direction={2}
       onClick={[Function]}
@@ -135,12 +135,12 @@ exports[`<Scrollable /> renders vertical with overflow scrolled right most corre
         }
       }
     />
-    <Indicator
-      className="nz-left nz-is-visible"
+    <ScrollIndicator
+      className="nz-left nz-visible"
       direction={0}
       onClick={[Function]}
     />
-    <Indicator
+    <ScrollIndicator
       className="nz-right"
       direction={2}
       onClick={[Function]}
@@ -201,12 +201,12 @@ exports[`<Scrollable /> renders with expandsTo 1`] = `
         }
       }
     />
-    <Indicator
+    <ScrollIndicator
       className="nz-left"
       direction={1}
       onClick={[Function]}
     />
-    <Indicator
+    <ScrollIndicator
       className="nz-right"
       direction={3}
       onClick={[Function]}
@@ -267,12 +267,12 @@ exports[`<Scrollable /> renders with panelAlignment 1`] = `
         }
       }
     />
-    <Indicator
+    <ScrollIndicator
       className="nz-left"
       direction={0}
       onClick={[Function]}
     />
-    <Indicator
+    <ScrollIndicator
       className="nz-right"
       direction={2}
       onClick={[Function]}
@@ -333,12 +333,12 @@ exports[`<Scrollable /> renders with visible item threshold 1`] = `
         }
       }
     />
-    <Indicator
+    <ScrollIndicator
       className="nz-left"
       direction={0}
       onClick={[Function]}
     />
-    <Indicator
+    <ScrollIndicator
       className="nz-right"
       direction={2}
       onClick={[Function]}

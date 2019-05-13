@@ -3,16 +3,21 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+#main-landing-wrapper p {
+  line-height: 26px;
+}
+
 span.gradient {
   background: linear-gradient(90deg, #038cd6 0%, #67b225 43%, #EFF8FF 100%) !important;
   height: 3px;
   display: block;
   border: none;
+  margin-bottom: 1em;
 }
 
 #main-landing-wrapper {
   margin-bottom: 0em !important;
-  background-color: #EFF8FF;
+  background-color: #FAFDFF;
   display: -ms-grid;
   display: grid;
   -ms-grid-columns: 1fr;
@@ -62,7 +67,7 @@ span.gradient {
   max-width: 50%;
   text-align: center;
   line-height: 1em;
-  margin: 3em auto;
+  margin: 6em auto;
   background: rgba(0, 42, 68, 0.753);
 }
 
@@ -89,6 +94,8 @@ p.digital-twin {
 }
 
 #demo-container {
+  width: 111%;
+  background-color: #F1F9FF;
   display: flex;
   align-items: center;
   position: relative;
@@ -101,6 +108,7 @@ p.digital-twin {
   display: block;
   width: 690px;
   height: 431px;
+  margin: 0 0 56px 0;
 }
 
 .iframe-viewer {
@@ -138,6 +146,7 @@ p.digital-twin {
   -ms-flex-shrink: 0;
   max-height: 25vw;
   max-width: 45vw;
+  margin: 0 4vw 0 1vw;
 }
 
 .middle-content-text {
@@ -152,6 +161,58 @@ p.digital-twin {
 
 .feature-header {
   color: #335569;
+  order: 2;
+  grid-row: 1;
+  grid-column: 2;
+  -ms-grid-row: 1;
+  -ms-grid-column: 2;
+  font-weight: 600;
+  text-align: left;
+  margin-left: 1em;
+}
+
+.feature-description {
+  order: 3;
+  grid-column: 2;
+  -ms-grid-column: 2;
+  margin-top: -30px;
+  grid-row: 2;
+  -ms-grid-row: 2;
+  text-align: left;
+  margin-left: 1em;
+}
+
+.landing-bottom-content-item {
+  padding: 20px 5px;
+  margin: 20px 5px;
+  max-width: 500px;
+  height: 100px;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  display: grid;
+  display: -ms-grid;
+  grid-template-columns: 48px 1fr;
+  -ms-grid-columns: 48px 1fr;
+}
+
+.landing-bottom-content-item img {
+  width: 24px;
+  height: 24px;
+  margin: 14px 0px;
+}
+
+ul#bottom-content-container {
+  margin: 0px 10%;
+  list-style: none !important;
+  flex-wrap: wrap;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-content: center;
+  -webkit-padding-start: 0px !important;
+  -webkit-margin-before: 0px !important;
+  -webkit-margin-after: 0px !important;
 }
 
 ul.list-unstyled.list-inline {
@@ -173,12 +234,16 @@ body.layout-full-width #main-landing-wrapper {
   #main-landing-wrapper #middle-content-wrapper {
     margin: 2em 1% !important;
   }
+  #demo-container {
+    width: 102%;
+  }
   .middle-content-text {
     margin: 0 1vw 0 4vw;
   }
+  +98888
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 767px) {
   #bottom-content-container {
     -ms-flex-direction: column !important;
   }
@@ -236,4 +301,12 @@ body.layout-full-width #main-landing-wrapper {
   .imodeljs-header-tagline {
     max-width: 80%;
   }
+}
+
+#landing-footer .container {
+  max-width: none;
+  margin-left: inherit;
+  margin-right: inherit;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }

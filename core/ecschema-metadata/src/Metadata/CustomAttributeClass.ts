@@ -11,6 +11,7 @@ import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 
 /**
  * A Typescript class representation of an ECCustomAttributeClass.
+ * @beta
  */
 export class CustomAttributeClass extends ECClass {
   public readonly schemaItemType!: SchemaItemType.CustomAttributeClass; // tslint:disable-line

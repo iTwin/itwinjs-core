@@ -4,20 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Models */
 
-import { Id64String, Id64, DbOpcode, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
-import { AxisAlignedBox3d, GeometricModel2dProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
+import { DbOpcode, Id64, Id64String, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { DefinitionPartition, DocumentPartition, PhysicalPartition } from "./Element";
+import { AxisAlignedBox3d, GeometricModel2dProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
+import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 
-/**
- * A Model is a container for persisting a collection of related elements within an iModel.
+/** A Model is a container for persisting a collection of related elements within an iModel.
  * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDB.
  * See [Creating models]($docs/learning/backend/CreateModels.md)
+ * @public
  */
 export class Model extends Entity implements ModelProps {
+  public static get className(): string { return "Model"; }
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
   public readonly parentModel: Id64String;
@@ -25,7 +26,7 @@ export class Model extends Entity implements ModelProps {
   public isPrivate: boolean;
   public isTemplate: boolean;
 
-  /** @hidden */
+  /** @internal */
   constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
     this.id = Id64.fromJSON(props.id);
@@ -38,7 +39,7 @@ export class Model extends Entity implements ModelProps {
   }
 
   /** Add all custom-handled properties of a Model to a json object.
-   * @hidden
+   * @internal
    */
   public toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
@@ -83,10 +84,12 @@ export class Model extends Entity implements ModelProps {
   public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForModel(this, opcode); }
 }
 
-/**
- * A container for persisting geometric elements.
+/** A container for persisting geometric elements.
+ * @public
  */
 export class GeometricModel extends Model {
+  public static get className(): string { return "GeometricModel"; }
+
   /** Query for the union of the extents of the elements contained by this model. */
   public queryExtents(): AxisAlignedBox3d {
     const { error, result } = this.iModel.nativeDb.queryModelExtents(JSON.stringify({ id: this.id.toString() }));
@@ -96,37 +99,41 @@ export class GeometricModel extends Model {
   }
 }
 
-/**
- * A container for persisting 3d geometric elements.
+/** A container for persisting 3d geometric elements.
+ * @public
  */
 export abstract class GeometricModel3d extends GeometricModel {
+  public static get className(): string { return "GeometricModel3d"; }
 }
 
-/**
- * A container for persisting 2d geometric elements.
+/** A container for persisting 2d geometric elements.
+ * @public
  */
 export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
+  public static get className(): string { return "GeometricModel2d"; }
   public globalOrigin?: Point2d;
 }
 
-/**
- * A container for persisting 2d graphical elements.
+/** A container for persisting 2d graphical elements.
+ * @public
  */
 export abstract class GraphicalModel2d extends GeometricModel2d {
+  public static get className(): string { return "GraphicalModel2d"; }
 }
 
-/**
- * A container for persisting 3d geometric elements that are spatially located.
+/** A container for persisting 3d geometric elements that are spatially located.
+ * @public
  */
 export abstract class SpatialModel extends GeometricModel3d {
+  public static get className(): string { return "SpatialModel"; }
 }
 
-/**
- * A container for persisting physical elements that model physical space.
+/** A container for persisting physical elements that model physical space.
+ * @public
  */
 export class PhysicalModel extends SpatialModel {
-  /**
-   * Insert a PhysicalPartition and a PhysicalModel that breaks it down.
+  public static get className(): string { return "PhysicalModel"; }
+  /** Insert a PhysicalPartition and a PhysicalModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
    * @param name The name of the PhysicalPartition that the new PhysicalModel will break down.
@@ -148,62 +155,92 @@ export class PhysicalModel extends SpatialModel {
   }
 }
 
-/**
- * A container for persisting spatial location elements.
+/** A container for persisting spatial location elements.
+ * @public
  */
 export class SpatialLocationModel extends SpatialModel {
+  public static get className(): string { return "SpatialLocationModel"; }
 }
 
-/**
- * A 2d model that holds [[DrawingGraphic]]s. DrawingModels may be dimensional or non-dimensional.
+/** A 2d model that holds [[DrawingGraphic]]s. DrawingModels may be dimensional or non-dimensional.
+ * @public
  */
 export class DrawingModel extends GraphicalModel2d {
+  public static get className(): string { return "DrawingModel"; }
 }
 
-/**
- * A container for persisting section [[DrawingGraphic]]s.
+/** A container for persisting section [[DrawingGraphic]]s.
+ * @public
  */
 export class SectionDrawingModel extends DrawingModel {
+  public static get className(): string { return "SectionDrawingModel"; }
 }
 
-/**
- * A container for persisting [[ViewAttachment]]s and [[DrawingGraphic]]s.
+/** A container for persisting [[ViewAttachment]]s and [[DrawingGraphic]]s.
  * A SheetModel is a digital representation of a *sheet of paper*. SheetModels are 2d models in bounded paper coordinates.
  * SheetModels may contain annotation Elements as well as references to 2d or 3d Views.
+ * @public
  */
 export class SheetModel extends GraphicalModel2d {
+  public static get className(): string { return "SheetModel"; }
 }
 
-/**
- * A container for persisting role elements.
+/** A container for persisting role elements.
+ * @public
  */
 export class RoleModel extends Model {
+  public static get className(): string { return "RoleModel"; }
 }
 
-/**
- * A container for persisting information elements.
+/** A container for persisting information elements.
+ * @public
  */
 export abstract class InformationModel extends Model {
+  public static get className(): string { return "InformationModel"; }
 }
 
-/**
- * A container for persisting group information elements.
+/** A container for persisting group information elements.
+ * @public
  */
 export abstract class GroupInformationModel extends InformationModel {
+  public static get className(): string { return "GroupInformationModel"; }
 }
 
-/**
- * A container for persisting Information Record Elements
+/** A container for persisting Information Record Elements
+ * @public
  */
 export class InformationRecordModel extends InformationModel {
+  public static get className(): string { return "InformationRecordModel"; }
+
+  /** Insert a InformationRecordPartition and a InformationRecordModel that breaks it down.
+   * @param iModelDb Insert into this iModel
+   * @param parentSubjectId The InformationRecordPartition will be inserted as a child of this Subject element.
+   * @param name The name of the InformationRecordPartition that the new InformationRecordModel will break down.
+   * @returns The Id of the newly inserted InformationRecordModel.
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const partitionProps: InformationPartitionElementProps = {
+      classFullName: InformationRecordPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
+      code: InformationRecordPartition.createCode(iModelDb, parentSubjectId, name),
+    };
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    return iModelDb.models.insertModel({
+      classFullName: this.classFullName,
+      modeledElement: { id: partitionId },
+    });
+  }
 }
 
-/**
- * A container for persisting definition elements.
+/** A container for persisting definition elements.
+ * @public
  */
 export class DefinitionModel extends InformationModel {
-  /**
-   * Insert a DefinitionPartition and a DefinitionModel that breaks it down.
+  public static get className(): string { return "DefinitionModel"; }
+
+  /** Insert a DefinitionPartition and a DefinitionModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DefinitionPartition will be inserted as a child of this Subject element.
    * @param name The name of the DefinitionPartition that the new DefinitionModel will break down.
@@ -225,18 +262,19 @@ export class DefinitionModel extends InformationModel {
   }
 }
 
-/**
- * The singleton container of repository-related information elements.
+/** The singleton container of repository-related information elements.
+ * @public
  */
 export class RepositoryModel extends DefinitionModel {
+  public static get className(): string { return "RepositoryModel"; }
 }
 
-/**
- * Contains a list of document elements.
+/** Contains a list of document elements.
+ * @public
  */
 export class DocumentListModel extends InformationModel {
-  /**
-   * Insert a DocumentPartition and a DocumentListModel that breaks it down.
+  public static get className(): string { return "DocumentListModel"; }
+  /** Insert a DocumentPartition and a DocumentListModel that breaks it down.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
    * @param name The name of the DocumentPartition that the new DocumentListModel will break down.
@@ -258,18 +296,23 @@ export class DocumentListModel extends InformationModel {
   }
 }
 
-/**
- * A container for persisting link elements.
+/** A container for persisting link elements.
+ * @public
  */
 export class LinkModel extends InformationModel {
+  public static get className(): string { return "LinkModel"; }
 }
 
-/**
- * The singleton container for repository-specific definition elements.
+/** The singleton container for repository-specific definition elements.
+ * @public
  */
 export class DictionaryModel extends DefinitionModel {
+  public static get className(): string { return "DictionaryModel"; }
 }
 
-/** Obtains and displays multi-resolution tiled raster organized according to the WebMercator tiling system. */
+/** Obtains and displays multi-resolution tiled raster organized according to the WebMercator tiling system.
+ * @public
+ */
 export class WebMercatorModel extends SpatialModel {
+  public static get className(): string { return "WebMercatorModel"; }
 }

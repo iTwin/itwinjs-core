@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
-
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { DefaultWsgRequestOptionsProvider, WsgClient, WsgRequestOptions } from "../WsgClient";
 import { RequestOptions, RequestQueryOptions } from "../Request";
 import { WsgInstance } from "../ECJsonTypeMap";
@@ -12,7 +12,7 @@ import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import { FileHandler } from "../imodeljs-clients";
 import { CustomRequestOptions } from "./CustomRequestOptions";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { Config } from "../Config";
 /**
  * Provides default options for iModelHub requests.
@@ -28,7 +28,7 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
 
 /**
  * This class acts as the WsgClient for other iModelHub Handlers.
- * @hidden
+ * @internal
  */
 export class IModelBaseHandler extends WsgClient {
   protected _url?: string;
@@ -41,7 +41,7 @@ export class IModelBaseHandler extends WsgClient {
 
   /**
    * Create an instance of IModelBaseHandler.
-   * @hidden
+   * @internal
    */
   public constructor(keepAliveDuration = 30000, fileHandler?: FileHandler) {
     super("sv1.1");
@@ -105,102 +105,104 @@ export class IModelBaseHandler extends WsgClient {
    * Get the URL of the service. This method attempts to discover and cache the URL from the URL Discovery Service. If not found uses the default URL provided by client implementations. Note that for consistency sake, the URL is stripped of any trailing "/"
    * @returns URL for the service
    */
-  public async getUrl(alctx: ActivityLoggingContext): Promise<string> {
-    return super.getUrl(alctx);
+  public async getUrl(requestContext: ClientRequestContext): Promise<string> {
+    return super.getUrl(requestContext);
   }
 
   /**
    * Get the (delegation) access token to access the service
+   * @param requestContext The client request context
    * @param authorizationToken Authorization token.
    * @returns Resolves to the (delegation) access token.
    */
-  public async getAccessToken(alctx: ActivityLoggingContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
+  public async getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     const imsClient = new ImsDelegationSecureTokenClient();
-    return imsClient.getToken(alctx, authorizationToken, this.getRelyingPartyUrl());
+    return imsClient.getToken(requestContext, authorizationToken, this.getRelyingPartyUrl());
   }
 
   /**
    * Send a delete request. Sends a request without body.
-   * @param token Delegation token of the authorized user.
+   * @param requestContext The client request context
    * @param relativeUrlPath Relative path to the REST resource.
    * @returns Promise resolves after successfully deleting REST resource at the specified path.
    */
-  public async delete(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string): Promise<void> {
-    return super.delete(alctx, token, relativeUrlPath);
+  public async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void> {
+    return super.delete(requestContext, relativeUrlPath);
   }
 
   /**
    * Delete a strongly typed instance. Sends a request body with a WSG instance.
-   * @param token Delegation token of the authorized user.
+   * @param requestContext The client request context
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Instance to be deleted.
    * @param requestOptions WSG options for the request.
    * @returns Promise resolves after successfully deleting instance.
    */
-  public async deleteInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
+  public async deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
     if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
       }
       requestOptions.CustomOptions = this._customRequestOptions.insertCustomOptions(requestOptions.CustomOptions);
     }
-    return super.deleteInstance<T>(alctx, token, relativeUrlPath, instance, requestOptions);
+    return super.deleteInstance<T>(requestContext, relativeUrlPath, instance, requestOptions);
   }
 
   /**
    * Post a strongly typed instance. Sends a request body with a WSG instance.
+   * @param requestContext The client request context
    * @param typedConstructor Used to construct the resulting instances from the response.
-   * @param token Delegation token of the authorized user.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Strongly typed instance to be posted.
    * @param requestOptions WSG options for the request.
    * @returns The posted instance that's returned back from the server.
    */
-  public async postInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
+  public async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
     if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
       }
       requestOptions.CustomOptions = this._customRequestOptions.insertCustomOptions(requestOptions.CustomOptions);
     }
-    return super.postInstance<T>(alctx, typedConstructor, token, relativeUrlPath, instance, requestOptions);
+    return super.postInstance<T>(requestContext, typedConstructor, relativeUrlPath, instance, requestOptions);
   }
 
   /**
    * Post multiple strongly typed instances. Sends a request body with WSG instances.
+   * @param requestContext The client request context
    * @param typedConstructor Used to construct the resulting instances from the response.
-   * @param token Delegation token of the authorized user.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instances Strongly typed instances to be posted.
    * @param requestOptions WSG options for the request.
    * @returns The posted instances that's returned back from the server.
    */
-  public async postInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]> {
-    return super.postInstances(alctx, typedConstructor, token, relativeUrlPath, instances, requestOptions);
+  public async postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]> {
+    return super.postInstances(requestContext, typedConstructor, relativeUrlPath, instances, requestOptions);
   }
 
   /**
    * Get multiple strongly typed instances.
+   * @param requestContext The client request context
    * @param typedConstructor Used to construct the resulting instances from the response.
    * @param token Delegation token of the authorized user.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
    * @returns Array of strongly typed instances.
    */
-  public async getInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]> {
-    return super.getInstances(alctx, typedConstructor, token, relativeUrlPath, queryOptions);
+  public async getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]> {
+    return super.getInstances(requestContext, typedConstructor, relativeUrlPath, queryOptions);
   }
 
   /**
    * Get multiple strongly typed instances. Sends query in the request's body. This can be used for queries that are too long to fit in URL.
+   * @param requestContext The client request context
    * @param typedConstructor Used to construct the resulting instances from the response.
-   * @param token Delegation token of the authorized user.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
    * @returns Array of strongly typed instances.
    */
-  public async postQuery<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
-    return super.postQuery(alctx, typedConstructor, token, relativeUrlPath, queryOptions);
+  public async postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
+    return super.postQuery(requestContext, typedConstructor, relativeUrlPath, queryOptions);
   }
 
   /**

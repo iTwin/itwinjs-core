@@ -19,10 +19,12 @@ import { AnyCurve } from "../curve/CurveChain";
 import { ParityRegion } from "../curve/ParityRegion";
 import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { PolygonOps } from "../geometry3d/PointHelpers";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 
 /**
  * Sweepable contour with Transform for local to world interaction.
+ * * The surface/solid classes `LinearSweep`, `RotationalSweep`, `RuledSweep` use this for their swept contours.
+ * @public
  */
 export class SweepContour {
   public curves: CurveCollection;

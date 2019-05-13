@@ -48,6 +48,8 @@ import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Range2d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 
+// tslint:disable:no-const-enum
+
 /** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
@@ -72,7 +74,7 @@ export namespace IModelTileIO {
      * front-end is not capable of reading the tile content. Otherwise, this front-end can read the tile content even if the header specifies a
      * greater minor version than CurrentVersion.Minor, although some data may be skipped.
      */
-    Major = 2,
+    Major = 3,
     /** The unsigned 16-bit minor version number. If the major version in the tile header is equal to CurrentVersion.Major, then this front-end can
      * read the tile content even if the minor version in the tile header is greater than this value, although some data may be skipped.
      */
@@ -89,7 +91,7 @@ export namespace IModelTileIO {
     public readonly headerLength: number;
     /** Flags describing the geometry contained within the tile */
     public readonly flags: Flags;
-    /** A bounding box no larger than the tile's range, tightly enclosing the tile's geometry; or a null range if the tile is emtpy */
+    /** A bounding box no larger than the tile's range, tightly enclosing the tile's geometry; or a null range if the tile is empty */
     public readonly contentRange: ElementAlignedBox3d;
     /** The chord tolerance in meters at which the tile's geometry was faceted */
     public readonly tolerance: number;
@@ -205,7 +207,7 @@ export namespace IModelTileIO {
       let sizeMultiplier = this._sizeMultiplier;
       const completeTile = 0 === (header.flags & IModelTileIO.Flags.Incomplete);
       const emptyTile = completeTile && 0 === header.numElementsIncluded && 0 === header.numElementsExcluded;
-      if (emptyTile || this._isClassifier) {    // Classifier algorithm currently supports only a single tile.
+      if (emptyTile || this._isVolumeClassifier) {    // Classifier algorithm currently supports only a single tile.
         isLeaf = true;
       } else {
         // Non-spatial (2d) models are of arbitrary scale and contain geometry like line work and especially text which
@@ -227,10 +229,10 @@ export namespace IModelTileIO {
       return Promise.resolve(this.finishRead(isLeaf, featureTable, header.contentRange, header.emptySubRanges, sizeMultiplier));
     }
 
-    /** @hidden */
+    /** @internal */
     protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
 
-    /** @hidden */
+    /** @internal */
     protected createDisplayParams(json: any): DisplayParams | undefined {
       const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
       const lineColor = new ColorDef(JsonUtils.asInt(json.lineColor));
@@ -267,12 +269,12 @@ export namespace IModelTileIO {
       return new DisplayParams(type, lineColor, fillColor, width, linePixels, fillFlags, material, undefined, ignoreLighting, textureMapping);
     }
 
-    /** @hidden */
+    /** @internal */
     protected colorDefFromMaterialJson(json: any): ColorDef | undefined {
       return undefined !== json ? ColorDef.from(json[0] * 255 + 0.5, json[1] * 255 + 0.5, json[2] * 255 + 0.5) : undefined;
     }
 
-    /** @hidden */
+    /** @internal */
     protected materialFromJson(key: string): RenderMaterial | undefined {
       if (this._renderMaterials === undefined || this._renderMaterials[key] === undefined)
         return undefined;
@@ -392,7 +394,7 @@ export namespace IModelTileIO {
       });
     }
 
-    /** @hidden */
+    /** @internal */
     protected readFeatureTable(): PackedFeatureTable | undefined {
       const startPos = this._buffer.curPos;
       const header = FeatureTableHeader.readFrom(this._buffer);
@@ -564,17 +566,7 @@ export namespace IModelTileIO {
       return AuxChannelTable.fromJSON(props);
     }
 
-    // ###TODO_INSTANCING: Remove me once feature complete...
-    private static _forceInstancing = false;
-    private static _fakeInstanceParams = {
-      transforms: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0]),
-      featureIds: new Uint8Array([0, 0, 0]),
-      count: 1,
-    };
     private readInstances(primitive: any): InstancedGraphicParams | undefined {
-      if (Reader._forceInstancing)
-        return Reader._fakeInstanceParams;
-
       const json = primitive.instances;
       if (undefined === json)
         return undefined;
@@ -582,6 +574,12 @@ export namespace IModelTileIO {
       const count = JsonUtils.asInt(json.count, 0);
       if (count <= 0)
         return undefined;
+
+      const centerComponents = JsonUtils.asArray(json.transformCenter);
+      if (undefined === centerComponents || 3 !== centerComponents.length)
+        return undefined;
+
+      const transformCenter = Point3d.create(centerComponents[0], centerComponents[1], centerComponents[2]);
 
       const featureIds = this.findBuffer(JsonUtils.asString(json.featureIds));
       if (undefined === featureIds)
@@ -602,7 +600,7 @@ export namespace IModelTileIO {
       if (undefined !== json.symbologyOverrides)
         symbologyOverrides = this.findBuffer(JsonUtils.asString(json.symbologyOverrides));
 
-      return { count, transforms, featureIds, symbologyOverrides };
+      return { count, transforms, transformCenter, featureIds, symbologyOverrides };
     }
 
     private readVertexIndices(json: any): VertexIndices | undefined {
@@ -721,7 +719,7 @@ export namespace IModelTileIO {
 
       // ###TODO: Tile generator shouldn't bother producing edges for classification meshes in the first place...
       let edgeParams: EdgeParams | undefined;
-      if (this._loadEdges && undefined !== primitive.edges && SurfaceType.Classifier !== surface.type) {
+      if (this._loadEdges && undefined !== primitive.edges && SurfaceType.VolumeClassifier !== surface.type) {
         const edgeResult = this.readEdges(primitive.edges, displayParams);
         if (!edgeResult.succeeded)
           return undefined;

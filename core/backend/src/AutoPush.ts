@@ -4,20 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
+import { assert, BeEvent, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { IModelError, RpcRequest } from "@bentley/imodeljs-common";
+import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { IModelDb } from "./IModelDb";
-import { AccessToken, IAccessTokenManager } from "@bentley/imodeljs-clients";
-import { assert, Logger, BeEvent, IModelStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { RpcRequest, IModelError } from "@bentley/imodeljs-common";
+import { IModelHost } from "./IModelHost";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
-const loggingCategory = "imodeljs-backend.AutoPush";
+const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
-/** Monitors backend activity. */
+/** Monitors backend activity.
+ * @beta
+ */
 export interface AppActivityMonitor {
   /** Check if the app is idle, that is, not busy. */
   isIdle: boolean;
 }
 
-/** An implementation of AppActivityMonitor that should be suitable for most backends. */
+/** An implementation of AppActivityMonitor that should be suitable for most backends.
+ * @beta
+ */
 export class BackendActivityMonitor implements AppActivityMonitor {
   // intervalMillis - the length of time in seconds of inactivity that indicates that the backend is in a lull.
   constructor(public idleIntervalSeconds: number = 1) {
@@ -32,7 +39,9 @@ export class BackendActivityMonitor implements AppActivityMonitor {
   }
 }
 
-/** Configuration for AutoPush. */
+/** Configuration for AutoPush.
+ * @beta
+ */
 export interface AutoPushParams {
   /** Desired delay in seconds between pushes. */
   pushIntervalSecondsMin: number;
@@ -40,18 +49,20 @@ export interface AutoPushParams {
   pushIntervalSecondsMax: number;
   /** Should AutoPush automatically schedule pushes? If not, the app must call [[AutoPush#scheduleNextPush]] */
   autoSchedule: boolean;
-  /** The ActivityContext in iModelServer operations are to be carried out */
-  activityContext: ActivityLoggingContext;
 }
 
-/** Identifies the current state of an AutoPush object. */
+/** Identifies the current state of an AutoPush object.
+ * @beta
+ */
 export enum AutoPushState {
   NotRunning,
   Scheduled,
   Pushing,
 }
 
-/** Identifies an AutoPush event. */
+/** Identifies an AutoPush event.
+ * @beta
+ */
 export enum AutoPushEventType {
   PushStarted,
   PushFinished,
@@ -59,7 +70,9 @@ export enum AutoPushEventType {
   PushCancelled,
 }
 
-/** The signature of an AutoPush event handler. */
+/** The signature of an AutoPush event handler.
+ * @beta
+ */
 export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
 
 /** Use AutoPush to automatically push local changes to a specified IModel. To do this,
@@ -93,6 +106,7 @@ export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush
  * ``` ts
  * [[include:Service.readConfig]]
  * ```
+ * @beta
  */
 export class AutoPush {
   private _iModel: IModelDb;
@@ -105,8 +119,6 @@ export class AutoPush {
   private _activityMonitor: AppActivityMonitor;
   private _lastPushError: any;
   private _pendingTimeout: any | undefined;
-  private _activityContext: ActivityLoggingContext;
-  private _accessTokenManager: IAccessTokenManager;
   /** Events raised by AutoPush. See [[AutoPushEventType]] */
   public event: BeEvent<AutoPushEventHandler>;
 
@@ -114,17 +126,15 @@ export class AutoPush {
    * @param params  Auto-push configuration parameters
    * @param activityMonitor The activity monitor that will tell me when the app is idle. Defaults to BackendActivityMonitor with a 1 second idle period.
    */
-  constructor(iModel: IModelDb, params: AutoPushParams, accessTokenManager: IAccessTokenManager, activityMonitor?: AppActivityMonitor) {
+  constructor(iModel: IModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor) {
     AutoPush.validateAutoPushParams(params);
     iModel.onBeforeClose.addListener(() => this.cancel());
     this._iModel = iModel;
-    this._accessTokenManager = accessTokenManager;
     this._activityMonitor = activityMonitor || new BackendActivityMonitor();
     this._pushIntervalMillisMin = params.pushIntervalSecondsMin * 1000;
     this._pushIntervalMillisMax = params.pushIntervalSecondsMax * 1000;
     this._endOfPushMillis = Date.now(); // not true, but this sets the mark for detecting when we reach the max
     this._startOfPushMillis = this._endOfPushMillis + 1; // initialize to invalid duration
-    this._activityContext = params.activityContext;
     this._lastPushError = undefined;
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
@@ -139,7 +149,7 @@ export class AutoPush {
     const reqProps = ["pushIntervalSecondsMin", "pushIntervalSecondsMax", "autoSchedule"];
     for (const reqProp of reqProps) {
       if (!params.hasOwnProperty(reqProp)) {
-        throw new IModelError(IModelStatus.BadArg, "Invalid AutoPushParams object - missing required property: " + reqProp, Logger.logError, loggingCategory);
+        throw new IModelError(IModelStatus.BadArg, "Invalid AutoPushParams object - missing required property: " + reqProp, Logger.logError, loggerCategory);
       }
     }
   }
@@ -195,21 +205,28 @@ export class AutoPush {
     const intervalMillis = intervalSeconds ? (intervalSeconds * 1000) : this._pushIntervalMillisMin;
     this._pendingTimeout = setTimeout(() => this.doAutoPush(), intervalMillis);
     this._state = AutoPushState.Scheduled;
-    Logger.logTrace(loggingCategory, "AutoPush - next push in " + (intervalMillis / 1000) + " seconds...");
+    Logger.logTrace(loggerCategory, "AutoPush - next push in " + (intervalMillis / 1000) + " seconds...");
   }
 
   public async reserveCodes(): Promise<void> {
-    const accessToken = await this.getAccessToken();
-    return this._iModel.concurrencyControl.request(this._activityContext, accessToken);
+    const requestContext: AuthorizedBackendRequestContext = await this.getRequestContext();
+    return this._iModel.concurrencyControl.request(requestContext);
   }
 
-  private async getAccessToken(): Promise<AccessToken> {
-    return this._accessTokenManager.getAccessToken(new ActivityLoggingContext(""));
+  private _requestContext?: AuthorizedBackendRequestContext;
+  private async getRequestContext(): Promise<AuthorizedBackendRequestContext> {
+    // Create or refresh requestContext as necessary
+    // todo: replace this logic to check the validity of the accessToken
+    const accessToken: AccessToken = await IModelHost.getAccessToken();
+    if (!this._requestContext || this._requestContext.accessToken !== accessToken)
+      this._requestContext = new AuthorizedBackendRequestContext(accessToken);
+
+    return this._requestContext;
   }
 
   /** Callback invoked just before auto-pushing */
   private onPushStart() {
-    Logger.logTrace(loggingCategory, "AutoPush - pushing...");
+    Logger.logTrace(loggerCategory, "AutoPush - pushing...");
     this._state = AutoPushState.Pushing;
     this._startOfPushMillis = Date.now();
     if (this.event)
@@ -218,7 +235,7 @@ export class AutoPush {
 
   /** Callback invoked when the next scheduled autopush is cancelled */
   private onPushCancelled() {
-    Logger.logTrace(loggingCategory, "AutoPush - cancelling.");
+    Logger.logTrace(loggerCategory, "AutoPush - cancelling.");
     assert(this._state === AutoPushState.NotRunning);
     if (this.event)
       this.event.raiseEvent(AutoPushEventType.PushCancelled, this);
@@ -230,7 +247,7 @@ export class AutoPush {
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
     this._lastPushError = undefined;
-    Logger.logTrace(loggingCategory, "AutoPush - pushed.", () => ({ changeSetId: this._iModel.iModelToken.changeSetId }));
+    Logger.logTrace(loggerCategory, "AutoPush - pushed.", () => this._iModel.iModelToken);
     if (this._autoSchedule)
       this.scheduleNextPush();
     if (this.event)
@@ -241,7 +258,7 @@ export class AutoPush {
     this._state = AutoPushState.NotRunning;
     this._pendingTimeout = undefined;
     this._lastPushError = err;
-    Logger.logInfo(loggingCategory, "AutoPush - push failed", () => err);
+    Logger.logInfo(loggerCategory, "AutoPush - push failed", () => err);
     if (this._autoSchedule)
       this.scheduleNextPush();
     if (this.event)
@@ -258,7 +275,7 @@ export class AutoPush {
     }
 
     if (this.iModel === undefined) {
-      Logger.logInfo(loggingCategory, "AutoPush - No iModel! Cancelling...");
+      Logger.logInfo(loggerCategory, "AutoPush - No iModel! Cancelling...");
       this.cancel();
       return;
     }
@@ -266,7 +283,7 @@ export class AutoPush {
     //  If the previous push is still in progress ...
     if (this._state === AutoPushState.Pushing) {
       assert(this._pendingTimeout !== undefined);
-      Logger.logInfo(loggingCategory, "AutoPush - Attempt to auto-push while push is in progress. Re-scheduling.");
+      Logger.logInfo(loggerCategory, "AutoPush - Attempt to auto-push while push is in progress. Re-scheduling.");
       if (this._autoSchedule)
         this.scheduleNextPush();  // wait a while before trying another one.
       else
@@ -276,7 +293,7 @@ export class AutoPush {
 
     // If the backend is busy, then put off the push for a little while, and wait for a lull.
     if (!this._activityMonitor.isIdle && ((Date.now() - this._endOfPushMillis) < this._pushIntervalMillisMax)) {
-      Logger.logInfo(loggingCategory, "AutoPush - Attempt to auto-push while backend is busy. Re-scheduling.");
+      Logger.logInfo(loggerCategory, "AutoPush - Attempt to auto-push while backend is busy. Re-scheduling.");
       this.cancel();
       this.scheduleNextPush();
       return;
@@ -284,8 +301,8 @@ export class AutoPush {
 
     // We are either in lull or we have put off this push long enough. Start to push accumulated changes now.
     this.onPushStart();
-    this.getAccessToken()
-      .then(async (accessToken: AccessToken) => this.iModel.pushChanges(this._activityContext, accessToken))
+    this.getRequestContext()
+      .then(async (requestContext: AuthorizedBackendRequestContext) => this.iModel.pushChanges(requestContext))
       .then(() => this.onPushEnd())
       .catch((reason) => this.onPushEndWithError(reason));
 

@@ -6,19 +6,23 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { Omit } from "@bentley/ui-core";
+
+import { Omit, CommonProps } from "@bentley/ui-core";
+
+import { ItemStyleProvider } from "../../properties/ItemStyle";
+import { EditorContainerProps, EditorContainer } from "../../editors/EditorContainer";
+import { CellItem } from "../TableDataProvider";
 import {
-  EditorContainerProps, EditorContainer, CellItem, PropertyValueRendererManager,
-  PropertyDialogState, PropertyValueRendererContext, PropertyContainerType,
-} from "../../../ui-components";
+  PropertyDialogState, PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType,
+} from "../../properties/ValueRendererManager";
 
 import "./TableCell.scss";
-import { ItemStyleProvider } from "../../properties/ItemStyle";
 
 /**
  * Properties of the [[TableCell]] React component
+ * @public
  */
-export interface TableCellProps {
+export interface TableCellProps extends CommonProps {
   /** Additional class name for the cell container */
   className?: string;
   /** Title of the cell container */
@@ -37,8 +41,10 @@ export interface TableCellProps {
 
 /**
  * A React component that renders a table cell
+ * @public
  */
 export class TableCell extends React.PureComponent<TableCellProps> {
+  /** @internal */
   public render() {
     if (this.props.cellEditingProps)
       return (
@@ -51,6 +57,7 @@ export class TableCell extends React.PureComponent<TableCellProps> {
     return (
       <div
         className={classnames("components-table-cell", this.props.className)}
+        style={this.props.style}
         title={this.props.title}
         onClick={this.props.onClick}
         onMouseMove={this.props.onMouseMove}
@@ -62,8 +69,10 @@ export class TableCell extends React.PureComponent<TableCellProps> {
   }
 }
 
-/** Properties of the [[TableCellContent]] React component */
-export interface TableCellContentProps {
+/** Properties of the [[TableCellContent]] React component
+ * @public
+ */
+export interface TableCellContentProps extends CommonProps {
   /** Indicates, whether container cell is selected or not */
   isSelected: boolean;
   /** Props for the item that will be rendered */
@@ -76,16 +85,21 @@ export interface TableCellContentProps {
   propertyValueRendererManager: PropertyValueRendererManager;
 }
 
-/** State of the [[TableCellContent]] React component */
-export interface TableCellContentState {
+/** State of the [[TableCellContent]] React component
+ * @internal
+ */
+interface TableCellContentState {
   /** Rendered content */
   content: React.ReactNode;
 }
 
-/** A React component that renders table cell content */
+/** A React component that renders table cell content
+ * @public
+ */
 export class TableCellContent extends React.PureComponent<TableCellContentProps, TableCellContentState> {
+  /** @internal */
   public readonly state: TableCellContentState = {
-    content: <div style={this.getStyle(this.props.cellItem, this.props.isSelected, this.props.height)} />,
+    content: <div className={this.props.className} style={this.getStyle(this.props.cellItem, this.props.isSelected, this.props.height)} />,
   };
 
   private _isMounted = false;
@@ -95,6 +109,7 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
       ...ItemStyleProvider.createStyle(cellItem.style ? cellItem.style : {}, isSelected),
       textAlign: cellItem.alignment,
       height,
+      ...this.props.style,
     };
   }
 
@@ -102,7 +117,7 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
     const style = this.getStyle(props.cellItem, props.isSelected, props.height);
 
     if (!props.cellItem.record)
-      return <div style={style} />;
+      return <div className={this.props.className} style={style} />;
 
     const rendererContext: PropertyValueRendererContext = {
       containerType: PropertyContainerType.Table,
@@ -123,6 +138,7 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
       || props1.propertyValueRendererManager !== props2.propertyValueRendererManager;
   }
 
+  /** @internal */
   public async componentDidMount() {
     this._isMounted = true;
     const content = await this.renderContent(this.props);
@@ -131,10 +147,12 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
       this.setState({ content });
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
+  /** @internal */
   public async componentDidUpdate(prevProps: TableCellContentProps) {
     if (this.doPropsDiffer(prevProps, this.props)) {
       const content = await this.renderContent(this.props);
@@ -144,12 +162,15 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
     }
   }
 
+  /** @internal */
   public render() {
     return this.state.content;
   }
 }
 
-/** Properties for the [[TableIconCellContent]] React component  */
+/** Properties for the [[TableIconCellContent]] React component
+ * @public
+ */
 export interface TableIconCellContentProps {
   /** Icon name */
   iconName: string;
@@ -157,8 +178,10 @@ export interface TableIconCellContentProps {
 
 /**
  * A React component that renders table cell content as a Bentley icon
+ * @public
  */
 export class TableIconCellContent extends React.PureComponent<TableIconCellContentProps> {
+  /** @internal */
   public render() {
     return <div className={`icon ${this.props.iconName}`} />;
   }

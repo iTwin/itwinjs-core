@@ -4,14 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Widget */
 
+import * as React from "react";
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 
-// -----------------------------------------------------------------------------
-// Configurable Ui Widget Control
-// -----------------------------------------------------------------------------
-
 /** The base class for Widget controls.
+ * @public
  */
 export class WidgetControl extends ConfigurableUiControl {
   private _widgetDef!: WidgetDef;
@@ -38,6 +36,19 @@ export class WidgetControl extends ConfigurableUiControl {
   public setWidgetState(state: WidgetState): void {
     this.widgetDef.setWidgetState(state);
   }
-}
 
-export default WidgetControl;
+  /** Called when widget state changes. */
+  public onWidgetStateChanged(): void {
+  }
+
+  /** Overwrite to save transient DOM state (i.e. scroll offset). */
+  public saveTransientState(): void {
+  }
+
+  /** Overwrite to restore transient DOM state.
+   * @note Return true if the state is restored or the Widget will remount.
+   */
+  public restoreTransientState(): boolean {
+    return false;
+  }
+}

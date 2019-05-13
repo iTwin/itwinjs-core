@@ -90,7 +90,7 @@ describe("SearchBox", () => {
       const spyMethod = sinon.spy();
       const wrapper = mount(<SearchBox onValueChanged={() => { }} onClear={spyMethod} initialValue="Test" />);
 
-      const buttonNode = wrapper.find("div.searchbox-button");
+      const buttonNode = wrapper.find("div.core-searchbox-button");
       expect(buttonNode.length).to.eq(1);
 
       buttonNode.simulate("click");

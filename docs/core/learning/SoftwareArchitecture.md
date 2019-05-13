@@ -1,10 +1,10 @@
-# Software Architecture for iModel.js Apps
+# Software Architecture for iModel.js platform
 
 The software architecture of iModel.js was driven by the following goals:
 
-- Support iModel-based services running in any cloud or on premises
+- Support iModel-based services running in any cloud or on-premise
 - Support iModel-based web/desktop/mobile apps
-- Re-use business logic across web, desktop, and mobile apps
+- Re-use business logic across cloud, web, desktop, and mobile apps
 - Re-use HTML GUI across web, desktop, and mobile apps
 
 [Backend](../learning/backend/index) Architecture Layers:
@@ -16,7 +16,7 @@ The software architecture of iModel.js was driven by the following goals:
 
 [Frontend](../learning/frontend/index) Architecture Layers:
 
-- Application Frontend (TypeScript)
+- Application Frontend (TypeScript/JavaScript)
 - iModel.js Frontend Framework (TypeScript)
 - HTML GUI
 - Web Browser
@@ -28,9 +28,9 @@ Node.js provides the [V8 JavaScript Engine](https://developers.google.com/v8/) a
 This is how the iModel.js Native Libraries are exposed to the iModel.js backend framework.
 Portable application logic is written in TypeScript and calls TypeScript APIs exposed from the `@bentley/imodeljs-backend` package.
 
-Notice that the backend architecture is identical between Agents and interactive Web Applications.
+Notice that the backend architecture is identical between Agents and backends for interactive Web Applications.
 
-Web App frontends run in a web browser and use HTML GUI for presentation and APIs exposed from the `@bentley/imodeljs-frontend` package for *Remote Procedure Calls* (RPC) into functionality implemented on the backend.
+Web App frontends run in a web browser and use HTML GUI for presentation, and APIs exposed from the `@bentley/imodeljs-frontend` package for *Remote Procedure Calls* (RPC) to request services from the backend.
 
 The [frontend --> backend communication](./RpcInterface.md) is over HTTPS for interactive web applications.
 
@@ -48,9 +48,10 @@ Also see [Logging and ActivityIds](./RpcInterface.md#logging-and-activityids)
 
 iModel.js desktop applications use the [Electron](https://electronjs.org/) Framework.
 The backend architecture is the same as with iModel.js Web Apps because Electron also uses Node.js.
-The only difference in the frontend architecture is that an embedded [Chromium Browser](https://www.chromium.org/Home) replaces a standalone Web Browser.
+The primary difference in the frontend architecture is that an embedded [Chromium Browser](https://www.chromium.org/Home) replaces a standalone Web Browser.
 
-The [frontend --> backend communication](./RpcInterface.md) is over *Inter Process Communication* (IPC) as provided by Electron.
+The [frontend --> backend communication](./RpcInterface.md) is over *Inter Process Communication* (IPC) as provided by Electron. Note that iModel.js desktop applications always have at least
+two (one frontend and at least one backend) processes active together.
 
 ![SoftwareArchitecture-Desktop](./SoftwareArchitecture-Desktop.png)
 

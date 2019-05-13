@@ -10,6 +10,7 @@ import { FrontstageDef } from "./FrontstageDef";
 import { FrontstageProps } from "./Frontstage";
 
 /** Provides a Frontstage as a React based definition
+ * @public
  */
 export abstract class FrontstageProvider {
   private _frontstageDef?: FrontstageDef;

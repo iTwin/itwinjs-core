@@ -7,7 +7,9 @@
 
 /* tslint:disable: object-literal-key-quotes */
 
-/** Comparison utilities */
+/** Comparison utilities
+ * @internal
+ */
 export class DeepCompare {
   public typeCounts = {
     "numbers": 0,

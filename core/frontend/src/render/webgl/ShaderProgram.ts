@@ -14,7 +14,11 @@ import { TechniqueFlags } from "./TechniqueFlags";
 import { System } from "./System";
 import { Branch, Batch } from "./Graphic";
 
-/** Flags which control some conditional branches in shader code */
+// tslint:disable:no-const-enum
+
+/** Flags which control some conditional branches in shader code
+ * @internal
+ */
 export const enum ShaderFlags {
   None = 0,
   Monochrome = 1 << 0,
@@ -24,7 +28,9 @@ export const enum ShaderFlags {
   IgnoreNonLocatable = 1 << 4,
 }
 
-/** Describes the location of a uniform variable within a shader program. */
+/** Describes the location of a uniform variable within a shader program.
+ * @internal
+ */
 export class Uniform {
   private readonly _name: string;
   protected _handle?: UniformHandle;
@@ -46,12 +52,14 @@ export class Uniform {
 /**
  * A function associated with a ProgramUniform which is invoked each time the shader program becomes active.
  * The function is responsible for setting the value of the uniform.
+ * @internal
  */
 export type BindProgramUniform = (uniform: UniformHandle, params: ShaderProgramParams) => void;
 
 /**
  * Describes the location of a uniform variable within a shader program, the value of which does not change while the program is active.
  * The supplied binding function will be invoked once each time the shader becomes active to set the value of the uniform.
+ * @internal
  */
 export class ProgramUniform extends Uniform {
   private readonly _bind: BindProgramUniform;
@@ -71,6 +79,7 @@ export class ProgramUniform extends Uniform {
 /**
  * A function associated with a GraphicUniform which is invoked each time a new graphic primitive is rendered using the associated shader.
  * The function is responsible for setting the value of the uniform.
+ * @internal
  */
 export type BindGraphicUniform = (uniform: UniformHandle, params: DrawParams) => void;
 
@@ -78,6 +87,7 @@ export type BindGraphicUniform = (uniform: UniformHandle, params: DrawParams) =>
  * Describes the location of a uniform variable within a shader program, the value of which is dependent upon the graphic primitive
  * currently being rendered by the program. The supplied binding function will be invoked once for each graphic primitive submitted
  * to the program to set the value of the uniform.
+ * @internal
  */
 export class GraphicUniform extends Uniform {
   private readonly _bind: BindGraphicUniform;
@@ -94,10 +104,14 @@ export class GraphicUniform extends Uniform {
   }
 }
 
-/** A function associated with an Attribute which is invoked to bind the attribute data. */
+/** A function associated with an Attribute which is invoked to bind the attribute data.
+ * @internal
+ */
 export type BindAttribute = (attr: AttributeHandle, params: DrawParams) => void;
 
-/** Describes the location of an attribute within a shader program along with a function for binding the attribute's data */
+/** Describes the location of an attribute within a shader program along with a function for binding the attribute's data
+ * @internal
+ */
 export class Attribute {
   private readonly _name: string;
   private readonly _bind: BindAttribute;
@@ -125,17 +139,20 @@ export class Attribute {
   }
 }
 
-/** Describes the compilation status of a shader program. Programs may be compiled during idle time, or upon first use. */
+/** Describes the compilation status of a shader program. Programs may be compiled during idle time, or upon first use.
+ * @internal
+ */
 export const enum CompileStatus {
   Success,    // The program was successfully compiled.
   Failure,    // The program failed to compile.
   Uncompiled, // No attempt has yet been made to compile the program.
 }
 
+/** @internal */
 export class ShaderProgram implements IDisposable {
   private _description: string; // for debugging purposes...
-  public readonly vertSource: string;
-  public readonly fragSource: string;
+  public vertSource: string;
+  public fragSource: string;
   public readonly maxClippingPlanes: number;
   private _glProgram?: WebGLProgram;
   private _inUse: boolean = false;
@@ -143,6 +160,7 @@ export class ShaderProgram implements IDisposable {
   private readonly _programUniforms = new Array<ProgramUniform>();
   private readonly _graphicUniforms = new Array<GraphicUniform>();
   private readonly _attributes = new Array<Attribute>();
+  private readonly _preserveShaderSourceCode: boolean;
 
   public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, description: string, maxClippingPlanes: number) {
     this._description = description;
@@ -152,6 +170,8 @@ export class ShaderProgram implements IDisposable {
 
     const glProgram = gl.createProgram();
     this._glProgram = (null === glProgram) ? undefined : glProgram;
+
+    this._preserveShaderSourceCode = true === System.instance.options.preserveShaderSourceCode;
 
     // Silencing 'unused variable' warnings temporarily...
     assert(undefined !== this._description);
@@ -184,6 +204,13 @@ export class ShaderProgram implements IDisposable {
     gl.compileShader(shader);
     const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;
     const compileLog = succeeded ? "" : (GL.ShaderType.Vertex === type ? "Vertex" : "Fragment") + " compilation errors: " + gl.getShaderInfoLog(shader) + "\n" + src;
+
+    if (this._preserveShaderSourceCode !== true) { // do not preserve shader source code
+      if (GL.ShaderType.Vertex === type)
+        this.vertSource = "";
+      else
+        this.fragSource = "";
+    }
 
     assert(succeeded, compileLog);
     return succeeded ? shader : undefined;
@@ -307,9 +334,11 @@ export class ShaderProgram implements IDisposable {
   }
 }
 
-// Context in which ShaderPrograms are executed. Avoids switching shaders unnecessarily.
-// Ensures shader programs are compiled before use and un-bound when scope is disposed.
-// This class must *only* be used inside a using() function!
+/** Context in which ShaderPrograms are executed. Avoids switching shaders unnecessarily.
+ * Ensures shader programs are compiled before use and un-bound when scope is disposed.
+ * This class must *only* be used inside a using() function!
+ * @internal
+ */
 export class ShaderProgramExecutor {
   private _program?: ShaderProgram;
   private static _params?: ShaderProgramParams;

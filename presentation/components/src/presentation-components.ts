@@ -24,7 +24,10 @@ export { treeWithUnifiedSelection } from "./tree/WithUnifiedSelection";
 export { treeWithFilteringSupport } from "./tree/WithFilteringSupport";
 
 /** @module Viewport */
-export { viewWithUnifiedSelection } from "./viewport/WithUnifiedSelection";
+export { viewWithUnifiedSelection, ViewportSelectionHandler } from "./viewport/WithUnifiedSelection";
+
+/** @module DisplayLabels */
+export { IPresentationLabelsProvider, LabelsProvider } from "./labels/LabelsProvider";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

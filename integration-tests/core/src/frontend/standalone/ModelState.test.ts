@@ -15,19 +15,19 @@ describe("ModelState", () => {
   let imodel2: IModelConnection;
   before(async () => {
     MockRender.App.startup();
-    imodel2 = await IModelConnection.openStandalone(iModelLocation + "mirukuru.ibim");
-    imodel = await IModelConnection.openStandalone(iModelLocation + "CompatibilityTestSeed.bim");
+    imodel2 = await IModelConnection.openSnapshot(iModelLocation + "mirukuru.ibim");
+    imodel = await IModelConnection.openSnapshot(iModelLocation + "CompatibilityTestSeed.bim");
   });
 
   after(async () => {
-    if (imodel) await imodel.closeStandalone();
-    if (imodel2) await imodel2.closeStandalone();
+    if (imodel) await imodel.closeSnapshot();
+    if (imodel2) await imodel2.closeSnapshot();
     MockRender.App.shutdown();
   });
 
   it("ModelSelectors should hold models", () => {
     const props: ModelSelectorProps = {
-      classFullName: ModelSelectorState.getClassFullName(),
+      classFullName: ModelSelectorState.classFullName,
       model: Id64.fromLocalAndBriefcaseIds(1, 1),
       code: Code.createEmpty(),
       models: ["0x1"],
@@ -75,7 +75,7 @@ describe("ModelState", () => {
     range = await testSpatial.queryModelRange();
     assert.isTrue(range.isNull);
 
-    const modelProps = await imodel.models.queryProps({ from: SpatialModelState.sqlName });
+    const modelProps = await imodel.models.queryProps({ from: SpatialModelState.classFullName });
     assert.isAtLeast(modelProps.length, 2);
 
     await imodel2.models.load(["0x28", "0x1c"]);

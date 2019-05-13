@@ -8,6 +8,14 @@ import * as sinon from "sinon";
 import { Backstage } from "../../ui-ninezone";
 
 describe("<Backstage />", () => {
+  let addEventListenerSpy: sinon.SinonSpy | undefined;
+  let removeEventListenerSpy: sinon.SinonSpy | undefined;
+
+  afterEach(() => {
+    addEventListenerSpy && addEventListenerSpy.restore();
+    removeEventListenerSpy && removeEventListenerSpy.restore();
+  });
+
   it("should render", () => {
     mount(<Backstage />);
   });
@@ -20,34 +28,42 @@ describe("<Backstage />", () => {
     shallow(<Backstage isOpen={true} />).should.matchSnapshot();
   });
 
+  it("should render header", () => {
+    shallow(<Backstage header={"my header"} />).should.matchSnapshot();
+  });
+
+  it("should render footer", () => {
+    shallow(<Backstage footer={"my footer"} />).should.matchSnapshot();
+  });
+
+  it("should add event listener", () => {
+    addEventListenerSpy = sinon.spy(document, "addEventListener");
+
+    mount(<Backstage />);
+    addEventListenerSpy.calledOnce.should.true;
+  });
+
+  it("should remove event listener", () => {
+    removeEventListenerSpy = sinon.spy(document, "removeEventListener");
+    const sut = mount(<Backstage />);
+    sut.unmount();
+
+    removeEventListenerSpy.calledOnce.should.true;
+  });
+
   it("should handle overlay click events", () => {
     const handler = sinon.spy();
     const component = mount(<Backstage onClose={handler} />);
 
-    component.find(".nz-backstage-backstage_Overlay").simulate("click");
-
+    component.find(".nz-backstage-backstage_overlay").simulate("click");
     handler.calledOnce.should.true;
-  });
-
-  it("should not fire overlay click event when items are clicked", () => {
-    const handler = sinon.spy();
-    const component = mount(<Backstage onClose={handler} />);
-    const items = component.find(".nz-items");
-    items.should.exist;
   });
 
   it("should handle escape key down close event", () => {
     const handler = sinon.spy();
     mount(<Backstage isOpen={true} onClose={handler} />);
 
-    handler.should.not.have.been.called;
-
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-
-    // component.simulate("keyDown", { keyCode: "Escape" });
-    // document.dispatchEvent(new KeyboardEvent("keydown", { keyCode: 27 }));
-
-    // handler.should.not.have.been.called;
-    // handler.calledOnce.should.true;
+    handler.calledOnce.should.true;
   });
 });

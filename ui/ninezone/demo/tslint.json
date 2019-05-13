@@ -1,0 +1,9 @@
+{
+  "extends": "../tslint.json",
+  "rules": {
+    "await-promise": false,
+    "completed-docs": false,
+    "no-floating-promises": false,
+    "promise-function-async": false
+  }
+}

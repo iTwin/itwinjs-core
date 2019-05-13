@@ -8,11 +8,12 @@ import * as React from "react";
 
 import { WidgetDef, ToolbarWidgetProps } from "./WidgetDef";
 import { ItemList } from "../shared/ItemMap";
-import { ActionButtonItemDef } from "../shared/Item";
+import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
+ * @public
  */
 export class ToolbarWidgetDefBase extends WidgetDef {
   public horizontalDirection: Direction;
@@ -32,17 +33,20 @@ export class ToolbarWidgetDefBase extends WidgetDef {
   }
 
   private renderToolbarItems(itemList: ItemList): React.ReactNode[] | null {
+    let items: React.ReactNode[] | null = null;
+
+    // istanbul ignore else
     if (itemList && itemList.items) {
-      return (
-        itemList.items.map((item, index) => {
-          if (item instanceof ActionButtonItemDef)
-            return item.toolbarReactNode(index);
-          return null;
-        })
-      );
+      items = new Array<React.ReactNode>();
+
+      itemList.items.forEach((item, index) => {
+        // istanbul ignore else
+        if (item instanceof ActionButtonItemDef && items)
+          items.push(item.toolbarReactNode(index));
+      });
     }
 
-    return null;
+    return items;
   }
 
   public renderHorizontalToolbar = (): React.ReactNode | null => {
@@ -71,5 +75,3 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     return null;
   }
 }
-
-export default ToolbarWidgetDefBase;

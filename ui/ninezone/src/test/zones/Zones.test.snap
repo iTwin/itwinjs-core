@@ -5,3 +5,9 @@ exports[`<Zones /> renders correctly 1`] = `
   className="nz-zones-zones"
 />
 `;
+
+exports[`<Zones /> renders hidden correctly 1`] = `
+<div
+  className="nz-zones-zones nz-hidden"
+/>
+`;

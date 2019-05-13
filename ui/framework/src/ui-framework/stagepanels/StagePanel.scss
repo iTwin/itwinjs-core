@@ -1,0 +1,27 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.uifw-stagepanel {
+  background-color: $buic-background-widget;
+  box-sizing: border-box;
+
+  &.uifw-stagepanel-top {
+    border-bottom: 1px solid $buic-background-widget-stroke;
+  }
+
+  &.uifw-stagepanel-left {
+    border-right: 1px solid $buic-background-widget-stroke;
+  }
+
+  &.uifw-stagepanel-right {
+    border-left: 1px solid $buic-background-widget-stroke;
+  }
+
+  &.uifw-stagepanel-bottom {
+    border-top: 1px solid $buic-background-widget-stroke;
+  }
+}
+

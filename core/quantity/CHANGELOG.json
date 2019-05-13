@@ -2,6 +2,27 @@
   "name": "@bentley/imodeljs-quantity",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/imodeljs-quantity_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Adds parameter for api-extractor to validate missing release tags"
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "documentation cleanup"
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/imodeljs-quantity_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",

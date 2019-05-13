@@ -3,21 +3,22 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module BaseClients */
+import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
-import { AccessToken } from "./Token";
+import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { Config } from "./Config";
+import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 import { request, RequestOptions, Response, ResponseError } from "./Request";
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
-const loggingCategory = "imodeljs-clients.Clients";
+const loggerCategory: string = ClientsLoggerCategory.Clients;
 
-/** Provider for default RequestOptions, used by Client to set defaults.
+/**
+ * Provider for default RequestOptions, used by Client to set defaults.
+ * @internal
  */
 export class DefaultRequestOptionsProvider {
   protected _defaultOptions: RequestOptions;
-  /**
-   * Creates an instance of DefaultRequestOptionsProvider and sets up the default options.
-   */
+  /** Creates an instance of DefaultRequestOptionsProvider and sets up the default options. */
   constructor() {
     this._defaultOptions = {
       method: "GET",
@@ -41,14 +42,13 @@ export class DefaultRequestOptionsProvider {
 // @todo Setup a logging framework.
 /**
  * Base class for all Client implementations
+ * @public
  */
 export abstract class Client {
   private static _defaultRequestOptionsProvider: DefaultRequestOptionsProvider;
   protected _url?: string;
 
-  /**
-   * Creates an instance of Client.
-   */
+  /**  Creates an instance of Client. */
   protected constructor() {
   }
 
@@ -77,14 +77,14 @@ export abstract class Client {
    * sake, the URL is stripped of any trailing "/"
    * @returns URL for the service
    */
-  public async getUrl(alctx: ActivityLoggingContext): Promise<string> {
+  public async getUrl(requestContext: ClientRequestContext): Promise<string> {
     if (this._url) {
       return Promise.resolve(this._url);
     }
 
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
     const searchKey: string = this.getUrlSearchKey();
-    return urlDiscoveryClient.discoverUrl(alctx, searchKey, undefined)
+    return urlDiscoveryClient.discoverUrl(requestContext, searchKey, undefined)
       .then(async (url: string): Promise<string> => {
         this._url = url;
         return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
@@ -95,30 +95,31 @@ export abstract class Client {
   }
 
   /** used by clients to send delete requests */
-  protected async delete(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string): Promise<void> {
-    alctx.enter();
-    const url: string = await this.getUrl(alctx) + relativeUrlPath;
-    Logger.logInfo(loggingCategory, `Sending DELETE request to ${url}`);
+  protected async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void> {
+    requestContext.enter();
+    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    Logger.logInfo(loggerCategory, "Sending DELETE request", () => ({ url }));
     const options: RequestOptions = {
       method: "DELETE",
-      headers: { authorization: token.toTokenString() },
+      headers: { authorization: requestContext.accessToken.toTokenString() },
     };
     await this.setupOptionDefaults(options);
-    await request(alctx, url, options);
-    alctx.enter();
-    Logger.logTrace(loggingCategory, `Successful DELETE request to ${url}`);
+    await request(requestContext, url, options);
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, "Successful DELETE request", () => ({ url }));
   }
 }
 
 /**
  * Error for issues with authentication.
+ * @public
  */
 export class AuthenticationError extends ResponseError {
 }
 
 /**
- * Client API to discover URLs from the URL Discovery service
- * (a.k.a. Buddi service)
+ * Client API to discover URLs from the URL Discovery service (a.k.a. Buddi service)
+ * @internal
  */
 export class UrlDiscoveryClient extends Client {
   public static readonly configURL = "imjs_buddi_url";
@@ -152,8 +153,9 @@ export class UrlDiscoveryClient extends Client {
    * @param regionId Override region to use for URL discovery.
    * @returns Registered URL for the service.
    */
-  public async discoverUrl(alctx: ActivityLoggingContext, searchKey: string, regionId: number | undefined): Promise<string> {
-    alctx.enter();
+  public async discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string> {
+    requestContext.enter();
+
     const url: string = await this.getUrl() + "/GetUrl/";
     const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     const options: RequestOptions = {
@@ -163,9 +165,13 @@ export class UrlDiscoveryClient extends Client {
         region: resolvedRegion,
       },
     };
+
     await this.setupOptionDefaults(options);
-    alctx.enter();
-    const response: Response = await request(alctx, url, options);
+    requestContext.enter();
+
+    const response: Response = await request(requestContext, url, options);
+    requestContext.enter();
+
     const discoveredUrl: string = response.body.result.url.replace(/\/$/, ""); // strip trailing "/" for consistency
     return Promise.resolve(discoveredUrl);
   }

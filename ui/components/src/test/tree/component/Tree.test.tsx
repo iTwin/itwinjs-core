@@ -15,10 +15,11 @@ import TestUtils from "../../TestUtils";
 import {
   Tree, TreeProps,
   NodesSelectedCallback, NodesDeselectedCallback,
+  TreeTest,
 } from "../../../ui-components/tree/component/Tree";
 import { SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeCellUpdatedArgs } from "../../../ui-components";
 import { BeInspireTreeNode, BeInspireTreeNodeConfig } from "../../../ui-components/tree/component/BeInspireTree";
-import HighlightingEngine, { HighlightableTreeProps } from "../../../ui-components/tree/HighlightingEngine";
+import { HighlightingEngine, HighlightableTreeProps } from "../../../ui-components/tree/HighlightingEngine";
 import { TreeNodeProps } from "../../../ui-components/tree/component/Node";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../ui-components/properties/ValueRendererManager";
 import { ImmediatelyLoadedTreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
@@ -44,13 +45,13 @@ describe("Tree", () => {
     checkbox: HTMLInputElement | undefined,
   };
   const getNode = (label: string): NodeElement => {
-    const result = renderedTree.getAllByTestId(Tree.TestId.Node).reduce<NodeElement[]>((list: NodeElement[], node) => {
-      const nodeContents = within(node).getByTestId(Tree.TestId.NodeContents);
+    const result = renderedTree.getAllByTestId(TreeTest.TestId.Node).reduce<NodeElement[]>((list: NodeElement[], node) => {
+      const nodeContents = within(node).getByTestId(TreeTest.TestId.NodeContents);
       if (nodeContents.textContent === label || within(nodeContents).queryByText(label)) {
         list.push(Object.assign(node, {
           contentArea: nodeContents,
-          expansionToggle: within(node).queryByTestId(Tree.TestId.NodeExpansionToggle) || undefined,
-          checkbox: within(node).queryByTestId(Tree.TestId.NodeCheckbox) as HTMLInputElement || undefined,
+          expansionToggle: within(node).queryByTestId(TreeTest.TestId.NodeExpansionToggle) || undefined,
+          checkbox: within(node).queryByTestId(TreeTest.TestId.NodeCheckbox) as HTMLInputElement || undefined,
         }));
       }
       return list;
@@ -62,7 +63,7 @@ describe("Tree", () => {
     return result[0];
   };
   const getNodeLabel = (node: HTMLElement): string => {
-    const contents = within(node).getByTestId(Tree.TestId.NodeContents);
+    const contents = within(node).getByTestId(TreeTest.TestId.NodeContents);
     const labelSpan = contents.querySelector("div.components-tree-node-content span");
     return labelSpan!.innerHTML;
   };
@@ -115,7 +116,7 @@ describe("Tree", () => {
   describe("selection", () => {
 
     const getSelectedNodes = (): Array<HTMLElement & { label: string }> => {
-      return renderedTree.getAllByTestId(Tree.TestId.Node as any)
+      return renderedTree.getAllByTestId(TreeTest.TestId.Node as any)
         .filter((node) => node.classList.contains("is-selected"))
         .map((node) => Object.assign(node, { label: getNodeLabel(node) }));
     };
@@ -936,6 +937,24 @@ describe("Tree", () => {
       expect(node.checkbox!.checked).to.be.false;
     });
 
+    it("re-renders checkboxes when `checkboxInfo` callback and `selectedNodes` change", async () => {
+      const checkboxInfo1 = async () => ({ isVisible: true, isDisabled: true, state: CheckBoxState.On });
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo1} selectedNodes={[]} />), renderNodesSpy, 1);
+      let node = getNode("0");
+      expect(node.checkbox).to.not.be.undefined;
+      expect(node.checkbox!.disabled).to.be.true;
+      expect(node.checkbox!.checked).to.be.true;
+      expect(node.classList.contains("is-selected")).to.be.false;
+
+      const checkboxInfo2 = async () => ({ isVisible: true, isDisabled: false, state: CheckBoxState.Off });
+      await waitForUpdate(() => renderedTree.rerender(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo2} selectedNodes={["0"]} />), renderNodesSpy, 2);
+      node = getNode("0");
+      expect(node.checkbox).to.not.be.undefined;
+      expect(node.checkbox!.disabled).to.be.false;
+      expect(node.checkbox!.checked).to.be.false;
+      expect(node.classList.contains("is-selected")).to.be.true;
+    });
+
     it("checks and unchecks a node", async () => {
       const checkboxInfo = (n: TreeNodeItem) => ({ isVisible: true, state: (n.id === "0") ? CheckBoxState.On : CheckBoxState.Off });
       await waitForUpdate(() => renderedTree = render(<Tree {...defaultCheckboxTestsProps} checkboxInfo={checkboxInfo} />), renderNodesSpy, 1);
@@ -1019,8 +1038,8 @@ describe("Tree", () => {
     };
 
     const getExpandedNodes = () => {
-      return renderedTree.queryAllByTestId(Tree.TestId.Node as any).filter((node) => {
-        const expansionToggle = within(node).queryByTestId(Tree.TestId.NodeExpansionToggle as any);
+      return renderedTree.queryAllByTestId(TreeTest.TestId.Node as any).filter((node) => {
+        const expansionToggle = within(node).queryByTestId(TreeTest.TestId.NodeExpansionToggle as any);
         return (expansionToggle && expansionToggle.classList.contains("is-expanded"));
       });
     };
@@ -1039,7 +1058,7 @@ describe("Tree", () => {
       await waitForUpdate(() => renderedTree = render(<Tree {...defaultExpandCollapseProps} dataProvider={createDataProvider(["0"])} />), renderSpy, 2);
       expect(getNode("0").expansionToggle!.classList.contains("is-expanded")).to.be.true;
       expect(getExpandedNodes().length).to.eq(1);
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(4);
     });
 
     afterEach(function () {
@@ -1049,16 +1068,16 @@ describe("Tree", () => {
 
     it("expands and collapses node when clicked on expansion toggle", async () => {
       await waitForUpdate(() => renderedTree = render(<Tree {...defaultExpandCollapseProps} />), renderSpy, 2);
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(2);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(2);
 
       // expand node 0
       await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy, 2);
       expect(getExpandedNodes().length).to.eq(1);
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(4);
 
       await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy);
       expect(getExpandedNodes().length).to.eq(0);
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(2);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(2);
     });
 
     it("calls onNodeExpanded callback", async () => {
@@ -1130,7 +1149,7 @@ describe("Tree", () => {
 
     it("rerenders on data provider change without waiting for initial update with immediate data provider", async () => {
       renderedTree = render(<Tree {...defaultProps} dataProvider={[{ id: "0", label: "0" }]} />);
-      expect(renderedTree.queryAllByTestId(Tree.TestId.Node).length).to.eq(0);
+      expect(renderedTree.queryAllByTestId(TreeTest.TestId.Node).length).to.eq(0);
 
       await waitForUpdate(() => {
         renderedTree.rerender(<Tree {...defaultProps} dataProvider={[{ id: "1", label: "1" }]} />);
@@ -1143,18 +1162,18 @@ describe("Tree", () => {
       const p2 = new ResolvablePromise<TreeNodeItem[]>();
 
       renderedTree = render(<Tree {...defaultProps} dataProvider={async () => p1} />);
-      expect(renderedTree.queryAllByTestId(Tree.TestId.Node).length).to.eq(0);
+      expect(renderedTree.queryAllByTestId(TreeTest.TestId.Node).length).to.eq(0);
 
       await waitForUpdate(() => {
         renderedTree.rerender(<Tree {...defaultProps} dataProvider={async () => p2} />);
       }, renderSpy);
-      expect(renderedTree.queryAllByTestId(Tree.TestId.Node).length).to.eq(0);
+      expect(renderedTree.queryAllByTestId(TreeTest.TestId.Node).length).to.eq(0);
       renderSpy.resetHistory();
 
       p1.resolve([{ id: "0", label: "0" }]);
       await BeDuration.wait(0);
       expect(renderSpy).to.not.be.called;
-      expect(renderedTree.queryAllByTestId(Tree.TestId.Node).length).to.eq(0);
+      expect(renderedTree.queryAllByTestId(TreeTest.TestId.Node).length).to.eq(0);
 
       p2.resolve([{ id: "1", label: "1" }]);
       await BeDuration.wait(0);
@@ -1298,7 +1317,7 @@ describe("Tree", () => {
       expect(+nodes[1].style.height!.replace("px", "")).to.equal(40);
     });
 
-    it("renders row heights with default funtion if rowHeight prop is not provided", async () => {
+    it("renders row heights with default function if rowHeight prop is not provided", async () => {
       const provider: ITreeDataProvider = {
         getNodesCount: async () => 2,
         getNodes: async () => [{ id: "0", label: "without-description" }, { id: "1", label: "with-description", description: "desc" }],
@@ -1445,7 +1464,7 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
       }, renderSpy, 2);
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(4);
 
       const node = (await interfaceProvider.getNodes())[1];
       await waitForUpdate(() => {
@@ -1453,10 +1472,10 @@ describe("Tree", () => {
         interfaceProvider.onTreeNodeChanged!.raiseEvent([node]);
       }, renderNodesSpy);
       expect(renderedTree.getByText("test")).to.not.be.undefined;
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(4);
 
       // verify the node is collapsed
-      const toggle = within(getNode("test")).queryByTestId(Tree.TestId.NodeExpansionToggle);
+      const toggle = within(getNode("test")).queryByTestId(TreeTest.TestId.NodeExpansionToggle);
       expect(toggle!.classList.contains("is-expanded")).to.be.false;
     });
 
@@ -1464,7 +1483,7 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
       }, renderSpy, 2);
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(4);
 
       const node = (await interfaceProvider.getNodes())[0];
       await waitForUpdate(() => {
@@ -1472,20 +1491,20 @@ describe("Tree", () => {
         interfaceProvider.onTreeNodeChanged!.raiseEvent([node]);
       }, renderNodesSpy);
       expect(renderedTree.getByText("test")).to.not.be.undefined;
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(4);
 
       // verify the node is expanded
-      const toggle = within(getNode("test")).queryByTestId(Tree.TestId.NodeExpansionToggle);
+      const toggle = within(getNode("test")).queryByTestId(TreeTest.TestId.NodeExpansionToggle);
       expect(toggle!.classList.contains("is-expanded")).to.be.true;
     });
 
     it("rerenders when `onTreeNodeChanged` is broadcasted with undefined node", async () => {
-      const getFlatList = () => renderedTree.getAllByTestId(Tree.TestId.Node as any).map(getNodeLabel);
+      const getFlatList = () => renderedTree.getAllByTestId(TreeTest.TestId.Node as any).map(getNodeLabel);
 
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
       }, renderSpy, 2);
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(4);
       expect(getFlatList()).to.deep.eq(["0", "0-a", "0-b", "1"]);
 
       setReverseOrder(true);
@@ -1493,7 +1512,7 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         interfaceProvider.onTreeNodeChanged!.raiseEvent([undefined]);
       }, renderSpy, 1);
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(4);
       expect(getFlatList()).to.deep.eq(["1", "0", "0-b", "0-a"]);
     });
 
@@ -1501,14 +1520,14 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
       }, renderSpy, 2);
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(4);
 
       const node: TreeNodeItem = {
         id: "test",
         label: "test",
       };
       interfaceProvider.onTreeNodeChanged!.raiseEvent(node);
-      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(renderedTree.getAllByTestId(TreeTest.TestId.Node as any).length).to.eq(4);
     });
 
     it("subscribes to `onTreeNodeChanged` on mount", () => {
@@ -1646,9 +1665,9 @@ describe("Tree", () => {
   describe("cell editing", () => {
 
     const getSelectedNodes = (): Array<HTMLElement & { label: string }> => {
-      return renderedTree.getAllByTestId(Tree.TestId.Node as any)
+      return renderedTree.getAllByTestId(TreeTest.TestId.Node as any)
         .filter((node) => node.classList.contains("is-selected"))
-        .map((node) => Object.assign(node, { label: within(node).getByTestId(Tree.TestId.NodeContents).innerHTML }));
+        .map((node) => Object.assign(node, { label: within(node).getByTestId(TreeTest.TestId.NodeContents).innerHTML }));
     };
 
     let defaultSelectionProps: TreeProps;

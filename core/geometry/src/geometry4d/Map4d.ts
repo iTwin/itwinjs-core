@@ -8,6 +8,7 @@ import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "./Matrix4d";
 /** Map4 carries two Matrix4d which are inverses of each other.
+ * @public
  */
 export class Map4d implements BeJSONFunctions {
   private _matrix0: Matrix4d;
@@ -16,9 +17,9 @@ export class Map4d implements BeJSONFunctions {
     this._matrix0 = matrix0;
     this._matrix1 = matrix1;
   }
-  /** @returns Return a reference to (not copy of) the "forward" Matrix4d */
+  /** Return a reference to (not copy of) the "forward" Matrix4d */
   public get transform0(): Matrix4d { return this._matrix0; }
-  /** @returns Return a reference to (not copy of) the "reverse" Matrix4d */
+  /** Return a reference to (not copy of) the "reverse" Matrix4d */
   public get transform1(): Matrix4d { return this._matrix1; }
   /** Create a Map4d, capturing the references to the two matrices. */
   public static createRefs(matrix0: Matrix4d, matrix1: Matrix4d) {
@@ -60,7 +61,7 @@ export class Map4d implements BeJSONFunctions {
   }
   /** Copy contents from another Map4d */
   public setFrom(other: Map4d) { this._matrix0.setFrom(other._matrix0), this._matrix1.setFrom(other._matrix1); }
-  /** @returns Return a clone of this Map4d */
+  /** Return a clone of this Map4d */
   public clone(): Map4d { return new Map4d(this._matrix0.clone(), this._matrix1.clone()); }
   /** Reinitialize this Map4d as an identity. */
   public setIdentity() { this._matrix0.setIdentity(); this._matrix1.setIdentity(); }
@@ -78,8 +79,9 @@ export class Map4d implements BeJSONFunctions {
     result.setFromJSON(json);
     return result;
   }
-  /** @returns a json object `{matrix0: value0, matrix1: value1}` */
+  /** Return a json object `{matrix0: value0, matrix1: value1}` */
   public toJSON(): any { return { matrix0: this._matrix0.toJSON(), matrix1: this._matrix1.toJSON() }; }
+  /** Test if both matrices are almost equal to those */
   public isAlmostEqual(other: Map4d) {
     return this._matrix0.isAlmostEqual(other._matrix0) && this._matrix1.isAlmostEqual(other._matrix1);
   }
@@ -115,9 +117,14 @@ export class Map4d implements BeJSONFunctions {
       */
     return result;
   }
+  /** multiply this*other. The output matrices are
+   * * output matrix0 = `this.matrix0 * other.matrix0`
+   * * output matrix1 = 'other.matrix1 * this.matrix1`
+   */
   public multiplyMapMap(other: Map4d): Map4d {
     return new Map4d(this._matrix0.multiplyMatrixMatrix(other._matrix0), other._matrix1.multiplyMatrixMatrix(this._matrix1));
   }
+  /** Exchange the two matrices of the map. */
   public reverseInPlace() {
     const temp = this._matrix0;
     this._matrix0 = this._matrix1;

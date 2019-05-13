@@ -6,11 +6,12 @@
 import { XAndY } from "@bentley/geometry-core";
 import {
   AccuSnap, IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails,
-  SnapMode, ToolTipOptions, TileAdmin,
+  SnapMode, ToolTipOptions, TileAdmin, IModelAppOptions,
 } from "@bentley/imodeljs-frontend";
 import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { showError, showStatus } from "./Utils";
+import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -109,18 +110,23 @@ class Notifications extends NotificationManager {
   }
 }
 
-export class DisplayTestApp extends IModelApp {
-  protected static onStartup(): void {
-    IModelApp.accuSnap = new DisplayTestAppAccuSnap();
-    IModelApp.notifications = new Notifications();
-    IModelApp.tileAdmin = TileAdmin.create({
-      retryInterval: 50,
-      enableInstancing: false, // true,
-      elideEmptyChildContentRequests: true,
-    });
+export class DisplayTestApp {
+  public static tileAdminProps: TileAdmin.Props = {
+    retryInterval: 50,
+    enableInstancing: true,
+    elideEmptyChildContentRequests: true,
+  };
+
+  public static startup(opts?: IModelAppOptions): void {
+    opts = opts ? opts : {};
+    opts.accuSnap = new DisplayTestAppAccuSnap();
+    opts.notifications = new Notifications();
+    opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
+    IModelApp.startup(opts);
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     DrawingAidTestTool.register(svtToolNamespace);
+    MarkupSelectTestTool.register(svtToolNamespace);
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

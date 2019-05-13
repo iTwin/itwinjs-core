@@ -7,40 +7,45 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import Input, { InputProps } from "./Input";
-import InputStatus from "./InputStatus";
+import { Input, InputProps } from "./Input";
+import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 
-/** Properties for [[LabeledInput]] components */
-export interface LabeledInputProps extends InputProps {
-  label: string;
-  status?: InputStatus;
-  message?: string;
-}
+/** Properties for [[LabeledInput]] components
+ * @beta
+ */
+export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps { }
 
-/** Text input wrapper that provides additional styling and labeling */
-export class LabeledInput extends React.Component<LabeledInputProps> {
+/** Text input wrapper that provides additional styling and labeling
+ * @beta
+ */
+export class LabeledInput extends React.PureComponent<LabeledInputProps> {
   public render(): JSX.Element {
+    const { label, status, className, style,
+      inputClassName, inputStyle,
+      labelClassName, labelStyle,
+      message, messageClassName, messageStyle,
+      ...props } = this.props;
+
     return (
-      <label className={classnames(
+      <label style={style} className={classnames(
         "uicore-inputs-labeled-input",
         { disabled: this.props.disabled },
-        this.props.status,
-        this.props.className,
+        status,
+        className,
       )}>
-        <div className={"label"}> {this.props.label} </div>
-        {this.props.label &&
-          <div className={"label"}> {this.props.label} </div>}
-        <div className={classnames("input", { "with-icon": !!this.props.status })}>
-          <Input disabled={this.props.disabled} {...this.props} />
-          {this.props.status &&
-            <i className={classnames("icon", `icon-status-${this.props.status}`)} />
+        {label &&
+          <div className={classnames("label", labelClassName)}> {label} </div>
+        }
+        <div className={classnames("input", { "with-icon": !!status })}>
+          <Input disabled={this.props.disabled} className={inputClassName} style={inputStyle} {...props} />
+          {status &&
+            <i className={classnames("icon", `icon-status-${status}`)} />
           }
         </div>
-        {this.props.message &&
-          <div className={"message"}>{this.props.message}</div>
+        {message &&
+          <div className={classnames("message", messageClassName)} style={messageStyle}>{message}</div>
         }
       </label>
     );
   }
 }
-export default LabeledInput;

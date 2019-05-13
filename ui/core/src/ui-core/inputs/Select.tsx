@@ -6,9 +6,12 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+import { CommonProps } from "../utils/Props";
 
-/** Properties for [[Select]] component */
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+/** Properties for [[Select]] component
+ * @beta
+ */
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
   /** options for select dropdown.
    * @example
    * // Example of {[key: string]: string} usage:
@@ -29,8 +32,10 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
   options: string[] | { [key: string]: string };
 }
 
-/** Basic select component */
-export class Select extends React.Component<SelectProps> {
+/** Basic select component
+ * @beta
+ */
+export class Select extends React.PureComponent<SelectProps> {
   public render(): JSX.Element {
     const showPlaceholder = !!this.props.placeholder && !this.props.value && !this.props.defaultValue;
     const defaultValue =
@@ -43,15 +48,17 @@ export class Select extends React.Component<SelectProps> {
       <select {...this.props}
         defaultValue={defaultValue}
         required={required}
-        className={classnames("uicore-inputs-select", this.props.className)}>
+        className={classnames("uicore-inputs-select", this.props.className)}
+        style={this.props.style}>
         {showPlaceholder &&
-          <option className="placeholder" disabled key="" value="">{this.props.placeholder}</option>}
+          <option className="placeholder" disabled key="" value="">{this.props.placeholder}</option>
+        }
         {options instanceof Array ?
           options.map((value, index) => <option key={index} value={value}>{value}</option>)
           :
-          Object.keys(options).map((key) => <option key={key} value={key}>{options[key]}</option>)}
+          Object.keys(options).map((key) => <option key={key} value={key}>{options[key]}</option>)
+        }
       </select>
     );
   }
 }
-export default Select;

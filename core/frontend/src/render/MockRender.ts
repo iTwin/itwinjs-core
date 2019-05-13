@@ -18,7 +18,7 @@ import {
   RenderTarget,
 } from "./System";
 import { GraphicType } from "./GraphicBuilder";
-import { IModelApp } from "../IModelApp";
+import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { MeshParams, PolylineParams, PointStringParams } from "./primitives/VertexTable";
@@ -123,12 +123,14 @@ export namespace MockRender {
     public dispose(): void { }
     public get maxTextureSize() { return 4096; }
 
+    public constructor() { super(); }
+
     public createTarget(canvas: HTMLCanvasElement) { return new OnScreenTarget(this, canvas); }
     public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
 
     public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String) { return new Builder(this, placement, type, viewport, pickableId); }
     public createGraphicList(primitives: RenderGraphic[]) { return new List(primitives); }
-    public createBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume) { return new Branch(branch, transform, clips); }
+    public createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume) { return new Branch(branch, transform, clips); }
     public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) { return new Batch(graphic, features, range); }
 
     public createMesh(_params: MeshParams) { return new Graphic(); }
@@ -143,13 +145,17 @@ export namespace MockRender {
   /** An implementation of IModelApp which uses a MockRender.System by default.
    * @internal
    */
-  export class App extends IModelApp {
+  export class App {
     public static systemFactory: SystemFactory = () => App.createDefaultRenderSystem();
 
-    protected static supplyRenderSystem(): RenderSystem { return this.systemFactory(); }
+    public static startup(opts?: IModelAppOptions) {
+      opts = opts ? opts : {};
+      opts.renderSys = this.systemFactory();
+      IModelApp.startup(opts);
+    }
     public static shutdown(): void {
       this.systemFactory = () => App.createDefaultRenderSystem();
-      super.shutdown();
+      IModelApp.shutdown();
     }
 
     protected static createDefaultRenderSystem() { return new System(); }

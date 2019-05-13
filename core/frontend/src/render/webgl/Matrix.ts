@@ -7,6 +7,7 @@
 import { Vector3d, Point3d, Matrix3d, Transform, Matrix4d } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";
 
+/** @internal */
 export class Matrix3 {
   public readonly data: Float32Array = new Float32Array(3 * 3);
 
@@ -105,6 +106,7 @@ export class Matrix3 {
   public set m22(value: number) { this.setAt(2, 2, value); }
 }
 
+/** @internal */
 export class Matrix4 {
   public readonly data: Float32Array = new Float32Array(4 * 4);
 
@@ -393,10 +395,12 @@ export class Matrix4 {
 
 // missing Vector3d functions
 
+/** @internal */
 export function fromNormalizedCrossProduct(vec0: Vector3d, vec1: Vector3d): Vector3d | undefined {
   return vec0.unitCrossProduct(vec1);
 }
 
+/** @internal */
 export function normalizedDifference(target: Point3d, origin: Point3d): Vector3d | undefined {
   return Vector3d.createStartEnd(origin, target).normalize();
 }

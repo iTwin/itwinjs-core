@@ -5,7 +5,6 @@
 /** @module Utils */
 
 // TextDecoder is not supported on all platforms - this is an alternative for utf-8.
-// ###TODO use TextDecoder where available
 // From https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Core/getStringFromTypedArray.js
 // which is itself inspired by https://github.com/inexorabletash/text-encoding
 /** @internal */
@@ -114,15 +113,37 @@ namespace Utf8ToString {
   }
 }
 
+/** Exposed only for testing the fall-back used when TextDecoder is unsupported.
+ * @internal
+ */
+export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined {
+  return Utf8ToString.decodeWithFromCharCode(utf8);
+}
+
+// TextDecoder unsupported in Edge at time of writing.
+let textDecoderSupported = true;
+
 /** Given an array of bytes containing a utf-8 string, convert to a string.
  * @param utf8: An array of utf-8 characters as a byte array
  * @returns An equivalent string, or undefined if the array does not contain a valid utf-8 string.
+ * @note This function uses Javascript's TextDecoder if supported by the browser; otherwise, it
+ * falls back to a less efficient polyfill.
  * @public
  */
 export function utf8ToString(utf8: Uint8Array): string | undefined {
-  // ###TODO: if available: const decoder = new TextDecoder("utf-8");
-  // ###TODO: if available: return decoder.decode(utf8);
-  return Utf8ToString.decodeWithFromCharCode(utf8);
+  let decoder: TextDecoder | undefined;
+  if (textDecoderSupported) {
+    try {
+      decoder = new TextDecoder("utf-8");
+    } catch (_ex) {
+      textDecoderSupported = false;
+    }
+  }
+
+  if (undefined !== decoder)
+    return decoder.decode(utf8);
+  else
+    return utf8ToStringPolyfill(utf8);
 }
 
 /** Given a base-64-encoded string, decode it into an array of bytes.

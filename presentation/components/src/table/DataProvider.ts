@@ -15,6 +15,7 @@ import {
   PresentationError, PresentationStatus,
   DefaultContentDisplayTypes, Descriptor, SortDirection,
   Content, Field, PropertyValueFormat, Item, Ruleset,
+  InstanceKey, instanceKeyFromJSON,
 } from "@bentley/presentation-common";
 import { ContentDataProvider, CacheInvalidationProps, IContentDataProvider } from "../common/ContentDataProvider";
 import { ContentBuilder } from "../common/ContentBuilder";
@@ -32,9 +33,12 @@ export const TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20;
 export const TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5;
 
 /**
- * Interface for presentation rules-driven property data provider.
+ * Interface for presentation rules-driven table data provider.
  */
-export type IPresentationTableDataProvider = ITableDataProvider & IContentDataProvider;
+export type IPresentationTableDataProvider = ITableDataProvider & IContentDataProvider & {
+  /** Get key of ECInstance that's represented by the supplied row */
+  getRowKey: (row: RowItem) => InstanceKey,
+};
 
 /**
  * Initialization properties for [[PresentationTableDataProvider]]
@@ -74,6 +78,12 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
       props.cachedPagesCount || TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT);
     this.pagingSize = props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE;
   }
+
+  /** Get key of ECInstance that's represented by the supplied row */
+  public getRowKey(row: RowItem): InstanceKey {
+    return instanceKeyFromJSON(JSON.parse(row.key));
+  }
+
   /**
    * `ECExpression` for filtering data in the table.
    */
@@ -129,7 +139,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     if (props.descriptor) {
       this._filterExpression = undefined;
       this._sortColumnKey = undefined;
-      this._sortDirection = UiSortDirection.Ascending;
+      this._sortDirection = UiSortDirection.NoSort;
     }
 
     if (props.descriptor || props.descriptorConfiguration) {

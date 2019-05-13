@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module TypeConverters */
 
-import UiComponents from "../UiComponents";
+import { UiComponents } from "../UiComponents";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { Primitives } from "@bentley/imodeljs-frontend";
@@ -13,6 +13,7 @@ let sl10nTrue: string = "";
 let sl10nFalse: string = "";
 
 /** Boolean Type Converter.
+ * @public
  */
 export class BooleanTypeConverter extends TypeConverter {
   private getLocalizedTrueFalse() {
@@ -52,5 +53,6 @@ export class BooleanTypeConverter extends TypeConverter {
 
   public get isBooleanType(): boolean { return true; }
 }
+
 TypeConverterManager.registerConverter("boolean", BooleanTypeConverter);
 TypeConverterManager.registerConverter("bool", BooleanTypeConverter);

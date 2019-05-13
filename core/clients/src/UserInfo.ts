@@ -5,7 +5,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Authentication */
 
-/** Information on the authenticated user. */
+/** Information on the authenticated user.
+ * @beta
+ */
 export class UserInfo {
   constructor(
     /** Id of the user */
@@ -24,7 +26,9 @@ export class UserInfo {
     public featureTracking?: { ultimateSite: string, usageCountryIso: string },
   ) { }
 
-  public static fromJson(jsonObj: any): UserInfo {
+  public static fromJson(jsonObj: any): UserInfo | undefined {
+    if (!jsonObj)
+      return undefined;
     const id: string = jsonObj.sub;
     const email: any = jsonObj.email ? { id: jsonObj.email, isVerified: jsonObj.email_verified } : undefined;
     const profile: any = jsonObj.given_name ? { name: jsonObj.name, preferredUserName: jsonObj.preferred_username, firstName: jsonObj.given_name, lastName: jsonObj.family_name } : undefined;

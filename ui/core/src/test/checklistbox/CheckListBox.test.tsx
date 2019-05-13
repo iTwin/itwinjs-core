@@ -34,7 +34,7 @@ describe("<CheckListBox />", () => {
       <CheckListBoxItem label="label" onClick={spyMethod} />,
     );
 
-    const input = wrapper.find("input.chk-listboxitem-checkbox");
+    const input = wrapper.find("input.core-chk-listboxitem-checkbox");
     input.should.exist;
 
     input.simulate("click");

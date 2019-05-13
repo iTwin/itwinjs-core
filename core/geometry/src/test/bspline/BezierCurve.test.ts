@@ -10,13 +10,14 @@ import { Point4d } from "../../geometry4d/Point4d";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { Bezier1dNd } from "../../bspline/Bezier1dNd";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { KnotVector } from "../../bspline/KnotVector";
+import { KnotVector, BSplineWrapMode } from "../../bspline/KnotVector";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { LineString3d } from "../../curve/LineString3d";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { BSpline1dNd } from "../../bspline/BSpline1dNd";
 
 function exercise1dNdBase(ck: Checker, curve: Bezier1dNd) {
   ck.testLE(1, curve.order, "Bezier1dNd has nontrivial order");
@@ -87,11 +88,38 @@ describe("BsplineCurve", () => {
     ck.testFalse(base2!.isAlmostEqual(base3));
     ck.testFalse(base2!.isAlmostEqual(base4));
 
-    const knotOrder = 5;
+    const knotDegree = 5;
     const uniformKnots = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-    const knotVector = KnotVector.create(uniformKnots, knotOrder, false);
+    const knotVector = KnotVector.create(uniformKnots, knotDegree, false);
     ck.testFalse(base4!.saturateInPlace(knotVector, 100));
+    const knotVector1 = knotVector.clone();
 
+    ck.testFalse(knotVector1.isIndexOfRealSpan(-1));
+    ck.testFalse(knotVector1.isIndexOfRealSpan(knotVector1.rightKnotIndex));
+
+    ck.testTrue(knotVector.isAlmostEqual(knotVector1));
+    knotVector.setKnots([1, 2, 3, 4, 5], false);
+    ck.testFalse(knotVector.isAlmostEqual(knotVector1));
+    const knotVectorB = KnotVector.create([1, 1, 2, 3, 4, 5], 2); // replication at left but not right
+    const knotVectorC = KnotVector.create([0, 1, 2, 3, 4, 4], 2); // replication at right but not left
+    ck.testFalse(knotVectorB.testClosable(BSplineWrapMode.OpenByRemovingKnots));
+    ck.testFalse(knotVectorC.testClosable(BSplineWrapMode.OpenByRemovingKnots));
+    ck.testFalse(knotVectorC.testClosable(10 as BSplineWrapMode));
+    ck.testFalse(knotVectorC.isAlmostEqual(knotVector1));
+    ck.testExactNumber(knotVectorC.grevilleKnot(-1), knotVectorC.leftKnot);
+    ck.testExactNumber(knotVectorC.grevilleKnot(20), knotVectorC.rightKnot);
+
+    const zeroDegreeKnots = KnotVector.create([1, 2, 3], 0);
+    const basis = new Float64Array(5);
+    const basis1 = new Float64Array(3);
+    basis[0] = 10.0;
+    basis1[0] = 11.0;
+    zeroDegreeKnots.evaluateBasisFunctions(0, 0, basis);   // nothing happens !
+    ck.testExactNumber(1.0, basis[0]);
+    zeroDegreeKnots.evaluateBasisFunctions1(0, 0, basis, basis1);   // nothing happens !
+    ck.testExactNumber(1.0, basis[0]);
+    ck.testExactNumber(0.0, basis1[0]);
+    ck.testFalse(knotVector1.isIndexOfRealSpan(-1));
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -226,4 +254,18 @@ describe("BsplineCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("Bspline1dNd", () => {
+    const ck = new Checker();
+    const bspline = BSpline1dNd.create(4, 3, 2, KnotVector.create([1, 2, 3, 4], 1));
+    if (ck.testPointer(bspline) && bspline) {
+      const point0 = bspline.getPoint3dPole(0)!;
+      ck.testExactNumber(0, point0.magnitude());
+      const f = new Float64Array(5);
+      // these exercise obscure code .. no test for values ...
+      bspline.evaluateBasisFunctionsInSpan(-1, 0.5, f);
+      bspline.evaluateBasisFunctionsInSpan(29, 0.5, f);
+      ck.testFalse (bspline.testCloseablePolygon ());
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

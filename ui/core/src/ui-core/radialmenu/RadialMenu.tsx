@@ -10,9 +10,12 @@ import * as classnames from "classnames";
 import { AnnularSector, Annulus, Point } from "./Annulus";
 
 import "./RadialMenu.scss";
+import { CommonProps } from "../utils/Props";
 
-/** Property interface for [[RadialMenu]] */
-export interface RadialMenuProps {
+/** Properties for [[RadialMenu]]
+ * @beta
+ */
+export interface RadialMenuProps extends CommonProps {
   /** Whether to show RadialMenu */
   opened: boolean;
   /** Radius of inner portion of RadialMenu */
@@ -35,13 +38,14 @@ export interface RadialMenuProps {
   onEsc?: (event: any) => any;
 }
 
-/** @hidden */
-export interface RadialMenuState {
+/** @internal */
+interface RadialMenuState {
   sectors: AnnularSector[];
 }
 
 /**
  * A context menu arranged in a radial layout.
+ * @beta
  */
 export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState> {
   private _root: HTMLDivElement | null = null;
@@ -51,10 +55,14 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
     selected: -1,
   };
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<RadialMenuState> = {
     sectors: [],
   };
+
+  constructor(props: RadialMenuProps) {
+    super(props);
+  }
 
   public render(): JSX.Element {
     const width = 2 * (this.props.outerRadius + 1);
@@ -72,15 +80,17 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
       if (y > window.innerHeight - width)
         y = window.innerHeight - width;
     }
+    const divStyle: React.CSSProperties = { left: x, top: y, ...this.props.style };
+
     return (
       <div
         ref={(el) => { this._root = el; }}
-        className={classnames("radial-menu", { opened: this.props.opened })}
-        style={{ left: x, top: y }}>
+        className={classnames("core-radial-menu", { opened: this.props.opened }, this.props.className)}
+        style={divStyle}>
         <svg
           xmlns="http://w3.org/2000/svg" version="1.1"
           width={width} height={width}
-          className={"radial-menu-container"}>
+          className={"core-radial-menu-container"}>
           {React.Children.map(this.props.children, (child, index) => {
             if (!child || typeof child !== "object" || !("props" in child))
               return child;
@@ -100,6 +110,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
       </div>
     );
   }
+
   public componentDidMount() {
     this._generateAnnularSectors();
 
@@ -133,6 +144,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
     if (this._selectedButton)
       this._selectedButton.select();
   }
+
   private _generateAnnularSectors = () => {
     const n = React.Children.count(this.props.children);
     const angle = 2 * Math.PI / n;
@@ -149,13 +161,15 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
   }
 }
 
-/** Property interface for [[RadialButton]] */
-export interface RadialButtonProps {
+/** Properties for [[RadialButton]] component
+ * @beta
+ */
+export interface RadialButtonProps extends CommonProps {
   /** Whether label is rotated to radial menu. Default: Inherit */
   labelRotate?: boolean;
   /** which icon to display in on the menu button */
   icon?: string;
-  /** @hidden */
+  /** @internal */
   annularSector?: AnnularSector;
   /** listens to any onClick event, or any select event, which can be triggered by the select() method. */
   onSelect?: (e: any) => any;
@@ -163,18 +177,23 @@ export interface RadialButtonProps {
   selected?: boolean;
 }
 
-/** @hidden */
-export interface RadialButtonState {
+/** @internal */
+interface RadialButtonState {
   hover: boolean;
 }
 
 /**
- * Button for use within RadialMenu
+ * Button for use within a [[RadialMenu]]
+ * @beta
  */
 export class RadialButton extends React.Component<RadialButtonProps, RadialButtonState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<RadialButtonState> = { hover: this.props.selected || false };
+
+  constructor(props: RadialButtonProps) {
+    super(props);
+  }
 
   public render(): JSX.Element {
     const sector = this.props.annularSector;
@@ -183,7 +202,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
     let t = "";
     let path = "";
     if (sector) {
-      size = sector.start.p1.distTo(sector.end.p2);
+      size = sector.start.p1.distTo(sector.end.p2) * 2;
       path = sector.path;
 
       const parent = sector.parent;
@@ -207,13 +226,14 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
         onMouseOut={this._handleMouseOut}
         onClick={this._handleClick}>
         <path
-          className={classnames("radial-menu-sector", { selected: this.state.hover })}
+          className={classnames("core-radial-menu-sector", { selected: this.state.hover }, this.props.className)}
+          style={this.props.style}
           d={path}>
         </path>
-        <foreignObject transform={t} x={p.x - size / 2} y={p.y - 16} width={size} height={size} className={"radial-menu-button-svg"}>
-          <div {...{ xmlns: "http://www.w3.org/1999/xhtml" }} className={"radial-menu-button-container"}>
-            <div className={classnames("radial-menu-button-icon", "icon", this.props.icon)} />
-            <div className={"radial-menu-button-content"}>
+        <foreignObject transform={t} x={p.x - size / 2} y={p.y - 16} width={size} height={size} className={"core-radial-menu-button-svg"}>
+          <div {...{ xmlns: "http://www.w3.org/1999/xhtml" }} className={"core-radial-menu-button-container"}>
+            <div className={classnames("core-radial-menu-button-icon", "icon", this.props.icon)} />
+            <div className={"core-radial-menu-button-content"}>
               {this.props.children}
             </div>
           </div>

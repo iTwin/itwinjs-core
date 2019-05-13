@@ -3,11 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "_customTheme";
 
-.nzdemo-pages-zones {
+body {
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
+  height: 100%;
+  overflow: hidden;
 
   .nzdemo-success {
     color: $buic-foreground-success;

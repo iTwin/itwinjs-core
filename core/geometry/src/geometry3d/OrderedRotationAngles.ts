@@ -9,7 +9,14 @@ import { AxisOrder } from "../Geometry";
 import { Angle } from "./Angle";
 import { Matrix3d } from "./Matrix3d";
 
-/** OrderedRotationAngles represents a non-trivial rotation using three simple axis rotation angles, and an order in which to apply them. */
+/**
+ * * OrderedRotationAngles represents a non-trivial rotation using three simple axis rotation angles, and an order in which to apply them.
+ * * This class accomodates application-specific interpretation of "Multiplying 3 rotation matrices" with regard to
+ *   * Whether a "vector" is a "row" or a "column"
+ *   * The order in which the X,Y, Z rotations are applied.
+ * * Within the imodel geometry library, the prefered rotation order is encapsulated in `YawPitchRollAngles`.
+ * @alpha
+ */
 export class OrderedRotationAngles {
   private _x: Angle;
   private _y: Angle;

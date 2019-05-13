@@ -18,6 +18,7 @@ import { Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial,
  * * The family of derived classes is starts with low order (at least linear through cubic) with highly optimized calculations.
  * * The general degree Bezier class also uses this as its base class.
  * * The length of the coefficient array is NOT always the bezier order.   Use the `order` property to access the order.
+ * @internal
  */
 export abstract class BezierCoffs {
   /** Array of coefficients.
@@ -177,6 +178,7 @@ export abstract class BezierCoffs {
 }
 /**
  * Static methods to operate on univariate beizer polynomials, with coefficients in simple Float64Array or as components of blocked arrays.
+ * @internal
  */
 export class BezierPolynomialAlgebra {
   /**
@@ -326,6 +328,7 @@ export class BezierPolynomialAlgebra {
  * * Some machine-level constraints apply for curves of extrmely high order, e.g. 70.   For instance, at that level use of
  *     Pascal triangle coefficients becomes inaccurate because IEEE doubles cannot represent integers that
  *     large.
+ * @internal
  */
 export class UnivariateBezier extends BezierCoffs {
   private _order: number;
@@ -701,7 +704,9 @@ export class UnivariateBezier extends BezierCoffs {
     return roots;
   }
 }
-/** Bezier polynomial specialized to order 2 (2 coefficients, straight line function) */
+/** Bezier polynomial specialized to order 2 (2 coefficients, straight line function)\
+ * @internal
+ */
 export class Order2Bezier extends BezierCoffs {
   constructor(f0: number = 0.0, f1: number = 0.0) {
     super(2);
@@ -787,7 +792,9 @@ export class Order2Bezier extends BezierCoffs {
   }
 }
 
-/** Bezier polynomial specialized to order 3 (3 coefficients, paraboloa  function) */
+/** Bezier polynomial specialized to order 3 (3 coefficients, paraboloa  function)
+ * @internal
+ */
 export class Order3Bezier extends BezierCoffs {
   public constructor(f0: number = 0, f1: number = 0, f2: number = 0) {
     super(3);
@@ -880,7 +887,9 @@ export class Order3Bezier extends BezierCoffs {
   }
 }
 
-/** Bezier polynomial specialized to order 4 (4 coefficients, cubic  function) */
+/** Bezier polynomial specialized to order 4 (4 coefficients, cubic  function)
+ * @internal
+ */
 export class Order4Bezier extends BezierCoffs {
   public constructor(f0: number = 0, f1: number = 0, f2: number = 0, f3: number = 0) {
     super(4);
@@ -1025,7 +1034,9 @@ export class Order4Bezier extends BezierCoffs {
   }
 
 }
-/** Bezier polynomial specialized to order 5 (5 coefficients, quartic  function) */
+/** Bezier polynomial specialized to order 5 (5 coefficients, quartic  function)
+ * @internal
+ */
 export class Order5Bezier extends BezierCoffs {
   constructor(f0: number = 0, f1: number = 0, f2: number = 0, f3: number = 0, f4: number = 0) {
     super(5);

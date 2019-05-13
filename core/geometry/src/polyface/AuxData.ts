@@ -11,7 +11,9 @@
 import { Range1d } from "../geometry3d/Range";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
-/** The data types of [[AuxChannel]].  The scalar types are used to produce thematic  vertex colors. */
+/** The data types of [[AuxChannel]].  The scalar types are used to produce thematic  vertex colors.
+ * @public
+*/
 export enum AuxChannelDataType {
   /** General scalar type - no scaling is applied if associated [[Polyface]] is transformed. */
   Scalar = 0,
@@ -22,7 +24,9 @@ export enum AuxChannelDataType {
   /** Normal -- replaces vertex normal.  Rotated with associated [[Polyface]] transformation. 3 Data values (x,y.z) per entry. */
   Normal = 3,
 }
-/**  Represents the [[AuxChannel]] data at a single input value. */
+/**  Represents the [[AuxChannel]] data at a single input value.
+ * @public
+*/
 export class AuxChannelData {
   /** The input value for this data. */
   public input: number;
@@ -45,12 +49,14 @@ export class AuxChannelData {
     return Math.abs(this.input - other.input) < tolerance && NumberArray.isAlmostEqual(this.values, other.values, tolerance);
   }
 }
-/**  Represents a single [[PolyfaceAuxData]] channel. A channel  may represent a single scalar value such as stress or temperature or may represent displacements from vertex position or replacements for normals. */
+/**  Represents a single [[PolyfaceAuxData]] channel. A channel  may represent a single scalar value such as stress or temperature or may represent displacements from vertex position or replacements for normals.
+ * @public
+*/
 export class AuxChannel {
   /** An array of [[AuxChannelData]] that represents the vertex data at one or more input values. */
   public data: AuxChannelData[];
   public dataType: AuxChannelDataType;
-  /** The channel name. This is used to present the [[AuxChannel]] to the user and also to select the [[AuxChannel]] for display from [[AnalysisStyle]] */
+  /** The channel name. This is used to present the [[AuxChannel]] to the user and also to select the [[AuxChannel]] for display from AnalysisStyle */
   public name?: string;
   /** The input name. */
   public inputName?: string;
@@ -100,6 +106,7 @@ export class AuxChannel {
  * and possibly texture parameter.  The `PolyfaceAuxData` structure contains supplemental data that is generally computed
  *  in an analysis program or other external data source.  This can be scalar data used to either overide the vertex colors through *Thematic Colorization* or
  *  XYZ data used to deform the mesh by adjusting the vertex postions or normals.
+ * @public
  */
 export class PolyfaceAuxData {
   /** @param channels Array with one or more channels of auxilliary data for the associated polyface.

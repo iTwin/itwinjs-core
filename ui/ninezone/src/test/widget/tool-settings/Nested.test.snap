@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Nested /> renders correctly 1`] = `
-<ToolSettings
+exports[`<NestedToolSettings /> renders correctly 1`] = `
+<div
   className="nz-widget-toolSettings-nested"
 >
   <div
@@ -11,8 +11,8 @@ exports[`<Nested /> renders correctly 1`] = `
       className="nz-button"
     />
     <div
-      className="nz-label"
+      className="nz-title"
     />
   </div>
-</ToolSettings>
+</div>
 `;

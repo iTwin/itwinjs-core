@@ -9,13 +9,13 @@ import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import { BentleyError, Logger } from "@bentley/bentleyjs-core";
 
+/** @internal */
 export interface I18NOptions {
   urlTemplate?: string;
 }
-/**
- * Supplies Internationalization services.
- * @note
- * Internally, this class uses the [i18next](https://www.i18next.com/) package.
+
+/** Supplies Internationalization services.
+ * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
  * @public
  */
 export class I18N {
@@ -54,8 +54,7 @@ export class I18N {
       .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
   }
 
-  /**
-   * Replace all instances of `%{key}` within a string with the translations of those keys.
+  /** Replace all instances of `%{key}` within a string with the translations of those keys.
    * For example:
    * ``` ts
    * "MyKeys": {
@@ -134,8 +133,7 @@ export class I18N {
     return thisNamespace;
   }
 
-  /**
-   * Waits for the Promises for all the registered namespaces to be fulfilled.
+  /** Waits for the Promises for all the registered namespaces to be fulfilled.
    * @internal
    */
   public async waitForAllRead(): Promise<void[]> {
@@ -154,8 +152,8 @@ export class I18N {
 }
 
 /** The class that represents a registered I18N Namespace
- * @note
- * The readFinished member is a Promise that is resolved when the JSON file for the namespace has been retrieved from the server, or rejected if an error occurs.
+ * @note The readFinished member is a Promise that is resolved when the JSON file for the namespace has been retrieved from the server, or rejected if an error occurs.
+ * @public
  */
 export class I18NNamespace {
   public constructor(public name: string, public readFinished: Promise<void>) { }

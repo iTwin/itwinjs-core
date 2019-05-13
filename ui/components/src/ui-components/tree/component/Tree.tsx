@@ -7,14 +7,17 @@
 // third-party imports
 import _ from "lodash";
 import * as React from "react";
+import classnames from "classnames";
 import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedListRowProps } from "react-virtualized";
+
 // bentley imports
 import { using, Guid } from "@bentley/bentleyjs-core";
 import {
   Tree as TreeBase, TreeNodePlaceholder, shallowDiffers,
   CheckBoxState, CheckBoxInfo, NodeCheckboxRenderer,
-  Spinner, SpinnerSize,
+  Spinner, SpinnerSize, CommonProps,
 } from "@bentley/ui-core";
+
 // tree-related imports
 import {
   BeInspireTree, BeInspireTreeNode, BeInspireTreeNodes, BeInspireTreeNodeConfig,
@@ -34,24 +37,32 @@ import {
   OnItemsSelectedCallback, OnItemsDeselectedCallback,
 } from "../../common/selection/SelectionHandler";
 // node highlighting
-import HighlightingEngine, { HighlightableTreeProps } from "../HighlightingEngine";
+import { HighlightingEngine, HighlightableTreeProps } from "../HighlightingEngine";
 // misc
-import UiComponents from "../../UiComponents";
+import { UiComponents } from "../../UiComponents";
 import { CellEditingEngine, EditableTreeProps } from "../CellEditingEngine";
 import { ITreeImageLoader, TreeImageLoader } from "../ImageLoader";
 
 // css
 import "./Tree.scss";
 
-/** Type for nodesSelected callback */
+/** Type for nodesSelected callback
+ * @internal
+ */
 export type NodesSelectedCallback = OnItemsSelectedCallback<TreeNodeItem>;
-/** Type for nodesDeselected callback */
+/** Type for nodesDeselected callback
+ * @internal
+ */
 export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
-/** Type for node renderer */
+/** Type for node renderer
+ * @internal
+ */
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
-/** Properties for the Tree component  */
-export interface TreeProps {
+/** Properties for the [[Tree]] component
+ * @public
+ */
+export interface TreeProps extends CommonProps {
   /** Nodes provider */
   dataProvider: TreeDataProvider;
 
@@ -82,12 +93,14 @@ export interface TreeProps {
    * Callback that's called when nodes are selected. In case of
    * delayed loading (`pageSize != 0`), called only after all selected
    * nodes are fully loaded
+   * @internal
    */
   onNodesSelected?: NodesSelectedCallback;
   /**
    * Callback that's called when nodes are deselected. In case of
    * delayed loading (`pageSize != 0`), called only after all deselected
    * nodes are fully loaded
+   * @internal
    */
   onNodesDeselected?: NodesDeselectedCallback;
   /**
@@ -139,21 +152,21 @@ export interface TreeProps {
 
   /** Contains render overrides for different pieces of the tree component */
   renderOverrides?: {
-    /** Callback to render a node */
+    /** Callback to render a node @internal */
     renderNode?: NodeRenderer;
     /** Callback to render a node checkbox. When a custom node renderer is used, it's responsible for calling this callback. */
     renderCheckbox?: NodeCheckboxRenderer;
   };
 
-  /** @hidden */
+  /** @internal */
   onRender?: () => void;
-  /** @hidden */
+  /** @internal */
   onNodesRender?: () => void;
 
-  /** Properties for node highlighting logic. If not provided, node highlighting is disabled. */
+  /** Properties for node highlighting logic. If not provided, node highlighting is disabled. @internal */
   nodeHighlightingProps?: HighlightableTreeProps;
 
-  /** Properties for cell editing logic. If not provided, cell editing is disabled. */
+  /** Properties for cell editing logic. If not provided, cell editing is disabled. @beta */
   cellEditing?: EditableTreeProps;
 
   /**
@@ -185,8 +198,10 @@ export interface TreeProps {
   rowHeight?: ((node?: TreeNodeItem, index?: number) => number) | number;
 }
 
-/** State for the Tree component  */
-export interface TreeState {
+/** State for the Tree component
+ * @internal
+ */
+interface TreeState {
   prev: {
     dataProvider: TreeDataProvider;
     modelReady: boolean;
@@ -211,16 +226,17 @@ export interface TreeState {
     continue: () => void;
   };
 
-  /** @hidden */
+  /** @internal */
   highlightingEngine?: HighlightingEngine;
 
-  /** @hidden */
+  /** @internal */
   cellEditingEngine?: CellEditingEngine;
 }
 
 /**
- * A Tree React component that uses the core of BeInspireTree, but renders it
- * with Tree and TreeNode from ui-core.
+ * A Tree React component that uses the core of BeInspireTree
+ * but renders with TreeBase and TreeNodeBase from ui-core.
+ * @public
  */
 export class Tree extends React.Component<TreeProps, TreeState> {
 
@@ -240,8 +256,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     selectionMode: SelectionMode.Single,
   };
 
-  constructor(props: TreeProps, context?: any) {
-    super(props, context);
+  /** @internal */
+  constructor(props: TreeProps) {
+    super(props);
 
     this._selectionHandler = new SelectionHandler(props.selectionMode!, this._onNodesSelected, this._onNodesDeselected);
     this._selectionHandler.onItemsSelectedCallback = this._onNodesSelected;
@@ -271,10 +288,10 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     });
   }
 
+  /** @internal */
   public static getDerivedStateFromProps(props: TreeProps, state: TreeState): TreeState | null {
     const providerChanged = (props.dataProvider !== state.prev.dataProvider);
     const selectedNodesChanged = (props.selectedNodes !== state.prev.selectedNodes);
-    const checkboxInfoChanged = (props.checkboxInfo !== state.prev.checkboxInfo);
     const modelReadyChanged = (state.modelReady !== state.prev.modelReady);
 
     // create derived state that just updates `prev` values
@@ -316,20 +333,12 @@ export class Tree extends React.Component<TreeProps, TreeState> {
           state.model.updateTreeSelection(props.selectedNodes);
         });
       }
-      if ((modelBecameReady || checkboxInfoChanged) && props.checkboxInfo) {
-        // note: using `pauseRendering()` here - need it to fire `ChangesApplied`
-        // event after checkboxes are asynchronously updated
-        // tslint:disable-next-line: no-floating-promises
-        using((state.model.pauseRendering()), async (_r) => {
-          // note: calling this may actually mutate `model` in state
-          await state.model.updateTreeCheckboxes(props.checkboxInfo!);
-        });
-      }
     }
 
     return derivedState;
   }
 
+  /** @internal */
   public componentDidMount() {
     this._mounted = true;
     this.assignModelListeners(this.state.model);
@@ -338,11 +347,15 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     if (this.state.cellEditingEngine && !this.state.cellEditingEngine.hasSubscriptions)
       this.state.cellEditingEngine.subscribe(this._getCellEditorState, this._setCellEditorState);
 
+    // tslint:disable-next-line: no-floating-promises
+    this.handleCheckboxes(this.state.prev, this.props);
+
     /* istanbul ignore next */
     if (this.props.onRender)
       this.props.onRender();
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this.dropModelListeners(this.state.model);
     this.dropDataProviderListeners(this.props.dataProvider);
@@ -372,6 +385,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       || this.state.model.visible().some((n) => n.isDirty());
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: TreeProps, prevState: TreeState) {
     this._selectionHandler.selectionMode = this.props.selectionMode!;
 
@@ -400,9 +414,26 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       this.state.cellEditingEngine.subscribe(this._getCellEditorState, this._setCellEditorState);
     }
 
+    // tslint:disable-next-line: no-floating-promises
+    this.handleCheckboxes(prevProps, this.props);
+
     /* istanbul ignore next */
     if (this.props.onRender)
       this.props.onRender();
+  }
+
+  private async handleCheckboxes(prevProps: TreeProps, newProps: TreeProps, force?: boolean) {
+    const checkboxInfoChanged = (prevProps.checkboxInfo !== newProps.checkboxInfo);
+    if ((force || checkboxInfoChanged) && newProps.checkboxInfo) {
+      // note: using `pauseRendering()` here - need it to fire `ChangesApplied`
+      // event after checkboxes are asynchronously updated
+      await using((this.state.model.pauseRendering()), async (_r) => {
+        // note: calling this may actually mutate `model` in state - in
+        // that case a `ChangesApplied` event will be emitted and the
+        // `_onModelChanged` callback will be called
+        await this.state.model.updateTreeCheckboxes(newProps.checkboxInfo!);
+      });
+    }
   }
 
   private assignModelListeners(model: BeInspireTree<TreeNodeItem>) {
@@ -412,9 +443,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     model.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
     model.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     // tslint:disable-next-line:no-floating-promises
-    model.ready.then(() => {
+    model.ready.then(async () => {
       if (model === this.state.model)
-        this._onModelReady();
+        await this._onModelReady();
     });
   }
 
@@ -439,10 +470,12 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     this.setState((prev) => ({ model: prev.model }));
   }
 
-  private _onModelReady = () => {
+  private _onModelReady = async () => {
     // istanbul ignore else
-    if (this._mounted)
+    if (this._mounted) {
+      await this.handleCheckboxes(this.state.prev, this.props, true);
       this.setState({ modelReady: true });
+    }
   }
 
   private scrollToActiveNode() {
@@ -674,7 +707,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     return 24;
   }
 
-  /** map TreeNodeItem into an InspireNode */
+  /** map TreeNodeItem into an InspireNode
+   * @internal
+   */
   public static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>, base?: BeInspireTreeNodeConfig): BeInspireTreeNodeConfig {
     base = base || { text: "" };
     const node: BeInspireTreeNodeConfig = {
@@ -794,6 +829,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         isDisabled: node.itree!.state!.checkboxDisabled,
         state: node.itree!.state!.checked ? CheckBoxState.On : CheckBoxState.Off,
         onClick: this._onCheckboxClick,
+        tooltip: node.itree!.checkboxTooltip,
       } : undefined,
       cellEditing: this.state.cellEditingEngine,
       showDescription: this.props.showDescriptions,
@@ -820,6 +856,13 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     };
   }
 
+  /** Get loaded node by its ID */
+  public getLoadedNode(id: string): TreeNodeItem | undefined {
+    const node = this.state.model.node(id);
+    return node ? node.payload : undefined;
+  }
+
+  /** @internal */
   public render() {
     if (!this.state.modelReady) {
       return (
@@ -888,7 +931,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     };
 
     return (
-      <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown} className="components-tree">
+      <TreeBase ref={this._treeRef} onMouseDown={this._onMouseDown}
+        className={classnames("components-tree", this.props.className)} style={this.props.style}
+      >
         <AutoSizer>
           {({ width, height }: Size) => (
             <VirtualizedList
@@ -907,10 +952,15 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 }
 
-/** @hidden */
+/**
+ * @internal
+ * @note Renamed 'Tree' namespace to 'TreeTest' because extract-api does not allow two different release tags for 'Tree.
+ */
 // istanbul ignore next
-export namespace Tree {
-  export const enum TestId {
+export namespace TreeTest {
+
+  /** @internal */
+  export enum TestId {
     Node = "tree-node",
     NodeContents = "tree-node-contents",
     NodeExpansionToggle = "tree-node-expansion-toggle",

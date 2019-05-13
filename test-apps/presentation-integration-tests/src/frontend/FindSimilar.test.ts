@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { initialize, terminate } from "../IntegrationTests";
-import { OpenMode, Id64String, using } from "@bentley/bentleyjs-core";
+import { Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import { KeySet, Ruleset, RuleTypes, RuleSpecificationTypes, RegisteredRuleset, InstanceKey, instanceKeyFromJSON } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -22,12 +22,12 @@ describe("Find Similar", () => {
   before(async () => {
     initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
+    imodel = await IModelConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
   });
 
   after(async () => {
-    await imodel.closeStandalone();
+    await imodel.closeSnapshot();
     terminate();
   });
 
@@ -128,8 +128,7 @@ describe("Find Similar", () => {
     });
   });
 
-  // WIP: fails when run after the above tests due to issue in imodeljs-native, succeeds when run isolated
-  it.skip("creates a valid 'similar instances' data provider for related instance property", async () => {
+  it("creates a valid 'similar instances' data provider for related instance property", async () => {
     // get properties for one of the elements
     propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
     const propertyData = await propertiesDataProvider.getData();

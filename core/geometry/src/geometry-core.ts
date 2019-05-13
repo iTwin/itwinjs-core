@@ -137,6 +137,7 @@ export * from "./geometry3d/Point2dArrayCarrier";
 export * from "./geometry3d/Point2dVector2d";
 export * from "./geometry3d/Point3dVector3d";
 export * from "./geometry3d/PointHelpers";
+export * from "./geometry3d/PolygonOps";
 export * from "./geometry3d/Range";
 export * from "./geometry3d/Ray3d";
 export * from "./geometry3d/Segment1d";
@@ -191,6 +192,7 @@ export * from "./curve/PointString3d";
 export * from "./curve/StrokeOptions";
 export * from "./curve/TransitionSpiral";
 export * from "./curve/UnionRegion";
+export * from "./curve/Query/StrokeCountMap";
 export * from "./solid/Box";
 export * from "./solid/Cone";
 export * from "./solid/LinearSweep";
@@ -220,6 +222,7 @@ export * from "./topology/Graph";
 export * from "./topology/Triangulation";
 export * from "./serialization/IModelJsonSchema";
 export * from "./serialization/DeepCompare";
+export * from "./serialization/GeometrySamples";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

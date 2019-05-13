@@ -23,6 +23,7 @@ export * from "./render/webgl/Graphic";
 export * from "./render/webgl/Handle";
 export * from "./render/webgl/Matrix";
 export * from "./render/webgl/Mesh";
+export * from "./render/webgl/PlanarClassifier";
 export * from "./render/webgl/PointString";
 export * from "./render/webgl/Polyline";
 export * from "./render/webgl/Primitive";

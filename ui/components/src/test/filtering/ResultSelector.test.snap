@@ -6,15 +6,15 @@ exports[`ResultSelector content is '0 of 0' and buttons are disabled when result
   resultCount={0}
 >
   <span
-    className="result-selector"
+    className="components-result-selector"
   >
     <button
-      className="result-selector-button icon icon-chevron-left"
+      className="components-result-selector-button icon icon-chevron-left"
       disabled={true}
       onClick={[Function]}
     />
     <span
-      className="result-selector-current-result"
+      className="components-result-selector-current-result"
       onClick={[Function]}
       style={
         Object {
@@ -38,7 +38,7 @@ exports[`ResultSelector content is '0 of 0' and buttons are disabled when result
       </span>
     </span>
     <button
-      className="result-selector-button icon icon-chevron-right"
+      className="components-result-selector-button icon icon-chevron-right"
       disabled={true}
       onClick={[Function]}
     />
@@ -52,15 +52,15 @@ exports[`ResultSelector content is '1 of X' and buttons are not disabled when re
   resultCount={10}
 >
   <span
-    className="result-selector"
+    className="components-result-selector"
   >
     <button
-      className="result-selector-button icon icon-chevron-left"
+      className="components-result-selector-button icon icon-chevron-left"
       disabled={false}
       onClick={[Function]}
     />
     <span
-      className="result-selector-current-result"
+      className="components-result-selector-current-result"
       onClick={[Function]}
       style={
         Object {
@@ -84,7 +84,7 @@ exports[`ResultSelector content is '1 of X' and buttons are not disabled when re
       </span>
     </span>
     <button
-      className="result-selector-button icon icon-chevron-right"
+      className="components-result-selector-button icon icon-chevron-right"
       disabled={false}
       onClick={[Function]}
     />

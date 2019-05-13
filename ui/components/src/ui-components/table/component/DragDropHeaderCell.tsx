@@ -16,14 +16,15 @@ import { DragSourceArguments, DropTargetArguments } from "../../dragdrop/DragDro
 import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
 import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
 import { ColumnDragLayer } from "./ColumnDragLayer";
+import { CommonProps } from "@bentley/ui-core";
 
-/** @hidden */
-export interface DragDropHeaderCellProps {
+/** @internal */
+export interface DragDropHeaderCellProps extends CommonProps {
   onHeaderDrop?: (source: string, target: string) => void; // inherited by parent
   column: any; // inherited by parent
 }
 
-interface HeaderWrapperProps {
+interface HeaderWrapperProps extends CommonProps {
   item?: DropTargetArguments;
   type?: string;
   isDragging?: boolean;
@@ -45,26 +46,27 @@ class HeaderWrapper extends React.Component<HeaderWrapperProps> {
     }
 
     const classes = classnames(
-      "table-header-drag-drop",
+      "components-table-header-drag-drop",
       {
         left: canDrop && !isDragging && isOver && mode === -1,
         right: canDrop && !isDragging && isOver && mode === 1,
         dragging: isDragging,
       },
+      this.props.className,
     );
     return (
-      <div className={classes}>
+      <div className={classes} style={this.props.style}>
         <HeaderCell {...props} />
       </div>
     );
   }
 }
 
-/** @hidden */
+/** @internal */
 export const DragDropHeaderWrapper: DndComponentClass<HeaderWrapperProps & WithDropTargetProps<any> & WithDragSourceProps<any>> = withDragSource(withDropTarget(HeaderWrapper)); // tslint:disable-line:variable-name
 
 // Used only internally in ./Table.tsx
-/** @hidden */
+/** @internal */
 export class DragDropHeaderCell extends React.Component<DragDropHeaderCellProps> {
   public render(): React.ReactNode {
     const { column } = this.props;

@@ -12,8 +12,10 @@ import { Loop } from "./Loop";
 import { Path } from "./Path";
 /* tslint:disable:variable-name no-empty*/
 
-/** base class for detailed traversal of curve artifacts.  This recurses to children in the quickest way (no records of path)
- * Use the RecursiveCurveProcessorWithStack to record the path along the visit.
+/** base class for detailed traversal of curve artifacts.
+ * * This recurses to children in the quickest way (no records of path)
+ * * Use the RecursiveCurveProcessorWithStack to record the path along the visit.
+ * @public
  */
 export abstract class RecursiveCurveProcessor {
   protected constructor() {
@@ -61,8 +63,10 @@ export abstract class RecursiveCurveProcessor {
   }
 }
 
-/** base class for detailed traversal of curve artifacts, maintaining a stack that shows complete path to each artifact.
- * Use the QuickRecursiveCurveProcessor to visit without recording the path.
+/** base class for detailed traversal of curve artifacts
+ * * During recursion,  maintains a stack that shows complete path to each artifact.
+ * * Use the QuickRecursiveCurveProcessor to visit without recording the path.
+ * @public
  */
 export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurveProcessor {
   // NOTE: parameter names begin with underbar to suppress "unused var" errors

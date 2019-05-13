@@ -4,12 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert, ActivityLoggingContext, BentleyError, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
+import {
+  assert,
+  BentleyError,
+  ClientRequestContext,
+  compareNumbers,
+  IModelStatus,
+  JsonUtils,
+  SortedArray,
+} from "@bentley/bentleyjs-core";
 import {
   TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation,
-  BackgroundMapType, BackgroundMapProps, IModelCoordinatesResponseProps, GeoCoordStatus,
+  BackgroundMapType, BackgroundMapProps, GeoCoordStatus,
 } from "@bentley/imodeljs-common";
-import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal, XYZProps } from "@bentley/geometry-core";
+import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile } from "./TileTree";
 import { TileRequest } from "./TileRequest";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
@@ -27,6 +35,7 @@ import { GeoConverter } from "../GeoServices";
 // GeoTransformChildCreator is used when the range is larger, as in a map. Then you must calculate the iModel coordinates more precisely from the lat/longs of the tile corners.
 interface ChildCreator {
   getChildren(quadId: QuadId): Promise<WebMercatorTileProps[]>;
+  onTilesSelected(): void;
 }
 
 // this is the simple version that is appropriate when the iModel covers a small area.
@@ -36,9 +45,9 @@ class LinearTransformChildCreator implements ChildCreator {
   constructor(_iModel: IModelConnection, groundBias: number) {
     // calculate mercatorToDb.
     const ecefLocation: EcefLocation = _iModel.ecefLocation!;
-    const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
+    const dbToEcef = ecefLocation.getTransform();
 
-    const projectCenter = _iModel.projectExtents.center;
+    const projectCenter = Point3d.create(_iModel.projectExtents.center.x, _iModel.projectExtents.center.y, groundBias);
     const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
     const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
 
@@ -102,6 +111,19 @@ class LinearTransformChildCreator implements ChildCreator {
     }
     return Promise.resolve(tileProps);
   }
+
+  public onTilesSelected() { }
+}
+
+function compareXYZ(lhs: XYAndZ, rhs: XYAndZ): number {
+  let cmp = compareNumbers(lhs.x, rhs.x);
+  if (0 === cmp) {
+    cmp = compareNumbers(lhs.y, rhs.y);
+    if (0 === cmp)
+      cmp = compareNumbers(lhs.z, rhs.z);
+  }
+
+  return cmp;
 }
 
 // this is the simple version that is appropriate when the iModel covers a small area.
@@ -121,6 +143,11 @@ class GeoTransformChildCreator implements ChildCreator {
   private _converter: GeoConverter;
   private _groundBias: number;
   private _linearChildCreator: LinearTransformChildCreator;
+  // An array of points which need to be converted from geocoords to cartesian coords for loading of child tiles.
+  // This is initialized by the first call to getChildrenProps() requiring geopoint conversion during selectTiles(), and reset to undefined after selectTiles() completes.
+  private _request?: SortedArray<XYAndZ>;
+  // A deferred Promise dispatched once tile selection completes, resolving when all geocoord conversion is complete.
+  private _promise?: Promise<void>;
 
   constructor(_iModel: IModelConnection, groundBias: number) {
     this._converter = _iModel.geoServices.getConverter("WGS84");
@@ -148,15 +175,26 @@ class GeoTransformChildCreator implements ChildCreator {
     for (let iPoint = 0; iPoint < GeoTransformChildCreator._uniquePointPixels.length; ++iPoint) {
       const x = ((left + GeoTransformChildCreator._uniquePointPixels[iPoint][0]) / mapSize) - .5;
       const y = 0.5 - ((top + GeoTransformChildCreator._uniquePointPixels[iPoint][1]) / mapSize);
-      requestProps[iPoint] = {
-        x: 360.0 * x,
-        y: 90.0 - 360.0 * Math.atan(Math.exp(-y * 2 * Math.PI)) / Math.PI,
-        z: this._groundBias,
-      };
+      requestProps[iPoint] = [
+        360.0 * x,
+        90.0 - 360.0 * Math.atan(Math.exp(-y * 2 * Math.PI)) / Math.PI,
+        this._groundBias,
+      ];
     }
 
-    // send to the backend to get the XY coordinates.
-    const response: IModelCoordinatesResponseProps = await this._converter.getIModelCoordinatesFromGeoCoordinates(requestProps);
+    let cached = this._converter.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
+    if (undefined !== cached.missing) {
+      // Batch our missing points in with any others which may be needed during tile selection.
+      // This promise will request the points needed by all tiles simultaneously and resolve when they are all available in the cache.
+      await this.getPromise(cached.missing);
+
+      // The points we need should all now be available in the cache.
+      // ###TODO this is lazy - use the cached results from above; only query the converter for missing points
+      cached = this._converter.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
+      assert(undefined === cached.missing);
+    }
+
+    const iModelCoords = cached.result;
 
     // get the tileProps now that we have their geoCoords.
     const tileProps: WebMercatorTileProps[] = [];
@@ -168,14 +206,44 @@ class GeoTransformChildCreator implements ChildCreator {
         const corners: Point3d[] = new Array<Point3d>(4);
         for (let iPoint = 0; iPoint < 4; ++iPoint) {
           const pointNum = GeoTransformChildCreator._cornerList[iCol][iRow][iPoint];
-          corners[iPoint] = Point3d.fromJSON(response.iModelCoords[pointNum].p);
+          const iModelCoord = iModelCoords[pointNum]!;
+          assert(undefined !== iModelCoord);
+          corners[iPoint] = Point3d.fromJSON(iModelCoord.p);
         }
 
         const childId: string = level + "_" + (column + iCol) + "_" + (row + iRow);
         tileProps.push(new WebMercatorTileProps(childId, level, corners));
       }
     }
-    return Promise.resolve(tileProps);
+
+    return tileProps;
+  }
+
+  private async getPromise(geoPoints: XYZProps[]): Promise<void> {
+    if (undefined === this._promise) {
+      assert(undefined === this._request);
+      const req = new SortedArray<XYAndZ>(compareXYZ);
+      this._request = req;
+      this._promise = Promise.resolve().then(async () => {
+        // NB: At this point this._request and this._promise are undefined, or possibly pointing to different objects.
+        await this._converter.getIModelCoordinatesFromGeoCoordinates(req.extractArray());
+      });
+    }
+
+    assert(undefined !== this._request);
+    for (const point of geoPoints)
+      this._request!.insert(Point3d.fromJSON(point));
+
+    return this._promise;
+  }
+
+  public onTilesSelected(): void {
+    if (undefined === this._promise)
+      return;
+
+    assert(undefined !== this._request);
+    this._promise = undefined;
+    this._request = undefined;
   }
 }
 
@@ -230,12 +298,12 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   public yAxisUp = true;
   public isTerrain = true;
   public maxTilesToSkip = 4;
-  public constructor() {
+  public constructor(groundBias: number) {
     const corners: Point3d[] = [];
-    corners[0] = new Point3d(-10000000, -10000000, 0);
-    corners[1] = new Point3d(-10000000, 10000000, 0);
-    corners[2] = new Point3d(10000000, -10000000, 0);
-    corners[3] = new Point3d(10000000, 10000000, 0);
+    corners[0] = new Point3d(-10000000, -10000000, groundBias);
+    corners[1] = new Point3d(-10000000, 10000000, groundBias);
+    corners[2] = new Point3d(10000000, -10000000, groundBias);
+    corners[3] = new Point3d(10000000, 10000000, groundBias);
 
     this.rootTile = new WebMercatorTileProps("0_0_0", 0, corners);
     this.location = Transform.createIdentity();
@@ -334,6 +402,9 @@ class WebMercatorTileLoader extends TileLoader {
   public get parentsAndChildrenExclusive(): boolean { return false; }
   public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Background; }
   public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] {
+    // Dispatch any requests for child tiles props (geo-coordination)
+    this._childTileCreator.onTilesSelected();
+
     // Ensure lo-res tiles drawn before (therefore behind) hi-res tiles.
     // NB: Array.sort() sorts in-place and returns the input array - we're not making a copy.
     return selected.sort((lhs, rhs) => lhs.depth - rhs.depth);
@@ -350,7 +421,7 @@ class WebMercatorTileLoader extends TileLoader {
 // Represents the service that is providing map tiles for Web Mercator models (background maps).
 abstract class ImageryProvider {
   public mapType: BackgroundMapType;
-  protected _activityLoggingContext = new ActivityLoggingContext("");
+  protected _requestContext = new ClientRequestContext("");
 
   constructor(mapType: BackgroundMapType) {
     this.mapType = mapType;
@@ -379,10 +450,9 @@ abstract class ImageryProvider {
     if (!tileUrl.includes("https"))
       tileUrl = tileUrl.replace("http", "https");
 
-    const alctx = this._activityLoggingContext;
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     try {
-      const tileResponse: Response = await request(alctx, tileUrl, tileRequestOptions);
+      const tileResponse: Response = await request(this._requestContext, tileUrl, tileRequestOptions);
       const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
       if (!byteArray || (byteArray.length === 0))
         return undefined;
@@ -571,7 +641,6 @@ class BingMapProvider extends ImageryProvider {
     // get the template url
     // NEEDSWORK - should get bing key from server.
     const bingKey = "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt";
-    const alctx = this._activityLoggingContext;
 
     let imagerySet = "Road";
     if (BackgroundMapType.Aerial === this.mapType)
@@ -586,7 +655,7 @@ class BingMapProvider extends ImageryProvider {
       method: "GET",
     };
     try {
-      const response: Response = await request(alctx, bingRequestUrl, requestOptions);
+      const response: Response = await request(this._requestContext, bingRequestUrl, requestOptions);
       const bingResponseProps: any = response.body;
       this._logoUrl = bingResponseProps.brandLogoUri;
 
@@ -614,7 +683,7 @@ class BingMapProvider extends ImageryProvider {
       // case, but we can't stop - the user might want to look at design data a closer zoom. So we intentionally load such
       // a tile, and then compare other tiles to it, rejecting them if they match.
       this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => { // tslint:disable-line:no-floating-promises
-        if (tileData !== undefined) this._missingTileData = tileData.data;
+        if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
       });
     } catch (error) {
       throw new BentleyError(IModelStatus.BadModel, "Error in Bing Server communications");
@@ -731,6 +800,19 @@ export class BackgroundMapState {
     // this.providerData = JsonUtils.asString(json.providerData, "aerial");
     this._groundBias = JsonUtils.asDouble(json.groundBias, 0.0);
     this.mapType = json.providerData ? JsonUtils.asInt(json.providerData.mapType, BackgroundMapType.Hybrid) : BackgroundMapType.Hybrid;
+
+    // JSON may specify MapType.None (0) which is not defined in enum and is not meaningful.
+    // (May also specify any other arbitrary meaningless integer value).
+    // If so, use default
+    switch (this.mapType) {
+      case BackgroundMapType.Street:
+      case BackgroundMapType.Aerial:
+      case BackgroundMapType.Hybrid:
+        break;
+      default:
+        this.mapType = BackgroundMapType.Hybrid;
+        break;
+    }
   }
 
   private testGcsConverter() {
@@ -769,7 +851,7 @@ export class BackgroundMapState {
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
     const loader = new WebMercatorTileLoader(this._provider, this._iModel, this._groundBias, this._gcsConverterStatus === GcsConverterStatus.Available);
-    const tileTreeProps = new WebMercatorTileTreeProps();
+    const tileTreeProps = new WebMercatorTileTreeProps(this._groundBias);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;
   }

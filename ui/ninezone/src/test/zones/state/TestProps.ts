@@ -5,6 +5,7 @@
 import { NineZoneProps, getDefaultNineZoneProps } from "../../../ui-ninezone";
 import { HorizontalAnchor } from "../../../ui-ninezone/widget/Stacked";
 
+// tslint:disable: completed-docs
 export namespace TestProps {
   export const defaultProps = getDefaultNineZoneProps();
 

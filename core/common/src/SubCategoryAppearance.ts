@@ -33,11 +33,11 @@ export class SubCategoryAppearance {
   public readonly transparency: number;
   /** If true, geometry belonging to this SubCategory is not drawn. */
   public readonly invisible: boolean;
-  /** @hidden */
+  /** @internal */
   public readonly dontPlot: boolean;
-  /** @hidden */
+  /** @internal */
   public readonly dontSnap: boolean;
-  /** @hidden */
+  /** @internal */
   public readonly dontLocate: boolean;
   /** The element ID of the line style used to draw curves, or an invalid ID if no line style is specified. */
   public readonly styleId: Id64String;
@@ -115,11 +115,11 @@ export namespace SubCategoryAppearance {
     color?: ColorDefProps;
     /** @see [[SubCategoryAppearance.invisible]]. Defaults to false. */
     invisible?: boolean;
-    /** @hidden */
+    /** @internal */
     dontPlot?: boolean;
-    /** @hidden */
+    /** @internal */
     dontSnap?: boolean;
-    /** @hidden */
+    /** @internal */
     dontLocate?: boolean;
     /** @see [[SubCategoryAppearance.weight]]. Defaults to 0. */
     weight?: number;
@@ -150,7 +150,7 @@ export class SubCategoryOverride {
   public readonly invisible?: boolean;
   /** @see [[SubCategoryAppearance.weight]] */
   public readonly weight?: number;
-  /** @hidden Overriding with arbitrary custom line style is not supported - overriding with LinePixels enum could be. */
+  /** @internal Overriding with arbitrary custom line style is not supported - overriding with LinePixels enum could be. */
   public readonly style?: Id64String;
   /** @see [[SubCategoryAppearance.priority]] */
   public readonly priority?: number;
@@ -199,6 +199,18 @@ export class SubCategoryOverride {
     return val;
   }
 
+  /** Perform equality comparison against another SubCategoryOverride. */
+  public equals(other: SubCategoryOverride): boolean {
+    if (this.invisible !== other.invisible || this.weight !== other.weight || this.style !== other.style
+      || this.priority !== other.priority || this.material !== other.material || this.transparency !== other.transparency)
+      return false;
+
+    if (undefined !== this.color && undefined !== other.color)
+      return this.color.tbgr === other.color.tbgr;
+    else
+      return undefined === this.color && undefined === other.color;
+  }
+
   /** Create a new SubCategoryOverride from a JSON object */
   public static fromJSON(json?: SubCategoryAppearance.Props): SubCategoryOverride {
     return undefined !== json ? new SubCategoryOverride(json) : this.defaults;
@@ -221,7 +233,7 @@ export class SubCategoryOverride {
 /** The *rank* for a Category
  * @public
  */
-export const enum Rank {
+export enum Rank {
   /** This category is predefined by the system */
   System = 0,
   /** This category is defined by a schema. Elements in this category are not recognized by system classes. */

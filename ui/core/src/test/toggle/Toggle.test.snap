@@ -2,7 +2,7 @@
 
 exports[`<Toggle /> renders correctly 1`] = `
 <label
-  className="toggle rounded"
+  className="core-toggle rounded"
   style={
     Object {
       "borderRadius": 0,
@@ -12,19 +12,19 @@ exports[`<Toggle /> renders correctly 1`] = `
 >
   <input
     checked={false}
-    className="toggle-input"
+    className="core-toggle-input"
     onBlur={[Function]}
     onChange={[Function]}
     type="checkbox"
   />
   <span
-    className="toggle-label"
+    className="core-toggle-label"
   />
   <span
-    className="toggle-checkmark icon icon-checkmark"
+    className="core-toggle-checkmark icon icon-checkmark"
   />
   <span
-    className="toggle-handle"
+    className="core-toggle-handle"
     style={
       Object {
         "bottom": 2,

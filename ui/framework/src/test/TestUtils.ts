@@ -20,6 +20,8 @@ import { Store, createStore, combineReducers } from "redux";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
 
+// tslint:disable: completed-docs
+
 export interface SampleAppState {
   placeHolder?: boolean;
 }
@@ -50,7 +52,7 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
   return state;
 }
 
-export default class TestUtils {
+export class TestUtils {
   private static _i18n?: I18N;
   private static _uiFrameworkInitialized = false;
   public static store: Store<RootState>;
@@ -179,4 +181,22 @@ export default class TestUtils {
     return new Promise((resolve) => setTimeout(resolve));
   }
 
+  /** Sleeps a specified number of milliseconds */
+  public static sleep(milliseconds: number) {
+    const start = new Date().getTime();
+    for (let i = 0; i < 1e7; i++) {
+      if ((new Date().getTime() - start) > milliseconds) {
+        break;
+      }
+    }
+  }
+
+  /** Sleeps a specified number of milliseconds then flushes async operations */
+  public static async tick(milliseconds: number) {
+    TestUtils.sleep(milliseconds);
+    await TestUtils.flushAsyncOperations();
+  }
+
 }
+
+export default TestUtils;   // tslint:disable-line: no-default-export

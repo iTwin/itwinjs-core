@@ -7,7 +7,7 @@
 /** Whether to open a database readonly or writeable.
  * @public
  */
-export const enum OpenMode {
+export enum OpenMode {
   Readonly = 0x00000001,
   ReadWrite = 0x00000002,
 }
@@ -15,7 +15,7 @@ export const enum OpenMode {
 /** Values, stored in changesets, that indicate what operation was performed on the database.
  * @public
  */
-export const enum DbOpcode {
+export enum DbOpcode {
   /** A row was deleted. */
   Delete = 9,
   /** A new row was inserted. */
@@ -27,7 +27,7 @@ export const enum DbOpcode {
 /** Values for return codes from BeSQLite functions. Consult SQLite documentation for further explanations.
  * @public
  */
-export const enum DbResult {
+export enum DbResult {
   /** Success */
   BE_SQLITE_OK = 0,
   /** SQL error or missing database */

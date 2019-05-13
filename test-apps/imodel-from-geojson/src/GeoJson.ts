@@ -23,8 +23,12 @@ export namespace GeoJson {
   export type Geometry = any;
   export type Polygon = any;
   export type LineString = any;
+  export type Point = any;
 
-  export const enum GeometryType {
+  export enum GeometryType {
     multiPolygon = "MultiPolygon",
+    polygon = "Polygon",
+    linestring = "LineString",
+    point = "Point",
   }
 }

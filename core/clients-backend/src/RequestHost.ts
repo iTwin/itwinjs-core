@@ -9,7 +9,9 @@ import * as http from "http";
 import * as https from "https";
 import * as url from "url";
 
-/** Utility to configure all HTTP service requests make from the backend */
+/** Utility to configure all HTTP service requests make from the backend
+ * @internal
+ */
 export class RequestHost {
 
   /** Initialize the configuration for all HTTP service requests made from the backend.
@@ -33,7 +35,7 @@ export class RequestHost {
       return false;
     }
 
-    RequestGlobalOptions.HTTPS_PROXY = new HttpsProxyAgent(proxyUrl);
+    RequestGlobalOptions.httpsProxy = new HttpsProxyAgent(proxyUrl);
     const protocol = RequestHost.getProtocol(proxyUrl);
     if (protocol === "http")
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";

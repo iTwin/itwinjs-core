@@ -9,7 +9,7 @@ import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
 import { ZoneTargets } from "../../ui-framework";
-import { DropTarget, WidgetZoneIndex, TargetType } from "@bentley/ui-ninezone";
+import { DropTarget, WidgetZoneIndex, TargetType, MergeTarget, BackTarget } from "@bentley/ui-ninezone";
 
 describe("ZoneTargets", () => {
   const spyMethod = sinon.spy();
@@ -35,10 +35,10 @@ describe("ZoneTargets", () => {
     it("should call onTargetChanged", () => {
       spyMethod.resetHistory();
       const wrapper = mount(<ZoneTargets zoneId={1} dropTarget={DropTarget.Merge} targetChangeHandler={handler} />);
-      const target = wrapper.find(".nz-zones-target-target");
-      target.simulate("mouseenter");
+      const target = wrapper.find(MergeTarget);
+      target.prop("onTargetChanged")!(true);
       expect(spyMethod.calledOnce).to.be.true;
-      target.simulate("mouseleave");
+      target.prop("onTargetChanged")!(false);
       expect(spyMethod.calledTwice).to.be.true;
       wrapper.unmount();
     });
@@ -56,10 +56,10 @@ describe("ZoneTargets", () => {
     it("should call onTargetChanged", () => {
       spyMethod.resetHistory();
       const wrapper = mount(<ZoneTargets zoneId={1} dropTarget={DropTarget.Back} targetChangeHandler={handler} />);
-      const target = wrapper.find(".nz-zones-target-target");
-      target.simulate("mouseenter");
+      const target = wrapper.find(BackTarget);
+      target.prop("onTargetChanged")!(true);
       expect(spyMethod.calledOnce).to.be.true;
-      target.simulate("mouseleave");
+      target.prop("onTargetChanged")!(false);
       expect(spyMethod.calledTwice).to.be.true;
       wrapper.unmount();
     });

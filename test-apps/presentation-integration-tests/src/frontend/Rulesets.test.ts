@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
-import { OpenMode, using } from "@bentley/bentleyjs-core";
+import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Ruleset, RootNodeRule, CustomNodeSpecification, RegisteredRuleset } from "@bentley/presentation-common";
@@ -17,12 +17,12 @@ describe("Rulesets", async () => {
   before(async () => {
     initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
+    imodel = await IModelConnection.openSnapshot(testIModelName);
     ruleset = require("../../test-rulesets/Rulesets/default");
   });
 
   after(async () => {
-    await imodel.closeStandalone();
+    await imodel.closeSnapshot();
     terminate();
   });
 

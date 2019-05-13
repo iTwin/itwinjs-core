@@ -7,7 +7,9 @@
 import { GL } from "./GL";
 import { System } from "./System";
 
-/** Provides facilities for conditionally executing diagnostic/debug code. By default, all facilities are disabled - they must be explicitly enabled. */
+/** Provides facilities for conditionally executing diagnostic/debug code. By default, all facilities are disabled - they must be explicitly enabled.
+ * @internal
+ */
 export class Debug {
   /** Whether [[Debug.print]] will actually produce output. */
   public static printEnabled = false;

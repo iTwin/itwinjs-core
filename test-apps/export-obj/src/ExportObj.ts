@@ -1,17 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2019 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
-import { ExportGraphicsInfo, IModelHost, IModelDb, ECSqlStatement } from "@bentley/imodeljs-backend";
-import { OpenMode, DbResult, Id64Array } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+import { ExportGraphicsInfo, IModelHost, IModelDb, ECSqlStatement, Texture } from "@bentley/imodeljs-backend";
+import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
+import { Angle } from "@bentley/geometry-core";
 import * as fs from "fs";
 import * as Yargs from "yargs";
 import * as path from "path";
 
 function doExport(iModelName: string, objName: string, mtlName: string) {
   IModelHost.startup();
+  Logger.initializeToConsole();
+  Logger.setLevelDefault(LogLevel.Error);
 
-  const iModel: IModelDb = IModelDb.openStandalone(iModelName, OpenMode.Readonly);
+  const iModel: IModelDb = IModelDb.openSnapshot(iModelName);
   process.stdout.write(`Opened ${iModelName} successfully.\n`);
 
   const objFile = fs.openSync(objName, "w");
@@ -30,13 +34,24 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
     return;
 
   const materialMap = new Map<number, string>();
+  const textureMap = new Map<string, string>();
   let pointOffset = 1;
 
   const onGraphics = (info: ExportGraphicsInfo) => {
-    let materialName = materialMap.get(info.color);
-    if (materialName === undefined) {
-      materialName = `Material${materialMap.size}`;
-      materialMap.set(info.color, materialName);
+    let materialName: string | undefined;
+
+    if (info.textureId) {
+      materialName = textureMap.get(info.textureId);
+      if (materialName === undefined) {
+        materialName = `Material${materialMap.size + textureMap.size}`;
+        textureMap.set(info.textureId, materialName);
+      }
+    } else {
+      materialName = materialMap.get(info.color);
+      if (materialName === undefined) {
+        materialName = `Material${materialMap.size + textureMap.size}`;
+        materialMap.set(info.color, materialName);
+      }
     }
     fs.appendFileSync(objFile, `usemtl ${materialName}\n`);
 
@@ -63,13 +78,12 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
     }
 
     pointOffset += info.mesh.points.length / 3;
-
-    return true;
   };
 
   fs.appendFileSync(objFile, `mtllib ${mtlName}\n`);
-  iModel.exportGraphics(({ onGraphics, elementIdArray, chordTol: 0.01 }));
-  process.stdout.write(`Wrote ${pointOffset} vertices.\n`);
+  // Set angleTol to arbitrary large value so chordTol is deciding factor.
+  iModel.exportGraphics(({ onGraphics, elementIdArray, chordTol: 0.01, angleTol: Angle.degreesToRadians(45) }));
+  process.stdout.write(`Wrote ${pointOffset - 1} vertices.\n`);
   fs.closeSync(objFile);
 
   materialMap.forEach((materialName: string, color: number) => {
@@ -79,6 +93,20 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
     if (rawColors.t !== 0)
       fs.appendFileSync(mtlFile, `Tr ${(rawColors.t / 255).toFixed(2)}\n`);
   });
+
+  const textureDirectory = path.dirname(mtlName);
+  const getTextureExt = (format: ImageSourceFormat): string => format === ImageSourceFormat.Jpeg ? ".jpg" : ".png";
+
+  textureMap.forEach((materialName: string, textureId: Id64String) => {
+    const texture = iModel.elements.getElement(textureId) as Texture;
+    const texturePath = path.join(textureDirectory, textureId + getTextureExt(texture.format));
+
+    fs.appendFileSync(mtlFile, `newmtl ${materialName}\n`);
+    fs.appendFileSync(mtlFile, `map_Kd ${texturePath}\n`);
+
+    fs.writeFile(texturePath, Buffer.from(texture.data, "base64"), () => { }); // async is fine
+  });
+
   fs.closeSync(mtlFile);
 }
 
@@ -88,8 +116,8 @@ interface ExportObjArgs {
 }
 
 try {
-  Yargs.usage("Export an OBJ from an existing IBIM file.");
-  Yargs.required("input", "The input IBIM");
+  Yargs.usage("Export an OBJ from an existing BIM file.");
+  Yargs.required("input", "The input BIM");
   Yargs.required("output", "The output OBJ file");
   const args = Yargs.parse() as Yargs.Arguments<ExportObjArgs>;
 

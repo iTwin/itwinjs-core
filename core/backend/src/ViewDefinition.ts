@@ -4,44 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ViewDefinitions */
 
-import { Id64String, Id64, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64Array, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import {
-  AnalysisStyleProps,
-  BisCodeSpec,
-  Code,
-  CodeScopeProps,
-  CodeSpec,
-  ColorDef,
-  ContextRealityModelProps,
-  ViewDefinitionProps,
-  ViewDefinition3dProps,
-  ViewDefinition2dProps,
-  SpatialViewDefinitionProps,
-  ModelSelectorProps,
-  CategorySelectorProps,
-  Camera,
-  AuxCoordSystemProps,
-  AuxCoordSystem2dProps,
-  AuxCoordSystem3dProps,
-  ViewAttachmentProps,
-  ViewFlags,
-  LightLocationProps,
-  RelatedElement,
-  DisplayStyleProps,
-  DisplayStyleSettings,
-  DisplayStyle3dSettings,
-} from "@bentley/imodeljs-common";
+import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags, BackgroundMapProps } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
  * Many ViewDefinitions may share the same DisplayStyle.
+ * @public
  */
 export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
+  public static get className(): string { return "DisplayStyle"; }
   public abstract get settings(): DisplayStyleSettings;
 
+  /** @internal */
   protected constructor(props: DisplayStyleProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -57,12 +35,16 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
   }
 }
 
-/** A DisplayStyle for 2d views. */
+/** A DisplayStyle for 2d views.
+ * @public
+ */
 export class DisplayStyle2d extends DisplayStyle {
+  public static get className(): string { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
   public get settings(): DisplayStyleSettings { return this._settings; }
 
+  /** @internal */
   public constructor(props: DisplayStyleProps, iModel: IModelDb) {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
@@ -101,36 +83,40 @@ export class DisplayStyle2d extends DisplayStyle {
   }
 }
 
-/** Creation options for display styles */
+/** Creation options for display styles
+ * @public
+ */
 export interface DisplayStyleCreationOptions {
   viewFlags?: ViewFlags;
   backgroundColor?: ColorDef;
   analysisStyle?: AnalysisStyleProps;
   contextRealityModels?: ContextRealityModelProps[];
   scheduleScript?: object;
-
+  backgroundMap?: BackgroundMapProps;
 }
 /** A DisplayStyle for 3d views.
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
+ * @public
  */
 export class DisplayStyle3d extends DisplayStyle {
+  public static get className(): string { return "DisplayStyle3d"; }
   private readonly _settings: DisplayStyle3dSettings;
 
   public get settings(): DisplayStyle3dSettings { return this._settings; }
 
+  /** @internal */
   public constructor(props: DisplayStyleProps, iModel: IModelDb) {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
   }
-  /**
-   * Create a DisplayStyle3d for use by a ViewDefinition.
+
+  /** Create a DisplayStyle3d for use by a ViewDefinition.
    * @param iModelDb The iModel
    * @param definitionModelId The [[DefinitionModel]]
    * @param name The name/CodeValue of the DisplayStyle3d
    * @returns The newly constructed DisplayStyle3d element.
    * @throws [[IModelError]] if unable to create the element.
    */
-
   public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d {
     const stylesIn: { [k: string]: any } = { viewflags: (options && options.viewFlags) ? options.viewFlags : new ViewFlags() };
 
@@ -146,6 +132,9 @@ export class DisplayStyle3d extends DisplayStyle {
 
       if (options.contextRealityModels)
         stylesIn.contextRealityModels = options.contextRealityModels;
+
+      if (options.backgroundMap)
+        stylesIn.backgroundMap = options.backgroundMap;
     }
 
     const displayStyleProps: DisplayStyleProps = {
@@ -172,17 +161,19 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 }
 
-/**
- * Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
+/** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
  * See [how to create a ModelSelector]$(docs/learning/backend/CreateElements.md#ModelSelector).
+ * @public
  */
 export class ModelSelector extends DefinitionElement implements ModelSelectorProps {
+  public static get className(): string { return "ModelSelector"; }
+
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
   public models: string[];
-  /** @hidden */
+  /** @internal */
   constructor(props: ModelSelectorProps, iModel: IModelDb) { super(props, iModel); this.models = props.models; }
-  /** @hidden */
+  /** @internal */
   public toJSON(): ModelSelectorProps {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
@@ -231,17 +222,18 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
   }
 }
 
-/**
- * Holds a list of Ids of Categories to be displayed in a view.
+/** Holds a list of Ids of Categories to be displayed in a view.
  * @see [CategorySelectorState]($frontend)
  * See [how to create a CategorySelector]$(docs/learning/backend/CreateElements.md#CategorySelector).
+ * @public
  */
 export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
+  public static get className(): string { return "CategorySelector"; }
   /** The array of element Ids of the Categories selected by this CategorySelector */
   public categories: string[];
-  /** @hidden */
+  /** @internal */
   constructor(props: CategorySelectorProps, iModel: IModelDb) { super(props, iModel); this.categories = props.categories; }
-  /** @hidden */
+  /** @internal */
   public toJSON(): CategorySelectorProps {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
@@ -302,21 +294,23 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
  * ```
  *
  * @note ViewDefinition is only available in the backend. See [ViewState]($frontend) for usage in the frontend.
+ * @public
  */
 export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
+  public static get className(): string { return "ViewDefinition"; }
   /** The element Id of the [[CategorySelector]] for this ViewDefinition */
   public categorySelectorId: Id64String;
   /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
   public displayStyleId: Id64String;
 
-  /** @hidden */
+  /** @internal */
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
     this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
     this.displayStyleId = Id64.fromJSON(props.displayStyleId);
   }
 
-  /** @hidden */
+  /** @internal */
   public toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelectorId;
@@ -350,8 +344,11 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   }
 }
 
-/** Defines a view of one or more 3d models. */
+/** Defines a view of one or more 3d models.
+ * @public
+ */
 export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
+  public static get className(): string { return "ViewDefinition3d"; }
   /** If true, camera is used. Otherwise, use an orthographic projection. */
   public cameraOn: boolean;
   /** The lower left back corner of the view frustum. */
@@ -363,7 +360,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   /** The camera used for this view, if `cameraOn` is true. */
   public camera: Camera;
 
-  /** @hidden */
+  /** @internal */
   public constructor(props: ViewDefinition3dProps, iModel: IModelDb) {
     super(props, iModel);
     this.cameraOn = JsonUtils.asBool(props.cameraOn);
@@ -373,7 +370,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     this.camera = new Camera(props.camera);
   }
 
-  /** @hidden */
+  /** @internal */
   public toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this.cameraOn;
@@ -388,8 +385,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   public loadDisplayStyle3d(): DisplayStyle3d { return this.iModel.elements.getElement<DisplayStyle3d>(this.displayStyleId); }
 }
 
-/**
- * Defines a view of one or more SpatialModels.
+/** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored by the ModelSelector.
  *
  * This is how a SpatialViewDefinition selects the elements to display:
@@ -399,27 +395,30 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
  *        * ModelIds  -------> SpatialModels    <----------GeometricElement3d.Model
  *    * CategorySelector
  *        * CategoryIds -----> SpatialCategories <----------GeometricElement3d.Category
+ * @public
  */
 export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
+  public static get className(): string { return "SpatialViewDefinition"; }
   /** The element Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public modelSelectorId: Id64String;
-  /** @hidden */
+  /** @internal */
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); this.modelSelectorId = Id64.fromJSON(props.modelSelectorId); }
-  /** @hidden */
+  /** @internal */
   public toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
     return json;
   }
-
   /** Load this view's ModelSelector from the IModelDb. */
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
  * See [how to create a OrthographicViewDefinition]$(docs/learning/backend/CreateElements.md#OrthographicViewDefinition).
+ * @public
  */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
+  public static get className(): string { return "OrthographicViewDefinition"; }
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
   /**
    * Create an OrthographicViewDefinition
@@ -481,8 +480,11 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
   }
 }
 
-/** Defines a view of a single 2d model. Each 2d model has its own coordinate system, so only one may appear per view. */
+/** Defines a view of a single 2d model. Each 2d model has its own coordinate system, so only one may appear per view.
+ * @public
+ */
 export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2dProps {
+  public static get className(): string { return "ViewDefinition2d"; }
   /** The Id of the Model displayed by this view. */
   public baseModelId: Id64String;
   /** The lower-left corner of this view in Model coordinates. */
@@ -492,7 +494,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
   /** The rotation of this view. */
   public angle: Angle;
 
-  /** @hidden */
+  /** @internal */
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
     this.baseModelId = Id64.fromJSON(props.baseModelId);
@@ -500,7 +502,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
   }
-  /** @hidden */
+  /** @internal */
   public toJSON(): ViewDefinition2dProps {
     const val = super.toJSON() as ViewDefinition2dProps;
     val.baseModelId = this.baseModelId;
@@ -514,14 +516,17 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
   public loadDisplayStyle2d(): DisplayStyle2d { return this.iModel.elements.getElement<DisplayStyle2d>(this.displayStyleId); }
 }
 
-/** Defines a view of a [[DrawingModel]]. */
+/** Defines a view of a [[DrawingModel]].
+ * @public
+ */
 export class DrawingViewDefinition extends ViewDefinition2d {
+  public static get className(): string { return "DrawingViewDefinition"; }
+  /** @internal */
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
   }
 
-  /**
-   * Create a DrawingViewDefinition
+  /** Create a DrawingViewDefinition
    * @param iModelDb The iModel
    * @param definitionModelId The [[DefinitionModel]]
    * @param name The name/CodeValue of the view
@@ -546,8 +551,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
     return new DrawingViewDefinition(viewDefinitionProps, iModelDb);
   }
 
-  /**
-   * Insert a DrawingViewDefinition
+  /** Insert a DrawingViewDefinition
    * @param iModelDb Insert into this iModel
    * @param definitionModelId Insert the new DrawingViewDefinition into this [[DefinitionModel]]
    * @param name The name/CodeValue of the view
@@ -563,29 +567,43 @@ export class DrawingViewDefinition extends ViewDefinition2d {
   }
 }
 
-/** Defines a view of a [[SheetModel]]. */
-export class SheetViewDefinition extends ViewDefinition2d { }
+/** Defines a view of a [[SheetModel]].
+ * @public
+ */
+export class SheetViewDefinition extends ViewDefinition2d {
+  public static get className(): string { return "SheetViewDefinition"; }
+}
 
-/** A ViewDefinition used to display a 2d template model. */
-export class TemplateViewDefinition2d extends ViewDefinition2d { }
+/** A ViewDefinition used to display a 2d template model.
+ * @internal
+ */
+export class TemplateViewDefinition2d extends ViewDefinition2d {
+  public static get className(): string { return "TemplateViewDefinition2d"; }
+}
 
-/** A ViewDefinition used to display a 3d template model. */
-export class TemplateViewDefinition3d extends ViewDefinition3d { }
+/** A ViewDefinition used to display a 3d template model.
+ * @internal
+ */
+export class TemplateViewDefinition3d extends ViewDefinition3d {
+  public static get className(): string { return "TemplateViewDefinition3d"; }
+}
 
-/**
- * An auxiliary coordinate system element. Auxiliary coordinate systems can be used by views to show
+/** An auxiliary coordinate system element. Auxiliary coordinate systems can be used by views to show
  * coordinate information in different units and/or orientations.
+ * @public
  */
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
+  public static get className(): string { return "AuxCoordSystem"; }
   public type!: number;
   public description?: string;
   public constructor(props: AuxCoordSystemProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/**
- * A 2d auxiliary coordinate system.
+/** A 2d auxiliary coordinate system.
+ * @public
  */
 export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
+  public static get className(): string { return "AuxCoordSystem2d"; }
   public origin?: Point2d;
   public angle!: number;
   public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
@@ -601,10 +619,11 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
   }
 }
 
-/**
- * A 3d auxiliary coordinate system.
+/** A 3d auxiliary coordinate system.
+ * @public
  */
 export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
+  public static get className(): string { return "AuxCoordSystem3d"; }
   public origin?: Point3d;
   public yaw!: number;
   public pitch!: number;
@@ -622,10 +641,11 @@ export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3d
   }
 }
 
-/**
- * A spatial auxiliary coordinate system.
+/** A spatial auxiliary coordinate system.
+ * @public
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
+  public static get className(): string { return "AuxCoordSystemSpatial"; }
   /** Create a Code for a AuxCoordSystemSpatial element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystemSpatial element and provides the scope for its name.
@@ -637,10 +657,11 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
   }
 }
 
-/**
- * Represents an *attachment* of a [[ViewDefinition]] to a [[Sheet]].
+/** Represents an *attachment* of a [[ViewDefinition]] to a [[Sheet]].
+ * @public
  */
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
+  public static get className(): string { return "ViewAttachment"; }
   public view: RelatedElement;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
@@ -649,11 +670,13 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
   }
 }
 
-/**
- * The position in space of a Light.
+/** The position in space of a Light.
+ * @public
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
+  public static get className(): string { return "LightLocation"; }
   /** Whether this light is currently turned on. */
   public enabled!: boolean;
+  /** @internal */
   constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
 }

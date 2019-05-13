@@ -2,11 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex } from "@bentley/geometry-core";
-import { Cartographic, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, AxisAlignedBox3d, EcefLocation, ViewFlags } from "@bentley/imodeljs-common";
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SpatialModel } from "@bentley/imodeljs-backend";
+import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex, Arc3d, Range3d } from "@bentley/geometry-core";
+import { Cartographic, Code, ColorDef, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, GeometryParams, AxisAlignedBox3d, EcefLocation, ViewFlags, IModel, BackgroundMapProps, BackgroundMapType, RenderMode } from "@bentley/imodeljs-common";
+import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SpatialModel, ViewDefinition } from "@bentley/imodeljs-backend";
 import { GeoJson } from "./GeoJson";
+import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
 
 /** */
 export class GeoJsonImporter {
@@ -16,40 +17,102 @@ export class GeoJsonImporter {
   public featureCategoryId: Id64String = Id64.invalid;
   public featureClassFullName = "Generic:SpatialLocation";
   private readonly _geoJson: GeoJson;
+  private readonly _appendToExisting: boolean;
+  private readonly _modelName?: string;
+  private readonly _forceZeroHeight = true;
+  private readonly _labelProperty?: string;
+  private readonly _pointRadius: number;
+  private _colorIndex?: number;
+  private readonly _viewFlags: ViewFlags;
+  private readonly _backgroundMap: BackgroundMapProps | undefined;
 
-  /**
-   * Construct a new GeoJsonImporter
+  /** Construct a new GeoJsonImporter
    * @param iModelFileName the output iModel file name
    * @param geoJson the input GeoJson data
    */
-  public constructor(iModelFileName: string, geoJson: GeoJson) {
-    this.iModelDb = IModelDb.createStandalone(iModelFileName, { rootSubject: { name: geoJson.title } });
+  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapType?: string, mapGroundBias?: number,
+    private _classifiedURL?: string, private _classifiedName?: string, private _classifiedOutside?: string, private _classifiedInside?: string) {
+    this.iModelDb = appendToExisting ? IModelDb.openStandalone(iModelFileName, OpenMode.ReadWrite) : IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
+    this._appendToExisting = appendToExisting;
+    this._modelName = modelName;
+    this._labelProperty = labelProperty;
+    this._pointRadius = pointRadius === undefined ? .25 : pointRadius;
+    this._colorIndex = pseudoColor ? 0 : undefined;
+    this._viewFlags = new ViewFlags();
+    this._viewFlags.renderMode = RenderMode.SmoothShade;
+    switch (mapType) {
+      case "none":
+        this._viewFlags.backgroundMap = false;
+        break;
+      case "streets":
+        this._viewFlags.backgroundMap = true;
+        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Street } };
+        break;
+      case "aerial":
+        this._viewFlags.backgroundMap = true;
+        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Aerial } };
+        break;
+      default:
+      case "hybrid":
+        this._viewFlags.backgroundMap = true;
+        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Hybrid } };
+        break;
+    }
   }
 
   /** Perform the import */
-  public import(): void {
-    this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "GeoJSON Definitions");
-    this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "GeoJSON Features");
-    this.featureCategoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, "GeoJSON Feature", { color: ColorDef.green });
+  public async import(): Promise<void> {
+    const categoryName = this._modelName ? this._modelName : "GeoJson Category";
+    const modelName = this._modelName ? this._modelName : "GeoJson Model";
 
-    /** To geo-locate the project, we need to first scan the GeoJSon and extract range. This would not be required
-     * if the bounding box was directly available.
-     */
-    const featureMin = new Cartographic(), featureMax = new Cartographic();
-    if (!this.getFeatureRange(featureMin, featureMax))
-      return;
-    const featureCenter = new Cartographic((featureMin.longitude + featureMax.longitude) / 2, (featureMin.latitude + featureMax.latitude) / 2);
+    if (this._appendToExisting) {
+      this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, modelName);
+      const foundCategoryId = SpatialCategory.queryCategoryIdByName(this.iModelDb, IModel.dictionaryId, categoryName);
+      this.featureCategoryId = (foundCategoryId !== undefined) ? foundCategoryId : this.addCategoryToExistingDb(categoryName);
+      this.convertFeatureCollection();
+      const featureModel: SpatialModel = this.iModelDb.models.getModel(this.physicalModelId) as SpatialModel;
+      const featureModelExtents: AxisAlignedBox3d = featureModel.queryExtents();
+      const projectExtents = Range3d.createFrom(this.iModelDb.projectExtents);
+      projectExtents.extendRange(featureModelExtents);
+      this.iModelDb.updateProjectExtents(projectExtents);
+    } else {
+      this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "GeoJSON Definitions");
+      this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, modelName);
+      this.featureCategoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, categoryName, { color: ColorDef.white });
+      /** To geo-locate the project, we need to first scan the GeoJSon and extract range. This would not be required
+       * if the bounding box was directly available.
+       */
+      const featureMin = new Cartographic(), featureMax = new Cartographic();
+      if (!this.getFeatureRange(featureMin, featureMax))
+        return;
+      const featureCenter = new Cartographic((featureMin.longitude + featureMax.longitude) / 2, (featureMin.latitude + featureMax.latitude) / 2);
 
-    this.iModelDb.setEcefLocation(EcefLocation.createFromCartographicOrigin(featureCenter));
-    this.convertFeatureCollection();
+      this.iModelDb.setEcefLocation(EcefLocation.createFromCartographicOrigin(featureCenter));
+      this.convertFeatureCollection();
 
-    const featureModel: SpatialModel = this.iModelDb.models.getModel(this.physicalModelId) as SpatialModel;
-    const featureModelExtents: AxisAlignedBox3d = featureModel.queryExtents();
+      const featureModel: SpatialModel = this.iModelDb.models.getModel(this.physicalModelId) as SpatialModel;
+      const featureModelExtents: AxisAlignedBox3d = featureModel.queryExtents();
+      if (!this._classifiedURL)
+        this.insertSpatialView("Spatial View", featureModelExtents);
+      this.iModelDb.updateProjectExtents(featureModelExtents);
+    }
+    if (this._classifiedURL)
+      await insertClassifiedRealityModel(this._classifiedURL, this.physicalModelId, this.featureCategoryId, this.iModelDb, this._viewFlags, this._backgroundMap, this._classifiedName ? this._classifiedName : this._modelName, this._classifiedInside, this._classifiedOutside);
 
-    this.insertSpatialView("Spatial View", featureModelExtents);
-    this.iModelDb.updateProjectExtents(featureModelExtents);
     this.iModelDb.saveChanges();
+  }
+  private addCategoryToExistingDb(categoryName: string) {
+    const categoryId = SpatialCategory.insert(this.iModelDb, IModel.dictionaryId, categoryName, { color: ColorDef.white });
+    this.iModelDb.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, ((view: ViewDefinition) => {
+      const categorySelector = this.iModelDb.elements.getElement<CategorySelector>(view.categorySelectorId);
+      categorySelector.categories.push(categoryId);
+      this.iModelDb.elements.updateElement(categorySelector);
+
+      return true;
+    }));
+
+    return categoryId;
   }
   /** Iterate through and accumulate the GeoJSON FeatureCollection range. */
   protected getFeatureRange(featureMin: Cartographic, featureMax: Cartographic) {
@@ -59,24 +122,41 @@ export class GeoJsonImporter {
     for (const feature of this._geoJson.data.features) {
       if (feature.geometry) {
         switch (feature.geometry.type) {
+          case GeoJson.GeometryType.polygon:
+            for (const loop of feature.geometry.coordinates)
+              this.extendRangeForCoordinates(featureMin, featureMax, loop);
+            break;
+
+          case GeoJson.GeometryType.linestring:
+            this.extendRangeForCoordinates(featureMin, featureMax, feature.geometry.coordinates);
+            break;
+
+          case GeoJson.GeometryType.point:
+            this.extendRangeForCoordinate(featureMin, featureMax, feature.geometry.coordinates);
+            break;
+
           case GeoJson.GeometryType.multiPolygon:
             for (const polygon of feature.geometry.coordinates)
-              for (const loop of polygon) {
-                for (const point of loop) {
-                  const longitude = Angle.degreesToRadians(point[0]);
-                  const latitude = Angle.degreesToRadians(point[1]);
-                  featureMin.longitude = Math.min(longitude, featureMin.longitude);
-                  featureMin.latitude = Math.min(latitude, featureMin.latitude);
-                  featureMax.longitude = Math.max(longitude, featureMax.longitude);
-                  featureMax.latitude = Math.max(latitude, featureMax.latitude);
-                }
-              }
+              for (const loop of polygon)
+                this.extendRangeForCoordinates(featureMin, featureMax, loop);
             break;
-          // TBD... Support other geometry types
         }
       }
     }
     return featureMin.longitude < featureMax.longitude && featureMin.latitude < featureMax.latitude;
+  }
+  private extendRangeForCoordinate(featureMin: Cartographic, featureMax: Cartographic, point: GeoJson.Point) {
+    const longitude = Angle.degreesToRadians(point[0]);
+    const latitude = Angle.degreesToRadians(point[1]);
+    featureMin.longitude = Math.min(longitude, featureMin.longitude);
+    featureMin.latitude = Math.min(latitude, featureMin.latitude);
+    featureMax.longitude = Math.max(longitude, featureMax.longitude);
+    featureMax.latitude = Math.max(latitude, featureMax.latitude);
+  }
+  private extendRangeForCoordinates(featureMin: Cartographic, featureMax: Cartographic, lineString: GeoJson.LineString) {
+    for (const point of lineString) {
+      this.extendRangeForCoordinate(featureMin, featureMax, point);
+    }
   }
 
   /** Iterate through the GeoJSON FeatureCollection converting each Feature in the collection. */
@@ -90,7 +170,12 @@ export class GeoJsonImporter {
 
     for (const featureJson of this._geoJson.data.features) {
       featureProps.geom = this.convertFeatureGeometry(featureJson.geometry);
-      featureProps.userLabel = featureJson.properties ? featureJson.properties.mapname : undefined;
+      if (featureJson.properties) {
+        if (this._labelProperty !== undefined && featureJson.properties[this._labelProperty] !== undefined)
+          featureProps.userLabel = featureJson.properties[this._labelProperty];
+        else
+          featureProps.userLabel = featureJson.properties.mapname;
+      }
       this.iModelDb.elements.insertElement(featureProps);
     }
   }
@@ -101,7 +186,32 @@ export class GeoJsonImporter {
       return undefined;
 
     const builder = new GeometryStreamBuilder();
+    if (this._colorIndex !== undefined) {
+      const colorValues = [ColorByName.blue, ColorByName.red, ColorByName.green, ColorByName.yellow, ColorByName.cyan, ColorByName.magenta, ColorByName.cornSilk, ColorByName.blueViolet, ColorByName.deepSkyBlue, ColorByName.indigo, ColorByName.fuchsia];
+      const geomParams = new GeometryParams(this.featureCategoryId);
+      geomParams.lineColor = new ColorDef(colorValues[this._colorIndex++ % colorValues.length]);
+      builder.appendGeometryParamsChange(geomParams);
+    }
+
     switch (inGeometry.type) {
+      case GeoJson.GeometryType.point:
+        const pointGeometry = this.convertPoint(inGeometry.coordinates);
+        if (pointGeometry)
+          builder.appendGeometry(pointGeometry);
+        break;
+
+      case GeoJson.GeometryType.linestring:
+        const linestringGeometry = this.convertLinestring(inGeometry.coordinates);
+        if (linestringGeometry)
+          builder.appendGeometry(linestringGeometry);
+        break;
+
+      case GeoJson.GeometryType.polygon:
+        const polyGeometry = this.convertPolygon(inGeometry.coordinates);
+        if (polyGeometry)
+          builder.appendGeometry(polyGeometry);
+        break;
+
       case GeoJson.GeometryType.multiPolygon:
         for (const polygon of inGeometry.coordinates) {
           const outGeometry = this.convertPolygon(polygon);
@@ -109,9 +219,37 @@ export class GeoJsonImporter {
             builder.appendGeometry(outGeometry);
         }
         break;
-      // TBD... Support other geometry types
     }
     return builder.geometryStream;
+  }
+
+  private pointFromCoordinate(coordinates: number[]) {
+    GeoJsonImporter._scratchCartographic.longitude = Angle.degreesToRadians(coordinates[0]);
+    GeoJsonImporter._scratchCartographic.latitude = Angle.degreesToRadians(coordinates[1]);
+
+    const point = this.iModelDb.cartographicToSpatialFromEcef(GeoJsonImporter._scratchCartographic);
+    /** the ecef Transform (particularly if it appending) may introduce some deviation from 0 x-y plane. */
+    if (this._forceZeroHeight)
+      point.z = 0.0;
+
+    return point;
+  }
+  private convertPoint(inPoint: GeoJson.Point): Loop {
+    return Loop.create(Arc3d.createXY(this.pointFromCoordinate(inPoint), this._pointRadius));
+
+  }
+
+  /** Convert a GeoJSON LineString into an @bentley/geometry-core lineString */
+  private convertLinestring(inLinestring: GeoJson.LineString): LineString3d | undefined {
+    if (!Array.isArray(inLinestring))
+      return undefined;
+
+    const outPoints = [];
+    for (const inPoint of inLinestring) {
+      outPoints.push(this.pointFromCoordinate(inPoint));
+    }
+
+    return LineString3d.createPoints(outPoints);
   }
 
   /** Convert a GeoJSON polygon into geometry that can be appended to an iModel GeometryStream. */
@@ -134,29 +272,19 @@ export class GeoJsonImporter {
         return undefined;   // TBD... Multi-loop Regions,
     }
   }
+  private static _scratchCartographic = new Cartographic();
 
   /** Convert a GeoJSON LineString into an @bentley/geometry-core Loop */
   private convertLoop(inLoop: GeoJson.LineString): Loop | undefined {
-    if (!Array.isArray(inLoop))
-      return undefined;
-
-    const outPoints = [];
-    const cartographic = new Cartographic();
-    for (const inPoint of inLoop) {
-      cartographic.longitude = Angle.degreesToRadians(inPoint[0]);
-      cartographic.latitude = Angle.degreesToRadians(inPoint[1]);
-      outPoints.push(this.iModelDb.cartographicToSpatialFromEcef(cartographic));
-    }
-    return Loop.create(LineString3d.createPoints(outPoints));
+    const lineString = this.convertLinestring(inLoop);
+    return lineString ? Loop.create(lineString) : undefined;
   }
 
   /** Insert a SpatialView configured to display the GeoJSON data that was converted/imported. */
   protected insertSpatialView(viewName: string, range: AxisAlignedBox3d): Id64String {
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.featureCategoryId]);
-    const vf = new ViewFlags();
-    vf.backgroundMap = true;
-    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf });
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundMap: this._backgroundMap });
     return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
   }
 }

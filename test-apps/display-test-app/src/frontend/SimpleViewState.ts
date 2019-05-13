@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients";
+import { HubIModel, Project, AccessToken } from "@bentley/imodeljs-clients";
 import { IModelConnection, ViewState, Viewport } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { ConnectProjectConfiguration } from "../common/SVTConfiguration";

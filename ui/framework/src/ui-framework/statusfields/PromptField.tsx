@@ -6,31 +6,39 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
-import { StatusBarText } from "@bentley/ui-ninezone";
+import classnames from "classnames";
+import { FooterIndicator } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
+import { StatusFieldProps } from "./StatusFieldProps";
+import "./PromptField.scss";
 
-/** Defines properties supported by the Prompt Field Component. */
-export interface PromptFieldProps {
-  isInFooterMode: boolean;
+/** Defines properties supported by the Prompt Field Component.
+ */
+interface PromptFieldProps extends StatusFieldProps {
+  /** Prompt text for the active tool */
   toolPrompt: string;
 }
 
-/** Prompt Field React component. This component is designed to be specified in a status bar definition.
- * It is used to display prompt from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
+/**
+ * Prompt Field React component. This component is designed to be specified in a status bar definition.
+ * It is used to display prompts from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
  * IModelApp.notifications.outputPrompt.
  */
 class PromptFieldComponent extends React.Component<PromptFieldProps> {
 
-  constructor(props?: any, context?: any) {
-    super(props, context);
+  constructor(props: PromptFieldProps) {
+    super(props);
   }
 
   public render(): React.ReactNode {
     return (
-      <StatusBarText
-        label={this.props.toolPrompt}
+      <FooterIndicator
+        className={classnames("uifw-statusFields-promptField", this.props.className)}
+        style={this.props.style}
         isInFooterMode={this.props.isInFooterMode}
-      />
+      >
+        {this.props.toolPrompt}
+      </FooterIndicator>
     );
   }
 }
@@ -46,5 +54,11 @@ function mapStateToProps(state: any) {
 }
 
 // we declare the variable and export that rather than using export default.
-/** OverallContent React component that is Redux connected. */ // tslint:disable-next-line:variable-name
+/**
+ * Prompt Field React component. This component is designed to be specified in a status bar definition.
+ * It is used to display prompts from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
+ * IModelApp.notifications.outputPrompt.
+ * This React component is Redux connected.
+ * @public
+ */ // tslint:disable-next-line:variable-name
 export const PromptField = connect(mapStateToProps)(PromptFieldComponent);

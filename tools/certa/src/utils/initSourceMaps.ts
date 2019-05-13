@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+// NB: This file is not a CommonJs module - it needs to run in the browser. Do not import or export modules here!
+
 // NB: This requires source-map-support/browser-source-map-support.js to be loaded first!
 declare const sourceMapSupport: any;
 sourceMapSupport.install();

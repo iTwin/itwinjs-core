@@ -3,17 +3,20 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { request, RequestOptions, FileHandler, ArgumentCheck } from "@bentley/imodeljs-clients";
+import { Logger } from "@bentley/bentleyjs-core";
+import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, request, RequestOptions } from "@bentley/imodeljs-clients";
 import * as fs from "fs";
 import * as path from "path";
-const loggingCategory = "imodeljs-clients.imodelhub";
+import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
+
+const loggerCategory: string = ClientsBackendLoggerCategory.IModelHub;
 
 /**
  * Provides methods to work with the file system and azure storage. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.
+ * @internal
  */
 export class IOSAzureFileHandler implements FileHandler {
-  /** @hidden */
+  /** @internal */
   public agent: any;
 
   /**
@@ -35,7 +38,7 @@ export class IOSAzureFileHandler implements FileHandler {
   }
   /**
    * Download a file from AzureBlobStorage for the iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
-   * @param alctx The activity logging context
+   * @param requestContext The client request context
    * @param downloadUrl URL to download file from.
    * @param downloadToPathname Pathname to download the file to.
    * @param fileSize Size of the file that's being downloaded.
@@ -43,14 +46,14 @@ export class IOSAzureFileHandler implements FileHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
 
-  public async downloadFile(alctx: ActivityLoggingContext, downloadUrl: string, downloadToPathname: string): Promise<void> {
-    alctx.enter();
+  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string): Promise<void> {
+    requestContext.enter();
     if (!IOSAzureFileHandler._isMobile) {
-      Logger.logError(loggingCategory, "Expecting this code to run on a mobile device");
+      Logger.logError(loggerCategory, "Expecting this code to run on a mobile device");
       return Promise.reject("Expecting this code to run on a mobile device");
     }
 
-    Logger.logInfo(loggingCategory, `Downloading file from ${downloadUrl}`);
+    Logger.logInfo(loggerCategory, `Downloading file from ${downloadUrl}`);
     ArgumentCheck.defined("downloadUrl", downloadUrl);
     ArgumentCheck.defined("downloadToPathname", downloadToPathname);
 
@@ -76,14 +79,14 @@ export class IOSAzureFileHandler implements FileHandler {
         (xhr as any).downloadFile(downloadToPathname);
       });
     } catch (err) {
-      alctx.enter();
+      requestContext.enter();
       if (fs.existsSync(downloadToPathname))
         fs.unlinkSync(downloadToPathname); // Just in case there was a partial download, delete the file
-      Logger.logError(loggingCategory, `Error downloading file`);
+      Logger.logError(loggerCategory, `Error downloading file`);
       return Promise.reject(err);
     }
-    alctx.enter();
-    Logger.logTrace(loggingCategory, `Downloaded file from ${downloadUrl}`);
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, `Downloaded file from ${downloadUrl}`);
   }
 
   /** Get encoded block id from its number. */
@@ -91,8 +94,8 @@ export class IOSAzureFileHandler implements FileHandler {
     return Base64.encode(blockId.toString(16).padStart(5, "0"));
   }
 
-  private async uploadChunk(alctx: ActivityLoggingContext, uploadUrlString: string, filePath: string, blockId: number) {
-    alctx.enter();
+  private async uploadChunk(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, filePath: string, blockId: number) {
+    requestContext.enter();
     const chunkSize = 4 * 1024 * 1024;
     const uploadUrl = `${uploadUrlString}&comp=block&blockid=${this.getBlockId(blockId)}`;
     return new Promise<void>((resolve: any, reject: any) => {
@@ -117,20 +120,20 @@ export class IOSAzureFileHandler implements FileHandler {
 
   /**
    * Upload a file to AzureBlobStorage for the iModelHub.
-   * @param alctx The activity logging context
+   * @param requestContext The client request context
    * @param uploadUrl URL to upload the file to.
    * @param uploadFromPathname Pathname to upload the file from.
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
-  public async uploadFile(alctx: ActivityLoggingContext, uploadUrlString: string, uploadFromPathname: string): Promise<void> {
-    alctx.enter();
+  public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string): Promise<void> {
+    requestContext.enter();
     if (!IOSAzureFileHandler._isMobile) {
-      Logger.logError(loggingCategory, "Expecting this code to run on a mobile device");
+      Logger.logError(loggerCategory, "Expecting this code to run on a mobile device");
       return Promise.reject("Expecting this code to run on a mobile device");
     }
 
-    Logger.logTrace(loggingCategory, `Uploading file to ${uploadUrlString}`);
+    Logger.logTrace(loggerCategory, `Uploading file to ${uploadUrlString}`);
     ArgumentCheck.defined("uploadUrlString", uploadUrlString);
     ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);
 
@@ -140,7 +143,9 @@ export class IOSAzureFileHandler implements FileHandler {
     let blockList = '<?xml version=\"1.0\" encoding=\"utf-8\"?><BlockList>';
     let i = 0;
     for (; i * chunkSize < fileSize; ++i) {
-      await this.uploadChunk(alctx, uploadUrlString, uploadFromPathname, i);
+      await this.uploadChunk(requestContext, uploadUrlString, uploadFromPathname, i);
+      requestContext.enter();
+
       blockList += `<Latest>${this.getBlockId(i)}</Latest>`;
     }
     blockList += "</BlockList>";
@@ -159,7 +164,7 @@ export class IOSAzureFileHandler implements FileHandler {
     };
 
     const uploadUrl = `${uploadUrlString}&comp=blocklist`;
-    await request(alctx, uploadUrl, options);
+    await request(requestContext, uploadUrl, options);
   }
 
   /**

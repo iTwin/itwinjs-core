@@ -10,6 +10,7 @@ import { ToolWidgetDef } from "./ToolWidget";
 import { NavigationWidgetDef } from "./NavigationWidget";
 
 /** Factory class for creating an appropriate Widget definition based on Widget properties.
+ * @internal
  */
 export class WidgetDefFactory {
   /** Creates an appropriate [[WidgetDef]] based on the given [[WidgetProps]].
@@ -26,5 +27,3 @@ export class WidgetDefFactory {
     return new WidgetDef(widgetProps);
   }
 }
-
-export default WidgetDefFactory;

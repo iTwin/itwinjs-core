@@ -83,3 +83,5 @@ The iModel.js library is divided into these npm packages in the `@bentley` scope
 |**imodeljs-frontend**|Runs in a web browser. The frontend utilizes the HTML document paradigm. It includes everything you need to query, display 2d and 3d views, and create [Tools](../learning/frontend/Tools) that modify iModels.
 |**imodeljs-common**|Classes that are shared between the frontend and backend.
 |**imodeljs-native**|Performs low-level I/O to an iModel. Runs only on backends, and `imodeljs-backend` depends on this package.
+|**imodeljs-markup**|Provides tools for creating SVG-based markup of an iModel.js Viewport.
+|**imodeljs-quantity**|Provides classes for parsing, formatting and converting between quantity values.

@@ -26,10 +26,12 @@ import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl 
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
+import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidget";
 
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
 import { TestModalDialog } from "../dialogs/TestModalDialog";
+import { PopupTestDialog } from "../dialogs/PopupTest";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { AppTools } from "../../tools/ToolSpecifications";
 
@@ -82,6 +84,7 @@ export class Frontstage4 extends FrontstageProvider {
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeDemo" control={TreeDemoWidgetControl} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeSelectionDemo" control={TreeSelectionDemoWidgetControl} />,
             ]}
           />
         }
@@ -162,6 +165,14 @@ export class Frontstage4 extends FrontstageProvider {
     );
   }
 
+  private testPopup(): React.ReactNode {
+    return (
+      <PopupTestDialog
+        opened={true}
+      />
+    );
+  }
+
   private radialMenu(): React.ReactNode {
     return (
       <TestRadialMenu
@@ -180,8 +191,9 @@ export class Frontstage4 extends FrontstageProvider {
           <>
             <ToolButton toolId={AppTools.item6.id} iconSpec={AppTools.item6.iconSpec!} labelKey={AppTools.item6.label} />
             <ToolButton toolId={AppTools.item5.id} iconSpec={AppTools.item5.iconSpec!} labelKey={AppTools.item5.label} />
-            <ToolButton toolId="openDialog" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.modalDialog())} />
-            <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
+            <ToolButton toolId="openDialog" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.modalDialog())} />
+            <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.radialMenu())} />
+            <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.testPopup())} />
           </>
         }
       />;

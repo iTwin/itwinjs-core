@@ -7,7 +7,9 @@ import * as React from "react";
 import { DragSource, DragSourceMonitor, ConnectDragSource, DragSourceConnector, ConnectDragPreview, DndComponentClass } from "react-dnd";
 import { DragSourceArguments, DropEffects, DropStatus, DropTargetArguments, DragSourceProps } from "./DragDropDef";
 
-/** React properties for withDragSource Higher-Order Component */
+/** React properties for withDragSource Higher-Order Component
+ * @beta
+ */
 export interface WithDragSourceProps<DragDropObject = any> {
   /** Properties and callbacks for DragSource. */
   dragProps: DragSourceProps<DragDropObject>;
@@ -19,22 +21,22 @@ export interface WithDragSourceProps<DragDropObject = any> {
   ctrlDropEffect?: DropEffects;
   /** Which dropEffect dragSource should be used when alt button is pressed during start of drag. */
   altDropEffect?: DropEffects;
-  /** @hidden */
+  /** @internal */
   connectDragSource?: ConnectDragSource;
-  /** @hidden */
+  /** @internal */
   connectDragPreview?: ConnectDragPreview;
-  /** @hidden */
+  /** @internal */
   isDragging?: boolean;
-  /** @hidden */
+  /** @internal */
   canDrag?: boolean;
-  /** @hidden */
+  /** @internal */
   item?: DragDropObject;
-  /** @hidden */
+  /** @internal */
   type?: string | symbol | null;
 }
 
-/** @hidden */
-export interface WithDragSourceState {
+/** @internal */
+interface WithDragSourceState {
   ctrlKey: boolean;
   altKey: boolean;
 }
@@ -52,6 +54,7 @@ function getEmptyImage(): HTMLImageElement {
 /**
  * HOC (Higher-Order Component) that transforms wrapped component into a DragSource.
  * @param Component component to wrap.
+ * @beta
  */
 export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
   // tslint:disable-next-line:variable-name

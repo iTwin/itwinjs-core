@@ -8,14 +8,18 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 
 // This file defines the Project-related service interface that applications can provide if they want to override the default behavior.
 
-/** The possible status values for reading ProjectInfo from CONNECT. */
+/** The possible status values for reading ProjectInfo from CONNECT.
+ * @internal
+ */
 export enum ProjectReadStatus {
   NotRead,
   Reading,
   DoneReading,
 }
 
-/** The possible values for Project scope in the CONNECT environment. */
+/** The possible values for Project scope in the CONNECT environment.
+ * @internal
+ */
 export enum ProjectScope {
   Favorites,
   MostRecentlyUsed,
@@ -23,7 +27,9 @@ export enum ProjectScope {
   All,
 }
 
-/** Information required to display a CONNECT Project to the user. */
+/** Information required to display a CONNECT Project to the user.
+ * @internal
+ */
 export interface ProjectInfo {
   name: string;
   projectNumber: string;
@@ -31,7 +37,9 @@ export interface ProjectInfo {
   readStatus: ProjectReadStatus;
 }
 
-/** Interface for Project services */
+/** Interface for Project services
+ * @internal
+ */
 export interface ProjectServices {
 
   /**

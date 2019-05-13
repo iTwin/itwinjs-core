@@ -2,7 +2,6 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-export * from "./AutoPush";
 export * from "./BriefcaseManager";
 export * from "./Category";
 export * from "./ChangeSummaryManager";
@@ -14,15 +13,13 @@ export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./Element";
 export * from "./ElementAspect";
-export * from "./ElementPropertyFormatter";
 export * from "./Entity";
 export * from "./ExportGraphics";
-export * from "./ExpressServer";
 export * from "./IModelJsFs";
-export * from "./IModelHost";
 export * from "./Relationship";
 export * from "./Texture";
 export * from "./LineStyle";
+export * from "./BackendLoggerCategory";
 export * from "./Material";
 export * from "./Model";
 export * from "./NavigationRelationship";
@@ -37,6 +34,11 @@ export * from "./domains/Generic";
 export * from "./domains/GenericElements";
 export * from "./IModelImporter";
 export * from "./IModelJsNative";
+export * from "./IModelHost";
+export * from "./AutoPush";
+export * from "./BackendRequestContext";
+export * from "./CloudStorageBackend";
+export * from "./DevTools";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description

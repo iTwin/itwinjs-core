@@ -5,15 +5,18 @@
 /** @module Tools */
 
 // cSpell:ignore configurableui
-import { FitViewTool, FlyViewTool, IModelApp, PanViewTool, RotateViewTool, SelectionTool, ViewToggleCameraTool, WalkViewTool, WindowAreaTool, ZoomViewTool } from "@bentley/imodeljs-frontend";
-import { ToolItemDef } from "./shared/Item";
-import { ContentViewManager } from "./content/ContentViewManager";
-import { BaseItemState } from "./shared/ItemDefBase";
-import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
-import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
-import { ScheduleAnimationTool } from "./tools/ScheduleAnimation";
+import {
+  FitViewTool, FlyViewTool, IModelApp, PanViewTool, RotateViewTool, SelectionTool, ViewToggleCameraTool, WalkViewTool,
+  WindowAreaTool, ZoomViewTool, ViewClipByPlaneTool,
+  ViewClipDecorationProvider,
+} from "@bentley/imodeljs-frontend";
+import { ViewFlags } from "@bentley/imodeljs-common";
+import { ToolItemDef } from "./shared/ToolItemDef";
 
-/** Utility Class that provides definitions of tools provided by imodel.js core. These definitions can be used to populate the ui. */
+/** Utility Class that provides definitions of tools provided by iModel.js core. These definitions can be used to populate the UI.
+ * @public
+ */
+// istanbul ignore next
 export class CoreTools {
   public static get fitViewCommand() {
     return new ToolItemDef({
@@ -58,7 +61,7 @@ export class CoreTools {
   public static get rotateViewCommand() {
     return new ToolItemDef({
       toolId: RotateViewTool.toolId,
-      iconSpec: "icon-rotate-left",
+      iconSpec: "icon-gyroscope",
       label: () => RotateViewTool.flyover,
       tooltip: () => RotateViewTool.description,
       execute: () => { IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView); },
@@ -105,47 +108,26 @@ export class CoreTools {
     });
   }
 
-  public static get analysisAnimationCommand() {
+  // note current ViewClipByPlaneTool is not automatically registered so the app must call ViewClipByPlaneTool.register();
+  public static get sectionByPlaneCommand() {
     return new ToolItemDef({
-      toolId: AnalysisAnimationTool.toolId,
-      iconSpec: "icon-camera-animation",
-      label: () => AnalysisAnimationTool.flyover,
-      tooltip: () => AnalysisAnimationTool.description,
-      execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
-      isVisible: false, // default to not show and then allow stateFunc to redefine.
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        const activeContentControl = ContentViewManager.getActiveContentControl();
+      toolId: ViewClipByPlaneTool.toolId,
+      iconSpec: "icon-plane",
+      label: () => ViewClipByPlaneTool.flyover,
+      tooltip: () => ViewClipByPlaneTool.description,
+      execute: () => {
+        const vp = IModelApp.viewManager.selectedView;
+        if (!vp || !vp.view.is3d())
+          return;
 
-        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle))
-          returnState.isVisible = true;
-        else
-          returnState.isVisible = false;
-        return returnState;
+        // Turn on clip volume flag for section tools
+        const viewFlags: ViewFlags = vp.view.viewFlags.clone();
+        viewFlags.clipVolume = true;
+        vp.viewFlags = viewFlags;
+
+        IModelApp.tools.run(ViewClipByPlaneTool.toolId, ViewClipDecorationProvider.create());
       },
     });
   }
 
-  public static get scheduleAnimationCommand() {
-    return new ToolItemDef({
-      toolId: ScheduleAnimationTool.toolId,
-      iconSpec: "icon-camera-animation",
-      label: () => ScheduleAnimationTool.flyover,
-      tooltip: () => ScheduleAnimationTool.description,
-      execute: () => { IModelApp.tools.run(ScheduleAnimationTool.toolId); },
-      isVisible: false, // default to not show and then allow stateFunc to redefine.
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-
-        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.scheduleScript))
-          returnState.isVisible = true;
-        else
-          returnState.isVisible = false;
-        return returnState;
-      },
-    });
-  }
 }

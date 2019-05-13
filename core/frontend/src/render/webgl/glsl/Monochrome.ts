@@ -5,7 +5,8 @@
 /** @module WebGL */
 
 import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
-import { FloatRgba } from "../FloatRGBA";
+import { MutableFloatRgba } from "../FloatRGBA";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 // The alpha component of the mono color is 1.0 if lit, 0.0 if unlit.
 // Unlit stuff (edges, polylines) uses the mono color directly in order for white-on-white reversal to work correctly.
@@ -24,14 +25,16 @@ const applyMonochromeColor = `
   return mix(baseColor, monoColor, extractShaderBit(kShaderBit_Monochrome));
 `;
 
+const scratchMonoColor: MutableFloatRgba = MutableFloatRgba.fromColorDef(ColorDef.white);
+
+/** @internal */
 export function addMonochrome(frag: FragmentShaderBuilder): void {
   frag.set(FragmentShaderComponent.ApplyMonochrome, applyMonochromeColor);
   frag.addUniform("u_monoRgb", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_monoRgb", (uniform, params) => {
-      // alpha = 1.0 indicates lit surface, 0.0 = unlit
-      const transparency = params.geometry.isLitSurface ? 0 : 255;
-      const color = FloatRgba.fromColorDef(params.target.monoColor, transparency);
-      color.bind(uniform);
+      const color = params.target.monoColor;
+      scratchMonoColor.setRgbaValues(color.red, color.green, color.blue, params.geometry.isLitSurface ? 1.0 : 0.0);
+      scratchMonoColor.bind(uniform);
     });
   });
 }

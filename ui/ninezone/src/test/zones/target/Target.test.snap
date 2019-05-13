@@ -1,9 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<MergeTarget /> renders correctly 1`] = `
+exports[`<ZoneTarget /> renders correctly 1`] = `
 <div
   className="nz-zones-target-target"
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
-/>
+>
+  <div
+    onMouseEnter={[Function]}
+    onMouseLeave={[Function]}
+  />
+</div>
 `;

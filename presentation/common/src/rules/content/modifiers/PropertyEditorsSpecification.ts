@@ -23,7 +23,7 @@ export declare type PropertyEditorParameters = PropertyEditorJsonParameters
   | PropertyEditorSliderParameters;
 
 /** Used for serializing array of [[PropertyEditorParameters]] to JSON */
-export const enum PropertyEditorParameterTypes {
+export enum PropertyEditorParameterTypes {
   Json = "Json",
   Multiline = "Multiline",
   Range = "Range",

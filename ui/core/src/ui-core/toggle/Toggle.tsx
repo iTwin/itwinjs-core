@@ -2,14 +2,16 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Toggle */
+/** @module Inputs */
 
 import * as React from "react";
 import * as classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 import "./Toggle.scss";
 
-/** Toggle display types */
+/** Toggle display types
+ * @beta
+ */
 export enum ToggleButtonType {
   /** Primary (green) background */
   Primary,
@@ -17,7 +19,9 @@ export enum ToggleButtonType {
   Blue,
 }
 
-/** Properties for [[Toggle]] component */
+/** Properties for [[Toggle]] component
+ * @beta
+ */
 export interface ToggleProps extends CommonProps {
   /** Determine if the toggle is disabled or not */
   disabled?: boolean;
@@ -35,6 +39,7 @@ export interface ToggleProps extends CommonProps {
   onBlur?: (event: React.FocusEvent) => any;
 }
 
+/** @internal */
 interface ToggleState {
   height: number;
   width: number;
@@ -42,14 +47,14 @@ interface ToggleState {
 }
 
 /**
- * Toggle React component
- * Component to show an "on" or "off state
+ * Toggle React component to show an "on" or "off state
+ * @beta
  */
-export class Toggle extends React.Component<ToggleProps, ToggleState> {
+export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
   private _padding: number = 2;
 
-  constructor(props: ToggleProps, context?: any) {
-    super(props, context);
+  constructor(props: ToggleProps) {
+    super(props);
 
     this.state = { height: 0, width: 0, checked: this.props.isOn! };
   }
@@ -71,10 +76,13 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
   }
 
   private _handleChange = () => {
-    this.setState({ checked: !this.state.checked }, () => { this.props.onChange && this.props.onChange(this.state.checked); });
+    this.setState(
+      { checked: !this.state.checked },
+      () => { this.props.onChange && this.props.onChange(this.state.checked); });
   }
 
   private _handleBlur = (event: React.FocusEvent) => {
+    // istanbul ignore else
     if (this.props.onBlur)
       this.props.onBlur(event);
   }
@@ -91,13 +99,13 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
 
   public render(): JSX.Element {
     const halfHeight = this.state.height / 2;
-    const checkmarkClassName = classnames("toggle-checkmark icon icon-checkmark", this.props.showCheckmark && "visible");
-    const toggleStyle: React.CSSProperties = { borderRadius: this.props.rounded ? halfHeight : 3, fontSize: halfHeight };
+    const checkmarkClassName = classnames("core-toggle-checkmark", "icon", "icon-checkmark", this.props.showCheckmark && "visible");
+    const toggleStyle: React.CSSProperties = { borderRadius: this.props.rounded ? halfHeight : 3, fontSize: halfHeight, ...this.props.style };
     const toggleClassName = classnames(
-      "toggle",
-      this.props.buttonType === ToggleButtonType.Primary && "toggle-primary",
+      "core-toggle",
+      this.props.buttonType === ToggleButtonType.Primary && "core-toggle-primary",
       this.props.rounded && "rounded",
-      { disabled: this.props.disabled },
+      this.props.disabled && "disabled",
       this.props.className);
     const toggleHandleStyle: React.CSSProperties = {
       width: this.state.height - (this._padding * 2),
@@ -108,13 +116,11 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
     };
     return (
       <label ref={(el) => { if (el) this._setHeight(el.clientHeight, el.clientWidth); }} style={toggleStyle} className={toggleClassName}>
-        <input checked={this.props.isOn} className="toggle-input" disabled={this.props.disabled} type="checkbox" onChange={this._handleChange} onBlur={this._handleBlur} />
-        <span className="toggle-label" />
+        <input checked={this.state.checked} className="core-toggle-input" disabled={this.props.disabled} type="checkbox" onChange={this._handleChange} onBlur={this._handleBlur} />
+        <span className="core-toggle-label" />
         <span className={checkmarkClassName} />
-        <span className="toggle-handle" style={toggleHandleStyle} />
+        <span className="core-toggle-handle" style={toggleHandleStyle} />
       </label>
     );
   }
 }
-
-export default Toggle;

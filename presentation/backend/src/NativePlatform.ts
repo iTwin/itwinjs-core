@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { IModelJsNative } from "@bentley/imodeljs-backend";
-import { IModelDb, IModelHost } from "@bentley/imodeljs-backend";
+import { IDisposable, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { IModelJsNative, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
 
@@ -22,6 +21,7 @@ export enum NativePlatformRequestTypes {
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",
   GetDistinctValues = "GetDistinctValues",
+  GetDisplayLabel = "GetDisplayLabel",
 }
 
 /** @hidden */
@@ -33,17 +33,17 @@ export interface NativePlatformDefinition extends IDisposable {
   addRuleset(serializedRulesetJson: string): string;
   removeRuleset(rulesetId: string, hash: string): boolean;
   clearRulesets(): void;
-  handleRequest(activityLoggingContext: ActivityLoggingContext, db: any, options: string): Promise<string>;
+  handleRequest(requestContext: ClientRequestContext, db: any, options: string): Promise<string>;
   getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): VariableValueJSON;
   setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): void;
 }
 
 /** @hidden */
-export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition; } => {
+export const createDefaultNativePlatform = (id?: string): { new(): NativePlatformDefinition; } => {
   // note the implementation is constructed here to make PresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NativePlatformDefinition {
-    private _nativeAddon = new IModelHost.platform.ECPresentationManager();
+    private _nativeAddon = new IModelHost.platform.ECPresentationManager(id);
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
         case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
@@ -91,8 +91,8 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
     public clearRulesets(): void {
       this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
-    public handleRequest(activityLoggingContext: ActivityLoggingContext, db: any, options: string): Promise<string> {
-      activityLoggingContext.enter();
+    public async handleRequest(requestContext: ClientRequestContext, db: any, options: string): Promise<string> {
+      requestContext.enter();
       return new Promise((resolve, reject) => {
         this._nativeAddon.handleRequest(db, options, (response) => {
           try {

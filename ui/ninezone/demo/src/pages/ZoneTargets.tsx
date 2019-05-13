@@ -3,9 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Container } from "@src/zones/target/Container";
-import { Merge } from "@src/zones/target/Merge";
-import { Back } from "@src/zones/target/Back";
+import { MergeTarget } from "@src/zones/target/Merge";
+import { BackTarget } from "@src/zones/target/Back";
 
 const root: React.CSSProperties = {
   display: "grid",
@@ -22,9 +21,6 @@ const col: React.CSSProperties = {
   width: "100%",
   height: "100%",
   position: "relative",
-};
-
-const container: React.CSSProperties = {
   backgroundColor: "#EEE",
 };
 
@@ -33,14 +29,10 @@ export default class ZoneTargets extends React.PureComponent<{}> {
     return (
       <div style={root}>
         <div style={col}>
-          <Container style={container}>
-            <Merge />
-          </Container>
+          <MergeTarget />
         </div>
         <div style={col}>
-          <Container style={container}>
-            <Back zoneIndex={9} />
-          </Container>
+          <BackTarget zoneIndex={9} />
         </div>
       </div>
     );

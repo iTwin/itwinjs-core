@@ -77,7 +77,7 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
       opened: false,
     }), () => {
       if (!this.state.opened)
-        ModalDialogManager.closeModalDialog();
+        ModalDialogManager.closeDialog();
       followUp();
     });
   }

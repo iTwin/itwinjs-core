@@ -8,7 +8,9 @@ import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { Primitives } from "@bentley/imodeljs-frontend";
 
-/** Operators for string types */
+/** Operators for string types
+ * @public
+ */
 export interface StringOperatorProcessor {
   startsWith(a: string, b: string, caseSensitive: boolean): boolean;
   endsWith(a: string, b: string, caseSensitive: boolean): boolean;
@@ -22,6 +24,7 @@ export interface StringOperatorProcessor {
 
 /**
  * String Type Converter.
+ * @public
  */
 export class StringTypeConverter extends TypeConverter implements StringOperatorProcessor {
   public convertToString(value?: Primitives.String) {

@@ -10,6 +10,7 @@ import { Primitives } from "@bentley/imodeljs-frontend";
 
 /**
  * Base Numeric Type Converter.
+ * @public
  */
 export abstract class NumericTypeConverterBase extends TypeConverter implements LessGreaterOperatorProcessor {
   public get isLessGreaterType(): boolean { return true; }
@@ -37,6 +38,7 @@ export abstract class NumericTypeConverterBase extends TypeConverter implements 
 
 /**
  * Float Type Converter.
+ * @public
  */
 export class FloatTypeConverter extends NumericTypeConverterBase {
   public convertToString(value?: Primitives.Float) {
@@ -61,6 +63,7 @@ TypeConverterManager.registerConverter("double", FloatTypeConverter);
 
 /**
  * Int Type Converter.
+ * @public
  */
 export class IntTypeConverter extends NumericTypeConverterBase {
   public convertToString(value?: Primitives.Int) {

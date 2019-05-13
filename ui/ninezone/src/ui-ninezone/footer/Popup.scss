@@ -1,0 +1,21 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "@bentley/ui-core/lib/ui-core/_z-index";
+@import "_variables";
+
+.nz-footer-popup {
+  border: unset;
+
+  @include uicore-z-index(status-popup);
+
+  &.nz-content-dialog {
+    color: $buic-background-control-stroke;
+  }
+
+  &.nz-content-panel {
+    color: $buic-background-panel;
+  }
+}

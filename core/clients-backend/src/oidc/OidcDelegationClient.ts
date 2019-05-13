@@ -5,23 +5,25 @@
 
 import { AccessToken, IncludePrefix } from "@bentley/imodeljs-clients";
 import { GrantParams, TokenSet } from "openid-client";
-import { ActivityLoggingContext, BentleyStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { BentleyStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
 
+/** @beta */
 export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
 
-/** Utility to generate delegation OAuth or legacy SAML tokens for backend applications */
+/** Utility to generate delegation OAuth or legacy SAML tokens for backend applications
+ * @beta
+ */
 export class OidcDelegationClient extends OidcBackendClient {
-  /**
-   * Creates an instance of OidcBackendClient.
+  /** Creates an instance of OidcBackendClient.
    * @param deploymentEnv Deployment environment.
    */
   public constructor(configuration: OidcDelegationClientConfiguration) {
     super(configuration);
   }
 
-  private async exchangeToJwtToken(actx: ActivityLoggingContext, accessToken: AccessToken, grantType: string): Promise<AccessToken> {
-    actx.enter();
+  private async exchangeToJwtToken(requestContext: ClientRequestContext, accessToken: AccessToken, grantType: string): Promise<AccessToken> {
+    requestContext.enter();
 
     const grantParams: GrantParams = {
       grant_type: grantType,
@@ -29,26 +31,26 @@ export class OidcDelegationClient extends OidcBackendClient {
       assertion: accessToken.toTokenString(IncludePrefix.No),
     };
 
-    const client = await this.getClient(actx);
+    const client = await this.getClient(requestContext);
     const tokenSet: TokenSet = await client.grant(grantParams);
     return this.createToken(tokenSet, accessToken.getUserInfo());
   }
 
   /** Get a JWT for the specified scope from a SAML token */
-  public async getJwtFromSaml(actx: ActivityLoggingContext, accessToken: AccessToken): Promise<AccessToken> {
-    actx.enter();
-    return this.exchangeToJwtToken(actx, accessToken, "urn:ietf:params:oauth:grant-type:saml-token");
+  public async getJwtFromSaml(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken> {
+    requestContext.enter();
+    return this.exchangeToJwtToken(requestContext, accessToken, "urn:ietf:params:oauth:grant-type:saml-token");
   }
 
   /** Get a delegation JWT for a new scope from another JWT */
-  public async getJwtFromJwt(actx: ActivityLoggingContext, accessToken: AccessToken): Promise<AccessToken> {
-    actx.enter();
-    return this.exchangeToJwtToken(actx, accessToken, "urn:ietf:params:oauth:grant-type:jwt-bearer");
+  public async getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken> {
+    requestContext.enter();
+    return this.exchangeToJwtToken(requestContext, accessToken, "urn:ietf:params:oauth:grant-type:jwt-bearer");
   }
 
   /** Get a SAML token for the specified scope from a JWT token */
-  public async getSamlFromJwt(actx: ActivityLoggingContext, jwt: AccessToken): Promise<AccessToken> {
-    actx.enter();
+  public async getSamlFromJwt(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken> {
+    requestContext.enter();
 
     const grantType = "urn:ietf:params:oauth:grant-type:jwt-bearer";
     const params: GrantParams = {
@@ -57,7 +59,7 @@ export class OidcDelegationClient extends OidcBackendClient {
       assertion: jwt.toTokenString(IncludePrefix.No),
     };
 
-    const client = await this.getClient(actx);
+    const client = await this.getClient(requestContext);
     const tokenSet: TokenSet = await client.grant(params);
 
     const samlToken = AccessToken.fromSamlTokenString(tokenSet.access_token, IncludePrefix.No);

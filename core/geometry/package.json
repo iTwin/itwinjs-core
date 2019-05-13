@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "0.190.0",
+  "version": "0.191.0",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
@@ -11,6 +11,7 @@
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=geometry-core",
+    "extract-api-test": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=geometry-core",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
@@ -39,25 +40,31 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "0.190.0",
-    "@bentley/webpack-tools": "0.190.0",
+    "@bentley/build-tools": "0.191.0",
+    "@bentley/webpack-tools": "0.191.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
-    "@types/node": "10.12.18",
+    "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "debug": "^2.6.9",
     "mocha": "^5.2.0",
-    "nyc": "^13.0.1",
+    "nyc": "^14.0.0",
     "rimraf": "^2.6.2",
     "semver": "^5.5.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
-    "typedoc": "^0.11.1",
+    "tslint-etc": "^1.5.2",
+    "typedoc": "^0.14.2",
     "typescript": "~3.2.2"
   },
   "dependencies": {},
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "check-coverage": true,
+    "statements": 85,
+    "functions": 85,
+    "branches": 70,
+    "lines": 85
   }
 }

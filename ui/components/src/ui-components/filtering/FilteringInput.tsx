@@ -5,22 +5,27 @@
 /** @module Filtering  */
 
 import * as React from "react";
+import classnames from "classnames";
 import { Key } from "ts-key-enum";
 import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
 import "./FilteringInput.scss";
-import UiComponents from "../UiComponents";
-import { Spinner, SpinnerSize } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
+import { Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
 
-/** [[FilteringInput]] React Component state */
-export interface FilteringInputState {
+/** [[FilteringInput]] React Component state
+ * @internal
+ */
+interface FilteringInputState {
   /** A string which will be used for search */
   searchText: string;
-  /** @hidden */
+  /** @internal */
   context: InputContext;
 }
 
-/** [[FilteringInput]] React Component properties */
-export interface FilteringInputProps {
+/** [[FilteringInput]] React Component properties
+ * @public
+ */
+export interface FilteringInputProps extends CommonProps {
   /** Filtering should start */
   onFilterStart: (searchText: string) => void;
   /** Filtering is canceled while still in progress */
@@ -35,7 +40,7 @@ export interface FilteringInputProps {
 
 /**
  * Enumeration of possible component contexts
- * @hidden
+ * @internal
  */
 export enum InputContext {
   /** Component is ready to filter */
@@ -48,8 +53,10 @@ export enum InputContext {
   FilteringFinishedWithNoStepping,
 }
 
-/** A helper component for filtering trees and stepping through results */
-export class FilteringInput extends React.Component<FilteringInputProps, FilteringInputState> {
+/** A helper component for filtering trees and stepping through results
+ * @public
+ */
+export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
   constructor(props: FilteringInputProps) {
     super(props);
     this.state = {
@@ -104,16 +111,20 @@ export class FilteringInput extends React.Component<FilteringInputProps, Filteri
 
   public render() {
     return (
-      <div className="filtering-input filtering-input-preload-images" onKeyDown={this._onFilterKeyDown}>
-        <span className="filtering-input-input">
+      // TODO: What is filtering-input-preload-images?
+      <div className={classnames("components-filtering-input", "filtering-input-preload-images", this.props.className)}
+        style={this.props.style}
+        onKeyDown={this._onFilterKeyDown}
+      >
+        <span className="components-filtering-input-input">
           <input type="text"
             onKeyDown={this._onFilterKeyDown}
             value={this.state.searchText}
             onChange={this._onInputChanged} />
 
-          <span className="filtering-input-input-components">
+          <span className="components-filtering-input-input-components">
             {this.state.context === InputContext.FilteringInProgress ?
-              <div className="filtering-input-loader">
+              <div className="components-filtering-input-loader">
                 <Spinner size={SpinnerSize.Medium} />
               </div>
               : undefined}
@@ -124,15 +135,15 @@ export class FilteringInput extends React.Component<FilteringInputProps, Filteri
         </span>
 
         {this.state.context === InputContext.ReadyToFilter ?
-          <button className="filtering-input-button"
+          <button className="components-filtering-input-button"
             onClick={this._onSearchButtonClick}>{UiComponents.i18n.translate("UiComponents:button.label.search")}</button> : undefined}
 
         {this.state.context === InputContext.FilteringInProgress ?
-          <button className="filtering-input-button"
+          <button className="components-filtering-input-button"
             onClick={this._onCancelButtonClick}>{UiComponents.i18n.translate("UiComponents:button.label.cancel")}</button> : undefined}
 
         {this.state.context === InputContext.FilteringFinishedWithNoStepping || this.state.context === InputContext.FilteringFinished ?
-          <button className="filtering-input-clear icon icon-close" onClick={this._onClearButtonClick}></button> :
+          <button className="components-filtering-input-clear icon icon-close" onClick={this._onClearButtonClick}></button> :
           undefined}
 
       </div>

@@ -11,8 +11,6 @@ import { render, cleanup } from "react-testing-library";
 import TestUtils from "../TestUtils";
 import {
   StatusBar,
-  StatusBarFieldId,
-  IStatusBar,
   SelectionInfoField,
   StatusBarWidgetControl,
   WidgetState,
@@ -20,6 +18,8 @@ import {
   ConfigurableUiControlType,
   WidgetDef,
   UiFramework,
+  SessionStateActionId,
+  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
 
 describe("SelectionInfoField", () => {
@@ -31,8 +31,8 @@ describe("SelectionInfoField", () => {
       super(info, options);
     }
 
-    public getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode {
-      if (statusBar && openWidget) { }
+    public getReactNode({ isInFooterMode, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+      if (openWidget) { }
       return (
         <>
           <SelectionInfoField isInFooterMode={isInFooterMode} />
@@ -65,12 +65,22 @@ describe("SelectionInfoField", () => {
   });
 
   it("SelectionInfoField should render with 1", () => {
-    UiFramework.frameworkState!.appState.numItemsSelected = 1;
+    UiFramework.frameworkState!.sessionState.numItemsSelected = 1;
     const component = render(<Provider store={TestUtils.store}>
       <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
     </Provider>);
     expect(component).not.to.be.undefined;
     const foundText = component.getAllByText("1");
+    expect(foundText).not.to.be.undefined;
+  });
+
+  it("SelectionInfoField should update after Redux action", () => {
+    const component = render(<Provider store={TestUtils.store}>
+      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
+    </Provider>);
+    expect(component).not.to.be.undefined;
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, 99);
+    const foundText = component.getAllByText("99");
     expect(foundText).not.to.be.undefined;
   });
 });

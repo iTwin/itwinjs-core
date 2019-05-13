@@ -10,5 +10,6 @@ export const createRandomEntityProps = (): EntityProps => {
   return {
     classFullName: faker.random.word(),
     id: createRandomId(),
+    type: faker.random.word(),
   };
 };

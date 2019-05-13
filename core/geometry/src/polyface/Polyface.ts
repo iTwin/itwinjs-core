@@ -29,6 +29,7 @@ function allDefined(valueA: any, valueB: any, valueC: any): boolean {
 /**
  * A Polyface is n abstract mesh structure (of unspecified implementation) that provides a PolyfaceVisitor
  * to iterate over its facets.
+ * @public
  */
 export abstract class Polyface extends GeometryQuery {
   public data: PolyfaceData;
@@ -72,6 +73,10 @@ export abstract class Polyface extends GeometryQuery {
    */
   public abstract get isEmpty(): boolean;
 }
+/**
+ * An `IndexedPolyface` is a set of facets which can have normal, param, and color arrays with independent point, normal, param, and color indices.
+ * @public
+ */
 export class IndexedPolyface extends Polyface {
   public isSameGeometryClass(other: any): boolean { return other instanceof IndexedPolyface; }
   /** Tests for equivalence between two IndexedPolyfaces. */
@@ -496,7 +501,7 @@ export class IndexedPolyface extends Polyface {
 
     return true;
   }
-
+/** Second step of double dispatch:  call `handler.handleIndexedPolyface(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleIndexedPolyface(this);
   }
@@ -508,19 +513,34 @@ export class IndexedPolyface extends Polyface {
  * * The polyface visitor holds data for one facet at a time.
  * * The caller can request the position in the addressed facets as a "readIndex."
  * * The readIndex value (as a number) is not promised to be sequential. (I.e. it might be a simple facet count or might be
+ * @public
  */
 export interface PolyfaceVisitor extends PolyfaceData {
+  /** Load data for the facet with given index. */
   moveToReadIndex(index: number): boolean;
+  /** Return  the readIndex of the currently loaded facet */
   currentReadIndex(): number;
+  /** Load data for th enext facet. */
   moveToNextFacet(): boolean;
+  /** Reset to initial state for reading all facets sequentially with moveToNextFacet */
   reset(): void;
+  /** Return the point index of vertex i within the currently loaded facet */
   clientPointIndex(i: number): number;
+  /** Return the param index of vertex i within the currently loaded facet */
   clientParamIndex(i: number): number;
+  /** Return the normal index of vertex i within the currently loaded facet */
   clientNormalIndex(i: number): number;
+  /** Return the color index of vertex i within the currently loaded facet */
   clientColorIndex(i: number): number;
+  /** Return the aux data index of vertex i within the currently loaded facet */
   clientAuxIndex(i: number): number;
 }
 
+/**
+ * An `IndexedPolyfaceVisitor` is an iterator-like object that "visits" facets of a mesh.
+ * * The visitor extends a `PolyfaceData ` class, so it can at any time hold all the data of a single facet.
+ * @public
+ */
 export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
   private _currentFacetIndex: number;
   private _nextFacetIndex: number;

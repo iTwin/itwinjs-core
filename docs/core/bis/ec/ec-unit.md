@@ -1,8 +1,8 @@
-# Unit
+## Unit
 
 Defines a Unit of Measure in terms of other Units allowing generation of a conversion factor between it and any other dimensionally compatible unit.  NOTE: Conversions are limited to units in the same Phenomenon.
 
-## Attributes
+### Attributes
 
 **typeName** Defines the name of this Unit. Must be a valid [ECName](./ec-name.md) and be unique among all other items in a schema.
 
@@ -22,11 +22,11 @@ Defines a Unit of Measure in terms of other Units allowing generation of a conve
 
 **offset** The offset applied when converting between units.
 
-# Inverted Unit
+## Inverted Unit
 
 Defines a Unit that is the inverse of another Unit.  Only valid for Units whose dimensional derivation is Unit-less (e.g., slope).
 
-## Attributes
+### Attributes
 
 **typeName** Defines the name of this Unit. Must be a valid [ECName](./ec-name.md) and be unique among all other items in a schema.
 

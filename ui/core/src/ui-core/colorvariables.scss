@@ -37,6 +37,7 @@
   --buic-background-toolbutton-inactive:      var(--buic-background-3);
   --buic-background-context-menu:             var(--buic-background-3);
   --buic-background-panel:                    var(--buic-background-3);
+  --buic-background-placeholder:              var(--buic-background-3);
 
   /** background.2 */
   --buic-background-tab-active:               var(--buic-background-2);
@@ -48,4 +49,6 @@
   --buic-background-card:                     var(--buic-background-1);
   --buic-background-control:                  var(--buic-background-1);
 
+  /** Widget Opacity */
+  --buic-widget-opacity:    0.90;
 }

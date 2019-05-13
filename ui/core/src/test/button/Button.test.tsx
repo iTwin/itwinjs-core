@@ -24,19 +24,19 @@ describe("<Button />", () => {
   });
 
   it("should render blue", () => {
-    shallow(<Button type={ButtonType.Blue} />).should.matchSnapshot();
+    shallow(<Button buttonType={ButtonType.Blue} />).should.matchSnapshot();
   });
 
   it("should render hollow", () => {
-    shallow(<Button type={ButtonType.Hollow} />).should.matchSnapshot();
+    shallow(<Button buttonType={ButtonType.Hollow} />).should.matchSnapshot();
   });
 
   it("should render primary", () => {
-    shallow(<Button type={ButtonType.Primary} />).should.matchSnapshot();
+    shallow(<Button buttonType={ButtonType.Primary} />).should.matchSnapshot();
   });
 
   it("should render disabled", () => {
-    shallow(<Button type={ButtonType.Disabled} />).should.matchSnapshot();
+    shallow(<Button buttonType={ButtonType.Disabled} />).should.matchSnapshot();
   });
 
   it("should render large", () => {

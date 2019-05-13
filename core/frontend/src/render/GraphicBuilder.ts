@@ -32,8 +32,9 @@ import { RenderGraphic } from "./System";
  * @note For those types for which depth-testing is disabled, the order in which the individual geometric primitives are drawn determines which geometry draws on top of other geometry.
  *  - Within a [[GraphicList]], each [[RenderGraphic]] is rendered in the order in which it appears in the list; and
  *  - Within a single [[RenderGraphic]], each geometric primitive is rendered in the ordered in which it was added to the GraphicBuilder.
+ * @public
  */
-export const enum GraphicType {
+export enum GraphicType {
   /**
    * Renders behind all other graphics. For example, the border of a [[SheetViewState]] is of this type.
    * Coordinates: [[CoordSystem.View]].
@@ -102,6 +103,7 @@ export const enum GraphicType {
  * @see [[RenderSystem.createGraphicBuilder]].
  * @see [[DecorateContext]].
  * @see [[DynamicsContext]].
+ * @public
  */
 export abstract class GraphicBuilder {
   private readonly _placement: Transform;
@@ -237,13 +239,13 @@ export abstract class GraphicBuilder {
       p[Npc.RightTopRear],
       p[Npc.LeftTopRear],
       p[Npc.LeftBottomRear],
-      p[Npc.LeftBottomFront],
-      p[Npc.RightBottomFront],
+      p[Npc.LeftBottomFront].clone(),
+      p[Npc.RightBottomFront].clone(),
     ]);
 
-    this.addLineString([p[Npc.LeftTopFront], p[Npc.LeftTopRear]]);
-    this.addLineString([p[Npc.RightTopFront], p[Npc.RightTopRear]]);
-    this.addLineString([p[Npc.LeftBottomRear], p[Npc.RightBottomRear]]);
+    this.addLineString([p[Npc.LeftTopFront].clone(), p[Npc.LeftTopRear].clone()]);
+    this.addLineString([p[Npc.RightTopFront].clone(), p[Npc.RightTopRear].clone()]);
+    this.addLineString([p[Npc.LeftBottomRear].clone(), p[Npc.RightBottomRear].clone()]);
   }
 
   /** Sets the current active symbology for this builder. Any new geometry subsequently added will be drawn using the specified symbology.

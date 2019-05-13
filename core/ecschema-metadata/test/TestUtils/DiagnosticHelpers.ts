@@ -32,7 +32,7 @@ export class TestReporter implements IDiagnosticReporter {
 const ruleSetName = "TestDiagnostics";
 
 function getCode(code: number): string {
-  return ruleSetName + ":" + code;
+  return ruleSetName + "-" + code;
 }
 
 // tslint:disable-next-line:variable-name

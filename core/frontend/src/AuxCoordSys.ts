@@ -14,14 +14,16 @@ import { DecorateContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { Viewport, CoordSystem } from "./Viewport";
 
-export const enum ACSType {
+/** @public */
+export enum ACSType {
   None = 0,
   Rectangular = 1,
   Cylindrical = 2,
   Spherical = 3,
 }
 
-export const enum ACSDisplayOptions {
+/** @public */
+export enum ACSDisplayOptions {
   None = 0, // used for testing individual bits.
   Active = (1 << 0),
   Deemphasized = (1 << 1),
@@ -44,8 +46,12 @@ const enum ACSDisplaySizes {
   LabelWidth = 0.15,
 }
 
-/** The state of an AuxCoordSystem element in the frontend */
+/** The state of an AuxCoordSystem element in the frontend
+ * @public
+ */
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
+  /** The name of the associated ECClass */
+  public static get className() { return "AuxCoordSystem"; }
   public type: number;
   public description?: string;
 
@@ -60,15 +66,14 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     return new AuxCoordSystemSpatialState(props, iModel);
   }
 
-  /**
-   * Create a new AuxCoordSystemState.
+  /** Create a new AuxCoordSystemState.
    * @param acsName the name for the new AuxCoordSystem
    * @param iModel the iModel for which the ACS applies.
    * @note call this method with the appropriate subclass (e.g. AuxCoordSystemSpatialState, AuxCoordSystem2dState, etc), not on AuxCoordSystemState directly
    */
   public static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState {
     const myCode = new Code({ spec: BisCodeSpec.auxCoordSystemSpatial, scope: IModel.dictionaryId.toString(), value: acsName });
-    return new AuxCoordSystemSpatialState({ model: IModel.dictionaryId, code: myCode, classFullName: this.getClassFullName() }, iModel);
+    return new AuxCoordSystemSpatialState({ model: IModel.dictionaryId, code: myCode, classFullName: this.classFullName }, iModel);
   }
 
   public constructor(props: AuxCoordSystemProps, iModel: IModelConnection) {
@@ -284,8 +289,12 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   }
 }
 
-/** The state of an AuxCoordSystem2d element in the frontend */
+/** The state of an AuxCoordSystem2d element in the frontend
+ * @public
+ */
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
+  /** The name of the associated ECClass */
+  public static get className() { return "AuxCoordSystem2d"; }
   public readonly origin: Point2d;
   public angle: number; // in degrees
   private readonly _rMatrix: Matrix3d;
@@ -313,12 +322,16 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
   }
 }
 
-/** The state of an AuxCoordSystem3d element in the frontend */
+/** The state of an AuxCoordSystem3d element in the frontend
+ * @public
+ */
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
+  /** The name of the associated ECClass */
+  public static get className() { return "AuxCoordSystem3d"; }
   public readonly origin: Point3d;
-  public yaw: number;
-  public pitch: number;
-  public roll: number;
+  public yaw: number; // in degrees
+  public pitch: number; // in degrees
+  public roll: number; // in degrees
   private readonly _rMatrix: Matrix3d;
 
   constructor(props: AuxCoordSystem3dProps, iModel: IModelConnection) {
@@ -327,7 +340,7 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
     this.yaw = JsonUtils.asDouble(props.yaw);
     this.pitch = JsonUtils.asDouble(props.pitch);
     this.roll = JsonUtils.asDouble(props.roll);
-    const angles = new YawPitchRollAngles(Angle.createRadians(this.yaw), Angle.createRadians(this.pitch), Angle.createRadians(this.roll));
+    const angles = new YawPitchRollAngles(Angle.createDegrees(this.yaw), Angle.createDegrees(this.pitch), Angle.createDegrees(this.roll));
     this._rMatrix = angles.toMatrix3d();
   }
 
@@ -346,12 +359,16 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
   public setRotation(rMatrix: Matrix3d): void {
     this._rMatrix.setFrom(rMatrix);
     const angles = YawPitchRollAngles.createFromMatrix3d(rMatrix)!;
-    this.yaw = angles.yaw.radians;
-    this.pitch = angles.pitch.radians;
-    this.roll = angles.roll.radians;
+    this.yaw = angles.yaw.degrees;
+    this.pitch = angles.pitch.degrees;
+    this.roll = angles.roll.degrees;
   }
 }
 
-/** The state of an AuxCoordSystemSpatial element in the frontend */
+/** The state of an AuxCoordSystemSpatial element in the frontend
+ * @public
+ */
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
+  /** The name of the associated ECClass */
+  public static get className() { return "AuxCoordSystemSpatial"; }
 }

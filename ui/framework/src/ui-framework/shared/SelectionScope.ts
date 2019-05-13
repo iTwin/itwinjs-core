@@ -5,6 +5,7 @@
 /** @module Frontstage */
 
 /** Selection Scope enum.
+ * @public
  */
 export enum SelectionScope {
   Element,

@@ -10,9 +10,11 @@
 import { Geometry } from "../Geometry";
 import { NumberArray } from "../geometry3d/PointHelpers";
 /**
- * false ==> no wrap possible
- * true ==> wrapped by adding poles
- * 2 ==> wrapped by deleting extrme knots.
+ * Enumeration of the possible ways of converting a "periodic" knot vector to an open knot vector.
+ * None (0) ==> no wrap possible
+ * OpenByAddintControlPoints (1)  ==> wrapped by adding poles
+ * OpenByRemovingKnots (2)  ==> wrapped by deleting extrme knots.
+ * @public
  */
 export enum BSplineWrapMode {
   /** No conversion to periodic */
@@ -41,24 +43,32 @@ export enum BSplineWrapMode {
  * * This class provides queries to convert among spanFraction, fraction of knot range, and knot
  * * core computations (evaluateBasisFucntions) have leftKnotIndex and global knot value as inputs.  Caller's need to
  * know their primary values (global knot, spanFraction).
+ * @public
  */
 export class KnotVector {
   public knots: Float64Array;
+  /** Return the degree of basis functions defined in these knots. */
   public degree: number;
   private _knot0: number;
   private _knot1: number;
 
   private _wrapMode?: BSplineWrapMode;
   public static readonly knotTolerance = 1.0e-9;
+  /** Return the leftmost knot value (of the active interval, ignoring unclamped leading knots)*/
   public get leftKnot() { return this._knot0; }
+  /** Return the rightmost knot value (of the active interval, ignoring unclamped leading knots)*/
   public get rightKnot() { return this._knot1; }
+  /** Return the index of the leftmost knot of the active interval */
   public get leftKnotIndex() { return this.degree - 1; }
+  /** Return the index of the rightmost knot of the active interval */
   public get rightKnotIndex() { return this.knots.length - this.degree; }
   /**
    * Return true if the bspline was created by adding poles in to "closed" structure
    */
   public get wrappable() { return this._wrapMode === undefined ? BSplineWrapMode.None : this._wrapMode; }
+  /** Set the wrappable flag.  This is used by serialize/deserialize to mark knotVector's that were converted from periodic style. */
   public set wrappable(value: BSplineWrapMode) { this._wrapMode = value; }
+  /** Return the number of bezier spans.  Not that this includes zero-lenght spans if there are repeated knots. */
   public get numSpans() { return this.rightKnotIndex - this.leftKnotIndex; }
   /**
    *
@@ -73,7 +83,7 @@ export class KnotVector {
     this._knot0 = 0.0;
     this._knot1 = 1.0;
     // satisfy the initialize checker ..
-    if (Array.isArray(knots)) {
+    if (Array.isArray(knots)) { // remark:  This ctor is private.  The callers (as of April 2019) do not use this path.
       this.knots = new Float64Array(knots.length);
       this.setKnots(knots);
       this.setupFixedValues();
@@ -91,11 +101,11 @@ export class KnotVector {
     this._knot0 = this.knots[this.degree - 1];
     this._knot1 = this.knots[this.knots.length - this.degree];
   }
-  /** @returns Return the total knot distance from beginning to end. */
+  /** Return the total knot distance from beginning to end. */
   public get knotLength01(): number { return this._knot1 - this._knot0; }
   /**
+   * Returns true if all numeric values have wraparound conditions for "closed" knotVector with specified wrap mode
    * @param mdoe optional test mode.  If undefined, use the this.wrappable.
-   * @returns true if all numeric values have wraparound conditions for "closed" knotVector with specified wrap mode
    */
   public testClosable(mode?: BSplineWrapMode): boolean {
     if (mode === undefined)
@@ -121,9 +131,9 @@ export class KnotVector {
       const leftKnot = this.knots[leftKnotIndex];
       const rightKnot = this.knots[rightKnotIndex];
       for (let i = 0; i < numRepeated; i++) {
-        if (!Geometry.isSameCoordinate(leftKnot, this.knots[leftKnotIndex - i]))
+        if (!Geometry.isSameCoordinate(leftKnot, this.knots[leftKnotIndex - i - 1]))
           return false;
-        if (!Geometry.isSameCoordinate(rightKnot, this.knots[rightKnotIndex + i]))
+        if (!Geometry.isSameCoordinate(rightKnot, this.knots[rightKnotIndex + i + 1]))
           return false;
       }
       return true;
@@ -131,10 +141,13 @@ export class KnotVector {
 
     return false;
   }
+  /** Test matching degree and knot values */
   public isAlmostEqual(other: KnotVector): boolean {
     if (this.degree !== other.degree) return false;
     return NumberArray.isAlmostEqual(this.knots, other.knots, KnotVector.knotTolerance);
   }
+  /** install knot values from an array, optionally ignoring first and last.
+   */
   public setKnots(knots: number[] | Float64Array, skipFirstAndLast?: boolean) {
     const numAllocate = skipFirstAndLast ? knots.length - 2 : knots.length;
     if (numAllocate !== this.knots.length)
@@ -210,22 +223,22 @@ export class KnotVector {
   }
   /** Return an array sized for a set of the basis function values. */
   public createBasisArray(): Float64Array { return new Float64Array(this.degree + 1); }
-  // public createTargetArray(numCoff: number): Float64Array { return new Float64Array(numCoff); }
-
+  /** Convert localFraction within the interval following an indexed knot to a knot value. */
   public baseKnotFractionToKnot(knotIndex0: number, localFraction: number): number {
     const knot0 = this.knots[knotIndex0];
     return knot0 + localFraction * (this.knots[knotIndex0 + 1] - knot0);
   }
-
+/** Convert localFraction within an indexed bezier span to a knot value. */
   public spanFractionToKnot(spanIndex: number, localFraction: number): number {
     const k = this.spanIndexToLeftKnotIndex(spanIndex);
     return this.knots[k] + localFraction * (this.knots[k + 1] - this.knots[k]);
   }
+/** Convert localFraction within an indexed bezier span to fraction of active knot range. */
   public spanFractionToFraction(spanIndex: number, localFraction: number): number {
     const knot = this.spanFractionToKnot(spanIndex, localFraction);
     return (knot - this.leftKnot) / (this.rightKnot - this.leftKnot);
   }
-
+/** Return fraction of active knot range to knot value. */
   public fractionToKnot(fraction: number): number {
     return Geometry.interpolate(this.knots[this.degree - 1], fraction, this.knots[this.knots.length - this.degree]);
   }
@@ -326,7 +339,7 @@ export class KnotVector {
         ddf[depth + 1] = ddgCarry;
     }
   }
-
+/** Return the (highest) index of the knot less than or equal to u */
   public knotToLeftKnotIndex(u: number): number {
     // Anything to left is in the first span . .
     const firstLeftKnot = this.degree - 1;
@@ -348,6 +361,7 @@ export class KnotVector {
     if (spanIndex <= 0.0) return d - 1;
     return Math.min(spanIndex + d - 1, this.knots.length - d);
   }
+  /** Return the knot interval length of indexed bezier span. */
   public spanIndexToSpanLength(spanIndex: number): number {
     const k = this.spanIndexToLeftKnotIndex(spanIndex);
     return this.knots[k + 1] - this.knots[k];
@@ -362,7 +376,7 @@ export class KnotVector {
       return !Geometry.isSmallMetricDistance(this.spanIndexToSpanLength(spanIndex));
     return false;
   }
-
+/** Reflect all knots so `leftKnot` and `rightKnot` are maintained but interval lengths reverse. */
   public reflectKnots() {
     const a = this.leftKnot;
     const b = this.rightKnot;

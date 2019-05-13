@@ -16,6 +16,9 @@ import {
   parseShowSignOption, ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
 } from "./../utils/FormatEnums";
 
+/**
+ * @beta
+ */
 export class Format extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Format; // tslint:disable-line
   protected _roundFactor: number;

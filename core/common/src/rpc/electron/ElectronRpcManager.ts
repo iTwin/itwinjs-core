@@ -7,15 +7,19 @@
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "../core/RpcConfiguration";
-import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { interop } from "./ElectronIpcTransport";
+import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
-/** Initialization parameters for ElectronRpcConfiguration. */
+/** Initialization parameters for ElectronRpcConfiguration.
+ * @beta
+ */
 export interface ElectronRpcParams {
   protocol?: typeof ElectronRpcProtocol;
 }
 
-/** RPC interface configuration for an Electron-based application. */
+/** RPC interface configuration for an Electron-based application.
+ * @beta
+ */
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
   public static get isElectron() { return interop !== null; }
 
@@ -23,7 +27,9 @@ export abstract class ElectronRpcConfiguration extends RpcConfiguration {
   public abstract protocol: ElectronRpcProtocol;
 }
 
-/** Coordinates usage of RPC interfaces for an Electron-based application. */
+/** Coordinates usage of RPC interfaces for an Electron-based application.
+ * @beta
+ */
 export class ElectronRpcManager extends RpcManager {
   /** Initializes ElectronRpcManager for the frontend of an application. */
   public static initializeClient(params: ElectronRpcParams, interfaces: RpcInterfaceDefinition[]): ElectronRpcConfiguration {

@@ -81,6 +81,11 @@
           "description": "Inverts grep and fgrep matches.",
           "default": false
         },
+        "forbidOnly": {
+          "type": "boolean",
+          "description": "Causes tests marked `only` to fail the suite.",
+          "default": false
+        },
         "reporter": {
           "type": "string",
           "description": "Specifies the mocha reporter to use.",

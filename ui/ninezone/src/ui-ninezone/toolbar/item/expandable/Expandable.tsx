@@ -7,11 +7,13 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { CommonProps } from "../../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import { ToolbarItem, ToolbarItemProps } from "../../Toolbar";
 import "./Expandable.scss";
 
-/** Properties of [[ExpandableItem]] component. */
+/** Properties of [[ExpandableItem]] component.
+ * @beta
+ */
 export interface ExpandableItemProps extends CommonProps {
   /** History of the toolbar. See [[]] */
   history?: React.ReactNode;
@@ -21,21 +23,19 @@ export interface ExpandableItemProps extends CommonProps {
   isDisabled?: boolean;
   /** Function called when history tray should be extended or shrank. */
   onIsHistoryExtendedChange?: (isExtended: boolean) => void;
-  // ref?: React.RefObject<ToolbarItem>;
   /** Panel of the toolbar. See [[]] */
   panel?: React.ReactNode;
 }
 
-/** Expandable toolbar item. */
-class ExpandableItemComponent extends React.PureComponent<ExpandableItemProps> implements ToolbarItem {
+class ActualItem extends React.PureComponent<ExpandableItemProps> implements ToolbarItem {
   public readonly panel = document.createElement("div");
   public readonly history = document.createElement("div");
 
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-expandable",
-      this.props.isActive && "nz-is-active",
-      this.props.isDisabled && "nz-is-disabled",
+      this.props.isActive && "nz-active",
+      this.props.isDisabled && "nz-disabled",
       this.props.className);
 
     const panel = ReactDOM.createPortal((
@@ -72,11 +72,14 @@ class ExpandableItemComponent extends React.PureComponent<ExpandableItemProps> i
   }
 }
 
+/** Expandable toolbar item.
+ * @beta
+ */
 export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
   public render() {
-    const toolbarItemProps = this.props as ToolbarItemProps<ExpandableItemComponent>;
+    const toolbarItemProps = this.props as ToolbarItemProps<ActualItem>;
     return (
-      <ExpandableItemComponent
+      <ActualItem
         {...this.props}
         ref={toolbarItemProps.toolbarItemRef}
       />

@@ -6,11 +6,14 @@
 import { SelectionMode, hasFlag, SelectionModeFlags } from "./SelectionModes";
 import { Range2d } from "@bentley/geometry-core";
 
-/** Prototype for a Selection Changed handler */
+/** Prototype for a Selection Changed handler
+ * @public
+ */
 export declare type OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void;
 
 /**
  * Contains single item specific methods required by selection handler.
+ * @internal
  */
 export interface SingleSelectionHandler<TItem> {
   /**
@@ -41,6 +44,7 @@ export interface SingleSelectionHandler<TItem> {
 
 /**
  * Contains multi-selection methods required by selection handler.
+ * @internal
  */
 export interface MultiSelectionHandler<TItem> {
   /**
@@ -71,12 +75,14 @@ export interface MultiSelectionHandler<TItem> {
  * Called after items were selected.
  * @param items Items that were selected.
  * @param replace Should replace current selection.
+ * @public
  */
 export declare type OnItemsSelectedCallback<TItem> = (items: TItem[], replace: boolean) => void | boolean;
 
 /**
  * Called after items were deselected.
  * @param items Items that were deselected.
+ * @public
  */
 export declare type OnItemsDeselectedCallback<Item> = (items: Item[]) => void | boolean;
 
@@ -118,7 +124,7 @@ class BatchSelectionOperation<Item> {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class DragAction<Item> {
   private _itemSelectionHandlers: Array<Array<SingleSelectionHandler<Item>>>;
   private _componentSelectionHandler: MultiSelectionHandler<Item>;
@@ -199,7 +205,7 @@ export class DragAction<Item> {
 
 }
 
-/** @hidden */
+/** @internal */
 export class SelectionHandler<Item> {
 
   /** Selection mode. */

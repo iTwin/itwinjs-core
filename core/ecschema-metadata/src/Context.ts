@@ -9,10 +9,14 @@ import { Schema, MutableSchema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaKey, SchemaItemKey } from "./SchemaKey";
 
+/**
+ * @beta
+ */
 export class SchemaMap extends Array<Schema> { }
 
 /**
  * The interface defines what is needed to be a ISchemaLocater, which are used in a SchemaContext.
+ * @beta
  */
 export interface ISchemaLocater {
 
@@ -35,12 +39,15 @@ export interface ISchemaLocater {
   getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined;
 }
 
+/**
+ * @beta
+ */
 export interface ISchemaItemLocater {
   getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined>;
 }
 
 /**
- *
+ * @beta
  */
 export class SchemaCache implements ISchemaLocater {
   private _schema: SchemaMap;
@@ -123,6 +130,7 @@ export class SchemaCache implements ISchemaLocater {
  * The context controls the lifetime of each schema that it knows about. It has to be explicitly removed from the context to delete a schema object.
  *
  * The context is made up of a group of Schema Locators.
+ * @beta
  */
 export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   private _locaters: ISchemaLocater[];

@@ -3,12 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module OIDC */
-
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IOidcFrontendClient, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
-import { OidcBrowserClient } from "./OidcBrowserClient";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-
 import { ElectronRpcConfiguration, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { OidcBrowserClient } from "./OidcBrowserClient";
 import { OidcIOSClient } from "./OidcIOSClient";
 
 let OidcClient: any; // tslint:disable-line:variable-name
@@ -22,7 +20,7 @@ if (ElectronRpcConfiguration.isElectron) {
   OidcClient = OidcBrowserClient;
 }
 
-/** @hidden */
+/** @internal */
 export class OidcClientWrapper {
 
   private static _oidcClient: IOidcFrontendClient;
@@ -31,9 +29,9 @@ export class OidcClientWrapper {
     return this._oidcClient;
   }
 
-  public static async initialize(actx: ActivityLoggingContext, config: OidcFrontendClientConfiguration) {
-    actx.enter();
+  public static async initialize(requestContext: ClientRequestContext, config: OidcFrontendClientConfiguration) {
+    requestContext.enter();
     this._oidcClient = new OidcClient(config);
-    await this._oidcClient.initialize(actx);
+    await this._oidcClient.initialize(requestContext);
   }
 }

@@ -4,9 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Curve */
 import { Range3d } from "../geometry3d/Range";
-import { Transform} from "../geometry3d/Transform";
+import { Transform } from "../geometry3d/Transform";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 /** Queries to be supported by Curve, Surface, and Solid objects */
+/**
+ * * `GeometryQuery` is an abstract base class with (abstract) methods for querying curve, solid primitive, mesh, and bspline surfaces
+ * @public
+ */
 export abstract class GeometryQuery {
 
   /** return the range of the entire (tree) GeometryQuery */
@@ -61,7 +65,7 @@ export abstract class GeometryQuery {
           if (!childrenA[i].isAlmostEqual(childrenB[i])) return false;
         }
         return true;
-      } else if (childrenA || childrenB) {
+      } else if (childrenA || childrenB) {  // CurveCollections satr with empty arrays for children.  So these null pointer cases are never reached.
         return false;   // plainly different .
       } else {
         // both children null. call it equal?   This class should probably have implemented.
@@ -70,7 +74,12 @@ export abstract class GeometryQuery {
     }
     return false;
   }
-
-  // Every class provides its own handler for dgnjs writing, querying, etc...
+  /**
+   * * "double dispatch" call pattern.
+   * * User code implements a `GeometryHandler` with specialized methods to handle `LineSegment3d`, `Arc3d` etc as relevant to its use case.
+   * * Each such `GeometryQuery` class implements this method as a one-line method containing the appropriate call such as `handler.handleLineSegment3d ()`
+   * * This allows each type-specific method to be called without a switch or `instanceof` test.
+   * @param handler handler to be called by the particular geometry class
+   */
   public abstract dispatchToGeometryHandler(handler: GeometryHandler): any;
 }

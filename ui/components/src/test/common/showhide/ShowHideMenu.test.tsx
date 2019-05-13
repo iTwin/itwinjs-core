@@ -29,12 +29,12 @@ describe("ShowHideMenu", () => {
         x={0} y={0}
         items={items}
         opened={true} />);
-      expect(getByTestId("context-menu-container").classList.contains("opened")).to.be.true;
+      expect(getByTestId("core-context-menu-container").classList.contains("opened")).to.be.true;
       rerender(<ShowHideMenu
         x={0} y={0}
         items={items}
         opened={false} />);
-      expect(getByTestId("context-menu-container").classList.contains("opened")).to.be.false;
+      expect(getByTestId("core-context-menu-container").classList.contains("opened")).to.be.false;
     });
     it("should render with initialHidden", () => {
       const { getByTestId } = render(<ShowHideMenu
@@ -114,7 +114,7 @@ describe("ShowHideMenu", () => {
         items={items} opened={true} onShowHideChange={showHideChange} />);
       const list = getByTestId("show-hide-list");
       fireEvent.click(list);
-      expect(getByTestId("dialog-container")).to.exist;
+      expect(getByTestId("core-dialog-container")).to.exist;
     });
     it("should trigger onClose when 'list' is pressed", () => {
       const closeSpy = sinon.spy();
@@ -131,8 +131,8 @@ describe("ShowHideMenu", () => {
         items={items} opened={true} />);
       const list = getByTestId("show-hide-list");
       fireEvent.click(list);
-      fireEvent.click(getByTestId("dialog-close"));
-      expect(queryByTestId("dialog-container" as any)).to.not.exist;
+      fireEvent.click(getByTestId("core-dialog-close"));
+      expect(queryByTestId("core-dialog-container" as any)).to.not.exist;
     });
     it("should block contextMenu propagation in dialog", () => {
       const showHideChange = sinon.spy();
@@ -141,7 +141,7 @@ describe("ShowHideMenu", () => {
         items={items} opened={true} onShowHideChange={showHideChange} />);
       const showAll = getByTestId("show-hide-showall");
       fireEvent.click(showAll);
-      const dialogRoot = getByTestId("dialog-root");
+      const dialogRoot = getByTestId("core-dialog-root");
       fireEvent.contextMenu(dialogRoot);
     });
   });

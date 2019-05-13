@@ -5,15 +5,20 @@
 /** @module PropertyGrid */
 
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
+import classnames from "classnames";
+
+import { Orientation, CommonProps } from "@bentley/ui-core";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+
 import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer";
 import { PropertyCategory } from "../PropertyDataProvider";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 
-/** Properties of [[PropertyList]] React component */
-export interface PropertyListProps {
+/** Properties of [[PropertyList]] React component
+ * @public
+ */
+export interface PropertyListProps extends CommonProps {
   orientation: Orientation;
   category?: PropertyCategory;
   properties: PropertyRecord[];
@@ -34,21 +39,31 @@ export interface PropertyListProps {
 
 /**
  * Get unique key for property record
- * @hidden
+ * @internal
  */
 export function getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord) {
   return propertyCategory.name + propertyRecord.property.name;
 }
 
-/** State of [[PropertyList]] React component */
-export interface PropertyListState {
+/** State of [[PropertyList]] React component
+ * @internal
+ */
+interface PropertyListState {
   /** Width of the whole property list container */
   width?: number;
 }
 
-/** A React component that renders multiple properties within a category as a list. */
+/** A React component that renders multiple properties within a category as a list.
+ * @public
+ */
 export class PropertyList extends React.Component<PropertyListProps, PropertyListState> {
+
+  /** @internal */
   public readonly state: PropertyListState = {};
+
+  constructor(props: PropertyListProps) {
+    super(props);
+  }
 
   private _listRef = React.createRef<HTMLDivElement>();
 
@@ -64,19 +79,25 @@ export class PropertyList extends React.Component<PropertyListProps, PropertyLis
       this.setState({ width });
   }
 
+  /** @internal */
   public componentDidMount() {
     this.afterRender();
   }
 
+  /** @internal */
   public componentDidUpdate() {
     this.afterRender();
   }
 
+  /** @internal */
   public render() {
-    const propertyListClassName = (this.props.orientation === Orientation.Horizontal)
-      ? "components-property-list--horizontal" : "components-property-list--vertical";
+    const propertyListClassName = classnames(
+      (this.props.orientation === Orientation.Horizontal) ? "components-property-list--horizontal" : "components-property-list--vertical",
+      this.props.className,
+    );
+
     return (
-      <div className={propertyListClassName} ref={this._listRef}>
+      <div className={propertyListClassName} style={this.props.style} ref={this._listRef}>
         {this.props.properties.map((propertyRecord: PropertyRecord) => {
           const key = this.props.category ? getPropertyKey(this.props.category, propertyRecord) : propertyRecord.property.name;
           return (

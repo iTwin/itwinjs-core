@@ -17,15 +17,14 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  color: $buic-foreground-muted;
+  color: $buic-text-color;
 
-  &:not(.nz-is-open) {
+  &:not(.nz-active) {
     border-bottom: 1px solid $buic-background-dialog-stroke;
     background-color: $buic-background-tab-inactive;
-    color: $buic-text-color;
   }
 
-  &.nz-is-open {
+  &.nz-active {
     color: $buic-foreground-primary;
 
     &:after {
@@ -41,5 +40,9 @@
       box-sizing: border-box;
       background-clip: content-box;
     }
+  }
+
+  &:not(:first-child) {
+    border-left: 1px solid $buic-background-dialog-stroke;
   }
 }

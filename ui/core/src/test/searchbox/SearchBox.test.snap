@@ -2,7 +2,7 @@
 
 exports[`SearchBox renders renders correctly 1`] = `
 <div
-  className="searchbox"
+  className="core-searchbox"
 >
   <input
     onChange={[Function]}
@@ -12,11 +12,11 @@ exports[`SearchBox renders renders correctly 1`] = `
     placeholder="searchbox.search"
   />
   <div
-    className="searchbox-button"
+    className="core-searchbox-button"
     onClick={[Function]}
   >
     <span
-      className="searchbox-icon icon icon-search"
+      className="core-searchbox-icon icon icon-search"
     />
   </div>
 </div>

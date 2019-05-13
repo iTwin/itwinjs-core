@@ -37,11 +37,11 @@ describe("RulesetTesting", () => {
 
   beforeEach(async () => {
     // set up for testing imodel presentation data
-    imodel = await IModelConnection.openStandalone(imodelPath);
+    imodel = await IModelConnection.openSnapshot(imodelPath);
   });
 
   afterEach(async () => {
-    await imodel.closeStandalone();
+    await imodel.closeSnapshot();
   });
 
   it("generates correct hierarchy for 'Items' ruleset", async () => {

@@ -27,7 +27,7 @@ export interface VariablesGroup {
 }
 
 /** Available value types of user-controllable variables */
-export const enum VariableValueType {
+export enum VariableValueType {
   /** Bool value, that uses Yes / No strings in the UI */
   YesNo = "YesNo",
 

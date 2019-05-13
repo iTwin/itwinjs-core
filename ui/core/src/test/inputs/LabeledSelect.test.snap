@@ -7,10 +7,11 @@ exports[`<LabeledSelect /> renders array options correctly 1`] = `
   <div
     className="label"
   >
+     
     select test
+     
   </div>
   <Select
-    label="select test"
     options={
       Array [
         "Option 1",
@@ -29,10 +30,11 @@ exports[`<LabeledSelect /> renders correctly 1`] = `
   <div
     className="label"
   >
+     
     select test
+     
   </div>
   <Select
-    label="select test"
     options={Array []}
   />
 </label>
@@ -45,11 +47,11 @@ exports[`<LabeledSelect /> renders message correctly 1`] = `
   <div
     className="label"
   >
+     
     select test
+     
   </div>
   <Select
-    label="select test"
-    message="Test message"
     options={Array []}
   />
   <div
@@ -67,10 +69,11 @@ exports[`<LabeledSelect /> renders object options correctly 1`] = `
   <div
     className="label"
   >
+     
     select test
+     
   </div>
   <Select
-    label="select test"
     options={
       Object {
         "option1": "Option 1",
@@ -89,12 +92,12 @@ exports[`<LabeledSelect /> renders status correctly 1`] = `
   <div
     className="label"
   >
+     
     select test
+     
   </div>
   <Select
-    label="select test"
     options={Array []}
-    status="success"
   />
 </label>
 `;

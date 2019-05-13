@@ -6,27 +6,17 @@ import { assert } from "chai";
 import { Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { CategoryProps, Code, GeometricElement3dProps, ElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
-import { Generic, GroupInformationPartition, Group, GroupModel, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, SubjectOwnsPartitionElements } from "../../imodeljs-backend";
+import { GenericSchema, GroupInformationPartition, Group, GroupModel, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, SubjectOwnsPartitionElements } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Generic Domain", () => {
 
-  before(() => {
-    // Logger.initializeToConsole();
-    // Logger.setLevelDefault(LogLevel.Warning);
-    // Logger.setLevel("imodeljs-addon", LogLevel.Warning);
-    // Logger.setLevel("imodeljs-backend", LogLevel.Warning);
-    // Logger.setLevel("DgnCore", LogLevel.Warning);
-    // Logger.setLevel("ECObjectsNative", LogLevel.Warning);
-    // Logger.setLevel("ECDb", LogLevel.Warning);
-  });
-
   it("should create elements from the Generic domain", async () => {
-    Generic.registerSchema();
-    assert.equal(Generic.name, "Generic");
-    assert.isTrue(PhysicalObject.classFullName.startsWith(Generic.name));
+    GenericSchema.registerSchema();
+    assert.equal(GenericSchema.schemaName, "Generic");
+    assert.isTrue(PhysicalObject.classFullName.startsWith(GenericSchema.schemaName));
 
-    const iModelDb: IModelDb = IModelTestUtils.createStandaloneIModel("GenericTest.bim", {
+    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("GenericDomain", "GenericTest.bim"), {
       rootSubject: { name: "GenericTest", description: "Test of the Generic domain schema." },
       client: "Generic",
       globalOrigin: { x: 0, y: 0 },
@@ -66,7 +56,7 @@ describe("Generic Domain", () => {
         model: physicalModelId,
         category: spatialCategoryId,
         code: Code.createEmpty(),
-        userLabel: `${PhysicalObject.name}${i}`,
+        userLabel: `${PhysicalObject.className}${i}`,
       };
       const physicalObjectId: Id64String = iModelDb.elements.insertElement(physicalObjectProps);
       assert.isTrue(Id64.isValidId64(physicalObjectId));
@@ -93,13 +83,13 @@ describe("Generic Domain", () => {
         classFullName: Group.classFullName,
         model: groupModelId,
         code: Code.createEmpty(),
-        userLabel: `${Group.name}${i}`,
+        userLabel: `${Group.className}${i}`,
       };
       const groupId: Id64String = iModelDb.elements.insertElement(groupProps);
       assert.isTrue(Id64.isValidId64(groupId));
     }
 
     iModelDb.saveChanges("Insert Generic elements");
-    iModelDb.closeStandalone();
+    iModelDb.closeSnapshot();
   });
 });

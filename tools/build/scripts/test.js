@@ -32,17 +32,15 @@ const timeout = (argv.timeout !== undefined) ? argv.timeout : "999999";
 // use the --defineWindow argument if your test needs jsdom-global/register to define a window for compilation purposes.
 const defineWindow = (argv.defineWindow !== undefined);
 
-const inMonoRepo = fs.existsSync(path.join(__dirname, "../../../common/scripts/mocha-reporter-tweaks.js"));
-const rushTweaks = (inMonoRepo) ? ["--require", require.resolve("../../../common/scripts/mocha-reporter-tweaks")] : [];
-
 const options = [
   "--check-leaks",
-  ...rushTweaks,
   "--require", "source-map-support/register",
   "--watch-extensions", "ts",
   "-u", "tdd",
   "--timeout", timeout,
-  "--colors"
+  "--colors",
+  "--reporter", require.resolve("../mocha-reporter"),
+  "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
 ];
 
 if (defineWindow) {
@@ -55,13 +53,6 @@ if (argv.offline === "mock") {
 }
 
 const watchOptions = argv.watch ? ["--watch", "--inline-diffs"] : [];
-
-const reporterOptions = (!isCI) ? [
-  "-R", "spec"
-] : [
-    "--reporter", "mocha-junit-reporter",
-    "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
-  ]
 
 const debugOptions = argv.debug ? [
   "--inspect=9229",
@@ -80,7 +71,6 @@ const args = [
   ...debugOptions,
   path.resolve(packageRoot, "node_modules/mocha/bin/_mocha"),
   ...watchOptions,
-  ...reporterOptions,
   ...options,
   ...grepOptions,
   ...offlineOptions,

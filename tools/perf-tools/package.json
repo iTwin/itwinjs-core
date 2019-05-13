@@ -1,0 +1,39 @@
+{
+  "name": "@bentley/perf-tools",
+  "version": "0.191.0",
+  "description": "Tools for collecting and reporting performance data",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
+  "scripts": {
+    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "clean": "rimraf lib package-deps.json",
+    "lint": "tslint --project . 1>&2",
+    "test": "",
+    "docs": "",
+    "cover": ""
+  },
+  "keywords": [
+    "Bentley",
+    "iModel",
+    "iModel.js",
+    "EC"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "fs-extra": "^6.0.1"
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "0.191.0",
+    "@types/fs-extra": "^4.0.7",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.2.2"
+  }
+}

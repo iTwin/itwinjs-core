@@ -22,8 +22,8 @@
   </style>
   <link rel="stylesheet" type="text/css" href="index.css">
   <!-- get the IModelJs loader to load the system -->
-  <script type="text/javascript" src="runtime.js"></script>
-  <script type="text/javascript" src="iModelJsLoader.js" data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.runtimeVersion %>/runtime.js"></script>
+  <script type="text/javascript" src="v<%= htmlWebpackPlugin.options.loaderVersion %>/IModelJsLoader.js" data-imjsversions='<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
 </head>
 
 <body>

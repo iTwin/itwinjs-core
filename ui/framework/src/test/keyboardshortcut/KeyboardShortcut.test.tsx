@@ -225,6 +225,7 @@ describe("KeyboardShortcut", () => {
       KeyboardShortcutManager.setFocusToHome();
       activeElement = document.activeElement as HTMLElement;
       expect(activeElement === document.body).to.be.true;
+      document.body.removeChild(buttonElement);
     });
   });
 

@@ -16,9 +16,9 @@ import ISelectionProvider from "./ISelectionProvider";
  * internal the selection state
  */
 export default class SelectionHandler implements IDisposable {
-  private _manager: SelectionManager;
   private _inSelect: boolean;
   private _disposables: DisposableList;
+  public readonly manager: SelectionManager;
   public name: string;
   public rulesetId?: string;
   public imodel: IModelConnection;
@@ -34,13 +34,13 @@ export default class SelectionHandler implements IDisposable {
    */
   constructor(manager: SelectionManager, name: string, imodel: IModelConnection, rulesetId?: string, onSelect?: SelectionChangesListener) {
     this._inSelect = false;
-    this._manager = manager;
+    this.manager = manager;
     this._disposables = new DisposableList();
     this.name = name;
     this.rulesetId = rulesetId;
     this.imodel = imodel;
     this.onSelect = onSelect;
-    this._disposables.add(this._manager.selectionChange.addListener(this.onSelectionChanged));
+    this._disposables.add(this.manager.selectionChange.addListener(this.onSelectionChanged));
   }
 
   /**
@@ -73,7 +73,7 @@ export default class SelectionHandler implements IDisposable {
 
   /** Get selection levels for the imodel managed by this handler */
   public getSelectionLevels(): number[] {
-    return this._manager.getSelectionLevels(this.imodel);
+    return this.manager.getSelectionLevels(this.imodel);
   }
 
   /**
@@ -81,7 +81,7 @@ export default class SelectionHandler implements IDisposable {
    * @param level Level of the selection to get. Defaults to 0.
    */
   public getSelection(level?: number): Readonly<KeySet> {
-    return this._manager.getSelection(this.imodel, level);
+    return this.manager.getSelection(this.imodel, level);
   }
 
   /**
@@ -93,7 +93,7 @@ export default class SelectionHandler implements IDisposable {
     if (this._inSelect)
       return;
 
-    return this._manager.addToSelection(this.name, this.imodel, keys, level, this.rulesetId);
+    return this.manager.addToSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
 
   /**
@@ -105,7 +105,7 @@ export default class SelectionHandler implements IDisposable {
     if (this._inSelect)
       return;
 
-    return this._manager.removeFromSelection(this.name, this.imodel, keys, level, this.rulesetId);
+    return this.manager.removeFromSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
 
   /**
@@ -117,7 +117,7 @@ export default class SelectionHandler implements IDisposable {
     if (this._inSelect)
       return;
 
-    return this._manager.replaceSelection(this.name, this.imodel, keys, level, this.rulesetId);
+    return this.manager.replaceSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
 
   /**
@@ -128,6 +128,6 @@ export default class SelectionHandler implements IDisposable {
     if (this._inSelect)
       return;
 
-    return this._manager.clearSelection(this.name, this.imodel, level, this.rulesetId);
+    return this.manager.clearSelection(this.name, this.imodel, level, this.rulesetId);
   }
 }

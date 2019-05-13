@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
-import { InstanceKey } from "../../common/lib/EC";
 import { Presentation } from "@bentley/presentation-frontend";
-import { KeySet, Ruleset, RegisteredRuleset, PageOptions, DefaultContentDisplayTypes, Content } from "@bentley/presentation-common";
+import { InstanceKey, KeySet, Ruleset, RegisteredRuleset, PageOptions, DefaultContentDisplayTypes, Content } from "@bentley/presentation-common";
 import { ContentBuilder as PresentationContentBuilder, ContentDataProvider } from "@bentley/presentation-components";
 import { using, Id64String } from "@bentley/bentleyjs-core";
 

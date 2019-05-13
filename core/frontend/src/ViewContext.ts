@@ -8,9 +8,9 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ConvexClipPlaneSet, CurveLocationDetail, Geometry, LineSegment3d, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, Npc, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget } from "./render/System";
+import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget, RenderPlanarClassifier, PlanarClassifierMap, RenderSolarShadowMap } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
-import { ScreenViewport, Viewport } from "./Viewport";
+import { ScreenViewport, Viewport, ViewFrustum } from "./Viewport";
 import { ViewState3d } from "./ViewState";
 import { Tile } from "./tile/TileTree";
 import { IModelApp } from "./IModelApp";
@@ -30,10 +30,10 @@ export class RenderContext {
   /** Frustum planes extracted from the context's [[Viewport]]. */
   public readonly frustumPlanes: FrustumPlanes;
 
-  constructor(vp: Viewport) {
+  constructor(vp: Viewport, frustum?: Frustum) {
     this.viewport = vp;
     this.viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
-    this.frustum = vp.getFrustum();
+    this.frustum = frustum ? frustum : vp.getFrustum();
     this.frustumPlanes = new FrustumPlanes(this.frustum);
   }
 
@@ -52,14 +52,16 @@ export class RenderContext {
    */
   public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder { return this._createGraphicBuilder(GraphicType.Scene, transform); }
 
+  /** @internal */
+  public createGraphicBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic { return this.target.renderSystem.createGraphicBranch(branch, location, clip, planarClassifier); }
+
   /** Create a [[RenderGraphic]] which groups a set of graphics into a node in a scene graph, applying to each a transform and optional clip volume and symbology overrides.
    * @param branch Contains the group of graphics and the symbology overrides.
    * @param location the local-to-world transform applied to the grouped graphics.
-   * @param clip Optional clipping volume applied to the grouped graphics.
    * @returns A RenderGraphic suitable for drawing the scene graph node within this context's [[Viewport]].
    * @see [[RenderSystem.createBranch]]
    */
-  public createBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume): RenderGraphic { return this.target.renderSystem.createBranch(branch, location, clip); }
+  public createBranch(branch: GraphicBranch, location: Transform): RenderGraphic { return this.createGraphicBranch(branch, location); }
 }
 
 /** Provides context for an [[InteractiveTool]] to display decorations representing its current state.
@@ -516,9 +518,15 @@ export class SceneContext extends RenderContext {
   public readonly missingTiles = new Set<Tile>();
   public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
   public backgroundMap?: BackgroundMapState;
+  public modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
+  public planarClassifiers?: PlanarClassifierMap;               // Classifier model id to planar classifier.
+  public solarShadowMap?: RenderSolarShadowMap;
 
-  public constructor(vp: Viewport) {
-    super(vp);
+  public constructor(vp: Viewport, frustum?: Frustum) {
+    super(vp, frustum);
+  }
+  public get viewFrustum(): ViewFrustum | undefined {
+    return (undefined !== this.backgroundMap) ? ViewFrustum.createFromViewportAndPlane(this.viewport, this.backgroundMap.getPlane()) : this.viewport.viewFrustum;
   }
 
   public outputGraphic(graphic: RenderGraphic): void { this.backgroundMap ? this.backgroundGraphics.push(graphic) : this.graphics.push(graphic); }
@@ -535,5 +543,15 @@ export class SceneContext extends RenderContext {
 
   public requestMissingTiles(): void {
     IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
+  }
+  public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined { return this.planarClassifiers ? this.planarClassifiers.get(id) : undefined; }
+  public setPlanarClassifier(id: Id64String, planarClassifier: RenderPlanarClassifier) {
+    if (!this.planarClassifiers)
+      this.planarClassifiers = new Map<Id64String, RenderPlanarClassifier>();
+    this.planarClassifiers.set(id, planarClassifier);
+  }
+  public getPlanarClassifierForModel(modelId: Id64String) {
+    const classifierId = this.modelClassifiers.get(modelId);
+    return undefined === classifierId ? undefined : this.getPlanarClassifier(classifierId);
   }
 }

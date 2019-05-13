@@ -11,8 +11,9 @@ import { IModelHost } from "./IModelHost";
 import { Config } from "@bentley/imodeljs-clients";
 
 /** Marks a string as either an [Id64String]($bentleyjs-core) or [GuidString]($bentleyjs-core), so
- *  that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
- *  methods of [SqliteStatement]($backend).
+ * that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
+ * methods of [SqliteStatement]($backend).
+ * @internal
  */
 export interface StringParam {
   id?: Id64String;
@@ -38,26 +39,27 @@ export interface StringParam {
  * > Preparing a statement can be time-consuming. The best way to reduce the effect of this overhead is to cache and reuse prepared
  * > statements. A cached prepared statement may be used in different places in an app, as long as the statement is general enough.
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
+ * @internal
  */
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
   private _isShared: boolean = false;
 
-  /** @hidden - used by statement cache */
+  /** @internal - used by statement cache */
   public setIsShared(b: boolean) { this._isShared = b; }
 
-  /** @hidden - used by statement cache */
+  /** @internal - used by statement cache */
   public get isShared(): boolean { return this._isShared; }
 
   /** Check if this statement has been prepared successfully or not */
   public get isPrepared(): boolean { return !!this._stmt; }
 
-  /** @hidden used internally only
-   * Prepare this statement prior to first use.
+  /** Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param sql The SQL statement string to prepare
    * @throws [IModelError]($common) if the SQL statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
+   * @internal
    */
   public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, sql: string): void {
     if (this.isPrepared)
@@ -68,8 +70,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
       throw new IModelError(stat.status, stat.message);
   }
 
-  /**
-   * Indicates whether the prepared statement makes no **direct* changes to the content of the file
+  /** Indicates whether the prepared statement makes no **direct* changes to the content of the file
    * or not. See [SQLite docs](https://www.sqlite.org/c3ref/stmt_readonly.html) for details.
    * @return Returns True, if the statement is readonly. False otherwise.
    */
@@ -197,26 +198,6 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    */
   public step(): DbResult { return this._stmt!.step(); }
 
-  /** Asynchronous version of Step method.
-   *
-   *  For **SQL SELECT** statements the method returns
-   *  - [DbResult.BE_SQLITE_ROW]($bentleyjs-core) if the statement now points successfully to the next row.
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has no more rows.
-   *  - Error status in case of errors.
-   *
-   *  For **SQL INSERT, UPDATE, DELETE** statements the method returns
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has been executed successfully.
-   *  - Error status in case of errors.
-   */
-  public async stepAsync(): Promise<DbResult> {
-    return new Promise<DbResult>((resolve, reject) => {
-      if (!this._stmt)
-        reject();
-      else
-        this._stmt!.stepAsync(resolve);
-    });
-  }
-
   /** Get the query result's column count (only for SQL SELECT statements). */
   public getColumnCount(): number { return this._stmt!.getColumnCount(); }
 
@@ -308,12 +289,11 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
 }
 
 /** Data type of a value in in an SQLite SQL query result.
- *
  * See also:
- *
  * - [SqliteValue]($backend)
  * - [SqliteStatement]($backend)
  * - [SqliteStatement.getValue]($backend)
+ * @internal
  */
 export enum SqliteValueType {
   // do not change the values of that enum. It must correspond to the respective
@@ -326,11 +306,10 @@ export enum SqliteValueType {
 }
 
 /** Value of a column in a row of an SQLite SQL query result.
- *
  * See also:
- *
  * - [SqliteStatement]($backend)
  * - [SqliteStatement.getValue]($backend)
+ * @internal
  */
 export class SqliteValue {
   private readonly _stmt: IModelJsNative.SqliteStatement;
@@ -391,24 +370,23 @@ export class SqliteValue {
   public getGuid(): GuidString { return this._stmt.getValueGuid(this._colIndex); }
 }
 
-/** A cached SqliteStatement.
- *  See [SqliteStatementCache]($backend) for details.
+/** A cached SqliteStatement. See [SqliteStatementCache]($backend) for details.
+ * @internal
  */
 export class CachedSqliteStatement {
   public statement: SqliteStatement;
   public useCount: number;
 
-  /** @hidden - used by statement cache */
+  /** @internal - used by statement cache */
   public constructor(stmt: SqliteStatement) {
     this.statement = stmt;
     this.useCount = 1;
   }
 }
 
-/** A cache for SqliteStatements.
- *
- * Preparing [SqliteStatement]($backend)s can be costly. This class provides a way to
- * save previously prepared SqliteStatements for reuse.
+/** A cache for SqliteStatements. Preparing [SqliteStatement]($backend)s can be costly.
+ * This class provides a way to save previously prepared SqliteStatements for reuse.
+ * @internal
  */
 export class SqliteStatementCache {
   private readonly _statements: Map<string, CachedSqliteStatement> = new Map<string, CachedSqliteStatement>();

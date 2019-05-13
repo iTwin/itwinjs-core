@@ -10,6 +10,8 @@ import {
   DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, ImmediatelyLoadedTreeNodeItem,
 } from "../../ui-components";
 
+// tslint:disable: completed-docs
+
 export enum TreeDragTypes {
   Root = "root",
   Child = "child",

@@ -7,10 +7,11 @@
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { Primitives } from "@bentley/imodeljs-frontend";
-import * as ConvertedPrimitives from "./valuetypes/ConvertedTypes";
+import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
 
 /**
  * Point type converter.
+ * @public
  */
 export abstract class BasePointTypeConverter extends TypeConverter {
   public convertToString(value?: Primitives.Point) {
@@ -45,6 +46,7 @@ export abstract class BasePointTypeConverter extends TypeConverter {
 
 /**
  * Point2d type converter.
+ * @public
  */
 export class Point2dTypeConverter extends BasePointTypeConverter {
   protected getVectorLength(point: Primitives.Point): number | undefined {
@@ -67,6 +69,7 @@ TypeConverterManager.registerConverter("point2d", Point2dTypeConverter);
 
 /**
  * Point3d type converter.
+ * @public
  */
 export class Point3dTypeConverter extends BasePointTypeConverter {
   protected getVectorLength(point: Primitives.Point): number | undefined {

@@ -12,12 +12,19 @@ import { SmallSystem } from "./Polynomials";
 /** base class for Newton iterations in various dimensions.
  * Dimension-specific classes carry all dimension-related data and answer generalized queries
  * from this base class.
+ * @internal
  */
 export abstract class AbstractNewtonIterator {
   /** Compute a step.  The current x and function values must be retained for use in later method calls */
   public abstract computeStep(): boolean;
-  /** return the current step size, scaled for use in tolerance tests. */
+  /** return the current step size, scaled for use in tolerance tests.
+   * * This is a single number, typically the max of various per-dimension `dx / (1+x)` for the x and dx of that dimension.
+   */
   public abstract currentStepSize(): number;
+  /**
+   * Apply the current step (in all dimensions)
+   * @param isFinalStep true if this is a final step.
+   */
   public abstract applyCurrentStep(isFinalStep: boolean): boolean;
   /**
    * @param stepSizeTarget tolerance to consider a single step converged.
@@ -38,11 +45,21 @@ export abstract class AbstractNewtonIterator {
     this._successiveConvergenceTarget = successiveConvergenceTarget;
     this._maxIterations = maxIterations;
   }
+  /** Number of consecutive steps which passed convergence condition */
   protected _numAccepted: number = 0;
+  /** Target number of successive convergences */
   protected _successiveConvergenceTarget: number;
+  /** convergence target (the implementation-specific currentStepSize is compared to this) */
   protected _stepSizeTolerance: number;
+  /** Max iterations allowed */
   protected _maxIterations: number;
+  /** number of iterations (incremented at each step) */
   public numIterations: number = 0;
+  /**
+   * Test if a step is converged.
+   * * Convergence is accepted with enough (_successiveConvergenceTarget) small steps (according to _stepSizeTolerance) occur in succession.
+   * @param delta step size as reported by currentStepSize
+   */
   public testConvergence(delta: number): boolean {
     if (Math.abs(delta) < this._stepSizeTolerance) {
       this._numAccepted++;
@@ -51,7 +68,13 @@ export abstract class AbstractNewtonIterator {
     this._numAccepted = 0;
     return false;
   }
-
+  /**
+   * Run iterations, calling various methods from base and derived classes:
+   * * computeStep -- typically evaluate derivatives and solve lineary system.
+   * * currentStepSize -- return numeric measure of the step just computed by computeStep
+   * * testConvergence -- test if the step from currentStepSize (along with recent steps) is converged.
+   * * applyCurrentStep -- apply the step to the independent variables
+   */
   public runIterations(): boolean {
     this._numAccepted = 0;
     this.numIterations = 0;
@@ -67,28 +90,43 @@ export abstract class AbstractNewtonIterator {
 }
 /** object to evaluate a newton function.  The object must retain most-recent function and derivative
  * values for immediate query.
+ * @internal
  */
 export abstract class NewtonEvaluatorRtoRD {
-
+/** evaluate the function and its derivative at x. */
   public abstract evaluate(x: number): boolean;
+  /** most recent function value */
   public currentF!: number;
+  /** most recent evaluated derivative */
   public currentdFdX!: number;
 }
+/**
+ * Newton iterator for use when both function and derivative can be evaluated.
+ * @internal
+ */
 export class Newton1dUnbounded extends AbstractNewtonIterator {
   private _func: NewtonEvaluatorRtoRD;
   private _currentStep!: number;
   private _currentX!: number;
   private _target!: number;
+  /**
+   * Constructor for 1D newton iteration with approximate derivatives.
+   * @param func function that returns both function and derivative.
+   */
   public constructor(func: NewtonEvaluatorRtoRD) {
     super();
     this._func = func;
     this.setTarget(0);
   }
+  /** Set the independent variable */
   public setX(x: number): boolean { this._currentX = x; return true; }
+  /** Get the independent variable */
   public getX(): number { return this._currentX; }
+  /** Set the target function value */
   public setTarget(y: number) { this._target = y; }
+  /** move the current X by the just-computed step */
   public applyCurrentStep(): boolean { return this.setX(this._currentX - this._currentStep); }
-  /** Univariate newton step : */
+  /** Compute the univariate newton step. */
   public computeStep(): boolean {
     if (this._func.evaluate(this._currentX)) {
       const dx = Geometry.conditionalDivideFraction(this._func.currentF - this._target, this._func.currentdFdX);
@@ -99,36 +137,46 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
     }
     return false;
   }
-
+  /** Return the current step size as a relative number. */
   public currentStepSize(): number {
     return Math.abs(this._currentStep / (1.0 + Math.abs(this._currentX)));
   }
 }
 
 /** object to evaluate a newton function (without derivative).  The object must retain most-recent function value.
+ * @internal
  */
 export abstract class NewtonEvaluatorRtoR {
-
+/** Evalute function value into member currentF */
   public abstract evaluate(x: number): boolean;
+  /** Most recent function evaluation. */
   public currentF!: number;
 }
 
-/** Newton iteration for a univariate function, using approximate derivatives. */
+/** Newton iteration for a univariate function, using approximate derivatives.
+ * @internal
+ */
 export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterator {
   private _func: NewtonEvaluatorRtoR;
   private _currentStep!: number;
   private _currentX!: number;
   public derivativeH: number; // step size for approximate derivative
 
+  /**
+   * Constructor for 1D newton iteration with approximate derivatives.
+   * @param func function that returns both function and derivative.
+   */
   public constructor(func: NewtonEvaluatorRtoR) {
     super();
     this._func = func;
     this.derivativeH = 1.0e-8;
   }
   public setX(x: number): boolean { this._currentX = x; return true; }
+  /** Get the independent variable */
   public getX(): number { return this._currentX; }
+  /** move the current X by the just-computed step */
   public applyCurrentStep(): boolean { return this.setX(this._currentX - this._currentStep); }
-  /** Univariate newton step : */
+  /** Univariate newton step computed with APPROXIMATE derivative. */
   public computeStep(): boolean {
     if (this._func.evaluate(this._currentX)) {
       const fA = this._func.currentF;
@@ -144,19 +192,21 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
     return false;
   }
 
+  /** Return the current step size as a relative number. */
   public currentStepSize(): number {
     return Math.abs(this._currentStep / (1.0 + Math.abs(this._currentX)));
   }
 }
 
 /** object to evaluate a 2-parameter newton function (with derivatives!!).
+ * @internal
  */
 export abstract class NewtonEvaluatorRRtoRRD {
   /** Iteration controller calls this to ask for evaluation of the function and its two partial derivatives.
    * * The implemention returns true, it must set the currentF object.
    */
   public abstract evaluate(x: number, y: number): boolean;
-  /** most recent function evaluation */
+  /** most recent function evaluation as xy parts of the plane */
   public currentF!: Plane3dByOriginAndVectors;
   /**
    * constructor.
@@ -169,6 +219,7 @@ export abstract class NewtonEvaluatorRRtoRRD {
 
 /**
  * Implement evaluation steps for newton iteration in 2 dimensions.
+ * @internal
  */
 export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   private _func: NewtonEvaluatorRRtoRRD;

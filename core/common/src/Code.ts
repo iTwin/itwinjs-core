@@ -49,7 +49,7 @@ export class Code implements CodeProps {
  * For other domains, the best practice is to include the domain name or alias as part of the CodeSpec name to ensure global uniqueness.
  * @public
  */
-export const enum BisCodeSpec {
+export enum BisCodeSpec {
   nullCodeSpec = "bis:NullCodeSpec",
   annotationFrameStyle = "bis:AnnotationFrameStyle",
   annotationLeaderStyle = "bis:AnnotationLeaderStyle",
@@ -90,7 +90,7 @@ export namespace CodeScopeSpec {
   /** The standard ways the CodeScope can be specified.
    * @public
    */
-  export const enum Type {
+  export enum Type {
     /** The Code value must be unique within (at least) the iModel repository */
     Repository = 1,
     /** The Code value must be unique within the scope of the Model */
@@ -104,7 +104,7 @@ export namespace CodeScopeSpec {
   /** Requirements for how the CodeScope Element is identified.
    * @public
    */
-  export const enum ScopeRequirement {
+  export enum ScopeRequirement {
     /** The Code is required to have a valid ElementId as its scope */
     ElementId = 1,
     /** The Code is required to have a valid FederationGuid as its scope */

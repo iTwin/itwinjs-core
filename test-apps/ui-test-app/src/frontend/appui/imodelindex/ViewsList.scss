@@ -1,0 +1,98 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+@import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
+@import "@bentley/ui-ninezone/lib/ui-ninezone/_scrollbar";
+@import "@bentley/ui-core/lib/ui-core/index";
+
+$outline-size: 2px;
+
+/* content area of the views */
+.vl-content {
+  display: flex;
+  overflow-y: auto;
+  height: 100%;
+
+  /* Container for all views in list view */
+  .view-container-listview {
+    @include nz-scrollbar($color: $buic-background-4);
+    flex: 1;
+    padding: $outline-size 0;
+    margin-bottom: $uicore-xs;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Container for all views in thumbnail view */
+  .view-container-thumbnailview {
+    @include nz-scrollbar($color: $buic-background-4);
+    padding: $uicore-xs 0 $uicore-xs 10px;
+    display: flex;
+    align-items: flex-start;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Loading (spinner) view */
+  .view-loading {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* No search results or no views defined */
+  .view-list-nosearchresults {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    padding: 0 20px;
+    text-align: center;
+    color: $uicore-gray;
+    color: rgba($uicore-text-color, .85);
+    pointer-events: none;
+
+    .default-prompt {
+      font-style: italic;
+    }
+  }
+
+  .fade-in {
+    -webkit-animation: show ease-in .25s;
+    -moz-animation: show ease-in .25s;
+    animation: show ease-in .25s;
+
+    -webkit-animation-fill-mode: forwards;
+    -moz-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+  }
+
+  @-webkit-keyframes show {
+    0%   {opacity: 0;}
+    100% {opacity: 1;}
+    }
+
+  @keyframes show {
+    0%   {opacity: 0;}
+    100% {opacity: 1;}
+  }
+}
+

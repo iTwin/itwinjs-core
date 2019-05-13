@@ -15,12 +15,11 @@ const extractInstanceBit = `
 `;
 
 const computeInstancedModelMatrix = `
-  mat4 instanceMatrix = mat4(
+  g_modelMatrix = mat4(
     a_instanceMatrixRow0.x, a_instanceMatrixRow1.x, a_instanceMatrixRow2.x, 0.0,
     a_instanceMatrixRow0.y, a_instanceMatrixRow1.y, a_instanceMatrixRow2.y, 0.0,
     a_instanceMatrixRow0.z, a_instanceMatrixRow1.z, a_instanceMatrixRow2.z, 0.0,
     a_instanceMatrixRow0.w, a_instanceMatrixRow1.w, a_instanceMatrixRow2.w, 1.0);
-  g_modelMatrix = instanceMatrix * u_rootModelMatrix;
 `;
 
 function addInstanceMatrixRow(vert: VertexShaderBuilder, row: number) {
@@ -39,17 +38,9 @@ function addInstanceMatrixRow(vert: VertexShaderBuilder, row: number) {
   });
 }
 
+/** @internal */
 export function addInstancedModelMatrix(vert: VertexShaderBuilder) {
   assert(vert.usesInstancedGeometry);
-
-  // ###TODO_INSTANCING: We can make this more efficient, reduce amount of data sent as uniforms and attributes, and reduce computation on the GPU.
-  // Get it working the straightforward way first.
-  vert.addUniform("u_rootModelMatrix", VariableType.Mat4, (prog) => {
-    // ###TODO_INSTANCING: We only need 3 rows, not 4...
-    prog.addGraphicUniform("u_rootModelMatrix", (uniform, params) => {
-      uniform.setMatrix4(params.modelMatrix);
-    });
-  });
 
   addInstanceMatrixRow(vert, 0);
   addInstanceMatrixRow(vert, 1);
@@ -59,6 +50,7 @@ export function addInstancedModelMatrix(vert: VertexShaderBuilder) {
   vert.addInitializer(computeInstancedModelMatrix);
 }
 
+/** @internal */
 export function addInstanceOverrides(vert: VertexShaderBuilder): void {
   if (undefined !== vert.find("a_instanceOverrides"))
     return;
@@ -81,6 +73,7 @@ export function addInstanceOverrides(vert: VertexShaderBuilder): void {
   });
 }
 
+/** @internal */
 export function addInstanceColor(vert: VertexShaderBuilder): void {
   addInstanceOverrides(vert);
 

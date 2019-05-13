@@ -14,6 +14,10 @@ import { Point4d } from "../geometry4d/Point4d";
 // import { Arc3d } from "../curve/Arc3d";
 
 /* tslint:disable:variable-name*/
+/**
+ * degree 2 (quadratic) polynomial in for y = c0 + c1*x + c2*x^2
+ * @internal
+ */
 export class Degree2PowerPolynomial {
   public coffs: number[];
 
@@ -104,6 +108,10 @@ export class Degree2PowerPolynomial {
   }
 
 }
+/**
+ * degree 3 (cubic) polynomial in for y = c0 + c1*x + c2*x^2 + c3*x^3
+ * @internal
+ */
 export class Degree3PowerPolynomial {
   public coffs: number[];
 
@@ -147,6 +155,10 @@ export class Degree3PowerPolynomial {
   }
 
 }
+/**
+ * degree 4 (quartic) polynomial in for y = c0 + c1*x + c2*x^2 + c4*x^4
+ * @internal
+ */
 export class Degree4PowerPolynomial {
   public coffs: number[];
 
@@ -184,6 +196,13 @@ export class Degree4PowerPolynomial {
   }
 
 }
+/**
+ * polynomial services for an implicit torus with
+ * * z axis is "through the donut hole"
+ * * `majorRadius` is the radius of the circle "around the z axis"
+ * * `minorRadius` is the radius of circles around the major circle
+ * @internal
+ */
 export class TorusImplicit {
   public majorRadius: number;
   public minorRadius: number;
@@ -323,6 +342,7 @@ export class TorusImplicit {
 }
 /**
  * evaluation methods for an implicit sphere `x*x + y*y + z*z - r*r = 0`.
+ * @internal
  */
 export class SphereImplicit {
   public radius: number;
@@ -434,6 +454,7 @@ export class SphereImplicit {
     */
 }
 /** AnalyticRoots has static methods for solving quadratic, cubic, and quartic equations.
+ * @internal
  *
  */
 export class AnalyticRoots {
@@ -489,32 +510,31 @@ export class AnalyticRoots {
       return (roots.atUncheckedIndex(i) > roots.atUncheckedIndex(i - 1));
     }
   }
-  private static newtonMethodAdjustment(coffs: Float64Array | number[], root: number, order: number) {
-    if (order === 3) {
-      const f = coffs[0] + root * (coffs[1] + root * (coffs[2] + root * coffs[3]));
-      const df = coffs[1] + root * (2.0 * coffs[2] + root * 3.0 * coffs[3]);
-      return f / df;
-    } else if (order === 4) {
-      const f = coffs[0] + root * (coffs[1] + root * (coffs[2] + root * (coffs[3] + root * coffs[4])));
-      const df = coffs[1] + root * (2.0 * coffs[2] + root * (3.0 * coffs[3] + root * 4.0 * coffs[4]));
-      return f / df;
-    } else {
-      return 0;
+  private static newtonMethodAdjustment(coffs: Float64Array | number[], root: number, degree: number): number | undefined {
+    let p = coffs[degree];
+    let q = 0.0;
+    for (let i = degree - 1; i >= 0; i--) {
+      q = p + root * q;
+      p = coffs[i] + root * p;
     }
+    if (Math.abs(q) >= 1.0e-14 * (1.0 + Math.abs(root))) {
+      return p / q;
+    }
+    return undefined;
   }
-  private static improveSortedRoots(coffs: Float64Array | number[], degree: number, roots: GrowableFloat64Array) {
+  private static improveRoots(coffs: Float64Array | number[], degree: number, roots: GrowableFloat64Array, restrictOrderChanges: boolean) {
     const relTol = 1.0e-10;
 
     // Loop through each root
     for (let i = 0; i < roots.length; i++) {
       let dx = this.newtonMethodAdjustment(coffs, roots.atUncheckedIndex(i), degree);
-      if (!dx) continue;  // skip if newton step had divide by zero.
+      if (dx === undefined || dx === 0.0) continue;  // skip if newton step had divide by zero.
       const originalValue = roots.atUncheckedIndex(i);
       let counter = 0;
       let convergenceCounter = 0;
 
       // Loop through applying changes to found root until dx is diminished or counter is hit
-      while (dx !== 0 && (counter < 10)) {
+      while (dx !== undefined && dx !== 0.0 && (counter < 10)) {
         // consider it converged if two successive iterations satisfy the (not too demanding) tolerance.
         if (Math.abs(dx) < relTol * (1.0 + Math.abs(roots.atUncheckedIndex(i)))) {
           if (++convergenceCounter > 1)
@@ -528,7 +548,7 @@ export class AnalyticRoots {
 
         // If root is thrown past one of its neighboring roots, unstable condition is assumed.. revert
         // to originally found root
-        if (!this.checkRootProximity(roots, i)) {
+        if (restrictOrderChanges && !this.checkRootProximity(roots, i)) {
           roots.reassign(i, originalValue);
           break;
         }
@@ -688,7 +708,7 @@ export class AnalyticRoots {
       results.push(origin + t * Math.cos(phi));
       results.push(origin - t * Math.cos(phi + Math.PI / 3));
       results.push(origin - t * Math.cos(phi - Math.PI / 3));
-      this.improveSortedRoots(c, 3, results);
+      this.improveRoots(c, 3, results, false);
 
       return;
     } else {    // One real solution
@@ -696,7 +716,7 @@ export class AnalyticRoots {
       const u = this.cbrt(sqrt_D - q);
       const v = -(this.cbrt(sqrt_D + q));
       results.push(origin + u + v);
-      this.improveSortedRoots(c, 3, results);
+      this.improveRoots(c, 3, results, false);
       return;
     }
   }
@@ -801,7 +821,7 @@ export class AnalyticRoots {
     this.addConstant(origin, results);
 
     results.sort();
-    this.improveSortedRoots(c, 4, results);
+    this.improveRoots(c, 4, results, true);
 
     return;
   }
@@ -917,6 +937,10 @@ export class AnalyticRoots {
     return solutionType;
   }
 }
+/**
+ * manipulations of polynomials with where `coff[i]` multiplies x^i
+ * @internal
+ */
 
 export class PowerPolynomial {
 
@@ -959,6 +983,10 @@ export class PowerPolynomial {
     }
   }
 }
+/**
+ * manipmulation of polynomials with powers of sine and cosine
+ * @internal
+ */
 export class TrigPolynomial {
   // Constants taken from Angle.cpp (may be later moved to a constants module)
   public static readonly SmallAngle: number = 1.0e-11;
@@ -1185,7 +1213,10 @@ export class TrigPolynomial {
     return boolstat;
   }
 }
-
+/**
+ * static methods for commonly appearing sets of equations in 2 or 3 variables
+ * @public
+ */
 export class SmallSystem {
   /**
    * Return true if lines (a0,a1) to (b0, b1) have a simple intersection.
@@ -1344,26 +1375,46 @@ export class SmallSystem {
    */
   public static lineSegment3dClosestApproachUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d,
     result: Vector2d): boolean {
-    const ux = a1.x - a0.x;
-    const uy = a1.y - a0.y;
-    const uz = a1.z - a0.z;
+    return this.ray3dXYZUVWClosestApproachUnbounded(
+      a0.x, a0.y, a0.z,
+      a1.x - a0.x, a1.y - a0.y, a1.z - a0.z,
+      b0.x, b0.y, b0.z,
+      b1.x - b0.x, b1.y - b0.y, b1.z - b0.z,
+      result);
+  }
+  /**
+   * Return true if lines (a0,a1) to (b0, b1) have closest approach (go by each other) in 3d
+   * Return the fractional (not xy) coordinates as x and y parts of a Point2d.
+   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   */
+  public static ray3dXYZUVWClosestApproachUnbounded(
+    ax: number, ay: number, az: number, au: number, av: number, aw: number,
+    bx: number, by: number, bz: number, bu: number, bv: number, bw: number,
+    result: Vector2d): boolean {
 
-    const vx = b1.x - b0.x;
-    const vy = b1.y - b0.y;
-    const vz = b1.z - b0.z;
+    const cx = bx - ax;
+    const cy = by - ay;
+    const cz = bz - az;
 
-    const cx = b0.x - a0.x;
-    const cy = b0.y - a0.y;
-    const cz = b0.z - a0.z;
-
-    const uu = Geometry.dotProductXYZXYZ(ux, uy, uz, ux, uy, uz);
-    const vv = Geometry.dotProductXYZXYZ(vx, vy, vz, vx, vy, vz);
-    const uv = Geometry.dotProductXYZXYZ(ux, uy, uz, vx, vy, vz);
-    const cu = Geometry.dotProductXYZXYZ(cx, cy, cz, ux, uy, uz);
-    const cv = Geometry.dotProductXYZXYZ(cx, cy, cz, vx, vy, vz);
+    const uu = Geometry.hypotenuseSquaredXYZ(au, av, aw);
+    const vv = Geometry.hypotenuseSquaredXYZ(bu, bv, bw);
+    const uv = Geometry.dotProductXYZXYZ(au, av, aw, bu, bv, bw);
+    const cu = Geometry.dotProductXYZXYZ(cx, cy, cz, au, av, aw);
+    const cv = Geometry.dotProductXYZXYZ(cx, cy, cz, bu, bv, bw);
     return SmallSystem.linearSystem2d(uu, -uv, uv, -vv, cu, cv, result);
   }
-
+/**
+ * Solve the pair of linear equations
+ * * `ux * x + vx + y = cx`
+ * * `uy * x + vy * y = cy`
+ * @param ux xx coefficient
+ * @param vx xy coefficient
+ * @param uy yx coefficient
+ * @param vy yy ceofficient
+ * @param cx x right hand side
+ * @param cy y right hand side
+ * @param result (x,y) solution.  (MUST be preallocated by caller)
+ */
   public static linearSystem2d(
     ux: number, vx: number, // first row of matrix
     uy: number, vy: number, // second row of matrix

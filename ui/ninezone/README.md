@@ -4,7 +4,7 @@ Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
 
 ## Description
 
-The __@bentley/ui-ninezone__ package contains React components for 9-zone UI and other purposes.
+The __@bentley/ui-ninezone__ package contains React components for 9-Zone UI and other purposes.
 
 ## Documentation
 

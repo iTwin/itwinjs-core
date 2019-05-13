@@ -5,14 +5,16 @@
 /** @module ChangedElementsDb */
 
 import { IModelError, IModelStatus, ChangedElements } from "@bentley/imodeljs-common";
-import { DbResult, OpenMode, IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { DbResult, OpenMode, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelJsNative } from "./IModelJsNative";
 import { IModelDb, ChangeSetToken, ECDbOpenMode, BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractContext } from "./imodeljs-backend";
-import { ChangeSet, ChangesType, AccessToken } from "@bentley/imodeljs-clients";
+import { ChangeSet, ChangesType, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import * as path from "path";
 import { IModelHost } from "./IModelHost";
 
-/** An ChangedElementsDb file */
+/** An ChangedElementsDb file
+ * @beta
+ */
 export class ChangedElementsDb implements IDisposable {
   private _nativeDb: IModelJsNative.ChangedElementsECDb | undefined;
 
@@ -84,14 +86,14 @@ export class ChangedElementsDb implements IDisposable {
   }
 
   /** Processes a range of changesets and adds it to the changed elements cache
-   * @param accessToken Access token to download changesets
+   * @param requestContext The client request context
    * @param briefcase iModel briefcase to use
    * @param startChangesetId Start Changeset Id
    * @param endChangesetId End Changeset Id
    */
-  public async processChangesets(accessToken: AccessToken, briefcase: IModelDb, rulesetId: string, startChangesetId: string, endChangesetId: string, filterSpatial?: boolean): Promise<DbResult> {
-    const ctx = new ChangeSummaryExtractContext(accessToken, briefcase);
-    const changesets = await ChangeSummaryManager.downloadChangeSets(new ActivityLoggingContext(""), ctx, startChangesetId, endChangesetId);
+  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: string, endChangesetId: string, filterSpatial?: boolean): Promise<DbResult> {
+    const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
+    const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, startChangesetId, endChangesetId);
     const tokens = ChangedElementsDb.buildChangeSetTokens(changesets, BriefcaseManager.getChangeSetsPath(briefcase.iModelToken.iModelId!));
     // ChangeSets need to be processed from newest to oldest
     tokens.reverse();
@@ -127,6 +129,7 @@ export class ChangedElementsDb implements IDisposable {
     this.nativeDb.closeDb();
   }
 
+  /** @internal */
   public get nativeDb(): IModelJsNative.ChangedElementsECDb {
     if (!this._nativeDb)
       throw new IModelError(IModelStatus.BadRequest, "ChangedElementsDb object has already been disposed.");

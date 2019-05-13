@@ -20,7 +20,17 @@
     "SingleContent": "Single Content"
   },
   "Test": {
-    "my-label": "My Label"
+    "my-label": "My Label",
+    "loading": "Loading..."
+  },
+  "settingsStage": {
+    "settings": "Settings",
+    "light": "Light",
+    "dark": "Dark",
+    "themeTitle": "Theme",
+    "themeDescription": "Toggle the theme between light and dark",
+    "autoHideTitle": "Auto-Hide UI",
+    "autoHideDescription": "Toggle the auto-hide of UI after inactivity"
   },
   "backstage": {
     "command": "Command",
@@ -29,12 +39,15 @@
     "testFrontstage3": "Test 3 Frontstage",
     "testFrontstage4": "Test 4 Frontstage",
     "testFrontstage5": "Test 5 Frontstage",
+    "viewIModel": "View iModel",
     "testFrontstage6": "Settings",
     "iModelStage": "Review iModel",
-    "task1": "Task 1",
-    "task2": "Task 2",
-    "task3": "Task 3",
-    "exit": "Exit"
+    "task1": "Test 1 Frontstage via Task",
+    "task2": "View iModel via Task",
+    "exit": "Exit",
+    "imodelopen": "IModel Open",
+    "imodelindex": "IModel Index",
+    "fileSelect": "Open Local File"
   },
   "zone6": {
     "month": "Month",
@@ -104,12 +117,22 @@
     "toggleItemDisplay": "Toggle Hide/Show Test",
     "openRadial": "Open Radial Menu",
     "outputMessage": "Call outputMessage",
+    "openCloseProperties": "Open/Close Property Grid",
     "openPropertyGrid": "Open Property Grid",
     "closePropertyGrid": "Close Property Grid",
     "showShortcutsMenu": "Show Shortcuts Menu",
     "shortcutsSubMenu": "Shortcuts Submenu Sample",
     "openNestedFrontstage1": "Open Nested Frontstage",
-    "switchLayout": "Switch layouts"
+    "switchLayout": "Switch layouts",
+    "showhideZones": "Toggle Zone Visibility",
+    "activityMessage": "Activity Message",
+    "pointerMessage": "Pointer Message",
+    "messageDemos": "Message Demos",
+    "dialogDemos": "Dialog Demos",
+    "viewportDialog": "Viewport Dialog",
+    "openNestedAnimationStage": "Open Stage to Play Animations",
+    "reduceWidgetOpacity": "Reduce Widget Opacity",
+    "defaultWidgetOpacity": "Default Widget Opacity"
   },
   "tools": {
     "ToolWithSettings": {
@@ -122,6 +145,7 @@
         "Lock": "Lock",
         "City": "City",
         "Color": "Color",
+        "Weight": "Weight",
         "State": "State",
         "Coordinate": "Coordinate",
         "Length": "Length"
@@ -173,7 +197,23 @@
     "pan": "Pan",
     "walk": "Walk",
     "fly": "Fly",
-    "toggleCamera": "Toggle Camera"
+    "toggleCamera": "Toggle Camera",
+    "AnalysisAnimation": {
+      "keyin": "Analysis Animation",
+      "description": "Animate analysis solutions",
+      "flyover": "Analysis Animation",
+      "Prompts": {
+        "SelectView": "Select View and press Play button"
+      },
+      "ToolSettings": {
+        "duration": "Duration:",
+        "seconds": "sec",
+        "loop": "Loop",
+        "play": "Play",
+        "pause": "Pause",
+        "stop": "Stop"
+      }
+    }
   },
   "widgets": {
     "NavigationTree": "Navigation Tree",
@@ -188,5 +228,9 @@
     "TableDemo": "Table Demo",
     "TreeDemo": "Tree Demo",
     "FeedbackDemo": "Feedback Demo"
+  },
+  "localFileStage": {
+    "localFile": "Local File",
+    "selectFile": "Select Local File"
   }
 }

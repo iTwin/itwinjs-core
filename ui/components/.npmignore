@@ -2,6 +2,7 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
+!lib/module/dev/ui-components.js.map
 !lib/**/*.*css
 !lib/public/**/*
 lib/test

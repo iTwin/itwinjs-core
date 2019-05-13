@@ -8,22 +8,26 @@ import * as React from "react";
 
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-import { Backstage, BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./Backstage";
+import { Backstage } from "./Backstage";
+import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
 import { CommandHandler } from "../shared/ItemProps";
 
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 
 /** Properties for a [[CommandLaunchBackstageItem]] component
+ * @public
  */
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler {
   /** Unique Id for this backstage item. */
   commandId: string;
 }
 
-/** Backstage item that launches a Command */
+/** Backstage item that launches a Command
+ * @public
+ */
 export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BackstageItemState>;
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased
@@ -75,8 +79,8 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
     }
   }
 
-  public componentWillReceiveProps(nextProps: CommandLaunchBackstageItemProps) {
-    const updatedState = getBackstageItemStateFromProps(nextProps);
+  public componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) {
+    const updatedState = getBackstageItemStateFromProps(this.props);
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);
   }
@@ -84,12 +88,15 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
   // TODO: add tooltip, subtitle, aria-label? to NZ_BackstageItem
   public render(): React.ReactNode {
     return (
-      <NZ_BackstageItem key={this.props.commandId}
+      <NZ_BackstageItem
+        icon={PropsHelper.getIcon(this.state.iconSpec)}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
-        label={this.state.label}
-        icon={PropsHelper.getIcon(this.state.iconSpec)}
-        onClick={this.execute} />
+        key={this.props.commandId}
+        onClick={this.execute}
+      >
+        {this.state.label}
+      </NZ_BackstageItem>
     );
   }
 }

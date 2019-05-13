@@ -72,20 +72,31 @@ function imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined
  * @public
  */
 export function getImageSourceMimeType(format: ImageSourceFormat): string {
-  return ImageSourceFormat.Jpeg === format ? "image/jpeg" : "image/png";
+
+  switch (format) {
+    case ImageSourceFormat.Jpeg:
+      return "image/jpeg";
+    case ImageSourceFormat.Png:
+      return "image/png";
+    case ImageSourceFormat.Svg:
+      return "image/svg+xml;charset=utf-8";
+  }
+  return "";
 }
 
-/** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify a supported ImageSourceFormat. */
+/** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify a supported ImageSourceFormat.
+ * @public
+ */
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined {
   switch (mimeType) {
     case "image/jpeg": return ImageSourceFormat.Jpeg;
     case "image/png": return ImageSourceFormat.Png;
+    case "image/svg+xml;charset=utf-8": return ImageSourceFormat.Svg;
     default: return undefined;
   }
 }
 
-/**
- * Extract an html Image element from a binary jpeg or png.
+/** Extract an html Image element from a binary jpeg or png.
  * @param source The ImageSource containing the binary jpeg or png data.
  * @returns a Promise which resolves to an HTMLImageElement containing the uncompressed bitmap image in RGBA format.
  * @public

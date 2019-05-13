@@ -4,14 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent } from "@bentley/bentleyjs-core";
 
-/**
- * @hidden
- */
+/** @internal */
 export type GateValue = number | boolean | string | undefined;
 
-/**
- * A set of "gates" that can enable or disable features at runtime.
- * @hidden
+/** A set of "gates" that can enable or disable features at runtime.
+ * @internal
  */
 export class FeatureGates {
   /** Event raised every time any feature changes. */
@@ -20,8 +17,7 @@ export class FeatureGates {
   /** A map of the current set of features. */
   public readonly gates = new Map<string, GateValue>();
 
-  /**
-   * Get the value of a potentially gated feature.
+  /** Get the value of a potentially gated feature.
    * @param feature The name of the feature to check. May be a "path" of period-separated feature sub-groups (e.g. "feature1.groupA.showMe").
    *       Feature names are case-sensitive.
    * @param defaultVal Optionally, value to return if feature is undefined.
@@ -31,8 +27,7 @@ export class FeatureGates {
     return val === undefined ? defaultVal : val;
   }
 
-  /**
-   * Gate access to a feature.
+  /** Gate access to a feature.
    * @param feature The name of the feature to gate. May be a "path" of period-separated feature sub-groups (e.g. "feature1.groupA.showMe").
    *  Feature names are case-sensitive.
    * @param val Value to set. If undefined, feature is deleted.
@@ -48,8 +43,7 @@ export class FeatureGates {
     this.onChanged.raiseEvent(feature, val);
   }
 
-  /**
-   * Register a listener to be called whenever the value of a specific gate changes.
+  /** Register a listener to be called whenever the value of a specific gate changes.
    * @param feature The name of the feature to monitor
    * @param monitor The listener to call when `feature` changes. Receives a single argument holding the new value of the feature (may be undefined).
    * @returns A function that may be called to remove the listener.

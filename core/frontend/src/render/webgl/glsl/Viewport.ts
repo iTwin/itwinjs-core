@@ -10,6 +10,7 @@ import { ViewRect } from "../../../Viewport";
 import { addModelViewProjectionMatrix } from "./Vertex";
 import { addRenderPass } from "./RenderPass";
 
+/** @internal */
 export function addViewport(shader: ShaderBuilder) {
   shader.addUniform("u_viewport", VariableType.Vec4, (prog) => {
     prog.addProgramUniform("u_viewport", (uniform, params) => {
@@ -57,6 +58,7 @@ function computeViewportTransformation(viewRect: ViewRect): Matrix4 {
   return mat;
 }
 
+/** @internal */
 export function addViewportTransformation(shader: ShaderBuilder) {
   shader.addUniform("u_viewportTransformation", VariableType.Mat4, (prog) => {
     prog.addProgramUniform("u_viewportTransformation", (uniform, params) => {
@@ -96,6 +98,7 @@ vec4 modelToWindowCoordinates(vec4 position, vec4 next) {
   }
 `;
 
+/** @internal */
 export function addModelToWindowCoordinates(vert: VertexShaderBuilder) {
   addModelViewProjectionMatrix(vert);
   addViewportTransformation(vert);

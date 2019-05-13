@@ -13,6 +13,10 @@ import { ClipPlane } from "../../clipping/ClipPlane";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 /* tslint:disable:no-console */
 
 function exerciseLineString3d(ck: Checker, lsA: LineString3d) {
@@ -83,13 +87,29 @@ describe("LineString3d", () => {
 
   it("createXY", () => {
     const ck = new Checker();
-    const ls = LineString3d.createXY(
-      [Point2d.create(1, 1),
-      Point2d.create(4, 1),
-      Point2d.create(4, 2),
-      Point2d.create(0, 2)],
-      10.0);
-    ck.testExactNumber(4, ls.numPoints());
+    const xyArray = [Point2d.create(1, 1),
+    Point2d.create(4, 1),
+    Point2d.create(4, 2),
+    Point2d.create(0, 2)];
+    const jsArrayXY = [];
+    const jsArrayXYZ = [];
+    const dz = 10.0;
+    for (const p of xyArray) {
+      jsArrayXY.push([p.x, p.y]);
+      jsArrayXYZ.push([p.x, p.y, dz]);
+    }
+    const ls10 = LineString3d.createXY(xyArray, dz);
+    const ls0 = LineString3d.create(xyArray);
+    const lsArrayXY = LineString3d.create(jsArrayXY);
+    const lsArrayXYZ = LineString3d.create(jsArrayXYZ);
+    lsArrayXY.tryTranslateInPlace(0, 0, dz);
+    ls0.tryTranslateInPlace(0, 0, dz);
+
+    ck.testTrue(ls0.isAlmostEqual(ls10));
+    ck.testTrue(ls0.isAlmostEqual(lsArrayXY));
+    ck.testTrue(ls0.isAlmostEqual(lsArrayXYZ));
+
+    ck.testExactNumber(4, ls10.numPoints());
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -257,6 +277,165 @@ describe("LineStringIterator", () => {
       i++;
       // console.log("for..of ", p.toJSON());
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+});
+
+describe("LineStringAnnotation", () => {
+  it("DegenerateCases", () => {
+    const ck = new Checker();
+    const ls0 = LineString3d.create();
+    const badPoint0 = ls0.startPoint();
+    const badPoint1 = ls0.endPoint();
+    const zeroPoint = Point3d.create();
+    const intersections: CurveLocationDetail[] = [];
+    ck.testFalse(ls0.isAlmostEqual(LineSegment3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
+    ck.testExactNumber(0, ls0.appendPlaneIntersectionPoints(Plane3dByOriginAndUnitNormal.createXYPlane(), intersections));
+    ck.testPoint3d(zeroPoint, badPoint0);
+    ck.testPoint3d(zeroPoint, badPoint1);
+    ck.testExactNumber(0, ls0.curveLengthBetweenFractions(0, 0));
+    ck.testExactNumber(0, ls0.curveLengthBetweenFractions(0, 1));
+    const p0 = Point3d.create(1, 2, 3);
+    const p1 = Point3d.create(4, 1, 2);
+    const ls2 = LineString3d.create([p0, p1]);
+    ck.testCoordinate(p0.distance(p1), ls2.curveLengthBetweenFractions(0, 1));
+
+    const ls2A = LineString3d.create([p0, p0]);
+    const frame = ls2.fractionToFrenetFrame(0.5);
+    const frameA = ls2A.fractionToFrenetFrame(0.5);
+    const l24Bad = LineString3d.create([p0, p0, p0, p0]);
+    const frame4Bad = l24Bad.fractionToFrenetFrame(0.5);
+    ck.testPointer(frame);
+    ck.testPointer(frameA);
+    ck.testPointer(frame4Bad);
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("FractionArray", () => {
+    const ck = new Checker();
+    const ls0 = LineString3d.create();
+    ls0.ensureEmptyFractions();
+    ls0.ensureEmptyFractions();
+    const p0 = Point3d.create(1, 2, 3);
+    const p1 = Point3d.create(4, 1, 2);
+    ls0.appendStrokePoint(p0, 0.0);
+    ls0.appendStrokePoint(p1, 1.0);
+    ck.testExactNumber(2, ls0.numPoints());
+    ls0.appendStrokePoint(p1, 1.0);   // this is a duplicate
+    ck.testExactNumber(2, ls0.numPoints());
+    ls0.appendStrokePoint(p1, 0.0);   // this is xyz dup but fraction different
+    ck.testExactNumber(2, ls0.numPoints());
+
+    const line = LineSegment3d.createXYZXYZ(1, 2, 3, 2, 5, 1);
+    ls0.clear();
+    ls0.ensureEmptyFractions();
+    ls0.appendFractionToPoint(line, 0.0);
+    ck.testExactNumber(1, ls0.numPoints());
+
+    ls0.clear();
+    ls0.ensureEmptyDerivatives();
+    ls0.ensureEmptyDerivatives();
+    ls0.appendFractionToPoint(line, 0.0);
+    ls0.appendFractionToPoint(line, 1.0);
+    ck.testExactNumber(ls0.fractions!.length, ls0.packedDerivatives!.length);
+    ls0.clear();
+    ck.testExactNumber(0, ls0.numPoints());
+    ck.testExactNumber(0, ls0.fractions!.length);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("AppendInterpolated", () => {
+    const ck = new Checker();
+    const ls0 = LineString3d.create();
+    const p0 = Point3d.create(1, 2, 3);
+    const p1 = Point3d.create(4, 1, 2);
+    const p2 = Point3d.create(6, 3, 0);
+    for (const i of [0, 1]) {
+      ls0.clear();
+      ls0.appendInterpolatedStrokePoints(3, p0, p1, true);
+      ck.testExactNumber(4, ls0.numPoints());
+      ls0.appendInterpolatedStrokePoints(4, p1, p2, false);
+      ck.testExactNumber(7, ls0.numPoints());
+      if (i === 0)
+        ls0.ensureEmptyFractions();
+    }
+    ls0.fractionToFrenetFrame(1.1);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("StrokeCountWithMaxEdgeLength", () => {
+    const ck = new Checker();
+    const p0 = Point3d.create(1, 0, 0);
+    const p1 = Point3d.create(3, 0, 0);
+    const p2 = Point3d.create(3, 5, 0);
+    const ls0 = LineString3d.create(p0, p1, p2);
+    const options = StrokeOptions.createForCurves();
+    options.maxEdgeLength = 1.0;
+    const n = ls0.computeStrokeCountForOptions(options);
+    ck.testExactNumber(7, n);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("CreateAnnotations", () => {
+    const ck = new Checker();
+    const allPoints: Point3d[] = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(0, 10, 0),
+      Point3d.create(10, 10, 0),
+      Point3d.create(10, 0, 0),
+      Point3d.create(20, 0, 0),
+      Point3d.create(20, 10, 0)];
+    const ls = LineString3d.create(allPoints);
+
+    const normalIndices = ls.ensureEmptyNormalIndices();
+    const pointIndices = ls.ensureEmptyPointIndices();
+    const paramIndices = ls.ensureEmptyUVIndices();
+    const params = ls.ensureEmptyUVParams();
+    const surfaceNormals = ls.ensureEmptySurfaceNormals();
+
+    ck.testUndefined(ls.derivativeAt(1));
+    ck.testUndefined(ls.surfaceNormalAt(3));
+    ck.testPointer(normalIndices);
+    ck.testPointer(pointIndices);
+    ck.testPointer(paramIndices);
+    ck.testPointer(params);
+    ck.testPointer(surfaceNormals);
+
+    // meaningless data -- just fill all the arrays ..
+    const n = allPoints.length;
+
+    for (let i = 0; i < n; i++) {
+      const v = Vector3d.create(2 * i, i * i * i);
+      ls.addSurfaceNormal(v);
+      const vN = ls.surfaceNormalAt(i);
+      if (ck.testPointer(vN) && vN)
+        ck.testVector3d(v, vN);
+      ls.addDerivative(v);
+      const v1 = ls.derivativeAt(i);
+      if (ck.testPointer(v1) && v1)
+        ck.testVector3d(v, v1);
+      if ((i & 0x01) !== 0)
+        ls.addUVParam(Point2d.create(0, i));
+      else
+        ls.addUVParamAsUV(i, 0);
+    }
+
+    ck.testExactNumber(n, surfaceNormals.length);
+    ck.testExactNumber(n, params.length);
+
+    // again to reach overwrite blocks
+    const normalIndicesA = ls.ensureEmptyNormalIndices();
+    const pointIndicesA = ls.ensureEmptyPointIndices();
+    const paramIndicesA = ls.ensureEmptyUVIndices();
+    const paramsA = ls.ensureEmptyUVParams();
+    const surfaceNormalsA = ls.ensureEmptySurfaceNormals();
+
+    ck.testPointer(normalIndicesA);
+    ck.testPointer(pointIndicesA);
+    ck.testPointer(paramIndicesA);
+    ck.testPointer(paramsA);
+    ck.testPointer(surfaceNormalsA);
+
     expect(ck.getNumErrors()).equals(0);
   });
 

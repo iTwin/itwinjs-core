@@ -6,12 +6,13 @@
 
 import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode, Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Guid } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, RealityData } from "@bentley/imodeljs-clients";
 import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
 import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
+import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../FrontendRequestContext";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -50,7 +51,7 @@ export class RealityModelTileUtils {
 
   }
   public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
-    const minToleranceRatio = .5;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
+    const minToleranceRatio = 1.0;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
     return minToleranceRatio * range.diagonal().magnitude() / geometricError;
   }
   public static transformFromJson(jTrans: number[] | undefined): Transform {
@@ -194,24 +195,35 @@ export class RealityModelTileTree {
     }).catch((_err) => tileTreeState.loadStatus = TileTree.LoadStatus.NotFound);
   }
 
-  private static async getTileTreeProps(url: string, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
-    if (undefined !== url) {
-      const tileClient = new RealityModelTileClient(url, IModelApp.accessToken);
-      const json = await tileClient.getRootDocument(url);
-      const ecefLocation = iModel.ecefLocation;
-      let rootTransform = ecefLocation ? ecefLocation.getTransform().inverse()! : Transform.createIdentity();
-      if (json.root.transform)
-        rootTransform = rootTransform.multiplyTransformTransform(RealityModelTileUtils.transformFromJson(json.root.transform));
-      else if (json.root.boundingVolume && Array.isArray(json.root.boundingVolume.region))
-        rootTransform = Transform.createTranslationXYZ(0, 0, (json.root.boundingVolume.region[4] + json.root.boundingVolume.region[5]) / 2.0).multiplyTransformTransform(rootTransform);
-
-      if (undefined !== tilesetToDbJson)
-        rootTransform = Transform.fromJSON(tilesetToDbJson).multiplyTransformTransform(rootTransform);
-
-      return new RealityModelTileTreeProps(json, tileClient, rootTransform);
-    } else {
-      throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
+  private static async getAccessToken(): Promise<AccessToken | undefined> {
+    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
+      return undefined; // Not signed in
+    let accessToken: AccessToken;
+    try {
+      accessToken = await IModelApp.authorizationClient.getAccessToken();
+    } catch (error) {
+      return undefined;
     }
+    return accessToken;
+  }
+
+  private static async getTileTreeProps(url: string, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
+    if (!url)
+      throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
+    const accessToken = await this.getAccessToken();
+    const tileClient = new RealityModelTileClient(url, accessToken);
+    const json = await tileClient.getRootDocument(url);
+    const ecefLocation = iModel.ecefLocation;
+    let rootTransform = ecefLocation ? ecefLocation.getTransform().inverse()! : Transform.createIdentity();
+    if (json.root.transform)
+      rootTransform = rootTransform.multiplyTransformTransform(RealityModelTileUtils.transformFromJson(json.root.transform));
+    else if (json.root.boundingVolume && Array.isArray(json.root.boundingVolume.region))
+      rootTransform = Transform.createTranslationXYZ(0, 0, (json.root.boundingVolume.region[4] + json.root.boundingVolume.region[5]) / 2.0).multiplyTransformTransform(rootTransform);
+
+    if (undefined !== tilesetToDbJson)
+      rootTransform = Transform.fromJSON(tilesetToDbJson).multiplyTransformTransform(rootTransform);
+
+    return new RealityModelTileTreeProps(json, tileClient, rootTransform);
   }
 }
 
@@ -242,12 +254,15 @@ export class RealityModelTileClient {
     this._token = accessToken;
   }
 
-  private async initializeRDSRealityData(alctx: ActivityLoggingContext): Promise<void> {
-    if (undefined !== this.rdsProps && undefined !== this._token) {
+  private async initializeRDSRealityData(requestContext: AuthorizedFrontendRequestContext): Promise<void> {
+    requestContext.enter();
+
+    if (undefined !== this.rdsProps) {
       if (!this._realityData) {
         // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
         // though this base URL is only the part relative to the root of the blob contining the data.
-        this._realityData = await RealityModelTileClient._client.getRealityData(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId);
+        this._realityData = await RealityModelTileClient._client.getRealityData(requestContext, this.rdsProps.projectId, this.rdsProps.tilesId);
+        requestContext.enter();
 
         // A reality data that has not root document set should not be considered.
         const rootDocument: string = (this._realityData!.rootDocument ? this._realityData!.rootDocument as string : "");
@@ -293,33 +308,42 @@ export class RealityModelTileClient {
   // the relative path to root document is extracted from the reality data. Otherwise the full url to root document should have been provided at
   // the construction of the instance.
   public async getRootDocument(url: string): Promise<any> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
-    await this.initializeRDSRealityData(alctx); // Only needed for PW Context Share data ... return immediately otherwise.
+    if (this.rdsProps && this._token) {
+      const authRequestContext = new AuthorizedFrontendRequestContext(this._token);
+      authRequestContext.enter();
 
-    if (undefined !== this.rdsProps && undefined !== this._token)
-      return this._realityData!.getRootDocumentJson(alctx, this._token);
+      await this.initializeRDSRealityData(authRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
+      authRequestContext.enter();
+
+      return this._realityData!.getRootDocumentJson(authRequestContext);
+    }
 
     // The following is only if the reality data is not stored on PW Context Share.
     this.setBaseUrl(url);
-    return getJson(alctx, url);
+    const requestContext = new FrontendRequestContext();
+    return getJson(requestContext, url);
   }
 
   /**
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(url: string): Promise<any> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const requestContext = this._token ? new AuthorizedFrontendRequestContext(this._token) : new FrontendRequestContext();
+    requestContext.enter();
 
-    await this.initializeRDSRealityData(alctx); // Only needed for PW Context Share data ... return immediately otherwise.
+    if (this.rdsProps && this._token) {
+      await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
+      requestContext.enter();
+    }
 
     let tileUrl: string = url;
     if (undefined !== this._baseUrl) {
       tileUrl = this._baseUrl + url;
 
       if (undefined !== this.rdsProps && undefined !== this._token)
-        return this._realityData!.getTileContent(alctx, this._token, tileUrl);
+        return this._realityData!.getTileContent(requestContext as AuthorizedFrontendRequestContext, tileUrl);
 
-      return getArrayBuffer(alctx, tileUrl);
+      return getArrayBuffer(requestContext, tileUrl);
     }
     throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data content url");
   }
@@ -328,18 +352,22 @@ export class RealityModelTileClient {
    * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileJson(url: string): Promise<any> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const requestContext = this._token ? new AuthorizedFrontendRequestContext(this._token) : new FrontendRequestContext();
+    requestContext.enter();
 
-    await this.initializeRDSRealityData(alctx); // Only needed for PW Context Share data ... return immediately otherwise.
+    if (this.rdsProps && this._token) {
+      await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
+      requestContext.enter();
+    }
 
     let tileUrl: string = url;
     if (undefined !== this._baseUrl) {
       tileUrl = this._baseUrl + url;
 
       if (undefined !== this.rdsProps && undefined !== this._token)
-        return this._realityData!.getTileJson(alctx, this._token, tileUrl);
+        return this._realityData!.getTileJson(requestContext as AuthorizedFrontendRequestContext, tileUrl);
 
-      return getJson(alctx, tileUrl);
+      return getJson(requestContext, tileUrl);
     }
     throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data json url");
   }

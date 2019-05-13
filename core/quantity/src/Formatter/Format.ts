@@ -471,14 +471,18 @@ export class Format implements FormatProps {
   }
 }
 
-/** Interface the defines the format of the data needed to convert a quantity from one unit to another. */
+/** Interface the defines the format of the data needed to convert a quantity from one unit to another.
+ * @alpha
+ */
 export interface UnitConversionSpec {
   name: string;
   label: string;
   conversion: UnitConversion;
 }
 
-/** A class that contains both formatting information and the conversion factors necessary to convert from an input unit to the units specified in the format. */
+/** A class that contains both formatting information and the conversion factors necessary to convert from an input unit to the units specified in the format.
+ * @alpha
+ */
 export class FormatterSpec {
   private _name = "";
   private _conversions: UnitConversionSpec[] = [];  // max four entries

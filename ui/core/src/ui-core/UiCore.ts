@@ -13,6 +13,7 @@ import "./classes.scss";
 /**
  * Entry point for static initialization required by various
  * components used in the package.
+ * @public
  */
 export class UiCore {
 

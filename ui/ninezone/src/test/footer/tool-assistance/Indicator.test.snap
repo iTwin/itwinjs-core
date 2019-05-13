@@ -1,7 +1,24 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<ToolAssistanceIndicator /> renders correctly 1`] = `
-<div
+exports[`<ToolAssistance /> renders correctly 1`] = `
+<FooterIndicator
+  className="nz-footer-toolAssistance-indicator"
+>
+  <div
+    className="nz-indicator"
+  >
+    <div
+      className="nz-icons"
+    />
+    <div
+      className="nz-triangle"
+    />
+  </div>
+</FooterIndicator>
+`;
+
+exports[`<ToolAssistance /> renders correctly with label 1`] = `
+<FooterIndicator
   className="nz-footer-toolAssistance-indicator"
 >
   <div
@@ -11,11 +28,13 @@ exports[`<ToolAssistanceIndicator /> renders correctly 1`] = `
       className="nz-icons"
     />
     <span
-      className="nz-step-string"
-    />
+      className="nz-content"
+    >
+      Start Point
+    </span>
     <div
       className="nz-triangle"
     />
   </div>
-</div>
+</FooterIndicator>
 `;

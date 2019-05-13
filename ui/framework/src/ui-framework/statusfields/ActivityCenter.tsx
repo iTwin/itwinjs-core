@@ -5,33 +5,28 @@
 /** @module Notification */
 
 import * as React from "react";
+import classnames from "classnames";
 
-import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
-
-import { Status, MessageLayout, Progress } from "@bentley/ui-ninezone";
+import { Status, MessageLayout, MessageProgress } from "@bentley/ui-ninezone";
 import { MessageManager, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
+import { StatusFieldProps } from "./StatusFieldProps";
+import { Centered } from "@bentley/ui-core";
 
-/** Properties for the [[ActivityCenterField]] component */
-export interface ActivityCenterProps {
-  statusBar: IStatusBar;
-  isInFooterMode: boolean;
-  openWidget: StatusBarFieldId;
-}
-
-/** State for the [[ActivityCenterField]] component */
-export interface ActivityCenterState {
+/** State for the [[ActivityCenterField]] component
+ * @internal
+ */
+interface ActivityCenterState {
   title: string;
   percentage: number;
   isActivityMessageVisible: boolean;
 }
 
 /** Activity Center Field React component.
+ * @public
  */
-export class ActivityCenterField extends React.Component<ActivityCenterProps, ActivityCenterState> {
-  private _element: any;
-
-  constructor(p: ActivityCenterProps) {
+export class ActivityCenterField extends React.Component<StatusFieldProps, ActivityCenterState> {
+  constructor(p: StatusFieldProps) {
     super(p);
     this.state = {
       title: "",
@@ -76,21 +71,23 @@ export class ActivityCenterField extends React.Component<ActivityCenterProps, Ac
       const tooltip = this.state.title + " - " + moreDetails;
 
       footerMessages = (
-        <div className="uifw-centered open-activity-message" onClick={this._openActivityMessage} title={tooltip}>
+        <Centered className={classnames("open-activity-message", this.props.className)}
+          style={this.props.style}
+          onClick={this._openActivityMessage} title={tooltip}
+        >
           <MessageLayout
             progress={
-              <Progress
+              <MessageProgress
                 status={Status.Information}
                 progress={this.state.percentage}
               />
             }
           />
-        </div>
+        </Centered>
       );
     } else {
       footerMessages = <div />;
     }
-    this.props.statusBar.setFooterMessages(this._element);
     return footerMessages;
   }
 }

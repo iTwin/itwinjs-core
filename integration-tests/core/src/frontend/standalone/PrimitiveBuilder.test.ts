@@ -33,15 +33,15 @@ describe("PrimitiveBuilder tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    imodel = await IModelConnection.openStandalone(iModelLocation);
+    WebGLTestContext.startup();
+    imodel = await IModelConnection.openSnapshot(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
-    WebGLTestContext.startup();
   });
 
   after(async () => {
+    if (imodel) await imodel.closeSnapshot();
     WebGLTestContext.shutdown();
-    if (imodel) await imodel.closeStandalone();
   });
 
   it("PrimitiveBuilder should produce proper arc strokes for specific tolerances", () => {

@@ -1,15 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<LeadingText /> content renders correctly 1`] = `
-<span
-  className="uicore-text-leading"
+<StyledText
+  mainClassName="uicore-text-leading"
 >
   Test content
-</span>
+</StyledText>
 `;
 
 exports[`<LeadingText /> renders correctly 1`] = `
-<span
-  className="uicore-text-leading"
+<StyledText
+  mainClassName="uicore-text-leading"
 />
 `;

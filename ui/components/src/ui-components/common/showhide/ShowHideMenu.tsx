@@ -7,10 +7,12 @@
 import * as React from "react";
 import { GlobalContextMenu, GlobalContextMenuProps, ContextMenuDivider, ContextMenuItem } from "@bentley/ui-core";
 import { ShowHideItem, ShowHideID } from "./ShowHideItem";
-import UiComponents from "../../UiComponents";
+import { UiComponents } from "../../UiComponents";
 import { ShowHideDialog } from "./ShowHideDialog";
 
-/** Properties for the [[ShowHideMenu]] component */
+/** Properties for the [[ShowHideMenu]] component
+ * @public
+ */
 export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMenuProps {
   /** key-label pair list for id's to be shown/hidden, and an accompanying label. */
   items: Array<ShowHideItem<T>>;
@@ -28,8 +30,8 @@ export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMe
   onShowHideChange?: (cols: T[]) => boolean | undefined;
 }
 
-/** @hidden */
-export interface ShowHideMenuState<T extends ShowHideID> {
+/** @internal */
+interface ShowHideMenuState<T extends ShowHideID> {
   hiddenColumns: T[];
   dialogOpened: boolean;
 }
@@ -37,10 +39,13 @@ export interface ShowHideMenuState<T extends ShowHideID> {
 /**
  * [ContextMenu]($ui-core) Component used to toggle show/hide items, given through items prop, through a list of checkboxes.
  * Component includes a "list" button that displays a dialog with the same checkboxes.
+ * @public
  */
-export class ShowHideMenu<T extends ShowHideID> extends React.Component<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
-  /** @hidden */
+export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
+  /** @internal */
   public readonly state: ShowHideMenuState<T>;
+
+  /** @internal */
   constructor(props: ShowHideMenuProps<T>) {
     super(props);
     this.state = {
@@ -49,7 +54,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.Component<ShowHide
     };
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidUpdate(oldProps: ShowHideMenuProps<T>) {
     if (this.props.initialHidden && oldProps.initialHidden !== this.props.initialHidden) {
       this.setState({ hiddenColumns: this.props.initialHidden });
@@ -110,6 +115,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.Component<ShowHide
     event.stopPropagation();
   }
 
+  /** @internal */
   public render(): React.ReactNode {
     const { items, x, y, opened, initialHidden, onClose, onShowHideChange, ...props } = this.props;
     return (

@@ -14,4 +14,8 @@ describe("<Zones />", () => {
   it("renders correctly", () => {
     shallow(<Zones />).should.matchSnapshot();
   });
+
+  it("renders hidden correctly", () => {
+    shallow(<Zones isHidden />).should.matchSnapshot();
+  });
 });

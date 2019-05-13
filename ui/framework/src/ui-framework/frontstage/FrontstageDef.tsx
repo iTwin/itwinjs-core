@@ -17,9 +17,12 @@ import { FrontstageProvider } from "./FrontstageProvider";
 
 import { NineZoneProps } from "@bentley/ui-ninezone";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ToolItemDef } from "../shared/Item";
+import { ToolItemDef } from "../shared/ToolItemDef";
+import { StagePanelDef } from "../stagepanels/StagePanelDef";
+import { StagePanelLocation } from "../stagepanels/StagePanel";
 
 /** FrontstageDef class provides an API for a Frontstage.
+ * @public
  */
 export class FrontstageDef {
   public id: string = "";
@@ -44,6 +47,19 @@ export class FrontstageDef {
   public bottomLeft?: ZoneDef;
   public bottomCenter?: ZoneDef;
   public bottomRight?: ZoneDef;
+
+  /** @alpha */
+  public topPanel?: StagePanelDef;
+  /** @alpha */
+  public topMostPanel?: StagePanelDef;
+  /** @alpha */
+  public leftPanel?: StagePanelDef;
+  /** @alpha */
+  public rightPanel?: StagePanelDef;
+  /** @alpha */
+  public bottomPanel?: StagePanelDef;
+  /** @alpha */
+  public bottomMostPanel?: StagePanelDef;
 
   public defaultLayout?: ContentLayoutDef;
   public contentGroup?: ContentGroup;
@@ -88,11 +104,17 @@ export class FrontstageDef {
   public async waitUntilReady(): Promise<void> {
     // create an array of control-ready promises
     const controlReadyPromises = new Array<Promise<void>>();
-    for (const control of this._widgetControls) {
+    this._widgetControls.forEach((control: WidgetControl) => {
       controlReadyPromises.push(control.isReady);
-    }
-    for (const control of this.contentControls) {
-      controlReadyPromises.push(control.isReady);
+    });
+
+    if (ContentLayoutManager.activeLayout) {
+      const usedContentIndexes = ContentLayoutManager.activeLayout.getUsedContentIndexes();
+      this.contentControls.forEach((control: ContentControl, index: number) => {
+        // istanbul ignore else
+        if (usedContentIndexes.includes(index))
+          controlReadyPromises.push(control.isReady);
+      });
     }
 
     return Promise.all(controlReadyPromises)
@@ -186,6 +208,61 @@ export class FrontstageDef {
     return zoneDefs;
   }
 
+  /** Gets a [[StagePanelDef]] based on a given panel location
+   * @alpha
+   */
+  public getStagePanelDef(location: StagePanelLocation): StagePanelDef | undefined {
+    let panelDef: StagePanelDef | undefined;
+
+    switch (location) {
+      case StagePanelLocation.Top:
+        panelDef = this.topPanel;
+        break;
+      case StagePanelLocation.TopMost:
+        panelDef = this.topMostPanel;
+        break;
+      case StagePanelLocation.Left:
+        panelDef = this.leftPanel;
+        break;
+      case StagePanelLocation.Right:
+        panelDef = this.rightPanel;
+        break;
+      case StagePanelLocation.Bottom:
+        panelDef = this.bottomPanel;
+        break;
+      case StagePanelLocation.BottomMost:
+        panelDef = this.bottomMostPanel;
+        break;
+      // istanbul ignore default
+      default:
+        throw new RangeError();
+    }
+
+    // Panels can be undefined in a Frontstage
+
+    return panelDef;
+  }
+
+  /** Gets a list of [[StagePanelDef]]s
+   * @alpha
+   */
+  public get panelDefs(): StagePanelDef[] {
+    const panels = [
+      StagePanelLocation.Left, StagePanelLocation.Right,
+      StagePanelLocation.Top, StagePanelLocation.TopMost,
+      StagePanelLocation.Bottom, StagePanelLocation.BottomMost,
+    ];
+    const panelDefs: StagePanelDef[] = [];
+
+    panels.forEach((location: StagePanelLocation) => {
+      const panelDef = this.getStagePanelDef(location);
+      if (panelDef)
+        panelDefs.push(panelDef);
+    });
+
+    return panelDefs;
+  }
+
   /** Finds a [[WidgetDef]] based on a given id */
   public findWidgetDef(id: string): WidgetDef | undefined {
     for (const zoneDef of this.zoneDefs) {
@@ -193,26 +270,44 @@ export class FrontstageDef {
       if (widgetDef)
         return widgetDef;
     }
+
+    for (const panelDef of this.panelDefs) {
+      const widgetDef = panelDef.findWidgetDef(id);
+      if (widgetDef)
+        return widgetDef;
+    }
+
     return undefined;
   }
 
   /** Gets the list of [[WidgetControl]]s */
   private get _widgetControls(): WidgetControl[] {
     const widgetControls = new Array<WidgetControl>();
-    for (const zoneDef of this.zoneDefs) {
-      for (const widgetDef of zoneDef.widgetDefs) {
+
+    this.zoneDefs.forEach((zoneDef: ZoneDef) => {
+      zoneDef.widgetDefs.forEach((widgetDef: WidgetDef) => {
         const widgetControl = widgetDef.widgetControl;
         if (widgetControl)
           widgetControls.push(widgetControl);
-      }
-    }
+      });
+    });
+
+    this.panelDefs.forEach((panelDef: StagePanelDef) => {
+      panelDef.widgetDefs.forEach((widgetDef: WidgetDef) => {
+        const widgetControl = widgetDef.widgetControl;
+        if (widgetControl)
+          widgetControls.push(widgetControl);
+      });
+    });
+
     return widgetControls;
   }
 
   /** Gets the list of [[ContentControl]]s */
   public get contentControls(): ContentControl[] {
-    if (this.contentGroup)
+    if (this.contentGroup) {
       return this.contentGroup.getContentControls();
+    }
     return [];
   }
 

@@ -5,7 +5,6 @@
 /** @module Frontstage */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 
 import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageChangedEventArgs } from "./FrontstageManager";
 import { FrontstageDef } from "./FrontstageDef";
@@ -17,9 +16,12 @@ import {
   Size, PointProps, DefaultStateManager as NineZoneStateManager, RectangleProps, TargetType, WidgetProps as NZ_WidgetProps,
 } from "@bentley/ui-ninezone";
 
-import { WidgetDef } from "../widgets/WidgetDef";
+import { WidgetDef, WidgetState } from "../widgets/WidgetDef";
+import { CommonProps } from "@bentley/ui-core";
 
-/** Interface defining callbacks for widget changes */
+/** Interface defining callbacks for widget changes
+ * @public
+ */
 export interface WidgetChangeHandler {
   handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number): void;
   handleTabClick(widgetId: WidgetZoneIndex, tabIndex: number): void;
@@ -29,17 +31,23 @@ export interface WidgetChangeHandler {
   handleWidgetStateChange(widgetId: number, tabIndex: number, isOpening: boolean): void;
 }
 
-/** Interface defining callbacks for ZoneDropTarget changes */
+/** Interface defining callbacks for ZoneDropTarget changes
+ * @public
+ */
 export interface TargetChangeHandler {
   handleTargetChanged(zoneId: WidgetZoneIndex, type: TargetType, isTargeted: boolean): void;
 }
 
-/** Interface defining a provider for Zone definitions */
+/** Interface defining a provider for Zone definitions
+ * @public
+ */
 export interface ZoneDefProvider {
   getZoneDef(zoneId: number): ZoneDef | undefined;
 }
 
-/** Runtime Props for the Frontstage */
+/** Runtime Props for the Frontstage
+ * @internal
+ */
 export interface FrontstageRuntimeProps {
   nineZoneProps: NineZoneProps;
   widgetChangeHandler: WidgetChangeHandler;
@@ -48,33 +56,28 @@ export interface FrontstageRuntimeProps {
   frontstageDef: FrontstageDef;
 }
 
-/** Properties for the [[FrontstageComposer]] component.
- */
-export interface FrontstageComposerProps {
-  className?: string;
-  style?: React.CSSProperties;
-}
-
 /** State for the FrontstageComposer component.
+ * @internal
  */
-export interface FrontstageComposerState {
+interface FrontstageComposerState {
   frontstageId: string;
   modalFrontstageCount: number;
   nineZoneProps: NineZoneProps;
 }
 
 /** FrontstageComposer React component.
+ * @public
  */
-export class FrontstageComposer extends React.Component<FrontstageComposerProps, FrontstageComposerState>
+export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState>
   implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider {
 
   private _frontstageDef: FrontstageDef | undefined;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<FrontstageComposerState>;
 
-  constructor(props: FrontstageComposerProps, context?: any) {
-    super(props, context);
+  constructor(props: CommonProps) {
+    super(props);
 
     const activeFrontstageId = FrontstageManager.activeFrontstageId;
     this._frontstageDef = FrontstageManager.findFrontstageDef(activeFrontstageId);
@@ -210,7 +213,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     }
 
     return (
-      <div id="uifw-frontstage-composer">
+      <div id="uifw-frontstage-composer" className={this.props.className} style={this.props.style}>
         {this.renderModalFrontstage()}
 
         {content}
@@ -250,7 +253,29 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
       return {
         nineZoneProps,
       };
-    });
+    },
+      () => {
+        // TODO: use NineZoneManager notifications once available
+        const nineZone = new NineZone(this.state.nineZoneProps);
+        const widgets = nineZone.getWidget(widgetId).zone.getWidgets();
+        widgets.forEach((w) => {
+          const zoneDef = this.getZoneDef(w.props.id);
+          if (!zoneDef)
+            return;
+
+          const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible);
+          for (let i = 0; i < visibleWidgets.length; i++) {
+            const widgetDef = visibleWidgets[i];
+            let state = widgetDef.state;
+            if (w.props.tabIndex === i)
+              state = WidgetState.Open;
+            else if (state === WidgetState.Open)
+              state = WidgetState.Closed;
+            widgetDef.setWidgetState(state);
+          }
+        });
+      },
+    );
   }
 
   public handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
@@ -335,7 +360,8 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
 
   private layout() {
     this.setState((prevState) => {
-      const element = ReactDOM.findDOMNode(this) as Element;
+      // const element = ReactDOM.findDOMNode(this) as Element;
+      const element = document.getElementById("uifw-ninezone-area");
       let nineZoneProps = prevState.nineZoneProps;
       if (element) {
         nineZoneProps = FrontstageManager.NineZoneStateManager.layout(new Size(element.clientWidth, element.clientHeight), prevState.nineZoneProps);

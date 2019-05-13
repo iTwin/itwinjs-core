@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Frontstage */
+/** @module Widget */
 
 import * as React from "react";
 
@@ -11,7 +11,8 @@ import { WidgetState } from "./WidgetDef";
 import { StringGetter } from "../shared/ItemProps";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
-/** Properties for a Widget.
+/** Properties for a [Widget]($framework). component.
+ * @public
  */
 export interface WidgetProps extends IconProps {
   /** Defines the SyncUi event Ids that will trigger the stateFunc to run to determine the state of the widget. */
@@ -30,10 +31,8 @@ export interface WidgetProps extends IconProps {
   id?: string;
   /** Default Widget state. Controls how the Widget is initially displayed. Defaults to WidgetState.Open. */
   defaultState?: WidgetState;
-  /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. */
-  isFreeform?: boolean;                         // Default - false
-  /** for future use. */
-  featureId?: string;
+  /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false. */
+  isFreeform?: boolean;
   /** Application data attached to the Widget. */
   applicationData?: any;
   /** Indicates whether this Widget is for the Tool Settings. */
@@ -58,7 +57,9 @@ export interface WidgetProps extends IconProps {
   priority?: number;
 }
 
-/** ConfigurableUi Widget React component.
+/** Widget React component.
+ * A Widget is a collection of UI components tied to a particular Zone that allows the user to view and/or modify data relevant to their current context.
+ * @public
  */
 export class Widget extends React.Component<WidgetProps> {
 

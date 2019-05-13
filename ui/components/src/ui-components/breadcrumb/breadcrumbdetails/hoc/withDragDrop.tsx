@@ -8,7 +8,7 @@ import * as React from "react";
 
 import { getDisplayName } from "@bentley/ui-core";
 import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../../dragdrop/DragDropDef";
-import withTableDragDrop, { TableDropTargetProps } from "../../../table/hocs/withDragDrop";
+import { withTableDragDrop, TableDropTargetProps } from "../../../table/hocs/withDragDrop";
 import { Table, TableProps } from "../../../table/component/Table";
 import { BreadcrumbDetailsProps } from "../BreadcrumbDetails";
 import { TableDataProvider } from "../../../table/TableDataProvider";
@@ -16,11 +16,13 @@ import { TreeNodeItem } from "../../../tree/TreeDataProvider";
 
 /**
  * Type for drag and drop,
+ * @beta
  */
-export type BreadcrumbDragDropType = {} | TreeNodeItem | TableDataProvider;
+export type BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider;
 
 /**
  * Props that are injected to the HOC component.
+ * @beta
  */
 export interface BreadcrumbDetailsDragDropProps<DragDropObject = any> {
   dragProps?: DragSourceProps<DragDropObject>;
@@ -30,9 +32,10 @@ export interface BreadcrumbDetailsDragDropProps<DragDropObject = any> {
 /**
  * A HOC component that adds drag and drop functionality to the supplied
  * breadcrumb component.
+ * @beta
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, DragDropObject extends BreadcrumbDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & BreadcrumbDetailsDragDropProps<DragDropObject>> {
+export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, DragDropObject extends BreadcrumbDetailsDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & BreadcrumbDetailsDragDropProps<DragDropObject>> {
 
   type CombinedProps = P & BreadcrumbDetailsDragDropProps<DragDropObject>;
 
@@ -145,4 +148,3 @@ export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, 
     }
   };
 }
-export default withBreadcrumbDetailsDragDrop;

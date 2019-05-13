@@ -11,12 +11,17 @@ import { Orientation } from "@bentley/ui-core";
 import { TableArrayValueRenderer } from "./table/ArrayValueRenderer";
 import { withContextStyle } from "./WithContextStyle";
 
-/** Default Array Property Renderer */
+/** Default Array Property Renderer
+ * @public
+ */
 export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
+
+  /** Checks if the renderer can handle given property */
   public canRender(record: PropertyRecord) {
     return record.value.valueFormat === PropertyValueFormat.Array;
   }
 
+  /** Method that returns a JSX representation of PropertyRecord */
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
     const recordItems = (record.value as ArrayValue).items;
 

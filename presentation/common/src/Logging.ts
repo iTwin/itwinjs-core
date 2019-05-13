@@ -9,7 +9,7 @@
  * Enum of logging namespaces used by Presentation library.
  * Use `@bentley/bentleyjs-core/Logger` to enable logging for these namespaces.
  */
-export const enum LoggingNamespaces {
+export  enum LoggingNamespaces {
   ECObjects = "ECObjects",
   ECObjects_ECExpressions = "ECObjects.ECExpressions",
   ECObjects_ECExpressions_Parse = "ECObjects.ECExpressions.Parse",

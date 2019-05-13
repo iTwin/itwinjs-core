@@ -2,7 +2,7 @@
 
 exports[`<CheckListBox /> renders correctly 1`] = `
 <ul
-  className="chk-listbox"
+  className="core-chk-listbox"
 >
   <CheckListBoxItem
     label="label"

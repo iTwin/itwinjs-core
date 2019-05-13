@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
+import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d, SpatialClassificationProps, Frustum, SolarShadows } from "@bentley/imodeljs-common";
 import {
   ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
-  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask,
+  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d,
 } from "@bentley/geometry-core";
 import {
   InstancedGraphicParams,
@@ -17,8 +17,12 @@ import {
   RenderDiagnostics,
   RenderTarget,
   RenderClipVolume,
+  RenderClassifierModel,
+  RenderPlanarClassifier,
   GraphicList,
   PackedFeatureTable,
+  WebGLExtensionName,
+  RenderSolarShadowMap,
 } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -36,7 +40,7 @@ import { ViewRect, Viewport } from "../../Viewport";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
-import { TextureHandle, Texture, TextureMonitor } from "./Texture";
+import { TextureHandle, Texture } from "./Texture";
 import { GL } from "./GL";
 import { PolylineGeometry } from "./Polyline";
 import { PointStringGeometry } from "./PointString";
@@ -45,19 +49,31 @@ import { PointCloudGeometry } from "./PointCloud";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
-import { SkyBoxPrimitive, Primitive } from "./Primitive";
+import { SkyCubePrimitive, SkySpherePrimitive, Primitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
+import { SolarShadowMap } from "./SolarShadowMap";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
+import { PlanarClassifier } from "./PlanarClassifier";
+import { TileTreeModelState } from "../../ModelState";
+import { TileTree } from "../../tile/TileTree";
+import { SceneContext } from "../../ViewContext";
+import { ModelSelectorState } from "../../ModelSelectorState";
+import { CategorySelectorState } from "../../CategorySelectorState";
 
+// tslint:disable:no-const-enum
+
+/** @internal */
 export const enum ContextState {
   Uninitialized,
   Success,
   Error,
 }
 
-/** Describes the type of a render target. Used by Capabilities to represent maximum precision render target available on host system. */
+/** Describes the type of a render target. Used by Capabilities to represent maximum precision render target available on host system.
+ * @internal
+ */
 export const enum RenderType {
   TextureUnsignedByte,
   TextureHalfFloat,
@@ -67,6 +83,7 @@ export const enum RenderType {
 /**
  * Describes the type of a depth buffer. Used by Capabilities to represent maximum depth buffer precision available on host system.
  * Note: the commented-out values are unimplemented but left in place for reference, in case desired for future implementation.
+ * @internal
  */
 export const enum DepthType {
   RenderBufferUnsignedShort16,     // core to WebGL1
@@ -78,11 +95,20 @@ export const enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
-const forceNoDrawBuffers = false;
-const forceHalfFloat = false;
-const debugTextureLifetime = false;
+const knownExtensions: WebGLExtensionName[] = [
+  "WEBGL_draw_buffers",
+  "OES_element_index_uint",
+  "OES_texture_float",
+  "OES_texture_half_float",
+  "WEBGL_depth_texture",
+  "EXT_color_buffer_float",
+  "EXT_shader_texture_lod",
+  "ANGLE_instanced_arrays",
+];
 
-/** Describes the rendering capabilities of the host system. */
+/** Describes the rendering capabilities of the host system.
+ * @internal
+ */
 export class Capabilities {
   private _maxRenderType: RenderType = RenderType.TextureUnsignedByte;
   private _maxDepthType: DepthType = DepthType.RenderBufferUnsignedShort16;
@@ -123,13 +149,13 @@ export class Capabilities {
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 4; }
 
   /** Queries an extension object if available.  This is necessary for other parts of the system to access some constants within extensions. */
-  public queryExtensionObject<T>(ext: string): T | undefined {
+  public queryExtensionObject<T>(ext: WebGLExtensionName): T | undefined {
     const extObj: any = this._extensionMap[ext];
     return (null !== extObj) ? extObj as T : undefined;
   }
 
   /** Initializes the capabilities based on a GL context. Must be called first. */
-  public init(gl: WebGLRenderingContext): boolean {
+  public init(gl: WebGLRenderingContext, disabledExtensions?: WebGLExtensionName[]): boolean {
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
     this._maxVertTextureUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
@@ -140,14 +166,16 @@ export class Capabilities {
 
     const extensions = gl.getSupportedExtensions(); // This just retrieves a list of available extensions (not necessarily enabled).
     if (extensions) {
-      for (const ext of extensions) {
-        if ((!forceNoDrawBuffers && ext === "WEBGL_draw_buffers") || ext === "OES_element_index_uint" || (!forceHalfFloat && ext === "OES_texture_float") ||
-          ext === "OES_texture_half_float" || ext === "WEBGL_depth_texture" || ext === "EXT_color_buffer_float" ||
-          ext === "EXT_shader_texture_lod" || ext === "ANGLE_instanced_arrays") {
-          const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
-          if (null !== extObj)
-            this._extensionMap[ext] = extObj;
-        }
+      for (const extStr of extensions) {
+        const ext = extStr as WebGLExtensionName;
+        if (-1 === knownExtensions.indexOf(ext))
+          continue;
+        else if (undefined !== disabledExtensions && -1 !== disabledExtensions.indexOf(ext))
+          continue;
+
+        const extObj: any = gl.getExtension(ext); // This call enables the extension and returns a WebGLObject containing extension instance.
+        if (null !== extObj)
+          this._extensionMap[ext] = extObj;
       }
     }
 
@@ -156,7 +184,8 @@ export class Capabilities {
     this._maxDrawBuffers = dbExt !== undefined ? gl.getParameter(dbExt.MAX_DRAW_BUFFERS_WEBGL) : 1;
 
     // Determine the maximum color-renderable attachment type.
-    if (!forceHalfFloat && this.isTextureRenderable(gl, gl.FLOAT))
+    const allowFloatRender = undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float");
+    if (allowFloatRender && this.isTextureRenderable(gl, gl.FLOAT))
       this._maxRenderType = RenderType.TextureFloat;
     else {
       const hfExt: OES_texture_half_float | undefined = this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
@@ -173,9 +202,9 @@ export class Capabilities {
     return this._hasRequiredFeatures && this._hasRequiredTextureUnits;
   }
 
-  public static create(gl: WebGLRenderingContext): Capabilities | undefined {
+  public static create(gl: WebGLRenderingContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined {
     const caps = new Capabilities();
-    return caps.init(gl) ? caps : undefined;
+    return caps.init(gl, disabledExtensions) ? caps : undefined;
   }
 
   /** Determines if a particular texture type is color-renderable on the host system. */
@@ -261,7 +290,9 @@ export class Capabilities {
   }
 }
 
-/** Id map holds key value pairs for both materials and textures, useful for caching such objects. */
+/** Id map holds key value pairs for both materials and textures, useful for caching such objects.
+ * @internal
+ */
 export class IdMap implements IDisposable {
   /** Mapping of materials by their key values. */
   public readonly materials: Map<string, RenderMaterial>;
@@ -269,29 +300,28 @@ export class IdMap implements IDisposable {
   public readonly textures: Map<string, RenderTexture>;
   /** Mapping of textures using gradient symbology. */
   public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
-  /** Mapping of ClipVectors to corresponding clipping volumes. */
-  public readonly clipVolumes: Map<ClipVector, RenderClipVolume>;
-
+  /** Mapping of (planar) classification model ID to textures */
+  public readonly classifiers: Map<Id64String, RenderClassifierModel>;
+  /** Solar shadow map (one for IModel) */
+  private _solarShadowMap?: RenderSolarShadowMap;
   public constructor() {
     this.materials = new Map<string, RenderMaterial>();
     this.textures = new Map<string, RenderTexture>();
     this.gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
-    this.clipVolumes = new Map<ClipVector, RenderClipVolume>();
+    this.classifiers = new Map<Id64String, RenderClassifierModel>();
   }
 
   public dispose() {
     const textureArr = Array.from(this.textures.values());
     const gradientArr = this.gradients.extractArrays().values;
-    const clipVolumeArr = Array.from(this.clipVolumes.values());
     for (const texture of textureArr)
       dispose(texture);
+
     for (const gradient of gradientArr)
       dispose(gradient);
-    for (const clipVolume of clipVolumeArr)
-      dispose(clipVolume);
+
     this.textures.clear();
     this.gradients.clear();
-    this.clipVolumes.clear();
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
@@ -391,42 +421,21 @@ export class IdMap implements IDisposable {
     return texture;
   }
 
-  /** Find or cache a new clipping volume using the given clip vector. */
-  public getClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
-    const existingClipVolume = this.clipVolumes.get(clipVector);
-    if (existingClipVolume)
-      return existingClipVolume;
+  /** Get a classifier model */
+  public getSpatialClassificationModel(modelId: Id64String): RenderClassifierModel | undefined { return this.classifiers.get(modelId); }
 
-    let clipVolume: RenderClipVolume | undefined = ClipMaskVolume.create(clipVector);
-    if (clipVolume === undefined)
-      clipVolume = ClipPlanesVolume.create(clipVector);
-    if (clipVolume !== undefined)
-      this.clipVolumes.set(clipVector, clipVolume);
-    return clipVolume;
-  }
-}
+  /** @internal */
+  /** Add a new classifier */
+  public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel) { this.classifiers.set(modelId, classifier); }
 
-class TextureStats implements TextureMonitor {
-  private _allocated = new Set<TextureHandle>();
-  private _maxSize = 0;
+  /** @internal */
+  /** Get solar shadow map */
+  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, models: ModelSelectorState, categories: CategorySelectorState) {
+    if (undefined === this._solarShadowMap)
+      this._solarShadowMap = new SolarShadowMap();
 
-  public onTextureCreated(tex: TextureHandle): void {
-    assert(!this._allocated.has(tex));
-    const size = tex.width * tex.height;
-    this._maxSize = Math.max(size, this._maxSize);
-    this._allocated.add(tex);
-  }
-
-  public onTextureDisposed(tex: TextureHandle): void {
-    assert(this._allocated.has(tex));
-    this._allocated.delete(tex);
-    const thisSize = tex.width * tex.height;
-    if (thisSize < this._maxSize)
-      return;
-
-    this._maxSize = 0;
-    for (const entry of this._allocated)
-      this._maxSize = Math.max(this._maxSize, entry.width * entry.height);
+    (this._solarShadowMap as SolarShadowMap)!.set(frustum, direction, settings, models, categories);
+    return this._solarShadowMap;
   }
 }
 
@@ -439,6 +448,7 @@ const enum VertexAttribState {
   InstancedEnabled = Instanced | Enabled,
 }
 
+/** @internal */
 export class System extends RenderSystem {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
@@ -448,7 +458,6 @@ export class System extends RenderSystem {
   public readonly resourceCache: Map<IModelConnection, IdMap>;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _instancingExtension?: ANGLE_instanced_arrays;
-  private readonly _textureStats?: TextureStats;
   private readonly _textureBindings: TextureBinding[] = [];
 
   // NB: Increase the size of these arrays when the maximum number of attributes used by any one shader increases.
@@ -476,6 +485,7 @@ export class System extends RenderSystem {
   public get techniques() { return this._techniques!; }
 
   public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
+  public get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
 
   public setDrawBuffers(attachments: GLenum[]): void {
     // NB: The WEBGL_draw_buffers member is not exported directly because that type name is not available in some contexts (e.g. test-imodel-service).
@@ -483,7 +493,8 @@ export class System extends RenderSystem {
       this._drawBuffersExtension.drawBuffersWEBGL(attachments);
   }
 
-  public static create(): System {
+  public static create(optionsIn?: RenderSystem.Options): System {
+    const options: RenderSystem.Options = undefined !== optionsIn ? optionsIn : {};
     const canvas = document.createElement("canvas") as HTMLCanvasElement;
     if (null === canvas)
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
@@ -496,11 +507,14 @@ export class System extends RenderSystem {
       }
     }
 
-    const capabilities = Capabilities.create(context);
+    const capabilities = Capabilities.create(context, options.disabledExtensions);
     if (undefined === capabilities)
       throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
 
-    return new System(canvas, context, capabilities);
+    // set actual gl state to match desired state defaults
+    context.depthFunc(GL.DepthFunc.Default);  // LessOrEqual
+
+    return new System(canvas, context, capabilities, options);
   }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
@@ -540,15 +554,15 @@ export class System extends RenderSystem {
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return Primitive.create(() => new PointCloudGeometry(args)); }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
-  public createBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume): RenderGraphic { return new Branch(branch, transform, clips); }
+  public createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier): RenderGraphic { return new Branch(branch, transform, clips, undefined, planarClassifier); }
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
     if (undefined !== params.cube) {
-      return SkyBoxPrimitive.create(() => SkyBoxQuadsGeometry.create(params.cube!));
+      return SkyCubePrimitive.create(() => SkyBoxQuadsGeometry.create(params.cube!));
     } else {
       assert(undefined !== params.sphere || undefined !== params.gradient);
-      return SkyBoxPrimitive.create(() => SkySphereViewportQuadGeometry.createGeometry(params));
+      return SkySpherePrimitive.create(() => SkySphereViewportQuadGeometry.createGeometry(params));
     }
   }
 
@@ -647,14 +661,21 @@ export class System extends RenderSystem {
     return idMap.findTexture(key);
   }
 
-  /** Attempt to create a clipping volume for the given iModel using a clip vector. */
-  public getClipVolume(clipVector: ClipVector, imodel: IModelConnection): RenderClipVolume | undefined {
-    const idMap = this.getIdMap(imodel);
-    return idMap.getClipVolume(clipVector);
-  }
+  public createClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
+    let clipVolume: RenderClipVolume | undefined = ClipMaskVolume.create(clipVector);
+    if (undefined === clipVolume)
+      clipVolume = ClipPlanesVolume.create(clipVector);
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities) {
-    super();
+    return clipVolume;
+  }
+  public getSpatialClassificationModel(modelId: Id64String, iModel: IModelConnection): RenderClassifierModel | undefined { return this.getIdMap(iModel).classifiers.get(modelId); }
+  public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel, iModel: IModelConnection) { this.getIdMap(iModel).classifiers.set(modelId, classifier); }
+  public createPlanarClassifier(properties: SpatialClassificationProps.Properties, tileTree: TileTree, classifiedModel: TileTreeModelState, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedModel, sceneContext); }
+  /** Solar Shadow Map */
+  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, models: ModelSelectorState, categories: CategorySelectorState, iModel: IModelConnection): RenderSolarShadowMap | undefined { return this.getIdMap(iModel).getSolarShadowMap(frustum, direction, settings, models, categories); }
+
+  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
+    super(options);
     this.canvas = canvas;
     this.context = context;
     this.capabilities = capabilities;
@@ -664,11 +685,6 @@ export class System extends RenderSystem {
 
     // Make this System a subscriber to the the IModelConnection onClose event
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
-
-    if (debugTextureLifetime) {
-      this._textureStats = new TextureStats();
-      TextureHandle.monitor = this._textureStats;
-    }
   }
 
   private getIdMap(imodel: IModelConnection): IdMap {

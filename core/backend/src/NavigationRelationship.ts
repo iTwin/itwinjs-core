@@ -10,7 +10,9 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { RelatedElement } from "@bentley/imodeljs-common";
 
-/** Relates a parent Element to child Elements which represent parts of the Entity modeled by the parent Element. */
+/** Relates a parent Element to child Elements which represent parts of the Entity modeled by the parent Element.
+ * @public
+ */
 export class ElementOwnsChildElements extends RelatedElement {
   public static classFullName = "BisCore:ElementOwnsChildElements";
   public constructor(parentId: Id64String, relClassName: string = ElementOwnsChildElements.classFullName) {
@@ -18,7 +20,9 @@ export class ElementOwnsChildElements extends RelatedElement {
   }
 }
 
-/** Relates a parent [[Subject]] to [[Subject]] child elements. */
+/** Relates a parent [[Subject]] to [[Subject]] child elements.
+ * @public
+ */
 export class SubjectOwnsSubjects extends ElementOwnsChildElements {
   public static classFullName = "BisCore:SubjectOwnsSubjects";
   public constructor(parentId: Id64String, relClassName: string = SubjectOwnsSubjects.classFullName) {
@@ -26,7 +30,9 @@ export class SubjectOwnsSubjects extends ElementOwnsChildElements {
   }
 }
 
-/** Relates a parent [[Subject]] to [[InformationPartitionElement]] child elements. */
+/** Relates a parent [[Subject]] to [[InformationPartitionElement]] child elements.
+ * @public
+ */
 export class SubjectOwnsPartitionElements extends ElementOwnsChildElements {
   public static classFullName = "BisCore:SubjectOwnsPartitionElements";
   public constructor(parentId: Id64String, relClassName: string = SubjectOwnsPartitionElements.classFullName) {
@@ -34,7 +40,9 @@ export class SubjectOwnsPartitionElements extends ElementOwnsChildElements {
   }
 }
 
-/** Relates a parent [[Category]] to [[SubCategory]] child elements. */
+/** Relates a parent [[Category]] to [[SubCategory]] child elements.
+ * @public
+ */
 export class CategoryOwnsSubCategories extends ElementOwnsChildElements {
   public static classFullName = "BisCore:CategoryOwnsSubCategories";
   public constructor(parentId: Id64String, relClassName: string = CategoryOwnsSubCategories.classFullName) {
@@ -42,7 +50,9 @@ export class CategoryOwnsSubCategories extends ElementOwnsChildElements {
   }
 }
 
-/** Relates a parent [[RenderMaterial]] to [[RenderMaterial]] child elements. */
+/** Relates a parent [[RenderMaterial]] to [[RenderMaterial]] child elements.
+ * @public
+ */
 export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements {
   public static classFullName = "BisCore:RenderMaterialOwnsRenderMaterials";
   public constructor(parentId: Id64String, relClassName: string = RenderMaterialOwnsRenderMaterials.classFullName) {
@@ -50,7 +60,9 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
   }
 }
 
-/** Relates a parent Element to child Elements which represent **hidden** parts of the Entity. */
+/** Relates a parent Element to child Elements which represent **hidden** parts of the Entity.
+ * @public
+ */
 export class ElementEncapsulatesElements extends ElementOwnsChildElements {
   public static classFullName = "BisCore:ElementEncapsulatesElements";
   public constructor(parentId: Id64String, relClassName: string = ElementEncapsulatesElements.classFullName) {
@@ -58,7 +70,9 @@ export class ElementEncapsulatesElements extends ElementOwnsChildElements {
   }
 }
 
-/** Relates a parent [[PhysicalElement]] to [[PhysicalElement]] children that it assembles. */
+/** Relates a parent [[PhysicalElement]] to [[PhysicalElement]] children that it assembles.
+ * @public
+ */
 export class PhysicalElementAssemblesElements extends ElementOwnsChildElements {
   public static classFullName = "BisCore:PhysicalElementAssemblesElements";
   public constructor(parentId: Id64String, relClassName: string = PhysicalElementAssemblesElements.classFullName) {
@@ -66,7 +80,9 @@ export class PhysicalElementAssemblesElements extends ElementOwnsChildElements {
   }
 }
 
-/** Relates a [[GraphicalElement2d]] to its [[GraphicalType2d]] */
+/** Relates a [[GraphicalElement2d]] to its [[GraphicalType2d]]
+ * @public
+ */
 export class GraphicalElement2dIsOfType extends RelatedElement {
   public static classFullName = "BisCore:GraphicalElement2dIsOfType";
   public constructor(id: Id64String, relClassName: string = GraphicalElement2dIsOfType.classFullName) {
@@ -74,7 +90,9 @@ export class GraphicalElement2dIsOfType extends RelatedElement {
   }
 }
 
-/** Relates a [[PhysicalElement]] to its [[PhysicalType]] */
+/** Relates a [[PhysicalElement]] to its [[PhysicalType]]
+ * @public
+ */
 export class PhysicalElementIsOfType extends RelatedElement {
   public static classFullName = "BisCore:PhysicalElementIsOfType";
   public constructor(id: Id64String, relClassName: string = PhysicalElementIsOfType.classFullName) {
@@ -82,7 +100,9 @@ export class PhysicalElementIsOfType extends RelatedElement {
   }
 }
 
-/** Relates a [[SpatialLocationElement]] to its [[SpatialLocationType]] */
+/** Relates a [[SpatialLocationElement]] to its [[SpatialLocationType]]
+ * @public
+ */
 export class SpatialLocationIsOfType extends RelatedElement {
   public static classFullName = "BisCore:SpatialLocationIsOfType";
   public constructor(id: Id64String, relClassName: string = SpatialLocationIsOfType.classFullName) {

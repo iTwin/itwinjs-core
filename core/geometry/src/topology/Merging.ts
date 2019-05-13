@@ -11,6 +11,7 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { ClusterableArray } from "../numerics/ClusterableArray";
+import { Range3d } from "../geometry3d/Range";
 
 /**
  * * Assorted methods used in algorithms on HalfEdgeGraph.
@@ -20,7 +21,7 @@ export class HalfEdgeGraphOps {
 
   // SORTING FUNCTIONS (compare methods used by sort() in larger algorithms) -----------------------------------------------------------
 
-  /** Compare function for sorting X, Y, and sortAngle components of ndoes. */
+  /** Compare function for sorting X, Y, and (optional) sortAngle components of ndoes. */
   public static compareNodeXYTheta(a: HalfEdge, b: HalfEdge) {
     // Check x's
     if (!Geometry.isSameCoordinate(a.x, b.x))
@@ -43,7 +44,40 @@ export class HalfEdgeGraphOps {
     }
     return 0;
   }
+  /** Compare function for sorting "downward" with primary y compare, secondary  x compare. */
+  public static compareNodesYXUp(a: HalfEdge, b: HalfEdge) {
+    // Check y's
+    // if (!Geometry.isSameCoordinate(a.y, b.y))
+    if (a.y < b.y)
+      return -1;
+    else if (a.y > b.y)
+      return 1;
+    // Check x's
+    // if (!Geometry.isSameCoordinate(a.x, b.x))
+    if (a.x < b.x)
+      return -1;
+    else if (a.x > b.x)
+      return 1;
+    return 0;
+  }
 
+  /** Return true if nodeB (a) is lower than both its neighbors and (b) inflects as a downward peak (rather than an upward trough) */
+  public static isDownPeak(nodeB: HalfEdge) {
+    const nodeA = nodeB.facePredecessor;
+    const nodeC = nodeB.faceSuccessor;
+    return this.compareNodesYXUp(nodeB, nodeA) < 0
+      && this.compareNodesYXUp(nodeB, nodeC) < 0
+      && this.crossProductToTargets(nodeB, nodeA, nodeC) > 0;
+  }
+
+  /** return the cross product of vectors from base to targetA and base to targetB
+   * @param base base vertex of both vectors.
+   * @param targetA target vertex of first vector
+   * @param targetB target vertex of second vector
+   */
+  public static crossProductToTargets(base: HalfEdge, targetA: HalfEdge, targetB: HalfEdge): number {
+    return Geometry.crossProductXYXY(targetA.x - base.x, targetA.y - base.y, targetB.x - base.x, targetB.y - base.y);
+  }
   /** Compare function for sorting the "event queue" when searching for crossings of line segments in an array of segments (x increasing) */
   private static eventCompareCrossings(a: any, b: any): number {
     if (a.leftPoint.x < b.leftPoint.x)
@@ -117,6 +151,13 @@ export class HalfEdgeGraphOps {
 
   // ----------------------------------------------------------------------------------------------------------------------
 
+  public static graphRange(graph: HalfEdgeGraph): Range3d {
+    const range = Range3d.create();
+    for (const node of graph.allHalfEdges) {
+      range.extendXYZ(node.x, node.y, node.z);
+    }
+    return range;
+  }
   /** Returns an array of a all nodes (both ends) of edges created from segments. */
   public static segmentArrayToGraphEdges(segments: LineSegment3d[], returnGraph: HalfEdgeGraph, mask: HalfEdgeMask): HalfEdge[] {
     const result = [];

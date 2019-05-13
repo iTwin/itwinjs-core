@@ -7,7 +7,7 @@ import {
   IModelApp, PrimitiveTool,
   BeButtonEvent, EventHandled,
   ToolSettingsPropertyRecord, PropertyDescription, PrimitiveValue, ToolSettingsValue, ToolSettingsPropertySyncItem,
-  NotifyMessageDetails, OutputMessagePriority, PropertyEditorParamTypes,
+  NotifyMessageDetails, OutputMessagePriority, PropertyEditorParamTypes, ParseResults,
 } from "@bentley/imodeljs-frontend";
 
 import { Point3d } from "@bentley/geometry-core";
@@ -104,6 +104,29 @@ export class ToolWithSettings extends PrimitiveTool {
 
   public set colorDef(value: ColorDef) {
     this._optionsValue.value = value.tbgr;
+  }
+
+  // ------------- Weight ---------------
+  private static _weightName = "weight";
+  private static _getWeightDescription = (): PropertyDescription => {
+    return {
+      name: ToolWithSettings._weightName,
+      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Weight"),
+      typename: "number",
+      editor: {
+        name: "weight-picker",
+      },
+    };
+  }
+
+  private _weightValue = new ToolSettingsValue(3);
+
+  public get weight(): number {
+    return this._weightValue.value as number;
+  }
+
+  public set weight(value: number) {
+    this._weightValue.value = value;
   }
 
   // ------------- boolean based toggle button ---------------
@@ -214,6 +237,8 @@ export class ToolWithSettings extends PrimitiveTool {
     };
   }
 
+  private static _formatLength = (numberValue: number): string => numberValue.toFixed(2);
+
   private _useLengthValue = new ToolSettingsValue(true);
 
   public get useLength(): boolean {
@@ -230,17 +255,34 @@ export class ToolWithSettings extends PrimitiveTool {
     return {
       name: ToolWithSettings._lengthName,
       displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Length"),
-      typename: "string",
+      typename: "number",
+      editor: {
+        name: "number-custom",
+        params: [
+          {
+            type: PropertyEditorParamTypes.CustomFormattedNumber,
+            formatFunction: ToolWithSettings._formatLength,
+            parseFunction: (stringValue: string): ParseResults => {
+              const rtnValue = Number.parseFloat(stringValue);
+              if (Number.isNaN(rtnValue)) {
+                return { parseError: `Unable to parse ${stringValue} into a valid length` };
+              } else {
+                return { value: rtnValue };
+              }
+            },
+          },
+        ],
+      },
     };
   }
 
-  private _lengthValue = new ToolSettingsValue("0.0");
+  private _lengthValue = new ToolSettingsValue(0.0);
 
-  public get length(): string {
-    return this._lengthValue.value as string;
+  public get length(): number {
+    return this._lengthValue.value as number;
   }
 
-  public set length(option: string) {
+  public set length(option: number) {
     this._lengthValue.value = option;
   }
 
@@ -293,6 +335,7 @@ export class ToolWithSettings extends PrimitiveTool {
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
     toolSettings.push(new ToolSettingsPropertyRecord(this._optionsValue.clone() as PrimitiveValue, ToolWithSettings._getEnumAsPicklistDescription(), { rowPriority: 0, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._colorValue.clone() as PrimitiveValue, ToolWithSettings._getColorDescription(), { rowPriority: 2, columnIndex: 2 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._weightValue.clone() as PrimitiveValue, ToolWithSettings._getWeightDescription(), { rowPriority: 3, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._lockValue.clone() as PrimitiveValue, ToolWithSettings._getLockToggleDescription(), { rowPriority: 5, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._cityValue.clone() as PrimitiveValue, ToolWithSettings._getCityDescription(), { rowPriority: 10, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._stateValue.clone() as PrimitiveValue, ToolWithSettings._getStateDescription(), { rowPriority: 10, columnIndex: 4 }));
@@ -314,6 +357,7 @@ export class ToolWithSettings extends PrimitiveTool {
 
   private syncLengthState(): void {
     const lengthValue = new ToolSettingsValue(this.length);
+    lengthValue.displayValue = ToolWithSettings._formatLength(lengthValue.value as number);
     const syncItem: ToolSettingsPropertySyncItem = { value: lengthValue, propertyName: ToolWithSettings._lengthName, isDisabled: !this.useLength };
     this.syncToolSettingsProperties([syncItem]);
   }
@@ -339,11 +383,14 @@ export class ToolWithSettings extends PrimitiveTool {
       this.showInfoFromUi(updatedValue);
       this.syncLengthState();
     } else if (updatedValue.propertyName === ToolWithSettings._lengthName) {
-      this.length = updatedValue.value.value as string;
+      this.length = updatedValue.value.value as number;
       this.showInfoFromUi(updatedValue);
     } else if (updatedValue.propertyName === ToolWithSettings._colorName) {
       this.colorValue = updatedValue.value.value as number;
       this.showColorInfoFromUi(updatedValue);
+    } else if (updatedValue.propertyName === ToolWithSettings._weightName) {
+      this.weight = updatedValue.value.value as number;
+      this.showInfoFromUi(updatedValue);
     }
 
     // return true is change is valid

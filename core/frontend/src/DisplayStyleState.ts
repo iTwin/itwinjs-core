@@ -8,7 +8,6 @@ import {
   ColorDef,
   DisplayStyleProps,
   RenderTexture,
-  RenderMaterial,
   SubCategoryOverride,
   SkyBoxProps,
   SkyBoxImageType,
@@ -19,17 +18,21 @@ import {
   DisplayStyle3dSettings,
   BackgroundMapProps,
   AnalysisStyle,
-
+  ContextRealityModelProps,
+  Cartographic,
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { JsonUtils, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, TextureImage, AnimationBranchStates } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { TileTreeModelState } from "./ModelState";
-import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Vector3d, Point3d } from "@bentley/geometry-core";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
+import { Viewport } from "./Viewport";
+import { SpatialClassification } from "./SpatialClassification";
+import { calculateSolarDirection } from "./SolarCalculate";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
  * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
@@ -38,6 +41,8 @@ import { RenderScheduleState } from "./RenderScheduleState";
  * @public
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
+  /** The name of the associated ECClass */
+  public static get className() { return "DisplayStyle"; }
   private _backgroundMap: BackgroundMapState;
   private _contextRealityModels: ContextRealityModelState[];
   private _analysisStyle?: AnalysisStyle;
@@ -86,12 +91,25 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     for (const contextRealityModel of this._contextRealityModels) { func(contextRealityModel); }
   }
 
-  /** Performs logical comparison against another display style.
+  /** @internal */
+  public async loadContextRealityModels(): Promise<void> {
+    const classifierIds = new Set<Id64String>();
+    for (const contextRealityModel of this._contextRealityModels) {
+      const classifier = SpatialClassification.getClassifierProps(contextRealityModel);
+      if (undefined !== classifier)
+        classifierIds.add(classifier.modelId);
+    }
+    return SpatialClassification.loadClassifiers(classifierIds, this.iModel);
+  }
+  /** Performs logical comparison against another display style. Two display styles are logically equivalent if they have the same name, Id, and settings.
    * @param other The display style to which to compare.
    * @returns true if the specified display style is logically equivalent to this display style - i.e., both styles have the same values for all of their settings.
    */
   public equalState(other: DisplayStyleState): boolean {
-    return JSON.stringify(this.settings) === JSON.stringify(other.settings);
+    if (this.name !== other.name || this.id !== other.id)
+      return false;
+    else
+      return JSON.stringify(this.settings) === JSON.stringify(other.settings);
   }
 
   /** @internal */
@@ -123,9 +141,29 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined { return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime); }
 
-  /** @internal */
+  /** Note - do not push or remove members from contextRealityModelsProperty - use add/remove so that the json properties are kept in synch properly.
+   * @internal
+   */
   public get contextRealityModels(): ContextRealityModelState[] { return this._contextRealityModels; }
+  /** @internal */
   public set contextRealityModels(contextRealityModels: ContextRealityModelState[]) { this._contextRealityModels = contextRealityModels; }
+  /** @internal */
+  public addContextRealityModel(contextRealityModel: ContextRealityModelProps, iModel: IModelConnection) {
+    this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, iModel));
+    if (undefined === this.jsonProperties.contextRealityModels)
+      this.jsonProperties.contextRealityModels = [];
+
+    this.jsonProperties.contextRealityModels.push(contextRealityModel);
+  }
+  /** @internal */
+  public removeContextRealityModel(index: number) {
+    if (index >= this._contextRealityModels.length || !Array.isArray(this.jsonProperties.contextRealityModels) || index >= this.jsonProperties.contextRealityModels.length) {
+      assert(false);
+      return;
+    }
+    this._contextRealityModels.splice(index, 1);
+    this.jsonProperties.contextRealityModels.splice(index, 1);
+  }
 
   /** @internal */
   public containsContextRealityModel(contextRealityModel: ContextRealityModelState) {
@@ -191,6 +229,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
  * @public
  */
 export class DisplayStyle2dState extends DisplayStyleState {
+  /** The name of the associated ECClass */
+  public static get className() { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
   public get settings(): DisplayStyleSettings { return this._settings; }
@@ -200,6 +240,13 @@ export class DisplayStyle2dState extends DisplayStyleState {
     this._settings = new DisplayStyleSettings(this.jsonProperties);
   }
 }
+
+/** ###TODO: Generalize this into something like a PromiseOrValue<T> type which can contain
+ * either a Promise<T> or a resolved T.
+ * This is used to avoid flickering when loading skybox - don't want to load asynchronously unless we have to.
+ * @internal
+ */
+export type SkyBoxParams = Promise<SkyBox.CreateParams | undefined> | SkyBox.CreateParams | undefined;
 
 /** The SkyBox is part of an [[Environment]] drawn in the background of spatial views to provide context.
  * Several types of skybox are supported:
@@ -242,7 +289,7 @@ export abstract class SkyBox implements SkyBoxProps {
   }
 
   /** @internal */
-  public abstract async loadParams(_system: RenderSystem, _iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined>;
+  public abstract loadParams(_system: RenderSystem, _iModel: IModelConnection): SkyBoxParams;
 }
 
 /** The SkyBox is part of an [[Environment]] drawn in the background of spatial views to provide context.
@@ -254,14 +301,14 @@ export abstract class SkyBox implements SkyBoxProps {
  */
 export namespace SkyBox {
   /** Parameters defining a spherical [[SkyBox]].
-   * @internal
+   * @public
    */
   export class SphereParams {
     public constructor(public readonly texture: RenderTexture, public readonly rotation: number) { }
   }
 
   /** Parameters used by the [[RenderSystem]] to instantiate a [[SkyBox]].
-   * @internal
+   * @public
    */
   export class CreateParams {
     public readonly gradient?: SkyGradient;
@@ -332,8 +379,8 @@ export class SkyGradient extends SkyBox {
   }
 
   /** @internal */
-  public async loadParams(_system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams> {
-    return Promise.resolve(SkyBox.CreateParams.createForGradient(this, iModel.globalOrigin.z));
+  public loadParams(_system: RenderSystem, iModel: IModelConnection): SkyBoxParams {
+    return SkyBox.CreateParams.createForGradient(this, iModel.globalOrigin.z);
   }
 }
 
@@ -369,13 +416,14 @@ export class SkySphere extends SkyBox {
   }
 
   /** @internal */
-  public async loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
-    const texture = await system.loadTexture(this.textureId, iModel);
-    if (undefined === texture)
-      return undefined;
-
+  public loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams {
     const rotation = 0.0; // ###TODO: from where do we obtain rotation?
-    return SkyBox.CreateParams.createForSphere(new SkyBox.SphereParams(texture, rotation), iModel.globalOrigin.z);
+    const createParams = (tex?: RenderTexture) => undefined !== tex ? SkyBox.CreateParams.createForSphere(new SkyBox.SphereParams(tex, rotation), iModel.globalOrigin.z) : undefined;
+    const texture = system.findTexture(this.textureId, iModel);
+    if (undefined !== texture)
+      return createParams(texture);
+    else
+      return system.loadTexture(this.textureId, iModel).then((tex) => createParams(tex));
   }
 }
 
@@ -401,7 +449,6 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
 
   private constructor(front: Id64String, back: Id64String, top: Id64String, bottom: Id64String, right: Id64String, left: Id64String, display?: boolean) {
     super({ display });
-
     this.front = front;
     this.back = back;
     this.top = top;
@@ -456,16 +503,14 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
   }
 
   /** @internal */
-  public async loadParams(system: RenderSystem, iModel: IModelConnection): Promise<SkyBox.CreateParams | undefined> {
+  public loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams {
     // ###TODO: We never cache the actual texture *images* used here to create a single cubemap texture...
     const textureIds = new Set<string>([this.front, this.back, this.top, this.bottom, this.right, this.left]);
     const promises = new Array<Promise<TextureImage | undefined>>();
     for (const textureId of textureIds)
       promises.push(system.loadTextureImage(textureId, iModel));
 
-    try {
-      const images = await Promise.all(promises);
-
+    return Promise.all(promises).then((images) => {
       // ###TODO there's gotta be a simpler way to map the unique images back to their texture Ids...
       const idToImage = new Map<string, HTMLImageElement>();
       let index = 0;
@@ -485,13 +530,15 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
 
       const texture = system.createTextureFromCubeImages(textureImages[0], textureImages[1], textureImages[2], textureImages[3], textureImages[4], textureImages[5], iModel, params);
       return undefined !== texture ? SkyBox.CreateParams.createForCube(texture) : undefined;
-    } catch (_err) {
+    }).catch((_err) => {
       return undefined;
-    }
+    });
   }
 }
 
-/** Describes the [[SkyBox]] and [[GroundPlane]] associated with a [[DisplayStyle3dState]]. */
+/** Describes the [[SkyBox]] and [[GroundPlane]] associated with a [[DisplayStyle3dState]].
+ * @public
+ */
 export class Environment implements EnvironmentProps {
   public readonly sky: SkyBox;
   public readonly ground: GroundPlane;
@@ -510,22 +557,43 @@ export class Environment implements EnvironmentProps {
   }
 }
 
+function isSameSkyBox(a: SkyBoxProps | undefined, b: SkyBoxProps | undefined): boolean {
+  if (undefined === a || undefined === b)
+    return undefined === a && undefined === b;
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /** A [[DisplayStyleState]] that can be applied to spatial views.
  * @public
  */
 export class DisplayStyle3dState extends DisplayStyleState {
-  /** @internal */
-  public skyboxMaterial: RenderMaterial | undefined;
+  /** The name of the associated ECClass */
+  public static get className() { return "DisplayStyle3d"; }
   private _skyBoxParams?: SkyBox.CreateParams;
   private _skyBoxParamsLoaded?: boolean;
   private _environment?: Environment;
   private _settings: DisplayStyle3dSettings;
+  private _sunDirection?: Vector3d;
+
+  /** @internal */
+  public clone(iModel: IModelConnection): this {
+    const clone = super.clone(iModel);
+    if (undefined === iModel || this.iModel === iModel) {
+      clone._skyBoxParams = this._skyBoxParams;
+      clone._skyBoxParamsLoaded = this._skyBoxParamsLoaded;
+    }
+
+    return clone;
+  }
 
   public get settings(): DisplayStyle3dSettings { return this._settings; }
 
   public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
+    const styles = this.jsonProperties.styles;
+    if (styles.sceneLights && styles.sceneLights.sunDir)
+      this._sunDirection = Vector3d.fromJSON(styles.sceneLights.sunDir);
   }
 
   /** The [[SkyBox]] and [[GroundPlane]] settings for this style. */
@@ -536,23 +604,58 @@ export class DisplayStyle3dState extends DisplayStyleState {
     return this._environment;
   }
   public set environment(env: Environment) {
+    const prevEnv = this.settings.environment;
     this.settings.environment = env.toJSON();
     this._environment = undefined;
+
+    // Regenerate the skybox if the sky settings have changed
+    if (undefined !== this._skyBoxParamsLoaded && !isSameSkyBox(env.sky, prevEnv.sky)) {
+      // NB: We only reset _skyBoxParamsLoaded - keep the previous skybox (if any) to continue drawing until the new one (if any) is ready
+      this._skyBoxParamsLoaded = undefined;
+    }
+  }
+
+  private onLoadSkyBoxParams(params?: SkyBox.CreateParams, vp?: Viewport): void {
+    this._skyBoxParams = params;
+    this._skyBoxParamsLoaded = true;
+    if (undefined !== vp)
+      vp.invalidateDecorations();
   }
 
   /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise.
    * @internal
    */
-  public loadSkyBoxParams(system: RenderSystem): SkyBox.CreateParams | undefined {
-    if (undefined === this._skyBoxParams && undefined === this._skyBoxParamsLoaded) {
-      this._skyBoxParamsLoaded = false;
-      const skybox = this.environment.sky;
-      skybox.loadParams(system, this.iModel).then((params?: SkyBox.CreateParams) => {
-        this._skyBoxParams = params;
-        this._skyBoxParamsLoaded = true;
-      }).catch((_err) => this._skyBoxParamsLoaded = true);
+  public loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined {
+    if (undefined === this._skyBoxParamsLoaded) {
+      const params = this.environment.sky.loadParams(system, this.iModel);
+      if (undefined === params || params instanceof SkyBox.CreateParams) {
+        this.onLoadSkyBoxParams(params, vp);
+      } else {
+        this._skyBoxParamsLoaded = false; // indicates we're currently loading them.
+        params.then((result?: SkyBox.CreateParams) => this.onLoadSkyBoxParams(result, vp)).catch((_err) => this.onLoadSkyBoxParams(undefined));
+      }
     }
 
     return this._skyBoxParams;
+  }
+  /** @beta */
+  public get sunDirection() { return this._sunDirection; }
+
+  /** set the solar direction based on time value
+   * @param time The time in unix time milliseconds.
+   * @beta
+   */
+  public setSunTime(time: number) {
+    let cartoCenter;
+    if (this.iModel.isGeoLocated) {
+      const projectExtents = this.iModel.projectExtents;
+      const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
+      cartoCenter = this.iModel.spatialToCartographicFromEcef(projectCenter);
+    } else {
+      cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+    }
+
+    this._sunDirection = calculateSolarDirection(new Date(time), cartoCenter);
+
   }
 }

@@ -5,23 +5,27 @@
 
 import { Schema } from "./Schema";
 
+/** @beta */
 export interface CustomAttribute {
   className: string;
   [propName: string]: any;
 }
 
+/** @beta */
 export interface CustomAttributeSet {
   [Symbol.iterator]: () => IterableIterator<[string, CustomAttribute]>;
   has(className: string): boolean;
   get(className: string): CustomAttribute | undefined;
 }
 
+/** @beta */
 export interface CustomAttributeContainerProps {
   customAttributes?: CustomAttributeSet;
   fullName: string;
   schema: Schema;
 }
 
+/** @beta */
 export function serializeCustomAttributes(customAttributes: CustomAttributeSet | undefined): any[] | undefined {
   if (undefined !== customAttributes) { // custom attributes is optional
     const attributes: any[] = [];

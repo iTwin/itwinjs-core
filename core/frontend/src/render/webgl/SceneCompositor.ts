@@ -18,7 +18,6 @@ import { GL } from "./GL";
 import { RenderCommands, ShaderProgramParams, DrawParams, DrawCommands, BatchPrimitiveCommand } from "./DrawCommand";
 import { RenderState } from "./RenderState";
 import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
-import { FloatRgba } from "./FloatRGBA";
 import { BatchState } from "./BranchState";
 import { Feature } from "@bentley/imodeljs-common";
 import { Debug } from "./Diagnostics";
@@ -26,7 +25,8 @@ import { Debug } from "./Diagnostics";
 let progParams: ShaderProgramParams | undefined;
 let drawParams: DrawParams | undefined;
 
-function getDrawParams(target: Target, geometry: CachedGeometry): DrawParams {
+/** @internal */
+export function getDrawParams(target: Target, geometry: CachedGeometry): DrawParams {
   if (undefined === progParams) {
     progParams = new ShaderProgramParams();
     drawParams = new DrawParams();
@@ -375,8 +375,10 @@ class PixelBuffer implements Pixel.Buffer {
   }
 }
 
-// Orchestrates rendering of the scene on behalf of a Target.
-// This base class exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
+/** Orchestrates rendering of the scene on behalf of a Target.
+ * This base class exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
+ * @internal
+ */
 export abstract class SceneCompositor implements IDisposable {
   public readonly target: Target;
 
@@ -466,7 +468,7 @@ abstract class Compositor extends SceneCompositor {
     this._geom = geometry;
 
     this._opaqueRenderState.flags.depthTest = true;
-    // this._opaqueRenderState.flags.cull = true; ###TODO: Want backface culling but breaks edge display (presumably incorrect winding order)
+    this._opaqueRenderState.flags.cull = true === System.instance.options.backfaceCulling;
 
     this._translucentRenderState.flags.depthMask = false;
     this._translucentRenderState.flags.blend = this._translucentRenderState.flags.depthTest = true;
@@ -611,14 +613,18 @@ abstract class Compositor extends SceneCompositor {
     }
 
     this.clearOpaque(false);
+    this.target.recordPerformanceMetric("Render Background");
 
     // On entry the RenderCommands has been initialized for all scene graphics and pickable decorations with the exception of world overlays.
     // It's possible we have no pickable scene graphics or decorations, but do have pickable world overlays.
     const haveRenderCommands = !commands.isEmpty;
     if (haveRenderCommands) {
       this.target.pushActiveVolume();
+      this.target.recordPerformanceMetric("Enable Clipping");
       this.renderOpaque(commands, CompositeFlags.None, true);
+      this.target.recordPerformanceMetric("Render Opaque");
       this.renderClassification(commands, false, true);
+      this.target.recordPerformanceMetric("Render Stencils");
       this.target.popActiveVolume();
     }
 
@@ -643,6 +649,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Render overlays as opaque into the pick buffers
     this.renderOpaque(commands, CompositeFlags.None, true);
+    this.target.recordPerformanceMetric("Overlay Draws");
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
@@ -710,7 +717,7 @@ abstract class Compositor extends SceneCompositor {
     }
 
     this.target.plan!.selectTerrainFrustum();
-    this.target.changeFrustum(this.target.plan!);
+    this.target.changeFrustum(this.target.plan!.frustum, this.target.plan!.fraction, this.target.plan!.is3d);
 
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
@@ -720,7 +727,7 @@ abstract class Compositor extends SceneCompositor {
     });
 
     this.target.plan!.selectViewFrustum();
-    this.target.changeFrustum(this.target.plan!);
+    this.target.changeFrustum(this.target.plan!.frustum, this.target.plan!.fraction, this.target.plan!.is3d);
   }
 
   private renderSkyBox(commands: RenderCommands, needComposite: boolean) {
@@ -906,6 +913,19 @@ abstract class Compositor extends SceneCompositor {
       // Draw the normal hilite geometry.
       this.drawPass(commands, RenderPass.Hilite);
     });
+    // Process planar classifiers
+    const planarClassifierCmds = commands.getCommands(RenderPass.HilitePlanarClassification);
+    if (0 !== planarClassifierCmds.length) {
+      system.frameBufferStack.execute(this._frameBuffers.hiliteUsingStencil!, true, () => {
+        system.applyRenderState(this._opaqueRenderState);
+        system.context.clearDepth(1.0);
+        system.context.clear(GL.BufferBit.Depth);
+        system.context.clearColor(0, 0, 0, 0);
+        system.context.clear(GL.BufferBit.Color);
+        this.target.techniques.execute(this.target, planarClassifierCmds, RenderPass.HilitePlanarClassification);
+      });
+    }
+
     // Process the hilite stencil volumes.
     const cmds = commands.getCommands(RenderPass.HiliteClassification);
     if (0 === cmds.length) {
@@ -937,6 +957,7 @@ abstract class Compositor extends SceneCompositor {
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
+      case RenderPass.HilitePlanarClassification:
         return this._opaqueRenderState;
       case RenderPass.Translucent:
         return this._translucentRenderState;
@@ -1204,23 +1225,28 @@ class MPGeometry extends Geometry {
 // The chief use case is iOS.
 class MPCompositor extends Compositor {
   private _currentRenderTargetIndex: number = 0;
+  private _drawMultiPassDepth: boolean = true;
   private readonly _opaqueRenderStateWithEqualDepthFunc = new RenderState();
+  private readonly _opaqueRenderStateWithEqualDepthFuncNoZWt = new RenderState();
 
   public constructor(target: Target) {
     super(target, new MPFrameBuffers(), new MPGeometry());
 
     this._opaqueRenderStateWithEqualDepthFunc.flags.depthTest = true;
     this._opaqueRenderStateWithEqualDepthFunc.depthFunc = GL.DepthFunc.LessOrEqual;
+    this._opaqueRenderStateWithEqualDepthFunc.flags.cull = true === System.instance.options.backfaceCulling;
+    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.depthTest = true;
+    this._opaqueRenderStateWithEqualDepthFuncNoZWt.depthFunc = GL.DepthFunc.LessOrEqual;
+    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.depthMask = false;
+    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.cull = true === System.instance.options.backfaceCulling;
   }
 
   protected getRenderState(pass: RenderPass): RenderState {
-    if (this._currentRenderTargetIndex > 0) {
-      switch (pass) {
-        case RenderPass.OpaqueLinear:
-        case RenderPass.OpaquePlanar:
-        case RenderPass.OpaqueGeneral:
-          return this._opaqueRenderStateWithEqualDepthFunc;
-      }
+    switch (pass) {
+      case RenderPass.OpaqueLinear:
+      case RenderPass.OpaquePlanar:
+      case RenderPass.OpaqueGeneral:
+        return this._drawMultiPassDepth ? this._opaqueRenderStateWithEqualDepthFunc : this._opaqueRenderStateWithEqualDepthFuncNoZWt;
     }
 
     return super.getRenderState(pass);
@@ -1236,10 +1262,10 @@ class MPCompositor extends Compositor {
   protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!; }
 
   protected clearOpaque(needComposite: boolean): void {
-    const bg = FloatRgba.fromColorDef(this.target.bgColor);
+    const bg = this.target.bgColor;
     this.clearFbo(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, bg.red, bg.green, bg.blue, bg.alpha, true);
-    this.clearFbo(this._fbos.depthAndOrder!, 0, 0, 0, 0, true);
-    this.clearFbo(this._fbos.featureId!, 0, 0, 0, 0, true);
+    this.clearFbo(this._fbos.depthAndOrder!, 0, 0, 0, 0, false);
+    this.clearFbo(this._fbos.featureId!, 0, 0, 0, 0, false);
   }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {
@@ -1261,6 +1287,7 @@ class MPCompositor extends Compositor {
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
     if (!renderForReadPixels && !needAO) {
       System.instance.frameBufferStack.execute(colorFbo, true, () => {
+        this._drawMultiPassDepth = true;  // for OpaqueGeneral
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
@@ -1284,9 +1311,14 @@ class MPCompositor extends Compositor {
   // ###TODO: For readPixels(), could skip rendering color...also could skip rendering depth and/or element ID depending upon selector...
   private drawOpaquePass(colorFbo: FrameBuffer, commands: RenderCommands, pass: RenderPass, pingPong: boolean): void {
     const stack = System.instance.frameBufferStack;
-    stack.execute(colorFbo, true, () => this.drawPass(commands, pass, pingPong));
+    this._drawMultiPassDepth = true;
+    if (!this.target.isReadPixelsInProgress) {
+      stack.execute(colorFbo, true, () => this.drawPass(commands, pass, pingPong));
+      this._drawMultiPassDepth = false;
+    }
     this._currentRenderTargetIndex++;
-    stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, false));
+    stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth));
+    this._drawMultiPassDepth = false;
     this._currentRenderTargetIndex++;
     stack.execute(this._fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, false));
     this._currentRenderTargetIndex = 0;

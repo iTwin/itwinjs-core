@@ -9,26 +9,27 @@ import { ItemProps } from "../shared/ItemProps";
 import { WorkflowManager } from "./Workflow";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 
-// -----------------------------------------------------------------------------
-// TaskDef, TasksDef, WorkflowDef and WorkflowsDef
-// -----------------------------------------------------------------------------
-
-/** Properties for a [[Task]] */
+/** Properties for a [[Task]]
+ * @public
+ */
 export interface TaskProps extends ItemProps {
   id: string;
   primaryStageId: string;
 }
 
-/** List of Task Properties */
+/** List of Task Properties
+ * @public
+ */
 export interface TaskPropsList {
   tasks: TaskProps[];
 }
 
 // -----------------------------------------------------------------------------
-// Task class
-// -----------------------------------------------------------------------------
 
 /** Task class.
+ * A Task is a specific piece of work to accomplish.
+ * A Task refers to a Frontstage to activate.
+ * @public
  */
 export class Task extends ItemDefBase {
   public taskId: string;
@@ -66,10 +67,9 @@ export class Task extends ItemDefBase {
 }
 
 // -----------------------------------------------------------------------------
-// TaskManager class
-// -----------------------------------------------------------------------------
 
 /** Task Manager class.
+ * @public
  */
 export class TaskManager {
   private static _tasks: Map<string, Task> = new Map<string, Task>();
@@ -97,5 +97,3 @@ export class TaskManager {
     this._tasks.set(taskId, task);
   }
 }
-
-// export default WorkflowsDef;

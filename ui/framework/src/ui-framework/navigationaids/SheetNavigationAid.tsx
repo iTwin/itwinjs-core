@@ -5,19 +5,24 @@
 /** @module NavigationAids */
 
 import * as React from "react";
+import * as classnames from "classnames";
+
+import { IModelConnection, IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
+import { ViewportComponentEvents, ViewIdChangedEventArgs } from "@bentley/ui-components";
+
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { NavigationAidControl } from "./NavigationAidControl";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { SheetsModalFrontstage, CardContainer, CardSelectedEventArgs } from "./SheetsModalFrontstage";
-import { IModelConnection, IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
-import { Spinner, SpinnerSize } from "@bentley/ui-core";
-import { ViewportComponentEvents, ViewIdChangedEventArgs } from "@bentley/ui-components";
 
 import "./SheetNavigationAid.scss";
 
-/** A Sheet Navigation Aid control. */
+/** A Sheet Navigation Aid control.
+ * @alpha
+ */
 export class SheetNavigationAidControl extends NavigationAidControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -26,28 +31,34 @@ export class SheetNavigationAidControl extends NavigationAidControl {
   public getSize(): string | undefined { return "96px"; }
 }
 
-/** Data displayed about sheet */
+/** Data displayed about sheet
+ * @alpha
+ */
 export interface SheetData {
   name: string;
   viewId: string;
 }
 
-/** @hidden */
-export interface SheetNavigationProps {
+/** Properties for the [[SheetNavigationAid]] component
+ * @alpha
+ */
+export interface SheetNavigationProps extends CommonProps {
   iModelConnection: IModelConnection;
 }
 
-/** @hidden */
-export interface SheetNavigationState {
+/** @internal */
+interface SheetNavigationState {
   index: number;
   sheetData: SheetData[];
 }
 
-/** A Sheet Navigation Aid. */
+/** A Sheet Navigation Aid.
+ * @alpha
+ */
 export class SheetNavigationAid extends React.Component<SheetNavigationProps, SheetNavigationState> {
   private _isMounted = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<SheetNavigationState> = {
     index: 0,
     sheetData: [],
@@ -115,7 +126,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     return stateData;
   }
 
-  /** @hidden */
+  /** @internal */
   public render(): React.ReactNode {
     const name = (this.state.sheetData.length > 0) ? this.state.sheetData[this.state.index].name : "";
     const sheet = UiFramework.i18n.translate("UiFramework:general.sheet");
@@ -139,7 +150,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     }
 
     return (
-      <div className="uifw-sheet-navigation">
+      <div className={classnames("uifw-sheet-navigation", this.props.className)} style={this.props.style}>
         <div className="gradient"></div>
         {content}
       </div>

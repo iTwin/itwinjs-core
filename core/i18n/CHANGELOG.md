@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodeljs-i18n
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Adds parameter for api-extractor to validate missing release tags
+- Fix broken links
+- Put sourcemap in npm package.
+- Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -15,7 +25,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
 - Fixed type definitions
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - fix imports of i18next-xhr-backend
 - Documentation improvements
 - Save BUILD_SEMVER to globally accessible map

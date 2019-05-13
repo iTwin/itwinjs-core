@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ToolSettings /> renders correctly 1`] = `
+<div
+  className="nz-widget-toolSettings"
+>
+  <TitleBar
+    className="nz-title"
+  />
+  <div
+    className="nz-content"
+  />
+</div>
+`;

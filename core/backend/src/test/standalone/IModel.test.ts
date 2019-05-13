@@ -3,16 +3,16 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import {
-  ActivityLoggingContext,
+  ClientRequestContext,
   BeEvent,
   DbResult,
   Guid,
   Id64,
   Id64String,
-  OpenMode,
-  LogLevel,
-  Logger,
   using,
+  Logger,
+  LogLevel,
+  GetMetaDataFunction,
 } from "@bentley/bentleyjs-core";
 import {
   Angle,
@@ -27,7 +27,7 @@ import {
   PolyfaceBuilder,
   YawPitchRollAngles,
 } from "@bentley/geometry-core";
-import { AccessToken, IAccessTokenManager } from "@bentley/imodeljs-clients";
+import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
@@ -37,15 +37,15 @@ import {
 import { assert, expect } from "chai";
 import * as path from "path";
 import {
-  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCore, Category, ClassRegistry, DefinitionPartition,
-  DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementPropertyFormatter, Entity,
+  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionPartition,
+  DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
-  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterial, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
+  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
+  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { HubUtility } from "../integration/HubUtility";
+import { IModelHost } from "../../IModelHost";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -67,32 +67,40 @@ function expectIModelError(expectedErrorNumber: IModelStatus, error: IModelError
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
 }
 
+function exerciseGc() {
+  for (let i = 0; i < 1000; ++i) {
+    const obj = { value: i };
+    const fmt = obj.value.toString();
+    assert.isTrue(i === parseInt(fmt, 10));
+  }
+}
+
 describe("iModel", () => {
   let imodel1: IModelDb;
   let imodel2: IModelDb;
   let imodel3: IModelDb;
   let imodel4: IModelDb;
   let imodel5: IModelDb;
-  const actx = new ActivityLoggingContext("");
+  const requestContext = new BackendRequestContext();
 
   before(async () => {
-    IModelTestUtils.registerTestBim();
-    imodel1 = IModelTestUtils.openIModel("test.bim");
-    imodel2 = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
-    imodel3 = IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
-    imodel4 = IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
-    imodel5 = IModelTestUtils.openIModel("mirukuru.ibim");
+    IModelTestUtils.registerTestBimSchema();
+    imodel1 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel2 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    imodel3 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
+    imodel4 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
+    imodel5 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
+    await imodel1.importSchema(requestContext, schemaPathname); // will throw an exception if import fails
   });
 
   after(() => {
-    IModelTestUtils.closeIModel(imodel1);
-    IModelTestUtils.closeIModel(imodel2);
-    IModelTestUtils.closeIModel(imodel3);
-    IModelTestUtils.closeIModel(imodel4);
-    IModelTestUtils.closeIModel(imodel5);
+    imodel1.closeSnapshot();
+    imodel2.closeSnapshot();
+    imodel3.closeSnapshot();
+    imodel4.closeSnapshot();
+    imodel5.closeSnapshot();
   });
 
   /** test the copy constructor and to/from Json methods for the supplied entity */
@@ -108,11 +116,96 @@ describe("iModel", () => {
     assert.equal(s1, s2);
   };
 
-  it.skip("dump cs file", () => {
-    Logger.setLevel("DgnCore", LogLevel.Trace);
-    Logger.setLevel("Changeset", LogLevel.Trace);
-    const db = IModelDb.openStandalone("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
-    HubUtility.dumpChangeSetFile(db, "D:\\dgn\\problem\\83927\\EAP_TT_001", "9fd0e30f88e93bec72532f6f1e05688e2c2408cd");
+  it("should verify object vault", () => {
+    const platform = IModelHost.platform!;
+
+    const o1 = "o1";
+    platform.storeObjectInVault({ thisIs: "obj1" }, o1);
+    exerciseGc();
+    assert.deepEqual(platform.getObjectFromVault(o1), { thisIs: "obj1" });
+    assert.equal(platform.getObjectRefCountFromVault(o1), 1);
+
+    const o2 = "o2";
+    platform.storeObjectInVault({ thatIs: "obj2" }, o2);
+    exerciseGc();
+    assert.deepEqual(platform.getObjectFromVault(o2), { thatIs: "obj2" });
+    exerciseGc();
+    assert.equal(platform.getObjectRefCountFromVault(o2), 1);
+
+    platform.storeObjectInVault(platform.getObjectFromVault(o1), o1); // this is one way to increase the ref count on obj1
+    assert.equal(platform.getObjectRefCountFromVault(o1), 2);
+    assert.equal(platform.getObjectRefCountFromVault(o2), 1);
+
+    platform.addReferenceToObjectInVault(o1); // this is the more direct way to increase the ref count to obj1
+    assert.equal(platform.getObjectRefCountFromVault(o1), 3);
+
+    platform.dropObjectFromVault(o1); // decrease the ref count on obj1
+    platform.dropObjectFromVault(o1); // decrease the ref count on obj1
+    assert.equal(platform.getObjectRefCountFromVault(o1), 1);
+
+    exerciseGc();
+
+    platform.dropObjectFromVault(o1); // remove the only remaining reference to obj1
+    try {
+      platform.getObjectFromVault(o1);
+    } catch (_err) {
+      // expected
+    }
+    try {
+      platform.dropObjectFromVault(o1); // this is ID is invalid and should be rejected.
+    } catch (_err) {
+      // expected
+    }
+
+    assert.equal(platform.getObjectRefCountFromVault(o2), 1);
+    assert.deepEqual(platform.getObjectFromVault(o2), { thatIs: "obj2" });
+    platform.dropObjectFromVault(o2); // remove the only reference to obj2
+    try {
+      platform.getObjectFromVault(o2);
+    } catch (_err) {
+      // expected
+    }
+  });
+
+  it("should do logging from worker threads in correct context", async () => {
+
+    const contextForTest = new ClientRequestContext("contextForTest");
+    const contextForStepAsync = new ClientRequestContext("contextForStepAsync");
+
+    const testMessage = "message from test in main";
+
+    const expectedMsgsInOrder: any[] = [
+      { message: "ECSqlStepWorker: Start on main thread", ctx: contextForStepAsync },
+      { message: testMessage, ctx: contextForTest },
+      { message: "ECSqlStepWorker: In worker thread", ctx: contextForStepAsync },
+      { message: "ECSqlStepWorker: Back on main thread", ctx: contextForStepAsync },
+    ];
+
+    const msgs: any[] = [];
+    Logger.initialize((_category: string, message: string, _metaData?: GetMetaDataFunction) => {
+      msgs.push({ message, ctx: ClientRequestContext.current });
+    });
+    Logger.setLevel("ECSqlStepWorkerTestCategory", LogLevel.Error);
+    const stmt = imodel1.prepareStatement("SELECT * from bis.Element");
+
+    contextForStepAsync.enter();        // the statement should run entirely in contextForStepAsync
+    const stepPromise = stmt.stepAsync();
+
+    contextForTest.enter();             // while the statement runs, the test switches to a new context
+    Logger.logError("ECSqlStepWorkerTestCategory", testMessage);
+
+    const res = await stepPromise;      // now the statement completes.
+    assert.equal(res, DbResult.BE_SQLITE_ROW);
+
+    assert.strictEqual(ClientRequestContext.current, contextForTest);
+
+    assert.equal(msgs.length, expectedMsgsInOrder.length);
+    for (let i = 0; i < msgs.length; ++i) {
+      assert.equal(msgs[i].message, expectedMsgsInOrder[i].message);
+      assert.strictEqual(msgs[i].ctx, expectedMsgsInOrder[i].ctx);
+    }
+
+    stmt.dispose();
   });
 
   it("should be able to get properties of an iIModel", () => {
@@ -128,12 +221,12 @@ describe("iModel", () => {
   });
 
   it("should use schema to look up classes by name", () => {
-    const elementClass = BisCore.getClass(Element.name, imodel1);
-    const categoryClass = BisCore.getClass(Category.name, imodel1);
+    const elementClass = BisCoreSchema.getClass(Element.className, imodel1);
+    const categoryClass = BisCoreSchema.getClass(Category.className, imodel1);
     assert.isDefined(elementClass);
     assert.isDefined(categoryClass);
-    assert.equal(elementClass!.name, "Element");
-    assert.equal(categoryClass!.name, "Category");
+    assert.equal(elementClass!.className, "Element");
+    assert.equal(categoryClass!.className, "Category");
   });
 
   it("FontMap", () => {
@@ -302,7 +395,7 @@ describe("iModel", () => {
       TextureId: "test_textureid",
     };
 
-    const renderMaterialParams = new RenderMaterial.Params(testPaletteName);
+    const renderMaterialParams = new RenderMaterialElement.Params(testPaletteName);
     renderMaterialParams.description = testDescription;
     renderMaterialParams.color = color;
     renderMaterialParams.specularColor = specularColor;
@@ -313,10 +406,10 @@ describe("iModel", () => {
     renderMaterialParams.reflect = reflect;
     renderMaterialParams.reflectColor = reflectColor;
     renderMaterialParams.patternMap = textureMapProps;
-    const renderMaterialId = RenderMaterial.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
+    const renderMaterialId = RenderMaterialElement.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
 
-    const renderMaterial = imodel2.elements.getElement<RenderMaterial>(renderMaterialId);
-    assert((renderMaterial instanceof RenderMaterial) === true, "did not retrieve an instance of RenderMaterial");
+    const renderMaterial = imodel2.elements.getElement<RenderMaterialElement>(renderMaterialId);
+    assert((renderMaterial instanceof RenderMaterialElement) === true, "did not retrieve an instance of RenderMaterial");
     expect(renderMaterial.paletteName).to.equal(testPaletteName);
     expect(renderMaterial.description).to.equal(testDescription);
     expect(renderMaterial.jsonProperties.materialAssets.renderMaterial.HasBaseColor).to.equal(true);
@@ -365,7 +458,7 @@ describe("iModel", () => {
 
     const texId = Texture.insert(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
 
-    const matId = RenderMaterial.insert(imodel5, IModel.dictionaryId, "test material name",
+    const matId = RenderMaterialElement.insert(imodel5, IModel.dictionaryId, "test material name",
       {
         paletteName: "TestPaletteName",
         patternMap: {
@@ -377,8 +470,8 @@ describe("iModel", () => {
       });
 
     /** Create a simple flat mesh with 4 points (2x2) */
-    const width = imodel5.projectExtents.width * 0.2;
-    const height = imodel5.projectExtents.depth * 0.2;
+    const width = imodel5.projectExtents.xLength() * 0.2;
+    const height = imodel5.projectExtents.yLength() * 0.2;
     let shape: GeometryQuery;
     const doPolyface = true;
     if (doPolyface) {
@@ -554,8 +647,8 @@ describe("iModel", () => {
 
   it("should find a tile tree for a geometric model", async () => {
     // Note: this is an empty model.
-    const actx2 = new ActivityLoggingContext("tiletreetest");
-    const tree = await imodel1.tiles.requestTileTreeProps(actx2, "0x1c");
+    const requestContext2 = new BackendRequestContext();
+    const tree = await imodel1.tiles.requestTileTreeProps(requestContext2, "0x1c");
     expect(tree).not.to.be.undefined;
 
     expect(tree.id).to.equal("0x1c");
@@ -581,24 +674,24 @@ describe("iModel", () => {
   });
 
   it("should throw on invalid tile requests", async () => {
-    const logCtx = new ActivityLoggingContext("invalidTileRequests");
+    const requestContext2 = new ClientRequestContext("invalidTileRequests");
     await using(new DisableNativeAssertions(), async (_r) => {
-      let error = await getIModelError(imodel1.tiles.requestTileTreeProps(logCtx, "0x12345"));
+      let error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "0x12345"));
       expectIModelError(IModelStatus.MissingId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileTreeProps(logCtx, "NotAValidId"));
+      error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "NotAValidId"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "0/0/0/0"));
+      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "0/0/0/0"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x12345", "0/0/0/0/1"));
+      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x12345", "0/0/0/0/1"));
       expectIModelError(IModelStatus.MissingId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "V/W/X/Y/Z"));
+      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "V/W/X/Y/Z"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(logCtx, "0x1c", "NotAValidId"));
+      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "NotAValidId"));
       expectIModelError(IModelStatus.InvalidId, error);
     });
   });
@@ -610,20 +703,6 @@ describe("iModel", () => {
     assert.isAtLeast(rows.length, 1);
     assert.exists(rows[0].id);
     assert.notEqual(rows[0].id.value, "");
-  });
-
-  it("ElementPropertyFormatter should format", () => {
-    const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
-    const el = imodel1.elements.getElement(code1);
-    const formatter: ElementPropertyFormatter = new ElementPropertyFormatter(imodel1);
-    const props = formatter.formatProperties(el);
-    assert.exists(props);
-    // WIP: format seems to have changed?
-    // assert.isArray(props);
-    // assert.notEqual(props.length, 0);
-    // const item = props[0];
-    // assert.isString(item.category);
-    // assert.isArray(item.properties);
   });
 
   it("should be some categories", () => {
@@ -669,7 +748,7 @@ describe("iModel", () => {
     for (const drawingGraphicRow of drawingGraphicRows!) {
       const drawingGraphic = imodel2.elements.getElement({ id: drawingGraphicRow.id, wantGeometry: true });
       assert.exists(drawingGraphic);
-      assert.isTrue(drawingGraphic.constructor.name === "DrawingGraphic", "Should be instance of DrawingGraphic");
+      assert.isTrue(drawingGraphic.className === "DrawingGraphic", "Should be instance of DrawingGraphic");
       assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
       if (Id64.getLocalId(drawingGraphic.id) === 0x25) {
         assert.isTrue(drawingGraphic.placement.origin.x === 0.0);
@@ -749,23 +828,23 @@ describe("iModel", () => {
       const modeledElement = imodel2.elements.getElement(modelId);
       assert.exists(modeledElement, "Modeled Element should exist");
 
-      if (model.constructor.name === "LinkModel") {
+      if (model.className === "LinkModel") {
         // expect LinkModel to be accompanied by LinkPartition
         assert.isTrue(modeledElement instanceof LinkPartition);
         continue;
-      } else if (model.constructor.name === "DictionaryModel") {
+      } else if (model.className === "DictionaryModel") {
         assert.isTrue(modeledElement instanceof DefinitionPartition);
         continue;
-      } else if (model.constructor.name === "PhysicalModel") {
+      } else if (model.className === "PhysicalModel") {
         assert.isTrue(modeledElement instanceof PhysicalPartition);
         continue;
-      } else if (model.constructor.name === "GroupModel") {
+      } else if (model.className === "GroupModel") {
         assert.isTrue(modeledElement instanceof GroupInformationPartition);
         continue;
-      } else if (model.constructor.name === "DocumentListModel") {
+      } else if (model.className === "DocumentListModel") {
         assert.isTrue(modeledElement instanceof DocumentPartition);
         continue;
-      } else if (model.constructor.name === "DefinitionModel") {
+      } else if (model.className === "DefinitionModel") {
         assert.isTrue(modeledElement instanceof DefinitionPartition);
         continue;
       } else {
@@ -1125,7 +1204,7 @@ describe("iModel", () => {
 
   it("snapping", async () => {
     const worldToView = Matrix4d.createIdentity();
-    const response = await imodel2.requestSnap(actx, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
+    const response = await imodel2.requestSnap(requestContext, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
     assert.isDefined(response.status);
   });
 
@@ -1347,7 +1426,7 @@ describe("iModel", () => {
     }
   });
 
-  it("should be able to create a standalone IModel", async () => {
+  it("should be able to create a snapshot IModel", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test project" },
       client: "ABC Manufacturing",
@@ -1356,7 +1435,7 @@ describe("iModel", () => {
       guid: Guid.createValue(),
     };
 
-    const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", args);
+    const iModel: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot.bim"), args);
     assert.equal(iModel.getGuid(), args.guid);
     assert.equal(iModel.rootSubject.name, args.rootSubject.name);
     assert.equal(iModel.rootSubject.description, args.rootSubject.description);
@@ -1399,7 +1478,7 @@ describe("iModel", () => {
     next = iModel.queryNextAvailableFileProperty(myPropsStr);
     assert.equal(0, next, "queryNextAvailableFileProperty, should return 0 when none present");
 
-    iModel.closeStandalone();
+    iModel.closeSnapshot();
   });
 
   it("The same promise can have two subscribers, and it will notify both.", async () => {
@@ -1448,19 +1527,23 @@ describe("iModel", () => {
       },
     };
 
-    const accessTokenManager: IAccessTokenManager = {
-      getAccessToken: async (_actx: ActivityLoggingContext): Promise<AccessToken> => {
+    const authorizationClient: IAuthorizationClient = {
+      getAccessToken: async (_requestContext: ClientRequestContext): Promise<AccessToken> => {
         const fakeAccessToken2 = {} as AccessToken;
         return fakeAccessToken2;
       },
+      isAuthorized: true,
+      hasExpired: false,
+      hasSignedIn: true,
     };
 
     lastPushTimeMillis = 0;
     lastAutoPushEventType = undefined;
 
     // Create an autopush in manual-schedule mode.
-    const autoPushParams: AutoPushParams = { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false, activityContext: actx };
-    const autoPush = new AutoPush(iModel as any, autoPushParams, accessTokenManager, activityMonitor);
+    const autoPushParams: AutoPushParams = { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false };
+    IModelHost.authorizationClient = authorizationClient;
+    const autoPush = new AutoPush(iModel as any, autoPushParams, activityMonitor);
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.isFalse(autoPush.autoSchedule);
 
@@ -1544,7 +1627,9 @@ describe("iModel", () => {
 
   it.skip("ImodelJsTest.MeasureInsertPerformance", () => {
 
-    const ifperfimodel = IModelTestUtils.openIModel("DgnPlatformSeedManager_OneSpatialModel10.bim", { copyFilename: "ImodelJsTest_MeasureInsertPerformance.bim", enableTransactions: true });
+    const seedFileName = IModelTestUtils.resolveAssetFile("DgnPlatformSeedManager_OneSpatialModel10.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("IModel", "ImodelJsTest_MeasureInsertPerformance.bim");
+    const ifperfimodel = IModelDb.createSnapshotFromSeed(testFileName, seedFileName);
 
     // tslint:disable-next-line:no-console
     console.time("ImodelJsTest.MeasureInsertPerformance");
@@ -1664,10 +1749,10 @@ describe("iModel", () => {
   });
 
   it("Run plain SQL against readonly connection", () => {
-    let iModel: IModelDb = IModelTestUtils.createStandaloneIModel("sqlitesqlreadonlyconnection.bim", { rootSubject: { name: "test" } });
+    let iModel: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IModel", "sqlitesqlreadonlyconnection.bim"), { rootSubject: { name: "test" } });
     const iModelPath: string = iModel.briefcase.pathname;
-    iModel.closeStandalone();
-    iModel = IModelDb.openStandalone(iModelPath, OpenMode.Readonly);
+    iModel.closeSnapshot();
+    iModel = IModelDb.openSnapshot(iModelPath);
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
       let rowCount: number = 0;
@@ -1701,6 +1786,6 @@ describe("iModel", () => {
       }
       assert.equal(rowCount, 2);
     });
-    iModel.closeStandalone();
+    iModel.closeSnapshot();
   });
 });

@@ -1,0 +1,26 @@
+{
+  "name": "@bentley/perf-tools",
+  "entries": [
+    {
+      "version": "0.191.0",
+      "tag": "@bentley/perf-tools_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixes testSuite and testName output in CSV"
+          },
+          {
+            "comment": "\"Adds readme to perf-tools\""
+          },
+          {
+            "comment": "Fixes exportCSV and renames variables\""
+          },
+          {
+            "comment": "Stringifies JSON values for info"
+          }
+        ]
+      }
+    }
+  ]
+}

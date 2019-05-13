@@ -24,7 +24,8 @@ import { ToolBarDropDown } from "./ToolBar";
 import { createButton } from "./Button";
 import { createNumericInput } from "./NumericInput";
 import { createCheckBox } from "./CheckBox";
-import { createComboBox } from "./ComboBox";
+import { createComboBox, ComboBoxHandler, ComboBox } from "./ComboBox";
+import { createColorInput, convertHexToRgb, ColorInputProps } from "./ColorInput";
 
 export function emphasizeSelectedElements(vp: Viewport): void {
   const emph = EmphasizeElements.getOrCreate(vp);
@@ -68,7 +69,7 @@ export class Provider implements FeatureOverrideProvider {
     this.sync();
   }
 
-  private sync(): void { this._vp.view.setFeatureOverridesDirty(); }
+  private sync(): void { this._vp.setFeatureOverrideProviderChanged(); }
 
   public static get(vp: Viewport): Provider | undefined {
     return vp.featureOverrideProvider instanceof Provider ? vp.featureOverrideProvider : undefined;
@@ -108,7 +109,7 @@ export class Settings implements IDisposable {
     this.addColor(this._element);
     this.addTransparency(this._element);
     this.addWeight(this._element);
-    this.addStyle(this._element);
+    Settings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10)));
 
     createCheckBox({
       parent: this._element,
@@ -242,7 +243,7 @@ export class Settings implements IDisposable {
     parent.appendChild(div);
   }
 
-  private addStyle(parent: HTMLElement): void {
+  public static addStyle(parent: HTMLElement, value: LinePixels, handler: ComboBoxHandler): ComboBox {
     const entries = [
       { name: "Not overridden", value: LinePixels.Invalid },
       { name: "Solid", value: LinePixels.Solid },
@@ -257,13 +258,13 @@ export class Settings implements IDisposable {
       { name: "Code7", value: LinePixels.Code7 },
     ];
 
-    createComboBox({
+    return createComboBox({
       parent,
       entries,
       id: "ovr_Style",
       name: "Style ",
-      value: LinePixels.Invalid,
-      handler: (select) => this.updateStyle(parseInt(select.value, 10)),
+      value,
+      handler,
     });
   }
 
@@ -275,50 +276,26 @@ export class Settings implements IDisposable {
     cb.id = "cb_ovrColor";
     div.appendChild(cb);
 
-    const label = document.createElement("label");
-    label.htmlFor = "cb_ovrColor";
-    label.innerText = "Color ";
-    div.appendChild(label);
-
-    const colorDiv = document.createElement("div");
-    const inputs: HTMLInputElement[] = [];
-    const update = () => this.updateColor(new RgbColor(parseInt(inputs[0].value, 10), parseInt(inputs[1].value, 10), parseInt(inputs[2].value, 10)));
-    const props = {
-      parent: colorDiv,
-      value: 255,
+    const update = () => this.updateColor(convertHexToRgb(input.value));
+    const props: ColorInputProps = {
+      parent: div,
+      id: "color_ovrColor",
+      label: "Color",
+      value: "#ffffff",
+      display: "inline",
       disabled: true,
-      min: 0,
-      max: 255,
-      step: 1,
-      handler: () => update(),
+      handler: update,
     };
-
-    inputs.push(createNumericInput(props), createNumericInput(props), createNumericInput(props));
-    const labels = [ "R", "G", "B" ];
-    for (let i = 0; i < 3; i++) {
-      const colorName = labels[i];
-      const id = "ovr_Color" + colorName;
-      const colorLabel = document.createElement("label");
-      colorLabel.htmlFor = id;
-      colorLabel.innerText = colorName + " ";
-      colorDiv.appendChild(colorLabel);
-
-      const colorInput = inputs[i];
-      colorInput.id = id;
-      colorDiv.appendChild(colorInput);
-    }
+    const input: HTMLInputElement = createColorInput(props).input;
 
     cb.addEventListener("click", () => {
-      for (const input of inputs)
-        input.disabled = !cb.checked;
+      input.disabled = !cb.checked;
 
       if (cb.checked)
         update();
       else
         this.updateColor(undefined);
     });
-
-    div.appendChild(colorDiv);
     parent.appendChild(div);
   }
 }

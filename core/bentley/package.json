@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "0.190.0",
+  "version": "0.191.0",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
@@ -39,19 +39,20 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "0.190.0",
-    "@bentley/webpack-tools": "0.190.0",
+    "@bentley/build-tools": "0.191.0",
+    "@bentley/webpack-tools": "0.191.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
-    "@types/node": "10.12.18",
+    "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",
-    "typedoc": "^0.11.1",
+    "tslint-etc": "^1.5.2",
+    "typedoc": "^0.14.2",
     "typescript": "~3.2.2",
     "ts-node": "^7.0.1",
-    "nyc": "^13.0.1"
+    "nyc": "^14.0.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

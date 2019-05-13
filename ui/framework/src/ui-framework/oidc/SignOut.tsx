@@ -6,14 +6,16 @@
 
 import * as React from "react";
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
 import { getUserColor } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import "./SignOut.scss";
 import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
-/** Modal frontstage displaying sign out form. */
+/** Modal frontstage displaying sign out form.
+ * @public
+ */
 export class SignOutModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.i18n.translate("UiFramework:userProfile.userprofile");
   private _signOut = UiFramework.i18n.translate("UiFramework:userProfile.signout");
@@ -29,8 +31,10 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
   private _getInitials(): string {
     let initials: string = "";
     if (this._userInfo && this._userInfo.profile) {
+      // istanbul ignore else
       if (this._userInfo.profile.firstName.length > 0)
         initials += this._userInfo.profile.firstName[0];
+      // istanbul ignore else
       if (this._userInfo.profile.lastName.length > 0)
         initials += this._userInfo.profile.lastName[0];
     }
@@ -47,9 +51,9 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     return name;
   }
 
-  private _onSignOut = () => {
+  private _onSignOut = async () => {
     FrontstageManager.closeModalFrontstage();
-    OidcClientWrapper.oidcClient.signOut(new ActivityLoggingContext(""));
+    OidcClientWrapper.oidcClient.signOut(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
   }
 
   public get content(): React.ReactNode {

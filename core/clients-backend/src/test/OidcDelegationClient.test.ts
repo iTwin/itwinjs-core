@@ -4,36 +4,33 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Config, AccessToken } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { OidcDelegationClient, OidcDelegationClientConfiguration, OidcAgentClient, OidcAgentClientConfiguration } from "../imodeljs-clients-backend";
+import { OidcDelegationClient, OidcDelegationClientConfiguration, OidcAgentClientV2, OidcAgentClientConfigurationV2 } from "../imodeljs-clients-backend";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 chai.should();
 
-// @todo: Work with OIDC team to get these tests working
 describe("OidcDelegationClient (#integration)", () => {
 
   let validator: HubAccessTestValidator;
   let jwt: AccessToken;
-  const actx = new ActivityLoggingContext("");
+  const requestContext = new ClientRequestContext();
 
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
 
-    const agentConfiguration: OidcAgentClientConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
-      serviceUserEmail: Config.App.getString("imjs_agent_test_service_user_email"),
-      serviceUserPassword: Config.App.getString("imjs_agent_test_service_user_password"),
-      scope: "openid email profile organization imodeljs-backend-2686",
+    const agentConfiguration: OidcAgentClientConfigurationV2 = {
+      clientId: Config.App.getString("imjs_agent_test_client_id_v2"),
+      clientSecret: Config.App.getString("imjs_agent_test_client_secret_v2"),
+      scope: "context-registry-service imodelhub imodeljs-backend-2686",
     };
 
-    const agentClient = new OidcAgentClient(agentConfiguration);
-    jwt = await agentClient.getToken(actx);
+    const agentClient = new OidcAgentClientV2(agentConfiguration);
+    jwt = await agentClient.getToken(requestContext);
   });
 
   it("should get valid SAML delegation tokens", async () => {
@@ -45,7 +42,7 @@ describe("OidcDelegationClient (#integration)", () => {
     };
 
     const delegationClient = new OidcDelegationClient(delegationConfiguration);
-    const saml = await delegationClient.getSamlFromJwt(actx, jwt);
+    const saml = await delegationClient.getSamlFromJwt(requestContext, jwt);
     await validator.validateConnectAccess(saml);
     await validator.validateIModelHubAccess(saml);
   });
@@ -58,7 +55,7 @@ describe("OidcDelegationClient (#integration)", () => {
     };
 
     const delegationClient = new OidcDelegationClient(delegationConfiguration);
-    const delegationJwt = await delegationClient.getJwtFromJwt(actx, jwt);
+    const delegationJwt = await delegationClient.getJwtFromJwt(requestContext, jwt);
     await validator.validateConnectAccess(delegationJwt);
     await validator.validateIModelHubAccess(delegationJwt);
   });

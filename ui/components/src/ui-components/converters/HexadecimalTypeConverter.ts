@@ -10,6 +10,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { Primitives } from "@bentley/imodeljs-frontend";
 
 /** Hexadecimal Type Converter.
+ * @public
  */
 export class HexadecimalTypeConverter extends TypeConverter {
   public convertToString(value?: Primitives.Hexadecimal) {

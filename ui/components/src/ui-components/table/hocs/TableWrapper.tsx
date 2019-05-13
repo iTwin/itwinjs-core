@@ -7,7 +7,7 @@
 import * as React from "react";
 import { WithDropTargetProps } from "../../dragdrop/withDropTarget";
 
-/** @hidden */
+/** @internal */
 export interface TableWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
   isOver?: boolean;
   canDrop?: boolean;
@@ -15,7 +15,7 @@ export interface TableWrapperProps extends React.HTMLAttributes<HTMLDivElement> 
   type?: string | symbol;
 }
 
-/** @hidden */
+/** @internal */
 export class TableWrapper extends React.Component<TableWrapperProps> {
   public render(): React.ReactNode {
     const { isOver, canDrop, item, type, ...props } = this.props as WithDropTargetProps;

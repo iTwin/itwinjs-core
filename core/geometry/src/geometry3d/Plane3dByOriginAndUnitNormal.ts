@@ -13,6 +13,7 @@ import { Point4d } from "../geometry4d/Point4d";
  *
  * * Any point on the plane.
  * * a unit normal.
+ * @public
  */
 export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   private _origin: Point3d;
@@ -52,7 +53,10 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
     if (origin)
       return Plane3dByOriginAndUnitNormal._create(origin.x, origin.y, origin.z, 0, 1, 0);
     return Plane3dByOriginAndUnitNormal._create(0, 0, 0, 0, 1, 0);
-  }
+
+  /** create a new  Plane3dByOriginAndUnitNormal with given origin and normal.
+   * * Returns undefined if the normal vector is all zeros.
+   */}
   public static create(origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
     const normalized = normal.normalize();
     if (!normalized)
@@ -74,9 +78,11 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
       return new Plane3dByOriginAndUnitNormal(pointA, cross);
     return undefined;
   }
+  /** test for (toleranced) equality with `other` */
   public isAlmostEqual(other: Plane3dByOriginAndUnitNormal): boolean {
     return this._origin.isAlmostEqual(other._origin) && this._normal.isAlmostEqual(other._normal);
   }
+  /** Parse a json fragment `{origin: [x,y,z], normal: [ux,uy,uz]}`  */
   public setFromJSON(json?: any) {
     if (!json) {
       this._origin.set(0, 0, 0);
@@ -91,20 +97,24 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
    * @return {*} [origin,normal]
    */
   public toJSON(): any { return { origin: this._origin.toJSON(), normal: this._normal.toJSON() }; }
+  /**  create a new Plane3dByOriginAndUnitNormal from json fragment.
+   * * See `Plane3dByOriginAndUnitNormal.setFromJSON`
+   */
   public static fromJSON(json?: any): Plane3dByOriginAndUnitNormal {
     const result = Plane3dByOriginAndUnitNormal.createXYPlane();
     result.setFromJSON(json);
     return result;
   }
-  /** @returns a reference to the origin. */
+  /** Return a reference to the origin. */
   public getOriginRef(): Point3d { return this._origin; }
-  /** @returns a reference to the unit normal. */
+  /** Return a reference to the unit normal. */
   public getNormalRef(): Vector3d { return this._normal; }
   /** Copy coordinates from the given origin and normal. */
   public set(origin: Point3d, normal: Vector3d): void {
     this._origin.setFrom(origin);
     this._normal.setFrom(normal);
   }
+  /** return a deep clone (point and normal cloned) */
   public clone(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal {
     if (result) {
       result.set(this._origin, this._normal);
@@ -125,37 +135,37 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   public setFrom(source: Plane3dByOriginAndUnitNormal): void {
     this.set(source._origin, source._normal);
   }
-  /** @returns Return the altitude of spacePoint above or below the plane.  (Below is negative) */
+  /** Return the altitude of spacePoint above or below the plane.  (Below is negative) */
   public altitude(spacePoint: Point3d): number { return this._normal.dotProductStartEnd(this._origin, spacePoint); }
 
-  /** @returns Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
+  /** Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
   public weightedAltitude(spacePoint: Point4d): number {
     return this._normal.dotProductStart3dEnd4d(this._origin, spacePoint); }
 
-  /** @returns return a point at specified (signed) altitude */
+  /** return a point at specified (signed) altitude */
   public altitudeToPoint(altitude: number, result?: Point3d): Point3d {
     return this._origin.plusScaled(this._normal, altitude, result);
   }
-  /** @returns The dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
+  /** Return the dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
    * for a point moving at speed one along the spaceVector.
    */
   public velocityXYZ(x: number, y: number, z: number): number { return this._normal.dotProductXYZ(x, y, z); }
-  /** @returns The dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
+  /** Return the dot product of spaceVector with the plane's unit normal.  This tells the rate of change of altitude
    * for a point moving at speed one along the spaceVector.
    */
   public velocity(spaceVector: Vector3d): number { return this._normal.dotProduct(spaceVector); }
-  /** @returns the altitude of a point given as separate x,y,z components. */
+  /** Return the altitude of a point given as separate x,y,z components. */
   public altitudeXYZ(x: number, y: number, z: number): number {
     return this._normal.dotProductStartEndXYZ(this._origin, x, y, z);
   }
-  /** @returns the altitude of a point given as separate x,y,z,w components. */
+  /** Return the altitude of a point given as separate x,y,z,w components. */
   public altitudeXYZW(x: number, y: number, z: number, w: number): number {
     return this._normal.dotProductStartEndXYZW(this._origin, x, y, z, w);
   }
-  /** @returns Return the projection of spacePoint onto the plane. */
+  /** Return the projection of spacePoint onto the plane. */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
     return spacePoint.plusScaled(this._normal, -this._normal.dotProductStartEnd(this._origin, spacePoint), result);
   }
-  /** @return Returns true of spacePoint is within distance tolerance of the plane. */
+  /** Returns true of spacePoint is within distance tolerance of the plane. */
   public isPointInPlane(spacePoint: Point3d): boolean { return Geometry.isSmallMetricDistance(this.altitude(spacePoint)); }
 }

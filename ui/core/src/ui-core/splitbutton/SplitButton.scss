@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../index.scss";
 
-.split-button {
+.core-split-button {
   flex-shrink: 1;
 
   @include uicore-font-family;
@@ -16,7 +16,7 @@
   color: $buic-foreground-body;
   background-color: $buic-background-control;
 
-  > .split-button-label {
+  > .core-split-button-label {
     &:hover {
       color: $buic-foreground-primary;
     }
@@ -24,18 +24,18 @@
     @include uicore-text(body);
   }
 
-  > .split-button-arrow {
+  > .core-split-button-arrow {
     &:focus {
       border: none;
       box-shadow: none;
       outline: 0px;
 
-      > .split-button-arrow-icon {
+      > .core-split-button-arrow-icon {
         color: $buic-foreground-primary;
       }
     }
 
-    > .split-button-arrow-icon {
+    > .core-split-button-arrow-icon {
       transition: transform .2s;
 
       &:hover {
@@ -57,7 +57,7 @@
   }
 
   &.expanded {
-    > .split-button-arrow > .split-button-arrow-icon {
+    > .core-split-button-arrow > .core-split-button-arrow-icon {
       transform: scaleY(-1);
     }
   }

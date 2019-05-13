@@ -23,21 +23,23 @@ import { UnivariateBezier } from "../numerics/BezierPolynomials";
 /**
  * Base class for CurvePrimitve (necessarily 3D) with _polygon.
  * * This has a Bezier1dNd polygon as a member, and implements dimension-indendent methods
- * * This exists to support BezeierCurve3d and BezierCurve3dH.
+ * * This exists to support
+ *    * BezeierCurve3d -- 3 coordinates x,y,z per block in the Bezier1dNd poles
+ *    * BezierCurve3dH -- 4 coordinates x,y,z,w per block in the Bezier1dNd poles
  * * The implementations of "pure 3d" queries is based on calling `getPolePoint3d`.
  * * This has the subtle failure difference that `getPolePoint3d` call with a valid index on on a 3d curve always succeeds, but on 3dH curve fails when weight is zero.
+ * @public
  */
 export abstract class BezierCurveBase extends CurvePrimitive {
+  /** Control points */
   protected _polygon: Bezier1dNd;
-  /** data blocks accessible by concrete class.   Initialized to correct blockSize in constructor. */
+  /** scratch data blocks accessible by concrete class.   Initialized to correct blockSize in constructor. */
   protected _workData0: Float64Array;
+  /** scratch data blocks accessible by concrete class.   Initialized to correct blockSize in constructor. */
   protected _workData1: Float64Array;
-  /**
-   * *_workPoint0 and _workPoint1 are conventional 3d points
-   * * create by constructor
-   * * accessbile by derived classes
-   * */
+  /** Scratch xyz point accessible by derived classes. */
   protected _workPoint0: Point3d;
+  /** Scratch xyz point accessible by derived classes. */
   protected _workPoint1: Point3d;
 
   protected constructor(blockSize: number, data: Float64Array) {
@@ -61,11 +63,13 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     }
     return boolstat;
   }
-
+  /** (property accessor) Return the polynomial degree (one less than order) */
   public get degree(): number {
     return this._polygon.order - 1;
   }
+  /** (property accessor) Return the polynomial order */
   public get order(): number { return this._polygon.order; }
+  /** (property accessor) Return the number of poles (aka control points) */
   public get numPoles(): number { return this._polygon.order; }
   /** Get pole `i` as a Point3d.
    * * For 3d curve, this is simple a pole access, and only fails (return `undefined`) for invalid index
@@ -78,8 +82,11 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * * For 4d curve, this accesses the (weighted) pole.
    */
   public abstract getPolePoint4d(i: number, point?: Point4d): Point4d | undefined;
-
+  /** Set mapping to parent curve (e.g. if this bezier is a span extracted from a bspline, this is the knot interval of the span) */
   public setInterval(a: number, b: number) { this._polygon.setInterval(a, b); }
+  /** map `fraction` from this Bezier curves inherent 0..1 range to the (a,b) range of parent
+   * * ( The parent range should have been previously defined with `setInterval`)
+   */
   public fractionToParentFraction(fraction: number): number { return this._polygon.fractionToParentFraction(fraction); }
   /** Return a stroke count appropriate for given stroke options. */
   public abstract computeStrokeCountForOptions(options?: StrokeOptions): number;
@@ -114,6 +121,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     }
     return false;
   }
+  /** Return the lenght of the control polygon. */
   public polygonLength(): number {
     if (!this.getPolePoint3d(0, this._workPoint0))
       return 0.0;
@@ -125,21 +133,28 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     }
     return sum;
   }
-
+  /** Return the start point.  (first control point) */
   public startPoint(): Point3d {
     const result = this.getPolePoint3d(0)!;   // ASSUME non-trivial pole set -- if null comes back, it bubbles out
     return result;
   }
+  /** Return the end point.  (last control point) */
   public endPoint(): Point3d {
     const result = this.getPolePoint3d(this.order - 1)!;    // ASSUME non-trivial pole set
     return result;
   }
-
+  /** Return the control polygon length as a quick length estimate. */
   public quickLength(): number { return this.polygonLength(); }
   /** Concrete classes must implement extendRange . . .  */
   public abstract extendRange(rangeToExtend: Range3d, transform?: Transform): void;
+  /**
+   * 1D bezier coefficients for use in range computations.
+   * @internal
+   */
   protected _workBezier?: UnivariateBezier; // available for bezier logic within a method
+  /** scratch array for use by derived classes, using allocateAndZeroBezierWorkData for sizing. */
   protected _workCoffsA?: Float64Array;
+  /** scratch array for use by derived classes, using allocateAndZeroBezierWorkData for sizing. */
   protected _workCoffsB?: Float64Array;
 
   /**

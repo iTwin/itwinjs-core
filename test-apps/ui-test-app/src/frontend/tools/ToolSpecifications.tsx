@@ -6,17 +6,19 @@ import * as React from "react";
 
 import {
   IModelApp, NotifyMessageDetails, OutputMessagePriority, MessageBoxValue, SelectionTool,
-  OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType,
+  OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType, OutputMessageAlert,
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity } from "@bentley/ui-core";
 import {
-  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager, SyncUiEventId,
+  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager, SyncUiEventId, Backstage,
 } from "@bentley/ui-framework";
-import { SampleAppIModelApp, RootState, SampleAppUiActionId } from "../";
+import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "../tools/ToolWithSettings";
 import { AppSelectTool } from "../tools/AppSelectTool";
+import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
+
 // cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { AppUi } from "../appui/AppUi";
@@ -62,6 +64,28 @@ export class AppTools {
     });
   }
 
+  public static get analysisAnimationCommand() {
+    return new ToolItemDef({
+      toolId: AnalysisAnimationTool.toolId,
+      iconSpec: "icon-camera-animation",
+      label: () => AnalysisAnimationTool.flyover,
+      tooltip: () => AnalysisAnimationTool.description,
+      execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
+      isVisible: false, // default to not show and then allow stateFunc to redefine.
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+
+        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle))
+          returnState.isVisible = true;
+        else
+          returnState.isVisible = false;
+        return returnState;
+      },
+    });
+  }
+
   /* ------------- NEEDSWORK - figure out how to move to plugin.
   public static get measurePoints() {
     return new ToolItemDef({
@@ -82,17 +106,7 @@ export class AppTools {
 
   // Tool that toggles the backstage
   public static get backstageToggleCommand() {
-    return new CommandItemDef({
-      commandId: "SampleApp.BackstageShow",
-      iconSpec: "icon-home",
-      labelKey: "SampleApp:tools.",
-      execute: () => {
-        const state: RootState = SampleAppIModelApp.store.getState();
-        // cSpell:Ignore BACKSTAGEHIDE BACKSTAGESHOW
-        const action: string = (state.sampleAppState!.backstageVisible) ? SampleAppUiActionId.hideBackstage : SampleAppUiActionId.showBackstage;
-        SampleAppIModelApp.store.dispatch({ type: action });
-      },
-    });
+    return Backstage.backstageToggleCommand;
   }
 
   public static get item1() {
@@ -248,15 +262,21 @@ export class AppTools {
     });
   }
 
+  private static _longMessage =
+    "<ol>" +
+    "<li>" + AppTools._detailedMessage + "</li>" +
+    "<li>" + AppTools._detailedMessage + "</li>" +
+    "</ol>" +
+    "For more details, <a href='https://www.google.com/' target='_blank'>Google it!</a>";
+
   public static get errorMessageCommand() {
     return new CommandItemDef({
       commandId: "errorMessage",
       iconSpec: "icon-status-rejected",
       labelKey: "SampleApp:buttons.errorMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message",
-        "1. " + this._detailedMessage + "<br>" +
-        "2. " + this._detailedMessage + "<br>" +
-        "For more details, <a href='https://www.google.com/' target='_blank'>Google it!</a>", OutputMessageType.Alert)),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error,
+        "This is an error message", this._longMessage,
+        OutputMessageType.Alert, OutputMessageAlert.Dialog)),
     });
   }
 
@@ -269,7 +289,7 @@ export class AppTools {
         let displayString = "Current Snap Mode(s):";
 
         if (SampleAppIModelApp.store.getState().frameworkState) {
-          const snapModes = SampleAppIModelApp.accuSnap.getActiveSnapModes();
+          const snapModes = IModelApp.accuSnap.getActiveSnapModes();
           for (const mode of snapModes) {
             if (mode === SnapMode.Bisector) displayString += " Bisector";
             if (mode === SnapMode.Center) displayString += " Center";
@@ -320,7 +340,7 @@ export class AppTools {
       commandId: "errorMessage",
       iconSpec: "icon-status-error",
       labelKey: "SampleApp:buttons.errorMessageBox",
-      execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.i18n.translate("SampleApp:buttons.errorMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.i18n.translate("SampleApp:buttons.errorMessageBox"))),
     });
   }
 
@@ -329,7 +349,7 @@ export class AppTools {
       commandId: "successMessage",
       iconSpec: "icon-status-success",
       labelKey: "SampleApp:buttons.successMessageBox",
-      execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.i18n.translate("SampleApp:buttons.successMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.i18n.translate("SampleApp:buttons.successMessageBox"))),
     });
   }
 
@@ -338,7 +358,7 @@ export class AppTools {
       commandId: "informationMessage",
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
-      execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Information, IModelApp.i18n.translate("SampleApp:buttons.informationMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Information, IModelApp.i18n.translate("SampleApp:buttons.informationMessageBox"))),
     });
   }
 
@@ -347,7 +367,7 @@ export class AppTools {
       commandId: "questionMessage",
       iconSpec: "icon-help",
       labelKey: "SampleApp:buttons.questionMessageBox",
-      execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Question, IModelApp.i18n.translate("SampleApp:buttons.questionMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Question, IModelApp.i18n.translate("SampleApp:buttons.questionMessageBox"))),
     });
   }
 
@@ -356,7 +376,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Warning, IModelApp.i18n.translate("SampleApp:buttons.warningMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Warning, IModelApp.i18n.translate("SampleApp:buttons.warningMessageBox"))),
     });
   }
 
@@ -367,7 +387,9 @@ export class AppTools {
       labelKey: "SampleApp:buttons.openMessageBox",
       execute: () => {
         // tslint:disable-next-line:no-floating-promises
-        IModelApp.notifications.openMessageBox(MessageBoxType.Ok, "This is a box opened using IModelApp.notifications.openMessageBox and using promise/then to process result.", MessageBoxIconType.Information)
+        IModelApp.notifications.openMessageBox(MessageBoxType.Ok,
+          "This is a box opened using IModelApp.notifications.openMessageBox and using promise/then to process result." + this._longMessage,
+          MessageBoxIconType.Information)
           .then((value: MessageBoxValue) => { window.alert("Closing message box ... value is " + value); });
       },
     });
@@ -379,7 +401,9 @@ export class AppTools {
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.openMessageBox",
       execute: async () => {
-        const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo, "This is a box opened using IModelApp.notifications.openMessageBox and using async/await to process result.", MessageBoxIconType.Warning);
+        const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
+          "This is a box opened using IModelApp.notifications.openMessageBox and using async/await to process result." + this._longMessage,
+          MessageBoxIconType.Warning);
         window.alert("Closing message box ... value is " + value);
       },
     });

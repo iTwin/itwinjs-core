@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Common */
 
-/** Enumeration of time formats. */
-export const enum TimeFormat {
+/** Enumeration of time formats.
+ * @public
+ */
+export enum TimeFormat {
   None = 0,
   Short,
   Long,

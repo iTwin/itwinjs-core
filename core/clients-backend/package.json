@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients-backend",
-  "version": "0.190.0",
+  "version": "0.191.0",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/imodeljs-clients-backend.js",
   "browser": {
@@ -9,7 +9,7 @@
   "typings": "lib/imodeljs-clients-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=10.14.0 <11.0"
+    "node": ">=10.11.0 <11.0"
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:typedefs && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
@@ -38,24 +38,25 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.190.0",
-    "@bentley/geometry-core": "0.190.0",
-    "@bentley/imodeljs-clients": "0.190.0"
+    "@bentley/bentleyjs-core": "^0.191.0",
+    "@bentley/geometry-core": "^0.191.0",
+    "@bentley/imodeljs-clients": "^0.191.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.190.0",
-    "@bentley/build-tools": "0.190.0",
-    "@bentley/config-loader": "0.190.0",
-    "@bentley/geometry-core": "0.190.0",
-    "@bentley/imodeljs-clients": "0.190.0",
+    "@bentley/bentleyjs-core": "0.191.0",
+    "@bentley/build-tools": "0.191.0",
+    "@bentley/config-loader": "0.191.0",
+    "@bentley/geometry-core": "0.191.0",
+    "@bentley/imodeljs-clients": "0.191.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",
-    "@types/node": "10.12.18",
+    "@types/node": "10.14.1",
+    "@types/semver": "^5.5.0",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
     "@types/js-base64": "^2.3.1",
@@ -63,13 +64,14 @@
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "nock": "^9.2.3",
-    "nyc": "^13.0.1",
+    "nyc": "^14.0.0",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
     "source-map-support": "^0.5.6",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
-    "typedoc": "^0.11.1",
+    "tslint-etc": "^1.5.2",
+    "typedoc": "^0.14.2",
     "typescript": "~3.2.2"
   },
   "dependencies": {
@@ -80,6 +82,7 @@
     "fs-extra": "^6.0.1",
     "js-base64": "^2.4.5",
     "fs-write-stream-atomic": "^1.0.10",
+    "semver": "^5.5.0",
     "jsonwebtoken": "^8.5.0"
   },
   "nyc": {

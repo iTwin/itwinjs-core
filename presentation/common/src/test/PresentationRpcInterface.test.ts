@@ -6,8 +6,8 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "./_helpers/Mocks";
 import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "./_helpers/random";
-import { using } from "@bentley/bentleyjs-core";
-import { IModelToken, RpcRegistry, RpcOperation, RpcRequest, RpcSerializedValue, EntityProps } from "@bentley/imodeljs-common";
+import { using, Id64String } from "@bentley/bentleyjs-core";
+import { IModelToken, RpcRegistry, RpcOperation, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
 import {
   PresentationRpcInterface,
   KeySet, Paged,
@@ -16,6 +16,7 @@ import {
   RpcRequestOptions, HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   ClientStateSyncRequestOptions,
   SelectionScopeRpcRequestOptions,
+  LabelRpcRequestOptions,
 } from "../PresentationRpcInterface";
 
 describe("PresentationRpcInterface", () => {
@@ -185,6 +186,24 @@ describe("PresentationRpcInterface", () => {
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys, fieldName, maximumValueCount)), moq.Times.once());
     });
 
+    it("forwards getDisplayLabel call", async () => {
+      const key = createRandomECInstanceKey();
+      const options: LabelRpcRequestOptions = {
+        ...defaultRpcOptions,
+      };
+      await rpcInterface.getDisplayLabel(token, options, key);
+      mock.verify(async (x) => x(toArguments(token, options, key)), moq.Times.once());
+    });
+
+    it("forwards getDisplayLabels call", async () => {
+      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const options: LabelRpcRequestOptions = {
+        ...defaultRpcOptions,
+      };
+      await rpcInterface.getDisplayLabels(token, options, keys);
+      mock.verify(async (x) => x(toArguments(token, options, keys)), moq.Times.once());
+    });
+
     it("forwards getSelectionScopes call", async () => {
       const options: SelectionScopeRpcRequestOptions = {
         ...defaultRpcOptions,
@@ -197,10 +216,10 @@ describe("PresentationRpcInterface", () => {
       const options: SelectionScopeRpcRequestOptions = {
         ...defaultRpcOptions,
       };
-      const keys = new Array<EntityProps>();
+      const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
-      await rpcInterface.computeSelection(token, options, keys, scopeId);
-      mock.verify(async (x) => x(toArguments(token, options, keys, scopeId)), moq.Times.once());
+      await rpcInterface.computeSelection(token, options, ids, scopeId);
+      mock.verify(async (x) => x(toArguments(token, options, ids, scopeId)), moq.Times.once());
     });
 
     it("forwards syncClientState call", async () => {

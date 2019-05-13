@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Config } from "@bentley/imodeljs-clients";
 import {
@@ -37,14 +37,14 @@ Logger.setLevelDefault(LogLevel.Warning);
     const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
     // __PUBLISH_EXTRACT_END__
     for (const def of rpcConfiguration.interfaces())
-      RpcOperation.forEach(def, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
+      RpcOperation.forEach(def, (operation) => operation.policy.token = (request) => (request.findParameterOfType(IModelToken) || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
   }
 })();
 
-// subclass of IModelApp needed to use IModelJs API
-export class SampleApp extends IModelApp {
+export class SampleApp {
   private static _ready: Promise<void>;
-  protected static onStartup() {
+  public static startup() {
+    IModelApp.startup();
     const readyPromises = new Array<Promise<void>>();
 
     const localizationNamespace = IModelApp.i18n.registerNamespace("Sample");
@@ -63,6 +63,10 @@ export class SampleApp extends IModelApp {
       // specify locale for localizing presentation data
       activeLocale: IModelApp.i18n.languageList()[0],
     });
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ Presentation.Frontend.SetSelectionScope
+    Presentation.selection.scopes.activeScope = "top-assembly";
     // __PUBLISH_EXTRACT_END__
 
     readyPromises.push(UiCore.initialize(IModelApp.i18n));

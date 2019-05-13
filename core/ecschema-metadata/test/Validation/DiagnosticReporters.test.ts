@@ -9,10 +9,18 @@ import { assert, expect } from "chai";
 import sinon = require("sinon");
 
 import { PrimitiveType } from "../../src/ECObjects";
-import { EntityClass, PrimitiveProperty, Schema, SchemaContext } from "../../src/ecschema-metadata";
+import { EntityClass, PrimitiveProperty, Schema, SchemaContext, FormatDiagnosticReporter } from "../../src/ecschema-metadata";
 import { ECClass, MutableClass } from "../../src/Metadata/Class";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../src/Validation/Diagnostic";
 import { LoggingDiagnosticReporter } from "../../src/Validation/LoggingDiagnosticReporter";
+
+class TestDiagnosticReporter extends FormatDiagnosticReporter {
+  constructor(suppressions?: Map<string, string[]>) {
+    super(suppressions);
+  }
+  public reportDiagnostic(_diagnostic: AnyDiagnostic, _messageText: string) {
+  }
+}
 
 describe("DiagnosticReporters tests", () => {
   let testSchema: Schema;
@@ -24,7 +32,7 @@ describe("DiagnosticReporters tests", () => {
     testSchema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
     testSchemaItem = new EntityClass(testSchema, "TestEntity");
     testProperty = await (testSchemaItem as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-    const diagnosticClass = createPropertyDiagnosticClass("TestRuleSet:100", "Test Message {0} {1}", category);
+    const diagnosticClass = createPropertyDiagnosticClass("TestRuleSet-100", "Test Message {0} {1}", category);
     const diagnostic = new diagnosticClass(testProperty, messageArgs);
     // These were added to a test collection because the generator, createAsyncIterableDiagnostic,
     // can only be consumed once, hence the need for the collection, which allows the tests access
@@ -41,6 +49,52 @@ describe("DiagnosticReporters tests", () => {
     sinon.restore();
   });
 
+  describe("FormatDiagnosticReporter tests", () => {
+    it("suppressions specified, suppressions set correctly", async () => {
+      const suppressions = new Map<string, string[]>();
+      suppressions.set("schema1", ["code1"]);
+      suppressions.set("schema1", ["code2"]);
+      const reporter = new TestDiagnosticReporter(suppressions);
+
+      expect(reporter.suppressions).equals(suppressions);
+    });
+
+    it("no suppressions, should call reportDiagnostic correctly", async () => {
+      const reporter = new TestDiagnosticReporter();
+      const reportDiagnostic = sinon.stub(reporter, "reportDiagnostic");
+      const diag = await createTestDiagnostic(DiagnosticCategory.Error);
+
+      await reporter.report(diag);
+
+      expect(reportDiagnostic.calledOnceWith(diag, "Test Message Param1 Param2")).to.be.true;
+    });
+
+    it("rules code not in suppressions, should call reportDiagnostic correctly", async () => {
+      const diag = await createTestDiagnostic(DiagnosticCategory.Error);
+      const suppressions = new Map<string, string[]>();
+      suppressions.set(testSchema.fullName, ["randomCode"]);
+      const reporter = new TestDiagnosticReporter(suppressions);
+      const reportDiagnostic = sinon.stub(reporter, "reportDiagnostic");
+
+      await reporter.report(diag);
+
+      expect(reportDiagnostic.calledOnceWith(diag, "Test Message Param1 Param2")).to.be.true;
+    });
+
+    it("diagnostic suppressed, should not call reportDiagnostic", async () => {
+      const diag = await createTestDiagnostic(DiagnosticCategory.Error);
+      const suppressions = new Map<string, string[]>();
+      suppressions.set(testSchema.fullName, [diag.code]);
+      const reporter = new TestDiagnosticReporter(suppressions);
+      const reportDiagnostic = sinon.stub(reporter, "reportDiagnostic");
+
+      await reporter.report(diag);
+
+      expect(reportDiagnostic.notCalled).to.be.true;
+    });
+
+  });
+
   describe("LoggingDiagnosticReporter tests", () => {
     it("should log expected error", async () => {
       const logMessage = sinon.stub(Logger, "logError");
@@ -54,7 +108,7 @@ describe("DiagnosticReporters tests", () => {
       assert.isDefined(metaDataFunc);
       const metaData = metaDataFunc!();
       assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet:100");
+      expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Error);
       expect(metaData.ecDefinition).to.equal(testProperty);
       expect(metaData.messageText).to.be.undefined;
@@ -69,7 +123,7 @@ describe("DiagnosticReporters tests", () => {
       const translate = i18nMock.expects("translate");
       translate.returns("Translated text {0} {1}");
       const logMessage = sinon.stub(Logger, "logError");
-      const reporter = new LoggingDiagnosticReporter(i18n);
+      const reporter = new LoggingDiagnosticReporter(undefined, i18n);
       const diag = await createTestDiagnostic(DiagnosticCategory.Error);
 
       await reporter.report(diag);
@@ -85,7 +139,7 @@ describe("DiagnosticReporters tests", () => {
       const translate = i18nMock.expects("translate");
       translate.returns("Translated text");
       const logMessage = sinon.stub(Logger, "logError");
-      const reporter = new LoggingDiagnosticReporter(i18n);
+      const reporter = new LoggingDiagnosticReporter(undefined, i18n);
       const diag = await createTestDiagnostic(DiagnosticCategory.Error, []);
 
       await reporter.report(diag);
@@ -105,7 +159,7 @@ describe("DiagnosticReporters tests", () => {
       assert.isDefined(metaDataFunc);
       const metaData = metaDataFunc!();
       assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet:100");
+      expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Warning);
       expect(metaData.ecDefinition).to.equal(testProperty);
       expect(metaData.messageText).to.be.undefined;
@@ -124,7 +178,7 @@ describe("DiagnosticReporters tests", () => {
       assert.isDefined(metaDataFunc);
       const metaData = metaDataFunc!();
       assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet:100");
+      expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Message);
       expect(metaData.ecDefinition).to.equal(testProperty);
       expect(metaData.messageText).to.be.undefined;
@@ -143,7 +197,7 @@ describe("DiagnosticReporters tests", () => {
       assert.isDefined(metaDataFunc);
       const metaData = metaDataFunc!();
       assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet:100");
+      expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Suggestion);
       expect(metaData.ecDefinition).to.equal(testProperty);
       expect(metaData.messageText).to.be.undefined;

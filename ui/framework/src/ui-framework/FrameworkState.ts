@@ -4,21 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module State */
 
-import { OverallContentState, OverallContentReducer } from "./overallcontent/state";
 import { ConfigurableUiState, ConfigurableUiReducer } from "./configurableui/state";
-import { AppState, AppStateReducer } from "./AppState";
+import { SessionState, SessionStateReducer } from "./SessionState";
 import { combineReducers } from "./utils/redux-ts";
 
-/** Interface combining all the Framework state interfaces. */
+/** Interface combining all the Framework state interfaces.
+ * @beta
+ */
 export interface FrameworkState {
-  overallContentState: OverallContentState;
   configurableUiState: ConfigurableUiState;
-  appState: AppState;
+  sessionState: SessionState;
 }
 
-/** Framework reducer that combines the [[OverallContentReducer]], [[ConfigurableUiReducer]] and [[AppStateReducer]]. */
+/** Framework reducer that combines the [[ConfigurableUiReducer]] and [[SessionStateReducer]].
+ * @beta
+ */
 export const FrameworkReducer = combineReducers({ // tslint:disable-line:variable-name
-  overallContentState: OverallContentReducer,
   configurableUiState: ConfigurableUiReducer,
-  appState: AppStateReducer,
+  sessionState: SessionStateReducer,
 });

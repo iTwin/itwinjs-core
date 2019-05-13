@@ -2,7 +2,7 @@
 
 exports[`<HistoryItem /> renders active 1`] = `
 <div
-  className="nz-toolbar-item-expandable-history-item nz-is-active"
+  className="nz-toolbar-item-expandable-history-item nz-active"
   onClick={[Function]}
 />
 `;
@@ -10,6 +10,13 @@ exports[`<HistoryItem /> renders active 1`] = `
 exports[`<HistoryItem /> renders correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-history-item"
+  onClick={[Function]}
+/>
+`;
+
+exports[`<HistoryItem /> renders disabled 1`] = `
+<div
+  className="nz-toolbar-item-expandable-history-item nz-disabled"
   onClick={[Function]}
 />
 `;

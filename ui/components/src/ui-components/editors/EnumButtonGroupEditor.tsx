@@ -14,23 +14,27 @@ import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManag
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumButtonGroupEditor.scss";
 
+/** @internal */
 interface EnumEditorState {
   selectValue: string | number;
   valueIsNumber: boolean;
 }
 
-/** EnumButtonGroupEditor React component that is a property editor with select input  */
+/** EnumButtonGroupEditor React component that is a property editor with select input
+ * @beta
+ */
 export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumEditorState> implements TypeEditor {
   private _isMounted = false;
   private _enumIcons?: IconDefinition[];
   private _btnRefs = new Map<string | number, HTMLButtonElement>();
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<EnumEditorState> = {
     selectValue: "",
     valueIsNumber: false,
   };
 
+  /** @internal */
   constructor(props: PropertyEditorProps) {
     super(props);
 
@@ -94,15 +98,17 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
       button.focus();
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps, _prevState: EnumEditorState) {
     // if the props have changed then we need to update the state
     const prevRecord = prevProps.propertyRecord;
@@ -198,6 +204,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     );
   }
 
+  /** @internal */
   public render() {
     const { propertyRecord } = this.props;
     let choices: EnumerationChoice[] | undefined;
@@ -207,13 +214,15 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
       choices = propertyRecord.property.enum.choices;
 
     return (
-      <div className="components-enumbuttongroup-editor">
+      <div className={classnames("components-enumbuttongroup-editor", this.props.className)} style={this.props.style}>
         {choices && choices.map((choice: EnumerationChoice, index: number) => this.getButton(choice, index))}
       </div>);
   }
 }
 
-/** EnumPropertyButtonGroupEditor React component that uses the [[EnumButtonGroupEditor]] property editor. */
+/** EnumPropertyButtonGroupEditor React component that uses the [[EnumButtonGroupEditor]] property editor.
+ * @beta
+ */
 export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {
 
   public get reactElement(): React.ReactNode {

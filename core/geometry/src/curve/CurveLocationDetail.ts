@@ -9,6 +9,7 @@ import { CurvePrimitive } from "./CurvePrimitive";
 import { Geometry } from "../Geometry";
 /**
  * An enumeration of special conditions being described by a CurveLocationDetail.
+ * @public
  */
 export enum CurveIntervalRole {
   /** This point is an isolated point NOT at a primary vertex. */
@@ -24,6 +25,7 @@ export enum CurveIntervalRole {
 }
 /**
  * Return code for CurvePrimitive method `moveSignedDistanceFromFraction`
+ * @public
  */
 export enum CurveSearchStatus {
   /** unimplemented or zero length curve  */
@@ -49,13 +51,18 @@ function optionalVectorUpdate(source: Vector3d | undefined, result: Vector3d | u
 }
 /**
  * CurveLocationDetail carries point and paramter data about a point evaluated on a curve.
+ * * These are returned by a variety of queries.
+ * * Particular contents can vary among the queries.
+ * @public
  */
 export class CurveLocationDetail {
   /** The curve being evaluated */
   public curve?: CurvePrimitive;
+  /** optional ray */
+  public ray?: Ray3d;
   /** The fractional position along the curve */
   public fraction: number;
-  /** Deail condition of the role this point has in some context */
+  /** Detail condition of the role this point has in some context */
   public intervalRole?: CurveIntervalRole;
   /** The point on the curve */
   public point: Point3d;
@@ -171,6 +178,16 @@ export class CurveLocationDetail {
     result.curveSearchStatus = undefined;
     return result;
   }
+  /**
+   * Create a new detail with only ray, fraction, and point.
+   */
+  public static createRayFractionPoint(ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail {
+    result = result ? result : new CurveLocationDetail();
+    result.fraction = fraction;
+    result.ray = ray;
+    result.point.setFromPoint3d(point);
+    return result;
+  }
 
   /** create with CurvePrimitive pointer, fraction, and point coordinates
    */
@@ -276,10 +293,26 @@ export class CurveLocationDetail {
   }
 
 }
-/** A pair of CurveLocationDetail. */
+/** Enumeration of configurations for intersections and min/max distance-between-curve
+ * @public
+ */
+export enum CurveCurveApproachType {
+  /** Intersection at a single point */
+  Intersection = 0,
+  /** Distinct points on the two curves, with each curve's tangent perpendicular to the chord between the points */
+  PerpendicularChord = 1,
+  /** Completely coincident geometry */
+  CoincidentGeometry = 2,
+  /** Completely parallel geometry. */
+  ParallelGeometry = 3,
+}
+/** A pair of CurveLocationDetail.
+ * @public
+ */
 export class CurveLocationDetailPair {
   public detailA: CurveLocationDetail;
   public detailB: CurveLocationDetail;
+  public approachType?: CurveCurveApproachType;
 
   public constructor() {
     this.detailA = new CurveLocationDetail();
@@ -287,7 +320,7 @@ export class CurveLocationDetailPair {
   }
 
   /** Create a curve detail pair using references to two CurveLocationDetails */
-  public static createDetailRef(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair {
+  public static createCapture(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair {
     result = result ? result : new CurveLocationDetailPair();
     result.detailA = detailA;
     result.detailB = detailB;
@@ -299,6 +332,7 @@ export class CurveLocationDetailPair {
     result = result ? result : new CurveLocationDetailPair();
     result.detailA = this.detailA.clone();
     result.detailB = this.detailB.clone();
+    result.approachType = this.approachType;
     return result;
   }
 }

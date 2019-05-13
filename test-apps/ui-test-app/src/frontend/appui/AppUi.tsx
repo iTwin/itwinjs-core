@@ -5,17 +5,17 @@
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
 import {
-  ConfigurableUiManager, FrontstageManager, WidgetState,
-  ContentGroupProps, ViewClass, TaskPropsList, WorkflowPropsList, ContentLayoutProps,
-  KeyboardShortcutProps, FunctionKey, CommandItemDef, KeyboardShortcutManager,
+  ConfigurableUiManager, FrontstageManager, WidgetState, ContentGroupProps,
+  TaskPropsList, WorkflowPropsList, ContentLayoutProps, UiFramework,
+  KeyboardShortcutProps, FunctionKey, CommandItemDef, KeyboardShortcutManager, WorkflowProps,
 } from "@bentley/ui-framework";
-import { StandardViewId } from "@bentley/imodeljs-frontend";
 
 /** Include application registered Controls in Webpack
  */
 import "./contentviews/CubeContent";
 import "./contentviews/TableExampleContent";
 import "./contentviews/TreeExampleContent";
+import "./contentviews/ScheduleAnimationViewport";
 import "./widgets/BreadcrumbDemoWidget";
 import "./widgets/TreeDemoWidget";
 import "./widgets/TableDemoWidget";
@@ -32,7 +32,11 @@ import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
+import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
+import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
+import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
+import { ScheduleAnimationFrontstage} from "./frontstages/ScheduleAnimationFrontstage";
 import { AppTools } from "../tools/ToolSpecifications";
 
 /** Example Ui Configuration for an iModelJS App
@@ -57,6 +61,10 @@ export class AppUi {
     ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage3());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage4());
+    ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
+    ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
+    ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
+    ConfigurableUiManager.addFrontstageProvider(new ScheduleAnimationFrontstage());
   }
 
   public static command1 = () => {
@@ -87,11 +95,6 @@ export class AppUi {
       contents: [
         {
           classId: IModelViewportControl,
-          backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
-          defaultViewSpec: {
-            viewDefinitionClass: ViewClass.Drawing,
-            viewRotation: StandardViewId.Top,
-          },
         },
       ],
     };
@@ -101,19 +104,9 @@ export class AppUi {
       contents: [
         {
           classId: IModelViewportControl,
-          backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
-          defaultViewSpec: {
-            viewDefinitionClass: ViewClass.Drawing,
-            viewRotation: StandardViewId.Top,
-          },
         },
         {
           classId: IModelViewportControl,
-          backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
-          defaultViewSpec: {
-            viewDefinitionClass: ViewClass.Sheet,
-            viewRotation: StandardViewId.Top,
-          },
         },
       ],
     };
@@ -123,30 +116,15 @@ export class AppUi {
       contents: [
         {
           classId: IModelViewportControl,
-          backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
-          defaultViewSpec: {
-            viewDefinitionClass: ViewClass.Camera,
-            viewRotation: StandardViewId.Iso,
-          },
         },
         {
           classId: IModelViewportControl,
-          backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
-          defaultViewSpec: {
-            viewDefinitionClass: ViewClass.Orthographic,
-            viewRotation: StandardViewId.Top,
-          },
         },
         {
           classId: "TablePane",
         },
         {
           classId: IModelViewportControl,
-          backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
-          defaultViewSpec: {
-            viewDefinitionClass: ViewClass.Orthographic,
-            viewRotation: StandardViewId.Front,
-          },
         },
       ],
     };
@@ -254,45 +232,34 @@ export class AppUi {
   private static getContentLayouts(): ContentLayoutProps[] {
     const fourQuadrants: ContentLayoutProps = {
       id: "FourQuadrants",
-      descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
-      priority: 1000,
       horizontalSplit: {
-        id: "FourQuadrants.MainHorizontal",
         percentage: 0.50,
-        top: { verticalSplit: { id: "FourQuadrants.TopVert", percentage: 0.50, left: 0, right: 1 } },
-        bottom: { verticalSplit: { id: "FourQuadrants.BottomVert", percentage: 0.50, left: 2, right: 3 } },
+        top: { verticalSplit: { percentage: 0.50, left: 0, right: 1 } },
+        bottom: { verticalSplit: { percentage: 0.50, left: 2, right: 3 } },
       },
     };
 
     const twoHalvesVertical: ContentLayoutProps = {
       id: "TwoHalvesVertical",
-      descriptionKey: "SampleApp:ContentLayoutDef.TwoHalvesVertical",
-      priority: 60,
-      verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
+      verticalSplit: { percentage: 0.50, left: 0, right: 1 },
     };
 
     const twoHalvesHorizontal: ContentLayoutProps = {
       id: "TwoHalvesHorizontal",
-      descriptionKey: "SampleApp:ContentLayoutDef.TwoHalvesHorizontal",
-      priority: 50,
-      horizontalSplit: { id: "TwoHalvesHorizontal.HorizontalSplit", percentage: 0.50, top: 0, bottom: 1 },
+      horizontalSplit: { percentage: 0.50, top: 0, bottom: 1 },
     };
 
     const singleContent: ContentLayoutProps = {
       id: "SingleContent",
-      descriptionKey: "SampleApp:ContentLayoutDef.SingleContent",
-      priority: 100,
     };
 
     const threeRightStacked: ContentLayoutProps = { // Three Views, one on the left, two stacked on the right.
       id: "ThreeRightStacked",
-      descriptionKey: "SampleApp:ContentLayoutDef.ThreeRightStacked",
-      priority: 85,
       verticalSplit: {
         id: "ThreeRightStacked.MainVertical",
         percentage: 0.50,
         left: 0,
-        right: { horizontalSplit: { id: "ThreeRightStacked.Right", percentage: 0.50, top: 1, bottom: 2 } },
+        right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2 } },
       },
     };
 
@@ -322,7 +289,7 @@ export class AppUi {
         },
         {
           id: "Task2",
-          primaryStageId: "Test2",
+          primaryStageId: "ViewsFrontstage",
           iconSpec: "icon-placeholder",
           labelKey: "SampleApp:backstage.task2",
         },
@@ -330,6 +297,17 @@ export class AppUi {
     };
 
     ConfigurableUiManager.loadTasks(taskPropsList);
+
+    // Test Workflows
+    const workflowProps: WorkflowProps = {
+      id: "ExampleWorkflow",
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:Test.my-label",
+      defaultTaskId: "task1",
+      tasks: ["Task1", "Task2"],
+    };
+
+    ConfigurableUiManager.loadWorkflow(workflowProps);
 
     // Test Workflows
     const workflowPropsList: WorkflowPropsList = {
@@ -359,6 +337,10 @@ export class AppUi {
       {
         key: "s",
         item: AppTools.verticalPropertyGridOffCommand,
+      },
+      {
+        key: "r",
+        item: AppUi._toggleZonesCommand,
       },
       {
         key: "d",
@@ -398,4 +380,15 @@ export class AppUi {
     });
   }
 
+  private static get _toggleZonesCommand() {
+    return new CommandItemDef({
+      commandId: "toggleZones",
+      labelKey: "SampleApp:buttons.showhideZones",
+      execute: () => {
+        const isVisible = UiFramework.getIsUiVisible();
+        UiFramework.setIsUiVisible(!isVisible);
+        // IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "F11", "Click F11 to restore view!"));
+      },
+    });
+  }
 }

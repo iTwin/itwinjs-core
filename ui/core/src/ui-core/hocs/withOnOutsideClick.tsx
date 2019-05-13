@@ -7,27 +7,32 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-/** Properties for [[withOnOutsideClick]] React higher-order component */
+/** Properties for [[withOnOutsideClick]] React higher-order component
+ * @public
+ */
 export interface WithOnOutsideClickProps {
   /** outside click callback function */
   onOutsideClick?: (event: MouseEvent) => any;
 }
 
-/** withOnOutsideClick is a React higher-order component that adds outside click support. */
+/** withOnOutsideClick is a React higher-order component that adds outside click support.
+ * @public
+ */
 export const withOnOutsideClick = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
   defaultOnOutsideClick?: (event: MouseEvent) => any,
+  useCapture: boolean = true,
 ) => {
-  return class WithOnOutsideClick extends React.Component<ComponentProps & WithOnOutsideClickProps> {
+  return class WithOnOutsideClick extends React.PureComponent<ComponentProps & WithOnOutsideClickProps> {
     public ref: HTMLDivElement | undefined;
 
     public componentDidMount() {
-      document.addEventListener("click", this.handleDocumentClick, true);
+      document.addEventListener("click", this.handleDocumentClick, useCapture);
     }
 
     public componentWillUnmount() {
-      document.removeEventListener("click", this.handleDocumentClick, true);
+      document.removeEventListener("click", this.handleDocumentClick, useCapture);
     }
 
     public handleDocumentClick = (e: MouseEvent) => {
@@ -53,5 +58,3 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
     }
   };
 };
-
-export default withOnOutsideClick;

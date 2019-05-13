@@ -4,22 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "../core/RpcConfiguration";
-import { MobileRpcProtocol, interop } from "./MobileRpcProtocol";
-import { RpcMobilePlatform, RpcEndpoint } from "../core/RpcConstants";
+import { RpcEndpoint, RpcMobilePlatform } from "../core/RpcConstants";
+import { interop, MobileRpcProtocol } from "./MobileRpcProtocol";
 
-/** Holds configuration for the RpcInterfaces used by the application. */
+/** Holds configuration for the RpcInterfaces used by the application.
+ * @beta
+ */
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
   public abstract protocol: MobileRpcProtocol;
-  private static getMobilePlaform(): RpcMobilePlatform {
+  private static getMobilePlatform(): RpcMobilePlatform {
     if (typeof window === "undefined") {
       return RpcMobilePlatform.Unknown;
     }
 
     const win: any = window;
     const userAgent = win.navigator.userAgent || win.navigator.vendor || win.opera;
-    if (/windows phone/i.test(userAgent)) {
-      return RpcMobilePlatform.Window;
-    }
 
     if (/android/i.test(userAgent)) {
       return RpcMobilePlatform.Android;
@@ -33,7 +32,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   }
 
   /** Return type of mobile platform using browser userAgent */
-  public static readonly platform: RpcMobilePlatform = MobileRpcConfiguration.getMobilePlaform();
+  public static readonly platform: RpcMobilePlatform = MobileRpcConfiguration.getMobilePlatform();
 
   /** Check if running backend running on mobile */
   public static get isMobileBackend() { return interop !== null; }
@@ -45,7 +44,9 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   public static get isIOSFrontend() { return MobileRpcConfiguration.isMobileFrontend && (window as any).webkit && (window as any).webkit.messageHandlers; }
 }
 
-/** Coordinates usage of RPC interfaces for an Mobile-based application. */
+/** Coordinates usage of RPC interfaces for an Mobile-based application.
+ * @beta
+ */
 export class MobileRpcManager {
   private static performInitialization(interfaces: RpcInterfaceDefinition[], endPoint: RpcEndpoint): MobileRpcConfiguration {
     const config = class extends MobileRpcConfiguration {
@@ -70,5 +71,5 @@ export class MobileRpcManager {
   /** Initializes MobileRpcManager for the backend of an application. */
   public static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration {
     return MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Backend);
-    }
+  }
 }

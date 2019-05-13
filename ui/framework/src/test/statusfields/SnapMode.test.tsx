@@ -6,9 +6,11 @@ import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
 import { Provider } from "react-redux";
+import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
 import { SnapMode } from "@bentley/imodeljs-frontend";
+import { FooterPopup } from "@bentley/ui-ninezone";
 
 import {
   SnapModeField,
@@ -16,11 +18,10 @@ import {
   StatusBar,
   WidgetState,
   ConfigurableCreateInfo,
-  IStatusBar,
-  StatusBarFieldId,
   WidgetDef,
   ConfigurableUiControlType,
   UiFramework,
+  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
 
 describe("SnapModeField", () => {
@@ -30,10 +31,10 @@ describe("SnapModeField", () => {
       super(info, options);
     }
 
-    public getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode {
+    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <SnapModeField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
+          <SnapModeField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
         </>
       );
     }
@@ -64,13 +65,13 @@ describe("SnapModeField", () => {
       <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
     </Provider>);
 
-    for (let i = 0; i < 7; i++) {
-      // Simulate a click to open the pop-up dialog
-      wrapper.find("div.nz-footer-snapMode-indicator").simulate("click"); // Opens it
-      wrapper.update();
+    // Simulate a click to open the pop-up dialog
+    wrapper.find(".nz-footer-snapMode-indicator .nz-indicator").simulate("click"); // Opens it
+    wrapper.update();
 
+    for (let i = 0; i < 7; i++) {
       // Simulate selecting a snap mode
-      const snaps = wrapper.find("div.nz-footer-snapMode-snap");
+      const snaps = wrapper.find(".nz-footer-snapMode-snap");
       expect(snaps.length).to.eq(7);
       snaps.at(i).simulate("click");
       wrapper.update();
@@ -80,9 +81,12 @@ describe("SnapModeField", () => {
       expect(snapMode).to.eq(modes[i]);
 
       // the indicator field should contain the selected snap icon.
-      const itemId = "div." + icons[i];
+      const itemId = ".nz-footer-snapMode-snap ." + icons[i];
       expect(wrapper.find(itemId).length).to.eq(1);
     }
+
+    wrapper.find(".nz-footer-snapMode-indicator .nz-indicator").simulate("click"); // Closes popup
+    wrapper.update();
 
     wrapper.unmount();
   });
@@ -98,10 +102,42 @@ describe("SnapModeField", () => {
     </Provider>);
 
     // the indicator field should contain the multi-snap icon.
-    const itemId = "div.icon-snaps-multione";
+    const itemId = ".icon-snaps-multione";
     expect(wrapper.find(itemId).length).to.eq(1);
 
     wrapper.unmount();
+  });
+
+  it("should close on outside click", () => {
+    const wrapper = mount(<Provider store={TestUtils.store}>
+      <StatusBar widgetControl={widgetControl} isInFooterMode />
+    </Provider>);
+    const statusBar = wrapper.find(StatusBar);
+    const footerPopup = wrapper.find(FooterPopup);
+
+    const statusBarInstance = statusBar.instance() as StatusBar;
+    statusBarInstance.setState(() => ({ openWidget: "test-widget" }));
+
+    const outsideClick = new MouseEvent("");
+    sinon.stub(outsideClick, "target").get(() => document.createElement("div"));
+    footerPopup.prop("onOutsideClick")!(outsideClick);
+
+    expect(statusBarInstance.state.openWidget).null;
+  });
+
+  it("should not close on outside click", () => {
+    const wrapper = mount<Provider>(<Provider store={TestUtils.store}>
+      <StatusBar widgetControl={widgetControl} isInFooterMode />
+    </Provider>);
+    const statusBar = wrapper.find(StatusBar);
+    const footerPopup = wrapper.find(FooterPopup);
+
+    const statusBarInstance = statusBar.instance() as StatusBar;
+    statusBarInstance.setState(() => ({ openWidget: "test-widget" }));
+    const outsideClick = new MouseEvent("");
+    footerPopup.prop("onOutsideClick")!(outsideClick);
+
+    expect(statusBarInstance.state.openWidget).eq("test-widget");
   });
 
 });

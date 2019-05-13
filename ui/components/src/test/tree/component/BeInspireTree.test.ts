@@ -30,6 +30,7 @@ interface RenderedNode {
   isChecked?: boolean;
   isCheckboxVisible?: boolean;
   isCheckboxDisabled?: boolean;
+  checkboxTooltip?: string;
 }
 
 describe("BeInspireTree", () => {
@@ -115,6 +116,8 @@ describe("BeInspireTree", () => {
           renderNode.isCheckboxVisible = true;
         if (node.itree!.state!.checkboxDisabled)
           renderNode.isCheckboxDisabled = true;
+        if (node.itree!.checkboxTooltip)
+          renderNode.checkboxTooltip = node.itree!.checkboxTooltip;
         renderList.push(renderNode);
       } else {
         renderList.push({
@@ -494,6 +497,19 @@ describe("BeInspireTree", () => {
             expect(renderedTree).to.matchSnapshot();
           });
 
+          it("doesn't mark selected nodes as dirty if they were selected", () => {
+            tree.removeAllListeners();
+
+            tree.updateTreeSelection(["0"]);
+            expect(tree.node("0")!.selected()).to.be.true;
+            expect(tree.node("0")!.isDirty()).to.be.true;
+            tree.node("0")!.setDirty(false);
+
+            tree.updateTreeSelection(["0"]);
+            expect(tree.node("0")!.selected()).to.be.true;
+            expect(tree.node("0")!.isDirty()).to.be.false;
+          });
+
         });
 
         it("does nothing when `nodesToSelect` is undefined", () => {
@@ -723,10 +739,24 @@ describe("BeInspireTree", () => {
             expect(renderedTree).to.matchSnapshot();
           });
 
-          it("sets all node statuses to checked", async () => {
+          it("sets all node statuses to checked / unchecked", async () => {
             const ids = flatten(hierarchy).map((n) => n.id);
+
             await tree.updateTreeCheckboxes(() => cb.createResult({ state: CheckBoxState.On }));
             tree.nodes(ids).forEach((n) => expect(n.checked()).to.be.true);
+            expect(renderer).to.be.calledOnce;
+            expect(renderedTree).to.matchSnapshot();
+
+            await tree.updateTreeCheckboxes(() => cb.createResult({ state: CheckBoxState.Off }));
+            tree.nodes(ids).forEach((n) => expect(n.checked()).to.be.false);
+            expect(renderer).to.be.calledTwice;
+            expect(renderedTree).to.matchSnapshot();
+          });
+
+          it("sets node checkbox tooltips", async () => {
+            const ids = flatten(hierarchy).map((n) => n.id);
+            await tree.updateTreeCheckboxes(() => cb.createResult({ tooltip: "test" }));
+            tree.nodes(ids).forEach((n) => expect(n.itree!.checkboxTooltip).to.eq("test"));
             expect(renderer).to.be.calledOnce;
             expect(renderedTree).to.matchSnapshot();
           });

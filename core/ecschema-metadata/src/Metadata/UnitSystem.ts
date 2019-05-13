@@ -7,6 +7,9 @@ import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { SchemaItemType } from "./../ECObjects";
 
+/**
+ * @beta
+ */
 export class UnitSystem extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.UnitSystem; // tslint:disable-line
 

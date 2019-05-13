@@ -15,6 +15,7 @@ import * as path from "path";
 /**
  * A SchemaLocator implementation for locationg JSON Schema files
  * from the file system using configurable search paths.
+ * @alpha Needs further testing and may be moved to a separate package.
  */
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
 

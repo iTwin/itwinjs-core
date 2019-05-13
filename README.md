@@ -55,9 +55,12 @@ Each package will have its own **node_modules** directory which will contain sym
 
 ### Linux
 
-You must install the following on a Linux computer before attempting to run imodeljs-backend:
+The imodeljs-backend requires:
 
-* libc++abi1
+* GLIBC 2.24 (or newer)
+* GLIBCXX 3.4.22 (or newer)
+
+The imodeljs-backend is built and primarily tested on Debian 9 (stretch). Most current distributions also deliver these pre-reqs, or newer, such as Fedora 29, Slackware 14.2, OpenSUSE 15, and Ubuntu 18.04.
 
 ## Build Instructions
 

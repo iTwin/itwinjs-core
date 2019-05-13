@@ -6,14 +6,19 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+import { CommonProps } from "../utils/Props";
 
-/** Sizes for [[Button]] component */
+/** Sizes for [[Button]] component
+ * @public
+ */
 export enum ButtonSize {
   Default = "",
   Large = "large",
 }
 
-/** Types for [[Button]] component */
+/** Types for [[Button]] component
+ * @public
+ */
 export enum ButtonType {
   Primary = "primary",
   Blue = "blue",
@@ -21,44 +26,49 @@ export enum ButtonType {
   Hollow = "hollow",
 }
 
-/** Properties for [[Button]] component */
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+/** Properties for [[Button]] component
+ * @public
+ */
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** Allow ID to be passed to Button */
   id?: string;
   /** Default and large sizes */
   size?: ButtonSize;
   /** 4 styles to tweak the content of the button */
-  type?: ButtonType;
+  buttonType?: ButtonType;
   /** A function to be run when the element is clicked */
   onClick?: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void);
 }
 
-/** Generic button component  */
-export class Button extends React.Component<ButtonProps> {
-  public render() {
-    let className = "";
+/** Generic button component
+ * @public
+ */
 
-    switch (this.props.type) {
+export class Button extends React.PureComponent<ButtonProps> {
+  public render() {
+    const { buttonType, size, className, style, onClick, ...props } = this.props;
+
+    let typeClassName = "";
+
+    switch (buttonType) {
       case ButtonType.Blue:
-        className = "uicore-buttons-blue";
+        typeClassName = "uicore-buttons-blue";
         break;
       case ButtonType.Disabled:
-        className = "uicore-buttons-disabled";
+        typeClassName = "uicore-buttons-disabled";
         break;
       case ButtonType.Hollow:
-        className = "uicore-buttons-hollow";
+        typeClassName = "uicore-buttons-hollow";
         break;
       case ButtonType.Primary:
       default:
-        className = "uicore-buttons-blue";
+        typeClassName = "uicore-buttons-blue";
         break;
     }
 
-    if (this.props.size === ButtonSize.Large)
-      className += "-large";
+    if (size === ButtonSize.Large)
+      typeClassName += "-large";
 
-    return <button {...this.props} className={classnames(className, this.props.className)} onClick={this.props.onClick} />;
+    return <button {...props} className={classnames(typeClassName, className)} style={style} onClick={onClick} />;
   }
 }
-
-export default Button;

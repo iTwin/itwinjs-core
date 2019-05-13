@@ -4,7 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Content */
 
-import * as ec from "../EC";
+import {
+  ClassInfo, ClassInfoJSON, classInfoFromJSON,
+  RelationshipPathInfo, RelationshipPathInfoJSON, relatedClassInfoFromJSON,
+} from "../EC";
+// import * as ec from "../EC";
 import { Field, FieldJSON } from "./Fields";
 
 /**
@@ -12,13 +16,13 @@ import { Field, FieldJSON } from "./Fields";
  */
 export interface SelectClassInfo {
   /** Information about the ECClass */
-  selectClassInfo: ec.ClassInfo;
+  selectClassInfo: ClassInfo;
   /** Is the class handled polymorphically */
   isSelectPolymorphic: boolean;
   /** Relationship path to the [Primary class]($docs/learning/content/Terminology#primary-class) */
-  pathToPrimaryClass: ec.RelationshipPathInfo;
+  pathToPrimaryClass: RelationshipPathInfo;
   /** Relationship paths to [Related property]($docs/learning/content/Terminology#related-properties) classes */
-  relatedPropertyPaths: ec.RelationshipPathInfo[];
+  relatedPropertyPaths: RelationshipPathInfo[];
 }
 
 /**
@@ -27,18 +31,18 @@ export interface SelectClassInfo {
  * @hidden
  */
 export interface SelectClassInfoJSON {
-  selectClassInfo: ec.ClassInfoJSON;
+  selectClassInfo: ClassInfoJSON;
   isSelectPolymorphic: boolean;
-  pathToPrimaryClass: ec.RelationshipPathInfoJSON;
-  relatedPropertyPaths: ec.RelationshipPathInfoJSON[];
+  pathToPrimaryClass: RelationshipPathInfoJSON;
+  relatedPropertyPaths: RelationshipPathInfoJSON[];
 }
 
 const selectClassInfoFromJSON = (json: SelectClassInfoJSON): SelectClassInfo => {
   return {
     ...json,
-    selectClassInfo: ec.classInfoFromJSON(json.selectClassInfo),
-    pathToPrimaryClass: json.pathToPrimaryClass.map((p) => ec.relatedClassInfoFromJSON(p)),
-    relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => (rp.map((p) => ec.relatedClassInfoFromJSON(p)))),
+    selectClassInfo: classInfoFromJSON(json.selectClassInfo),
+    pathToPrimaryClass: json.pathToPrimaryClass.map((p) => relatedClassInfoFromJSON(p)),
+    relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => (rp.map((p) => relatedClassInfoFromJSON(p)))),
   };
 };
 
@@ -101,7 +105,10 @@ export interface DescriptorJSON {
   filterExpression?: string;
 }
 
-/** @hidden */
+/**
+ * Descriptor overrides that can be used to customize
+ * content.
+ */
 export interface DescriptorOverrides {
   displayType: string;
   hiddenFieldNames: string[];

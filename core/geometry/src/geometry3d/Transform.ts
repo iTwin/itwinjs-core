@@ -23,6 +23,7 @@ import { Matrix3d } from "./Matrix3d";
  * when describing the transform is NOT the "origin" stored in the transform.
  * Setup methods (e.g createFixedPointAndMatrix, createScaleAboutPoint)
  * take care of determining the appropriate origin coordinates.
+ * @public
  */
 export class Transform implements BeJSONFunctions {
   // static (one per class) vars for temporaries in computation.
@@ -48,6 +49,10 @@ export class Transform implements BeJSONFunctions {
   }
 
   public freeze() { Object.freeze(this); Object.freeze(this._origin); this._matrix.freeze(); }
+  /**
+   * Copy contents from other Transform into this Transform
+   * @param other source transform
+   */
   public setFrom(other: Transform) { this._origin.setFrom(other._origin), this._matrix.setFrom(other._matrix); }
   /** Set this Transform to be an identity. */
   public setIdentity() { this._origin.setZero(); this._matrix.setIdentity(); }
@@ -209,7 +214,7 @@ export class Transform implements BeJSONFunctions {
   /** Create a transform with the specified matrix. Compute an origin (different from the given fixedPoint)
    * so that the fixedPoint maps back to itself.
    */
-  public static createFixedPointAndMatrix(fixedPoint: Point3d, matrix: Matrix3d, result?: Transform): Transform {
+  public static createFixedPointAndMatrix(fixedPoint: XYAndZ, matrix: Matrix3d, result?: Transform): Transform {
     const origin = Matrix3d.xyzMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
     return Transform.createRefs(origin, matrix.clone(), result);
   }
@@ -291,7 +296,7 @@ export class Transform implements BeJSONFunctions {
       Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, point, point);
   }
 
-  /** @returns Return product of the transform's inverse times a point. */
+  /** Return product of the transform's inverse times a point. */
   public multiplyInversePoint3d(point: XYAndZ, result?: Point3d): Point3d | undefined {
     return this._matrix.multiplyInverseXYZAsPoint3d(
       point.x - this._origin.x,
@@ -347,6 +352,13 @@ export class Transform implements BeJSONFunctions {
         source[i]);
     return true;
   }
+  /**
+   * * If destination has more values than source, remove the extras.
+   * * If destination has fewer values, use the constructionFunction to create new ones.
+   * @param source array
+   * @param dest destination array, to  be modified to match source length
+   * @param constructionFunction function to call to create new entries.
+   */
   // modify destination so it has non-null points for the same length as the source.
   // (ASSUME existing elements of dest are non-null, and that parameters are given as either Point2d or Point3d arrays)
   public static matchArrayLengths(source: any[], dest: any[], constructionFunction: () => any): number {
@@ -477,7 +489,8 @@ export class Transform implements BeJSONFunctions {
     return result;
   }
   /**
-   * @returns Return a Transform which is the inverse of this transform. Return undefined if this Transform's matrix is singular.
+   * * Return a Transform which is the inverse of this transform.
+   * * Return undefined if this Transform's matrix is singular.
    */
   public inverse(): Transform | undefined {
     const matrixInverse = this._matrix.inverse();

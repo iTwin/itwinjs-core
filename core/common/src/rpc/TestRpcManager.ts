@@ -18,7 +18,7 @@ import { RpcInterfaceDefinition } from "../RpcInterface";
  * It will not work if one side uses TestRpcManager and the other uses some other protocol (say, cloud).
  * That means that you must actually program the backend to know when it is running in direct test
  * mode and to employ TestRpcManager in that case.
- * @hidden
+ * @internal
  */
 export class TestRpcManager {
   public static initialize(interfaces: RpcInterfaceDefinition[]) {

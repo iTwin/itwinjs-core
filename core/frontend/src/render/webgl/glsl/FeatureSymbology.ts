@@ -14,9 +14,8 @@ import {
   VariablePrecision,
   FragmentShaderComponent,
 } from "../ShaderBuilder";
-import { Hilite } from "@bentley/imodeljs-common";
+import { Hilite, ColorDef } from "@bentley/imodeljs-common";
 import { TextureUnit, OvrFlags } from "../RenderFlags";
-import { FloatRgba } from "../FloatRGBA";
 import { FeatureMode } from "../TechniqueFlags";
 import { addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
 import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
@@ -28,7 +27,11 @@ import { UniformHandle } from "../Handle";
 import { GL } from "../GL";
 import { DrawParams } from "../DrawCommand";
 import { assert } from "@bentley/bentleyjs-core";
+import { MutableFloatRgba } from "../FloatRGBA";
 
+// tslint:disable:no-const-enum
+
+/** @internal */
 export const enum FeatureSymbologyOptions {
   None = 0,
   Weight = 1 << 0,
@@ -42,6 +45,7 @@ export const enum FeatureSymbologyOptions {
   Linear = HasOverrides | Color | Weight | LineCode | Alpha,
 }
 
+/** @internal */
 export function addOvrFlagConstants(builder: ShaderBuilder): void {
   // NB: These are the bit positions of each flag in OvrFlags enum - not the flag values
   builder.addConstant("kOvrBit_Visibility", VariableType.Float, "0.0");
@@ -229,14 +233,17 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   return true;
 }
 
+const scratchHiliteColor: MutableFloatRgba = MutableFloatRgba.fromColorDef(ColorDef.white);
+
+/** @internal */
 export function addHiliteSettings(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_hilite_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_hilite_color", (uniform, params) => {
       const vf = params.target.currentViewFlags;
       const useLighting = params.geometry.wantMixHiliteColorForFlash(vf, params.target);
-      const transparency = useLighting ? 0 : 255;
-      const hiliteColor = FloatRgba.fromColorDef(params.target.hiliteSettings.color, transparency);
-      hiliteColor.bind(uniform);
+      const hiliteColor = params.target.hiliteColor;
+      scratchHiliteColor.setRgbaValues(hiliteColor.red, hiliteColor.green, hiliteColor.blue, useLighting ? 1.0 : 0.0);
+      scratchHiliteColor.bind(uniform);
     });
   });
 
@@ -285,11 +292,13 @@ const computeHiliteOverridesWithWeight = computeHiliteOverrides + `
   value.b * 256.0);
 `;
 
+/** @internal */
 export function addSurfaceHiliter(builder: ProgramBuilder, wantWeight: boolean = false): void {
   addHiliter(builder, wantWeight);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeSurfaceHiliteColor);
 }
 
+/** @internal */
 export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false): void {
   let opts = FeatureSymbologyOptions.HasOverrides;
   if (wantWeight)
@@ -323,6 +332,7 @@ function addSamplers(frag: FragmentShaderBuilder, testFeatureId: boolean) {
   }, VariablePrecision.High);
 }
 
+/** @internal */
 export const readDepthAndOrder = `
 vec2 readDepthAndOrder(vec2 tc) {
   vec4 pdo = TEXTURE(u_pickDepthAndOrder, tc);
@@ -393,6 +403,7 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
   return alwaysDiscard || (!neverDiscard && discardByOrder && withinDepthTolerance && (isSameFeature || ((depthAndOrder.x > kRenderOrder_PlanarSurface) || ((depthAndOrder.x == kRenderOrder_PlanarSurface) && (depthDelta <= 4.0e-5)))));
 `;
 
+/** @internal */
 export const computeFeatureId = `v_feature_id = addUInt32s(u_batch_id, g_featureIndex) / 255.0;`;
 
 function addRenderOrderConstants(builder: ShaderBuilder) {
@@ -409,6 +420,7 @@ function addRenderOrderConstants(builder: ShaderBuilder) {
   builder.addConstant("kRenderOrder_PlanarSilhouette", VariableType.Float, "13.0");
 }
 
+/** @internal */
 export function addRenderOrder(builder: ShaderBuilder) {
   builder.addUniform("u_renderOrder", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_renderOrder", (uniform, params) => {
@@ -469,6 +481,7 @@ function addBatchId(vert: VertexShaderBuilder) {
   }, VariablePrecision.High);
 }
 
+/** @internal */
 export function addFeatureId(builder: ProgramBuilder) {
   const vert = builder.vert;
   vert.addFunction(addUInt32s);
@@ -482,6 +495,7 @@ const isBelowTransparencyThreshold = `
   return g_baseAlpha < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);
 `;
 
+/** @internal */
 export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode) {
   const frag = builder.frag;
   const vert = builder.vert;
@@ -618,6 +632,7 @@ function addApplyFlash(frag: FragmentShaderBuilder) {
   });
 }
 
+/** @internal */
 export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, opts: FeatureSymbologyOptions): void {
   if (!addCommon(builder, feat, opts) || FeatureSymbologyOptions.None === opts)
     return;
@@ -635,20 +650,24 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
   frag.set(FragmentShaderComponent.ApplyFeatureColor, applyFeatureColor);
 }
 
-// If we're running the hilite shader for a uniform feature, it follows that the feature must be hilited.
-// So the hilite shader simply needs to output '1' for every fragment.
+/** If we're running the hilite shader for a uniform feature, it follows that the feature must be hilited.
+ * So the hilite shader simply needs to output '1' for every fragment.
+ * @internal
+ */
 export function addUniformHiliter(builder: ProgramBuilder): void {
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, `return vec4(1.0);`);
   builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
 }
 
-// For a uniform feature table, the feature ID output to pick buffers is equal to the batch ID.
-// The following symbology overrides are supported:
-//  - Visibility - implcitly, because if the feature is invisible its geometry will never be drawn.
-//  - Flash
-//  - Hilite
-// In future we may find a reason to support color and/or transparency.
-// This shader could be simplified, but want to share code with the non-uniform versions...hence uniforms/globals with "v_" prefix typically used for varyings...
+/** For a uniform feature table, the feature ID output to pick buffers is equal to the batch ID.
+ * The following symbology overrides are supported:
+ *  - Visibility - implcitly, because if the feature is invisible its geometry will never be drawn.
+ *  - Flash
+ *  - Hilite
+ * In future we may find a reason to support color and/or transparency.
+ * This shader could be simplified, but want to share code with the non-uniform versions...hence uniforms/globals with "v_" prefix typically used for varyings...
+ * @internal
+ */
 export function addUniformFeatureSymbology(builder: ProgramBuilder): void {
   // addFeatureIndex()
   builder.vert.addGlobal("g_featureIndex", VariableType.Vec4, "vec4(0.0)", true);

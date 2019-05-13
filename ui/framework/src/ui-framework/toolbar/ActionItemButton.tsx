@@ -8,16 +8,19 @@ import * as React from "react";
 
 import { Icon } from "../shared/IconComponent";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ActionButtonItemDef } from "../shared/Item";
+import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 
 import { Item } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { CommonProps } from "@bentley/ui-core";
 
-/** Property that must be specified for a ActionItemButton component */
-export interface ActionItemButtonProps {
+/** Properties that must be specified for a ActionItemButton component
+ * @public
+ */
+export interface ActionItemButtonProps extends CommonProps {
   actionItem: ActionButtonItemDef;
   isEnabled?: boolean;
 }
@@ -34,11 +37,12 @@ const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
 };
 
 /** A Toolbar button React Component that executes an action defined by a CommandItemDef or a ToolItemDef.
+ * @public
  */
 export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> {
   private _componentUnmounting = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<BaseItemState>;
 
   constructor(props: ActionItemButtonProps) {

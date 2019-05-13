@@ -25,7 +25,9 @@ import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
 import { InstancedGraphicParams, RenderMemory } from "../System";
+import { InstanceBuffers } from "./InstancedGeometry";
 
+/** @internal */
 export class MeshData implements IDisposable {
   public readonly edgeWidth: number;
   public features?: FeaturesInfo;
@@ -64,29 +66,36 @@ export class MeshData implements IDisposable {
   }
 }
 
+/** @internal */
 export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: Primitive[] = [];
+  private readonly _instances?: InstanceBuffers;
 
   public static create(params: MeshParams, instances?: InstancedGraphicParams): MeshGraphic | undefined {
+    const buffers = undefined !== instances ? InstanceBuffers.create(instances, true) : undefined;
+    if (undefined === buffers && undefined !== instances)
+      return undefined;
+
     const data = MeshData.create(params);
-    return undefined !== data ? new MeshGraphic(data, params, instances) : undefined;
+    return undefined !== data ? new MeshGraphic(data, params, buffers) : undefined;
   }
 
-  private addPrimitive(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams) {
-    const primitive = Primitive.create(createGeom, instances);
+  private addPrimitive(createGeom: () => CachedGeometry | undefined, instances?: InstanceBuffers) {
+    const primitive = Primitive.createShared(createGeom, instances);
     if (undefined !== primitive)
       this._primitives.push(primitive);
   }
 
-  private constructor(data: MeshData, params: MeshParams, instances?: InstancedGraphicParams) {
+  private constructor(data: MeshData, params: MeshParams, instances?: InstanceBuffers) {
     super();
     this.meshData = data;
+    this._instances = instances;
 
     this.addPrimitive(() => SurfaceGeometry.create(this.meshData, params.surface.indices), instances);
 
     // Classifiers are surfaces only...no edges.
-    if (this.surfaceType === SurfaceType.Classifier || undefined === params.edges)
+    if (this.surfaceType === SurfaceType.VolumeClassifier || undefined === params.edges)
       return;
 
     const edges = params.edges;
@@ -111,6 +120,10 @@ export class MeshGraphic extends Graphic {
   public collectStatistics(stats: RenderMemory.Statistics): void {
     stats.addVertexTable(this.meshData.lut.bytesUsed);
     this._primitives.forEach((prim) => prim.collectStatistics(stats));
+
+    // Only count the shared instance buffers once...
+    if (undefined !== this._instances)
+      this._instances.collectStatistics(stats);
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
@@ -122,7 +135,9 @@ export class MeshGraphic extends Graphic {
   public get surfaceType(): SurfaceType { return this.meshData.type; }
 }
 
-// Defines one aspect of the geometry of a mesh (surface or edges)
+/** Defines one aspect of the geometry of a mesh (surface or edges)
+ * @internal
+ */
 export abstract class MeshGeometry extends LUTGeometry {
   public readonly mesh: MeshData;
   protected readonly _numIndices: number;
@@ -165,6 +180,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   }
 }
 
+/** @internal */
 export class EdgeGeometry extends MeshGeometry {
   protected readonly _indices: BufferHandle;
   protected readonly _endPointAndQuadIndices: BufferHandle;
@@ -212,6 +228,7 @@ export class EdgeGeometry extends MeshGeometry {
   }
 }
 
+/** @internal */
 export class SilhouetteEdgeGeometry extends EdgeGeometry {
   private readonly _normalPairs: BufferHandle;
 
@@ -242,6 +259,8 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
     this._normalPairs = normalPairs;
   }
 }
+
+/** @internal */
 export class PolylineEdgeGeometry extends MeshGeometry {
   private _buffers: PolylineBuffers;
 
@@ -287,6 +306,7 @@ function wantLighting(vf: ViewFlags) {
   return RenderMode.SmoothShade === vf.renderMode && (vf.sourceLights || vf.cameraLights || vf.solarLight);
 }
 
+/** @internal */
 export class SurfaceGeometry extends MeshGeometry {
   private readonly _indices: BufferHandle;
 
@@ -307,7 +327,7 @@ export class SurfaceGeometry extends MeshGeometry {
   public get isTextured() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
-  public get isClassifier() { return SurfaceType.Classifier === this.surfaceType; }
+  public get isClassifier() { return SurfaceType.VolumeClassifier === this.surfaceType; }
 
   public get asSurface() { return this; }
   public get asEdge() { return undefined; }
@@ -346,7 +366,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getColor(target: Target) {
     if (FillFlags.Background === (this.fillFlags & FillFlags.Background))
-      return ColorInfo.createFromColorDef(target.bgColor);
+      return ColorInfo.createUniform(target.bgColor);
     else
       return this.colorInfo;
   }

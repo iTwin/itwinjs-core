@@ -22,7 +22,7 @@
 
   @include uicore-z-index(backstage);
 
-  .app-bar {
+  .uifw-modal-app-bar {
     transition: transform .125s;
     padding: 10px;
     background: #16191b;
@@ -40,7 +40,7 @@
       font-size: 28px;
     }
 
-    .app-bar-right {
+    .uifw-modal-app-bar-right {
       color: #FFF;
       line-height: 60px;
       vertical-align: center;
@@ -55,17 +55,17 @@
 
   }
 
-  .modal-content {
+  .uifw-modal-content {
     overflow: hidden;
     height: 100%;
   }
 
-  &.open {
+  &.uifw-modal-open {
     visibility: visible;
     pointer-events: unset;
     transition: background .25s ease;
 
-    .app-bar {
+    .uifw-modal-app-bar {
       transform: translateY(0%);
       transition: transform .125s ease;
     }

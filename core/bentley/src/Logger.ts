@@ -6,7 +6,8 @@
 
 import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
 import { IDisposable } from "./Disposable";
-import { ActivityLoggingContext } from "./ActivityLoggingContext";
+import { ClientRequestContext } from "./ClientRequestContext";
+import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
 
 /** Defines the *signature* for a log function.
  * @public
@@ -79,13 +80,30 @@ export class Logger {
     );
   }
 
-  /** Add the currently registered activityId, if any, to the specified metadata. */
-  public static addActivityId(mdata: any) {
-    if ((ActivityLoggingContext.current.activityId === "") || mdata.hasOwnProperty("ActivityId"))
-      return;
-    const activityId = ActivityLoggingContext.current.activityId;
-    if (activityId !== "")
-      mdata.ActivityId = activityId;
+  // WIP: This modifies the incoming Object!
+  private static addClientRequestContext(metaData: any) {
+    const requestContext = ClientRequestContext.current;
+    metaData.ActivityId = requestContext.activityId;
+    metaData.SessionId = requestContext.sessionId;
+    metaData.ApplicationId = requestContext.applicationId;
+    metaData.ApplicationVersion = requestContext.applicationVersion;
+  }
+
+  /** @internal used by addon */
+  public static getCurrentClientRequestContext(): ClientRequestContext {
+    return ClientRequestContext.current;
+  }
+
+  /** @internal used by addon */
+  public static setCurrentClientRequestContext(obj: any) {
+    if (obj === undefined) {
+      if (ClientRequestContext.current.activityId !== "")
+        new ClientRequestContext("").enter();
+    } else {
+      if (!(obj instanceof ClientRequestContext))
+        throw new TypeError(`${JSON.stringify(obj)} -- this is not an instance of ClientRequestContext`);
+      obj.enter();
+    }
   }
 
   /** Should the callstack be included when an exception is logged?  */
@@ -100,16 +118,14 @@ export class Logger {
 
   /** Compose the metadata for a log message.  */
   public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData && (ActivityLoggingContext.current.activityId === ""))
-      return;
-    const mdata: any = getMetaData ? getMetaData() : {};
-    Logger.addActivityId(mdata);
-    return mdata;
+    const metaData: any = getMetaData ? Object.assign({}, getMetaData()) : {}; // Copy object to avoid mutating the original
+    Logger.addClientRequestContext(metaData);
+    return metaData;
   }
 
   /** Format the metadata for a log message.  */
   private static formatMetaData(getMetaData?: GetMetaDataFunction): any {
-    if (!getMetaData && (ActivityLoggingContext.current.activityId === ""))
+    if (!getMetaData)
       return "";
     return " " + JSON.stringify(Logger.makeMetaData(getMetaData));
   }
@@ -290,30 +306,40 @@ export class Logger {
  * @public
  */
 export class PerfLogger implements IDisposable {
-  private static _loggerName: string = "Performance";
   private static _severity: LogLevel = LogLevel.Info;
 
-  private _routine: string;
+  private _operation: string;
+  private _metaData?: GetMetaDataFunction;
   private _startTimeStamp: number;
 
-  public constructor(routine: string) {
-    this._routine = routine;
+  public constructor(operation: string, metaData?: GetMetaDataFunction) {
+    this._operation = operation;
+    this._metaData = metaData;
 
-    if (!Logger.isEnabled(PerfLogger._loggerName, PerfLogger._severity)) {
+    if (!Logger.isEnabled(BentleyLoggerCategory.Performance, PerfLogger._severity)) {
       this._startTimeStamp = 0;
       return;
     }
 
-    Logger.logInfo(PerfLogger._loggerName, `${this._routine},START`);
+    Logger.logInfo(BentleyLoggerCategory.Performance, `${this._operation},START`, this._metaData);
     this._startTimeStamp = new Date().getTime(); // take timestamp
   }
 
-  public dispose(): void {
+  private logMessage(): void {
     const endTimeStamp: number = new Date().getTime();
-    if (!Logger.isEnabled(PerfLogger._loggerName, PerfLogger._severity))
+    if (!Logger.isEnabled(BentleyLoggerCategory.Performance, PerfLogger._severity))
       return;
 
-    Logger.logInfo(PerfLogger._loggerName, `${this._routine},END,${endTimeStamp - this._startTimeStamp} ms`);
+    Logger.logInfo(BentleyLoggerCategory.Performance, `${this._operation},END`, () => {
+      const mdata = this._metaData ? this._metaData() : {};
+      return {
+        ...mdata, TimeElapsed: endTimeStamp - this._startTimeStamp,
+      };
+    });
+  }
+
+  public dispose(): void {
+    this.logMessage();
   }
 }
 

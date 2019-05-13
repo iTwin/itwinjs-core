@@ -9,15 +9,19 @@ import { ColorDef, ColorDefProps, RgbColor } from "@bentley/imodeljs-common";
 import { Id64Set, Id64Arg, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./rendering";
 
-/** Whether override includes both color and alpha, only color, or only alpha. */
-export const enum FeatureOverrideType { ColorOnly, AlphaOnly, ColorAndAlpha }
+/** Whether override includes both color and alpha, only color, or only alpha.
+ * @internal
+ */
+export enum FeatureOverrideType { ColorOnly, AlphaOnly, ColorAndAlpha }
 
+/** @internal */
 export interface AppearanceOverrideProps {
   overrideType?: FeatureOverrideType;
   color?: ColorDefProps;
   ids?: Id64Set;
 }
 
+/** @internal */
 export interface EmphasizeElementsProps {
   neverDrawn?: Id64Set;
   alwaysDrawn?: Id64Set;
@@ -26,15 +30,14 @@ export interface EmphasizeElementsProps {
   appearanceOverride?: AppearanceOverrideProps[];
 }
 
-/**
- * An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
+/** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
+ * @internal
  */
 export class EmphasizeElements implements FeatureOverrideProvider {
   private _defaultAppearance?: FeatureSymbology.Appearance;
   private _overrideAppearance?: Map<number, Id64Set>;
 
-  /**
-   * Establish active feature overrides to emphasize elements and apply color/transparency overrides.
+  /** Establish active feature overrides to emphasize elements and apply color/transparency overrides.
    * @see [[Viewport.featureOverrideProvider]]
    */
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, vp: Viewport): void {
@@ -53,7 +56,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   protected createAppearanceFromKey(key: number): FeatureSymbology.Appearance {
     if (key < 0)
       return FeatureSymbology.Appearance.fromTransparency(Math.abs(key));
@@ -63,7 +66,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return FeatureSymbology.Appearance.fromRgba(color);
   }
 
-  /** @hidden */
+  /** @internal */
   protected createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined {
     const colorValues = color.colors;
     switch (override) {
@@ -102,9 +105,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     });
   }
 
-  /** @hidden Get the IDs of the currently never drawn elements. */
+  /** @internal Get the IDs of the currently never drawn elements. */
   public getNeverDrawnElements(vp: Viewport): Id64Set | undefined { return (undefined !== vp.neverDrawn && 0 !== vp.neverDrawn.size ? vp.neverDrawn : undefined); }
-  /** @hidden Get the IDs of the currently always drawn elements. */
+  /** @internal Get the IDs of the currently always drawn elements. */
   public getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined { return (undefined !== vp.alwaysDrawn && 0 !== vp.alwaysDrawn.size ? vp.alwaysDrawn : undefined); }
   /** Get the IDs of the currently hidden elements. */
   public getHiddenElements(vp: Viewport): Id64Set | undefined { return this.getNeverDrawnElements(vp); }
@@ -114,11 +117,12 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   public getEmphasizedElements(vp: Viewport): Id64Set | undefined { return (!vp.isAlwaysDrawnExclusive && undefined !== this._defaultAppearance ? this.getAlwaysDrawnElements(vp) : undefined); }
   /** Get the map of current elements with color/transparency overrides. */
   public getOverriddenElements(): Map<number, Id64Set> | undefined { return (undefined !== this._overrideAppearance && 0 !== this._overrideAppearance.size ? this._overrideAppearance : undefined); }
-  /** @hidden Get the IDs of current elements with the specified color/tranparency override. */
+  /** @internal Get the IDs of current elements with the specified color/tranparency override. */
   public getOverriddenElementsByKey(key: number): Id64Set | undefined { return (undefined !== this._overrideAppearance ? this._overrideAppearance.get(key) : undefined); }
 
-  /** @hidden Clear never drawn elements.
+  /** Clear never drawn elements.
    * @return false if nothing to clear.
+   * @internal
    */
   public clearNeverDrawnElements(vp: Viewport): boolean {
     if (undefined === this.getNeverDrawnElements(vp))
@@ -127,8 +131,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return true;
   }
 
-  /** @hidden Clear always drawn elements.
+  /** Clear always drawn elements.
    * @return false if nothing to clear.
+   * @internal
    */
   public clearAlwaysDrawnElements(vp: Viewport): boolean {
     if (undefined === this.getAlwaysDrawnElements(vp))
@@ -175,16 +180,18 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     } else {
       this._overrideAppearance = undefined;
     }
-    vp.view.setFeatureOverridesDirty(true);
+
+    vp.setFeatureOverrideProviderChanged();
     return true;
   }
 
-  /** @hidden Set the element IDs to be never drawn.
+  /** Set the element IDs to be never drawn.
    * @param ids The IDs of the elements to never draw.
    * @param vp The viewport.
    * @param replace true to replace currently hidden elements (if any) or false to add to the existing set.
    * @return true if overrides were changed.
    * @see [[Viewport.neverDrawn]]
+   * @internal
    */
   public setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace: boolean = true): boolean {
     const hiddenIds = new Set<string>();
@@ -201,7 +208,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return true;
   }
 
-  /** @hidden Set the element IDs to be always drawn.
+  /** Set the element IDs to be always drawn.
    * @param ids The IDs of the elements to always draw.
    * @param vp The viewport.
    * @param exclusive If true, *only* the specified elements will be drawn.
@@ -209,6 +216,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @return true if overrides were changed.
    * @see [[Viewport.alwaysDrawn]]
    * @see [[Viewport.isAlwaysDrawnExclusive]]
+   * @internal
    */
   public setAlwaysDrawnElements(ids: Id64Arg, vp: Viewport, exclusive: boolean = true, replace: boolean = true): boolean {
     const visibleIds = new Set<string>();
@@ -311,8 +319,10 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const selection = vp.view.iModel.selectionSet;
     if (!selection.isActive || !this.emphasizeElements(selection.elements, vp, defaultAppearance, replace))
       return false;
+
     if (clearSelection)
       selection.emptyAll();
+
     return true;
   }
 
@@ -329,31 +339,39 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const ovrKey = this.createOverrideKey(color, override);
     if (undefined === ovrKey)
       return false;
+
     const overrideIds = new Set<string>();
     Id64.toIdSet(ids).forEach((id) => { overrideIds.add(id); });
     if (0 === overrideIds.size)
       return false;
+
     const existingIds = (!replace ? this.getOverriddenElementsByKey(ovrKey) : undefined);
     const oldSize = (undefined !== existingIds ? existingIds.size : 0);
     if (0 !== oldSize && undefined !== existingIds)
       for (const id of existingIds)
         overrideIds.add(id);
+
     if (oldSize === overrideIds.size)
       return false;
+
     if (undefined === this._overrideAppearance) {
       this._overrideAppearance = new Map<number, Id64Set>();
     } else {
       for (const [key, otherIds] of this._overrideAppearance) {
         if (key === ovrKey) // Make sure these ids are unique to this color/transparency key...
           continue;
+
         Id64.toIdSet(ids).forEach((id) => { otherIds.delete(id); });
         if (0 !== otherIds.size)
           continue;
+
         this._overrideAppearance.delete(key);
       }
     }
+
     this._overrideAppearance.set(ovrKey, overrideIds);
-    vp.view.setFeatureOverridesDirty(true);
+    vp.setFeatureOverrideProviderChanged();
+
     return true;
   }
 
@@ -454,6 +472,4 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     vp.clearAlwaysDrawn();
     vp.featureOverrideProvider = undefined;
   }
-
-  // ###TODO - Implement toJSON/fromJSON...
 }

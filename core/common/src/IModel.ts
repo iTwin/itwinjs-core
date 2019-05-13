@@ -70,7 +70,7 @@ export class EcefLocation implements EcefLocationProps {
 }
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
- * @alpha Why is this not just SubjectProps?
+ * @public
  */
 export interface RootSubjectProps {
   /** The name of the root subject. */
@@ -101,7 +101,9 @@ export interface CreateIModelProps extends IModelProps {
   guid?: GuidString;
   /** Client name for new iModel */
   client?: string;
-  /** Thumbnail for new iModel */
+  /** Thumbnail for new iModel
+   * @alpha
+   */
   thumbnail?: ThumbnailProps;
 }
 
@@ -156,7 +158,7 @@ export abstract class IModel implements IModelProps {
     this._ecefTrans = undefined;
   }
 
-  /** @hidden */
+  /** @internal */
   public toJSON(): IModelProps {
     const out: any = {};
     out.name = this.name;
@@ -168,16 +170,16 @@ export abstract class IModel implements IModelProps {
     return out;
   }
 
-  /** @hidden */
+  /** @internal */
   protected _token: IModelToken;
 
   /** The token that can be used to find this iModel instance. */
   public get iModelToken(): IModelToken { return this._token; }
 
-  /** @hidden */
+  /** @internal */
   protected constructor(iModelToken: IModelToken) { this._token = iModelToken; }
 
-  /** @hidden */
+  /** @internal */
   protected initialize(name: string, props: IModelProps) {
     this.name = name;
     this.rootSubject = props.rootSubject;

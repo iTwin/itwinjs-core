@@ -7,13 +7,16 @@
 import { Point3d, Transform } from "@bentley/geometry-core";
 import { DisplayParams } from "./DisplayParams";
 
+/** @internal */
 export class StrokesPrimitivePointList {
   public points: Point3d[];
   constructor(points: Point3d[] = []) { this.points = [...points]; }
 }
 
+/** @internal */
 export class StrokesPrimitivePointLists extends Array<StrokesPrimitivePointList> { constructor(...args: StrokesPrimitivePointList[]) { super(...args); } }
 
+/** @internal */
 export class StrokesPrimitive {
   public readonly displayParams: DisplayParams;
   public readonly isDisjoint: boolean;
@@ -38,4 +41,5 @@ export class StrokesPrimitive {
   }
 }
 
+/** @internal */
 export class StrokesPrimitiveList extends Array<StrokesPrimitive> { constructor(...args: StrokesPrimitive[]) { super(...args); } }

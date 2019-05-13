@@ -6,18 +6,35 @@
 
 // tslint:disable:no-string-literal
 
-import { RpcRegistry } from "./RpcRegistry";
+import { BentleyStatus, IModelError } from "../../IModelError";
+import { RpcConfiguration } from "./RpcConfiguration";
+import { RpcMarshalingDirective } from "./RpcConstants";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol } from "./RpcProtocol";
-import { RpcConfiguration } from "./RpcConfiguration";
-import { IModelError, BentleyStatus } from "../../IModelError";
-import { RpcMarshalingDirective } from "./RpcConstants";
+import { RpcRegistry } from "./RpcRegistry";
+import { Readable } from "stream";
 
 let marshalingScope = "";
 let marshalingTarget: RpcSerializedValue;
 let chunkThreshold = 0;
+let forceStrict = false;
 
-interface MarshalingBinaryMarker {
+function isReadable(value: any): value is Readable {
+  return value !== null && typeof (value) === "object" && typeof (value.pipe) === "function" &&
+    value.readable !== false && typeof (value._read) === "function" && typeof (value._readableState) === "object";
+}
+
+async function read(value: Readable): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    value.on("error", (err) => reject(err));
+    value.on("data", (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c.buffer, c.byteOffset, c.byteLength)));
+    value.on("end", () => resolve(Buffer.concat(chunks)));
+  });
+}
+
+/** @internal */
+export interface MarshalingBinaryMarker {
   [RpcMarshalingDirective.Binary]: true;
   type: number;
   index: number;
@@ -25,38 +42,53 @@ interface MarshalingBinaryMarker {
   chunks: number;
 }
 
+/** @internal */
 export namespace MarshalingBinaryMarker {
   export function createDefault(): MarshalingBinaryMarker {
     return { [RpcMarshalingDirective.Binary]: true, type: 0, index: 0, size: -1, chunks: 1 };
   }
 }
 
+/** @public */
 export interface RpcSerializedValue {
   objects: string;
   data: Uint8Array[];
   chunks?: number;
+  stream?: Readable;
 }
 
+/** @public */
 export namespace RpcSerializedValue {
   export function create(objects = "", data: Uint8Array[] = []): RpcSerializedValue {
     return { objects, data };
   }
 }
 
-/** @hidden */
+/** @internal */
 export class RpcMarshaling {
   private constructor() { }
 
   /** Serializes a value. */
-  public static serialize(operation: RpcOperation | string, protocol: RpcProtocol | undefined, value: any): RpcSerializedValue {
+  public static async serialize(operation: RpcOperation | string, protocol: RpcProtocol | undefined, _value: any): Promise<RpcSerializedValue> {
+    let value = _value;
     const serialized = RpcSerializedValue.create();
 
     if (typeof (value) === "undefined") {
       return serialized;
     }
 
+    if (isReadable(value)) {
+      if (protocol && protocol.preserveStreams) {
+        serialized.stream = value;
+        return serialized;
+      } else {
+        value = await read(value);
+      }
+    }
+
     marshalingTarget = serialized;
     marshalingScope = typeof (operation) === "string" ? operation : operation.interfaceDefinition.name;
+    forceStrict = (operation instanceof RpcOperation) ? operation.policy.forceStrictMode : false;
     chunkThreshold = protocol ? protocol.transferChunkThreshold : 0;
     serialized.objects = JSON.stringify(value, WireFormat.marshal);
     marshalingTarget = undefined as any;
@@ -66,12 +98,13 @@ export class RpcMarshaling {
   }
 
   /** Deserializes a value. */
-  public static deserialize(_operation: RpcOperation, protocol: RpcProtocol | undefined, value: RpcSerializedValue): any {
+  public static deserialize(operation: RpcOperation, protocol: RpcProtocol | undefined, value: RpcSerializedValue): any {
     if (value.objects === "") {
       return undefined;
     }
 
     marshalingTarget = value;
+    forceStrict = (operation instanceof RpcOperation) ? operation.policy.forceStrictMode : false;
     chunkThreshold = protocol ? protocol.transferChunkThreshold : 0;
     const result = JSON.parse(value.objects, WireFormat.unmarshal);
     marshalingTarget = undefined as any;
@@ -371,9 +404,9 @@ class WireFormat {
   }
 
   private static checkUnregistered(name: string, value: any): void {
-    if (RpcConfiguration.strictMode && value[RpcMarshalingDirective.Unregistered]) {
+    if ((RpcConfiguration.strictMode || forceStrict) && value[RpcMarshalingDirective.Unregistered]) {
       const [className, typeName] = name.split("_", 2);
-      throw new Error(`Cannot unmarshal type "${typeName} for this RPC interface. Ensure this type is listed in ${className}.types or suppress using RpcConfiguration.strictMode.`);
+      throw new Error(`Cannot unmarshal type "${typeName}" for this RPC interface. Ensure this type is listed in ${className}.types or suppress using RpcConfiguration.strictMode.`);
     }
 
     delete value[RpcMarshalingDirective.Unregistered];

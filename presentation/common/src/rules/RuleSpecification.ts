@@ -18,7 +18,7 @@ export interface RuleSpecification {
 }
 
 /** Used for serializing array of [[ContentSpecification]] and [[ChildNodeSpecification]] */
-export const enum RuleSpecificationTypes {
+export enum RuleSpecificationTypes {
   // hierarchy specifications
   AllInstanceNodes = "AllInstanceNodes",
   AllRelatedInstanceNodes = "AllRelatedInstanceNodes",

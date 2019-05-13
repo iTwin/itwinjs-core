@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert, BeDuration, BeEvent, BeTimePoint, dispose, Id64, Id64Arg, IDisposable, StopWatch, Id64Set } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
 import {
-  Angle, AngleSweep, Arc3d, AxisOrder, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ, SmoothTransformBetweenFrusta,
+  Angle, AngleSweep, Arc3d, AxisOrder, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d,
+  Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter,
-  NpcCorners, Placement2d, Placement2dProps, Placement3d, PlacementProps, ViewFlags,
+  AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
+  Placement2d, Placement2dProps, Placement3d, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
+import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
@@ -23,15 +24,20 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget } from "./render/System";
 import { StandardView, StandardViewId } from "./StandardView";
+import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tile } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
-import { ToolSettings } from "./tools/ToolAdmin";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { GridOrientationType, MarginPercent, ViewState, ViewStatus } from "./ViewState";
+import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo } from "./ViewState";
+import { ToolSettings } from "./tools/Tool";
 
 /** An object which customizes the appearance of Features within a [[Viewport]].
  * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
+ *
+ * If the provider's internal state changes such that the Viewport should recompute the symbology overrides, the provider should notify the viewport by
+ * calling [[Viewport.setFeatureOverrideProviderChanged]].
  * @see [[Viewport.featureOverrideProvider]]
+ * @public
  */
 export interface FeatureOverrideProvider {
   addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
@@ -70,6 +76,73 @@ export class SyncFlags {
   public setValidAnimationFraction(): void { this._animationFraction = true; }
   public setRedrawPending(): void { this._redrawPending = true; }
   public initFrom(other: SyncFlags): void { this._decorations = other._decorations; this._scene = other._scene; this._renderPlan = other._renderPlan; this._controller = other._controller; this._rotatePoint = other._rotatePoint; this._animationFraction = other._animationFraction; this._redrawPending = other._redrawPending; }
+}
+
+/** @see [[ChangeFlags]]
+ * @beta
+ */
+export enum ChangeFlag {
+  None = 0,
+  AlwaysDrawn = 1 << 0,
+  NeverDrawn = 1 << 1,
+  ViewedCategories = 1 << 2,
+  ViewedModels = 1 << 3,
+  DisplayStyle = 1 << 4,
+  FeatureOverrideProvider = 1 << 5,
+  ViewedCategoriesPerModel = 1 << 6,
+  All = 0x0fffffff,
+  Overrides = ChangeFlag.All & ~ChangeFlag.ViewedModels,
+  Initial = ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
+}
+
+/** Viewport event synchronization flags. Used primarily for tracking changes which affect the viewport's [[FeatureSymbology.Overrides]].
+ * Each time [[Viewport.renderFrame]] is invoked, the effects of any changes to these flags will be applied, and corresponding events dispatched.
+ * An individual flag is true if the corresponding Viewport state has changed and needs to be synchronized.
+ * @beta
+ */
+export class ChangeFlags {
+  private _flags: ChangeFlag;
+
+  /** The set of always drawn elements has changed. */
+  public get alwaysDrawn() { return this.isSet(ChangeFlag.AlwaysDrawn); }
+  public setAlwaysDrawn() { this.set(ChangeFlag.AlwaysDrawn); }
+  /** The set of never drawn elements has changed. */
+  public get neverDrawn() { return this.isSet(ChangeFlag.NeverDrawn); }
+  public setNeverDrawn() { this.set(ChangeFlag.NeverDrawn); }
+  /** The set of displayed categories has changed. */
+  public get viewedCategories() { return this.isSet(ChangeFlag.ViewedCategories); }
+  public setViewedCategories() { this.set(ChangeFlag.ViewedCategories); }
+  /** The set of displayed models has changed. */
+  public get viewedModels() { return this.isSet(ChangeFlag.ViewedModels); }
+  public setViewedModels() { this.set(ChangeFlag.ViewedModels); }
+  /** The display style or its settings such as [ViewFlags]($common) have changed. */
+  public get displayStyle() { return this.isSet(ChangeFlag.DisplayStyle); }
+  public setDisplayStyle() { this.set(ChangeFlag.DisplayStyle); }
+  /** The [[FeatureOverrideProvider]] has changed, or its internal state has changed such that its overrides must be recomputed. */
+  public get featureOverrideProvider() { return this.isSet(ChangeFlag.FeatureOverrideProvider); }
+  public setFeatureOverrideProvider() { this.set(ChangeFlag.FeatureOverrideProvider); }
+  /** The [[PerModelCategoryVisibility.Overrides]] associated with the viewport have changed.
+   * @alpha
+   */
+  public get viewedCategoriesPerModel() { return this.isSet(ChangeFlag.ViewedCategoriesPerModel); }
+  public setViewedCategoriesPerModel() { this.set(ChangeFlag.ViewedCategoriesPerModel); }
+
+  public constructor(flags = ChangeFlag.Initial) { this._flags = flags; }
+
+  /** Return true if any of the specified flags are set. */
+  public isSet(flags: ChangeFlag): boolean { return 0 !== (this._flags & flags); }
+  /** Return true if all of the specified flags are set. */
+  public areAllSet(flags: ChangeFlag): boolean { return flags === (this._flags & flags); }
+  /** Set all of the specified flags. */
+  public set(flags: ChangeFlag): void { this._flags |= flags; }
+  /** Clear all of the specified flags. By default, clears all flags. */
+  public clear(flags: ChangeFlag = ChangeFlag.All): void { this._flags &= ~flags; }
+  /** Returns true if any flag affecting FeatureSymbology.Overrides is set. */
+  public get areFeatureOverridesDirty() { return this.isSet(ChangeFlag.Overrides); }
+  /** Returns true if any flag is set. */
+  public get hasChanges() { return this.isSet(ChangeFlag.All); }
+
+  public get value(): ChangeFlag { return this._flags; }
 }
 
 /** A rectangle in integer view coordinates with (0,0) corresponding to the top-left corner of the view.
@@ -216,8 +289,8 @@ export class ViewRect {
 }
 
 /** The minimum and maximum values for the z-depth of a rectangle of screen space.
- *
  * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0.
+ * @public
  */
 export class DepthRangeNpc {
   /**
@@ -233,7 +306,7 @@ export class DepthRangeNpc {
 /** Coordinate system types
  * @public
  */
-export const enum CoordSystem {
+export enum CoordSystem {
   /** Coordinates are relative to the origin of the viewing rectangle.
    * x and y values correspond to pixels within that rectangle, with (x=0,y=0) corresponding to the top-left corner.
    */
@@ -315,8 +388,10 @@ class Animator {
   }
 }
 
-/** Status for [[ViewportAnimator.animate]]. */
-export const enum RemoveMe { No = 0, Yes = 1 }
+/** Status for [[ViewportAnimator.animate]].
+ * @public
+ */
+export enum RemoveMe { No = 0, Yes = 1 }
 
 /** An object to animate a transition of a [[Viewport]].
  * Only one animator may be associated with a viewport at a time. Registering a new
@@ -325,6 +400,7 @@ export const enum RemoveMe { No = 0, Yes = 1 }
  * The return value of animate() indicates whether to keep the animator active or to remove it.
  * The animator may also be removed in response to certain changes to the viewport - e.g., when
  * the viewport is closed, or its view controller changed, etc.
+ * @public
  */
 export interface ViewportAnimator {
   /** Apply animation to the viewport. Return `RemoveMe.Yes` when animation is completed, causing the animator to be removed from the viewport. */
@@ -340,6 +416,7 @@ export interface ViewportAnimator {
  * active, decorations will be invalidated on each frame. The animator's
  * animateDecorations() function will be invoked to update any animation state; then
  * decorations will be re-requested and rendered.
+ * @alpha
  */
 export class DecorationAnimator implements ViewportAnimator {
   private _start: BeTimePoint;
@@ -373,7 +450,9 @@ export class DecorationAnimator implements ViewportAnimator {
   }
 }
 
-/** Options that control how operations that change a view work. */
+/** Options that control how operations that change a view work.
+ * @public
+ */
 export interface ViewChangeOptions {
   /** Whether to save the result of this change into the view undo stack. Default is yes. */
   saveInUndo?: boolean;
@@ -385,7 +464,9 @@ export interface ViewChangeOptions {
   marginPercent?: MarginPercent;
 }
 
-/** Options to allow changing the view rotation with zoomTo methods. */
+/** Options to allow changing the view rotation with zoomTo methods.
+ * @public
+ */
 export interface ZoomToOptions {
   /** Set view rotation from standard view identifier. */
   standardViewId?: StandardViewId;
@@ -521,7 +602,7 @@ export class ViewFrustum {
     if (!view.is3d()) // only necessary for 3d views
       return;
 
-    let extents = view.getViewedExtents() as Range3d;
+    let extents = view.getViewedExtents();
 
     this.extendRangeForDisplayedPlane(extents);
 
@@ -639,7 +720,7 @@ export class ViewFrustum {
     delta.y = Math.abs(delta.y);
     delta.z = Math.abs(delta.z);
 
-    const limits = this.view.getExtentLimits();
+    const limits = this.view.extentLimits;
     const clampRange = (val: number) => Math.min(Math.max(limits.min, val), limits.max);
     delta.x = clampRange(delta.x);
     delta.y = clampRange(delta.y);
@@ -858,30 +939,286 @@ export class ViewFrustum {
   }
 }
 
+/** @beta Event type for Viewport.onViewUndoRedo */
+export enum ViewUndoEvent { Undo = 0, Redo = 1 }
+
+/** Allows the visibility of categories within a [[Viewport]] to be controlled on a per-[[ModelState]] basis.
+ * If a category's visibility is overridden for a given model, then elements belonging to that category within that model will be displayed or hidden regardless of the category's inclusion in the Viewport's [[CategorySelectorState]].
+ * The override affects geometry on all subcategories belonging to the overridden category. That is, if the category is overridden to be visible, then geometry on all subcategories of the category
+ * will be visible, regardless of any [SubCategoryOverride]($common)s applied by the view's [[DisplayStyleState]].
+ * @see [[Viewport.perModelCategoryVisibility]]
+ * @alpha
+ */
+export namespace PerModelCategoryVisibility {
+  /** Describes whether and how a category's visibility is overridden.
+   * @beta
+   */
+  export enum Override {
+    /** The category's visibility is not overridden; its visibility is wholly controlled by the [[Viewport]]'s [[CategorySelectorState]]. */
+    None,
+    /** The category is overridden to be visible. */
+    Show,
+    /** The category is overridden to be invisible. */
+    Hide,
+  }
+
+  /** Describes a set of per-model category visibility overrides. Changes to these overrides invoke the [[Viewport.onViewedCategoriesPerModelChanged]] event.
+   * @see [[Viewport.perModelCategoryVisibility]].
+   * @beta
+   */
+  export interface Overrides {
+    /** Returns the override state of the specified category within the specified model. */
+    getOverride(modelId: Id64String, categoryId: Id64String): Override;
+    /** Changes the override state of one or more categories for one or more models. */
+    setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
+    /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
+    clearOverrides(modelIds?: Id64Arg): void;
+  }
+}
+
+class PerModelCategoryVisibilityOverride {
+  public modelId: Id64String;
+  public categoryId: Id64String;
+  public visible: boolean;
+
+  public constructor(modelId: Id64String, categoryId: Id64String, visible: boolean) {
+    this.modelId = modelId;
+    this.categoryId = categoryId;
+    this.visible = visible;
+  }
+
+  public reset(modelId: Id64String, categoryId: Id64String, visible: boolean): void {
+    this.modelId = modelId;
+    this.categoryId = categoryId;
+    this.visible = visible;
+  }
+}
+
+function compareCategoryOverrides(lhs: PerModelCategoryVisibilityOverride, rhs: PerModelCategoryVisibilityOverride): number {
+  const cmp = compareStrings(lhs.modelId, rhs.modelId);
+  return 0 === cmp ? compareStrings(lhs.categoryId, rhs.categoryId) : cmp;
+}
+
+/** The Viewport-specific implementation of PerModelCategoryVisibility.Overrides.
+ * ###TODO: Evaluate performance.
+ * @internal
+ */
+class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVisibilityOverride> implements PerModelCategoryVisibility.Overrides {
+  private readonly _scratch = new PerModelCategoryVisibilityOverride("0", "0", false);
+  private readonly _vp: Viewport;
+
+  public constructor(vp: Viewport) {
+    super(compareCategoryOverrides);
+    this._vp = vp;
+  }
+
+  public getOverride(modelId: Id64String, categoryId: Id64String): PerModelCategoryVisibility.Override {
+    this._scratch.reset(modelId, categoryId, false);
+    const ovr = this.findEqual(this._scratch);
+    if (undefined !== ovr)
+      return ovr.visible ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide;
+    else
+      return PerModelCategoryVisibility.Override.None;
+  }
+
+  public setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: PerModelCategoryVisibility.Override): void {
+    const ovr = this._scratch;
+    let changed = false;
+    Id64.forEach(modelIds, (modelId) => {
+      Id64.forEach(categoryIds, (categoryId) => {
+        ovr.reset(modelId, categoryId, false);
+        const index = this.indexOf(ovr);
+        if (-1 === index) {
+          if (PerModelCategoryVisibility.Override.None !== override) {
+            this.insert(new PerModelCategoryVisibilityOverride(modelId, categoryId, PerModelCategoryVisibility.Override.Show === override));
+            changed = true;
+          }
+        } else {
+          if (PerModelCategoryVisibility.Override.None === override) {
+            this._array.splice(index, 1);
+            changed = true;
+          } else if (this._array[index].visible !== (PerModelCategoryVisibility.Override.Show === override)) {
+            this._array[index].visible = (PerModelCategoryVisibility.Override.Show === override);
+            changed = true;
+          }
+        }
+      });
+    });
+
+    if (changed) {
+      this._vp.setViewedCategoriesPerModelChanged();
+
+      if (PerModelCategoryVisibility.Override.None !== override) {
+        // Ensure subcategories loaded.
+        this._vp.subcategories.push(this._vp.iModel.subcategories, categoryIds, () => this._vp.setViewedCategoriesPerModelChanged());
+      }
+    }
+  }
+
+  public clearOverrides(modelIds?: Id64Arg): void {
+    if (undefined === modelIds) {
+      if (0 < this.length) {
+        this.clear();
+        this._vp.setViewedCategoriesPerModelChanged();
+      }
+
+      return;
+    }
+
+    for (let i = 0; i < this.length; /**/) {
+      const ovr = this._array[i];
+      const removed = !Id64.iterate(modelIds, (modelId) => {
+        if (modelId === ovr.modelId) {
+          this._array.splice(i, 1);
+          this._vp.setViewedCategoriesPerModelChanged();
+          return false; // halt iteration
+        }
+
+        return true; // continue iteration
+      });
+
+      if (!removed)
+        ++i;
+    }
+  }
+
+  public addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void {
+    const cache = this._vp.iModel.subcategories;
+
+    for (const ovr of this._array) {
+      const subcats = cache.getSubCategories(ovr.categoryId);
+      if (undefined === subcats)
+        continue;
+
+      // It's pointless to override for models which aren't displayed...except if we do this, and then someone enables that model,
+      // we would need to regenerate our symbology overrides in response. Preferably people wouldn't bother overriding models that
+      // they don't want us to draw...
+      /* if (!this._vp.view.viewsModel(ovr.modelId))
+        continue; */
+
+      // ###TODO: Avoid recomputing upper and lower portions of model ID if model ID repeated.
+      // (Array is sorted first by model ID).
+      // Also avoid computing if no effective overrides.
+      const modelLo = Id64.getLowerUint32(ovr.modelId);
+      const modelHi = Id64.getUpperUint32(ovr.modelId);
+
+      for (const subcat of subcats) {
+        const subcatLo = Id64.getLowerUint32(subcat);
+        const subcatHi = Id64.getUpperUint32(subcat);
+        const vis = fs.isSubCategoryVisible(subcatLo, subcatHi);
+        if (vis !== ovr.visible) {
+          // Only care if visibility differs from that defined for entire view
+          let entry = ovrs.get(modelLo, modelHi);
+          if (undefined === entry) {
+            entry = new Id64.Uint32Set();
+            ovrs.set(modelLo, modelHi, entry);
+          }
+
+          entry.add(subcatLo, subcatHi);
+        }
+      }
+    }
+  }
+}
+
 /** A Viewport renders the contents of one or more Models onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters. [[ViewTool]]s may
  * modify the ViewState object. Changes to the ViewState are only reflected in a Viewport after the
  * [[synchWithView]] method is called.
  *
+ * In general, because the Viewport essentially takes control of its attached ViewState, changes to the ViewState should be made
+ * indirectly through the Viewport's own API. Doing so ensures that synchronization between the Viewport and its ViewState is reliable and automatic. For example:
+ *
+ *   * To change the set of categories or models displayed in the Viewport, use [[Viewport.changeCategoryDisplay]] and [[Viewport.changeModelDisplay]] rather than modifying the ViewState's [[CategorySelectorState]] or [[ModelSelectorState]] directly.
+ *   * To change the [ViewFlags]($common), set [[Viewport.viewFlags]] rather than modifying the ViewState's [[DisplayStyleState]] directly.
+ *   * To modify the [[DisplayStyleState]]:
+ *    ```ts
+ *    const style = viewport.displayStyle.clone();
+ *    style.backgroundColor = ColorDef.red.clone(); // or any other desired modifications
+ *    viewport.displayStyle = style;
+ *    ```
+ *
  * As changes to ViewState are made, Viewports also hold a stack of *previous copies* of it, to allow
  * for undo/redo (i.e. *View Previous* and *View Next*) of viewing tools.
+ *
+ * Changes to a Viewport's state can be monitored by attaching an event listener to a variety of specific events. Most such events are
+ * triggered only once per frame, just before the Viewport's contents are rendered. For example, if the following sequence of events occurs:
+ *
+ *   * First frame is rendered
+ *   * ViewFlags are modified
+ *   * ViewFlags are modified again
+ *   * Second frame is rendered
+ *
+ * The [[Viewport.onDisplayStyleChanged]] event will be invoked exactly once, when the second frame is rendered.
  *
  * @see [[ViewManager]]
  * @public
  */
 export abstract class Viewport implements IDisposable {
-  /** Event called whenever this viewport is synchronized with its ViewState. */
+  /** Event called whenever this viewport is synchronized with its [[ViewState]].
+   * @note This event is invoked *very* frequently. To avoid negatively impacting performance, consider using one of the more specific Viewport events;
+   * otherwise, avoid performing excessive computations in response to this event.
+   */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called whenever this viewport's set of always-drawn elements changes. */
+  /** Event called after reversing the most recent change to the Viewport from the undo stack or reapplying the most recently undone change to the Viewport from the redo stack.
+   * @beta
+   */
+  public readonly onViewUndoRedo = new BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>();
+  /** Event called on the next frame after this viewport's set of always-drawn elements changes.
+   * @beta
+   */
   public readonly onAlwaysDrawnChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called whenever this viewport's set of never-drawn elements changes. */
+  /** Event called on the next frame after this viewport's set of never-drawn elements changes.
+   * @beta
+   */
   public readonly onNeverDrawnChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called on the next frame after this viewport's [[DisplayStyleState]] or its members change.
+   * Aspects of the display style include [ViewFlags]($common), [SubCategoryOverride]($common)s, and [[Environment]] settings.
+   * @beta
+   */
+  public readonly onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called on the next frame after this viewport's set of displayed categories changes.
+   * @beta
+   */
+  public readonly onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called on the next frame after this viewport's set of [[PerModelCategoryVisibility.Overrides]] changes.
+   * @beta
+   */
+  public readonly onViewedCategoriesPerModelChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called on the next frame after this viewport's set of displayed models changes.
+   * @beta
+   */
+  public readonly onViewedModelsChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called on the next frame after this viewport's [[FeatureOverrideProvider]] changes, or the internal state of the provider changes such that the overrides needed to be recomputed.
+   * @beta
+   */
+  public readonly onFeatureOverrideProviderChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called on the next frame after this viewport's [[FeatureSymbology.Overrides]] change.
+   * @beta
+   */
+  public readonly onFeatureOverridesChanged = new BeEvent<(vp: Viewport) => void>();
+  /** Event called on the next frame after any of the viewport's [[ChangeFlags]] changes.
+   * @beta
+   */
+  public readonly onViewportChanged = new BeEvent<(vp: Viewport, changed: ChangeFlags) => void>();
 
   private readonly _viewportId: number;
   private _animationFraction = 0.0;
   private _doContinuousRendering = false;
   private _animator?: Animator;
+  /** @internal */
+  protected _changeFlags = new ChangeFlags();
+  private _scheduleTime = 0.0;
+  private _selectionSetDirty = true;
+  private readonly _perModelCategoryVisibility = new PerModelCategoryVisibilityOverrides(this);
+
+  /** @internal */
+  public readonly subcategories = new SubCategoriesCache.Queue();
+
+  /** @internal */
+  public get scheduleTime() { return this._scheduleTime; }
+
   /** Time the current flash started.
    * @internal
    */
@@ -952,7 +1289,9 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public get animationFraction(): number { return this._animationFraction; }
   /** @internal */
-  public set animationFraction(fraction: number) { this._animationFraction = fraction; this.sync.invalidateAnimationFraction(); }
+  public set animationFraction(fraction: number) {
+    this._animationFraction = fraction; this.sync.invalidateAnimationFraction();
+  }
 
   /** @internal */
   protected readonly _viewRange: ViewRect = new ViewRect();
@@ -977,8 +1316,183 @@ export abstract class Viewport implements IDisposable {
    * @return true if the grid display is on.
    */
   public get isGridOn(): boolean { return this.viewFlags.grid; }
-  /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered.  */
+  /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered. */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
+  public set viewFlags(viewFlags: ViewFlags) {
+    if (!this.viewFlags.equals(viewFlags)) {
+      this._changeFlags.setDisplayStyle();
+      this.view.displayStyle.viewFlags = viewFlags;
+    }
+  }
+
+  /** The display style controller how the contents of this viewport are rendered.
+   * @note To ensure proper synchronization, do not directly modify the [[DisplayStyleState]] returned by the getter. Instead, create a new one (possibly by cloning this display style) and pass it to the setter.
+   */
+  public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
+  public set displayStyle(style: DisplayStyleState) {
+    this.view.displayStyle = style;
+    this._changeFlags.setDisplayStyle();
+  }
+
+  /** Remove any [[SubCategoryOverride]] for the specified subcategory.
+   * @param id The Id of the subcategory.
+   * @see [[overrideSubCategory]]
+   */
+  public dropSubCategoryOverride(id: Id64String): void {
+    this.view.displayStyle.dropSubCategoryOverride(id);
+    this._changeFlags.setDisplayStyle();
+  }
+
+  /** Override the symbology of geometry belonging to a specific subcategory when rendered within this viewport.
+   * @param id The Id of the subcategory.
+   * @param ovr The symbology overrides to apply to all geometry belonging to the specified subcategory.
+   * @see [[dropSubCategoryOverride]]
+   */
+  public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void {
+    this.view.displayStyle.overrideSubCategory(id, ovr);
+    this._changeFlags.setDisplayStyle();
+  }
+
+  /** Query the symbology overrides applied to geometry belonging to a specific subcategory when rendered within this viewport.
+   * @param id The Id of the subcategory.
+   * @return The symbology overrides applied to all geometry belonging to the specified subcategory, or undefined if no such overrides exist.
+   * @see [[overrideSubCategory]]
+   */
+  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
+    return this.view.displayStyle.getSubCategoryOverride(id);
+  }
+
+  /** Query the symbology with which geometry belonging to a specific subcategory is rendered within this viewport.
+   * Every [[SubCategory]] defines a base symbology independent of any [[Viewport]].
+   * If a [[SubCategoryOverride]] has been applied to the subcategory within the context of this [[Viewport]], it will be applied to the subcategory's base symbology.
+   * @param id The Id of the subcategory.
+   * @return The symbology of the subcategory within this viewport, including any overrides.
+   * @see [[overrideSubCategory]]
+   */
+  public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
+    const app = this.iModel.subcategories.getSubCategoryAppearance(id);
+    if (undefined === app)
+      return SubCategoryAppearance.defaults;
+
+    const ovr = this.getSubCategoryOverride(id);
+    return undefined !== ovr ? ovr.override(app) : app;
+  }
+
+  /** Determine whether geometry belonging to a specific SubCategory is visible in this viewport.
+   * @param id The Id of the subcategory
+   * @returns true if the subcategory is visible in this viewport.
+   */
+  public isSubCategoryVisible(id: Id64String): boolean { return this.view.isSubCategoryVisible(id); }
+
+  /** Enable or disable display of elements belonging to a set of categories specified by Id.
+   * Visibility of individual subcategories belonging to a category can be controlled separately through the use of [[SubCategoryOverride]]s.
+   * By default, enabling display of a category does not affect display of subcategories thereof which have been overridden to be invisible.
+   * @param categories The Id(s) of the categories to which the change should be applied. No other categories will be affected.
+   * @param display Whether or not elements on the specified categories should be displayed in the viewport.
+   * @param enableAllSubCategories Specifies that when enabling display for a category, all of its subcategories should also be displayed even if they are overridden to be invisible.
+   */
+  public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
+    this._changeFlags.setViewedCategories();
+
+    if (!display) {
+      this.view.categorySelector.dropCategories(categories);
+      return;
+    }
+
+    this.view.categorySelector.addCategories(categories);
+    const categoryIds = Id64.toIdSet(categories);
+
+    this.updateSubCategories(categoryIds, enableAllSubCategories);
+  }
+
+  private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean): void {
+    this.subcategories.push(this.iModel.subcategories, categoryIds, () => {
+      if (enableAllSubCategories) {
+        this.enableAllSubCategories(categoryIds);
+        this._changeFlags.setViewedCategories();
+      }
+    });
+  }
+
+  private enableAllSubCategories(categoryIds: Id64Arg): void {
+    Id64.forEach(categoryIds, (categoryId) => {
+      const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
+      if (undefined !== subCategoryIds) {
+        for (const subCategoryId of subCategoryIds)
+          this.changeSubCategoryDisplay(subCategoryId, true);
+      }
+    });
+  }
+
+  /** @internal */
+  public getSubCategories(categoryId: Id64String): Id64Set | undefined { return this.iModel.subcategories.getSubCategories(categoryId); }
+
+  /** Change the visibility of geometry belonging to the specified subcategory when displayed in this viewport.
+   * @param subCategoryId The Id of the subcategory
+   * @param display: True to make geometry belonging to the subcategory visible within this viewport, false to make it invisible.
+   * @alpha
+   */
+  public changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
+    const app = this.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+    if (undefined === app)
+      return; // category not enabled or subcategory not found
+
+    const curOvr = this.getSubCategoryOverride(subCategoryId);
+    const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
+    if (isAlreadyVisible === display)
+      return;
+
+    // Preserve existing overrides - just flip the visibility flag.
+    const json = undefined !== curOvr ? curOvr.toJSON() : {};
+    json.invisible = !display;
+    this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json)); // will set the ChangeFlag appropriately
+  }
+
+  /** Returns true if this Viewport is currently displaying the model with the specified Id. */
+  public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
+
+  /** Attempt to replace the set of models currently viewed by this viewport.
+   * @param modelIds The Ids of the models to be displayed.
+   * @returns false if this Viewport is not viewing a [[SpatialViewState]]
+   * @note This function has no effect unless the viewport is viewing a [[SpatialViewState]].
+   */
+  public changeViewedModels(modelIds: Id64Arg): boolean {
+    if (!this.view.isSpatialView())
+      return false;
+
+    this.view.modelSelector.models.clear();
+    this.view.modelSelector.addModels(modelIds);
+
+    this._changeFlags.setViewedModels();
+    this.invalidateScene();
+
+    return true;
+  }
+
+  /** Add or remove a set of models from those models currently displayed in this viewport.
+   * @param modelIds The Ids of the models to add or remove.
+   * @param display Whether or not to display the specified models in the viewport.
+   * @returns false if thsi Viewport is not viewing a [[SpatialViewState]]
+   * @note This function has no effect unless the viewport is viewing a [[SpatialViewState]].
+   */
+  public changeModelDisplay(models: Id64Arg, display: boolean): boolean {
+    if (!this.view.isSpatialView())
+      return false;
+
+    const prevSize = this.view.modelSelector.models.size;
+    if (display)
+      this.view.modelSelector.addModels(models);
+    else
+      this.view.modelSelector.dropModels(models);
+
+    if (this.view.modelSelector.models.size !== prevSize) {
+      this._changeFlags.setViewedModels();
+      this.invalidateScene();
+    }
+
+    return true;
+  }
+
   /** @internal */
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   /** @internal */
@@ -986,6 +1500,7 @@ export abstract class Viewport implements IDisposable {
 
   /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
    * @see [[Tile.DebugBoundingBoxes]]
+   * @internal
    */
   public get debugBoundingBoxes(): Tile.DebugBoundingBoxes { return this._debugBoundingBoxes; }
   public set debugBoundingBoxes(boxes: Tile.DebugBoundingBoxes) {
@@ -1037,6 +1552,7 @@ export abstract class Viewport implements IDisposable {
   public dispose(): void {
     assert(undefined !== this._target, "Double disposal of Viewport");
     this._target = dispose(this._target);
+    this.subcategories.dispose();
     IModelApp.tileAdmin.forgetViewport(this);
   }
 
@@ -1086,8 +1602,7 @@ export abstract class Viewport implements IDisposable {
         this.alwaysDrawn.clear();
 
       this._alwaysDrawnExclusive = false;
-      this.view.setFeatureOverridesDirty();
-      this.onAlwaysDrawnChanged.raiseEvent(this);
+      this._changeFlags.setAlwaysDrawn();
     }
   }
 
@@ -1097,8 +1612,7 @@ export abstract class Viewport implements IDisposable {
   public clearNeverDrawn(): void {
     if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
-      this.view.setFeatureOverridesDirty();
-      this.onNeverDrawnChanged.raiseEvent(this);
+      this._changeFlags.setNeverDrawn();
     }
   }
 
@@ -1107,8 +1621,7 @@ export abstract class Viewport implements IDisposable {
    */
   public setNeverDrawn(ids: Id64Set): void {
     this._neverDrawn = ids;
-    this.view.setFeatureOverridesDirty();
-    this.onNeverDrawnChanged.raiseEvent(this);
+    this._changeFlags.setNeverDrawn();
   }
 
   /** Specify the IDs of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
@@ -1120,22 +1633,35 @@ export abstract class Viewport implements IDisposable {
   public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
     this._alwaysDrawn = ids;
     this._alwaysDrawnExclusive = exclusive;
-    this.view.setFeatureOverridesDirty();
-    this.onAlwaysDrawnChanged.raiseEvent(this);
+    this._changeFlags.setAlwaysDrawn();
   }
 
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
+  /** Allows visibility of categories within this viewport to be overridden on a per-model basis.
+   * @alpha
+   */
+  public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides { return this._perModelCategoryVisibility; }
+
+  /** Adds visibility overrides for any subcategories whose visibility differs from that defined by the view's
+   * category selector in the context of specific models.
+   * @internal
+   */
+  public addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void {
+    this._perModelCategoryVisibility.addOverrides(fs, ovrs);
+  }
+
   /** Sets an object which can customize the appearance of [[Feature]]s within a viewport.
    * If defined, the provider will be invoked whenever the overrides are determined to need updating.
-   * The overrides can be explicitly marked as needing a refresh by calling [[ViewState.setFeatureOverridesDirty]].
+   * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
+   * the internal state of the provider changes such that the computed overrides must also change.
    * @see [[FeatureSymbology.Overrides]]
    */
   public set featureOverrideProvider(provider: FeatureOverrideProvider | undefined) {
     if (provider !== this._featureOverrideProvider) {
       this._featureOverrideProvider = provider;
-      this.view.setFeatureOverridesDirty(true);
+      this.setFeatureOverrideProviderChanged();
     }
   }
 
@@ -1143,6 +1669,21 @@ export abstract class Viewport implements IDisposable {
   public get featureOverrideProvider(): FeatureOverrideProvider | undefined {
     return this._featureOverrideProvider;
   }
+
+  /** Notifies this viewport that the internal state of its [[FeatureOverrideProvider]] has changed such that its
+   * [[FeatureSymbology.Overrides]] should be recomputed.
+   */
+  public setFeatureOverrideProviderChanged(): void {
+    this._changeFlags.setFeatureOverrideProvider();
+  }
+
+  /** @internal */
+  public setViewedCategoriesPerModelChanged(): void {
+    this._changeFlags.setViewedCategoriesPerModel();
+  }
+
+  /** @internal */
+  public markSelectionSetDirty() { this._selectionSetDirty = true; }
 
   /** True if this is a 3d view with the camera turned on. */
   public get isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn; }
@@ -1187,6 +1728,7 @@ export abstract class Viewport implements IDisposable {
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    */
   public changeView(view: ViewState) {
+    this.updateChangeFlags(view);
     this.doSetupFromView(view);
     this.invalidateScene();
     this.sync.invalidateController();
@@ -1598,11 +2140,56 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public applyViewState(val: ViewState, animationTime?: BeDuration) {
+    this.updateChangeFlags(val);
     const startFrust = this.getFrustum();
-    this._viewFrustum.view = val.clone(this.view.iModel); // preserve our iModel in case val is coming from a different connection
+    this._viewFrustum.view = val;
     this.synchWithView(false);
     if (animationTime)
       this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
+  }
+
+  /** Invoked from applyViewState and changeView to potentially recompute change flags based on differences between current and new ViewState. */
+  private updateChangeFlags(newView: ViewState): void {
+    // Before the first call to changeView, this.view is undefined because we have no frustum. Our API pretends it is never undefined.
+    const oldView = undefined !== this.viewFrustum ? this.view : undefined;
+
+    if (undefined === oldView || oldView === newView)
+      return;
+
+    const flags = this._changeFlags;
+    if (!flags.displayStyle && !oldView.displayStyle.equalState(newView.displayStyle))
+      flags.setDisplayStyle();
+
+    if (!flags.viewedCategories && !oldView.categorySelector.equalState(newView.categorySelector))
+      flags.setViewedCategories();
+
+    if (!flags.neverDrawn) {
+      const oldExclude = oldView.displayStyle.settings.excludedElements;
+      const newExclude = newView.displayStyle.settings.excludedElements;
+      if (oldExclude.size !== newExclude.size) {
+        flags.setNeverDrawn();
+      } else {
+        for (const exclude of oldExclude)
+          if (!newExclude.has(exclude)) {
+            flags.setNeverDrawn();
+            break;
+          }
+      }
+    }
+
+    if (flags.viewedModels)
+      return;
+
+    if (oldView.is2d() && newView.is2d()) {
+      if (oldView.baseModelId !== newView.baseModelId)
+        flags.setViewedModels();
+    } else if (oldView.isSpatialView() && newView.isSpatialView()) {
+      if (!oldView.modelSelector.equalState(newView.modelSelector))
+        flags.setViewedModels();
+    } else {
+      // switched between 2d and 3d view.
+      flags.setViewedModels();
+    }
   }
 
   private static roundGrid(num: number, units: number): number {
@@ -1751,6 +2338,10 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public renderFrame(): boolean {
+    const changeFlags = this._changeFlags;
+    if (changeFlags.hasChanges)
+      this._changeFlags = new ChangeFlags(ChangeFlag.None);
+
     const sync = this.sync;
     const view = this.view;
     const target = this.target;
@@ -1771,7 +2362,7 @@ export abstract class Viewport implements IDisposable {
       sync.invalidateController();
     }
 
-    if (view.isSelectionSetDirty) {
+    if (this._selectionSetDirty) {
       if ((0 === view.iModel.hilited.size && 0 === view.iModel.selectionSet.size) || (view.iModel.hilited.size > 0 && 0 === view.iModel.selectionSet.size)) {
         target.setHiliteSet(view.iModel.hilited.elements); // only hilited has elements to send (or empty)
       } else if (0 === view.iModel.hilited.size && view.iModel.selectionSet.size > 0) {
@@ -1782,21 +2373,32 @@ export abstract class Viewport implements IDisposable {
         view.iModel.selectionSet.elements.forEach((val) => allHilites.add(val));
         target.setHiliteSet(allHilites);
       }
-      view.setSelectionSetDirty(false);
+
+      this._selectionSetDirty = false;
       isRedrawNeeded = true;
     }
 
-    if (view.areFeatureOverridesDirty) {
-      const ovr = new FeatureSymbology.Overrides(view);
-      if (undefined !== this._neverDrawn)
-        ovr.setNeverDrawnSet(this._neverDrawn);
-      if (undefined !== this._alwaysDrawn)
-        ovr.setAlwaysDrawnSet(this._alwaysDrawn, this._alwaysDrawnExclusive);
-      if (undefined !== this._featureOverrideProvider)
-        this._featureOverrideProvider.addFeatureOverrides(ovr, this);
+    let overridesNeeded = changeFlags.areFeatureOverridesDirty;
 
+    if (!sync.isValidAnimationFraction) {
+      target.animationFraction = this.animationFraction;
+      isRedrawNeeded = true;
+      sync.setValidAnimationFraction();
+      const scheduleScript = view.displayStyle.scheduleScript;
+      if (scheduleScript) {
+        const scheduleTime = scheduleScript.duration.fractionToPoint(target.animationFraction);
+        if (scheduleTime !== this._scheduleTime) {
+          this._scheduleTime = scheduleTime;
+          target.animationBranches = scheduleScript.getAnimationBranches(scheduleTime);
+          if (scheduleScript.containsFeatureOverrides)
+            overridesNeeded = true;
+        }
+      }
+    }
+
+    if (overridesNeeded) {
+      const ovr = new FeatureSymbology.Overrides(this);
       target.overrideFeatureSymbology(ovr);
-      view.setFeatureOverridesDirty(false);
       isRedrawNeeded = true;
     }
 
@@ -1807,12 +2409,15 @@ export abstract class Viewport implements IDisposable {
       if (!this._freezeScene) {
         this.numSelectedTiles = this.numReadyTiles = 0;
         const context = this.createSceneContext();
-        view.createScene(context);
         view.createClassification(context);
+        view.createScene(context);
         view.createTerrain(context);
+        view.createSolarShadowMap(context);
         context.requestMissingTiles();
         target.changeScene(context.graphics);
         target.changeTerrain(context.backgroundGraphics);
+        target.changePlanarClassifiers(context.planarClassifiers);
+        target.changeSolarShadowMap(context.solarShadowMap);
 
         isRedrawNeeded = true;
       }
@@ -1833,17 +2438,6 @@ export abstract class Viewport implements IDisposable {
       isRedrawNeeded = true;
     }
 
-    if (!sync.isValidAnimationFraction) {
-      target.animationFraction = this.animationFraction;
-      isRedrawNeeded = true;
-      sync.setValidAnimationFraction();
-      const scheduleScript = view.displayStyle.scheduleScript;
-      if (scheduleScript) {
-        view.scheduleTime = scheduleScript.duration.fractionToPoint(target.animationFraction);
-        target.animationBranches = scheduleScript.getAnimationBranches(view.scheduleTime);
-      }
-    }
-
     if (this.processFlash()) {
       target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this.flashIntensity);
       isRedrawNeeded = true;
@@ -1853,6 +2447,36 @@ export abstract class Viewport implements IDisposable {
     if (isRedrawNeeded) {
       target.drawFrame(timer.elapsed.milliseconds);
       this.onRender.raiseEvent(this);
+    }
+
+    // Dispatch change events after timer has stopped and update has finished.
+    if (changeFlags.hasChanges) {
+      this.onViewportChanged.raiseEvent(this, changeFlags);
+
+      if (changeFlags.displayStyle)
+        this.onDisplayStyleChanged.raiseEvent(this);
+
+      if (changeFlags.viewedModels)
+        this.onViewedModelsChanged.raiseEvent(this, changeFlags);
+
+      if (changeFlags.areFeatureOverridesDirty) {
+        this.onFeatureOverridesChanged.raiseEvent(this);
+
+        if (changeFlags.alwaysDrawn)
+          this.onAlwaysDrawnChanged.raiseEvent(this);
+
+        if (changeFlags.neverDrawn)
+          this.onNeverDrawnChanged.raiseEvent(this);
+
+        if (changeFlags.viewedCategories)
+          this.onViewedCategoriesChanged.raiseEvent(this);
+
+        if (changeFlags.viewedCategoriesPerModel)
+          this.onViewedCategoriesPerModelChanged.raiseEvent(this);
+
+        if (changeFlags.featureOverrideProvider)
+          this.onFeatureOverrideProviderChanged.raiseEvent(this);
+      }
     }
 
     return true;
@@ -1867,6 +2491,7 @@ export abstract class Viewport implements IDisposable {
    * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error.
    * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
+   * @beta
    */
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable = false): void {
     const viewRect = this.viewRect;
@@ -1887,7 +2512,9 @@ export abstract class Viewport implements IDisposable {
     return this.target.readImage(rect, targetSize, flipVertically);
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates */
+  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates
+   * @beta
+   */
   public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
     if (z <= 0.0)
@@ -1907,7 +2534,9 @@ export abstract class Viewport implements IDisposable {
     return result;
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in world coordinates */
+  /** Get the point at the specified x and y location in the pixel buffer in world coordinates
+   * @beta
+   */
   public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
     if (undefined !== npc)
@@ -1949,12 +2578,14 @@ export class ScreenViewport extends Viewport {
   private _viewCmdTargetCenter?: Point3d;
   /** The number of entries in the view undo/redo buffer. */
   public maxUndoSteps = 20;
-  private readonly _forwardStack: ViewState[] = [];
-  private readonly _backStack: ViewState[] = [];
-  private _currentBaseline?: ViewState;
+  private readonly _forwardStack: ViewStateUndo[] = [];
+  private readonly _backStack: ViewStateUndo[] = [];
+  private _currentBaseline?: ViewStateUndo;
 
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
+  /** The div created to hold all viewport elements. */
+  public readonly vpDiv: HTMLDivElement;
   /** The canvas to display the view contents. */
   public readonly canvas: HTMLCanvasElement;
   /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators". */
@@ -1983,20 +2614,22 @@ export class ScreenViewport extends Viewport {
     while (el.lastChild)
       el.removeChild(el.lastChild);
   }
-  /**  add a child element to this.parentDiv and set its size and position the same as the parent.
+  /** set Div style to absolute, {0,0,100%,100%}
    * @internal
    */
-  public addChildDiv(element: HTMLElement, zIndex: number) {
-    // get the (computed) z-index value of the parent, as an integer.
-    const parentZ = parseInt(window.getComputedStyle(this.parentDiv).zIndex || "0", 10);
-    const style = element.style;
+  public static setToParentSize(div: HTMLElement) {
+    const style = div.style;
     style.position = "absolute";
-    style.top = "0";
-    style.left = "0";
-    style.height = "100%";
-    style.width = "100%";
-    style.zIndex = (parentZ + zIndex).toString();
-    this.parentDiv.appendChild(element);
+    style.top = style.left = "0";
+    style.height = style.width = "100%";
+  }
+  /**  add a child element to this.vpDiv and set its size and position the same as the parent.  */
+  private addChildDiv(parent: HTMLElement, element: HTMLElement, zIndex: number) {
+    ScreenViewport.setToParentSize(element);
+    // get the (computed) z-index value of the parent, as an integer.
+    const parentZ = parseInt(window.getComputedStyle(this.vpDiv).zIndex || "0", 10);
+    element.style.zIndex = (parentZ + zIndex).toString();
+    parent.appendChild(element);
   }
 
   /** @internal */
@@ -2005,7 +2638,7 @@ export class ScreenViewport extends Viewport {
     div.className = className;
     div.style.pointerEvents = "none";
     div.style.overflow = overflowHidden ? "hidden" : "visible";
-    this.addChildDiv(div, z);
+    this.addChildDiv(this.vpDiv, div, z);
     return div;
   }
 
@@ -2018,7 +2651,11 @@ export class ScreenViewport extends Viewport {
     // first remove all children of the parent Div
     ScreenViewport.removeAllChildren(parentDiv);
 
-    this.addChildDiv(canvas, 10);
+    const div = this.vpDiv = document.createElement("div");
+    div.className = "imodeljs-vp";
+    this.addChildDiv(this.parentDiv, div, 0);
+
+    this.addChildDiv(this.vpDiv, canvas, 10);
     this.target.updateViewRect();
 
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
@@ -2140,9 +2777,9 @@ export class ScreenViewport extends Viewport {
 
     // the first time we're called we need to establish the baseline
     if (!this._currentBaseline)
-      this._currentBaseline = this.view.clone();
+      this._currentBaseline = this.view.saveForUndo();
 
-    if (this.view.equalState(this._currentBaseline!)) // this does a deep compare of the ViewState plus DisplayStyle, CategorySelector, and ModelSelector
+    if (this._currentBaseline.equalState(this.view))
       return; // nothing changed, we're done
 
     const backStack = this._backStack;
@@ -2154,32 +2791,37 @@ export class ScreenViewport extends Viewport {
      * we don't add a new entry to the view undo buffer.
      */
     const now = BeTimePoint.now();
-    if (backStack.length < 1 || backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)) {
+    if (Viewport.undoDelay.isZero || backStack.length < 1 || backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)) {
       this._currentBaseline!.undoTime = now; // save time we put this entry in undo buffer
       this._backStack.push(this._currentBaseline); // save previous state
       this._forwardStack.length = 0; // not possible to do redo after this
     }
 
-    this._currentBaseline = this.view.clone();
+    this._currentBaseline = this.view.saveForUndo();
   }
+
   /** Reverses the most recent change to the Viewport from the undo stack. */
   public doUndo(animationTime?: BeDuration) {
-    if (0 === this._backStack.length)
+    if (0 === this._backStack.length || this._currentBaseline === undefined)
       return;
 
-    this._forwardStack.push(this._currentBaseline!);
+    this._forwardStack.push(this._currentBaseline);
     this._currentBaseline = this._backStack.pop()!;
-    this.applyViewState(this._currentBaseline, animationTime);
+    this.view.setFromUndo(this._currentBaseline);
+    this.applyViewState(this.view, animationTime);
+    this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Undo);
   }
 
   /** Re-applies the most recently un-done change to the Viewport from the redo stack. */
   public doRedo(animationTime?: BeDuration) {
-    if (0 === this._forwardStack.length)
+    if (0 === this._forwardStack.length || this._currentBaseline === undefined)
       return;
 
     this._backStack.push(this._currentBaseline!);
     this._currentBaseline = this._forwardStack.pop()!;
-    this.applyViewState(this._currentBaseline, animationTime);
+    this.view.setFromUndo(this._currentBaseline);
+    this.applyViewState(this.view, animationTime);
+    this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Redo);
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */
@@ -2257,6 +2899,7 @@ export class ScreenViewport extends Viewport {
 /** Forms a 2-way connection between 2 Viewports of the same iModel, such that any change of the parameters in one will be reflected in the other.
  * For example, Navigator uses this class to synchronize two views for revision comparison.
  * @note It is possible to synchronize two Viewports from two different [[IModelConnection]]s of the same iModel.
+ * @alpha
  */
 export class TwoWayViewportSync {
   private _removals: VoidFunction[] = [];
@@ -2264,7 +2907,7 @@ export class TwoWayViewportSync {
   private syncView(source: Viewport, target: Viewport) {
     if (this._isEcho) return;
     this._isEcho = true; // so we don't react to the echo of this sync
-    target.applyViewState(source.view);
+    target.applyViewState(source.view.clone(target.iModel));
     this._isEcho = false;
   }
 
@@ -2272,7 +2915,7 @@ export class TwoWayViewportSync {
   public connect(view1: Viewport, view2: Viewport) {
     this.disconnect();
 
-    view2.applyViewState(view1.view); // use view1 as the starting point
+    view2.applyViewState(view1.view.clone(view2.iModel)); // use view1 as the starting point
 
     // listen to the onViewChanged events from both views
     this._removals.push(view1.onViewChanged.addListener(() => this.syncView(view1, view2)));

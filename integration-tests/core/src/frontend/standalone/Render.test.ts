@@ -26,13 +26,13 @@ describe("Render mirukuru", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await IModelConnection.openStandalone(imodelLocation);
     WebGLTestContext.startup();
+    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
+    imodel = await IModelConnection.openSnapshot(imodelLocation);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeStandalone();
+    if (imodel) await imodel.closeSnapshot();
     WebGLTestContext.shutdown();
   });
 
@@ -181,7 +181,7 @@ describe("Render mirukuru", () => {
 
       // Specify element is never drawn.
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.setNeverDrawn(elemId);
-      vp.view.setFeatureOverridesDirty(true);
+      vp.setFeatureOverrideProviderChanged();
       await vp.waitForAllTilesToRender();
 
       const bgColor = Color.fromRgba(0, 0, 0, 0xff);
@@ -194,7 +194,7 @@ describe("Render mirukuru", () => {
 
       // Specify element is nonLocatable
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromJSON({ nonLocatable: true }));
-      vp.view.setFeatureOverridesDirty(true);
+      vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       pixels = vp.readUniquePixelData(undefined, true); // Exclude non-locatable elements
       expect(pixels.length).to.equal(1);
@@ -205,7 +205,7 @@ describe("Render mirukuru", () => {
 
       // Specify element is drawn blue
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromRgb(ColorDef.blue));
-      vp.view.setFeatureOverridesDirty(true);
+      vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
       expect(colors.length).to.equal(2);
@@ -213,7 +213,7 @@ describe("Render mirukuru", () => {
 
       // Specify default overrides
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.setDefaultOverrides(FeatureSymbology.Appearance.fromRgb(ColorDef.red));
-      vp.view.setFeatureOverridesDirty(true);
+      vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
       expect(colors.length).to.equal(2);
@@ -224,7 +224,7 @@ describe("Render mirukuru", () => {
         ovrs.setDefaultOverrides(FeatureSymbology.Appearance.fromRgb(ColorDef.green));
         ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromRgb(new ColorDef(0x7f0000))); // blue = 0x7f...
       };
-      vp.view.setFeatureOverridesDirty(true);
+      vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
       expect(colors.length).to.equal(2);
@@ -233,7 +233,7 @@ describe("Render mirukuru", () => {
 
       // Override by subcategory
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideSubCategory(subcatId, FeatureSymbology.Appearance.fromRgb(ColorDef.red));
-      vp.view.setFeatureOverridesDirty(true);
+      vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.true;
@@ -243,14 +243,14 @@ describe("Render mirukuru", () => {
         ovrs.overrideSubCategory(subcatId, FeatureSymbology.Appearance.fromRgb(ColorDef.blue));
         ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromRgb(ColorDef.red));
       };
-      vp.view.setFeatureOverridesDirty(true);
+      vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.true;
 
       // Override to be fully transparent - element should not draw at all
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromTransparency(1.0));
-      vp.view.setFeatureOverridesDirty(true);
+      vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
       expect(colors.length).to.equal(1);
@@ -264,7 +264,7 @@ describe("Render mirukuru", () => {
       vp.view.displayStyle.backgroundColor = ColorDef.red;
       vp.invalidateRenderPlan();
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromJSON({ rgb: new RgbColor(0, 0, 1), transparency: 0.5 }));
-      vp.view.setFeatureOverridesDirty(true);
+      vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
       expect(colors.length).to.equal(2);

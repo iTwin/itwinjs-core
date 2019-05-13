@@ -6,25 +6,36 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { MergeTarget, MergeTargetProps } from "./Target";
+import { CommonProps } from "@bentley/ui-core";
 import { Arrow } from "./Arrow";
-import "./Merge.scss";
+import { ZoneTarget } from "./Target";
 
-/** Merge target. */
-export class Merge extends React.PureComponent<MergeTargetProps> {
+/** Properties of [[MergeTarget]] component.
+ * @beta
+ */
+export interface MergeTargetProps extends CommonProps {
+  /** Function called when component is targeted or untargeted. */
+  onTargetChanged?: (isTargeted: boolean) => void;
+}
+
+/** Zone target used to merge widgets.
+ * @beta
+ */
+export class MergeTarget extends React.PureComponent<MergeTargetProps> {
   public render() {
-    const mergeClassName = classnames(
+    const { className, ...props } = this.props;
+    const targetClassName = classnames(
       "nz-zones-target-merge",
-      this.props.className);
+      className);
 
     return (
-      <MergeTarget
-        className={mergeClassName}
-        {...this.props}
+      <ZoneTarget
+        className={targetClassName}
+        {...props}
       >
-        <Arrow className="nz-arrow" />
-        <Arrow className="nz-mirrored" />
-      </MergeTarget>
+        <Arrow zoneIndex={6} />
+        <Arrow zoneIndex={4} />
+      </ZoneTarget>
     );
   }
 }

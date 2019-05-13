@@ -9,7 +9,9 @@ import classnames from "classnames";
 
 import "./UnderlinedButton.scss";
 
-/** Properties for the [[UnderlinedButton]] React component */
+/** Properties for the [[UnderlinedButton]] React component
+ * @public
+ */
 export interface UnderlinedButtonProps {
   /** String that will be rendered by the button */
   children: string;
@@ -21,7 +23,9 @@ export interface UnderlinedButtonProps {
   onClick?: (e: React.MouseEvent) => void;
 }
 
-/** A React component that makes text clickable and underlined */
+/** A React component that makes text clickable and underlined
+ * @public
+ */
 export function UnderlinedButton(props: UnderlinedButtonProps) {
   const className = classnames(
     "core-underlined-button",

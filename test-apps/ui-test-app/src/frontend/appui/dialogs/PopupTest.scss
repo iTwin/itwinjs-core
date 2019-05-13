@@ -1,0 +1,125 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.popup-test {
+  width: 100%;
+  height: 300px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.popup-test .buttons {
+  display: flex;
+  width: 100%;
+  justify-content: space-evenly;
+
+  > div {
+    position: relative;
+  }
+
+  button {
+    @include uicore-buttons-hollow;
+    width: 110px;
+  }
+}
+
+.popup-test .buttons:nth-child(2) {
+  justify-content: flex-start;
+  width: 72%;
+}
+
+.popup-test .buttons {
+  margin-bottom: 15px;
+}
+
+.popup-test .options {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+
+  > div {
+    display: flex;
+    align-items: center;
+    margin: 0 15px;
+    justify-content: space-evenly;
+
+    > label {
+      margin-right: 5px;
+    }
+  }
+}
+
+.popup-toggle {
+  width: 54px;
+  height: 28px
+}
+
+.popupcolors {
+  background: $uicore-white;
+  color: $uicore-white;
+}
+
+.statusbarcolors {
+  background: #3f4850;
+  color: #3f4850;
+  border-color: #3f4850;
+}
+
+.popup-test-content {
+  padding: 15px 20px 15px 20px;
+  color: #777;
+  width: 120px;
+
+  h4 {
+    white-space: nowrap;
+    margin: 0;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  div {
+    height: 1px;
+    width: 100%;
+    margin: 0 0 10px 0;
+    background: #ccc;
+  }
+
+  > ul {
+    font-size: 12px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  > ul > li {
+    padding: 5px 5px;
+    color: inherit;
+
+    &:hover {
+      background: #eee;
+      cursor: pointer;
+    }
+  }
+}
+
+.statusbarcolors .popup-test-content {
+  color: $uicore-white;
+}
+
+.statusbarcolors .popup-test-content ul li:hover {
+  color: #777;
+}

@@ -27,6 +27,7 @@ import { Property, AnyProperty } from "./Metadata/Property";
 /**
  * Interface to allow schema traversal/deserialization workflows to visit
  * each part, item, class, etc. that exists in a given schema.
+ * @beta
  */
 export interface ISchemaPartVisitor {
   /**
@@ -292,11 +293,12 @@ function isCustomAttributeContainer(object: any): object is CustomAttributeConta
 
 /**
  * A helper class to call methods on the provided [[ISchemaPartVisitor]].
+ * @beta
  */
 export class SchemaPartVisitorDelegate {
   private _visitor: ISchemaPartVisitor;
 
-  constructor (visitor: ISchemaPartVisitor) {
+  constructor(visitor: ISchemaPartVisitor) {
     this._visitor = visitor;
   }
 

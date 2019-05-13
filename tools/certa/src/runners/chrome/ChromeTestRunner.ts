@@ -3,13 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import * as fs from "fs";
 import * as puppeteer from "puppeteer";
 import * as detect from "detect-port";
 import { spawnChildProcess } from "../../utils/SpawnUtils";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { CertaConfig } from "../../CertaConfig";
 import { writeCoverageData } from "../../utils/CoverageUtils";
+import { configureRemoteReporter } from "./MochaRemoteReporter";
 
 interface ChromeTestResults {
   failures: number;
@@ -31,10 +31,14 @@ export class ChromeTestRunner {
   public static async runTests(config: CertaConfig): Promise<void> {
     const webserverEnv = {
       CERTA_PORT: process.env.CERTA_PORT,
-      CERTA_PATH: this.generateHtml(config),
+      CERTA_PATH: path.join(__dirname, "../../../public/index.html"),
       CERTA_PUBLIC_DIRS: JSON.stringify(config.chromeOptions.publicDirs),
     };
     const webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv);
+
+    // FIXME: Do we really want to always enforce this behavior?
+    if (process.env.CI || process.env.TF_BUILD)
+      (config.mochaOptions as any).forbidOnly = true;
 
     const { failures, coverage } = await runTestsInPuppeteer(config, process.env.CERTA_PORT!);
     webserverProcess.kill();
@@ -44,24 +48,6 @@ export class ChromeTestRunner {
       writeCoverageData(coverage);
 
     process.exit(failures);
-  }
-
-  private static generateHtml(config: CertaConfig): string {
-    const contents = `<!doctype html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <script>
-            var _CERTA_CONFIG = ${JSON.stringify(config)};
-          </script>
-        </head>
-        <body>
-          <div id="mocha"></div>
-        </body>
-      </html>`;
-    const filename = path.join(__dirname, "test.html");
-    fs.writeFileSync(filename, contents);
-    return filename;
   }
 }
 
@@ -124,9 +110,12 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       // Now load the page (and requisite scripts)...
       const testBundle = (config.cover && config.instrumentedTestBundle) || config.testBundle;
       await page.goto(`http://localhost:${port}`);
+      await page.addScriptTag({ content: `var _CERTA_CONFIG = ${JSON.stringify(config)};` });
       await loadScript(page, require.resolve("mocha/mocha.js"));
       await loadScript(page, require.resolve("source-map-support/browser-source-map-support.js"));
       await loadScript(page, require.resolve("../../utils/initSourceMaps.js"));
+      await loadScript(page, require.resolve("./MochaSerializer.js"));
+      await configureRemoteReporter(page);
       await loadScript(page, require.resolve("../../utils/initMocha.js"));
       if (config.debug)
         await loadScriptAndTemporarilyBreak(page, testBundle);

@@ -6,7 +6,7 @@
       "commandKind": "global",
       "summary": "Runs npm audit for the entire monorepo",
       "description": "Scans the entire monorepo for security vulnerabilities via npm audit",
-      "shellCommand": "node common/scripts/audit.js"
+      "shellCommand": "node tools/build/scripts/rush/audit.js"
     },
     {
       "name": "clean",

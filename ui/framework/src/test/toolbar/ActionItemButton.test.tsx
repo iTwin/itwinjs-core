@@ -59,14 +59,14 @@ describe("ActionItemButton", () => {
       });
 
     const wrapper = mount(<ActionItemButton actionItem={spyCommand} />);
-    wrapper.find(".nz-toolbar-item-icon").simulate("click");
+    wrapper.find(".nz-toolbar-item-item").simulate("click");
     spyMethod.should.have.been.called;
     wrapper.unmount();
   });
 
   it("should set focus to home on Esc", () => {
     const wrapper = mount(<ActionItemButton actionItem={testCommand} />);
-    const element = wrapper.find(".nz-toolbar-item-icon");
+    const element = wrapper.find(".nz-toolbar-item-item");
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape", keyCode: 27 });
     expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
@@ -107,5 +107,14 @@ describe("ActionItemButton", () => {
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
     wrapper.unmount();
+  });
+
+  it("should handle changing state via props", () => {
+    const myCommand = testCommand;
+    myCommand.isEnabled = true;
+    const wrapper = mount(<ActionItemButton actionItem={myCommand} isEnabled={false} />);
+    expect(wrapper.state("isEnabled")).to.be.false;
+    wrapper.setProps({ isEnabled: true });
+    expect(wrapper.state("isEnabled")).to.be.true;
   });
 });

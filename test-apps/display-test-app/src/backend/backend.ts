@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
@@ -16,7 +16,7 @@ IModelJsConfig.init(true /* suppress exception */, true /* suppress error messag
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
 export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
+  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 }
 
 function setupStandaloneConfiguration() {
@@ -25,7 +25,7 @@ function setupStandaloneConfiguration() {
 
   const filename = process.env.SVT_STANDALONE_FILENAME;
   if (filename !== undefined) {
-    const configuration: any = {};
+    const configuration: SVTConfiguration = {};
     configuration.standalone = true;
     configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
     configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
@@ -33,6 +33,18 @@ function setupStandaloneConfiguration() {
     configuration.enableDiagnostics = undefined === process.env.SVT_DISABLE_DIAGNOSTICS;
     if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
       configuration.signInForStandalone = true;
+
+    configuration.disableInstancing = undefined !== process.env.SVT_DISABLE_INSTANCING;
+    configuration.omitEdges = undefined !== process.env.SVT_OMIT_EDGES;
+    configuration.displaySolarShadows = true;     // default solar shadows on.... undefined !== process.env.SVT_DISPLAY_SOLAR_SHADOWS;
+
+    configuration.enableBackfaceCulling = undefined !== process.env.SVT_ENABLE_BACKFACE_CULLING;
+    configuration.disableActiveVolumeCulling = undefined !== process.env.SVT_DISABLE_ACTIVE_VOLUME_CULLING;
+    configuration.preserveShaderSourceCode = undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE;
+
+    const extensions = process.env.SVT_DISABLED_EXTENSIONS;
+    if (undefined !== extensions)
+      configuration.disabledExtensions = extensions.split(";");
 
     const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
     fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
@@ -53,6 +65,7 @@ export function initializeBackend() {
     if (svtConfig.customOrchestratorUri)
       hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
   }
+
   IModelHost.startup(hostConfig);
 
   Logger.initializeToConsole(); // configure logging for imodeljs-core

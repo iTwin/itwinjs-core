@@ -2,6 +2,54 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/bentleyjs-core_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Adds parameter for api-extractor to validate missing release tags"
+          },
+          {
+            "comment": "Add a Dictionary-based least-recently-used cache."
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "LoggerCategory -> BentleyLoggerCategory"
+          },
+          {
+            "comment": "Logged the fields in ClientRequestContext"
+          },
+          {
+            "comment": "Logging fixes. "
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "Fixed logger to not mutate incoming objects. "
+          },
+          {
+            "comment": "Improved performance logging"
+          },
+          {
+            "comment": "Added functions for iterating and obtaining the number of elements of a collection of Id64s represented as an Id64Arg."
+          },
+          {
+            "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
+          },
+          {
+            "comment": "Use TextDecoder to decode binary utf-8 strings if supported."
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/bentleyjs-core_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",
@@ -23,7 +71,7 @@
             "comment": "Add release tags to indicate API stability"
           },
           {
-            "comment": "Remove uneeded typedoc plugin depedency"
+            "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
             "comment": "Save BUILD_SEMVER to globally accessible map"

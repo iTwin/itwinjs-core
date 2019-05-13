@@ -1,8 +1,22 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<ZoneComponent /> renders correctly 1`] = `
+exports[`<Zone /> renders correctly 1`] = `
 <div
   className="nz-zones-zone"
+  style={
+    Object {
+      "height": 10,
+      "left": 0,
+      "top": 0,
+      "width": 10,
+    }
+  }
+/>
+`;
+
+exports[`<Zone /> renders correctly in footer mode 1`] = `
+<div
+  className="nz-zones-zone nz-footer-mode"
   style={
     Object {
       "height": 10,

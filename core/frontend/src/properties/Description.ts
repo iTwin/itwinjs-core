@@ -9,6 +9,7 @@ import { QuantityType } from "../QuantityFormatter";
 
 /**
  * Information about an enumeration choice
+ * @beta
  */
 export interface EnumerationChoice {
   label: string;
@@ -17,6 +18,7 @@ export interface EnumerationChoice {
 
 /**
  * Information about a set of enumeration choices
+ * @beta
  */
 export interface EnumerationChoicesInfo {
   choices: EnumerationChoice[];
@@ -26,6 +28,7 @@ export interface EnumerationChoicesInfo {
 
 /**
  * Information about a Property Editor
+ * @beta
  */
 export interface PropertyEditorInfo {
   name?: string;
@@ -34,6 +37,7 @@ export interface PropertyEditorInfo {
 
 /**
  * PropertyDescription contains metadata about a Property
+ * @beta
  */
 export interface PropertyDescription {
   name: string;
@@ -41,7 +45,9 @@ export interface PropertyDescription {
   typename: string;
   enum?: EnumerationChoicesInfo;
   editor?: PropertyEditorInfo;
-  /** QuantityType or name KOQ full name - used by quantity formatter */
+  /** QuantityType or name KOQ full name - used by quantity formatter
+   * @alpha
+   */
   quantityType?: QuantityType | string;
   /** Get the custom DataController by this name and register it with the property editor */
   dataController?: string;

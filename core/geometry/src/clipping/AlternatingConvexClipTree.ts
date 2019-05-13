@@ -10,7 +10,7 @@ import { Range1d } from "../geometry3d/Range";
 import { Angle } from "../geometry3d/Angle";
 import { ClipPlane } from "./ClipPlane";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { PolygonOps } from "../geometry3d/PointHelpers";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
@@ -441,7 +441,7 @@ export class AlternatingCCTreeNodeCurveClipper {
       const f1 = interval.high;
       const xyz0 = curve.fractionToPoint(f0);
       const xyz1 = curve.fractionToPoint(f1);
-      insideIntervals.push(CurveLocationDetailPair.createDetailRef(
+      insideIntervals.push(CurveLocationDetailPair.createCapture(
         CurveLocationDetail.createCurveFractionPoint(curve, f0, xyz0),
         CurveLocationDetail.createCurveFractionPoint(curve, f1, xyz1),
       ));

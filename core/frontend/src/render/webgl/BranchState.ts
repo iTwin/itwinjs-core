@@ -10,26 +10,29 @@ import { Id64, Id64String, assert, lowerBound } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Branch, Batch } from "./Graphic";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
+import { PlanarClassifier } from "./PlanarClassifier";
 
 /**
  * Represents a branch node in the scene graph, with associated view flags and transform to be applied to
  * all sub-nodes of the branch.
+ * @internal
  */
 export class BranchState {
   public readonly transform: Transform;
   private readonly _viewFlags: ViewFlags;
   public symbologyOverrides: FeatureSymbology.Overrides;
   public readonly clipVolume?: ClipPlanesVolume | ClipMaskVolume;
+  public readonly planarClassifier?: PlanarClassifier;
 
   public static fromBranch(prev: BranchState, branch: Branch) {
     const vf = branch.branch.getViewFlags(prev.viewFlags);
     const transform = prev.transform.multiplyTransformTransform(branch.localToWorldTransform);
     const ovrs = undefined !== branch.branch.symbologyOverrides ? branch.branch.symbologyOverrides : prev.symbologyOverrides;
-    return new BranchState(vf, transform, ovrs, branch.clips);
+    return new BranchState(vf, transform, ovrs, branch.clips, branch.planarClassifier);
   }
 
-  public static create(ovrs: FeatureSymbology.Overrides, flags?: ViewFlags, transform?: Transform, clip?: ClipMaskVolume | ClipPlanesVolume) {
-    return new BranchState(ViewFlags.createFrom(flags), undefined !== transform ? transform.clone() : Transform.createIdentity(), ovrs, clip);
+  public static create(ovrs: FeatureSymbology.Overrides, flags?: ViewFlags, transform?: Transform, clip?: ClipMaskVolume | ClipPlanesVolume, planarClassifier?: PlanarClassifier) {
+    return new BranchState(ViewFlags.createFrom(flags), undefined !== transform ? transform.clone() : Transform.createIdentity(), ovrs, clip, planarClassifier);
   }
 
   public static createForDecorations(): BranchState {
@@ -45,11 +48,12 @@ export class BranchState {
   public set viewFlags(vf: ViewFlags) { vf.clone(this._viewFlags); }
   public get showClipVolume(): boolean { return this.viewFlags.clipVolume; }
 
-  private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: ClipPlanesVolume | ClipMaskVolume) {
+  private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier) {
     this._viewFlags = flags;
     this.transform = transform;
     this.symbologyOverrides = ovrs;
     this.clipVolume = clip;
+    this.planarClassifier = planarClassifier;
   }
 }
 
@@ -59,6 +63,7 @@ export class BranchState {
  * and multiplies the current transform with the branch's transform. Popping it inverts this
  * operation. The state at the top of the stack applies to the rendering of all primitives.
  * The stack does not store the scene graph itself.
+ * @internal
  */
 export class BranchStack {
   private readonly _stack: BranchState[] = [];
@@ -113,6 +118,7 @@ export class BranchStack {
  * During rendering, the feature IDs are written to the "feature ID" color attachment.
  * The batch IDs remain valid during a call to Target.readPixels() so that they can be used to extract
  * Features from the Batch's FeatureTables.
+ * @internal
  */
 export class BatchState {
   private _batches: Batch[] = []; // NB: this list is ordered - but *not* indexed - by batch ID.
@@ -165,14 +171,14 @@ export class BatchState {
     return batch.featureTable.findFeature(featureIndex);
   }
 
-  public get numFeatureIds() { return this._nextBatchId; }
+  public get numFeatureIds() { return this.nextBatchId; }
   public get numBatches() { return this._batches.length; }
   public findBatchId(featureId: number) {
     const batch = this.find(featureId);
     return undefined !== batch ? batch.batchId : 0;
   }
 
-  private get _nextBatchId(): number {
+  public get nextBatchId(): number {
     if (this.isEmpty)
       return 1;
 
@@ -188,7 +194,7 @@ export class BatchState {
 
   private getBatchId(batch: Batch, allowAdd: boolean): number {
     if (allowAdd && 0 === batch.batchId) {
-      batch.batchId = this._nextBatchId;
+      batch.batchId = this.nextBatchId;
       this._batches.push(batch);
     }
 

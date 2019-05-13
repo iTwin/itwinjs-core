@@ -12,9 +12,8 @@ import { Viewport, ScreenViewport, linePlaneIntersect } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId } from "./StandardView";
 import { ViewState } from "./ViewState";
-import { CoordinateLockOverrides } from "./tools/ToolAdmin";
 import { ColorDef, ColorByName, LinePixels, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { BeButtonEvent, CoordSource, BeButton, InputCollector } from "./tools/Tool";
+import { BeButtonEvent, CoordSource, BeButton, InputCollector, CoordinateLockOverrides } from "./tools/Tool";
 import { SnapMode, SnapDetail, SnapHeat, HitDetail } from "./HitDetail";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { AuxCoordSystemState, ACSDisplayOptions } from "./AuxCoordSys";
@@ -22,7 +21,8 @@ import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { DecorateContext } from "./ViewContext";
 import { ViewTool } from "./tools/ViewTool";
 
-export const enum AccuDrawFlags {
+/** @internal */
+export enum AccuDrawFlags {
   SetModePolar = 1,
   SetModeRect = 1 << 1,
   SetOrigin = (1 << 2),
@@ -47,12 +47,14 @@ export const enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
-export const enum CompassMode {
+/** @public */
+export enum CompassMode {
   Polar = 0,
   Rectangular = 1,
 }
 
-export const enum RotationMode {
+/** @public */
+export enum RotationMode {
   Top = 1,
   Front = 2,
   Side = 3,
@@ -61,7 +63,8 @@ export const enum RotationMode {
   Context = 6,
 }
 
-export const enum LockedStates {
+/** @internal */
+export enum LockedStates {
   NONE_LOCKED = 0,
   X_BM = (1),
   Y_BM = (1 << 1),
@@ -71,14 +74,16 @@ export const enum LockedStates {
   ANGLE_BM = (XY_BM | VEC_BM),
 }
 
-export const enum CurrentState {
+/** @internal */
+export enum CurrentState {
   NotEnabled = 0, // Compass disabled/unwanted for this session.
   Deactivated = 1, // Compass deactivated but CAN be activated by user.
   Inactive = 2, // Compass not displayed awaiting automatic activation (default tool state).
   Active = 3, // Compass displayed and adjusting points.
 }
 
-export const enum ContextMode {
+/** @internal */
+export enum ContextMode {
   Locked = 0,
   XAxis = 1,
   YAxis = 2,
@@ -87,7 +92,8 @@ export const enum ContextMode {
   None = 15,
 }
 
-export const enum ItemField {
+/** @internal */
+export enum ItemField {
   DIST_Item = 0,
   ANGLE_Item = 1,
   X_Item = 2,
@@ -95,18 +101,20 @@ export const enum ItemField {
   Z_Item = 4,
 }
 
+/** @internal */
 export enum KeyinStatus {
   Dynamic = 0,
   Partial = 1,
   DontUpdate = 2,
 }
 
-enum Constants {
+const enum Constants {
   MAX_SAVED_VALUES = 20,
   SMALL_ANGLE = 1.0e-12,
   SMALL_DELTA = 0.00001,
 }
 
+/** @internal */
 export class AccudrawData {
   public flags = 0; // AccuDrawFlags
   public readonly origin = new Point3d(); // used if ACCUDRAW_SetOrigin
@@ -118,6 +126,7 @@ export class AccudrawData {
   public zero() { this.flags = this.distance = this.angle = 0; this.origin.setZero(); this.delta.setZero(); this.vector.setZero(); this.rMatrix.setIdentity(); }
 }
 
+/** @internal */
 export class Flags {
   public redrawCompass = false;
   public dialogNeedsUpdate = false;
@@ -138,11 +147,13 @@ export class Flags {
   public animateRotation = false;
 }
 
+/** @internal */
 export class RoundOff {
   public active = false;
   public units = new Set<number>();
 }
 
+/** @internal */
 export class SavedState {
   public state = CurrentState.NotEnabled;
   public mode = CompassMode.Polar;
@@ -162,6 +173,7 @@ class SavedCoords {
   public readonly savedValIsAngle: boolean[] = [];
 }
 
+/** @internal */
 export class ThreeAxes {
   public readonly x = Vector3d.unitX();
   public readonly y = Vector3d.unitY();
@@ -186,62 +198,89 @@ export class ThreeAxes {
   public equals(other: ThreeAxes): boolean { return this.x.isExactEqual(other.x) && this.y.isExactEqual(other.y) && this.z.isExactEqual(other.z); }
 }
 
-/**
- * Accudraw is an aide for entering coordinate data.
+/** Accudraw is an aide for entering coordinate data.
  * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)
+ * @public
  */
 export class AccuDraw {
+  /** @internal */
   public currentState = CurrentState.NotEnabled; // Compass state
   public compassMode = CompassMode.Rectangular; // Compass mode
   public rotationMode = RotationMode.View; // Compass rotation
   public currentView?: ScreenViewport; // will be nullptr if view not yet defined
+  /** @internal */
   public readonly published = new AccudrawData(); // Staging area for hints
+  /** @internal */
   public readonly origin = new Point3d(); // origin point...not on compass plane when z != 0.0
+  /** @internal */
   public readonly axes = new ThreeAxes(); // X, Y and Z vectors (3d rotation matrix)
+  /** @internal */
   public readonly delta = Vector3d.unitZ(); // dialog items (x, y & z)
   private _distance = 0; // current distance
   private _angle = 0; // current angle
+  /** @internal */
   public locked = LockedStates.NONE_LOCKED; // axis/distance locked bit mask
+  /** @internal */
   public indexed = LockedStates.NONE_LOCKED; // axis/distance indexed bit mask
   private readonly _distanceRoundOff = new RoundOff(); // distance round off enabled and unit
   private readonly _angleRoundOff = new RoundOff(); // angle round off enabled and unit
+  /** @internal */
   public readonly flags = new Flags(); // current state flags
   private readonly _fieldLocked: boolean[] = []; // locked state of fields
   private readonly _keyinStatus: KeyinStatus[] = []; // state of input field
+  /** @internal */
   public readonly savedStateViewTool = new SavedState(); // Restore point for shortcuts/tools...
+  /** @internal */
   public readonly savedStateInputCollector = new SavedState(); // Restore point for shortcuts/tools...
   private readonly _savedCoords = new SavedCoords(); // History of previous angles/distances...
+  /** @internal */
   public readonly baseAxes = new ThreeAxes(); // Used for "context" base rotation to hold arbitrary rotation w/o needing to change ACS...
+  /** @internal */
   public readonly lastAxes = new ThreeAxes(); // Last result from UpdateRotation, replaces cM.rMatrix...
   private _lastDistance = 0; // previous saved distance or distance indexing tick
   private _tolerance = 0; // computed view based indexing tolerance
   private _percentChanged = 0; // Compass animation state
   private _threshold = 0; // Threshold for automatic x/y field focus change.
+  /** @internal */
   public readonly planePt = new Point3d(); // same as origin unless non-zero locked z value
   private readonly _rawDelta = new Point2d(); // used by rect fix point
   private readonly _rawPoint = new Point3d(); // raw uor point passed to fix point
   private readonly _rawPointOnPlane = new Point3d(); // adjusted rawPoint by applying hard/soft construction plane
+  /** @internal */
   public readonly point = new Point3d(); // current cursor point
+  /** @internal */
   public readonly vector = Vector3d.unitZ(); // current/last good locked direction
   private _xIsNegative = false; // Last delta.x was negative
   private _yIsNegative = false; // Last delta.y was negative
   private _xIsExplicit = false; // Sign of delta.x established from user input input, don't allow +/- side flip.
   private _yIsExplicit = false; // Sign of delta.y established from user input input, don't allow +/- side flip.
   public dontMoveFocus = false; // Disable automatic focus change when user is entering input.
+  /** @internal */
   public newFocus = ItemField.X_Item; // Item to move focus to (X_Item or Y_Item) for automatic focus change.
   private readonly _rMatrix = new Matrix3d();
+  /** @internal */
   protected _acsPickId?: string;
 
   // Compass Display Preferences...
+  /** @internal */
   protected _compassSizeInches = 0.44;
+  /** @internal */
   protected _animationFrames = 12;
+  /** @internal */
   protected _indexToleranceInches = 0.11;
+  /** @internal */
   protected readonly _frameColor = new ColorDef(ColorByName.lightGrey);
+  /** @internal */
   protected readonly _fillColor = new ColorDef(ColorByName.blue);
+  /** @internal */
   protected readonly _xColor = new ColorDef(ColorByName.red);
+  /** @internal */
   protected readonly _yColor = new ColorDef(ColorByName.green);
+  /** @internal */
   protected readonly _indexColor = new ColorDef(ColorByName.white);
+  /** @internal */
   protected readonly _frameColorNoFocus = new ColorDef(ColorByName.darkGrey);
+  /** @internal */
   protected readonly _fillColorNoFocus = new ColorDef(ColorByName.lightGrey);
 
   // User Preference Settings...
@@ -256,20 +295,28 @@ export class AccuDraw {
   public autoPointPlacement = false;
   private static _tempRot = new Matrix3d();
 
+  /** @internal */
   public onInitialized() { this.enableForSession(); }
+  /** @internal */
   public getRotation(rMatrix?: Matrix3d): Matrix3d { if (!rMatrix) rMatrix = this._rMatrix; Matrix3d.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix; }
 
   public get isActive(): boolean { return CurrentState.Active === this.currentState; }
   public get isEnabled(): boolean { return (this.currentState > CurrentState.NotEnabled); }
   public get isInactive(): boolean { return (CurrentState.Inactive === this.currentState); }
   public get isDeactivated(): boolean { return (CurrentState.Deactivated === this.currentState); }
+  /** @internal */
   protected setNewFocus(index: ItemField) { this.newFocus = index; }
+  /** @internal */
   public getFieldLock(index: ItemField): boolean { return this._fieldLocked[index]; }
+  /** @internal */
   public getKeyinStatus(index: ItemField): KeyinStatus { return this._keyinStatus[index]; }
 
-  /** Implement this method to set focus to the AccuDraw UI. */
+  /** Implement this method to set focus to the AccuDraw UI.
+   * @internal
+   */
   public grabInputFocus() { }
 
+  /** @internal */
   public activate(): void {
     // Upgrade state to inactive so upgradeToActiveState knows it is ok to move to active...
     if (CurrentState.Deactivated === this.currentState)
@@ -277,6 +324,7 @@ export class AccuDraw {
     this.upgradeToActiveState();
   }
 
+  /** @internal */
   public deactivate() {
     this.downgradeInactiveState();
     // Don't allow compass to come back until user re-enables it...
@@ -284,24 +332,28 @@ export class AccuDraw {
       this.currentState = CurrentState.Deactivated;
   }
 
+  /** @public */
   public setCompassMode(mode: CompassMode): void {
     if (mode === this.compassMode) return;
     this.compassMode = mode;
     this.onCompassModeChange();
   }
 
+  /** @public */
   public setRotationMode(mode: RotationMode): void {
     if (mode === this.rotationMode) return;
     this.rotationMode = mode;
     this.onRotationModeChange();
   }
 
+  /** @internal */
   public setFieldLock(index: ItemField, locked: boolean): void {
     if (locked === this._fieldLocked[index]) return;
     this._fieldLocked[index] = locked;
     this.onFieldLockChange(index);
   }
 
+  /** @internal */
   public setKeyinStatus(index: ItemField, status: KeyinStatus): void {
     this._keyinStatus[index] = status;
     if (KeyinStatus.Dynamic !== status)
@@ -395,6 +447,7 @@ export class AccuDraw {
     return false;
   }
 
+  /** @internal */
   public adjustPoint(pointActive: Point3d, vp: ScreenViewport, fromSnap: boolean): boolean {
     if (!this.isEnabled)
       return false;
@@ -454,6 +507,7 @@ export class AccuDraw {
     this.planePt.setFrom(origin);
   }
 
+  /** @internal */
   public isZLocked(vp: Viewport): boolean {
     if (this._fieldLocked[ItemField.Z_Item])
       return true;
@@ -463,6 +517,7 @@ export class AccuDraw {
     return false;
   }
 
+  /** @internal */
   public accountForAuxRotationPlane(rot: ThreeAxes, plane: RotationMode): void {
     // ACS mode now can have "front" and "side" variations...
     switch (plane) {
@@ -639,6 +694,7 @@ export class AccuDraw {
     }
   }
 
+  /** @internal */
   public updateRotation(animate: boolean = false, newRotationIn?: Matrix3d): void {
     let clearLocks = true;
     const oldRotation = this.axes.clone();
@@ -736,12 +792,15 @@ export class AccuDraw {
     // animator -> ChangeOfRotation(Matrix3d:: FromColumnVectors(oldRotation[0], oldRotation[1], oldRotation[2]));
   }
 
+  /** @internal */
   public enableForSession(): void { if (CurrentState.NotEnabled === this.currentState) this.currentState = CurrentState.Inactive; }
+  /** @internal */
   public disableForSession(): void {
     this.currentState = CurrentState.NotEnabled;
     this.flags.redrawCompass = true; // Make sure decorators are called so we don't draw (i.e. erase AccuDraw compass)
   }
 
+  /** @internal */
   public setLastPoint(pt: Point3d): void {
     const vp = this.currentView;
     if (!vp)
@@ -752,6 +811,7 @@ export class AccuDraw {
     IModelApp.toolAdmin.setAdjustedDataPoint(ev);
   }
 
+  /** @internal */
   public sendDataPoint(pt: Point3d, vp: ScreenViewport): void {
     const ev = new BeButtonEvent();
     ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User);
@@ -762,6 +822,7 @@ export class AccuDraw {
     IModelApp.toolAdmin.sendButtonEvent(ev); // tslint:disable-line:no-floating-promises
   }
 
+  /** @internal */
   public clearTentative(): boolean {
     if (!IModelApp.tentativePoint.isActive)
       return false;
@@ -771,6 +832,7 @@ export class AccuDraw {
     return wasSnapped;
   }
 
+  /** @internal */
   public doAutoPoint(index: ItemField, mode: CompassMode): void {
     const vp = this.currentView;
     if (!vp)
@@ -819,6 +881,7 @@ export class AccuDraw {
     }
   }
 
+  /** @internal */
   public getValueByIndex(index: ItemField): number {
     switch (index) {
       case ItemField.X_Item: return this.delta.x;
@@ -831,6 +894,7 @@ export class AccuDraw {
     }
   }
 
+  /** @internal */
   public setValueByIndex(index: ItemField, value: number): void {
     switch (index) {
       case ItemField.X_Item:
@@ -1041,6 +1105,7 @@ export class AccuDraw {
     return BentleyStatus.SUCCESS;
   }
 
+  /** @internal */
   public unlockAllFields(): void {
     this.locked = 0;
 
@@ -1133,6 +1198,7 @@ export class AccuDraw {
     return (!IModelApp.toolAdmin.gridLock);
   }
 
+  /** @internal */
   public processFieldInput(index: ItemField, input: string, synchText: boolean): void {
     const isBearing = false;
 
@@ -1185,6 +1251,7 @@ export class AccuDraw {
     this.refreshDecorationsAndDynamics();
   }
 
+  /** @internal */
   public updateFieldLock(index: ItemField, locked: boolean): void {
     if (locked) {
       if (!this._fieldLocked[index]) {
@@ -1238,6 +1305,7 @@ export class AccuDraw {
     this.setKeyinStatus(index, KeyinStatus.Dynamic);
   }
 
+  /** @internal */
   public static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined {
     const vp = (undefined !== currentVp) ? currentVp : snap.viewport;
     const rotation = out ? out : new Matrix3d();
@@ -1305,6 +1373,7 @@ export class AccuDraw {
     return undefined;
   }
 
+  /** @internal */
   public static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: Matrix3d): Matrix3d {
     const rMatrix = out ? out : new Matrix3d();
     rMatrix.setFrom(ViewState.getStandardViewMatrix(nStandard));
@@ -1316,6 +1385,7 @@ export class AccuDraw {
     return rMatrix;
   }
 
+  /** @internal */
   public static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: Matrix3d): Matrix3d | undefined {
     if (checkAccuDraw && IModelApp.accuDraw.isActive)
       return IModelApp.accuDraw.getRotation(rMatrix);
@@ -1330,6 +1400,7 @@ export class AccuDraw {
     return useVp.rotation;
   }
 
+  /** @internal */
   public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean = true): void {
     // When modeling with multiple spatial views open, you'd typically want the same ACS in all views...
     if (allViews && vp.view.isSpatialView()) {
@@ -1345,6 +1416,7 @@ export class AccuDraw {
     IModelApp.accuDraw.setContext(AccuDrawFlags.OrientACS);
   }
 
+  /** @internal */
   public distanceLock(synchText: boolean, saveInHistory: boolean): void {
     this.locked |= LockedStates.DIST_BM;
 
@@ -1360,6 +1432,7 @@ export class AccuDraw {
     }
   }
 
+  /** @internal */
   public angleLock(): void {
     if (this.indexed & LockedStates.Y_BM)
       this.locked |= LockedStates.Y_BM;
@@ -1379,6 +1452,7 @@ export class AccuDraw {
     this.flags.softAngleLock = false;
   }
 
+  /** @internal */
   public doLockAngle(isSnapped: boolean): void {
     if (CompassMode.Polar !== this.compassMode) {
       this.locked = LockedStates.NONE_LOCKED;
@@ -1408,6 +1482,7 @@ export class AccuDraw {
     }
   }
 
+  /** @internal */
   public saveCoordinate(index: ItemField, value: number): void {
     const isAngle = (ItemField.ANGLE_Item === index);
     let currIndex = this._savedCoords.nSaveValues + 1;
@@ -1437,6 +1512,7 @@ export class AccuDraw {
       this._lastDistance = value;
   }
 
+  /** @internal */
   public changeCompassMode(animate: boolean = false): void {
     this.setCompassMode(CompassMode.Polar === this.compassMode ? CompassMode.Rectangular : CompassMode.Polar);
 
@@ -1449,6 +1525,7 @@ export class AccuDraw {
     // animator -> ChangeOfMode();
   }
 
+  /** @internal */
   public changeBaseRotationMode(mode: RotationMode): void {
     if (mode > RotationMode.Context)
       return;
@@ -1459,7 +1536,7 @@ export class AccuDraw {
         const baseRMatrix = this.getBaseRotation();
         const baseZ = baseRMatrix.getRow(2);
 
-        if (baseZ.isParallelTo(this.axes.z))
+        if (baseZ.isParallelTo(this.axes.z, true))
           return;
       }
 
@@ -1519,6 +1596,7 @@ export class AccuDraw {
     return baseRMatrix;
   }
 
+  /** @internal */
   public setContextRotation(rMatrix: Matrix3d, locked: boolean, animate: boolean): void {
     this.flags.lockedRotation = locked;
     this.flags.contextRotMode = locked ? ContextMode.Locked : ContextMode.None;
@@ -1541,6 +1619,7 @@ export class AccuDraw {
       this.setCompassMode(this.flags.baseMode);
   }
 
+  /** @internal */
   public setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: Matrix3d | Vector3d, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus {
     this.published.flags |= flags;
 
@@ -1610,6 +1689,7 @@ export class AccuDraw {
     }
   }
 
+  /** @internal */
   public onPrimitiveToolInstall(): boolean {
     if (!this.isEnabled)
       return false;
@@ -1625,6 +1705,7 @@ export class AccuDraw {
     return false;
   }
 
+  /** @internal */
   public onViewToolInstall(): boolean {
     if (!this.isEnabled)
       return false;
@@ -1639,6 +1720,7 @@ export class AccuDraw {
     return false;
   }
 
+  /** @internal */
   public onViewToolExit(): boolean {
     if (!this.isEnabled)
       return false;
@@ -1648,6 +1730,7 @@ export class AccuDraw {
     return false;
   }
 
+  /** @internal */
   public onInputCollectorInstall(): boolean {
     if (!this.isEnabled)
       return false;
@@ -1662,6 +1745,7 @@ export class AccuDraw {
     return false;
   }
 
+  /** @internal */
   public onInputCollectorExit(): boolean {
     if (!this.isEnabled)
       return false;
@@ -1671,6 +1755,7 @@ export class AccuDraw {
     return false;
   }
 
+  /** @internal */
   public saveState(stateBuffer: SavedState): void {
     stateBuffer.state = this.currentState;
     stateBuffer.mode = this.compassMode;
@@ -1684,6 +1769,7 @@ export class AccuDraw {
     stateBuffer.ignoreFlags = 0;
   }
 
+  /** @internal */
   public restoreState(stateBuffer: SavedState): void {
     if (0 === (stateBuffer.ignoreFlags & AccuDrawFlags.Disable)) {
       this.currentState = stateBuffer.state;
@@ -1889,7 +1975,9 @@ export class AccuDraw {
     }
   }
 
+  /** @internal */
   public testDecorationHit(id: string): boolean { return id === this._acsPickId; }
+  /** @internal */
   public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined {
     if (!hit.viewport.viewFlags.acsTriad)
       return undefined;
@@ -1900,6 +1988,7 @@ export class AccuDraw {
     return acsGeom;
   }
 
+  /** @internal */
   public decorate(context: DecorateContext) {
     if (context.viewport.viewFlags.acsTriad) {
       context.viewport.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
@@ -2095,11 +2184,17 @@ export class AccuDraw {
     }
   }
 
+  /** @internal */
   public onCompassModeChange(): void { }
+  /** @internal */
   public onRotationModeChange(): void { }
+  /** @internal */
   public onFieldLockChange(_index: ItemField) { }
+  /** @internal */
   public onFieldValueChange(_index: ItemField) { }
+  /** @internal */
   public get hasInputFocus() { return true; }
+  /** @internal */
   public setFocusItem(_index: ItemField) { }
 
   private static getMinPolarMag(origin: Point3d): number {
@@ -2152,6 +2247,7 @@ export class AccuDraw {
     return BentleyStatus.SUCCESS;
   }
 
+  /** @internal */
   public softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean {
     if (!vp.isPointAdjustmentRequired) {
       outPtP.setFrom(inPtP);
@@ -2172,7 +2268,7 @@ export class AccuDraw {
     return true;
   }
 
-  /** snap projects normal, always produces point */
+  /** @internal */
   public hardConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean {
     if (!vp.isPointAdjustmentRequired) {
       outPtP.setFrom(inPtP);
@@ -2270,6 +2366,7 @@ export class AccuDraw {
     return roundValue * Math.floor((angle / roundValue) + 0.5);
   }
 
+  /** @internal */
   public fixPointPolar(vp: Viewport): void {
     let angleChanged = false;
     let distChanged = false;
@@ -2455,6 +2552,7 @@ export class AccuDraw {
       this.delta.z = (this.flags.pointIsOnPlane) ? 0.0 : delta.dotProduct(this.axes.z);
   }
 
+  /** @internal */
   public fixPointRectangular(vp: Viewport): void {
     const zLocked = this.isZLocked(vp);
     const xyCorrection = new Vector3d();
@@ -2648,7 +2746,7 @@ export class AccuDraw {
     }
   }
 
-  /** @hidden */
+  /** @internal */
   public refreshDecorationsAndDynamics(): void {
     // Immediately process hints and show dynamics using adjusted point when not called from button down...
     if (!this.flags.inDataPoint)
@@ -2662,7 +2760,7 @@ export class AccuDraw {
     IModelApp.toolAdmin.updateDynamics(undefined, undefined, true);
   }
 
-  /** @hidden */
+  /** @internal */
   public upgradeToActiveState(): boolean {
     if (!this.isEnabled)
       return false;
@@ -2710,7 +2808,7 @@ export class AccuDraw {
     return false;
   }
 
-  /** @hidden */
+  /** @internal */
   public downgradeInactiveState(): boolean {
     if (!this.isEnabled)
       return false;
@@ -2722,15 +2820,19 @@ export class AccuDraw {
     return false;
   }
 
+  /** @internal */
   public onBeginDynamics(): boolean { return this.upgradeToActiveState(); }
+  /** @internal */
   public onEndDynamics(): boolean { return this.downgradeInactiveState(); }
 
   /** Implemented by sub-classes to update ui fields to show current deltas or coordinates when inactive.
    * Should also choose active x or y input field in rectangular mode based on cursor position when
    * axis isn't locked to support "smart lock".
+   * @internal
    */
   public onMotion(_ev: BeButtonEvent): void { }
 
+  /** @internal */
   public onPreButtonEvent(ev: BeButtonEvent): boolean {
     if (BeButton.Reset === ev.button && !ev.isDown && !ev.isDragging) {
       if (IModelApp.tentativePoint.isActive && this.isActive) {
@@ -2757,6 +2859,7 @@ export class AccuDraw {
     return false;
   }
 
+  /** @internal */
   public onPostButtonEvent(ev: BeButtonEvent): boolean {
     if (BeButton.Data !== ev.button || !ev.isDown || !this.isEnabled)
       return false;
@@ -2791,6 +2894,7 @@ export class AccuDraw {
     return false;
   }
 
+  /** @internal */
   public onTentative(): boolean {
     if (this.isActive || this.isInactive)
       this.grabInputFocus(); // AccuDraw gets input focus on a tentative
@@ -2847,6 +2951,7 @@ export class AccuDraw {
     this.intersectXYCurve(snap, cpArc, false); // Get point on AccuDraw distance circle, not snapped curve. Want to preserve distance constraint with apparent intersection in XY.
   }
 
+  /** @internal */
   public onSnap(snap: SnapDetail): boolean {
     // If accudraw is locked, adjust near snap point to be the nearest point on this element, CONSTRAINED by the accudraw lock.
     if (!this.isActive || !this.locked)
@@ -2885,6 +2990,7 @@ export class AccuDraw {
     return false;
   }
 
+  /** @internal */
   public onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void {
     // In case previous is closing, always update AccuDraw to current view...
     if (undefined !== this.currentView && this.currentView === previous)
@@ -3028,6 +3134,7 @@ export class AccuDraw {
     }
   }
 
+  /** @internal */
   public processHints(): void {
     if (!this.published.flags || !this.isEnabled)
       return;
@@ -3038,19 +3145,22 @@ export class AccuDraw {
       return;
     }
     const setFocus: boolean = !!(this.published.flags & AccuDrawFlags.SetFocus);
+    const smartRotation: boolean = !!(this.published.flags & AccuDrawFlags.SmartRotation);
     this.doProcessHints();
     this.published.zero();
+    if (smartRotation && this.isInactive) // Preserve smart rotation hint until when/if AccuDraw is enabled for the current tool...
+      this.published.flags = AccuDrawFlags.SmartRotation;
     if (this.isEnabled || setFocus)
       this.grabInputFocus();
   }
 }
 
-/**
- * AccuDrawHintBuilder is a Tool helper class that facilitates AccuDraw interaction.
+/** AccuDrawHintBuilder is a Tool helper class that facilitates AccuDraw interaction.
  * The tool does not directly change the current AccuDraw state; the tool's job is merely
  * to supply "hints" to AccuDraw regarding its preferred AccuDraw configuration for the
  * current tool state. User settings such as "Context Sensitivity" and "Floating Origin"
  * affect how/which hints get applied.
+ * @internal
  */
 export class AccuDrawHintBuilder {
   private _flagOrigin = false;

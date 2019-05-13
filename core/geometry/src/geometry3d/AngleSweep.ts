@@ -6,7 +6,7 @@ import { GrowableFloat64Array } from "./GrowableFloat64Array";
 import { Angle } from "./Angle";
 import { BeJSONFunctions, Geometry, AngleSweepProps } from "../Geometry";
 /**
- * An AngleSweep is a pair of angles at start and end of an interval.
+ * An `AngleSweep` is a pair of angles at start and end of an interval.
  *
  * *  For stroking purposes, the "included interval" is all angles numerically reached by theta = start + f*(end-start), where f is between 0 and 1.
  * *  This stroking formula is simple numbers -- 2PI shifts are not involved.
@@ -14,9 +14,9 @@ import { BeJSONFunctions, Geometry, AngleSweepProps } from "../Geometry";
  * *  If (start < end) the angle proceeds CCW around the unit circle.
  * *  If (end < start) the angle proceeds CW around the unit circle.
  * *  Angles beyond 360 are fine as endpoints.
- *
- * **  (350,370) covers the same unit angles as (-10,10).
- * **  (370,350) covers the same unit angles as (10,-10).
+ *   *  (350,370) covers the same unit angles as (-10,10).
+ *   *  (370,350) covers the same unit angles as (10,-10).
+ * @public
  */
 export class AngleSweep implements BeJSONFunctions {
     private _radians0: number;
@@ -70,7 +70,7 @@ export class AngleSweep implements BeJSONFunctions {
     public static createStartSweep(startAngle: Angle, sweepAngle: Angle, result?: AngleSweep): AngleSweep {
         return AngleSweep.createStartSweepRadians(startAngle.radians, sweepAngle.radians, result);
     }
-    /** @returns Return a sweep with limits interpolated between this and other. */
+    /** Return a sweep with limits interpolated between this and other. */
     public interpolate(fraction: number, other: AngleSweep): AngleSweep {
         return new AngleSweep(Geometry.interpolate(this._radians0, fraction, other._radians0), Geometry.interpolate(this._radians1, fraction, other._radians1));
     }
@@ -171,6 +171,10 @@ export class AngleSweep implements BeJSONFunctions {
             data.reassign(i, this.radiansToPositivePeriodicFraction(data.atUncheckedIndex(i)));
         }
     }
+    /**
+     * Convert a radians value to a fraction that is always positive and can wrap.  See `angleToPositivePeriodicFraction` for detailed description.
+     * @param radians
+     */
     public radiansToPositivePeriodicFraction(radians: number): number {
         if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians0))
             return 0.0;
@@ -199,6 +203,9 @@ export class AngleSweep implements BeJSONFunctions {
     public angleToSignedPeriodicFraction(theta: Angle): number {
         return this.radiansToSignedPeriodicFraction(theta.radians);
     }
+    /**
+     * Convert a radians value to a fraction, allowing wraparound.  See `angleToSignedPeriodicFraction` for detailed description.
+     */
     public radiansToSignedPeriodicFraction(radians: number): number {
         if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._radians0))
             return 0.0;

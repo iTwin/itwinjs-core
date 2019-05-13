@@ -6,17 +6,23 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
-import { CommonProps, NoChildrenProps, FlattenChildren } from "../utilities/Props";
+import { NoChildrenProps, FlattenChildren } from "../utilities/Props";
 import { Items } from "./Items";
 import "./Toolbar.scss";
 
-/** Available alignment modes of [[Toolbar]] panels. */
+/** Available alignment modes of [[Toolbar]] panels.
+ * @beta
+ */
 export enum ToolbarPanelAlignment {
   Start,
   End,
 }
 
+/** Helpers for [[ToolbarPanelAlignment]].
+ * @alpha
+ */
 export class ToolbarPanelAlignmentHelpers {
   /** Class name of [[ToolbarPanelAlignment.Start]] */
   public static readonly START_CLASS_NAME = "nz-panel-alignment-start";
@@ -34,7 +40,9 @@ export class ToolbarPanelAlignmentHelpers {
   }
 }
 
-/** Properties of [[PanelsProvider]] component. */
+/** Properties of [[PanelsProvider]] component.
+ * @alpha
+ */
 export interface PanelsProviderProps {
   /** Render prop that provides item panels. */
   children?: (items: React.ReactNode) => React.ReactNode;
@@ -46,9 +54,12 @@ export interface PanelsProviderProps {
   panels: React.RefObject<HTMLElement>;
 }
 
-/** Provides panels and histories of toolbar items. */
+/** Provides panels and histories of toolbar items.
+ * @alpha
+ */
 export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
   private _update = false;
+  private _refs = new Array<React.RefObject<ToolbarItem>>();
 
   private appendPanels() {
     const panels = this.props.panels.current;
@@ -61,8 +72,6 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
 
     for (const ref of this._refs) {
       if (!ref.current)
-        continue;
-      if (!ref.current.panel)
         continue;
       panels.appendChild(ref.current.panel);
     }
@@ -80,8 +89,6 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
     for (const ref of this._refs) {
       if (!ref.current)
         continue;
-      if (!ref.current.history)
-        continue;
       histories.appendChild(ref.current.history);
     }
   }
@@ -97,8 +104,6 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
     this.appendHistories();
     this._update = true;
   }
-
-  private _refs = new Array<React.RefObject<ToolbarItem>>();
 
   public render() {
     const flattened = FlattenChildren(this.props.items);
@@ -131,24 +136,27 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
   }
 }
 
-/** Properties of [[Toolbar]] component. */
+/** Properties of [[Toolbar]] component.
+ * @beta
+ */
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
   /** Describes to which direction the history/panel items are expanded. Defaults to: [[Direction.Bottom]] */
   expandsTo?: Direction;
-  /** Items of the toolbar. I.e. [[ExpandableItem]], [[Icon]], [[Item]], [[Overflow]] */
+  /** Items of the toolbar. I.e. [[Item]], [[ExpandableItem]], [[Overflow]] */
   items?: React.ReactNode;
   /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
   panelAlignment?: ToolbarPanelAlignment;
 }
 
+/** @alpha */
 export const getToolbarDirection = (expandsTo: Direction): OrthogonalDirection => {
   const orthogonalDirection = DirectionHelpers.getOrthogonalDirection(expandsTo);
   return OrthogonalDirectionHelpers.inverse(orthogonalDirection);
 };
 
-/**
- * A toolbar that may contain items.
+/** A toolbar that may contain items.
  * @note See [[Scrollable]] for toolbar with scroll overflow strategy.
+ * @beta
  */
 export class Toolbar extends React.PureComponent<ToolbarProps> {
   public static readonly defaultProps = {
@@ -204,20 +212,25 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
   }
 }
 
-export interface ToolbarItem {
-  panel: HTMLElement;
-  history: HTMLElement;
-}
-
-/**
- * These props will be injected by Toolbar.
- * @note Must be passed down when wrapping the toolbar item component.
+/** Defines toolbar item component.
+ * @alpha
  */
-export interface ToolbarItemProps<TItem extends ToolbarItem> {
-  toolbarItemRef?: React.Ref<TItem>;
+export interface ToolbarItem {
+  readonly panel: HTMLElement;
+  readonly history: HTMLElement;
 }
 
-/** Extracts [[ToolbarItemProps]] from your props. */
+/** These props will be injected by Toolbar.
+ * @note Must be passed down when wrapping the toolbar item component.
+ * @alpha
+ */
+export interface ToolbarItemProps<TItem extends ToolbarItem = ToolbarItem> {
+  readonly toolbarItemRef?: React.Ref<TItem>;
+}
+
+/** Extracts [[ToolbarItemProps]] from your props.
+ * @alpha
+ */
 export const getToolbarItemProps = <TProps extends {}>(props: TProps): ToolbarItemProps<ToolbarItem> => {
   const toolbarItemProps = props as ToolbarItemProps<ToolbarItem>;
   if (toolbarItemProps.toolbarItemRef)

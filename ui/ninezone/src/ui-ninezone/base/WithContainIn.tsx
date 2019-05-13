@@ -5,79 +5,96 @@
 /** @module Base */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { Css } from "../utilities/Css";
-import { Rectangle } from "../utilities/Rectangle";
+import { Rectangle, RectangleProps } from "../utilities/Rectangle";
 
-/** Properties of [[withContainIn]] HOC. */
+/** Properties of [[withContainIn]] HOC.
+ * @alpha
+ */
 export interface WithContainInProps {
-  /** Container in which the wrapped component is contained. */
-  container?: React.RefObject<React.ReactInstance>;
-  /** Disables vertical containment and allows wrapped component to move out of bounds vertically. */
-  noVerticalContainment?: boolean;
-  /** Disables horizontal containment and allows wrapped component to move out of bounds horizontally. */
-  noHorizontalContainment?: boolean;
+  /** Function called to determine the actual bounds of wrapped component. See: [[contain]], [[containHorizontally]], [containVertically]. */
+  containFn?: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
+  /** Container in which the wrapped component is contained. By default contains component in viewport. */
+  container?: React.RefObject<HTMLElement>;
 }
 
-/** HOC which will ensure, that wrapped component bounds are contained in specified container bounds. */
+/** Contains the component bounds both vertically and horizontally. This is default containment method for [[withContainIn]].
+ * @alpha
+ */
+export const contain = (componentBounds: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
+  const bounds = Rectangle.create(componentBounds);
+  return bounds.containIn(containerBounds);
+};
+
+/** Contains the component bounds horizontally.
+ * @alpha
+ */
+export const containHorizontally = (componentBounds: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
+  const bounds = Rectangle.create(componentBounds);
+  return bounds.containHorizontallyIn(containerBounds);
+};
+
+/** Contains the component bounds vertically.
+ * @alpha
+ */
+export const containVertically = (componentBounds: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
+  const bounds = Rectangle.create(componentBounds);
+  return bounds.containVerticallyIn(containerBounds);
+};
+
+/** HOC which will ensure, that wrapped component bounds are contained in specified container bounds.
+ * @alpha Transfer to ui-core or remove if used with popups only.
+ */
 export const withContainIn = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
 ) => {
   return class WithContainIn extends React.PureComponent<ComponentProps & WithContainInProps> {
-    public getContainerBounds(): Rectangle {
-      if (!this.props.container)
-        return new Rectangle();
-      if (!this.props.container.current)
-        return new Rectangle();
-      const container = ReactDOM.findDOMNode(this.props.container.current);
-      if (!(container instanceof HTMLElement)) {
-        return new Rectangle();
-      }
+    public ref = React.createRef<HTMLDivElement>();
 
-      const containerBounds = container.getBoundingClientRect();
-      const containerStyle = window.getComputedStyle(container);
-      const topPadding = containerStyle.paddingTop ? parseFloat(containerStyle.paddingTop) : 0;
-      const leftPadding = containerStyle.paddingLeft ? parseFloat(containerStyle.paddingLeft) : 0;
-      const top = containerBounds.top + topPadding;
-      const left = containerBounds.left + leftPadding;
-      return new Rectangle(top, left, containerBounds.right, containerBounds.bottom);
+    public get containFn() {
+      const { containFn } = this.props as WithContainInProps;
+      return containFn === undefined ? contain : containFn;
     }
 
+    /** @internal */
+    public getContainerBounds(): Rectangle {
+      if (!this.props.container || !this.props.container.current)
+        return new Rectangle(0, 0, window.innerWidth, window.innerHeight);
+
+      const containerBounds = this.props.container.current.getBoundingClientRect();
+      return new Rectangle(containerBounds.left, containerBounds.top, containerBounds.right, containerBounds.bottom);
+    }
+
+    /** @internal */
     public getComponentBounds(root: HTMLElement): Rectangle {
       const bounds = root.getBoundingClientRect();
       return Rectangle.create(bounds);
     }
 
     public componentDidMount() {
-      const root = ReactDOM.findDOMNode(this);
-      if (!(root instanceof HTMLElement)) {
+      if (!this.ref.current)
         return;
-      }
-      const component = this.getComponentBounds(root);
-      const container = this.getContainerBounds();
 
-      let contained = component;
-      if (!this.props.noVerticalContainment && !this.props.noHorizontalContainment)
-        contained = component.containIn(container);
-      else if (this.props.noVerticalContainment)
-        contained = component.containHorizontallyIn(container);
-      else if (this.props.noHorizontalContainment)
-        contained = component.containVerticallyIn(container);
+      const componentBounds = this.getComponentBounds(this.ref.current);
+      const containerBounds = this.getContainerBounds();
+      const contained = Rectangle.create(this.containFn(componentBounds, containerBounds));
 
-      const offset = component.topLeft().getOffsetTo(contained.topLeft());
-      root.style.position = "relative";
-      root.style.top = Css.toPx(offset.y);
-      root.style.left = Css.toPx(offset.x);
+      const offset = componentBounds.topLeft().getOffsetTo(contained.topLeft());
+      this.ref.current.style.position = "relative";
+      this.ref.current.style.top = Css.toPx(offset.y);
+      this.ref.current.style.left = Css.toPx(offset.x);
     }
 
     public render() {
-      const { noVerticalContainment, noHorizontalContainment, container, ...props } = this.props as WithContainInProps;
+      const { containFn, container, ...props } = this.props as WithContainInProps;
       return (
-        <Component
-          {...props as ComponentProps}
-          {...this.state}
-        />
+        <div ref={this.ref}>
+          <Component
+            {...props as ComponentProps}
+            {...this.state}
+          />
+        </div>
       );
     }
   };

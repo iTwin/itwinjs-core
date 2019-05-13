@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ToolbarIcon  /> renders correctly 1`] = `
+<ToolbarButton
+  className="nz-toolbar-button-icon"
+>
+  <div
+    className="nz-icon"
+  />
+</ToolbarButton>
+`;

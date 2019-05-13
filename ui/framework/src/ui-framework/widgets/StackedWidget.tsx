@@ -8,13 +8,16 @@ import * as React from "react";
 
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { Icon } from "../shared/IconComponent";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 import {
   Stacked as NZ_StackedWidget, HorizontalAnchor, VerticalAnchor,
-  ResizeHandle, Draggable, TabGroup, VisibilityMode, PointProps, TabSeparator, WidgetZoneIndex, TabMode,
+  ResizeHandle, Tab, TabGroup, PointProps, TabSeparator, WidgetZoneIndex, TabMode, HandleMode, Rectangle,
 } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for a [[StackedWidget]] Tab.
+ * @internal
  */
 export interface WidgetTabProps {
   isActive: boolean;
@@ -24,6 +27,7 @@ export interface WidgetTabProps {
 }
 
 /** Properties for a Widget in a [[StackedWidget]].
+ * @internal
  */
 export interface EachWidgetProps {
   id: WidgetZoneIndex;
@@ -32,9 +36,10 @@ export interface EachWidgetProps {
 }
 
 /** Properties for the [[StackedWidget]] React component.
+ * @internal
  */
-export interface StackedWidgetProps {
-  children?: React.ReactNode;
+export interface StackedWidgetProps extends CommonProps {
+  contentRef: React.RefObject<HTMLDivElement>;
   fillZone: boolean;
   isFloating: boolean;
   zoneId: WidgetZoneIndex;
@@ -48,9 +53,14 @@ export interface StackedWidgetProps {
 }
 
 /** Stacked Widget React component.
+ * @internal
  */
 export class StackedWidget extends React.Component<StackedWidgetProps> {
+  private _widget = React.createRef<NZ_StackedWidget>();
+  private _firstTabs = new Map<WidgetZoneIndex, Tab>();
+
   public render(): React.ReactNode {
+    this._firstTabs.clear();
     const isWidgetOpen = this.props.widgets.some((w) => w.tabs.some((t) => t.isActive));
 
     let tabs: JSX.Element[] = new Array<JSX.Element>();
@@ -66,7 +76,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
           <TabGroup
             key={widget.id}
             anchor={this.props.horizontalAnchor}
-            handleMode={this.getTabHandleMode(widget.id)}
+            handle={this.getTabHandleMode(widget.id)}
           >
             {widgetTabs}
           </TabGroup>,
@@ -78,7 +88,9 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
 
     return (
       <NZ_StackedWidget
-        content={this.props.children}
+        className={this.props.className}
+        style={this.props.style}
+        contentRef={this.props.contentRef}
         fillZone={this.props.fillZone}
         horizontalAnchor={this.props.horizontalAnchor}
         isDragged={this.props.isDragged}
@@ -89,44 +101,62 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
             this._handleOnWidgetResize(this.props.zoneId, x, y, handle, filledHeightDiff);
           }
         }
+        ref={this._widget}
         tabs={tabs}
         verticalAnchor={this.props.verticalAnchor}
+        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
       />
     );
   }
 
   private getTabHandleMode(widgetId: WidgetZoneIndex) {
     if (this.props.isUnmergeDrag && this.props.isDragged && widgetId === this.props.zoneId)
-      return VisibilityMode.Visible;
+      return HandleMode.Visible;
 
     if (this.props.widgets.length > 1)
-      return VisibilityMode.OnHover;
+      return HandleMode.Hovered;
 
-    return VisibilityMode.Timeout;
+    return HandleMode.Timedout;
   }
 
   private getWidgetTabs(stackedWidget: EachWidgetProps, isWidgetOpen: boolean): JSX.Element[] {
     return stackedWidget.tabs.map((tab: WidgetTabProps, index: number) => {
       const mode = !isWidgetOpen ? TabMode.Closed : tab.isActive ? TabMode.Active : TabMode.Open;
       return (
-        <Draggable
+        <Tab
           title={tab.title}
           key={`${stackedWidget.id}_${index}`}
           anchor={this.props.horizontalAnchor}
           mode={mode}
           lastPosition={this.props.lastPosition}
           onClick={() => this._handleWidgetTabClick(stackedWidget.id, index)}
-          onDragStart={(initialPosition, offset) => this._handleTabDragStart(stackedWidget.id, index, initialPosition, offset, stackedWidget.isStatusBar)}
+          onDragStart={(initialPosition) => this._handleTabDragStart(stackedWidget.id, index, initialPosition, stackedWidget.isStatusBar)}
           onDrag={this._handleWidgetTabDrag}
           onDragEnd={this._handleTabDragEnd}
+          ref={(instance: Tab | null) => this._handleTabRef(stackedWidget.id, index, instance)}
         >
           <Icon iconSpec={tab.iconSpec} />
-        </Draggable>
+        </Tab>
       );
     });
   }
 
-  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps, isStatusBar: boolean) => {
+  private _handleTabRef = (widgetId: WidgetZoneIndex, tabId: number, instance: Tab | null) => {
+    if (tabId !== 0 || instance === null)
+      return;
+
+    this._firstTabs.set(widgetId, instance);
+  }
+
+  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, isStatusBar: boolean) => {
+    const firstTab = this._firstTabs.get(widgetId);
+    if (!this._widget.current || !firstTab)
+      return;
+
+    const firstTabPos = Rectangle.create(firstTab.getBounds()).topLeft();
+    const widgetPos = Rectangle.create(this._widget.current.getBounds()).topLeft();
+    const offset = widgetPos.getOffsetTo(firstTabPos);
+
     this.props.widgetChangeHandler.handleTabDragStart(widgetId, tabId, initialPosition, offset);
     if (isStatusBar)
       this.props.widgetChangeHandler.handleTabDragEnd();
@@ -148,5 +178,3 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
     this.props.widgetChangeHandler.handleTabDrag(dragged);
   }
 }
-
-export default StackedWidget;

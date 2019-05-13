@@ -5,23 +5,30 @@
 /** @module ToolSettings */
 
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
+import {
+  ToolSettings,
+  ToolSettingsTab,
+  RectangleProps,
+  Zone,
+  TitleBarButton,
+} from "@bentley/ui-ninezone";
 import { FrontstageManager, ToolActivatedEventArgs } from "../../frontstage/FrontstageManager";
 import { ToolUiManager } from "../toolsettings/ToolUiManager";
-
-import { ToolSettingsWidget, ToolSettingsTab, ToolSettings, CommonProps, RectangleProps, TabIcon, ZoneComponent } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
-import UiFramework from "../../UiFramework";
+import { UiFramework } from "../../UiFramework";
+import { UiShowHideManager } from "../../utils/UiShowHideManager";
 
 /** State for the ToolSettingsZone content.
  */
-export enum ToolSettingsZoneContent {
+enum ToolSettingsZoneContent {
   Closed,
   ToolSettings,
 }
 
-/** State for the ToolSettingsZone.
+/** State for the [[ToolSettingsZone]].
  */
-export interface ToolSettingsZoneState {
+interface ToolSettingsZoneState {
   toolSettingsZoneContent: ToolSettingsZoneContent;
   isPopoverOpen: boolean;
   isNestedPopoverOpen: boolean;
@@ -29,17 +36,20 @@ export interface ToolSettingsZoneState {
 }
 
 /** Properties for the [[ToolSettingsZone]] React component.
+ * @internal
  */
 export interface ToolSettingsZoneProps extends CommonProps {
   bounds: RectangleProps;
+  isHidden: boolean;
 }
 
 /** Tool Settings Zone React component.
+ * @internal
  */
 export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, ToolSettingsZoneState> {
   private _toolSettingsLabel: string;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ToolSettingsZoneState> = {
     toolSettingsZoneContent: ToolSettingsZoneContent.ToolSettings,
     isPopoverOpen: false,
@@ -74,13 +84,16 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
       };
 
       return (
-        <ZoneComponent
+        <Zone
+          className={this.props.className}
+          style={this.props.style}
           bounds={this.props.bounds}
+          isHidden={this.props.isHidden}
         >
           <div style={divStyle} >
             {this.getToolSettingsWidget()}
           </div>
-        </ZoneComponent>
+        </Zone>
       );
     }
 
@@ -108,57 +121,31 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
   private getToolSettingsWidget(): React.ReactNode {
     const title = ToolUiManager.activeToolDescription + " " + this._toolSettingsLabel;
+    if (this.state.toolSettingsZoneContent === ToolSettingsZoneContent.Closed)
+      return (
+        <ToolSettingsTab
+          onClick={this._processClick}
+          onKeyDown={this._handleKeyDown}
+          title={title}
+          onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+        >
+          {this.getToolSettingsButton()}
+        </ToolSettingsTab>
+      );
 
-    const tab = (
-      <ToolSettingsTab
-        onClick={this._processClick}
-        onKeyDown={this._handleKeyDown}
-        isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings}
-        title={title}
+    return (
+      <ToolSettings
+        buttons={[
+          <TitleBarButton key="0" onClick={this._processClick} title={UiFramework.i18n.translate("UiFramework:general.minimize")}>
+            <i className={"icon icon-chevron-up"} />
+          </TitleBarButton>,
+        ]}
+        title={ToolUiManager.activeToolLabel}
+        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
       >
-        {this.getToolSettingsButton()}
-        {/*this.getToolAssistanceButton()*/}
-      </ToolSettingsTab>
+        {FrontstageManager.activeToolSettingsNode}
+      </ToolSettings>
     );
-
-    let widget: React.ReactNode;
-
-    switch (this.state.toolSettingsZoneContent) {
-      case ToolSettingsZoneContent.ToolSettings: {
-        // istanbul ignore else
-        if (FrontstageManager.activeToolSettingsNode) {
-          const settingsStyle: React.CSSProperties = {
-            borderWidth: "thin",
-            borderStyle: "solid",
-            borderRadius: "3px",
-            paddingLeft: "10px",
-            paddingRight: "10px",
-          };
-
-          widget = (
-            <ToolSettingsWidget
-              tab={tab}
-              content={
-                <ToolSettings style={settingsStyle} >
-                  <div className="nz-widget-toolSettings-title">{ToolUiManager.activeToolLabel}</div>
-                  {FrontstageManager.activeToolSettingsNode}
-                </ToolSettings>
-              }
-            />
-          );
-        }
-        break;
-      }
-      case ToolSettingsZoneContent.Closed: {
-        widget = (
-          <ToolSettingsWidget
-            tab={tab}
-          />
-        );
-      }
-    }
-
-    return widget;
   }
 
   // private getToolAssistanceButton() {
@@ -197,7 +184,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     // istanbul ignore else
     if (FrontstageManager.activeToolSettingsNode) {
       button = (
-        <TabIcon iconSpec="icon-settings" isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings} />
+        <i className="icon icon-settings" />
       );
     }
 

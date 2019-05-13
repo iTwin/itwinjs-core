@@ -13,7 +13,7 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, InstanceKey } from "@bentley/presentation-common";
+import { KeySet, InstanceKey, instanceKeyFromJSON } from "@bentley/presentation-common";
 import {
   Presentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, SelectionChangeEventArgs,
@@ -65,6 +65,7 @@ describe("Table withUnifiedSelection", () => {
     providerMock.setup(async (x) => x.getRow(moq.It.isAnyNumber())).returns(async (i: number) => rows![i]);
     providerMock.setup((x) => x.onColumnsChanged).returns(() => new TableDataChangeEvent());
     providerMock.setup((x) => x.onRowsChanged).returns(() => new TableDataChangeEvent());
+    providerMock.setup((x) => x.getRowKey(moq.It.isAny())).returns((row) => instanceKeyFromJSON(JSON.parse(row.key)));
   };
 
   const createRandomRowItem = (): RowItem & { _key: InstanceKey } => {
@@ -192,7 +193,7 @@ describe("Table withUnifiedSelection", () => {
         selectionHandler={selectionHandlerMock.object}
         selectionLevel={3}
       />);
-      dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysOverall), moq.Times.once());
     });
 
     it("sets data provider keys to selection when mounts and highest selection level is equal to boundary", () => {
@@ -207,7 +208,7 @@ describe("Table withUnifiedSelection", () => {
         selectionHandler={selectionHandlerMock.object}
         selectionLevel={3}
       />);
-      dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysOverall), moq.Times.once());
     });
 
     it("sets data provider keys to selection when mounts and data provider already has keys", () => {
@@ -222,7 +223,7 @@ describe("Table withUnifiedSelection", () => {
         dataProvider={dataProviderMock.object}
         selectionHandler={selectionHandlerMock.object}
       />);
-      dataProviderMock.verify((x) => x.keys = keysNew, moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysNew), moq.Times.once());
     });
 
     it("does nothing when mounts and data provider already has keys and there are no available selection levels", () => {
@@ -455,7 +456,7 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={2}
         />);
         triggerSelectionChange(keys, 1);
-        dataProviderMock.verify((x) => x.keys = keys, moq.Times.once());
+        dataProviderMock.verify((x) => x.keys = moq.isKeySet(keys), moq.Times.once());
       });
 
       it("sets data provider keys to an empty KeySet on selection changes with lower selection level when overall selection is empty", () => {

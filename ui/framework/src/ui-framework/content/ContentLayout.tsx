@@ -7,53 +7,66 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import "./ContentLayout.scss";
-import { FrontstageManager, ContentLayoutActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { Orientation, UiEvent, CommonProps } from "@bentley/ui-core";
+
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentGroup } from "./ContentGroup";
 import { ContentViewManager, ActiveContentChangedEventArgs } from "./ContentViewManager";
-import { Orientation } from "@bentley/ui-core";
+import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
+
+import "./ContentLayout.scss";
 
 // There is a problem with this import and a different tsconfig being used. Using the require statement instead.
 // Locking into react-split-pane release 0.1.77 and using the require statement works for browser, electron and mocha test environment.
 // import SplitPane from "react-split-pane";
 const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
 
-/** Base interface for layout split properties */
+/** Base interface for layout split properties
+ * @public
+ */
 export interface LayoutSplitPropsBase {
   id?: string;            // The id used to save the current state of the splitter
   percentage: number;     // The percentage of this layout that should be occupied by the left/top fragment by default
   lock?: boolean;         // Default - false. Used to lock splitter into fixed position
 }
 
-/** Properties for a layout fragment */
+/** Properties for a layout fragment
+ * @public
+ */
 export interface LayoutFragmentProps {
   verticalSplit?: LayoutVerticalSplitProps;
   horizontalSplit?: LayoutHorizontalSplitProps;
 }
 
-/** Properties for a vertical layout split */
+/** Properties for a vertical layout split
+ * @public
+ */
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
   left: LayoutFragmentProps | number;
   right: LayoutFragmentProps | number;
 }
 
-/** Properties for a horizontal layout split */
+/** Properties for a horizontal layout split
+ * @public
+ */
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
   top: LayoutFragmentProps | number;
   bottom: LayoutFragmentProps | number;
 }
 
-/** Properties for a [[ContentLayoutDef]] */
+/** Properties for a [[ContentLayoutDef]]
+ * @public
+ */
 export interface ContentLayoutProps extends LayoutFragmentProps {
   id?: string;
-  descriptionKey: string;
-  priority: number;     // The priority for the layout. Determines its position in menus. Higher numbers appear first.
-  featureId?: string;
+  descriptionKey?: string;
+  priority?: number;     // The priority for the layout. Determines its position in menus. Higher numbers appear first.
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-interface ContentWrapperProps {
+interface ContentWrapperProps extends CommonProps {
   content: React.ReactNode;
 }
 
@@ -66,7 +79,7 @@ interface ContentWrapperState {
  */
 class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapperState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ContentWrapperState>;
 
   constructor(props: ContentWrapperProps) {
@@ -78,11 +91,13 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
   public render(): React.ReactNode {
     const overlayClassName = classnames(
       "uifw-contentlayout-overlay-div",
-      this.state.isActive ? "uifw-contentlayout-overlay-active" : "uifw-contentlayout-overlay-inactive");
+      this.state.isActive ? "uifw-contentlayout-overlay-active" : "uifw-contentlayout-overlay-inactive",
+    );
 
     return (
-      <div className="uifw-contentlayout-wrapper"
+      <div className={classnames("uifw-contentlayout-wrapper", this.props.className)} style={this.props.style}
         onMouseDown={this._handleMouseDown}
+        onMouseMove={UiShowHideManager.handleContentMouseMove}
       >
         {this.state.content}
         <div className={overlayClassName} />
@@ -111,12 +126,10 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
     }
   }
 
-  public static getDerivedStateFromProps(newProps: ContentWrapperProps, state: ContentWrapperState): ContentWrapperState | null {
-    if (state.content !== newProps.content) {
-      return { content: newProps.content, isActive: newProps.content === ContentViewManager.getActiveContent() };
+  public componentDidUpdate(prevProps: ContentWrapperProps, _prevState: ContentWrapperState) {
+    if (this.props.content !== prevProps.content) {
+      this.setState({ content: this.props.content, isActive: this.props.content === ContentViewManager.getActiveContent() });
     }
-
-    return null;
   }
 
 }
@@ -124,7 +137,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 /** Properties for the [[SplitContainer]] component */
-interface SplitContainerProps {
+interface SplitContainerProps extends CommonProps {
   contentA: React.ReactNode;
   contentB: React.ReactNode;
   orientation: Orientation;
@@ -145,7 +158,7 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
 
   private _containerDiv: HTMLDivElement | null = null;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<SplitContainerState> = {
     pane2Width: "100%",
     pane2Height: "100%",
@@ -205,11 +218,13 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
     window.removeEventListener("resize", this._handleWindowResize, true);
   }
 
-  public static getDerivedStateFromProps(_newProps: SplitContainerProps, _state: SplitContainerState): SplitContainerState | null {
-    return {
-      pane2Width: "100%",
-      pane2Height: "100%",
-    };
+  public componentDidUpdate(prevProps: SplitContainerProps, _prevState: SplitContainerState) {
+    if (this.props !== prevProps) {
+      this.setState({
+        pane2Width: "100%",
+        pane2Height: "100%",
+      });
+    }
   }
 
   private _handleWindowResize = () => {
@@ -237,7 +252,7 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
     const defaultSize = (this.props.percentage * 100).toString() + "%";
 
     return (
-      <div ref={(e) => { this._containerDiv = e; }} className="uifw-contentlayout-full-size">
+      <div ref={(e) => { this._containerDiv = e; }} className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style}>
         <SplitPane split={orientation} minSize={50} defaultSize={defaultSize} onChange={this._onSplitterChange} allowResize={this.props.resizable}>
           {this.props.contentA}
           <div style={{ width: this.state.pane2Width, height: this.state.pane2Height }}>
@@ -249,7 +264,7 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
   }
 }
 
-interface SingleContentProps {
+interface SingleContentProps extends CommonProps {
   content: React.ReactNode;
 }
 
@@ -259,15 +274,19 @@ class SingleContentContainer extends React.Component<SingleContentProps> {
 
   public render(): React.ReactNode {
     return (
-      <div className="uifw-contentlayout-full-size">
+      <div className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style} data-testid="single-content-container"
+        onMouseMove={UiShowHideManager.handleContentMouseMove}
+      >
         {this.props.content}
       </div>
     );
   }
 }
 
-/** Common interface for [[HorizontalSplit]] and [[VerticalSplit]] */
-interface LayoutSplit {
+/** Common interface for HorizontalSplit and VerticalSplit
+ * @public
+ */
+export interface LayoutSplit {
   createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode;
   isLocked: boolean;
 }
@@ -385,14 +404,14 @@ class VerticalSplit implements LayoutSplit {
 }
 
 /** Content Layout Definition class.
+ * @public
  */
 export class ContentLayoutDef {
   private static _sId = 0;
 
   public id: string = "";
-  public descriptionKey: string;
-  public priority: number;
-  public featureId: string = "";
+  public descriptionKey: string = "";
+  public priority: number = 0;
   private _layoutProps: ContentLayoutProps;
 
   private _rootSplit?: LayoutSplit;
@@ -407,11 +426,10 @@ export class ContentLayoutDef {
       this.id = "ContentLayout-" + ContentLayoutDef._sId;
     }
 
-    this.descriptionKey = layoutProps.descriptionKey;
-    this.priority = layoutProps.priority;
-
-    if (layoutProps.featureId !== undefined)
-      this.featureId = layoutProps.featureId;
+    if (layoutProps.descriptionKey !== undefined)
+      this.descriptionKey = layoutProps.descriptionKey;
+    if (layoutProps.priority !== undefined)
+      this.priority = layoutProps.priority;
   }
 
   public get rootSplit(): LayoutSplit | undefined { return this._rootSplit; }
@@ -428,32 +446,109 @@ export class ContentLayoutDef {
 
     return undefined;
   }
+
+  public getUsedContentIndexes(): number[] {
+    let allContentIndexes: number[] = [];
+
+    if (!this._layoutProps.horizontalSplit && !this._layoutProps.verticalSplit)
+      allContentIndexes.push(0);
+    else {
+      allContentIndexes = allContentIndexes.concat(this.getHorizontalSplitContentIndexes(this._layoutProps.horizontalSplit));
+      allContentIndexes = allContentIndexes.concat(this.getVerticalSplitContentIndexes(this._layoutProps.verticalSplit));
+    }
+
+    const uniqueContentIndexes = [...new Set(allContentIndexes)];
+
+    return uniqueContentIndexes;
+  }
+
+  private getHorizontalSplitContentIndexes(splitProps?: LayoutHorizontalSplitProps): number[] {
+    let contentIndexes: number[] = [];
+
+    if (!splitProps)
+      return contentIndexes;
+
+    if (typeof splitProps.top === "number")
+      contentIndexes.push(splitProps.top);
+    else {
+      contentIndexes = contentIndexes.concat(this.getHorizontalSplitContentIndexes(splitProps.top.horizontalSplit));
+      contentIndexes = contentIndexes.concat(this.getVerticalSplitContentIndexes(splitProps.top.verticalSplit));
+    }
+
+    if (typeof splitProps.bottom === "number")
+      contentIndexes.push(splitProps.bottom);
+    else {
+      contentIndexes = contentIndexes.concat(this.getHorizontalSplitContentIndexes(splitProps.bottom.horizontalSplit));
+      contentIndexes = contentIndexes.concat(this.getVerticalSplitContentIndexes(splitProps.bottom.verticalSplit));
+    }
+
+    return contentIndexes;
+  }
+
+  private getVerticalSplitContentIndexes(splitProps?: LayoutVerticalSplitProps): number[] {
+    let contentIndexes: number[] = [];
+
+    if (!splitProps)
+      return contentIndexes;
+
+    if (typeof splitProps.left === "number")
+      contentIndexes.push(splitProps.left);
+    else {
+      contentIndexes = contentIndexes.concat(this.getHorizontalSplitContentIndexes(splitProps.left.horizontalSplit));
+      contentIndexes = contentIndexes.concat(this.getVerticalSplitContentIndexes(splitProps.left.verticalSplit));
+    }
+
+    if (typeof splitProps.right === "number")
+      contentIndexes.push(splitProps.right);
+    else {
+      contentIndexes = contentIndexes.concat(this.getHorizontalSplitContentIndexes(splitProps.right.horizontalSplit));
+      contentIndexes = contentIndexes.concat(this.getVerticalSplitContentIndexes(splitProps.right.verticalSplit));
+    }
+
+    return contentIndexes;
+  }
 }
+
+/** Content Layout Activated Event Args class.
+ * @public
+ */
+export interface ContentLayoutActivatedEventArgs {
+  contentLayout: ContentLayoutDef;
+  contentGroup: ContentGroup;
+}
+
+/** Content Layout Activated Event class.
+ * @public
+ */
+export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedEventArgs> { }
 
 /** State for the [[ContentLayout]].
  */
-export interface ContentLayoutState {
+interface ContentLayoutState {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
   contentContainer?: React.ReactNode;
+  isUiVisible: boolean;
 }
 
 /** Properties for the [[ContentLayout]] React component.
+ * @public
  */
-export interface ContentLayoutReactProps {
+export interface ContentLayoutComponentProps extends CommonProps {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
   isInFooterMode: boolean;
 }
 
 /** Content Layout React component.
+ * @public
  */
-export class ContentLayout extends React.Component<ContentLayoutReactProps, ContentLayoutState> {
+export class ContentLayout extends React.Component<ContentLayoutComponentProps, ContentLayoutState> {
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<ContentLayoutState>;
 
-  constructor(props: ContentLayoutReactProps) {
+  constructor(props: ContentLayoutComponentProps) {
     super(props);
 
     let contentGroup: ContentGroup;
@@ -477,15 +572,22 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
       contentLayout: this.props.contentLayout,
       contentGroup: this.props.contentGroup,
       contentContainer,
+      isUiVisible: UiFramework.getIsUiVisible(),
     };
   }
 
   public componentDidMount() {
     FrontstageManager.onContentLayoutActivatedEvent.addListener(this._handleContentLayoutActivated);
+    UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
   }
 
   public componentWillUnmount() {
     FrontstageManager.onContentLayoutActivatedEvent.removeListener(this._handleContentLayoutActivated);
+    UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
+  }
+
+  private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
+    this.setState({ isUiVisible: args.visible });
   }
 
   private _handleContentLayoutActivated = (args: ContentLayoutActivatedEventArgs) => {
@@ -514,10 +616,13 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
 
   public render(): React.ReactNode {
     if (this.state.contentContainer) {
-      const className = this.props.isInFooterMode ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode";
+      const className = classnames(
+        (this.props.isInFooterMode && (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode",
+        this.props.className,
+      );
 
       return (
-        <div id="uifw-contentlayout-div" className={className} key={this.state.contentLayout.id}
+        <div id="uifw-contentlayout-div" className={className} style={this.props.style} key={this.state.contentLayout.id}
           onMouseDown={this._onMouseDown}
           onMouseUp={this._onMouseUp}
         >
@@ -539,6 +644,7 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
 }
 
 /** ContentLayout Manager class.
+ * @public
  */
 export class ContentLayoutManager {
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();

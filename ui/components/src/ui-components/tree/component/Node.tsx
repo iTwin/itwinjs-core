@@ -5,12 +5,12 @@
 /** @module Tree */
 
 import * as React from "react";
-import { Tree } from "./Tree";
+import { TreeTest } from "./Tree";
 import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";
 import {
   TreeNode as TreeNodeBase, NodeCheckboxProps as CheckboxProps, Omit,
-  CheckBoxState, NodeCheckboxRenderer, shallowDiffers,
+  CheckBoxState, NodeCheckboxRenderer, shallowDiffers, CommonProps,
 } from "@bentley/ui-core";
 import { TreeNodeContent } from "./NodeContent";
 import { CellEditingEngine } from "../CellEditingEngine";
@@ -22,7 +22,7 @@ import { ImageRenderer } from "../../common/ImageRenderer";
 
 /**
  * Properties for Checkbox in [[TreeNode]]
- * @hidden
+ * @internal
  */
 export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
   onClick: (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => void;
@@ -30,9 +30,9 @@ export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
 
 /**
  * Properties for [[TreeNode]] React component
- * @hidden
+ * @internal
  */
-export interface TreeNodeProps {
+export interface TreeNodeProps extends CommonProps {
   node: BeInspireTreeNode<TreeNodeItem>;
   checkboxProps?: NodeCheckboxProps;
   onClick?: (e: React.MouseEvent) => void;
@@ -69,9 +69,10 @@ export interface TreeNodeProps {
 
 /**
  * Default component for rendering a node for the [[Tree]]
- * @hidden
+ * @internal
  */
 export class TreeNode extends React.Component<TreeNodeProps> {
+
   public shouldComponentUpdate(nextProps: TreeNodeProps) {
     if (nextProps.node.isDirty() || doPropsDiffer(this.props, nextProps))
       return true;
@@ -85,6 +86,11 @@ export class TreeNode extends React.Component<TreeNodeProps> {
       nextProps.onFinalRenderComplete(nextProps.renderId);
 
     return false;
+  }
+
+  public componentDidUpdate(_prevProps: TreeNodeProps) {
+    if (this.props.node.isDirty())
+      this.props.node.setDirty(false);
   }
 
   public render() {
@@ -106,7 +112,9 @@ export class TreeNode extends React.Component<TreeNodeProps> {
 
     return (
       <TreeNodeBase
-        data-testid={Tree.TestId.Node}
+        data-testid={TreeTest.TestId.Node}
+        className={this.props.className}
+        style={this.props.style}
         isExpanded={this.props.node.expanded()}
         isSelected={this.props.node.selected()}
         isLoading={this.props.node.loading()}
@@ -140,13 +148,17 @@ function doPropsDiffer(props1: TreeNodeProps, props2: TreeNodeProps) {
     || props1.imageLoader !== props2.imageLoader;
 }
 
-/** Properties for [[TreeNodeIcon]] React component */
+/** Properties for [[TreeNodeIcon]] React component
+ * @public
+ */
 export interface TreeNodeIconProps extends React.Attributes {
   node: BeInspireTreeNode<TreeNodeItem>;
   imageLoader: ITreeImageLoader;
 }
 
-/** React component that renders tree node icons */
+/** React component that renders tree node icons
+ * @public
+ */
 export const TreeNodeIcon: React.FunctionComponent<TreeNodeIconProps> = ({ imageLoader, node }) => { // tslint:disable-line:variable-name
   let image: Image | undefined;
 

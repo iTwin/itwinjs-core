@@ -4,15 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
+import { MessageCenter } from "../../../ui-ninezone";
 
-import { MessageCenterIndicator } from "../../../ui-ninezone";
-
-describe("<MessageCenterIndicator />", () => {
+describe("<MessageCenter />", () => {
   it("should render", () => {
-    mount(<MessageCenterIndicator />);
+    mount(<MessageCenter />);
   });
 
   it("renders correctly", () => {
-    shallow(<MessageCenterIndicator />).should.matchSnapshot();
+    shallow(<MessageCenter />).should.matchSnapshot();
+  });
+
+  it("renders correctly with label", () => {
+    shallow(<MessageCenter label="Messages:" />).should.matchSnapshot();
   });
 });

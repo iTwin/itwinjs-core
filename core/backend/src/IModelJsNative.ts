@@ -8,22 +8,56 @@ import {
 } from "@bentley/bentleyjs-core";
 import { ElementProps, ChangedElements } from "@bentley/imodeljs-common";
 import { ExportGraphicsProps } from "./ExportGraphics";
-import { IModelDb } from "./IModelDb";
+import { IModelDb, TxnIdString } from "./IModelDb";
 
 // tslint:disable:prefer-get
 
 /** Module that declares the IModelJs native code.
- * @hidden
+ * @internal
  */
 export declare namespace IModelJsNative {
+  export interface NativeCrashReportingConfigNameValuePair {
+    name: string;
+    value: string;
+  }
+
+  export interface NativeCrashReportingConfig {
+    /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. */
+    crashDir: string;
+    /** Write .dmp files to crashDir? The default is false. Even if writeDumpsToCrashDir is false, the iModelJsNativeCrash*.properties.txt file will be written to crashDir. */
+    writeDumpsToCrashDir?: boolean;
+    /** max # .dmp files that may exist in crashDir */
+    maxDumpsInDir?: number;
+    /** If writeDumpsToCrashDir is true, do you want a full-memory dump? Defaults to false. */
+    wantFullMemory?: boolean;
+    /** Additional name, value pairs to write to iModelJsNativeCrash*.properties.txt file in the event of a crash. */
+    params?: NativeCrashReportingConfigNameValuePair[];
+  }
+
   export const version: string;
   export let logger: Logger;
   export function initializeRegion(region: number): void;
-  export type TxnIdString = string;
+  export function setUseTileCache(useTileCache: boolean): void;
+  export function setCrashReporting(cfg: NativeCrashReportingConfig): void;
+  export function storeObjectInVault(obj: any, id: string): void;
+  export function getObjectFromVault(id: string): any;
+  export function dropObjectFromVault(id: string): void;
+  export function addReferenceToObjectInVault(id: string): void;
+  export function getObjectRefCountFromVault(id: string): number;
+  export function clearLogLevelCache(): void;
 
-  /**
-   * The return type of synchronous functions that may return an error or a successful result.
-   */
+  /** Logger categories used by the native addon */
+  export const enum BackendLoggerCategory {  // tslint:disable-line:no-const-enum
+    Success = 0,
+    BeSQLite = "BeSQLite",
+    Changeset = "Changeset",
+    DgnCore = "DgnCore",
+    ECDb = "ECDb",
+    ECObjectsNative = "ECObjectsNative",
+    UnitsNative = "UnitsNative",
+  }
+
+  /** The return type of synchronous functions that may return an error or a successful result. */
   export interface ErrorStatusOrResult<ErrorCodeType, ResultType> {
     /** Error from the operation. This property is defined if and only if the operation failed. */
     error?: StatusCodeWithMessage<ErrorCodeType>;
@@ -32,16 +66,13 @@ export declare namespace IModelJsNative {
     result?: ResultType;
   }
 
-  /**
-   */
   export class BriefcaseManagerResourcesRequest {
     public reset(): void;
     public isEmpty(): boolean;
     public toJSON(): string;
   }
 
-  /**
-   * The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
+  /** The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
    * The scenario is that the caller has made some changes to the *local* briefcase. Now, the caller is attempting to
    * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
    */
@@ -97,7 +128,6 @@ export declare namespace IModelJsNative {
     public getDbGuid(): GuidString;
     public getECClassMetaData(schema: string, className: string): ErrorStatusOrResult<IModelStatus, string>;
     public getElement(opts: string): ErrorStatusOrResult<IModelStatus, ElementProps>;
-    public getElementPropertiesForDisplay(id: string): ErrorStatusOrResult<IModelStatus, string>;
     public getGeoCoordinatesFromIModelCoordinates(points: string): string;
     public getIModelCoordinatesFromGeoCoordinates(points: string): string;
     public getIModelProps(): string;
@@ -159,6 +189,7 @@ export declare namespace IModelJsNative {
     public updateLinkTableRelationship(props: string): DbResult;
     public updateModel(modelProps: string): IModelStatus;
     public updateProjectExtents(newExtentsJson: string): void;
+    public static vacuum(dbName: string, pageSize?: number): DbResult;
   }
 
   export class ECDb implements IDisposable {
@@ -288,14 +319,14 @@ export declare namespace IModelJsNative {
     public getValueGuid(columnIndex: number): GuidString;
   }
 
-  export const enum ECPresentationStatus {
+  export const enum ECPresentationStatus { // tslint:disable-line:no-const-enum
     Success = 0,
     Error = 1,
     InvalidArgument = Error + 1,
   }
 
   export class ECPresentationManager implements IDisposable {
-    constructor();
+    constructor(id?: string);
     public setupRulesetDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
     public setupLocaleDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
     public setRulesetVariableValue(rulesetId: string, variableId: string, type: string, value: any): ErrorStatusOrResult<ECPresentationStatus, void>;
@@ -345,7 +376,6 @@ export declare namespace IModelJsNative {
     public dispose(): void;
   }
 
-  /** @hidden */
   export class ImportContext implements IDisposable {
     constructor(sourceDb: DgnDb, targetDb: DgnDb);
     public dispose(): void;
@@ -356,5 +386,13 @@ export declare namespace IModelJsNative {
     public cloneElement(sourceId: Id64String): ElementProps;
     public importCodeSpec(sourceId: Id64String): Id64String;
     public importFont(sourceId: number): number;
+  }
+
+  /**
+   * Temporary implementation to allow crashing the backend for testing purposes
+   * @internal
+   */
+  export class NativeDevTools {
+    public static signal(signalType: number): boolean;
   }
 }

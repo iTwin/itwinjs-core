@@ -6,24 +6,23 @@
 
 import * as React from "react";
 
-import { WidgetType, WidgetDef, WidgetState } from "../widgets/WidgetDef";
+import { WidgetType, WidgetDef, WidgetState, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { StackedWidget, EachWidgetProps } from "../widgets/StackedWidget";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
-import { FrontstageManager, WidgetStateChangedEventArgs } from "../frontstage/FrontstageManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 import {
-  ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, ZoneComponent as NZ_Zone, RectangleProps,
-  GhostOutline, HorizontalAnchor, VerticalAnchor, PointProps,
+  ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, Zone as NZ_Zone, RectangleProps,
+  Outline, HorizontalAnchor, VerticalAnchor, PointProps,
 } from "@bentley/ui-ninezone";
-
-// -----------------------------------------------------------------------------
-// Zone React Components
-// -----------------------------------------------------------------------------
+import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for the [[FrameworkZone]] component.
+ * @internal
  */
-export interface FrameworkZoneProps {
+export interface FrameworkZoneProps extends CommonProps {
+  contentRef: React.RefObject<HTMLDivElement>;
   horizontalAnchor: HorizontalAnchor;
   verticalAnchor: VerticalAnchor;
   zoneProps: ZonePropsBase;
@@ -36,13 +35,15 @@ export interface FrameworkZoneProps {
   lastPosition: PointProps | undefined;
   isUnmergeDrag: boolean;
   fillZone?: boolean;
+  isHidden: boolean;
 }
 
 interface FrameworkZoneState {
   updatedWidgetDef?: WidgetDef;
 }
 
-/** ConfigurableUi Zone React component.
+/** FrameworkZone React component.
+ * @internal
  */
 export class FrameworkZone extends React.Component<FrameworkZoneProps, FrameworkZoneState> {
 
@@ -50,7 +51,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     super(props);
   }
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<FrameworkZoneState> = {
     updatedWidgetDef: undefined,
   };
@@ -70,10 +71,12 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
       return;
 
     const zoneDef = this.props.zoneDefProvider.getZoneDef(id);
+
+    // istanbul ignore else
     if (zoneDef) {
-      // tslint:disable-next-line:prefer-for-of
-      for (let index = 0; index < zoneDef.widgetDefs.length; index++) {
-        const wDef = zoneDef.widgetDefs[index];
+      const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible);
+      for (let index = 0; index < visibleWidgets.length; index++) {
+        const wDef = visibleWidgets[index];
         if (wDef === widgetDef) {
           this.props.widgetChangeHandler.handleWidgetStateChange(id, index, widgetDef.state === WidgetState.Open);
           break;
@@ -83,9 +86,16 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   }
 
   public render(): React.ReactNode {
+    const zIndexStyle: React.CSSProperties | undefined = this.props.zoneProps.floating ?
+      { zIndex: this.props.zoneProps.floating.stackId, position: "relative" } : undefined;
     return (
-      <>
-        <NZ_Zone bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}>
+      <span style={zIndexStyle}>
+        <NZ_Zone
+          bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}
+          className={this.props.className}
+          style={this.props.style}
+          isHidden={this.props.isHidden}
+        >
           {this._getWidget()}
         </NZ_Zone>
         <NZ_Zone bounds={this.props.zoneProps.bounds}>
@@ -95,25 +105,25 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
             targetChangeHandler={this.props.targetChangeHandler}
           />
         </NZ_Zone>
-        {
-          this.props.targetedBounds && (
-            <GhostOutline bounds={this.props.targetedBounds} />
-          )
-        }
-      </>
+        {this.props.targetedBounds && <Outline bounds={this.props.targetedBounds} />}
+      </span>
     );
   }
 
   private getWidgetPropsIdForDef(widgetDef: WidgetDef): number | undefined {
+    // istanbul ignore else
     if (this.props.zoneProps.widgets.length > 0) {
       for (const wProps of this.props.zoneProps.widgets) {
         const zoneDef = this.props.zoneDefProvider.getZoneDef(wProps.id);
+
+        // istanbul ignore else
         if (zoneDef) {
           if (zoneDef.widgetDefs.some((wDef: WidgetDef) => wDef === widgetDef))
             return wProps.id;
         }
       }
     }
+
     return undefined;
   }
 
@@ -154,26 +164,13 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
           if (WidgetState.Open === currentWidgetDef.state) {
             if (!widgetDefToActivate)
               widgetDefToActivate = currentWidgetDef;
-            else
-              currentWidgetDef.state = WidgetState.Closed;
           }
         }
       } else {
         // if there was a state change in this zone then force the WidgetDef state to match that defined by the active tabIndex
         for (let index = 0; index < visibleWidgetDefs.length; index++) {
-          const currentWidgetDef = visibleWidgetDefs[index];
-          if (nzWidgetProps.tabIndex === index) {
+          if (nzWidgetProps.tabIndex === index)
             widgetDefToActivate = visibleWidgetDefs[index];
-            if (!currentWidgetDef.isActive) {
-              // This is needed if stateFun says tab should be closed and then user clicks tab to show tab contents.
-              currentWidgetDef.state = WidgetState.Open;
-            }
-          } else {
-            if (currentWidgetDef.isActive) {
-              // This is needed if stateFun enables tab and then user clicks tab to hide tab contents.
-              currentWidgetDef.state = WidgetState.Closed;
-            }
-          }
         }
       }
 
@@ -191,16 +188,12 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
       });
     });
 
-    let content: React.ReactNode;
-    if (widgetDefToActivate) {
-      content = widgetDefToActivate.reactElement;
-    }
-
     if (widgets.length === 0)
       return null;
 
     return (
       <StackedWidget
+        contentRef={this.props.contentRef}
         fillZone={this.props.fillZone || this.props.zoneProps.isLayoutChanged}
         horizontalAnchor={this.props.horizontalAnchor}
         isDragged={this.props.isDragged}
@@ -211,9 +204,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
         widgets={widgets}
         widgetChangeHandler={this.props.widgetChangeHandler}
         zoneId={this.props.zoneProps.id}
-      >
-        {content}
-      </StackedWidget>
+      />
     );
   }
 }

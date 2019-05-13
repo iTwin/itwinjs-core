@@ -7,7 +7,10 @@ import { mount } from "enzyme";
 import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
-import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer } from "../../ui-framework";
+import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer, WidgetState } from "../../ui-framework";
+import { getDefaultNineZoneProps } from "@bentley/ui-ninezone";
+import sinon = require("sinon");
+import { TestFrontstage } from "./FrontstageTestUtils";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";
@@ -26,9 +29,14 @@ class TestModalFrontstage implements ModalFrontstageInfo {
 }
 
 describe("FrontstageComposer", () => {
+  let handleTabClickStub: sinon.SinonStub | undefined;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
+
+  beforeEach(() => {
+    handleTabClickStub && handleTabClickStub.restore();
   });
 
   it("FrontstageComposer support of ModalFrontstage", () => {
@@ -41,10 +49,87 @@ describe("FrontstageComposer", () => {
     wrapper.update();
     expect(wrapper.find("div.uifw-modal-frontstage").length).to.eq(1);
 
-    const backButton = wrapper.find("div.nz-toolbar-button-back");
+    const backButton = wrapper.find("button.nz-toolbar-button-back");
     expect(backButton.length).to.eq(1);
     backButton.simulate("click");
     expect(FrontstageManager.modalFrontstageCount).to.eq(0);
+
+    wrapper.unmount();
   });
 
+  it("should handle tab click", async () => {
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const newNineZoneProps = getDefaultNineZoneProps();
+    handleTabClickStub = sinon.stub(FrontstageManager.NineZoneStateManager, "handleTabClick").returns(newNineZoneProps);
+
+    wrapper.instance().handleTabClick(6, 0);
+
+    handleTabClickStub.calledOnce.should.true;
+    wrapper.instance().state.nineZoneProps.should.eq(newNineZoneProps);
+
+    wrapper.unmount();
+  });
+
+  it("should update widget state when tab is opened", async () => {
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const zoneDef = frontstageProvider.frontstageDef!.getZoneDef(6)!;
+    const widgetDef1 = zoneDef.widgetDefs[0];
+    const widgetDef2 = zoneDef.widgetDefs[1];
+
+    const setWidgetStateSpy1 = sinon.spy(widgetDef1, "setWidgetState");
+    const setWidgetStateSpy2 = sinon.spy(widgetDef2, "setWidgetState");
+
+    wrapper.instance().handleTabClick(6, 1);
+    setWidgetStateSpy1.calledOnceWithExactly(WidgetState.Closed);
+    setWidgetStateSpy2.calledOnceWithExactly(WidgetState.Open);
+
+    wrapper.unmount();
+  });
+
+  it("should not update state of unloaded widgets", async () => {
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const zoneDef = frontstageProvider.frontstageDef!.getZoneDef(6)!;
+    const widgetDef1 = zoneDef.widgetDefs[0];
+
+    sinon.stub(widgetDef1, "state").returns(WidgetState.Hidden);
+    const setWidgetStateSpy1 = sinon.spy(widgetDef1, "setWidgetState");
+    wrapper.instance().handleTabClick(6, 1);
+    setWidgetStateSpy1.calledOnceWithExactly(WidgetState.Hidden);
+
+    wrapper.unmount();
+  });
+
+  it("should not update widget state if zone is not found", async () => {
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const zoneDef = frontstageProvider.frontstageDef!.getZoneDef(6)!;
+    const widgetDef2 = zoneDef.widgetDefs[1];
+    const setWidgetStateSpy2 = sinon.spy(widgetDef2, "setWidgetState");
+
+    sinon.stub(frontstageProvider.frontstageDef!, "getZoneDef").returns(undefined);
+
+    wrapper.instance().handleTabClick(6, 1);
+    setWidgetStateSpy2.notCalled.should.true;
+
+    wrapper.unmount();
+  });
 });

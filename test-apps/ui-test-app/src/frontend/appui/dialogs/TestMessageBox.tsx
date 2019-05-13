@@ -44,7 +44,7 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
       >
         Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per. Vel scripta ornatus assentior cu. Duo nonumy equidem te, per ad malis deserunt consetetur. In per invidunt conceptam. Ea pri aeque corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.
         <div>
-          <Button type={ButtonType.Hollow} onClick={() => { IModelApp.notifications.openMessageBox(MessageBoxType.Ok, "This is a box opened using IModelApp.notifications.openMessageBox.", MessageBoxIconType.Information); }}>
+          <Button buttonType={ButtonType.Hollow} onClick={() => { IModelApp.notifications.openMessageBox(MessageBoxType.Ok, "This is a box opened using IModelApp.notifications.openMessageBox.", MessageBoxIconType.Information); }}>
             Open Another Modal
           </Button>
         </div>
@@ -67,7 +67,7 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
       opened: !this.state.opened,
     }), () => {
       if (!this.state.opened)
-        ModalDialogManager.closeModalDialog();
+        ModalDialogManager.closeDialog();
       if (this.props.onResult)
         this.props.onResult(DialogButtonType.Close);
     });

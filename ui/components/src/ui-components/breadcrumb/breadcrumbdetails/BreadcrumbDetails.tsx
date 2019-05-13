@@ -5,6 +5,8 @@
 /** @module Breadcrumb */
 
 import * as React from "react";
+import classnames from "classnames";
+
 import { using } from "@bentley/bentleyjs-core";
 import { TableDataProvider, RowItem, ColumnDescription } from "../../table/TableDataProvider";
 import { Table, TableProps } from "../../table/component/Table";
@@ -12,10 +14,13 @@ import { BreadcrumbTreeUtils, DataRowItem } from "../BreadcrumbTreeUtils";
 import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/component/BeInspireTree";
-import UiComponents from "../../UiComponents";
+import { UiComponents } from "../../UiComponents";
+import { CommonProps } from "@bentley/ui-core";
 
-/** Property interface for the [[BreadcrumbDetails]] component */
-export interface BreadcrumbDetailsProps {
+/** Properties for the [[BreadcrumbDetails]] component
+ * @beta
+ */
+export interface BreadcrumbDetailsProps extends CommonProps {
   /** Path data object shared by Breadcrumb component */
   path: BreadcrumbPath;
   columns?: ColumnDescription[];
@@ -24,12 +29,12 @@ export interface BreadcrumbDetailsProps {
   onChildrenLoaded?: (parent: TreeNodeItem, children: TreeNodeItem[]) => void;
   /** Callback triggered when root nodes are loaded with an asynchronous dataProvider. */
   onRootNodesLoaded?: (nodes: TreeNodeItem[]) => void;
-  /** @hidden */
+  /** @internal */
   onRender?: () => void;
 }
 
-/** @hidden */
-export interface BreadcrumbDetailsState {
+/** @internal */
+interface BreadcrumbDetailsState {
   table?: TableDataProvider;
   childNodes?: TreeNodeItem[];
   modelReady: boolean;
@@ -38,6 +43,7 @@ export interface BreadcrumbDetailsState {
 /**
  * A Table containing all children of tree node specified in path.
  * Used in conjunction with [[Breadcrumb]] to see children of current path.
+ * @beta
  */
 export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, BreadcrumbDetailsState> {
   private _tree!: BeInspireTree<TreeNodeItem>;
@@ -45,6 +51,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
 
   public readonly state: BreadcrumbDetailsState;
 
+  /** @internal */
   constructor(props: BreadcrumbDetailsProps) {
     super(props);
     this.state = {
@@ -53,6 +60,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     this._recreateTree();
   }
 
+  /** @internal */
   public componentDidMount() {
     this._mounted = true;
     /* istanbul ignore next */
@@ -66,6 +74,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     this.props.path.BreadcrumbUpdateEvent.addListener(this._pathChange);
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._mounted = false;
     this._tree.removeAllListeners();
@@ -75,6 +84,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     this.props.path.BreadcrumbUpdateEvent.removeListener(this._pathChange);
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: BreadcrumbDetailsProps) {
     /* istanbul ignore next */
     if (this.props.onRender)
@@ -95,7 +105,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     this._tree.ready.then(this._onModelReady); // tslint:disable-line:no-floating-promises
   }
 
-  /** @hidden */
+  /** @internal */
   public shouldComponentUpdate(nextProps: BreadcrumbDetailsProps, nextState: BreadcrumbDetailsState): boolean {
     if (this.state.modelReady !== nextState.modelReady) {
       // always render when state.modelReady changes
@@ -206,6 +216,8 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     if (this._mounted)
       this.setState({ table, childNodes });
   }
+
+  /** @internal */
   public render(): React.ReactNode {
     const node = this.props.path.getCurrentNode();
     if (node) {
@@ -217,7 +229,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     const { childNodes } = this.state;
     const renderTable = this.props.renderTable ? this.props.renderTable : this.renderTable;
     return (
-      <div className="breadcrumb-details">
+      <div className={classnames("components-breadcrumb-details", this.props.className)} style={this.props.style}>
         {
           this.state.table && childNodes &&
           renderTable({

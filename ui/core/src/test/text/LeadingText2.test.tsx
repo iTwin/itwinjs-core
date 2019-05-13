@@ -24,7 +24,8 @@ describe("<LeadingText2 />", () => {
   });
 
   it("has correct text", () => {
-    const wrapper = shallow(<LeadingText2>Test Content</LeadingText2>);
+    const wrapper = mount(<LeadingText2>Test Content</LeadingText2>);
     wrapper.find(".uicore-text-leading-2").text().should.equal("Test Content");
+    wrapper.unmount();
   });
 });

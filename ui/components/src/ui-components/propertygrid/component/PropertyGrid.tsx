@@ -5,9 +5,11 @@
 /** @module PropertyGrid */
 
 import * as React from "react";
+import classnames from "classnames";
 import ResizeObserver from "resize-observer-polyfill";
+
 import { DisposeFunc } from "@bentley/bentleyjs-core";
-import { Orientation, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { Orientation, Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
@@ -16,8 +18,10 @@ import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 
 import "./PropertyGrid.scss";
 
-/** Properties for [[PropertyGrid]] React component */
-export interface PropertyGridProps {
+/** Properties for [[PropertyGrid]] React component
+ * @public
+ */
+export interface PropertyGridProps extends CommonProps {
   /** Property data provider */
   dataProvider: IPropertyDataProvider;
 
@@ -35,24 +39,20 @@ export interface PropertyGridProps {
   /** Callback to property selection */
   onPropertySelectionChanged?: (property: PropertyRecord) => void;
 
-  /** Enables/disables property editing */
+  /** Enables/disables property editing @beta */
   isPropertyEditingEnabled?: boolean;
-  /** Callback for when properties are being edited */
+  /** Callback for when properties are being edited @beta */
   onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
-  /** Callback for when properties are updated */
+  /** Callback for when properties are updated @beta */
   onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
 
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
-/** Property Editor state */
-export interface PropertyEditorState {
-  active: boolean;
-  propertyRecord?: PropertyRecord;
-}
-
-/** Arguments for the Property Editing event callback */
+/** Arguments for the Property Editing event callback
+ * @public
+ */
 export interface PropertyEditingArgs {
   /** PropertyRecord being edited  */
   propertyRecord: PropertyRecord;
@@ -60,7 +60,9 @@ export interface PropertyEditingArgs {
   propertyKey?: string;
 }
 
-/** Arguments for `PropertyGridProps.onPropertyContextMenu` callback */
+/** Arguments for `PropertyGridProps.onPropertyContextMenu` callback
+ * @public
+ */
 export interface PropertyGridContextMenuArgs {
   /** PropertyRecord being edited  */
   propertyRecord: PropertyRecord;
@@ -68,15 +70,19 @@ export interface PropertyGridContextMenuArgs {
   event: React.MouseEvent;
 }
 
-/** Property Category in the [[PropertyGrid]] state */
+/** Property Category in the [[PropertyGrid]] state
+ * @public
+ */
 export interface PropertyGridCategory {
   propertyCategory: PropertyCategory;
   propertyCount: number;
   properties: PropertyRecord[];
 }
 
-/** State of [[PropertyGrid]] React component */
-export interface PropertyGridState {
+/** State of [[PropertyGrid]] React component
+ * @internal
+ */
+interface PropertyGridState {
   /** List of PropertyGrid categories */
   categories: PropertyGridCategory[];
   /** Unique key of currently selected property */
@@ -85,11 +91,12 @@ export interface PropertyGridState {
   editingPropertyKey?: string;
   /** Actual orientation used by the property grid */
   orientation: Orientation;
-  /** Is property grid currently loading data */
-  isLoading?: boolean;
+  /** If property grid currently loading data, the loading start time  */
+  loadStart?: Date;
 }
 
 /** PropertyGrid React component.
+ * @public
  */
 export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGridState> {
   private _dataChangesListenerDisposeFunc?: DisposeFunc;
@@ -104,11 +111,13 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     orientation: this.props.orientation ? this.props.orientation : Orientation.Horizontal,
   };
 
+  /** @internal */
   constructor(props: PropertyGridProps) {
     super(props);
     this._gridResizeSensor = new ResizeObserver(this._onGridResize);
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
     this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
@@ -123,6 +132,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     }
   }
 
+  /** @internal */
   public componentWillUnmount() {
     if (this._dataChangesListenerDisposeFunc) {
       this._dataChangesListenerDisposeFunc();
@@ -180,7 +190,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       return;
     }
 
-    this.setState({ isLoading: true });
+    this.setState((prev) => prev.loadStart ? null : { loadStart: new Date() });
 
     this._isInDataRequest = true;
     let propertyData: PropertyData;
@@ -207,7 +217,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       };
       categories.push(gridCategory);
     });
-    this.setState({ categories, isLoading: false });
+    this.setState({ categories, loadStart: undefined });
   }
 
   private _onExpansionToggled = (categoryName: string) => {
@@ -283,17 +293,18 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this.setState({ editingPropertyKey: undefined });
   }
 
+  /** @internal */
   public render() {
-    if (this.state.isLoading) {
+    if (this.state.loadStart) {
       return (
         <div className="components-property-grid-loader">
-          <Spinner size={SpinnerSize.Large} />
+          <DelayedSpinner loadStart={this.state.loadStart} />
         </div>
       );
     }
 
     return (
-      <div className="components-property-grid-wrapper">
+      <div className={classnames("components-property-grid-wrapper", this.props.className)} style={this.props.style}>
         <div ref={this._gridRef} className="components-property-grid">
           {
             this.state.categories.map((gridCategory: PropertyGridCategory) => (
@@ -320,3 +331,33 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     );
   }
 }
+
+interface DelayedSpinnerProps {
+  loadStart?: Date;
+  delay?: number;
+}
+// tslint:disable-next-line: variable-name
+const DelayedSpinner = (props: DelayedSpinnerProps) => {
+  const delay = props.delay || 500;
+  const [loadStart] = React.useState(props.loadStart || new Date());
+
+  const currTime = new Date();
+  const diff = (currTime.getTime() - loadStart.getTime());
+
+  const update = useForceUpdate();
+  React.useEffect(() => {
+    if (diff >= delay)
+      return;
+    const timer = setTimeout(update, diff);
+    return () => clearTimeout(timer);
+  });
+
+  if (diff < delay)
+    return null;
+
+  return (<Spinner size={SpinnerSize.Large} />);
+};
+const useForceUpdate = () => {
+  const [value, set] = React.useState(true);
+  return () => set(!value);
+};

@@ -4,15 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ViewportComponent } from "@bentley/ui-components";
+import {
+  ViewportComponent,
+} from "@bentley/ui-components";
 import {
   ConfigurableCreateInfo,
   ConfigurableUiManager,
   ContentViewManager,
   ViewportContentControl,
+  UiFramework,
 } from "@bentley/ui-framework";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
+import { AnimationViewOverlay } from "./AnimationViewOverlay";
 
 // create a HOC viewport component that supports unified selection
 // tslint:disable-next-line:variable-name
@@ -23,6 +27,19 @@ const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 export class IModelViewportControl extends ViewportContentControl {
   private _options: any;
 
+  private _onPlayPauseAnimation = (isPlaying: boolean): void => {
+    const isVisible = UiFramework.getIsUiVisible();
+    // turn off ui elements when playing
+    if (isVisible === isPlaying)
+      UiFramework.setIsUiVisible(!isVisible);
+  }
+
+  private _getViewOverlay = (viewport: ScreenViewport): React.ReactNode => {
+    return (
+      <AnimationViewOverlay viewport={viewport} onPlayPause={this._onPlayPauseAnimation} />
+    );
+  }
+
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
@@ -30,12 +47,11 @@ export class IModelViewportControl extends ViewportContentControl {
 
     if (options.viewId) {
       this.reactElement = <UnifiedSelectionViewport viewportRef={(v: ScreenViewport) => { this.viewport = v; }}
-        viewDefinitionId={options.viewId} imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
+        viewDefinitionId={options.viewId} imodel={options.iModelConnection} ruleset={options.ruleset} getViewOverlay={this._getViewOverlay} />;
     } else {
       this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
     }
   }
-
   /** Returns a promise that resolves when the control is ready for usage.
    */
   public get isReady(): Promise<void> {
@@ -52,7 +68,6 @@ export class IModelViewportControl extends ViewportContentControl {
     else
       return "StandardRotationNavigationAid";
   }
-
 }
 
 // This is used for fake viewports (those with no ViewId)

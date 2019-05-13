@@ -9,11 +9,14 @@ import * as React from "react";
 import ReactDataGrid from "react-data-grid";
 import ReactResizeDetector from "react-resize-detector";
 import classnames from "classnames";
+
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
+import { PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import {
   SortDirection, Dialog,
-  LocalUiSettings, UiSettings, UiSettingsStatus,
+  LocalUiSettings, UiSettings, UiSettingsStatus, CommonProps,
 } from "@bentley/ui-core";
+
 import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import {
@@ -22,27 +25,29 @@ import {
 } from "../../common/selection/SelectionHandler";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { PropertyValueRendererManager, PropertyDialogState } from "../../properties/ValueRendererManager";
-import { PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
 import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
 import { TableIconCellContent, TableCellContent, TableCell } from "./TableCell";
+import { TableRowStyleProvider } from "../../properties/ItemStyle";
 
 import "./Table.scss";
-import { TableRowStyleProvider } from "../../properties/ItemStyle";
 
 const TABLE_ROW_HEIGHT = 25;
 
 /**
  * Specifies table selection target.
+ * @public
  */
 export enum TableSelectionTarget {
   Row,
   Cell,
 }
 
-/** Properties for the Table React component */
-export interface TableProps {
+/** Properties for the Table React component
+ * @public
+ */
+export interface TableProps extends CommonProps {
   /** Data provider for the Table */
   dataProvider: TableDataProvider;
   /** Amount of rows per page */
@@ -69,11 +74,13 @@ export interface TableProps {
   tableSelectionTarget?: TableSelectionTarget;
   /** Specifies the selection mode. */
   selectionMode?: SelectionMode;
-  /** Callback for when properties are being edited */
+
+  /** Callback for when properties are being edited @beta */
   onPropertyEditing?: (args: TableCellEditorState) => void;
-  /** Callback for when properties are updated */
+  /** Callback for when properties are updated @beta */
   onPropertyUpdated?: (propertyArgs: PropertyUpdatedArgs, cellArgs: TableCellUpdatedArgs) => Promise<boolean>;
-  /** @hidden */
+
+  /** @internal */
   renderRow?: (item: RowItem, props: TableRowProps) => React.ReactNode;
   /** Enables context menu to show/hide columns */
   showHideColumns?: boolean;
@@ -87,19 +94,26 @@ export interface TableProps {
   propertyValueRendererManager?: PropertyValueRendererManager;
   /**
    * Gets called when rendering is finished. Should be used while testing to know when asynchronous rendering has finished.
-   * @hidden
+   * @internal
    */
   onRender?: () => void;
+
+  /** Hide the header */
+  hideHeader?: boolean;
 }
 
-/** Properties for a Table cell */
+/** Properties for a Table cell
+ * @public
+ */
 export interface CellProps {
   item: CellItem;
   displayValue: string;
   render: React.ComponentType<{ isSelected: boolean }>;
 }
 
-/** Properties for a Table row */
+/** Properties for a Table row
+ * @public
+ */
 export interface RowProps {
   index: number;
   item: RowItem;
@@ -114,7 +128,9 @@ interface RowsLoadResult {
   selectedCellKeys: CellKey[];
 }
 
-/** Cell/Property Editor state */
+/** Cell/Property Editor state
+ * @public
+ */
 export interface TableCellEditorState {
   active: boolean;
   rowIndex?: number;
@@ -122,14 +138,16 @@ export interface TableCellEditorState {
   cellKey?: string;
 }
 
-/** Cell/Property Updated Args */
+/** Cell/Property Updated Args
+ * @public
+ */
 export interface TableCellUpdatedArgs {
   rowIndex: number;
   colIndex: number;
   cellKey: string;
 }
 
-/** @hidden */
+/** @internal */
 export interface TableState {
   columns: ReactDataGridColumn[];
   hiddenColumns: string[];
@@ -144,7 +162,9 @@ export interface TableState {
   // popup?: PropertyPopupState;
 }
 
-/** ReactDataGrid.Column with additional properties */
+/** ReactDataGrid.Column with additional properties
+ * @public
+ */
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
   icon?: boolean;
 }
@@ -191,6 +211,7 @@ const enum UpdateStatus {
 
 /**
  * Table React component
+ * @public
  */
 export class Table extends React.Component<TableProps, TableState> {
 
@@ -209,10 +230,12 @@ export class Table extends React.Component<TableProps, TableState> {
   private _pressedItemSelected: boolean = false;
   private _tableRef = React.createRef<HTMLDivElement>();
 
-  public readonly state: Readonly<TableState> = initialState;
+  /** @internal */
+  public readonly state = initialState;
 
-  constructor(props: TableProps, context?: any) {
-    super(props, context);
+  /** @internal */
+  constructor(props: TableProps) {
+    super(props);
 
     if (props.pageAmount)
       this._pageAmount = props.pageAmount;
@@ -287,6 +310,7 @@ export class Table extends React.Component<TableProps, TableState> {
     return this.props.tableSelectionTarget ? this.props.tableSelectionTarget : TableSelectionTarget.Row;
   }
 
+  /** @internal */
   public componentWillReceiveProps(newProps: TableProps) {
     this._rowSelectionHandler.selectionMode = newProps.selectionMode ? newProps.selectionMode : SelectionMode.Single;
     this._cellSelectionHandler.selectionMode = newProps.selectionMode ? newProps.selectionMode : SelectionMode.Single;
@@ -298,6 +322,7 @@ export class Table extends React.Component<TableProps, TableState> {
     }
   }
 
+  /** @internal */
   public componentDidUpdate(previousProps: TableProps) {
     if (this.props.dataProvider !== previousProps.dataProvider) {
       // tslint:disable-next-line:no-floating-promises
@@ -315,6 +340,7 @@ export class Table extends React.Component<TableProps, TableState> {
       this.props.onRender();
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
 
@@ -322,6 +348,7 @@ export class Table extends React.Component<TableProps, TableState> {
     this.update();
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
     this._disposableListeners.dispose();
@@ -422,7 +449,7 @@ export class Table extends React.Component<TableProps, TableState> {
     await this.updateRows();
   }
 
-  /** @hidden */
+  /** @internal */
   public async update(): Promise<UpdateStatus> {
     let status = await this.updateColumns();
 
@@ -436,6 +463,7 @@ export class Table extends React.Component<TableProps, TableState> {
     return status;
   }
 
+  /** @internal */
   public updateSelectedRows() {
     const selectedRowIndices = new Set();
     if (this.props.isRowSelected) {
@@ -448,6 +476,7 @@ export class Table extends React.Component<TableProps, TableState> {
     this.forceUpdate();
   }
 
+  /** @internal */
   public updateSelectedCells() {
     const selectedCellKeys = new Map<string, Set<number>>();
     if (this.props.isCellSelected) {
@@ -999,6 +1028,7 @@ export class Table extends React.Component<TableProps, TableState> {
       this.setState({ cellEditorState: { active: false } });
   }
 
+  /** @internal */
   public shouldComponentUpdate(_props: TableProps): boolean {
     return true;
   }
@@ -1066,13 +1096,15 @@ export class Table extends React.Component<TableProps, TableState> {
 
   // private _onPopupHide = () =>  this.setState({ popup: undefined });
 
+  /** @internal */
   public render() {
     const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
 
     const visibleColumns = this._getVisibleColumns();
     return (
       <>
-        <div className="components-table" onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._showContextMenu : undefined}>
+        <div className={classnames("components-table", this.props.hideHeader && "hide-header", this.props.className)} style={this.props.style}
+          onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._showContextMenu : undefined}>
           {this.props.showHideColumns &&
             <ShowHideMenu
               opened={this.state.menuVisible}
@@ -1133,16 +1165,20 @@ export class Table extends React.Component<TableProps, TableState> {
 
 /**
  * Props for the [[TableRow]] component
+ * @internal
  */
-export interface TableRowProps {
+export interface TableRowProps extends CommonProps {
   cells: { [key: string]: React.ReactNode };
   isSelected?: boolean;
 }
 
 /**
  * Default component for rendering a row for the Table
+ * @internal
  */
 export class TableRow extends React.Component<TableRowProps> {
+
+  /** @internal */
   public render() {
     const { cells, isSelected, ...props } = this.props;
     return (

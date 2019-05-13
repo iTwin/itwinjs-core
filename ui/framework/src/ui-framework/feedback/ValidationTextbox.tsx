@@ -9,24 +9,29 @@ import * as classnames from "classnames";
 import { MessageManager } from "../messages/MessageManager";
 
 import "./ValidationTextbox.scss";
+import { CommonProps } from "@bentley/ui-core";
 
-/** Enum for Input Status used in [[ValidationTextbox]] */
+/** Enum for Input Status used in [[ValidationTextbox]]
+ * @beta
+ */
 export enum InputStatus {
   Valid = 0,
   Invalid = 1,
 }
 
-/** Property interface for ValidationTextbox */
-export interface ValidationTextboxProps {
+/** Property interface for ValidationTextbox
+ * @beta
+ */
+export interface ValidationTextboxProps extends CommonProps {
   /** value to set ValidationTextbox to initially */
   initialValue?: string;
   /** placeholder value to show in gray before anything is entered in */
   placeholder?: string;
   /** triggered when the content of ValidationTextbox is changed. Return true if valid */
   onValueChanged?: (value: string) => InputStatus;
-  /** listens for <Enter> keypresses */
+  /** listens for <Enter> key presses */
   onEnterPressed?: () => void;
-  /** listens for <Esc> keypresses */
+  /** listens for <Esc> key presses */
   onEscPressed?: () => void;
   /** width of ValidationTextbox, measured in em */
   size?: number;
@@ -37,14 +42,23 @@ export interface ValidationTextboxProps {
 /**
  * Input box that validates text based on provided criteria. Defaults to checking
  * for empty if no method for onValueChanged is provided.
+ * @beta
  */
 export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
   private _isValid: boolean = true;
 
-  /** @hidden */
+  constructor(props: ValidationTextboxProps) {
+    super(props);
+  }
+
+  /** @internal */
   public render(): React.ReactNode {
-    const sizeStyle = {
+    const sizeStyle: React.CSSProperties = {
       width: this.props.size ? this.props.size.toString() + "em" : "12em",
+    };
+    const divStyle: React.CSSProperties = {
+      ...sizeStyle,
+      ...this.props.style,
     };
 
     const validClassNames = classnames(
@@ -58,8 +72,8 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
 
     return (
       <div
-        className="uifw-ValidationTextbox"
-        style={sizeStyle}>
+        className={classnames("uifw-ValidationTextbox", this.props.className)}
+        style={divStyle}>
         <input
           className={this._isValid ? validClassNames : invalidClassNames}
           onChange={this._validateText}

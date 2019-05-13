@@ -24,7 +24,8 @@ describe("<Subheading />", () => {
   });
 
   it("has correct text", () => {
-    const wrapper = shallow(<Subheading>Test Content</Subheading>);
+    const wrapper = mount(<Subheading>Test Content</Subheading>);
     wrapper.find(".uicore-text-subheading").text().should.equal("Test Content");
+    wrapper.unmount();
   });
 });

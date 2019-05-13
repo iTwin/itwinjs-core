@@ -6,6 +6,7 @@
 
 import * as Fuse from "fuse.js";
 
+/** @public */
 export class FuzzySearch<T> {
 
   /** Override to provide non-standard FuseOptions for searches where the a single word pattern is used */
@@ -106,7 +107,9 @@ export class FuzzySearch<T> {
   }
 }
 
-/** Interface implemented by objects returned while iterating through FuzzySearchResults */
+/** Interface implemented by objects returned while iterating through FuzzySearchResults
+ * @public
+ */
 export interface FuzzySearchResult<T> {
   /** Return the current result object */
   getResult(): T;
@@ -160,6 +163,7 @@ function getBoldMask(this: any): boolean[] | undefined {
 /**
  * This class is used to return the results of FuzzySearch.search. It is iterable, with each iteration
  * returning an object implementing the FuzzySearchResult interface.
+ * @public
  */
 export class FuzzySearchResults<T> implements Iterable<T> {
   public results: any[];

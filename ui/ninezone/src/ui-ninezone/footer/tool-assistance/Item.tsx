@@ -6,16 +6,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Item.scss";
 
-/** Properties of [[ToolAssistanceItem]] component. */
+/** Properties of [[ToolAssistanceItem]] component.
+ * @beta
+ */
 export interface ToolAssistanceItemProps extends CommonProps {
-  /** Assistance items and separators. I.e.: [[ToolAssistanceItem]], [[ToolAssistanceSeparator]] */
+  /** Assistance items and separators. I.e. [[ToolAssistanceItem]], [[ToolAssistanceSeparator]] */
   children?: React.ReactNode;
 }
 
-/** Tool assistance item. Used in [[ToolAssistanceContent]] component. */
+/** Tool assistance item used in [[ToolAssistanceDialog]] component.
+ * @beta
+ */
 export class ToolAssistanceItem extends React.PureComponent<ToolAssistanceItemProps> {
   public render() {
     const className = classnames(

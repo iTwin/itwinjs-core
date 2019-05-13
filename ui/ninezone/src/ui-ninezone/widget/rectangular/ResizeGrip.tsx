@@ -6,19 +6,23 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 import { PointerCaptor } from "../../base/PointerCaptor";
-import { CommonProps } from "../../utilities/Props";
-import "./ResizeGrip.scss";
 import { Rectangle } from "../../utilities/Rectangle";
 import { Point, PointProps } from "../../utilities/Point";
+import "./ResizeGrip.scss";
 
-/** Properties of [[ResizeGrip]] component. */
+/** Properties of [[ResizeGrip]] component.
+ * @alpha
+ */
 export interface ResizeGripProps extends CommonProps {
   onResize?: (x: number, y: number) => void;
   direction: ResizeDirection;
 }
 
-/** Available resize directions of resize grip. */
+/** Available resize directions of resize grip.
+ * @alpha
+ */
 export enum ResizeDirection {
   EastWest,
   NorthSouth,
@@ -26,7 +30,9 @@ export enum ResizeDirection {
   NorthWest_SouthEast,
 }
 
-/** Helpers for [[ResizeDirection]]. */
+/** Helpers for [[ResizeDirection]].
+ * @alpha
+ */
 export class ResizeDirectionHelpers {
   /** Class name of [[ResizeDirection.EastWest]] */
   public static readonly EW_CLASS_NAME = "nz-direction-ew";
@@ -52,7 +58,9 @@ export class ResizeDirectionHelpers {
   }
 }
 
-/** Resize grip used by [[Stacked]] component. */
+/** Resize grip used by [[Stacked]] component.
+ * @alpha
+ */
 export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
   private _relativePosition?: Point;
   private _grip = React.createRef<HTMLDivElement>();
@@ -78,7 +86,7 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
     );
   }
 
-  private _getRelativePosition(grip: HTMLDivElement, clientPos: PointProps) {
+  private _getRelativePosition(grip: HTMLElement, clientPos: PointProps) {
     const clientRect = grip.getBoundingClientRect();
     const bounds = Rectangle.create(clientRect);
 
@@ -99,9 +107,6 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
   }
 
   private _handleMouseUp = () => {
-    if (!this._relativePosition)
-      return;
-
     this._relativePosition = undefined;
   }
 

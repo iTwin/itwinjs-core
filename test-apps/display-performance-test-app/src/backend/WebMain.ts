@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
 
-import { BentleyCloudRpcManager, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { initializeBackend } from "./backend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -17,7 +17,7 @@ import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 // tslint:disable:no-console
 
 export function getRpcInterfaces() {
-  return [DisplayPerfRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
+  return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 }
 
 function setupStandaloneConfiguration() {
@@ -97,7 +97,7 @@ app.use(bodyParser.text({ limit: "50mb" }));
 app.all("/*", (_req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "POST, GET");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id");
   next();
 });
 

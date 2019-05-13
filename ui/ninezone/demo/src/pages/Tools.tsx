@@ -13,7 +13,7 @@ import { GroupTool } from "@src/toolbar/item/expandable/group/tool/Tool";
 import { GroupToolExpander } from "@src/toolbar/item/expandable/group/tool/Expander";
 import { Overflow } from "@src/toolbar/item/Overflow";
 import { ExpandableItem } from "@src/toolbar/item/expandable/Expandable";
-import { Item } from "@src/toolbar/item/Icon";
+import { Item } from "@src/toolbar/item/Item";
 import { Toolbar } from "@src/toolbar/Toolbar";
 import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
@@ -22,11 +22,13 @@ import { AppButton } from "@src/widget/tools/button/App";
 import { BackButton } from "@src/widget/tools/button/Back";
 import { ExpandableButton } from "@src/widget/tools/button/Expandable";
 import { ToolbarIcon } from "@src/widget/tools/button/Icon";
+import { Popup, Position as PopupDirection } from "@bentley/ui-core";
 
-export interface State {
-  onBackCount: number;
+interface State {
+  direction: PopupDirection;
+  expandableButton: HTMLDivElement | null;
   isPanelVisible: boolean;
-  direction: Direction;
+  onBackCount: number;
 }
 
 export const cols2: React.CSSProperties = {
@@ -40,9 +42,10 @@ export const cols2: React.CSSProperties = {
 
 export default class Tools extends React.PureComponent<{}, State> {
   public readonly state: Readonly<State> = {
-    onBackCount: 0,
+    direction: PopupDirection.Right,
+    expandableButton: null,
     isPanelVisible: false,
-    direction: Direction.Right,
+    onBackCount: 0,
   };
 
   public render() {
@@ -117,23 +120,25 @@ export default class Tools extends React.PureComponent<{}, State> {
               <i className="icon icon-progress-backward-2" />
             }
           />
-          <ExpandableButton
-            expanded={
-              !this.state.isPanelVisible ? undefined :
-                <div style={{ backgroundColor: "teal" }}>
-                  Hello world
-                </div>
-            }
-            direction={this.state.direction}
-            button={
+          <div ref={this._handleExpandableButtonRef}>
+            <ExpandableButton>
               <ToolbarIcon
                 onClick={this._handleExpandableButtonClick}
                 icon={
                   <i className="icon icon-placeholder" />
                 }
               />
-            }
-          />
+            </ExpandableButton>
+          </div>
+          <Popup
+            isOpen={this.state.isPanelVisible}
+            position={this.state.direction}
+            target={this.state.expandableButton}
+          >
+            <div style={{ backgroundColor: "teal" }}>
+              Hello world
+            </div>
+          </Popup>
         </div>
         <h1>Tool Group</h1>
         <Panel>
@@ -163,6 +168,10 @@ export default class Tools extends React.PureComponent<{}, State> {
         />
       </div >
     );
+  }
+
+  private _handleExpandableButtonRef = (expandableButton: HTMLDivElement | null) => {
+    this.setState(() => ({ expandableButton }));
   }
 
   private getItems1(direction: Direction) {
@@ -230,7 +239,7 @@ export default class Tools extends React.PureComponent<{}, State> {
           this.state.isPanelVisible &&
           <Panel>
             Other Tools
-            </Panel>
+          </Panel>
         }
       >
         <Item
@@ -316,20 +325,20 @@ export default class Tools extends React.PureComponent<{}, State> {
     this.setState((prevState) => {
       let direction = prevState.direction;
       switch (direction) {
-        case Direction.Left: {
-          direction = Direction.Top;
+        case PopupDirection.Left: {
+          direction = PopupDirection.Top;
           break;
         }
-        case Direction.Top: {
-          direction = Direction.Right;
+        case PopupDirection.Top: {
+          direction = PopupDirection.Right;
           break;
         }
-        case Direction.Right: {
-          direction = Direction.Bottom;
+        case PopupDirection.Right: {
+          direction = PopupDirection.Bottom;
           break;
         }
-        case Direction.Bottom: {
-          direction = Direction.Left;
+        case PopupDirection.Bottom: {
+          direction = PopupDirection.Left;
           break;
         }
       }

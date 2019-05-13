@@ -34,6 +34,7 @@ import { LineString3d } from "./LineString3d";
  * * The relationship is the equation
  * ** `sweepRadians = arcLength * average Curvature = arcLength * 0.5 * (curvature0 + curvature1)`
  * * That is, regardless of any curvature properties other than symmetry, specifying any 3 of the quantities fully determines the remaining one.
+ * @alpha
  */
 export class TransitionConditionalProperties {
   public radius0: number | undefined;
@@ -146,7 +147,9 @@ export class TransitionConditionalProperties {
     return true;
   }
 }
-
+/**
+ * @alpha
+ */
 export class TransitionSpiral3d extends CurvePrimitive {
   // return 1/r with convention that if true zero is given as radius it represents infinite radius (0 curvature, straight line)
   public static radiusToCurvature(radius: number): number { return (radius === 0.0) ? 0.0 : 1.0 / radius; }
@@ -170,7 +173,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
   public static averageCurvatureR0R1(r0: number, r1: number): number {
     return 0.5 * (TransitionSpiral3d.radiusToCurvature(r0) + TransitionSpiral3d.radiusToCurvature(r1));
   }
-
+/** Return the arclength of a transition spiral with given sweep and radius pair. */
   public static radiusRadiusSweepRadiansToArcLength(radius0: number, radius1: number, sweepRadians: number): number {
     return Math.abs(sweepRadians / TransitionSpiral3d.averageCurvatureR0R1(radius0, radius1));
   }
@@ -449,7 +452,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     vectorY.scaleInPlace(this.fractionToCurvature(fraction));
     return Plane3dByOriginAndVectors.createCapture(origin, vectorX, vectorY, result);
   }
-
+/** Second step of double dispatch:  call `handler.handleTransitionSpiral(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleTransitionSpiral(this);
   }

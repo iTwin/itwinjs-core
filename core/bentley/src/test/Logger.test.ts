@@ -3,10 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { using, Logger, LogLevel, PerfLogger, DbResult } from "../bentleyjs-core";
+import { using, Logger, LogLevel, PerfLogger, DbResult, GetMetaDataFunction } from "../bentleyjs-core";
 import { EnvMacroSubst } from "../Logger";
 import { BentleyError } from "../BentleyError";
-import { ActivityLoggingContext } from "../ActivityLoggingContext";
+import { ClientRequestContext } from "../ClientRequestContext";
+import { BeDuration } from "../Time";
 
 let outerr: any[];
 let outwarn: any[];
@@ -398,34 +399,35 @@ describe("Logger", () => {
     clearOutlets();
   });
 
-  it("Performance logger", () => {
+  it("Performance logger", async () => {
     const perfMessages = new Array<string>();
+    const perfData = new Array<any>();
     Logger.initialize(undefined, undefined,
-      (category, message, _metadata) => {
-        if (category === "Performance")
+      (category, message, metadata?: GetMetaDataFunction) => {
+        if (category === "Performance") {
           perfMessages.push(message);
+
+          const data = metadata ? metadata() : {};
+          perfData.push(data);
+        }
       }, undefined);
 
-    using(new PerfLogger("mytestroutine"), (_r) => {
-      for (let i = 0; i < 1000; i++) {
-        if (i % 2 === 0)
-          continue;
-      }
+    await using(new PerfLogger("mytestroutine"), async (_r) => {
+      await BeDuration.wait(10);
     });
     assert.isEmpty(perfMessages);
 
     Logger.setLevel("Performance", LogLevel.Info);
 
-    using(new PerfLogger("mytestroutine2"), (_r) => {
-      for (let i = 0; i < 1000; i++) {
-        if (i % 2 === 0)
-          continue;
-      }
+    await using(new PerfLogger("mytestroutine2"), async (_r) => {
+      await BeDuration.wait(10);
     });
 
     assert.equal(perfMessages.length, 2);
     assert.equal(perfMessages[0], "mytestroutine2,START");
-    assert.isTrue(perfMessages[1].startsWith("mytestroutine2,END,"));
+    assert.equal(perfMessages[1], "mytestroutine2,END");
+    assert.isDefined(perfData[1].TimeElapsed);
+    assert.isAbove(perfData[1].TimeElapsed, 8);
     perfMessages.pop();
     perfMessages.pop();
 
@@ -444,8 +446,8 @@ describe("Logger", () => {
     assert.equal(perfMessages.length, 4);
     assert.equal(perfMessages[0], "outer call,START");
     assert.equal(perfMessages[1], "inner call,START");
-    assert.isTrue(perfMessages[2].startsWith("inner call,END,"));
-    assert.isTrue(perfMessages[3].startsWith("outer call,END,"));
+    assert.equal(perfMessages[2], "inner call,END");
+    assert.equal(perfMessages[3], "outer call,END");
   });
 
   it("should log exceptions", () => {
@@ -472,6 +474,14 @@ describe("Logger", () => {
     checkOutlets(["testcat", "BE_SQLITE_ERROR: bentley error message", { MyProp: "mypropvalue", ExceptionType: "BentleyError" }], [], [], []);
   });
 
+  it("logger shouldn't mutate arguments", () => {
+    Logger.initialize((_category: string, _message: string, getMetaData?: GetMetaDataFunction) => Logger.makeMetaData(getMetaData));
+    Logger.setLevel("testcat", LogLevel.Error);
+    const myInstance = { foo: "foo" };
+    Logger.logError("testcat", "some message", () => myInstance);
+    assert.equal(Object.keys(myInstance).length, 1);
+  });
+
   it("log should capture ActivityId", () => {
     Logger.initialize(
       (c, m, d) => outerr = [c, m, d ? d() : {}],
@@ -480,12 +490,12 @@ describe("Logger", () => {
       (c, m, d) => outtrace = [c, m, d ? d() : {}]);
     Logger.setLevel("testcat", LogLevel.Error);
 
-    const lctx1 = new ActivityLoggingContext("activity1").enter();
+    const lctx1 = new ClientRequestContext("activity1").enter();
     clearOutlets();
     Logger.logError("testcat", "message1");
     checkOutlets(["testcat", "message1", { ActivityId: lctx1.activityId }], [], [], []);
 
-    const lctx2 = new ActivityLoggingContext("activity2").enter();
+    const lctx2 = new ClientRequestContext("activity2").enter();
     clearOutlets();
     Logger.logError("testcat", "message2");
     checkOutlets(["testcat", "message2", { ActivityId: lctx2.activityId }], [], [], []);

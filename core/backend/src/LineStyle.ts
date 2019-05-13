@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Symbology */
 
-import { Id64String, DbResult, IModelStatus } from "@bentley/bentleyjs-core";
-import { FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@bentley/imodeljs-common";
-import { IModelDb } from "./IModelDb";
+import { DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@bentley/imodeljs-common";
 import { LineStyle } from "./Element";
+import { IModelDb } from "./IModelDb";
 
 /** A line style definition is a uniquely named pattern that repeats as it is displayed along a curve path. In the absence of a line style, curve display is limited to solid lines with a width in pixels.
  * There are three varieties of line styles:
@@ -17,6 +17,7 @@ import { LineStyle } from "./Element";
  *
  * A definition is defined by one or more components. A component is saved as a "file property" and can be referenced by other components. The line style definition references a component
  * by file property id and type and is saved as a dictionary element.
+ * @public
  */
 export namespace LineStyleDefinition {
 
@@ -443,6 +444,5 @@ export namespace LineStyleDefinition {
       const lsId = this.queryStyle(imodel, scopeModelId, name);
       return (undefined === lsId ? this.createStyle(imodel, scopeModelId, name, { compId: lineCode, compType: ComponentType.Internal }) : lsId);
     }
-
   }
 }

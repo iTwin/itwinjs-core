@@ -9,17 +9,25 @@ import { BeJSONFunctions, Geometry } from "../Geometry";
 import { Transform } from "./Transform";
 /**
  * A Point3dVector3dVector3d is an origin and a pair of vectors.
- * This defines a plane with (possibly skewed) uv coordinates
+ * This defines a plane with a (possibly skewed) uv coordinate grid
+ * * The grid directions (`vectorU` and `vectorV`)
+ *   * are NOT required to be unit vectors.
+ *   * are NOT required to be perpendicular vectors.
+ * @public
  */
 export class Plane3dByOriginAndVectors implements BeJSONFunctions {
+  /** origin of plane grid */
   public origin: Point3d;
+  /** u direction in plane grid */
   public vectorU: Vector3d;
+  /** v direction in plane gride */
   public vectorV: Vector3d;
   private constructor(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d) {
     this.origin = origin;
     this.vectorU = vectorU;
     this.vectorV = vectorV;
   }
+  /** create a new plane from origin and vectors. */
   public static createOriginAndVectors(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     if (result) {
       result.origin.setFrom(origin);
@@ -67,18 +75,23 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     result.vectorV = vectorV;
     return result;
   }
+  /** Set all origin and both vectors from direct numeric parameters */
   public setOriginAndVectorsXYZ(x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): Plane3dByOriginAndVectors {
     this.origin.set(x0, y0, z0);
     this.vectorU.set(ux, uy, uz);
     this.vectorV.set(vx, vy, vz);
     return this;
   }
+  /** Set all origin and both vectors from coordinates in given origin and vectors.
+   * * Note that coordinates are copied out of the parameters -- the given parameters are NOT retained by reference.
+   */
   public setOriginAndVectors(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d): Plane3dByOriginAndVectors {
     this.origin.setFrom(origin);
     this.vectorU.setFrom(vectorU);
     this.vectorV.setFrom(vectorV);
     return this;
   }
+    /** Create a new plane from direct numeric parameters */
   public static createOriginAndVectorsXYZ(x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     if (result)
       return result.setOriginAndVectorsXYZ(x0, y0, z0, ux, uy, uz, vx, vy, vz);
@@ -93,8 +106,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
   public static createOriginAndTargets(origin: Point3d, targetU: Point3d, targetV: Point3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(origin.x, origin.y, origin.z, targetU.x - origin.x, targetU.y - origin.y, targetU.z - origin.z, targetV.x - origin.x, targetV.y - origin.y, targetV.z - origin.z, result);
   }
-  /** Create a plane with origin at 000, unit vectorU in x direction, and unit vectorV in the y direction.
-   */
+  /** Create a plane with origin at 000, unit vectorU in x direction, and unit vectorV in the y direction. */
   public static createXYPlane(result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, result);
   }
@@ -142,9 +154,11 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
   public fractionToPoint(u: number, v: number, result?: Point3d): Point3d {
     return this.origin.plus2Scaled(this.vectorU, u, this.vectorV, v, result);
   }
+  /** Return the vector from the plane origin to parametric coordinate (u.v) */
   public fractionToVector(u: number, v: number, result?: Vector3d): Vector3d {
     return Vector3d.createAdd2Scaled(this.vectorU, u, this.vectorV, v, result);
   }
+  /** Set coordinates from a json object such as `{origin: [1,2,3], vectorU:[4,5,6], vectorV[3,2,1]}` */
   public setFromJSON(json?: any) {
     if (!json || !json.origin || !json.vectorV) {
       this.origin.set(0, 0, 0);
@@ -167,11 +181,13 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
       vectorV: this.vectorV.toJSON(),
     };
   }
+  /** create a new plane.   See `setFromJSON` for layout example. */
   public static fromJSON(json?: any): Plane3dByOriginAndVectors {
     const result = Plane3dByOriginAndVectors.createXYPlane();
     result.setFromJSON(json);
     return result;
   }
+  /** Test origin and vectors for isAlmostEqual with `other` */
   public isAlmostEqual(other: Plane3dByOriginAndVectors): boolean {
     return this.origin.isAlmostEqual(other.origin)
       && this.vectorU.isAlmostEqual(other.vectorU)

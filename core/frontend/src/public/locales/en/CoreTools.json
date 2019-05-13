@@ -85,10 +85,84 @@
           "description": "Fit all graphics in the chosen model"
         }
       },
+      "ToggleCamera": {
+        "keyin": "Camera Toggle",
+        "description": "Turns on camera if off, turns off camera if on.",
+        "flyover": "Camera On/Off"
+      },
+      "Undo": {
+        "keyin": "View Undo",
+        "description": "Reverses the most recent change to the Viewport.",
+        "flyover": "View Previous"
+      },
+      "Redo": {
+        "keyin": "View Redo",
+        "description": "Re-applies the most recently un-done change to the Viewport.",
+        "flyover": "View Next"
+      },
       "Standard": {
         "keyin": "Rotate to Standard View",
         "description": "align view with standard rotation",
         "flyover": "Standard View"
+      }
+    },
+    "ViewClip": {
+      "Settings": {
+        "Orientation": {
+          "Label": "Orientation",
+          "Top": "Top",
+          "Front": "Front",
+          "Left": "Left",
+          "Bottom": "Bottom",
+          "Back": "Back",
+          "Right": "Right",
+          "View": "View",
+          "Face": "Face"
+        }
+      },
+      "ByPlane": {
+        "keyin": "ViewClip ByPlane",
+        "description": "Section a view with a plane",
+        "flyover": "Section View",
+        "Prompts": {
+          "FirstPoint": "Identify point on section plane."
+        }
+      },
+      "ByShape": {
+        "keyin": "ViewClip ByShape",
+        "description": "Create a clip volume by shape points",
+        "flyover": "Clip Volume From Shape",
+        "Prompts": {
+          "FirstPoint": "Identify shape start point",
+          "SecondPoint": "Identify first edge endpoint",
+          "ThirdPoint": "Accept opposite corner (Ctrl to specify additional points)",
+          "NextPoint": "Accept shape (Ctrl to specify additional points)"
+        }
+      },
+      "ByRange": {
+        "keyin": "ViewClip ByRange",
+        "description": "Create a clip volume by range from 2 points",
+        "flyover": "Clip Volume From Range",
+        "Prompts": {
+          "FirstPoint": "Identify corner of clip volume.",
+          "NextPoint": "Identify opposite corner of clip volume."
+        }
+      },
+      "ByElement": {
+        "keyin": "ViewClip ByElement",
+        "description": "Create a clip volume from an element or selection set",
+        "flyover": "Clip Volume From Element",
+        "Prompts": {
+          "FirstPoint": "Identify element to use for clip volume."
+        }
+      },
+      "Clear": {
+        "keyin": "ViewClip Clear",
+        "description": "Remove clip volume or section planes from a view",
+        "flyover": "Unclip View",
+        "Prompts": {
+          "FirstPoint": "Identify view to unclip."
+        }
       }
     },
     "SelectView": "Select view",
@@ -144,8 +218,7 @@
         "IdentifyBoxRemove": "Identify elements to remove by box corner points",
         "AcceptSelection": "Accept/Reject Selection",
         "AcceptFence": "Accept/Reject Fence Contents",
-        "Mode": "Mode",
-        "Scope": "Scope"
+        "Mode": "Mode"
       },
       "Error": {
         "NoFence": "No fence defined",
@@ -155,16 +228,15 @@
         "NotSuportedElmType": "Element type not valid for this tool",
         "ProjectExtents": "Invalid location. All elements must fit within the volume defined by the project extents."
       },
-      "SelectionOptions": {
+      "SelectionMethods": {
         "Pick": "Select single",
         "Line": "Select all crossing line",
-        "Box": "Select by range",
+        "Box": "Select by range"
+      },
+      "SelectionModes": {
+        "Replace": "Replace current selection",
         "Add": "Add to selection",
         "Remove": "Remove from selection"
-      },
-      "SelectionScope": {
-        "Element": "Element",
-        "Assembly": "Assembly"
       }
     },
     "Plugin": {

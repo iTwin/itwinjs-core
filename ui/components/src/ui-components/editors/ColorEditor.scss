@@ -4,16 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-$components-color-editor-item-width: 1.5rem;
-$components-color-editor-item-height: 1.5rem;
+$components-color-editor-item-height: 100%;
 
 .components-color-editor {
   font-family: $uicore-font-family;
   font-size: $uicore-font-size;
   color: $buic-foreground-body;
-  background: $buic-background-control;
   border: none;
   box-sizing: border-box;
-  width: $components-color-editor-item-width;
   height: $components-color-editor-item-height;
 }

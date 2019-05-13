@@ -5,13 +5,20 @@
 /** @module Popup */
 
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
-
-import Timer from "../utils/Timer";
 import { CommonProps } from "../utils/Props";
 import "./Popup.scss";
 
-/** Position of the popup relative to its target */
+/** @internal */
+interface Point {
+  x: number;
+  y: number;
+}
+
+/** Position of the popup relative to its target
+ * @beta
+ */
 export enum Position {
   TopLeft,
   TopRight,
@@ -23,89 +30,75 @@ export enum Position {
   Right,
 }
 
-/** Properties for the [[Popup]] component */
+/** Properties for the [[Popup]] component
+ * @beta
+ */
 export interface PopupProps extends CommonProps {
   /**  show or hide the box shadow */
   showShadow: boolean;
   /** show or hide the arrow */
   showArrow: boolean;
   /** indicate if the popup is shown or not */
-  isShown: boolean;
-  /** show the popup when hovered over the target */
-  showOnHover: boolean;
-  /** time hovered over target to show the popup */
-  showTime: number;
-  /** time away from target to hide the popup */
-  hideTime: number;
+  isOpen: boolean;
   /** Direction (relative to the target) to which the popup is expanded */
   position: Position;
-  /** Fixed position in the viewport */
-  fixedPosition?: { top: number, left: number };
-  /** target element */
-  context: HTMLElement | null;
+  /** Top position (absolute positioning) */
+  top: number;
+  /** Left position (absolute positioning) */
+  left: number;
   /** Function called when the popup is opened */
   onOpen?: () => void;
+  /** Function called when user clicks outside the popup  */
+  onOutsideClick?: (e: MouseEvent) => void;
   /** Function called when the popup is closed */
   onClose?: () => void;
+  /* offset from the parent */
+  offset: number;
+  /** target element to position popup */
+  target?: HTMLElement | null;
 }
 
+/** @internal */
 interface PopupState {
-  isShown: boolean;
+  isOpen: boolean;
+  top: number;
+  left: number;
   position: Position;
 }
 
-interface Rect {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-}
-
-/** Popup React component */
+/** Popup React component
+ * @beta
+ */
 export class Popup extends React.Component<PopupProps, PopupState> {
-  private _popupRef = React.createRef<HTMLDivElement>();
-  private _targetElement?: HTMLElement; // target element owning the popup
-  private _targetElementOnMouseEnter: ((this: GlobalEventHandlers, ev: MouseEvent) => void) | null = null;
-  private _targetElementOnMouseLeave: ((this: GlobalEventHandlers, ev: MouseEvent) => void) | null = null;
+  private _popup: HTMLElement | null = null;
 
-  private _hoverTimer: Timer;
+  constructor(props: PopupProps) {
+    super(props);
 
-  constructor(props: PopupProps, context?: any) {
-    super(props, context);
-
-    this.state = { isShown: this.props.isShown, position: this.props.position };
-    this._hoverTimer = new Timer(this.props.showTime);
+    this.state = { isOpen: this.props.isOpen, top: 0, left: 0, position: this.props.position };
   }
 
   public static defaultProps: Partial<PopupProps> = {
     position: Position.Bottom,
     showShadow: true,
     showArrow: false,
-    showOnHover: false,
-    showTime: 300,
-    hideTime: 300,
+    isOpen: false,
+    offset: 4,
+    top: -1,
+    left: -1,
   };
 
   public componentDidMount() {
-    const popupElement = this._popupRef.current;
-    if (popupElement && popupElement.parentElement) {
-      this._targetElement = popupElement.parentElement;
-      this._targetElementOnMouseEnter = this._targetElement.onmouseenter;
-      this._targetElementOnMouseLeave = this._targetElement.onmouseleave;
-      this._targetElement.onmouseenter = this._onMouseEnter;
-      this._targetElement.onmouseleave = this._onMouseLeave;
+    if (this.props.isOpen) {
+      this._onShow();
     }
-
-    this._hoverTimer.delay = this.props.showTime;
   }
 
   public componentDidUpdate(previousProps: PopupProps) {
-    if (this.props.isShown === previousProps.isShown)
+    if (this.props.isOpen === previousProps.isOpen)
       return;
 
-    this._hoverTimer.delay = this.props.showTime;
-
-    if (this.props.isShown) {
+    if (this.props.isOpen) {
       this._onShow();
     } else {
       this._onClose();
@@ -113,217 +106,327 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   public componentWillUnmount() {
-    this._hoverTimer.stop();
-    document.body.removeEventListener("click", this._onBodyClick, false);
-    document.body.removeEventListener("keydown", this._onEsc, false);
-
-    if (this._targetElement) {
-      this._targetElement.onmouseenter = this._targetElementOnMouseEnter;
-      this._targetElement.onmouseleave = this._targetElementOnMouseLeave;
-    }
+    this._unBindWindowEvents();
   }
 
-  private _onMouseEnter = () => {
-    if (!this.props.showOnHover)
-      return;
-
-    this._hoverTimer.setOnExecute(() => { this._onShow(); });
-    this._hoverTimer.start();
+  private _bindWindowEvents = () => {
+    window.addEventListener("mousedown", this._handleOutsideClick);
+    // window.addEventListener("touchstart", this._handleOutsideClick);
+    // window.addEventListener("click", this._onBodyClick);
+    window.addEventListener("resize", this._hide);
+    window.addEventListener("contextmenu", this._hide);
+    window.addEventListener("scroll", this._hide);
+    window.addEventListener("wheel", this._handleWheel);
+    window.addEventListener("keydown", this._handleKeyboard);
   }
 
-  private _onMouseLeave = () => {
-    if (!this.props.showOnHover)
+  private _unBindWindowEvents = () => {
+    window.removeEventListener("mousedown", this._handleOutsideClick);
+    // window.removeEventListener("touchstart", this._handleOutsideClick);
+    // window.removeEventListener("click", this._handleOutsideClick);
+    window.removeEventListener("resize", this._hide);
+    window.removeEventListener("contextmenu", this._hide);
+    window.removeEventListener("scroll", this._hide);
+    window.removeEventListener("wheel", this._handleWheel);
+    window.removeEventListener("keydown", this._handleKeyboard);
+  }
+
+  private _handleWheel = (event: WheelEvent) => {
+    if (this._popup && this._popup.contains(event.target as Node))
+      return;
+    this._hide();
+  }
+
+  private _handleOutsideClick = (event: MouseEvent): void => {
+    if (this._popup && this._popup.contains(event.target as Node))
       return;
 
-    this._hoverTimer.stop();
+    if (this.props.onOutsideClick)
+      return this.props.onOutsideClick(event);
+
+    // istanbul ignore if
+    if (this.props.target && this.props.target.contains(event.target as Node))
+      return;
+
     this._onClose();
   }
 
-  private _onBodyClick = (event: MouseEvent): void => {
-
-    const context = this._getContext();
-
-    // Ignore clicks on the popover or button
-    if (context === event.target) {
-      return;
-    }
-
-    if (context && context.contains(event.target as Node)) {
-      return;
-    }
-
-    if (this._popupRef.current && (this._popupRef.current === event.target || this._popupRef.current.contains(event.target as Node))) {
-      return;
-    }
-
-    this._onClose();
-  }
-
-  private _onEsc = (event: KeyboardEvent): void => {
-    // Esc key
-    if (event.key === "Escape") {
+  private _handleKeyboard = (event: KeyboardEvent): void => {
+    if (event.key === "Escape" || event.key === "Enter") {
       this._onClose();
     }
   }
 
+  private _hide = () => {
+    this._onClose();
+  }
+
   private _onShow() {
-    if (this.state.isShown && !this.props.showOnHover) {
-      return;
-    }
+    this._bindWindowEvents();
 
-    document.addEventListener("click", this._onBodyClick, true);
-    document.addEventListener("keydown", this._onEsc, true);
-
-    const newPosition = this.getPositionWithinViewport();
-    this.setState({ position: newPosition, isShown: true }, () => {
+    const position = this._toggleRelativePosition();
+    const point = this._fitPopup(this._getPosition(position));
+    this.setState({ left: point.x, top: point.y, isOpen: true, position }, () => {
       if (this.props.onOpen)
         this.props.onOpen();
     });
   }
 
   private _onClose() {
-    if (!this.state.isShown) {
+    if (!this.state.isOpen) {
       return;
     }
 
-    document.removeEventListener("click", this._onBodyClick, true);
-    document.removeEventListener("keydown", this._onEsc, true);
+    this._unBindWindowEvents();
 
-    this.setState({ isShown: false, position: this.props.position }, () => {
+    this.setState({ isOpen: false }, () => {
       if (this.props.onClose)
         this.props.onClose();
     });
   }
 
-  private _getContext = () => this.props.context || this._targetElement;
-
-  private getPositionClassName(position: Position): string {
-    switch (position) {
-      case Position.TopLeft:
-        return classnames("popup-top-left");
-      case Position.TopRight:
-        return classnames("popup-top-right");
-      case Position.BottomLeft:
-        return classnames("popup-bottom-left");
-      case Position.BottomRight:
-        return classnames("popup-bottom-right");
-      case Position.Top:
-        return classnames("popup-top");
-      case Position.Left:
-        return classnames("popup-left");
-      case Position.Right:
-        return classnames("popup-right");
-      default:
-        return classnames("popup-bottom");
-    }
+  private _isPositionAbsolute(): boolean {
+    return (this.props.top !== -1 && this.props.left !== -1);
   }
 
-  private getPositionWithinViewport(): Position {
-    const popupElement = this._popupRef.current;
+  private _getClassNameByPosition(position: Position): string {
+    if (!this._isPositionAbsolute()) {
+      switch (position) {
+        case Position.TopLeft:
+          return "core-popup-top-left";
+        case Position.TopRight:
+          return "core-popup-top-right";
+        case Position.BottomLeft:
+          return "core-popup-bottom-left";
+        case Position.BottomRight:
+          return "core-popup-bottom-right";
+        case Position.Top:
+          return "core-popup-top";
+        case Position.Left:
+          return "core-popup-left";
+        case Position.Right:
+          return "core-popup-right";
+        case Position.Bottom:
+          return "core-popup-bottom";
+      }
+    }
 
-    if (!popupElement || !this._targetElement)
-      return this.props.position;
+    return "";
+  }
+
+  private _getPopupDimensions(): { popupWidth: number, popupHeight: number } {
+
+    let popupWidth = 0;
+    let popupHeight = 0;
+
+    if (this._popup) {
+      const popupRect = this._popup.getBoundingClientRect();
+      switch (this.props.position) {
+        case Position.Top:
+        case Position.Bottom:
+          popupWidth = popupRect.width;
+          popupHeight = popupRect.height * 2;
+          break;
+        case Position.TopLeft:
+        case Position.BottomLeft:
+          popupWidth = popupRect.width * 2;
+          popupHeight = popupRect.height * 2;
+          break;
+        case Position.TopRight:
+        case Position.BottomRight:
+          popupWidth = popupRect.width * 2;
+          popupHeight = popupRect.height * 2;
+          break;
+        case Position.Left:
+        case Position.Right:
+          popupWidth = popupRect.width * 2;
+          popupHeight = popupRect.height;
+          break;
+      }
+    }
+
+    return { popupWidth, popupHeight };
+  }
+
+  private _getPosition = (position: Position) => {
+    const { target, offset, top, left } = this.props;
+
+    const offsetArrow = (this.props.showArrow) ? 6 : 0;
+
+    // absolute position
+    if (this._isPositionAbsolute())
+      return { x: left, y: top };
+
+    // sanity check
+    const point = { x: 0, y: 0 };
+    if (!this._popup || !target)
+      return point;
+
+    // relative position
+    const scrollY = (window.scrollY !== undefined) ? window.scrollY : window.pageYOffset;
+    const scrollX = (window.scrollX !== undefined) ? window.scrollX : window.pageXOffset;
+
+    // const popupRect = this._popup.getBoundingClientRect();
+    const targetRect = target!.getBoundingClientRect();
+
+    const { popupWidth, popupHeight } = this._getPopupDimensions();
+
+    switch (position) {
+      case Position.Top:
+        point.y = scrollY + targetRect.top - popupHeight - offset - offsetArrow;
+        point.x = scrollX + targetRect.left + (targetRect.width / 2) - (popupWidth / 2);
+        break;
+
+      case Position.TopLeft:
+        point.y = scrollY + targetRect.top - popupHeight - offset - offsetArrow;
+        point.x = scrollX + targetRect.left;
+        break;
+
+      case Position.TopRight:
+        point.y = scrollY + targetRect.top - popupHeight - offset - offsetArrow;
+        point.x = scrollX + targetRect.right - popupWidth;
+        break;
+
+      case Position.Bottom:
+        point.y = scrollY + targetRect.bottom + offset + offsetArrow;
+        point.x = scrollX + targetRect.left + (targetRect.width / 2) - (popupWidth / 2);
+        break;
+
+      case Position.BottomLeft:
+        point.y = scrollY + targetRect.bottom + offset + offsetArrow;
+        point.x = scrollX + targetRect.left;
+        break;
+
+      case Position.BottomRight:
+        point.y = scrollY + targetRect.bottom + offset + offsetArrow;
+        point.x = scrollX + targetRect.right - popupWidth;
+        break;
+
+      case Position.Left:
+        point.y = scrollY + targetRect.top + (targetRect.height / 2) - (popupHeight / 2);
+        point.x = scrollX + targetRect.left - popupWidth - offset - offsetArrow;
+        break;
+
+      case Position.Right:
+        point.y = scrollY + targetRect.top + (targetRect.height / 2) - (popupHeight / 2);
+        point.x = scrollX + targetRect.right + offset + offsetArrow;
+        break;
+
+      default:
+        break;
+    }
+
+    return point;
+  }
+
+  private _toggleRelativePosition(): Position {
+    const { target, position, offset } = this.props;
+
+    if (!this._popup || !target)
+      return position;
+
+    // istanbul ignore if
+    if (this._isPositionAbsolute())
+      return position;
+
+    let newPosition = position;
+
+    interface Rect {
+      left: number;
+      top: number;
+      right: number;
+      bottom: number;
+    }
+
     // Note: Cannot use DOMRect yet since it's experimental and not available in all browsers (Nov. 2018)
     const viewportRect: Rect = { left: window.scrollX, top: window.scrollY, right: window.scrollX + window.innerWidth, bottom: window.scrollY + window.innerHeight };
-    const targetRect = this._targetElement.getBoundingClientRect();
-    const popupRect = popupElement.getBoundingClientRect();
-    const containerStyle = window.getComputedStyle(this._targetElement);
-    const offset = (this.props.showArrow) ? 10 : 2;
+    const targetRect = target.getBoundingClientRect();
+    const { popupWidth, popupHeight } = this._getPopupDimensions();
+    const containerStyle = window.getComputedStyle(target);
+    const offsetArrow = (this.props.showArrow) ? 10 : 2;
 
-    switch (this.props.position) {
-      case Position.BottomRight: {
-        const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
-        if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
-          return Position.TopRight;
-        }
-        break;
-      }
-
-      case Position.TopRight: {
-        const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
-        if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
-          return Position.BottomRight;
-        }
-        break;
-      }
-
-      case Position.TopLeft: {
-        const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
-        if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
-          return Position.BottomLeft;
-        }
-        break;
-      }
-
-      case Position.BottomLeft: {
-        const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
-        if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
-          return Position.TopLeft;
-        }
-        break;
-      }
-
-      case Position.Bottom: {
-        const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
-        if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
-          return Position.Top;
-        }
-        break;
-      }
-
-      case Position.Top: {
-        const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
-        if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
-          return Position.Bottom;
-        }
-        break;
-      }
-
-      case Position.Left: {
-        const leftMargin = containerStyle.marginLeft ? parseFloat(containerStyle.marginLeft) : 0;
-        if ((targetRect.left - popupRect.width - leftMargin - offset) < viewportRect.left) {
-          return Position.Right;
-        }
-        break;
-      }
-
-      case Position.Right: {
-        const rightMargin = containerStyle.marginRight ? parseFloat(containerStyle.marginRight) : 0;
-        if ((targetRect.right + popupRect.width + rightMargin + offset) > viewportRect.right) {
-          return Position.Left;
-        }
-        break;
-      }
+    const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
+    if ((targetRect.bottom + popupHeight + bottomMargin + offsetArrow + offset) > viewportRect.bottom) {
+      if (newPosition === Position.Bottom) newPosition = Position.Top;
+      else if (newPosition === Position.BottomLeft) newPosition = Position.TopLeft;
+      else if (newPosition === Position.BottomRight) newPosition = Position.TopRight;
     }
 
-    return this.props.position;
+    const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
+    if ((targetRect.top - popupHeight - topMargin - offsetArrow - offset) < viewportRect.top) {
+      if (newPosition === Position.Top) newPosition = Position.Bottom;
+      else if (newPosition === Position.TopLeft) newPosition = Position.BottomLeft;
+      else if (newPosition === Position.TopRight) newPosition = Position.BottomRight;
+    }
+
+    const leftMargin = containerStyle.marginLeft ? parseFloat(containerStyle.marginLeft) : 0;
+    if ((targetRect.left - popupWidth - leftMargin - offsetArrow - offset) < viewportRect.left) {
+      if (newPosition === Position.Left) newPosition = Position.Right;
+    }
+
+    const rightMargin = containerStyle.marginRight ? parseFloat(containerStyle.marginRight) : 0;
+    if ((targetRect.right + popupWidth + rightMargin + offsetArrow + offset) > viewportRect.right) {
+      if (newPosition === Position.Right) newPosition = Position.Left;
+    }
+
+    return newPosition;
   }
 
-  public render(): JSX.Element {
+  // fit the popup within the extents of the view port
+  private _fitPopup = (point: Point) => {
+    const fittedPoint = point;
+
+    if (!this._popup) {
+      return fittedPoint;
+    }
+
+    // const popupRect = this._popup.getBoundingClientRect();
+    const { popupWidth, popupHeight } = this._getPopupDimensions();
+    const { innerWidth, innerHeight } = window;
+
+    if (fittedPoint.y + popupHeight > innerHeight) {
+      fittedPoint.y = innerHeight - popupHeight;
+    }
+
+    if (fittedPoint.x + popupWidth > innerWidth) {
+      fittedPoint.x = innerWidth - popupWidth;
+    }
+
+    if (fittedPoint.y < 0) {
+      fittedPoint.y = 0;
+    }
+
+    if (fittedPoint.x < 0) {
+      fittedPoint.x = 0;
+    }
+
+    return fittedPoint;
+  }
+
+  public render() {
     const className = classnames(
-      "popup",
-      this.getPositionClassName(this.state.position),
-      this.props.showShadow && "popup-shadow",
-      this.state.isShown && "visible",
+      "core-popup",
+      this._getClassNameByPosition(this.state.position),
+      this.props.showShadow && "core-popup-shadow",
       this.props.showArrow && "arrow",
       this.props.className,
     );
 
-    let style: React.CSSProperties | undefined;
-    if (this.props.fixedPosition) {
-      style = {
-        top: this.props.fixedPosition.top,
-        left: this.props.fixedPosition.left,
-        position: "fixed",
-      };
+    const style: React.CSSProperties = {
+      top: this.state.top,
+      left: this.state.left,
+      ...this.props.style,
+    };
+
+    if (!this.props.isOpen) {
+      return null;
     }
 
-    return (
-      <div style={style} className={className} ref={this._popupRef}>
-        {this.props.children}
-      </div>
-    );
+    return ReactDOM.createPortal(
+      (
+        <div className={className} data-testid="core-popup" style={style} ref={(element) => { this._popup = element; }}>
+          {this.props.children}
+        </div>
+      ), document.body);
   }
 }
-
-export default Popup;

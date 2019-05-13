@@ -1,0 +1,39 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/style/index";
+
+// 40px is used to ensure scrubber is not drawn behind a widget tab
+.testapp-view-overlay {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: calc(100% -80px);
+  height: auto;
+  position: absolute;
+  bottom: 10px;
+  left: 40px;
+  right: 40px;
+  z-index: 1900;
+}
+
+$widget-transparency: 0.90;
+
+.testapp-animation-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  height: auto;
+  background: $buic-background-dialog;
+  border: 1px solid $buic-background-dialog-stroke;
+  border-radius: $uicore-border-radius;
+  // overflow: hidden;
+  opacity: $widget-transparency;
+
+  &:hover {
+    opacity: 1.00;
+  }
+}

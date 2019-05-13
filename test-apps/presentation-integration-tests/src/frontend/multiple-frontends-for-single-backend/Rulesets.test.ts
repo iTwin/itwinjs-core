@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
-import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset, RuleTypes, RuleSpecificationTypes } from "@bentley/presentation-common";
 import { PresentationManager } from "@bentley/presentation-frontend";
@@ -20,14 +19,14 @@ describe("Multiple frontends for one backend", async () => {
       initialize();
 
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await IModelConnection.openStandalone(testIModelName, OpenMode.Readonly);
+      imodel = await IModelConnection.openSnapshot(testIModelName);
       expect(imodel).is.not.null;
 
       frontends = [0, 1].map(() => PresentationManager.create());
     });
 
     after(async () => {
-      await imodel.closeStandalone();
+      await imodel.closeSnapshot();
       frontends.forEach((f) => f.dispose());
       terminate();
     });

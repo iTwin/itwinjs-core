@@ -2,20 +2,22 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
-import { Id64String, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "../../imodeljs-backend";
 import * as path from "path";
 import * as fs from "fs";
+import { Id64String, GuidString } from "@bentley/bentleyjs-core";
+import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { ImsUserCredentials } from "@bentley/imodeljs-clients";
+import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps } from "@bentley/imodeljs-common";
+import {
+  IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, ModelSelector,
+  OrthographicViewDefinition, PhysicalModel, SpatialCategory, AuthorizedBackendRequestContext,
+} from "../../imodeljs-backend";
 import { IModelWriter } from "./IModelWriter";
-import { HubUtility, UserCredentials } from "./HubUtility";
-import { TestUsers } from "../IModelTestUtils";
+import { HubUtility } from "./HubUtility";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { TestUsers } from "../TestUsers";
 
 const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const actx = new ActivityLoggingContext("");
 
 export class TestPushUtility {
   public iModelName?: string;
@@ -24,29 +26,29 @@ export class TestPushUtility {
   private _categoryId?: Id64String;
   private _codeSpecId?: Id64String;
 
-  private _accessToken?: AccessToken;
+  private _requestContext?: AuthorizedBackendRequestContext;
   private _projectId?: string;
   private _iModelId?: GuidString;
 
   private _currentLevel: number = 0;
 
   /** Initializes the utility */
-  public async initialize(projectName: string, iModelName: string, user: UserCredentials = TestUsers.superManager) {
-    this._accessToken = await HubUtility.login(user);
+  public async initialize(projectName: string, iModelName: string, user: ImsUserCredentials = TestUsers.superManager) {
+    this._requestContext = await IModelTestUtils.getTestUserRequestContext(user);
     this.iModelName = iModelName;
-    this._projectId = await HubUtility.queryProjectIdByName(this._accessToken!, projectName);
+    this._projectId = await HubUtility.queryProjectIdByName(this._requestContext, projectName);
   }
 
   /** Pushes a new Test IModel to the Hub */
   public async pushTestIModel(): Promise<GuidString> {
     const pathname = this.createStandalone();
-    this._iModelId = await HubUtility.pushIModel(this._accessToken!, this._projectId!, pathname);
+    this._iModelId = await HubUtility.pushIModel(this._requestContext!, this._projectId!, pathname);
     return this._iModelId;
   }
 
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
-    this._iModelDb = await IModelDb.open(actx, this._accessToken!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
+    this._iModelDb = await IModelDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
 
     const lastLevel = this._currentLevel + count;
     while (this._currentLevel < lastLevel) {
@@ -63,7 +65,7 @@ export class TestPushUtility {
     if (fs.existsSync(pathname))
       fs.unlinkSync(pathname);
 
-    this._iModelDb = IModelDb.createStandalone(pathname, { rootSubject: { name: this.iModelName! } });
+    this._iModelDb = IModelDb.createSnapshot(pathname, { rootSubject: { name: this.iModelName! } });
 
     const definitionModelId: Id64String = IModel.dictionaryId;
     this._physicalModelId = PhysicalModel.insert(this._iModelDb, IModel.rootSubjectId, "TestModel");
@@ -182,12 +184,12 @@ export class TestPushUtility {
 
   private async pushTestChangeSet() {
     const description = TestPushUtility.getChangeSetDescription(this._currentLevel);
-    await this._iModelDb!.pushChanges(actx, this._accessToken!, () => description);
+    await this._iModelDb!.pushChanges(this._requestContext!, () => description);
   }
 
   private async createNamedVersion() {
-    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, this._accessToken!, this._iModelId!.toString(), BriefcaseManager.imodelClient);
-    await BriefcaseManager.imodelClient.versions.create(actx, this._accessToken!, this._iModelId!, changeSetId, TestPushUtility.getVersionName(this._currentLevel));
+    const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(this._requestContext!, this._iModelId!.toString(), BriefcaseManager.imodelClient);
+    await BriefcaseManager.imodelClient.versions.create(this._requestContext!, this._iModelId!, changeSetId, TestPushUtility.getVersionName(this._currentLevel));
   }
 
 }

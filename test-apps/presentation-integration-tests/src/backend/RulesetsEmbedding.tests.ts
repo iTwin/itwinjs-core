@@ -2,18 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelDb } from "@bentley/imodeljs-backend/lib/IModelDb";
-import { initialize, terminate } from "../IntegrationTests";
-import RulesetEmbedder, { DuplicateHandlingStrategy } from "../../../../presentation/backend/lib/RulesetEmbedder";
-import { Id64, OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { expect } from "chai";
-import { tweakRuleset } from "./Helpers";
-import { Ruleset } from "@bentley/presentation-common/lib/rules/Ruleset";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/NativePlatform";
-import { createRandomRuleset } from "../../../../presentation/common/lib/test/_helpers/random";
-import { Presentation } from "@bentley/presentation-backend";
 import faker from "faker";
 import fs from "fs";
+import { tweakRuleset } from "./Helpers";
+import { initialize, terminate } from "../IntegrationTests";
+import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
+import { IModelDb } from "@bentley/imodeljs-backend/lib/IModelDb";
+import { Ruleset } from "@bentley/presentation-common";
+import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { Presentation } from "@bentley/presentation-backend";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/NativePlatform";
+import RulesetEmbedder, { DuplicateHandlingStrategy } from "@bentley/presentation-backend/lib/RulesetEmbedder";
 
 describe("RulesEmbedding", () => {
   let imodel: IModelDb;
@@ -34,19 +34,13 @@ describe("RulesEmbedding", () => {
 
   before(async () => {
     initialize();
-
-    fs.copyFile("assets/datasets/Properties_60InstancesWithUrl2.ibim", testIModelName, (err: Error) => {
-      if (err)
-        expect(false);
-    });
-
     nativePlatform = new (createDefaultNativePlatform())();
-    imodel = IModelDb.openStandalone(testIModelName, OpenMode.ReadWrite);
+    imodel = IModelDb.createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
 
   after(() => {
-    imodel.closeStandalone();
+    imodel.closeSnapshot();
     nativePlatform.dispose();
 
     fs.unlink(testIModelName, (err: Error) => {
@@ -112,7 +106,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    const rootNodes = await Presentation.getManager().getNodes(ActivityLoggingContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    const rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 
@@ -123,14 +117,14 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    let rootNodes = await Presentation.getManager().getNodes(ActivityLoggingContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    let rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
     expect(rootNodes.length).to.be.equal(1);
 
     const rulesetElement = imodel.elements.getElement(insertId);
     rulesetElement.setJsonProperty("id", faker.random.uuid());
     imodel.elements.updateElement(rulesetElement);
 
-    rootNodes = await Presentation.getManager().getNodes(ActivityLoggingContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 

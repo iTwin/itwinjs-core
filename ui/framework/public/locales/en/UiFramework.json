@@ -9,7 +9,8 @@
     "sheet": "Sheet",
     "of": "of",
     "alert": "Alert",
-    "toolSettings": "Tool Settings"
+    "toolSettings": "Tool Settings",
+    "minimize": "Minimize"
   },
   "rotations": {
     "top": "Top",
@@ -29,11 +30,16 @@
     "left": "LEFT",
     "right": "RIGHT"
   },
+  "drawing": {
+    "unrotate": "Un-Rotate",
+    "rotateStyle": "Toggle background-rotate"
+  },
   "messageCenter": {
     "messages": "Messages",
     "all": "All",
-    "problems": "Problems",
-    "prompt": "No messages."
+    "errors": "Errors",
+    "prompt": "No messages.",
+    "export": "Export"
   },
   "activityCenter": {
     "percentComplete": "% complete",
@@ -50,6 +56,10 @@
     "bisector": "Bisector",
     "multi": "Multiple"
   },
+  "selectionScopeField": {
+    "label": "Scope",
+    "toolTip": "Selection Scope"
+  },
   "tests": {
     "singleContent": "Single Content",
     "label": "Test Label",
@@ -62,15 +72,16 @@
     "FourQuadrants": "Four Quadrants"
   },
   "pickerButtons": {
-    "all": "All",
-    "none": "None",
+    "showAll": "Show All",
+    "hideAll": "Hide All",
     "invert": "Invert",
     "separator": "Separator"
   },
   "categoriesModels": {
     "categories": "Categories",
     "models": "Models",
-    "loadingMessage": "Loading..."
+    "loadingMessage": "Loading...",
+    "options": "Options"
   },
   "realityData": {
     "title": "Reality Data",
@@ -109,45 +120,50 @@
         "description": "Turn on/off use of camera in active view",
         "flyover": "Toggle Camera"
       }
-    },
-    "AnalysisAnimation": {
-      "keyin": "Analysis Animation",
-      "description": "Animate analysis solutions",
-      "flyover": "Analysis Animation",
-      "Prompts": {
-        "SelectView": "Select View and press Play button"
-      },
-      "ToolSettings": {
-        "duration": "Duration:",
-        "seconds": "sec",
-        "loop": "Loop",
-        "play": "Play",
-        "pause": "Pause",
-        "stop": "Stop"
-      }
-    },
-    "ScheduleAnimation": {
-      "keyin": "Schedule Animation",
-      "description": "Schedule analysis solutions",
-      "flyover": "Schedule Animation",
-      "Prompts": {
-        "SelectView": "Select View and press Play button"
-      },
-      "ToolSettings": {
-        "duration": "Duration:",
-        "seconds": "sec",
-        "loop": "Loop",
-        "play": "Play",
-        "pause": "Pause",
-        "stop": "Stop"
-      }
     }
   },
-  "settingsStage": {
-    "settings": "Settings",
-    "light": "Light",
-    "dark": "Dark",
-    "themeTitle": "THEME",
-    "themeDescription": "Toggle the theme between light and dark"
+  "iModelIndex": {
+    "views": "Views",
+    "3dModels": "3D Models",
+    "enteriModeling": "Enter iModel",
+    "upToDate": "You have the latest version.",
+    "updatesAvailable": "Later changes are available",
+    "toastTitle": "Need more control?",
+    "toastMessage": "Try ProjectWise Document Codes.",
+    "learnMore": "Learn more",
+    "enteriModel": "Enter iModel",
+    "noSavedView": "No saved views were found.",
+    "nextTab": "Switching you to the 3D Models tab..."
+  },
+  "listTools": {
+    "searchViews": "Search Views...",
+    "listView": "List",
+    "thumbnailView": "Thumbnails"
+  },
+  "visibilityTree": {
+    "status": {
+      "visible": "Visible",
+      "hidden": "Hidden",
+      "disabled": "Disabled"
+    },
+    "tooltips": {
+      "subject": {
+        "atLeastOneModelVisible": "At least one model is visible",
+        "allModelsHidden": "All models are hidden"
+      },
+      "category": {
+        "modelNotDisplayed": "Can't control category display if model is not displayed",
+        "displayedThroughPerModelOverride": "Per-model category override set to 'Show'",
+        "hiddenThroughPerModelOverride": "Per-model category override set to 'Hide'",
+        "displayedThroughCategorySelector": "Category display enabled through category selector",
+        "hiddenThroughCategorySelector": "Category display disabled through category selector"
+      },
+      "element": {
+        "modelNotDisplayed": "Can't control element display if model is not displayed",
+        "hiddenThroughNeverDrawnList": "Element in \"never drawn\" list",
+        "displayedThroughAlwaysDrawnList": "Element in \"always drawn\" list",
+        "hiddenThroughCategory": "Category not displayed"
+      }
+    }
   }
 }

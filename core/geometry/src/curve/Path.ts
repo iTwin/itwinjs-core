@@ -18,13 +18,17 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 
 /**
  * * A `Path` object is a collection of curves that join head-to-tail to form a path.
- * * A `Path` object does not bound a planar region.
+ * * A `Path` object does not bound a planar region.  Use `Loop` to indicate region bounding.
+ * @public
  */
 export class Path extends CurveChain {
+  /** Test if `other` is an instance of `Path` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Path; }
+  /** invoke `processor.announcePath(this, indexInParent)` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announcePath(this, indexInParent);
   }
+  /** Construct an empty path. */
   public constructor() { super(); }
   /**
    * Create a path from a variable length list of curve primtiives
@@ -53,13 +57,14 @@ export class Path extends CurveChain {
     }
     return result;
   }
-
+/** Return a deep copy, with leaf-level curve primitives stroked. */
   public cloneStroked(options?: StrokeOptions): AnyCurve {
     const strokes = LineString3d.create();
     for (const curve of this.children)
       curve.emitStrokes(strokes, options);
     return Path.create(strokes);
   }
+  /** Return the boundary type (1) of a corresponding  Microstation CurveVector */
   public dgnBoundaryType(): number { return 1; }
   /**
    * Return the `[index]` curve primitive, using `modulo` to map`index` to the cyclic indexing.
@@ -74,7 +79,9 @@ export class Path extends CurveChain {
     const index2 = Geometry.modulo(index, n);
     return this.children[index2];
   }
+  /** Clone as a new `Path` with no primitives */
   public cloneEmptyPeer(): Path { return new Path(); }
+  /** Second step of double dispatch:  call `handler.handlePath(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handlePath(this);
   }

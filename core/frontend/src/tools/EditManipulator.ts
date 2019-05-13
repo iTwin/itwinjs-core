@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeButtonEvent, InputCollector, BeButton, EventHandled, BeTouchEvent, InputSource, Tool } from "./Tool";
+import { BeButtonEvent, InputCollector, BeButton, EventHandled, BeTouchEvent, InputSource, Tool, CoordinateLockOverrides } from "./Tool";
 import { DecorateContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
-import { CoordinateLockOverrides, ManipulatorToolEvent } from "./ToolAdmin";
+import { ManipulatorToolEvent } from "./ToolAdmin";
 import { IModelConnection } from "../IModelConnection";
 import { SelectEventType } from "../SelectionSet";
 import { HitDetail } from "../HitDetail";
 import { Viewport } from "../Viewport";
 import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry, Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 
-/**
- * A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
+/** A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
  * Interactive modification is handled by installing an InputCollector tool.
+ * @public
  */
 export namespace EditManipulator {
-  export const enum EventType { Synch, Cancel, Accept }
+  export enum EventType { Synch, Cancel, Accept }
 
   export abstract class HandleTool extends InputCollector {
     public static toolId = "Select.Manipulator";
@@ -127,6 +127,7 @@ export namespace EditManipulator {
     public onManipulatorEvent(_eventType: EventType): void { this.updateControls(); } // tslint:disable-line:no-floating-promises
     protected async onDoubleClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
     protected async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+    protected async onTouchTap(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.Yes; }
 
     public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
       if (!this._isActive)
@@ -145,7 +146,7 @@ export namespace EditManipulator {
         return EventHandled.No; // Support ctrl+click to select multiple controls (ex. linestring vertices)...
 
       if (InputSource.Touch === ev.inputSource && !ev.isDragging)
-        return EventHandled.Yes; // Select controls on touch drag only, ignore tap on control...
+        return this.onTouchTap(hit, ev); // Default is to select controls on touch drag only, ignore tap on control...
 
       if (ev.isDown && !ev.isDragging)
         return EventHandled.No; // Select controls on up event or down event only after drag started...
@@ -193,7 +194,7 @@ export namespace EditManipulator {
     public static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw: boolean = false, checkACS: boolean = false): Point3d | undefined {
       const lineRay = Ray3d.create(linePt, lineDirection);
       const rayToEye = EditManipulator.HandleUtils.getBoresite(spacePt, vp, checkAccuDraw, checkACS);
-      if (rayToEye.direction.isParallelTo(lineRay.direction))
+      if (rayToEye.direction.isParallelTo(lineRay.direction, true))
         return lineRay.projectPointToRay(spacePt);
       const matrix = Matrix3d.createRigidFromColumns(lineRay.direction, rayToEye.direction, AxisOrder.XZY);
       if (undefined === matrix)
@@ -207,10 +208,10 @@ export namespace EditManipulator {
       return lineRay.projectPointToRay(projectedPt);
     }
 
-    /** Get a transform to orient arrow shape to view direction. If arrow direction is almost perpendicular to view direction will return undefined. */
+    /** Get a transform to orient arrow shape to view direction. If arrow direction is close to perpendicular to view direction will return undefined. */
     public static getArrowTransform(vp: Viewport, base: Point3d, direction: Vector3d, sizeInches: number): Transform | undefined {
       const boresite = EditManipulator.HandleUtils.getBoresite(base, vp);
-      if (Math.abs(direction.dotProduct(boresite.direction)) >= 0.99)
+      if (Math.abs(direction.dotProduct(boresite.direction)) >= 0.9)
         return undefined;
 
       const pixelSize = vp.pixelsFromInches(sizeInches);

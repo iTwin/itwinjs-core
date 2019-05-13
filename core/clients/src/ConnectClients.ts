@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ConnectServices */
 import { WsgClient } from "./WsgClient";
-import { AccessToken } from "./Token";
 import { RequestQueryOptions, RequestOptions } from "./Request";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { Config } from "./Config";
 import * as deepAssign from "deep-assign";
 
-/** Connect project */
+/** Connect project
+ * @public
+ */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Project extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
@@ -66,19 +67,25 @@ export class Project extends WsgInstance {
   public allowExternalTeamMembers?: boolean;
 }
 
-/** RBAC project */
+/** RBAC project
+ * @internal
+ */
 @ECJsonTypeMap.classToJson("wsg", "RBAC.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class RbacProject extends WsgInstance {
   // Empty!
 }
 
-/** RBAC user */
+/** RBAC user
+ * @internal
+ */
 @ECJsonTypeMap.classToJson("wsg", "RBAC.User", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class RbacUser extends WsgInstance {
   // Empty!
 }
 
-/** RBAC permission */
+/** RBAC permission
+ * @internal
+ */
 @ECJsonTypeMap.classToJson("wsg", "RBAC.Permission", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Permission extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
@@ -94,7 +101,9 @@ export class Permission extends WsgInstance {
   public categoryId?: number;
 }
 
-/** Options to request connect projects */
+/** Options to request connect projects
+ * @internal
+ */
 export interface ConnectRequestQueryOptions extends RequestQueryOptions {
   /** Set to true to request the most recently used projects */
   isMRU?: boolean;
@@ -103,11 +112,14 @@ export interface ConnectRequestQueryOptions extends RequestQueryOptions {
   isFavorite?: boolean;
 }
 
+/** @internal */
 export interface RbacRequestQueryOptions extends RequestQueryOptions {
   rbacOnly?: boolean;
 }
 
-/** Client API to access the connect services. */
+/** Client API to access the connect services.
+ * @public
+ */
 export class ConnectClient extends WsgClient {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
   public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
@@ -147,22 +159,22 @@ export class ConnectClient extends WsgClient {
 
   /**
    * Gets connect projects accessible to the authorized user.
-   * @param token Delegation token of the authorized user.
+   * @param requestContext The client request context
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of projects.
    */
-  public async getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
-    return this.getInstances<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
+  public async getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
+    return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
   }
 
   /**
    * Gets a connect project.
-   * @param token Delegation token of the authorized user.
+   * @param requestContext The client request context
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to the found project. Rejects if no projects, or more than one project is found.
    */
-  public async getProject(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project> {
-    const projects: Project[] = await this.getProjects(alctx, token, queryOptions);
+  public async getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project> {
+    const projects: Project[] = await this.getProjects(requestContext, queryOptions);
     if (projects.length === 0)
       throw new Error("Could not find a project with the specified criteria that the user has access to");
     else if (projects.length > 1)
@@ -176,8 +188,7 @@ export class ConnectClient extends WsgClient {
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of invited projects.
    */
-  public async getInvitedProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
-    return this.getInstances<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project?rbaconly=true", queryOptions);
+  public async getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
+    return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project?rbaconly=true", queryOptions);
   }
-
 }

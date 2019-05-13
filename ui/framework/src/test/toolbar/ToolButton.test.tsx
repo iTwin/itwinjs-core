@@ -28,6 +28,11 @@ describe("ToolButton", () => {
     wrapper.unmount();
   });
 
+  it("should render active & pressed", () => {
+    const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" isActive={true} isPressed={true} />);
+    wrapper.unmount();
+  });
+
   it("renders correctly", () => {
     FrontstageManager.setActiveToolId("tool1");
     shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot();
@@ -44,21 +49,21 @@ describe("ToolButton", () => {
   it("should execute a function", () => {
     const spyMethod = sinon.spy();
     const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" execute={spyMethod} />);
-    wrapper.find(".nz-toolbar-item-icon").simulate("click");
+    wrapper.find(".nz-toolbar-item-item").simulate("click");
     spyMethod.should.have.been.called;
     wrapper.unmount();
   });
 
   it("should execute a tool", () => {
     const wrapper = mount(<ToolButton toolId={SelectionTool.toolId} />);
-    wrapper.find(".nz-toolbar-item-icon").simulate("click");
+    wrapper.find(".nz-toolbar-item-item").simulate("click");
     // Check on active tool
     wrapper.unmount();
   });
 
   it("should set focus to home on Esc", () => {
     const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />);
-    const element = wrapper.find(".nz-toolbar-item-icon");
+    const element = wrapper.find(".nz-toolbar-item-item");
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape", keyCode: 27 });
     expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
@@ -72,10 +77,13 @@ describe("ToolButton", () => {
   it("sync event should trigger stateFunc", () => {
     const testEventId = "test-buttonstate";
     let stateFunctionCalled = false;
-    const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => { stateFunctionCalled = true; return state; };
+    const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => {
+      stateFunctionCalled = true;
+      return { ...state, isActive: true };
+    };
 
     const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" stateSyncIds={[testEventId]} stateFunc={testStateFunc} />);
-    const element = wrapper.find(".nz-toolbar-item-icon");
+    const element = wrapper.find(".nz-toolbar-item-item");
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape", keyCode: 27 });
     expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;

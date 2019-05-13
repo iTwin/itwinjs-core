@@ -1,6 +1,50 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Update to latest version of icon library.
+- @beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds.
+- #84584 Add support for a view overlay component. This will provide ability to show animation timeline control in viewport.
+- Update Timeline interfaces.
+- Update CSS for ColorSwatch.
+- Add Unit test for ColorEditor and ColorPickerButton
+- Added CommonProps to many component Props in ui-core & ui-components
+- Added 'Register' link back to SignIn component. Added ExternalIModel test widget. Made AppBackstage in ui-test-app Redux connected again.
+- Added missing package prefix to some CSS class names in ui-core, ui-components & ui-framework
+- Reverted CubeNavigationAid changes
+- Added viewport synchronization for 2d drawing navigation aid
+- Added local snapshot support to ui-test-app. Added specialized div components to ui-core.
+- Fix broken links
+- Fix failing CustomNumberPropertyEditor test
+- Add WeightEditor line weight type editor.
+- Add components to show and select a line weight.
+- Put sourcemap in npm package.
+- Locked react-data-grid at 6.0.1 and @types/react-data-grid at 4.0.2
+- #96348 Improve default rotate point for navigation cube
+- Fix to SignIn constructor in ui-components
+- Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
+- Require React & React-dom 16.8
+- remove IModelApp subclasses
+- Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
+- Update icons-generic-webfont version to latest available.
+- Clean up WeightPickerButton test code.
+- Introduce timeline animation interfaces.
+- Move timeline components from ui-test-app to ui-components package
+- Added release tags to ui-framework, ui-components and ui-core.
+- Property Grid: Show loading spinner only after half a second delay
+- Fix indefinite Tree component rendering when used with `checkboxInfo` prop
+- Tree: Fix nodes not being re-rendered in some async workflows
+- Fix tree being marked as dirty when selected nodes predicate changes, but returns the same results (actual selection doesn't change)
+- Add Tree.getLoadedNode(nodeId) function
+- Add ability to set tooltips on tree node checkboxes
+- Unit tests and fixed ColorEditor alignment
+- Upgrade TypeDoc dependency to 0.14.2
+- Added test coverage for ViewportComponent
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -21,7 +65,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Added ToggleEditor. Support for defaultTool in Frontstage. Fixed BooleanEditor sizing.
 - Added 100% test coverage for Breadcrumb/BreadcrumbDetails
 - Use new buildIModelJsBuild script
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Added EnumEditor & BooleanEditor type editors
 - Minor UI Color Theme changes
 - Support for including CSS files in published UI packages

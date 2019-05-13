@@ -10,31 +10,41 @@ import * as classnames from "classnames";
 import "./Cube.scss";
 
 import { Matrix3d } from "@bentley/geometry-core";
+import { CommonProps } from "../utils/Props";
 
-/** Cube Face enumeration */
+/** Cube Face enumeration
+ * @beta
+ */
 export enum Face {
-  None = 0,
-  Left,
-  Right,
-  Back,
-  Front,
-  Bottom,
-  Top,
+  None = "",
+  Left = "left",
+  Right = "right",
+  Back = "back",
+  Front = "front",
+  Bottom = "bottom",
+  Top = "top",
 }
 
-/** Properties for the [[Cube]] React component */
-export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement> {
+/** Properties for the [[Cube]] React component
+ * @beta
+ */
+export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
   faces?: { [key: string]: React.ReactNode };
   rotMatrix: Matrix3d;
-  className?: string;
 }
 
-/** Cube React component used by the 3d Cube Navigation Aid */
+/** Cube React component used by the 3d Cube Navigation Aid
+ * @beta
+ */
 export class Cube extends React.Component<CubeProps> {
+  constructor(props: CubeProps) {
+    super(props);
+  }
+
   public render(): React.ReactNode {
     const { faces, rotMatrix, className, ...props } = this.props;
     return (
-      <div className={classnames("cube-css3d", className)} {...props}>
+      <div className={classnames("core-cube-css3d", className)} data-testid="core-cube" {...props}>
         {[Face.Front, Face.Back, Face.Right, Face.Left, Face.Top, Face.Bottom]
           .map((face: Face) => {
             const content = faces && faces[face];
@@ -52,32 +62,21 @@ export class Cube extends React.Component<CubeProps> {
   }
 }
 
-const faceNames: { [key: number]: string } = {
-  [Face.None]: "",
-  [Face.Front]: "front",
-  [Face.Back]: "back",
-  [Face.Right]: "right",
-  [Face.Left]: "left",
-  [Face.Top]: "top",
-  [Face.Bottom]: "bottom",
-};
-
-/** @hidden */
+/** @internal */
 export interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
   rotMatrix: Matrix3d;
   face: Face;
 }
 
-/** @hidden */
+/** @internal */
 export class CubeFace extends React.Component<CubeFaceProps> {
   private _faceWidth: number = 0;
   public render(): React.ReactNode {
     const { rotMatrix, face, style, children, ...props } = this.props;
     if (face === Face.None)
       return null;
-    const name = faceNames[face];
-    const classes = classnames("face", name);
-    // orient face (flip because of y axis reversal, rotate as neccesary)
+    const classes = classnames("face", face);
+    // orient face (flip because of y axis reversal, rotate as necessary)
     let reorient: Matrix3d = Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, 1);
     // Position face correctly (applies to rotation, as well as translation)
     let reposition: Matrix3d = Matrix3d.createIdentity();
@@ -112,7 +111,7 @@ export class CubeFace extends React.Component<CubeFaceProps> {
       m.at(0, 2), -m.at(1, 2), m.at(2, 2), 0,
       vect.at(0), -vect.at(1), vect.at(2) - this._faceWidth /* move back faceWidth so face is on screen level */, 1,
     ];
-    const transform = `matrix3d(${list.join(",")})`;
+    const transform = `matrix3d(${list.join(", ")})`;
     const s: React.CSSProperties = {
       transform,
       WebkitTransform: transform,
@@ -121,6 +120,7 @@ export class CubeFace extends React.Component<CubeFaceProps> {
 
     return (
       <div style={s}
+        data-testid={"core-cube-face-" + face}
         className={classes}
         ref={(e) => { this._faceWidth = (e && e.clientWidth / 2) || 0; }}
         {...props}>

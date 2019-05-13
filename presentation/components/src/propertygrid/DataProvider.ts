@@ -10,9 +10,9 @@ import {
 } from "@bentley/ui-components";
 import { IModelConnection, PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/imodeljs-frontend";
 import {
-  CategoryDescription, Descriptor, ContentFlags,
+  CategoryDescription, Descriptor, DescriptorOverrides,
   Field, NestedContentField, DefaultContentDisplayTypes, Item,
-  PresentationError, PresentationStatus,
+  PresentationError, PresentationStatus, ContentFlags,
 } from "@bentley/presentation-common";
 import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
 import { ContentBuilder } from "../common/ContentBuilder";
@@ -219,12 +219,6 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     this._includeFieldsWithNoValues = true;
   }
 
-  protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
-    const configured = super.configureContentDescriptor(descriptor);
-    configured.contentFlags |= ContentFlags.ShowLabels;
-    return configured;
-  }
-
   protected invalidateCache(props: CacheInvalidationProps): void {
     super.invalidateCache(props);
     if (this.getMemoizedData)
@@ -233,9 +227,27 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
       this.onDataChanged.raiseEvent();
   }
 
-  /** Excludes fields that are hidden and not favorite. */
-  protected shouldExcludeFromDescriptor(field: Field): boolean {
-    return this.isFieldHidden(field) && !this.isFieldFavorite(field);
+  /**
+   * Tells the data provider to _not_ request descriptor and instead configure
+   * content using `getDescriptorOverrides()` call
+   */
+  protected shouldConfigureContentDescriptor(): boolean { return false; }
+
+  /**
+   * Provides content configuration for the property grid
+   */
+  protected getDescriptorOverrides(): DescriptorOverrides {
+    return {
+      ...super.getDescriptorOverrides(),
+      contentFlags: ContentFlags.ShowLabels | ContentFlags.MergeResults,
+    };
+  }
+
+  /**
+   * Hides the computed display label field from the list of properties
+   */
+  protected isFieldHidden(field: Field) {
+    return field.name === "/DisplayLabel/";
   }
 
   /**
@@ -295,7 +307,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   /**
    * Returns property data.
    */
-  public getData(): Promise<PropertyData> {
+  public async getData(): Promise<PropertyData> {
     return this.getMemoizedData();
   }
 }

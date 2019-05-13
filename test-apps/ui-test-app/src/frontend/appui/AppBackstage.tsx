@@ -4,94 +4,68 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { connect } from "react-redux";
-import { SampleAppIModelApp, RootState, SampleAppUiActionId } from "..";
+
+import {
+  SampleAppIModelApp, SampleAppUiActionId, RootState,
+} from "..";
+import { SettingsModalFrontstage } from "../appui/frontstages/Settings";
 import {
   Backstage,
   FrontstageManager,
   FrontstageLaunchBackstageItem,
   CommandLaunchBackstageItem,
   SeparatorBackstageItem,
-  BackstageCloseEventArgs,
   BooleanSyncUiListener,
-  SettingsModalFrontstage,
 } from "@bentley/ui-framework";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { LocalFileStage } from "./frontstages/LocalFileStage";
 
-import { Tool } from "@bentley/imodeljs-frontend";
-
-// Tool that shows the backstage
-export class BackstageShow extends Tool {
-  public static toolId = "SampleApp.BackstageShow";
-
-  public run(): boolean {
-    // dispatch the action
-    SampleAppIModelApp.store.dispatch({ type: SampleAppUiActionId.showBackstage });
-    return true;
-  }
-}
-
-// Tool that hides the backstage
-export class BackstageHide extends Tool {
-  public static toolId = "SampleApp.BackstageHide";
-
-  public run(): boolean {
-    // dispatch the action
-    SampleAppIModelApp.store.dispatch({ type: SampleAppUiActionId.hideBackstage });
-    return true;
-  }
-}
-
-export interface AppBackstageProps {
-  isVisible: boolean;
-  className?: string;
-  style?: React.CSSProperties;
+interface AppBackstageProps {
+  /** AccessToken from sign-in */
+  accessToken: AccessToken | undefined;
 }
 
 function mapStateToProps(state: RootState) {
-  return { isVisible: state.sampleAppState!.backstageVisible };
+  const appState = state.sampleAppState;
+
+  if (!appState)
+    return undefined;
+
+  return { accessToken: appState.accessToken };
 }
 
-class AppBackstage extends React.Component<AppBackstageProps> {
-
-  constructor(props?: any, context?: any) {
-    super(props, context);
-  }
-
-  public componentDidMount() {
-    Backstage.onBackstageCloseEventEvent.addListener(this._handleBackstageCloseEventEvent);
-  }
-
-  public componentWillUnmount() {
-    Backstage.onBackstageCloseEventEvent.removeListener(this._handleBackstageCloseEventEvent);
-  }
-
-  private _handleBackstageCloseEventEvent = (_args: BackstageCloseEventArgs) => {
-    new BackstageHide().run();
-  }
-
-  private _handleOnClose() {
-    new BackstageHide().run();
-  }
+class AppBackstageComponent extends React.Component<AppBackstageProps> {
 
   public render(): React.ReactNode {
     return (
-      <Backstage isVisible={this.props.isVisible} onClose={this._handleOnClose} accessToken={SampleAppIModelApp.store.getState().frameworkState!.overallContentState.accessToken} >
-        <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="SampleApp:backstage.testFrontstage1" iconSpec="icon icon-placeholder" />
-        <FrontstageLaunchBackstageItem frontstageId="Test2" labelKey="SampleApp:backstage.testFrontstage2" iconSpec="icon icon-placeholder" />
+      <Backstage accessToken={this.props.accessToken} >
+        <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="SampleApp:backstage.testFrontstage1" iconSpec="icon-placeholder" />
+        <FrontstageLaunchBackstageItem frontstageId="Test2" labelKey="SampleApp:backstage.testFrontstage2" iconSpec="icon-placeholder" />
         <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
-          {(isVisible: boolean) => isVisible && <FrontstageLaunchBackstageItem frontstageId="Test3" labelKey="SampleApp:backstage.testFrontstage3" iconSpec="icon icon-placeholder" />}
+          {(isVisible: boolean) => isVisible && <FrontstageLaunchBackstageItem frontstageId="Test3" labelKey="SampleApp:backstage.testFrontstage3" iconSpec="icon-placeholder" />}
         </BooleanSyncUiListener>
         <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() === "HIDE"} defaultValue={false}>
-          {(isEnabled: boolean) => <FrontstageLaunchBackstageItem frontstageId="Test4" labelKey="SampleApp:backstage.testFrontstage4" iconSpec="icon icon-placeholder" isEnabled={isEnabled} />}
+          {(isEnabled: boolean) => <FrontstageLaunchBackstageItem frontstageId="Test4" labelKey="SampleApp:backstage.testFrontstage4" iconSpec="icon-placeholder" isEnabled={isEnabled} />}
         </BooleanSyncUiListener>
         <SeparatorBackstageItem />
-        <CommandLaunchBackstageItem labelKey="SampleApp:backstage.testFrontstage6" iconSpec="icon icon-settings"
-              commandId="SampleApp:backstage.testFrontstage6" execute={() => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage())}/>
+        <FrontstageLaunchBackstageItem frontstageId="IModelOpen" labelKey="SampleApp:backstage.imodelopen" iconSpec="icon-folder-opened" />
+        <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setIsIModelLocal]} boolFunc={(): boolean => !SampleAppIModelApp.isIModelLocal} defaultValue={true}>
+          {(isEnabled: boolean) => <FrontstageLaunchBackstageItem frontstageId="IModelIndex" labelKey="SampleApp:backstage.imodelindex" iconSpec="icon-placeholder" isEnabled={isEnabled} />}
+        </BooleanSyncUiListener>
+        <CommandLaunchBackstageItem labelKey="SampleApp:backstage:fileSelect" iconSpec="icon-placeholder"
+          commandId="SampleApp:backstage:fileSelect" execute={() => LocalFileStage.open()} />
         <SeparatorBackstageItem />
-        <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" label="View iModel" descriptionKey="SampleApp:backstage.iModelStage" iconSpec="icon-placeholder" />
+        <CommandLaunchBackstageItem labelKey="SampleApp:backstage.testFrontstage6" iconSpec="icon-settings"
+          commandId="SampleApp:backstage.testFrontstage6" execute={() => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage())} />
+        <SeparatorBackstageItem />
+        <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" labelKey="SampleApp:backstage.viewIModel" descriptionKey="SampleApp:backstage.iModelStage" iconSpec="icon-placeholder" />
       </Backstage>
     );
   }
 }
 
-// makes a <Connect> react component
-export default connect(mapStateToProps)(AppBackstage);
+/**
+ * Application Backstage.
+ * This React component is Redux connected.
+ */
+export const AppBackstage = connect(mapStateToProps)(AppBackstageComponent); // tslint:disable-line:variable-name

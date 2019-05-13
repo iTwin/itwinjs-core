@@ -1,0 +1,27 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.uifw-tile-loading-bar {
+  transition: opacity 1s ease-in;
+  opacity: 0;
+  display: flex;
+  align-items: center;
+
+  > span {
+    font-family: sans-serif;
+    font-size: 10px;
+    margin-right: 5px;
+    position: relative;
+  }
+
+  > .core-lb {
+    flex: 1;
+  }
+}
+
+.uifw-tile-loading-bar-visible {
+  opacity: 1;
+}

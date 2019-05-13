@@ -11,9 +11,16 @@ const subTranslationNamespace = "Diagnostics";
 const baseTranslationKey = translationNamespace + ":" + subTranslationNamespace;
 
 /**
- * Interface used to report [[IDiagnostics]] objects created during schema validation.
+ * Interface used to report [[IDiagnostic]] objects created during schema validation.
+ * @beta
  */
 export interface IDiagnosticReporter {
+  /**
+   * A map where the key is a schema full name and the value is a collection
+   * of diagnostics codes identifying which rules violations to ignore during validation.
+   */
+  suppressions?: Map<string, string[]>;
+
   /** The I18N object to use for message translation. */
   i18N?: I18N;
 
@@ -26,10 +33,67 @@ export interface IDiagnosticReporter {
 }
 
 /**
- * The abstract base class for all [[IDiagnosticReporter]] implementations.
+ * An abstract base class for [[IDiagnosticReporter]] implementation that used the
+ * provided Map to suppress certain rule violations from being reported. The Map's key
+ * a schema full name, and the Map's value is a collection of rule codes to suppress.
+ * @beta
  */
-export abstract class DiagnosticReporterBase implements IDiagnosticReporter {
-  constructor(i18n?: I18N) {
+export abstract class SuppressionDiagnosticReporter implements IDiagnosticReporter {
+  private _suppressions?: Map<string, string[]>;
+
+  /**
+   * Initializes a new SuppressionDiagnosticReporter
+   * @param suppressions A Map where the key is a schema full name and the value is collection of diagnostic codes to suppress.
+   */
+  constructor(suppressions?: Map<string, string[]>) {
+    this._suppressions = suppressions;
+  }
+
+  /**
+   * Gets the collection of ISchemaDiagnosticSuppression objects that identify
+   * rules violations to ignore during validation.
+   */
+  public get suppressions(): Map<string, string[]> | undefined {
+    return this._suppressions;
+  }
+
+  /**
+   * Prior to reporting the [[IDiagnostic]], the diagnostic message is formatted (with translations)
+   * base on arguments contained in the diagnostic. Calls reportDiagnostic after the message is formatted.
+   * @param diagnostic The diagnostic to report.
+   */
+  public report(diagnostic: AnyDiagnostic) {
+    if (this._suppressions && this._suppressions.has(diagnostic.schema.fullName)) {
+      const suppressedCodes = this._suppressions.get(diagnostic.schema.fullName);
+      if (suppressedCodes!.includes(diagnostic.code))
+        return;
+    }
+
+    this.reportInternal(diagnostic);
+  }
+
+  /**
+   * Handles the given [[IDiagnostic]] based on the implementation requirements for a
+   * given reporter.
+   * @param diagnostic The diagnostic to report.
+   */
+  protected abstract reportInternal(diagnostic: AnyDiagnostic): void;
+}
+
+/**
+ * An abstract [[SuppressionDiagnosticReporter]] implementation that formats the
+ * diagnostic message with the message args. If an I18N implementation is specified,
+ * the message will also be translated.
+ * @beta
+ */
+export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticReporter {
+  /**
+   * Initializes a new FormatDiagnosticReporter
+   * @param suppressions A Map where the key is a schema full name and the value is collection of diagnostic codes to suppress.
+   * @param i18n The I18N instance to use to translate validation messages.
+   */
+  constructor(suppressions?: Map<string, string[]>, i18n?: I18N) {
+    super(suppressions);
     this.i18N = i18n;
   }
 
@@ -41,7 +105,7 @@ export abstract class DiagnosticReporterBase implements IDiagnosticReporter {
    * base on arguments contained in the diagnostic. Calls reportDiagnostic after the message is formatted.
    * @param diagnostic The diagnostic to report.
    */
-  public report(diagnostic: AnyDiagnostic) {
+  public reportInternal(diagnostic: AnyDiagnostic) {
     const message = this.formatMessage(diagnostic);
     this.reportDiagnostic(diagnostic, message);
   }

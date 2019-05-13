@@ -3,24 +3,25 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent, LogLevel } from "@bentley/bentleyjs-core";
-import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
-import { Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
+import { Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory } from "@bentley/bentleyjs-core";
+import { AccessToken, Config, ChangeSet, AuthorizedClientRequestContext, ImsUserCredentials, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
+import { Code, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
 import { IModelJsNative } from "../IModelJsNative";
+import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { HubUtility, UserCredentials } from "./integration/HubUtility";
+import { HubUtility } from "./integration/HubUtility";
 import * as path from "path";
 import { Schema, Schemas } from "../Schema";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { PhysicalElement } from "../Element";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-
-const actx = new ActivityLoggingContext("");
+import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
+import { TestUsers } from "./TestUsers";
 
 /** Class for simple test timing */
 export class Timer {
@@ -74,48 +75,6 @@ export interface IModelTestUtilsOpenOptions {
   openMode?: OpenMode;
 }
 
-/** Test users with various permissions */
-export class TestUsers {
-  /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static get regular(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_regular_user_name"),
-      password: Config.App.getString("imjs_test_regular_user_password"),
-    };
-  }
-
-  /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
-  public static get manager(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_manager_user_name"),
-      password: Config.App.getString("imjs_test_manager_user_password"),
-    };
-  }
-
-  /** User with the typical permissions of the connected services administrator - Co-Admin: No, Connect-Services-Admin: Yes */
-  public static get super(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_super_user_name"),
-      password: Config.App.getString("imjs_test_super_user_password"),
-    };
-  }
-
-  /** User with the typical permissions of the connected services administrator - Co-Admin: Yes, Connect-Services-Admin: Yes */
-  public static get superManager(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_super_manager_user_name"),
-      password: Config.App.getString("imjs_test_super_manager_user_password"),
-    };
-  }
-  /** Just another user */
-  public static get user1(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_user1_user_name"),
-      password: Config.App.getString("imjs_test_user1_user_password"),
-    };
-  }
-}
-
 /**
  * Disables native code assertions from firing. This can be used by tests that intentionally
  * test failing operations. If those failing operations raise assertions in native code, the test
@@ -138,11 +97,15 @@ export class DisableNativeAssertions implements IDisposable {
   }
 }
 
-export class TestBim extends Schema { }
+export class TestBim extends Schema {
+  public static get schemaName(): string { return "TestBim"; }
+
+}
 export interface TestRelationshipProps extends RelationshipProps {
   property1: string;
 }
 export class TestElementDrivesElement extends ElementDrivesElement implements TestRelationshipProps {
+  public static get className(): string { return "TestElementDrivesElement"; }
   public property1!: string;
   public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
   public static validateOutput = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
@@ -155,6 +118,7 @@ export interface TestPhysicalObjectProps extends GeometricElementProps {
   intProperty: number;
 }
 export class TestPhysicalObject extends PhysicalElement implements TestPhysicalObjectProps {
+  public static get className(): string { return "TestPhysicalObject"; }
   public intProperty!: number;
   public static beforeOutputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
   public static allInputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
@@ -163,92 +127,50 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
 }
 
 export class IModelTestUtils {
-  public static async getTestModelInfo(accessToken: AccessToken, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
+  public static async getTestModelInfo(requestContext: AuthorizedClientRequestContext, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
     const iModelInfo = new TestIModelInfo(iModelName);
-    iModelInfo.id = await HubUtility.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
+    iModelInfo.id = await HubUtility.queryIModelIdByName(requestContext, testProjectId, iModelInfo.name);
 
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
     iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
     iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-    iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, iModelInfo.id);
+    iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelInfo.id);
     return iModelInfo;
   }
 
-  public static async getTestUserAccessToken(userCredentials: any = TestUsers.regular): Promise<AccessToken> {
-    return HubUtility.login(userCredentials);
+  public static async getTestUserRequestContext(userCredentials: ImsUserCredentials = TestUsers.regular): Promise<AuthorizedBackendRequestContext> {
+    const accessToken: AccessToken = await HubUtility.login(userCredentials);
+    return new AuthorizedBackendRequestContext(accessToken);
   }
 
-  private static getStat(name: string) {
-    let stat: IModelJsFsStats | undefined;
-    try {
-      stat = IModelJsFs.lstatSync(name);
-    } catch (err) {
-      stat = undefined;
-    }
-    return stat;
+  /** Prepare for an output file by:
+   * - Resolving the output file name under the known test output directory
+   * - Making directories as necessary
+   * - Removing a previous copy of the output file
+   * @param subDirName Sub-directory under known test output directory. Should match the name of the test file minus the .test.ts file extension.
+   * @param fileName Name of output fille
+   */
+  public static prepareOutputFile(subDirName: string, fileName: string): string {
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+
+    const outputDir = path.join(KnownTestLocations.outputDir, subDirName);
+    if (!IModelJsFs.existsSync(outputDir))
+      IModelJsFs.mkdirSync(outputDir);
+
+    const outputFile = path.join(outputDir, fileName);
+    if (IModelJsFs.existsSync(outputFile))
+      IModelJsFs.unlinkSync(outputFile);
+
+    return outputFile;
   }
 
-  public static createStandaloneIModel(fileName: string, args: CreateIModelProps): IModelDb {
-    const destPath = KnownTestLocations.outputDir;
-    if (!IModelJsFs.existsSync(destPath))
-      IModelJsFs.mkdirSync(destPath);
-
-    const pathname = path.join(destPath, fileName);
-    if (IModelJsFs.existsSync(pathname))
-      IModelJsFs.unlinkSync(pathname);
-
-    const iModel: IModelDb = IModelDb.createStandalone(pathname, args);
-
-    assert.isNotNull(iModel);
-    assert.isTrue(IModelJsFs.existsSync(pathname));
-    return iModel!;
-  }
-
-  public static openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
-    const destPath = KnownTestLocations.outputDir;
-    if (!IModelJsFs.existsSync(destPath))
-      IModelJsFs.mkdirSync(destPath);
-
-    if (opts === undefined)
-      opts = {};
-
-    const srcName = path.join(KnownTestLocations.assetsDir, filename);
-    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
-    const srcStat = IModelTestUtils.getStat(srcName);
-    const destStat = IModelTestUtils.getStat(dbName);
-    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
-      IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
-    }
-
-    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
-    assert.exists(iModel);
-    return iModel!;
-  }
-
-  public static openIModelFromOut(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
-    const destPath = KnownTestLocations.outputDir;
-    if (!IModelJsFs.existsSync(destPath))
-      IModelJsFs.mkdirSync(destPath);
-
-    if (opts === undefined)
-      opts = {};
-
-    const srcName = path.join(KnownTestLocations.outputDir, filename);
-    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
-    const srcStat = IModelTestUtils.getStat(srcName);
-    const destStat = IModelTestUtils.getStat(dbName);
-    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
-      IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
-    }
-
-    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
-    assert.exists(iModel);
-    return iModel!;
-  }
-
-  public static closeIModel(iModel: IModelDb) {
-    iModel.closeStandalone();
+  /** Resolve an asset file path from the asset name by looking in the known assets directory */
+  public static resolveAssetFile(assetName: string): string {
+    const assetFile = path.join(KnownTestLocations.assetsDir, assetName);
+    assert.isTrue(IModelJsFs.existsSync(assetFile));
+    return assetFile;
   }
 
   public static getUniqueModelCode(testIModel: IModelDb, newModelCodeBase: string): Code {
@@ -332,8 +254,8 @@ export class IModelTestUtils {
     IModelHost.startup(config);
   }
 
-  public static registerTestBim() {
-    if (!Schemas.isRegistered(TestBim)) {
+  public static registerTestBimSchema() {
+    if (undefined === Schemas.getRegisteredSchema(TestBim.schemaName)) {
       Schemas.registerSchema(TestBim);
       ClassRegistry.register(TestPhysicalObject, TestBim);
       ClassRegistry.register(TestElementDrivesElement, TestBim);
@@ -361,22 +283,21 @@ export class IModelTestUtils {
       Logger.configureLevels(require(loggingConfigFile));
     }
   }
+  public static init() {
+    // dummy method to get this script included
+  }
 
   // Setup typical programmatic log level overrides here
   // Convenience method used to debug specific tests/fixtures
   public static setupDebugLogLevels() {
     Logger.setLevelDefault(LogLevel.Warning);
-    Logger.setLevel("Performance", LogLevel.Info);
-    Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
-    Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
-    Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
-    Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
-    Logger.setLevel("imodeljs-clients.Request", LogLevel.Trace);
-    Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
-    Logger.setLevel("DgnCore", LogLevel.Error);
-    Logger.setLevel("BeSQLite", LogLevel.Error);
-    Logger.setLevel("Bentley.LICENSING", LogLevel.Error);
-    Logger.setLevel("imodeljs-addon", LogLevel.Error);
+    Logger.setLevel(BentleyLoggerCategory.Performance, LogLevel.Info);
+    Logger.setLevel(BackendLoggerCategory.IModelDb, LogLevel.Trace);
+    Logger.setLevel(ClientsLoggerCategory.Clients, LogLevel.Trace);
+    Logger.setLevel(ClientsLoggerCategory.IModelHub, LogLevel.Trace);
+    Logger.setLevel(ClientsLoggerCategory.Request, LogLevel.Trace);
+    Logger.setLevel(IModelJsNative.BackendLoggerCategory.DgnCore, LogLevel.Error);
+    Logger.setLevel(IModelJsNative.BackendLoggerCategory.BeSQLite, LogLevel.Error);
   }
 }
 

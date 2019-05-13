@@ -19,7 +19,7 @@ import {
   ToolWidget,
   CoreTools,
 } from "../../ui-framework";
-import { TestFrontstage, TestContentControl, TestWidget } from "./FrontstageTestUtils";
+import { TestFrontstage, TestContentControl, AppStatusBarWidgetControl } from "./FrontstageTestUtils";
 
 class TestNestedFrontstage extends FrontstageProvider {
 
@@ -70,7 +70,7 @@ class TestNestedFrontstage extends FrontstageProvider {
           <Zone
             widgets={[
               <Widget id="statusBar" isStatusBar={true} iconSpec="icon-placeholder" labelKey="App:widgets.StatusBar"
-                control={TestWidget} applicationData={{ key: "value" }} />,
+                control={AppStatusBarWidgetControl} applicationData={{ key: "value" }} />,
             ]}
           />
         }

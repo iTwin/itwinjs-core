@@ -36,7 +36,6 @@ describe("WidgetDef", () => {
       isToolSettings: true,
       isStatusBar: true,
       fillZone: true,
-      featureId: "FeatureId",
       isFloatingStateSupported: true,
       isFloatingStateWindowResizable: false,
       applicationData: "AppData",
@@ -50,7 +49,6 @@ describe("WidgetDef", () => {
     expect(widgetDef.isActive).to.eq(true);
     expect(widgetDef.isFloating).to.eq(false);
     expect(widgetDef.priority).to.eq(100);
-    expect(widgetDef.featureId).to.eq("FeatureId");
     expect(widgetDef.isFreeform).to.eq(true);
     expect(widgetDef.isFloatingStateSupported).to.eq(true);
     expect(widgetDef.isFloatingStateWindowResizable).to.eq(false);
@@ -71,6 +69,28 @@ describe("WidgetDef", () => {
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
     expect(widgetDef.getWidgetControl(ConfigurableUiControlType.Widget)).to.not.be.undefined;
+    expect(widgetDef.reactElement).to.not.be.undefined;
+  });
+
+  it("labelKey and tooltipKey should return translated string", () => {
+    const widgetProps: WidgetProps = {
+      classId: "WidgetDefTest",
+      labelKey: "App:label",
+      tooltipKey: "App:tooltip",
+    };
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+
+    expect(widgetDef.label).to.eq("label");
+    expect(widgetDef.tooltip).to.eq("tooltip");
+  });
+
+  it("reactElement supports set and get", () => {
+    const widgetProps: WidgetProps = {
+      classId: "WidgetDefTest",
+    };
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+
+    widgetDef.reactElement = <div />;
     expect(widgetDef.reactElement).to.not.be.undefined;
   });
 

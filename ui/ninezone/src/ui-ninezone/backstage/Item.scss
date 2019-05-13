@@ -2,6 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "../prefix";
 @import "_variables";
 
 .nz-backstage-item {
@@ -10,26 +11,24 @@
   align-items: center;
   padding: $nz-backstage-item-spacing 0;
   cursor: pointer;
-  -webkit-transition: .2s ease;
-  -moz-transition: .2s ease;
-  -o-transition: .2s ease;
-  transition: .2s ease;
+
+  @include nz-transition(.2s ease);
 
   &:hover {
     background: $nz-backstage-item-hover-background;
     color: $nz-backstage-item-color;
   }
 
-  &.nz-is-active {
+  &.nz-active {
     background: $nz-backstage-item-active-background;
   }
 
-  &.nz-is-disabled {
+  &.nz-disabled {
     color: $nz-backstage-item-color-disabled;
     pointer-events: none;
   }
 
-  &.nz-is-active:before{
+  &.nz-active:before{
     content: '';
     position: absolute;
     top: 0;
@@ -40,12 +39,12 @@
     background: $nz-backstage-highlight-bar-background;
   }
 
-  > .icon {
+  > .nz-icon {
     padding-left: $nz-backstage-icon-spacing-left;
     padding-right: $nz-backstage-icon-spacing-right;
   }
 
-  > div {
+  > div:last-child {
     display: flex;
     flex-direction: column;
     padding-right: $uicore-sm;

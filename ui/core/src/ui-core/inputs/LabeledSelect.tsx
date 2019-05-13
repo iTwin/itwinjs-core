@@ -7,32 +7,40 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import Select, { SelectProps } from "./Select";
-import InputStatus from "./InputStatus";
+import { Select, SelectProps } from "./Select";
+import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 
-/** Properties for [[LabeledSelect]] components */
-export interface LabeledSelectProps extends SelectProps {
-  label: string;
-  status?: InputStatus;
-  message?: string;
-}
+/** Properties for [[LabeledSelect]] components
+ * @beta
+ */
+export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, MessagedComponentProps { }
 
-/** Dropdown wrapper that allows for additional styling and labelling */
-export class LabeledSelect extends React.Component<LabeledSelectProps> {
+/** Dropdown wrapper that allows for additional styling and labelling
+ * @beta
+ */
+export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
   public render(): JSX.Element {
+    const { label, status, className, style,
+      inputClassName, inputStyle,
+      labelClassName, labelStyle,
+      message, messageClassName, messageStyle,
+      ...props } = this.props;
+
     return (
-      <label className={classnames(
+      <label style={style} className={classnames(
         "uicore-inputs-labeled-select",
         { disabled: this.props.disabled },
-        this.props.status,
-        this.props.className,
+        status,
+        className,
       )}>
-        <div className={"label"}>{this.props.label}</div>
-        <Select disabled={this.props.disabled} {...this.props} />
-        {this.props.message &&
-          <div className={"message"}>{this.props.message}</div>}
+        {label &&
+          <div className={classnames("label", labelClassName)}> {label} </div>
+        }
+        <Select disabled={this.props.disabled} className={inputClassName} style={inputStyle} {...props} />
+        {message &&
+          <div className={classnames("message", messageClassName)} style={messageStyle}>{message}</div>
+        }
       </label>
     );
   }
 }
-export default LabeledSelect;

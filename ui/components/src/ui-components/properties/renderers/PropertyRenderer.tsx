@@ -12,9 +12,11 @@ import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyCon
 import { PrimitiveRendererProps, PrimitivePropertyRenderer } from "./PrimitivePropertyRenderer";
 import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import UiComponents from "../../UiComponents";
+import { UiComponents } from "../../UiComponents";
 
-/** Properties shared by all renderers and PropertyView */
+/** Properties shared by all renderers and PropertyView
+ * @public
+ */
 export interface SharedRendererProps {
   /** PropertyRecord to render */
   propertyRecord: PropertyRecord;
@@ -40,39 +42,51 @@ export interface SharedRendererProps {
   width?: number;
 }
 
-/** Properties of [[PropertyRenderer]] React component */
+/** Properties of [[PropertyRenderer]] React component
+ * @public
+ */
 export interface PropertyRendererProps extends SharedRendererProps {
   /** Custom value renderer */
   propertyValueRendererManager?: PropertyValueRendererManager;
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
-  /** Indicates property is being edited */
+
+  /** Indicates property is being edited @beta */
   isEditing?: boolean;
-  /** Called when property edit is committed. */
+  /** Called when property edit is committed. @beta */
   onEditCommit?: (args: PropertyUpdatedArgs) => void;
-  /** Called when property edit is cancelled. */
+  /** Called when property edit is cancelled. @beta */
   onEditCancel?: () => void;
 }
 
-/** State of [[PropertyRenderer]] React component */
-export interface PropertyRendererState {
+/** State of [[PropertyRenderer]] React component
+ * @internal
+ */
+interface PropertyRendererState {
   /** Currently loaded property value */
   displayValue?: React.ReactNode;
 }
 
-/**  A React component that renders properties */
+/**  A React component that renders properties
+ * @public
+ */
 export class PropertyRenderer extends React.Component<PropertyRendererProps, PropertyRendererState> {
   private _isMounted = false;
 
+  /** @internal */
   public readonly state: Readonly<PropertyRendererState> = {
     displayValue: UiComponents.i18n.translate("UiComponents:general.loading"),
   };
+
+  constructor(props: PropertyRendererProps) {
+    super(props);
+  }
 
   public static getLabelOffset(indentation?: number) {
     if (!indentation)
       return 0;
 
-    return indentation * 20;
+    return indentation * 17;
   }
 
   private async updateDisplayValue(props: PropertyRendererProps) {
@@ -124,21 +138,25 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
       });
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
     this.updateDisplayValue(this.props); // tslint:disable-line:no-floating-promises
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: PropertyRendererProps) {
     if (prevProps.propertyRecord !== this.props.propertyRecord
       || prevProps.isEditing !== this.props.isEditing)
       this.updateDisplayValue(this.props); // tslint:disable-line:no-floating-promises
   }
 
+  /** @internal */
   public render() {
     const { children, propertyValueRendererManager, isEditing, onEditCommit, onEditCancel, ...props } = this.props;
     const primitiveRendererProps: PrimitiveRendererProps = {

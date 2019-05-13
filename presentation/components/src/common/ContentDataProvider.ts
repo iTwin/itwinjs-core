@@ -9,7 +9,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, PageOptions, SelectionInfo,
   ContentRequestOptions, Content, Descriptor, Field,
-  Ruleset, RegisteredRuleset,
+  Ruleset, RegisteredRuleset, DescriptorOverrides,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
@@ -64,14 +64,14 @@ export interface IContentDataProvider extends IPresentationDataProvider, IDispos
   /** Display type used to format content */
   readonly displayType: string;
   /** Keys defining what to request content for */
-  keys: Readonly<KeySet>;
+  keys: KeySet;
   /** Information about selection event that results in content change */
-  selectionInfo: Readonly<SelectionInfo> | undefined;
+  selectionInfo: SelectionInfo | undefined;
 
   /**
    * Get the content descriptor.
    */
-  getContentDescriptor: () => Promise<Readonly<Descriptor> | undefined>;
+  getContentDescriptor: () => Promise<Descriptor | undefined>;
 
   /**
    * Get the number of content records.
@@ -82,7 +82,7 @@ export interface IContentDataProvider extends IPresentationDataProvider, IDispos
    * Get the content.
    * @param pageOptions Paging options.
    */
-  getContent: (pageOptions?: PageOptions) => Promise<Readonly<Content> | undefined>;
+  getContent: (pageOptions?: PageOptions) => Promise<Content | undefined>;
 }
 
 /**
@@ -92,8 +92,9 @@ export class ContentDataProvider implements IContentDataProvider {
   private _imodel: IModelConnection;
   private _rulesetId: string;
   private _displayType: string;
-  private _keys: Readonly<KeySet>;
-  private _selectionInfo?: Readonly<SelectionInfo>;
+  private _keys: KeySet;
+  private _previousKeysGuid: string;
+  private _selectionInfo?: SelectionInfo;
   private _registeredRuleset?: RegisteredRuleset;
   private _isDisposed?: boolean;
   private _pagingSize?: number;
@@ -110,6 +111,7 @@ export class ContentDataProvider implements IContentDataProvider {
     this._displayType = displayType;
     this._imodel = imodel;
     this._keys = new KeySet();
+    this._previousKeysGuid = this._keys.guid;
     this.invalidateCache(CacheInvalidationProps.full());
     if (typeof ruleset === "object") {
       this.registerRuleset(ruleset); // tslint:disable-line: no-floating-promises
@@ -150,6 +152,7 @@ export class ContentDataProvider implements IContentDataProvider {
   public set imodel(imodel: IModelConnection) {
     if (this._imodel === imodel)
       return;
+
     this._imodel = imodel;
     this.invalidateCache(CacheInvalidationProps.full());
   }
@@ -159,22 +162,28 @@ export class ContentDataProvider implements IContentDataProvider {
   public set rulesetId(value: string) {
     if (this._rulesetId === value)
       return;
+
     this._rulesetId = value;
     this.invalidateCache(CacheInvalidationProps.full());
   }
 
   /** Keys defining what to request content for */
   public get keys() { return this._keys; }
-  public set keys(keys: Readonly<KeySet>) {
+  public set keys(keys: KeySet) {
+    if (keys.guid === this._previousKeysGuid)
+      return;
+
     this._keys = keys;
+    this._previousKeysGuid = this._keys.guid;
     this.invalidateCache(CacheInvalidationProps.full());
   }
 
   /** Information about selection event that results in content change */
   public get selectionInfo() { return this._selectionInfo; }
-  public set selectionInfo(info: Readonly<SelectionInfo> | undefined) {
+  public set selectionInfo(info: SelectionInfo | undefined) {
     if (this._selectionInfo === info)
       return;
+
     this._selectionInfo = info;
     this.invalidateCache(CacheInvalidationProps.full());
   }
@@ -220,10 +229,20 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   /**
-   * Called to check whether the content descriptor should be configured.
-   * Not configuring content descriptor saves a backend request.
+   * Called to check whether the content descriptor needs advanced configuration. If yes,
+   * descriptor is requested from the backend and `configureContentDescriptor()` is called
+   * to configure it before requesting content. If not, the provider calls
+   * `getDescriptorOverrides()` to get basic configuration and immediately requests
+   * content - that saves a trip to the backend.
    */
   protected shouldConfigureContentDescriptor(): boolean { return true; }
+
+  /**
+   * Called to check if content should be requested even when `keys` is empty. If this
+   * method returns `false`, then content is not requested and this saves a trip
+   * to the backend.
+   */
+  protected shouldRequestContentForEmptyKeyset(): boolean { return false; }
 
   /** Called to check whether the field should be excluded from the descriptor. */
   protected shouldExcludeFromDescriptor(field: Field): boolean { return this.isFieldHidden(field); }
@@ -231,8 +250,23 @@ export class ContentDataProvider implements IContentDataProvider {
   /** Called to check whether the field should be hidden. */
   protected isFieldHidden(_field: Field): boolean { return false; }
 
+  /**
+   * Get the content descriptor overrides.
+   *
+   * **Note:** The method is only called if `shouldConfigureContentDescriptor()` returns `false` -
+   * in that case when requesting content we skip requesting descriptor and instead just pass
+   * overrides.
+   */
+  protected getDescriptorOverrides(): DescriptorOverrides {
+    return {
+      displayType: this.displayType,
+      contentFlags: 0,
+      hiddenFieldNames: [],
+    };
+  }
+
   // tslint:disable-next-line:naming-convention
-  private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
+  private getDefaultContentDescriptor = _.memoize(async (): Promise<Descriptor | undefined> => {
     return Presentation.presentation.getContentDescriptor(this.createRequestOptions(),
       this._displayType, this.keys, this.selectionInfo);
   });
@@ -240,10 +274,14 @@ export class ContentDataProvider implements IContentDataProvider {
   /**
    * Get the content descriptor.
    */
-  public getContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
+  public getContentDescriptor = _.memoize(async (): Promise<Descriptor | undefined> => {
+    if (!this.shouldRequestContentForEmptyKeyset() && this.keys.isEmpty)
+      return undefined;
+
     const descriptor = await this.getDefaultContentDescriptor();
     if (!descriptor)
       return undefined;
+
     return this.configureContentDescriptor(descriptor);
   });
 
@@ -262,7 +300,7 @@ export class ContentDataProvider implements IContentDataProvider {
    * Get the content.
    * @param pageOptions Paging options.
    */
-  public async getContent(pageOptions?: PageOptions): Promise<Readonly<Content> | undefined> {
+  public async getContent(pageOptions?: PageOptions): Promise<Content | undefined> {
     const contentAndSize = await this._getContentAndSize(pageOptions);
     if (undefined !== contentAndSize)
       return contentAndSize.content;
@@ -270,23 +308,29 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   private _getContentAndSize = _.memoize(async (pageOptions?: PageOptions) => {
-    let descriptorOrDisplayType;
+    if (!this.shouldRequestContentForEmptyKeyset() && this.keys.isEmpty)
+      return undefined;
+
+    let descriptorOrOverrides;
     if (this.shouldConfigureContentDescriptor()) {
-      descriptorOrDisplayType = await this.getContentDescriptor();
-      if (!descriptorOrDisplayType)
+      descriptorOrOverrides = await this.getContentDescriptor();
+      if (!descriptorOrOverrides)
         return undefined;
     } else {
-      descriptorOrDisplayType = this.displayType;
+      descriptorOrOverrides = this.getDescriptorOverrides();
     }
 
     const requestSize = undefined !== pageOptions && 0 === pageOptions.start && undefined !== pageOptions.size;
     const options = { ...this.createRequestOptions(), paging: pageOptions };
     if (requestSize)
-      return Presentation.presentation.getContentAndSize(options, descriptorOrDisplayType, this.keys);
+      return Presentation.presentation.getContentAndSize(options, descriptorOrOverrides, this.keys);
 
-    const responseContent: Content = await Presentation.presentation.getContent(options, descriptorOrDisplayType, this.keys);
-    const contentSize = undefined === pageOptions || undefined === pageOptions.size ? responseContent.contentSet.length : undefined;
-    return { content: responseContent, size: contentSize };
+    const content = await Presentation.presentation.getContent(options, descriptorOrOverrides, this.keys);
+    if (!content)
+      return undefined;
+
+    const size = (undefined === pageOptions || undefined === pageOptions.size) ? content.contentSet.length : undefined;
+    return { content, size };
   }, createKeyForPageOptions);
 }
 

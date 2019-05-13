@@ -5,9 +5,11 @@
 /** @module Common */
 
 import * as React from "react";
-import Timer from "../utils/Timer";
+import { Timer } from "../utils/Timer";
 
-/** Properties for [[withTimeout]] React higher-order component */
+/** Properties for [[withTimeout]] React higher-order component
+ * @public
+ */
 export interface WithTimeoutProps {
   /** Timeout duration in milliseconds */
   timeout: number;
@@ -15,12 +17,14 @@ export interface WithTimeoutProps {
   onTimeout?: () => void;
 }
 
-/** withTimeout is a React higher-order component that adds timeout support. */
+/** withTimeout is a React higher-order component that adds timeout support.
+ * @public
+ */
 export const withTimeout = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
 ) => {
-  return class WithTimeout extends React.Component<ComponentProps & WithTimeoutProps> {
+  return class WithTimeout extends React.PureComponent<ComponentProps & WithTimeoutProps> {
     public timer: Timer = new Timer(0);
 
     public componentDidMount(): void {
@@ -52,5 +56,3 @@ export const withTimeout = <ComponentProps extends {}>(
     }
   };
 };
-
-export default withTimeout;

@@ -31,6 +31,7 @@ $buic-background-tab-inactive:            var(--buic-background-tab-inactive);
 $buic-background-toolbutton-inactive:     var(--buic-background-toolbutton-inactive);
 $buic-background-context-menu:            var(--buic-background-context-menu);
 $buic-background-panel:                   var(--buic-background-panel);
+$buic-background-placeholder:             var(--buic-background-placeholder);
 
 $buic-background-tab-active:              var(--buic-background-tab-active);
 $buic-background-dialog:                  var(--buic-background-dialog);
@@ -47,10 +48,11 @@ $buic-foreground-disabled:                var(--buic-foreground-disabled);
 $buic-foreground-muted:                   var(--buic-foreground-muted);
 $buic-foreground-activehover:             var(--buic-foreground-activehover);
 
-$buic-text-color:                         var(--buic-foreground-body);
-$buic-text-color-disabled:                var(--buic-foreground-disabled);
-$buic-text-color-muted:                   var(--buic-foreground-muted);
-$buic-text-color-reverse:                 var(--buic-foreground-body-reverse);
+$buic-text-color:                         var(--buic-foreground-body);          // 0.85 opacity
+$buic-text-color-disabled:                var(--buic-foreground-disabled);      // 0.44 opacity (Note: 0.25 is too much)
+$buic-text-color-muted:                   var(--buic-foreground-muted);         // 0.55 opacity
+$buic-text-color-reverse:                 var(--buic-foreground-body-reverse);  // 0.85 opacity
+$buic-text-color-hover:                   var(--buic-foreground-activehover);   // 1.00 opacity
 
 $buic-icon-color:                         var(--buic-foreground-body);
 $buic-icon-color-disabled:                var(--buic-foreground-disabled);
@@ -91,3 +93,6 @@ $buic-accessory-success-tint:             var(--buic-accessory-success-tint);
 $buic-accessory-alert-tint:               var(--buic-accessory-alert-tint);
 $buic-accessory-warning-tint:             var(--buic-accessory-warning-tint);
 $buic-foreground-mediumgray:              var(--buic-foreground-mediumgray);
+
+/** Widget Opacity */
+$buic-widget-opacity:                     var(--buic-widget-opacity, 0.90);

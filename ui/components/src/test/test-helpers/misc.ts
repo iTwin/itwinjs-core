@@ -44,6 +44,7 @@ export const waitForUpdate = async (action: () => any, spy: sinon.SinonSpy, coun
   }, { timeout, interval: 1 });
 };
 
+/** Creates Promise */
 export class ResolvablePromise<T> implements PromiseLike<T> {
   private _wrapped: Promise<T>;
   private _resolve!: (value: T) => void;

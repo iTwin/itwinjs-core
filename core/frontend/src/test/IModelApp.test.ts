@@ -9,7 +9,7 @@ import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { RotateViewTool, PanViewTool } from "../tools/ViewTool";
 import { MockRender } from "../render/MockRender";
-import { IModelApp } from "../IModelApp";
+import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { WebGLTestContext } from "./utils/WebGLTestContext";
 
@@ -46,8 +46,11 @@ class TestSelectTool extends SelectionTool { }
 class TestApp extends MockRender.App {
   public static testNamespace?: I18NNamespace;
 
-  protected static onStartup() {
-    IModelApp.accuDraw = new TestAccuDraw();
+  public static startup(opts?: IModelAppOptions) {
+    opts = opts ? opts : {};
+    opts.accuDraw = new TestAccuDraw();
+    opts.i18n = this.supplyI18NOptions();
+    MockRender.App.startup(opts);
 
     this.testNamespace = IModelApp.i18n.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);
@@ -57,15 +60,11 @@ class TestApp extends MockRender.App {
     TestIdleTool.register();
     TestRotateTool.register();
     TestSelectTool.register();
+    IModelApp.toolAdmin.onInitialized();
 
     // register an anonymous class with the toolId "Null.Tool"
     const testNull = class extends Tool { public static toolId = "Null.Tool"; public run() { testVal1 = "fromNullTool"; return true; } };
     testNull.register(this.testNamespace);
-
-    IModelApp.features.setGate("feature2.a", true);
-    IModelApp.features.setGate("feature2.b", false);
-    IModelApp.features.setGate("feature5.val.str1", "string1");
-    IModelApp.features.setGate("feature5.val.doNot", false);
   }
 
   protected static supplyI18NOptions() { return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` }; }
@@ -85,27 +84,8 @@ describe("IModelApp", () => {
     assert.isTrue(IModelApp.tools.run("View.Pan"), "run view pan");
     assert.instanceOf(IModelApp.toolAdmin.viewTool, PanViewTool, "pan tool is active");
 
-    assert.isUndefined(IModelApp.features.check("feature1.test1"));
-    assert.isTrue(IModelApp.features.check("feature2.a"));
-    assert.isFalse(IModelApp.features.check("feature2.b"));
-    assert.isFalse(IModelApp.features.check("feature5.val.doNot"));
-    assert.equal(IModelApp.features.check("feature5.val.str1"), "string1");
-    const feature5 = IModelApp.features.check("feature5.val.str1");
-    assert.equal(feature5, "string1");
-
     assert.isTrue(IModelApp.tools.run("Null.Tool"), "run null");
     assert.equal(testVal1, "fromNullTool");
-
-    let monitorCalls = 0;
-    IModelApp.features.addMonitor("feat2", (_val) => ++monitorCalls);
-    IModelApp.features.setGate("feat2", false);
-    IModelApp.features.setGate("feat3.sub1.val.a", true);
-    IModelApp.features.setGate("feat3.sub1.val.b.yes", true);
-    assert.isFalse(IModelApp.features.check("feat2"));
-    assert.equal(IModelApp.features.check("feat3.sub1.notHere", "hello"), "hello", "undefined features should use default value");
-    assert.isTrue(IModelApp.features.check("feat3.sub1.val.a"));
-    assert.isTrue(IModelApp.features.check("feat3.sub1.val.b.yes"));
-    assert.equal(1, monitorCalls);
   });
 
   it("Should get localized keyin, flyover, and description for tools", async () => {
@@ -151,7 +131,7 @@ describe("IModelApp", () => {
 
   // Still failing to acquire WebGLRenderingContext on CI server.
   it("Should support WebGL", () => {
-    expect(TestApp.hasRenderSystem).to.be.true;
+    expect(IModelApp.hasRenderSystem).to.be.true;
     const canvas = WebGLTestContext.createCanvas();
     expect(canvas).not.to.be.undefined;
     if (undefined !== canvas) {
@@ -162,7 +142,8 @@ describe("IModelApp", () => {
   });
 
   it("Should create mock render system without WebGL", () => {
-    expect(TestApp.hasRenderSystem).to.be.true;
-    expect(TestApp.renderSystem).instanceof(MockRender.System);
+    expect(IModelApp.hasRenderSystem).to.be.true;
+    expect(IModelApp.renderSystem).instanceof(MockRender.System);
   });
+
 });

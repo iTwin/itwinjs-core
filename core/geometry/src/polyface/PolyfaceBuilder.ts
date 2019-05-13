@@ -36,7 +36,7 @@ import { StrokeCountSection } from "../curve/Query/StrokeCountChain";
 import { ParityRegion } from "../curve/ParityRegion";
 import { Range1d } from "../geometry3d/Range";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { CylindricalQuery } from "../curve/Query/CylindricalRange";
+import { CylindricalRangeQuery } from "../curve/Query/CylindricalRange";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { BilinearPatch } from "../geometry3d/BilinearPatch";
@@ -136,6 +136,7 @@ class FacetSector {
 }
 /**
  * UVSurfaceOps is a class containing static methods operating on UVSurface objects.
+ * @public
  */
 export class UVSurfaceOps {
   private constructor() { }  // private constructor -- no instances.
@@ -187,54 +188,53 @@ export class UVSurfaceOps {
  *
  * * Simple construction for strongly typed GeometryQuery objects:
  *
- * ** Create a builder with `builder = PolyfaceBuilder.create()`
- * ** Add GeemotryQuery objects:
+ *  * Create a builder with `builder = PolyfaceBuilder.create()`
+ *  * Add GeemotryQuery objects:
  *
- * *** `builder.addGeometryQuery(g: GeometryQuery)`
- * *** `builder.addCone(cone: Cone)`
- * *** `builder.addTorusPipe(surface: TorusPipe)`
- * *** `builder.addLinearSweepLineStrings(surface: LinearSweep)`
- * *** `builder.addRotationalSweep(surface: RotatationalSweep)`
- * *** `builder.addLinearSweep(surface: LinearSweep)`
- * *** `builder.addRuledSweep(surface: RuledSweep)`
- * *** `builder.addSphere(sphere: Sphere)`
- * *** `builder.addBox(box: Box)`
- * *** `buidler.addIndexedPolyface(polyface)`
- * **  Extract with `builder.claimPolyface (true)`
+ *    * `builder.addGeometryQuery(g: GeometryQuery)`
+ *    * `builder.addCone(cone: Cone)`
+ *    * `builder.addTorusPipe(surface: TorusPipe)`
+ *    * `builder.addLinearSweepLineStrings(surface: LinearSweep)`
+ *    * `builder.addRotationalSweep(surface: RotatationalSweep)`
+ *    * `builder.addLinearSweep(surface: LinearSweep)`
+ *    * `builder.addRuledSweep(surface: RuledSweep)`
+ *    * `builder.addSphere(sphere: Sphere)`
+ *    * `builder.addBox(box: Box)`
+ *    * `buidler.addIndexedPolyface(polyface)`
+ *  *  Extract with `builder.claimPolyface (true)`
  *
  * * Simple construction for ephemeral constructive data:
  *
- * ** Create a builder with `builder = PolyfaceBuilder.create()`
- * ** Add from fragmentary data:
- *
- * *** `builder.addBetweenLineStrings (linestringA, linestringB, addClosure)`
- * *** `builder.addBetweenTransformedLineStrings (curves, transformA, transformB, addClosure)`
- * *** `builder.addBetweenStroked (curveA, curveB)`
- * *** `builder.addLinearSweepLineStrigns (contour, vector)`
- * *** `builder.addPolygon (points, numPointsToUse)`
- * *** `builder.addTransformedUnitBox (transform)`
- * *** `builder.addTriangleFan (conePoint, linestring, toggleOrientation)`
- * *** `builder.addTrianglesInUnchedkedPolygon (linestring, toggle)`
- * *** `builder.addUVGrid(surface,numU, numV, createFanInCaps)`
- * *** `builder.addGraph(Graph, acceptFaceFunction)`
- * **  Extract with `builder.claimPolyface(true)`
+ *  * Create a builder with `builder = PolyfaceBuilder.create()`
+ *  * Add from fragmentary data:
+ *    * `builder.addBetweenLineStrings (linestringA, linestringB, addClosure)`
+ *    * `builder.addBetweenTransformedLineStrings (curves, transformA, transformB, addClosure)`
+ *    * `builder.addBetweenStroked (curveA, curveB)`
+ *    * `builder.addLinearSweepLineStrigns (contour, vector)`
+ *    * `builder.addPolygon (points, numPointsToUse)`
+ *    * `builder.addTransformedUnitBox (transform)`
+ *    * `builder.addTriangleFan (conePoint, linestring, toggleOrientation)`
+ *    * `builder.addTrianglesInUnchedkedPolygon (linestring, toggle)`
+ *    * `builder.addUVGrid(surface,numU, numV, createFanInCaps)`
+ *    * `builder.addGraph(Graph, acceptFaceFunction)`
+ *  *  Extract with `builder.claimPolyface(true)`
  *
  * * Low-level detail construction -- direct use of indices
- *
- * ** Create a builder with `builder = PolyfaceBuilder.create()`
- * ** Add GeometryQuery objects
- *
- * *** `builder.findOrAddPoint(point)`
- * *** `builder.findOrAddPointInLineString (linestring, index)`
- * *** `builder.findorAddTransformedPointInLineString(linestring, index, transform)`
- * *** `builder.findOrAddPointXYZ(x,y,z)`
- * *** `builder.addTriangle (point0, point1, point2)`
- * *** `builder.addQuad (point0, point1, point2, point3)`
- * *** `builder.addOneBasedPointIndex (index)`
+ *  * Create a builder with `builder = PolyfaceBuilder.create()`
+ *  * Add GeometryQuery objects
+ *    * `builder.findOrAddPoint(point)`
+ *    * `builder.findOrAddPointInLineString (linestring, index)`
+ *    * `builder.findorAddTransformedPointInLineString(linestring, index, transform)`
+ *    * `builder.findOrAddPointXYZ(x,y,z)`
+ *    * `builder.addTriangle (point0, point1, point2)`
+ *    * `builder.addQuad (point0, point1, point2, point3)`
+ *    * `builder.addOneBasedPointIndex (index)`
+ * @public
  */
 export class PolyfaceBuilder extends NullGeometryHandler {
   private _polyface: IndexedPolyface;
   private _options: StrokeOptions;
+  /** return (pointer to) the `StrokeOptions` in use by the builder. */
   public get options(): StrokeOptions { return this._options; }
   // State data that affects the current construction.
   private _reversed: boolean;
@@ -244,6 +244,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this._polyface.data.compress();
     return this._polyface;
   }
+  /** Toggle (reverse) the flag controlling orientation flips for newly added facets. */
   public toggleReversedFacetFlag() { this._reversed = !this._reversed; }
 
   private constructor(options?: StrokeOptions) {
@@ -253,7 +254,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this._options.needParams, this._options.needColors);
     this._reversed = false;
   }
-
+  /**
+   * Create a builder with given StrokeOptions
+   * @param options StrokeOptions (captured)
+   */
   public static create(options?: StrokeOptions): PolyfaceBuilder {
     return new PolyfaceBuilder(options);
   }
@@ -451,7 +455,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Optionally provide params and the plane normal, otherwise they will be calculated without reference data.
    * Optionally mark this quad as the last piece of a face in this polyface.
    */
-  public addQuadFacet(points: Point3d[], params?: Point2d[], normals?: Vector3d[]) {
+  public addQuadFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]) {
+    if (points instanceof GrowableXYZArray)
+    points = points.getPoint3dArray ();
     // If params and/or normals are needed, calculate them first
     const needParams = this.options.needParams;
     const needNormals = this.options.needNormals;
@@ -590,10 +596,22 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Add a triangle to the polyface given its points in order around the edges.
    * * Optionally provide params and triangle normals, otherwise they will be calculated without reference data.
    */
-  public addTriangleFacet(points: Point3d[], params?: Point2d[], normals?: Vector3d[]) {
+  public addTriangleFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]) {
+    if (points.length < 3)
+      return;
     let idx0: number;
     let idx1: number;
     let idx2: number;
+    let point0, point1, point2;
+    if (points instanceof GrowableXYZArray) {
+      point0 = points.getPoint3dAtCheckedPointIndex(0)!;
+      point1 = points.getPoint3dAtCheckedPointIndex(1)!;
+      point2 = points.getPoint3dAtCheckedPointIndex(2)!;
+    } else {
+      point0 = points[0];
+      point1 = points[1];
+      point2 = points[2];
+    }
 
     // Add params if needed
     if (this._options.needParams) {
@@ -602,10 +620,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         idx1 = this._polyface.addParam(params[1]);
         idx2 = this._polyface.addParam(params[2]);
       } else {  // Compute params
-        const paramTransform = this.getUVTransformForTriangleFacet(points[0], points[1], points[2]);
-        idx0 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(points[0]) : undefined));
-        idx1 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(points[1]) : undefined));
-        idx2 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(points[2]) : undefined));
+        const paramTransform = this.getUVTransformForTriangleFacet(point0, point1, point2);
+        idx0 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(point0) : undefined));
+        idx1 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(point1) : undefined));
+        idx2 = this._polyface.addParam(Point2d.createFrom(paramTransform ? paramTransform.multiplyPoint3d(point1) : undefined));
       }
       this.addIndexedTriangleParamIndexes(idx0, idx1, idx2);
     }
@@ -617,7 +635,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         idx1 = this._polyface.addNormal(normals[1]);
         idx2 = this._polyface.addNormal(normals[2]);
       } else {  // Compute normals
-        const normal = this.getNormalForTriangularFacet(points[0], points[1], points[2]);
+        const normal = this.getNormalForTriangularFacet(point0, point1, point2);
         idx0 = this._polyface.addNormal(normal);
         idx1 = this._polyface.addNormal(normal);
         idx2 = this._polyface.addNormal(normal);
@@ -626,9 +644,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
 
     // Add point and point indexes last (terminates the facet)
-    idx0 = this.findOrAddPoint(points[0]);
-    idx1 = this.findOrAddPoint(points[1]);
-    idx2 = this.findOrAddPoint(points[2]);
+    idx0 = this.findOrAddPoint(point0);
+    idx1 = this.findOrAddPoint(point1);
+    idx2 = this.findOrAddPoint(point2);
     this.addIndexedTrianglePointIndexes(idx0, idx1, idx2);
   }
 
@@ -959,17 +977,19 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       }
     }
   }
-
+  /**
+   * Construct facets for a rotational sweep.
+   */
   public addRotationalSweep(surface: RotationalSweep) {
     const contour = surface.getCurves();
     const section0 = StrokeCountSection.createForParityRegionOrChain(contour, this._options);
     const baseStrokes = section0.getStrokes();
 
     const axis = surface.cloneAxisRay();
-    const perpendicularVector = CylindricalQuery.computeMaxVectorFromRay(axis, baseStrokes);
+    const perpendicularVector = CylindricalRangeQuery.computeMaxVectorFromRay(axis, baseStrokes);
     const swingVector = axis.direction.crossProduct(perpendicularVector);
     if (this._options.needNormals)
-      CylindricalQuery.buildRotationalNormalsInLineStrings(baseStrokes, axis, swingVector);
+      CylindricalRangeQuery.buildRotationalNormalsInLineStrings(baseStrokes, axis, swingVector);
     const maxDistance = perpendicularVector.magnitude();
     const maxPath = Math.abs(maxDistance * surface.getSweep().radians);
     let numStep = StrokeOptions.applyAngleTol(this._options, 1, surface.getSweep().radians, undefined);
@@ -1160,7 +1180,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
     return true;
   }
-
+  /**
+   * @param sphere Sphere to facet.
+   */
   public addSphere(sphere: Sphere, strokeCount?: number) {
     const numStrokeTheta = strokeCount ? strokeCount : this._options.defaultCircleStrokes;
     const numStrokePhi = Geometry.clampToStartEnd(numStrokeTheta * sphere.latitudeSweepFraction, 1, Math.ceil(numStrokeTheta * 0.5));
@@ -1182,7 +1204,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.endFace();
     }
   }
-
+  /**
+   * @param box `Box` to facet.
+   */
   public addBox(box: Box) {
     const corners = box.getCorners();
     const xLength = Geometry.maxXY(box.getBaseX(), box.getBaseX());
@@ -1263,14 +1287,21 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return this._polyface.setNewFaceData();
   }
 
-  // -------------------- double dispatch methods ---------------------------
+  /** Double dispatch handler for Cone */
   public handleCone(g: Cone): any { return this.addCone(g); }
+  /** Double dispatch handler for TorusPipe */
   public handleTorusPipe(g: TorusPipe): any { return this.addTorusPipe(g); }
+  /** Double dispatch handler for Sphere */
   public handleSphere(g: Sphere): any { return this.addSphere(g); }
+  /** Double dispatch handler for Box */
   public handleBox(g: Box): any { return this.addBox(g); }
+  /** Double dispatch handler for LinearSweep */
   public handleLinearSweep(g: LinearSweep): any { return this.addLinearSweep(g); }
+  /** Double dispatch handler for RotationalSweep */
   public handleRotationalSweep(g: RotationalSweep): any { return this.addRotationalSweep(g); }
+  /** Double dispatch handler for RuledSweep */
   public handleRuledSweep(g: RuledSweep): any { return this.addRuledSweep(g); }
+  /** add facets for a GeometryQuery object.   This is double dispatch through `dispatchToGeometryHandleer(this)` */
   public addGeometryQuery(g: GeometryQuery) { g.dispatchToGeometryHandler(this); }
 
   /**
@@ -1279,6 +1310,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Test each face with f(node) for any node on the face.
    * * For each face that passes, pass its coordinates to the builder.
    * * Rely on the builder's compress step to find common vertex coordinates
+   * @internal
    */
   public addGraph(graph: HalfEdgeGraph, needParams: boolean, acceptFaceFunction: HalfEdgeToBooleanFunction = HalfEdge.testNodeMaskNotExterior) {
     let index = 0;
@@ -1308,9 +1340,42 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         return true;
       });
   }
+  /**
+   *
+   * * For each ndoe in `faces`
+   *  * add all of its vertices to the polyface
+   *  * add point indices to form a new facet.
+   *    * (Note: no normal or param indices are added)
+   *  * terminate the facet
+   * @internal
+   */
+  public addGraphFaces(_graph: HalfEdgeGraph, faces: HalfEdge[]) {
+    let index = 0;
+    for (const seed of faces) {
+      let node = seed;
+      do {
+        index = this.findOrAddPointXYZ(node.x, node.y, node.z);
+        this._polyface.addPointIndex(index);
+        node = node.faceSuccessor;
+      } while (node !== seed);
+      this._polyface.terminateFacet();
+    }
+  }
+  /** Create a polyface containing the faces of a HalfEdgeGraph, with test function to filter faces.
+   * @internal
+   */
   public static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction: HalfEdgeToBooleanFunction = HalfEdge.testNodeMaskNotExterior): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
     builder.addGraph(graph, builder.options.needParams, acceptFaceFunction);
+    builder.endFace();
+    return builder.claimPolyface();
+  }
+  /** Create a polyface containing an array of faces of a HalfEdgeGraph, with test function to filter faces.
+   * @internal
+   */
+  public static graphFacesToPolyface(graph: HalfEdgeGraph, faces: HalfEdge[]): IndexedPolyface {
+    const builder = PolyfaceBuilder.create();
+    builder.addGraphFaces(graph, faces);
     builder.endFace();
     return builder.claimPolyface();
   }

@@ -4,8 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module DragDrop  */
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 
-/** Enum for different DropEffects. */
+/** Enum for different DropEffects.
+ * @beta
+ */
 export enum DropEffects {
   None = 0,
   Copy = 1 << 0,
@@ -13,7 +16,9 @@ export enum DropEffects {
   Link = 1 << 2,
 }
 
-/** Enum for status of current drag/drop item */
+/** Enum for status of current drag/drop item
+ * @beta
+ */
 export enum DropStatus {
   None = 0,
   Ok,
@@ -21,7 +26,9 @@ export enum DropStatus {
   Cancel,
 }
 
-/** Properties and callbacks for the withDragSource Higher-Order Component. */
+/** Properties and callbacks for the withDragSource Higher-Order Component.
+ * @beta
+ */
 export interface DropTargetProps<DragDropObject = any> {
   /**
    * Triggered when item is dropped on wrapped component.
@@ -36,7 +43,9 @@ export interface DropTargetProps<DragDropObject = any> {
   objectTypes?: Array<string | symbol> | (() => Array<string | symbol>);
 }
 
-/** Properties and callbacks for the withDragSource Higher-Order Component. */
+/** Properties and callbacks for the withDragSource Higher-Order Component.
+ * @beta
+ */
 export interface DragSourceProps<DragDropObject = any> {
   /** Triggered when DragSource has begun a drag. */
   onDragSourceBegin?: (data: DragSourceArguments<DragDropObject>) => DragSourceArguments<DragDropObject>;
@@ -58,7 +67,9 @@ export interface DragSourceProps<DragDropObject = any> {
   defaultDragLayer?: React.ComponentType<DragLayerProps<DragDropObject>>;
 }
 
-/** Base DragDropArguments interface, used by both DragSourceArguments and DragTargetArguments. */
+/** Base DragDropArguments interface, used by both DragSourceArguments and DragTargetArguments.
+ * @beta
+ */
 export interface DragDropArguments<DragDropObject = any> {
   /** Arbitrary data being transferred. Actual data structure determined by the return value of the onDragSourceBegin callback. */
   dataObject: DragDropObject;
@@ -103,12 +114,15 @@ export interface DragDropArguments<DragDropObject = any> {
 }
 
 /** Properties for DragLayer components
+ * @beta
  */
-export interface DragLayerProps<DragDropObject = any> {
+export interface DragLayerProps<DragDropObject = any> extends CommonProps {
   args?: DragSourceArguments<DragDropObject>;
 }
 
-/** Interface for arguments supplied to DragSource callbacks, including onDragSourceBegin, and onDragSourceEnd, as well as to the DragLayers as a prop. */
+/** Interface for arguments supplied to DragSource callbacks, including onDragSourceBegin, and onDragSourceEnd, as well as to the DragLayers as a prop.
+ * @beta
+ */
 export interface DragSourceArguments<DragDropObject = any> extends DragDropArguments<DragDropObject> {
   /** Parent object, using the data structure relevant to object being used.
    * Object populated by consumer for use as trickle down arguments.
@@ -117,7 +131,10 @@ export interface DragSourceArguments<DragDropObject = any> extends DragDropArgum
   parentObject?: DragDropObject;
   defaultDragLayer?: React.ComponentType<DragLayerProps<DragDropObject>>;
 }
-/** Interface for arguments supplied to DropTarget callbacks, including onDropTargetOver, onDropTargetDrop, and canDropTargetDrop. */
+
+/** Interface for arguments supplied to DropTarget callbacks, including onDropTargetOver, onDropTargetDrop, and canDropTargetDrop.
+ * @beta
+ */
 export interface DropTargetArguments<DragDropObject = any> extends DragSourceArguments<DragDropObject> {
   /** Object that is being dropped onto, using the data structure relevant to object being used.
    * Object populated by consumer for use as trickle down arguments.

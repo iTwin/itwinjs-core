@@ -13,18 +13,22 @@ import { RowItem, TableDataProvider } from "../TableDataProvider";
 import { TableWrapper, TableWrapperProps } from "./TableWrapper";
 import { DragDropRow } from "./DragDropRow";
 
-/** Properties for the Table's DropTarget. */
+/** Properties for the Table's DropTarget.
+ * @beta
+ */
 export interface TableDropTargetProps<DragDropObject = any> extends DropTargetProps<DragDropObject> {
   /** Used for table components that allow dropping on top of node(as opposed to above or below). */
   canDropOn?: boolean;
 }
 /**
  * Type for DragDrop drag item
+ * @beta
  */
 export type TableDragDropType = {} | RowItem | TableDataProvider;
 
 /**
  * Props that are injected to the HOC component.
+ * @beta
  */
 export interface TableDragDropProps<DragDropObject = any> {
   dragProps?: DragSourceProps<DragDropObject>;
@@ -32,8 +36,8 @@ export interface TableDragDropProps<DragDropObject = any> {
 }
 
 /**
- * A HOC component that adds drag and drop functionality to the supplied
- * table component.
+ * A HOC component that adds drag and drop functionality to the supplied table component.
+ * @beta
  */
 // tslint:disable-next-line: variable-name naming-convention
 export function withTableDragDrop<P extends TableProps, DragDropObject extends TableDragDropType>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableDragDropProps<DragDropObject>> {
@@ -136,4 +140,3 @@ export function withTableDragDrop<P extends TableProps, DragDropObject extends T
 
   };
 }
-export default withTableDragDrop;

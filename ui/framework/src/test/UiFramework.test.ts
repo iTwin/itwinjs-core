@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "./TestUtils";
-import { UiFramework } from "../ui-framework";
+import { UiFramework, ColorTheme } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
+import { Presentation } from "@bentley/presentation-frontend";
+import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 
 describe("UiFramework", () => {
 
@@ -46,4 +48,65 @@ describe("UiFramework", () => {
     TestUtils.terminateUiFramework();
   });
 
+  it("IsUiVisible", async () => {
+    await TestUtils.initializeUiFramework();
+    UiFramework.setIsUiVisible(false);
+    expect(UiFramework.getIsUiVisible()).to.be.false;
+    TestUtils.terminateUiFramework();
+  });
+
+  it("ColorTheme", async () => {
+    await TestUtils.initializeUiFramework();
+    UiFramework.setColorTheme(ColorTheme.Dark);
+    expect(UiFramework.getColorTheme()).to.eq(ColorTheme.Dark);
+    TestUtils.terminateUiFramework();
+  });
+
+  it("test selection scope state data", async () => {
+    await TestUtils.initializeUiFramework();
+    expect(UiFramework.getActiveSelectionScope()).to.equal("element");
+    const scopes = UiFramework.getAvailableSelectionScopes();
+    expect(scopes.length).to.be.greaterThan(0);
+
+    // since "file" is not a valid scope the active scope should still be element
+    UiFramework.setActiveSelectionScope("file");
+    expect(UiFramework.getActiveSelectionScope()).to.equal("element");
+
+    TestUtils.terminateUiFramework();
+  });
+
+  it("WidgetOpacity", async () => {
+    await TestUtils.initializeUiFramework();
+    const testValue = 0.50;
+    UiFramework.setWidgetOpacity(testValue);
+    expect(UiFramework.getWidgetOpacity()).to.eq(testValue);
+    TestUtils.terminateUiFramework();
+  });
+});
+
+// before we can test setting scope to a valid scope id we must make sure Presentation Manager is initialized.
+describe("Requires Presentation", () => {
+  const shutdownIModelApp = () => {
+    if (IModelApp.initialized)
+      IModelApp.shutdown();
+  };
+
+  beforeEach(() => {
+    shutdownIModelApp();
+    NoRenderApp.startup();
+    Presentation.terminate();
+  });
+
+  describe("initialize and setActiveSelectionScope", () => {
+
+    it("creates manager instances", async () => {
+      Presentation.initialize();
+      await TestUtils.initializeUiFramework();
+      UiFramework.setActiveSelectionScope("element");
+      TestUtils.terminateUiFramework();
+
+      Presentation.terminate();
+      shutdownIModelApp();
+    });
+  });
 });

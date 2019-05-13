@@ -187,9 +187,9 @@ export class StrokeCountChain {
     const ls = LineString3d.create();
     if (this.options) {
       if (this.options.needNormals || this.options.needParams) {
-        ls.initializeFractionArray();
-        ls.initializeDerivativeArray();
-        ls.initializeUVParamsArray();
+        ls.ensureEmptyFractions();
+        ls.ensureEmptyDerivatives();
+        ls.ensureEmptyUVParams();
       }
     }
     for (const m of this.maps) {
@@ -234,6 +234,7 @@ export class StrokeCountChain {
  * class `StrokeCountSection`\
  * * contains an array of `StrokeCountChain`.
  * * Hence it is the internal node level of a (1-level-deep) tree of `StrokeCountChain`
+ * @internal
  */
 export class StrokeCountSection {
   public chains: StrokeCountChain[];

@@ -6,27 +6,34 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utilities/Props";
-import "./Zone.scss";
-import { RectangleProps } from "../utilities/Rectangle";
 import { CssProperties } from "../utilities/Css";
+import { RectangleProps } from "../utilities/Rectangle";
+import { CommonProps } from "@bentley/ui-core";
+import "./Zone.scss";
 
-/** Properties of [[Zone]] component. */
+/** Properties of [[Zone]] component.
+ * @beta
+ */
 export interface ZoneProps extends CommonProps {
-  /** Actual bounds of this [[Zone]]. */
+  /** Zone bounds. */
   bounds: RectangleProps;
-  /** Zone content. I.e. available widgets: [[Stacked]], [[Tools]], [[ToolSettings]] */
+  /** Zone content. I.e. [[Stacked]], [[Footer]], [[ToolSettings]], [[ToolSettingsTab]], [[GhostOutline]] */
   children?: React.ReactNode;
+  /** Describes if the zone is in footer mode. */
+  isInFooterMode?: boolean;
+  /** Describes if the zone component is hidden. */
+  isHidden?: boolean;
 }
 
-/**
- * A zone that may contain widgets.
- * @note For status zone (zone 8) [[FooterZone]] component should be used.
+/** Zone component of 9-Zone UI app.
+ * @beta
  */
-export class ZoneComponent extends React.PureComponent<ZoneProps> {
+export class Zone extends React.PureComponent<ZoneProps> {
   public render() {
     const className = classnames(
       "nz-zones-zone",
+      this.props.isInFooterMode && "nz-footer-mode",
+      this.props.isHidden && "nz-hidden",
       this.props.className);
 
     const style: React.CSSProperties = {

@@ -3,83 +3,71 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
+import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ImsUserCredentials } from "../ImsClients";
 import { UserInfo } from "../UserInfo";
-import { TestUsers, UserCredentials } from "./TestConfig";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { TestUsers } from "./TestConfig";
 
 chai.should();
 
 describe("ImsFederatedAuthenticationClient", () => {
-  const actx = new ActivityLoggingContext("");
-  // NOTE: Getting to client at the same time nto going to work  URL for DEV/QA from ims is same
-  // ===========================================================================================
+  const requestContext = new ClientRequestContext();
+  const authorizationClient = new ImsActiveSecureTokenClient();
+
   it("should find the access token with the right credentials (#integration)", async function (this: Mocha.ITestCallbackContext) {
-    const clients: ImsActiveSecureTokenClient[] = [
-      new ImsActiveSecureTokenClient(),
-    ];
-
-    for (const client of clients) {
-      let loginError: any;
-      try {
-        await client.getToken(actx, TestUsers.regular.email, "WrongPassword");
-      } catch (err) {
-        loginError = err;
-      }
-      chai.assert(!!loginError);
-
-      const authToken = await client.getToken(actx, TestUsers.regular.email, TestUsers.regular.password);
-      chai.assert(!!authToken);
-
-      const tokenStr = authToken!.toTokenString();
-      chai.assert(!!tokenStr);
-
-      chai.expect(tokenStr!.startsWith("X509 access_token="));
-      chai.expect(tokenStr!.length > 1000);
-
-      const userInfo: UserInfo | undefined = authToken!.getUserInfo();
-      chai.assert(!!userInfo);
-
-      chai.expect(userInfo!.email!.id.toLowerCase() === TestUsers.regular.email.toLowerCase());
+    let loginError: any;
+    try {
+      await authorizationClient.getToken(requestContext, { email: TestUsers.regular.email, password: "WrongPassword" });
+    } catch (err) {
+      loginError = err;
     }
-  });
+    chai.assert(!!loginError);
 
+    const authToken = await authorizationClient.getToken(requestContext, TestUsers.regular);
+    chai.assert(!!authToken);
+
+    const tokenStr = authToken!.toTokenString();
+    chai.assert(!!tokenStr);
+
+    chai.expect(tokenStr!.startsWith("X509 access_token="));
+    chai.expect(tokenStr!.length > 1000);
+
+    const userInfo: UserInfo | undefined = authToken!.getUserInfo();
+    chai.assert(!!userInfo);
+
+    chai.expect(userInfo!.email!.id.toLowerCase() === TestUsers.regular.email.toLowerCase());
+  });
 });
 
 describe("ImsDelegationSecureTokenClient", () => {
-  const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
-  const actx = new ActivityLoggingContext("");
+  const authorizationClient = new ImsActiveSecureTokenClient();
+  const delegationClient = new ImsDelegationSecureTokenClient();
+  const requestContext = new ClientRequestContext();
 
-  it.skip("should find the delegation token with the right credentials for all test users  (#integration)", async function (this: Mocha.ITestCallbackContext) {
-
-    const clients: ImsDelegationSecureTokenClient[] = [
-      new ImsDelegationSecureTokenClient(),
-    ];
-    const users: UserCredentials[] = [
+  it("should find the delegation token with the right credentials for all test users  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const users: ImsUserCredentials[] = [
       TestUsers.regular,
       TestUsers.manager,
       TestUsers.super,
       TestUsers.superManager,
     ];
 
-    for (const accessClient of clients) {
-      for (const user of users) {
-        const authToken: AuthorizationToken = await authorizationClient.getToken(actx, user.email, user.password);
-        chai.expect(!!authToken);
+    for (const user of users) {
+      const authToken: AuthorizationToken = await authorizationClient.getToken(requestContext, user);
+      chai.expect(!!authToken);
 
-        const accessToken: AccessToken = await accessClient.getToken(actx, authToken);
-        chai.expect(!!accessToken);
+      const accessToken: AccessToken = await delegationClient.getToken(requestContext, authToken);
+      chai.expect(!!accessToken);
 
-        const tokenString = accessToken.toTokenString();
-        chai.expect(!!tokenString);
-        chai.expect(tokenString!.startsWith("Token "));
-        chai.expect(tokenString!.length).is.greaterThan(1000);
+      const tokenString = accessToken.toTokenString();
+      chai.expect(!!tokenString);
+      chai.expect(tokenString!.startsWith("Token "));
+      chai.expect(tokenString!.length).is.greaterThan(1000);
 
-        const roundTrippedTokenString = AccessToken.fromSamlTokenString(tokenString!)!.toTokenString();
-        chai.expect(roundTrippedTokenString).equals(tokenString);
-      }
+      const roundTrippedTokenString = AccessToken.fromSamlTokenString(tokenString!)!.toTokenString();
+      chai.expect(roundTrippedTokenString).equals(tokenString);
     }
-  }); // .timeout(15000);
+  });
 
 });

@@ -2,11 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, IModelToken,
-  IModelWriteRpcInterface, RpcInterface, RpcManager, StandaloneIModelRpcInterface, WipRpcInterface,
+  IModelWriteRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
+  DevToolsRpcInterface,
 } from "@bentley/imodeljs-common";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
 export abstract class TestRpcInterface extends RpcInterface {
   public static version = "1.1.1";
@@ -24,7 +26,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async extractChangeSummaries(_accessToken: AccessToken, _iModelToken: IModelToken, _options: any): Promise<void> {
+  public async extractChangeSummaries(_iModelToken: IModelToken, _options: any): Promise<void> {
     return this.forward(arguments);
   }
 
@@ -35,13 +37,22 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async executeTest(_iModelToken: IModelToken, _testName: string, _params: any): Promise<any> {
     return this.forward(arguments);
   }
+
+  public async reportRequestContext(): Promise<ClientRequestContext> {
+    return this.forward(arguments);
+  }
+
+  public async reportAuthorizedRequestContext(): Promise<AuthorizedClientRequestContext> {
+    return this.forward(arguments);
+  }
 }
 
 export const rpcInterfaces = [
   IModelReadRpcInterface,
   IModelTileRpcInterface,
   IModelWriteRpcInterface,
-  StandaloneIModelRpcInterface,
+  SnapshotIModelRpcInterface,
   TestRpcInterface,
   WipRpcInterface,
+  DevToolsRpcInterface,
 ];

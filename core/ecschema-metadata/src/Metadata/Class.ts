@@ -25,6 +25,7 @@ import { assert } from "@bentley/bentleyjs-core";
 
 /**
  * A common abstract class for all of the ECClass types.
+ * @beta
  */
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
   protected _modifier: ECClassModifier;
@@ -574,6 +575,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
 /**
  * A Typescript class representation of an ECStructClass.
+ * @beta
  */
 export class StructClass extends ECClass {
   public readonly schemaItemType!: SchemaItemType.StructClass; // tslint:disable-line
@@ -584,8 +586,9 @@ export class StructClass extends ECClass {
   }
 }
 
-/** @hidden
+/**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
+ * @internal
  */
 export abstract class MutableClass extends ECClass {
   public abstract addCustomAttribute(customAttribute: CustomAttribute): void;

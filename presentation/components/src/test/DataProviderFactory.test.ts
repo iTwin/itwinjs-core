@@ -87,6 +87,7 @@ describe("DataProvidersFactory", () => {
       expect(dataProvider).to.be.instanceOf(PresentationTableDataProvider);
       expect(dataProvider.rulesetId).to.eq(ruleset.id);
       expect(dataProvider.description).to.eq(description);
+      expect((dataProvider as any).shouldRequestContentForEmptyKeyset()).to.be.true;
     });
 
   });

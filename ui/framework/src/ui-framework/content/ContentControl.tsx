@@ -4,10 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ContentView */
 
+import * as React from "react";
+
 import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "../configurableui/ConfigurableUiControl";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { UiEvent } from "@bentley/ui-core";
+
+/** ControlControl Activated Event Args interface.
+ * @public
+ */
+export interface ContentControlActivatedEventArgs {
+  activeContentControl: ContentControl;
+  oldContentControl?: ContentControl;
+}
+
+/** ContentControl Activated Event class.
+ * @public
+ */
+export class ContentControlActivatedEvent extends UiEvent<ContentControlActivatedEventArgs> { }
 
 /** The base class for Frontstage content controls.
+ * @public
  */
 export class ContentControl extends ConfigurableUiControl {
   private _reactElement: React.ReactNode;
@@ -46,5 +63,3 @@ export class ContentControl extends ConfigurableUiControl {
     return "";
   }
 }
-
-export default ContentControl;

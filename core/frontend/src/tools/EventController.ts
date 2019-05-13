@@ -7,12 +7,10 @@
 import { ScreenViewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 
-// tslint:disable:no-console
-
 /**
  * An EventController maps user input events from the canvas of a Viewport to the ToolAdmin so that tools can process them.
- * Viewports are assigned an EventController when they are registered with ViewManager.addViewport, and they are destroyed with
- * ViewManager.dropViewport.
+ * Viewports are assigned an EventController when they are registered with ViewManager.addViewport and they are destroyed with ViewManager.dropViewport.
+ * @public
  */
 export class EventController {
   private readonly _removals: VoidFunction[] = [];

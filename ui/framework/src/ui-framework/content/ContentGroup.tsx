@@ -4,54 +4,31 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ContentView */
 
+import * as React from "react";
+
 import { ContentControl } from "./ContentControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { StandardViewId } from "@bentley/imodeljs-frontend";
 
-// -----------------------------------------------------------------------------
-// ContentGroupDef and associated enums & interfaces
-// -----------------------------------------------------------------------------
-
-/** Enumeration for the iModel view class */
-export enum ViewClass {
-  Drawing,
-  Sheet,
-  Orthographic,
-  Camera,
-}
-
-/** Interface for the definition of a color */
-export interface ColorDef {
-  r: number;
-  g: number;
-  b: number;
-  a: number;
-}
-
-/** Interface for the definition of a view specification */
-export interface ViewSpecDef {
-  viewDefinitionClass: ViewClass;
-  viewRotation: StandardViewId;
-}
-
-/** Properties for content displayed in a content view */
+/** Properties for content displayed in a content view
+ * @public
+ */
 export interface ContentProps {
+  /** An optional id for the Content View */
   id?: string;
+  /** The class name or [[ConfigurableUiControlConstructor]] of the content control */
   classId: string | ConfigurableUiControlConstructor;
-
-  featureId?: string;
-  sourceFile?: string;
-
-  backgroundColor?: ColorDef;
-  defaultViewSpec?: ViewSpecDef;
-
+  /** Optional application data passed down the the Content View */
   applicationData?: any;
 }
 
-/** Properties for a [[ContentGroup]] */
+/** Properties for a [[ContentGroup]]
+ * @public
+ */
 export interface ContentGroupProps {
+  /** An optional id for the [[ContentGroup]] */
   id?: string;
+  /** A collection of [[ContentProps]], one for each content view */
   contents: ContentProps[];
 }
 
@@ -59,7 +36,8 @@ export interface ContentGroupProps {
 // ContentGroup class
 // -----------------------------------------------------------------------------
 
-/** ContentGroup class. ContentGroups define content displayed in content views that are laid out using a [ContentLayout].
+/** ContentGroup class. ContentGroups define content displayed in content views that are laid out using a [[ContentLayout]].
+ * @public
  */
 export class ContentGroup {
   private static _sId = 0;
@@ -90,21 +68,26 @@ export class ContentGroup {
     let contentControl: ContentControl | undefined;
 
     if (!this._contentControls.get(id)) {
+      let usedClassId: string = "";
+
       if (typeof contentProps.classId === "string") {
         if (!this._contentControls.get(id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
           contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData) as ContentControl;
-          if (contentControl.getType() !== ConfigurableUiControlType.Content && contentControl.getType() !== ConfigurableUiControlType.Viewport) {
-            throw Error("ContentGroup.getContentControl error: classId '" + contentProps.classId + "' is registered to a control that is NOT a ContentControl");
-          }
-          contentControl.initialize();
+          usedClassId = contentProps.classId;
         }
       } else {
         const info = new ConfigurableCreateInfo(contentProps.classId.name, id, id);
         contentControl = new contentProps.classId(info, contentProps.applicationData) as ContentControl;
+        usedClassId = contentProps.classId.name;
       }
 
-      if (contentControl)
+      if (contentControl) {
+        if (contentControl.getType() !== ConfigurableUiControlType.Content && contentControl.getType() !== ConfigurableUiControlType.Viewport) {
+          throw Error("ContentGroup.getContentControl error: '" + usedClassId + "' is NOT a ContentControl or ViewportContentControl");
+        }
+        contentControl.initialize();
         this._contentControls.set(id, contentControl);
+      }
     }
 
     return this._contentControls.get(id);
@@ -115,7 +98,7 @@ export class ContentGroup {
 
     this._contentSetMap.clear();
 
-    this.contentPropsList.map((contentProps: ContentProps, index: number) => {
+    this.contentPropsList.forEach((contentProps: ContentProps, index: number) => {
       const control = this.getContentControl(contentProps, index);
       if (control) {
         contentNodes.push(control.reactElement);
@@ -127,13 +110,16 @@ export class ContentGroup {
   }
 
   public getControlFromElement(node: React.ReactNode): ContentControl | undefined {
+    if (this._contentSetMap.size === 0)
+      this.getContentNodes();
+
     return this._contentSetMap.get(node);
   }
 
   public getContentControls(): ContentControl[] {
     const contentControls: ContentControl[] = new Array<ContentControl>();
 
-    this.contentPropsList.map((contentProps: ContentProps, index: number) => {
+    this.contentPropsList.forEach((contentProps: ContentProps, index: number) => {
       const control = this.getContentControl(contentProps, index);
       if (control) {
         contentControls.push(control);
@@ -163,6 +149,7 @@ export class ContentGroup {
 // -----------------------------------------------------------------------------
 
 /** ContentGroup Manager class.
+ * @public
  */
 export class ContentGroupManager {
   private static _groups: Map<string, ContentGroup> = new Map<string, ContentGroup>();

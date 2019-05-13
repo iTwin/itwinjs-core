@@ -5,22 +5,22 @@
  @import "@bentley/ui-core/lib/ui-core/index";
 
  $breadcrumb-edge: 2 * ($uicore-inputs-padding-bordered + $uicore-inputs-margin);
- .breadcrumb {
+ .components-breadcrumb {
    flex-shrink: 0;
    display: flex;
    flex-direction: column;
 
-   > .breadcrumb-head {
+   > .components-breadcrumb-head {
      position: relative;
-     .breadcrumb-input-root {
-       > .breadcrumb-input {
+     .components-breadcrumb-input-root {
+       > .components-breadcrumb-input {
          @include uicore-inputs-input;
 
          width: calc(100% - #{$breadcrumb-edge});
          height: $uicore-line-height;
        }
 
-       > .breadcrumb-close {
+       > .components-breadcrumb-close {
          position: absolute;
          top: 0px;
          right: 0px;
@@ -51,14 +51,14 @@
          }
        }
      }
-     .breadcrumb-dropdown {
+     .components-breadcrumb-dropdown {
        @include uicore-inputs-input;
 
        display: flex;
        width: calc(100% - #{$breadcrumb-edge});
        background-color: $buic-background-control;
 
-       > .breadcrumb-up-dir {
+       > .components-breadcrumb-up-dir {
          height: $uicore-line-height;
          width: $uicore-line-height;
          flex-shrink: 0;
@@ -81,9 +81,9 @@
            }
          }
        }
-       .breadcrumb-crumb-list {
+       .components-breadcrumb-crumb-list {
          display: flex;
-         .breadcrumb-split-button {
+         .components-breadcrumb-split-button {
            padding: 0;
            display: flex;
            .split-button-arrow-icon {
@@ -111,7 +111,7 @@
          }
        }
 
-       .breadcrumb-drop-target {
+       .components-breadcrumb-drop-target {
          border-radius: $uicore-border-radius;
          &.hover {
            background-color: $buic-row-hover;
@@ -121,7 +121,7 @@
          }
        }
 
-       .breadcrumb-end-node {
+       .components-breadcrumb-end-node {
          @include uicore-text-block;
 
          margin: 0;
@@ -139,14 +139,14 @@
        }
      }
 
-     .breadcrumb-selected {
+     .components-breadcrumb-selected {
        font-weight: bold;
      }
    }
  }
 
-.breadcrumb:not(.background) {
-  .breadcrumb-dropdown {
+.components-breadcrumb:not(.background) {
+  .components-breadcrumb-dropdown {
     border: initial;
     box-shadow: initial;
     background-color: initial;
@@ -156,7 +156,7 @@
   }
 }
 
-.breadcrumb-details {
+.components-breadcrumb-details {
   &:focus {
     outline: 0;
   }

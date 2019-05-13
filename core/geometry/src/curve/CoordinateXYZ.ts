@@ -10,7 +10,9 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 
 import { GeometryQuery } from "./GeometryQuery";
 
-/** A Coordinate is a persistable Point3d */
+/** A Coordinate is a persistable Point3d
+ * @public
+ */
 export class CoordinateXYZ extends GeometryQuery {
   private _xyz: Point3d;
   public get point() { return this._xyz; }
@@ -21,12 +23,14 @@ export class CoordinateXYZ extends GeometryQuery {
     super();
     this._xyz = xyz;
   }
+  /** Create a new CoordinateXYZ */
   public static create(point: Point3d): CoordinateXYZ {
     return new CoordinateXYZ(point.clone());
   }
   /** return the range of the point */
   public range(): Range3d { return Range3d.create(this._xyz); }
 
+  /** extend `rangeToExtend` to include this point (optionally transformed) */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     if (transform)
       rangeToExtend.extendTransformedXYZ(transform, this._xyz.x, this._xyz.y, this._xyz.z);
@@ -68,7 +72,7 @@ export class CoordinateXYZ extends GeometryQuery {
   public isAlmostEqual(other: GeometryQuery): boolean {
     return (other instanceof CoordinateXYZ) && this._xyz.isAlmostEqual(other._xyz);
   }
-
+/** Second step of double dispatch:  call `handler.handleCoordinateXYZ(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleCoordinateXYZ(this);
   }

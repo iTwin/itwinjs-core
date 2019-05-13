@@ -10,6 +10,7 @@ import { TypeConverterManager } from "./TypeConverterManager";
 
 /**
  * Enum Type Converter.
+ * @public
  */
 export class EnumTypeConverter extends TypeConverter {
   public convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Enum) {

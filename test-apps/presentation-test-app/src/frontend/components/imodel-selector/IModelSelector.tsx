@@ -35,7 +35,7 @@ export default class IModelSelector extends React.Component<Props, State> {
   private onImodelSelected = async (e: any) => {
     const imodelPath = e.target.value;
     if (MyAppFrontend.iModel) {
-      await MyAppFrontend.iModel.closeStandalone();
+      await MyAppFrontend.iModel.closeSnapshot();
     }
 
     let imodel: IModelConnection | undefined;

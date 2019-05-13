@@ -39,15 +39,11 @@ Once you have a Bentley User account, you will need to register the application 
 
 There are two types of apps you can register:
 
-[Browser Application](../learning/app.md/#interactive-apps)<br/>
-Our sample is called "Simple Viewer App" which can:
-- Embed an iModel.js viewport into your application to display graphical data.
-- Browse iModel catalog and view element properties.
+[Interactive Application](../learning/app.md/#interactive-apps)<br/>
+An interactive application obtains information from an iModel and presents that information in a user interface.
 
 [Agent Application](../learning/app.md/#agents-and-services)<br/>
-Our sample is called "iModel Query Agent" which can:
-- Listen to changes made to an iModel on the iModelHub.
-- Construct a 'Change Summary' of useful information.
+iModel agents and services are apps that have no interactive user interface.
 
 ## 4. Create a Sample Project
 Once you have a registered application, you will need content to work with. To get you started, Bentley can supply some example content using our “iModel Testdrive” organization. From the registration page you can create a new project and give access to other developers.
@@ -61,7 +57,14 @@ _Note: The “iModel Testdrive” organization is intended for developer testing
 The Github repositories for the applications described in step 3.
 
 [Simple Viewer App](https://github.com/imodeljs/simple-viewer-app)<br/>
-[iModel Query Agent](https://github.com/imodeljs/imodel-query-agent)
+An example of an *interactive application* which can:
+- Embed an iModel.js viewport into your application to display graphical data.
+- Browse iModel catalog and view element properties.
+
+[iModel Query Agent](https://github.com/imodeljs/imodel-query-agent)<br/>
+An example of an *agent application* which can:
+- Listen to changes made to an iModel on the iModelHub.
+- Construct a 'Change Summary' of useful information.
 
 <br/>
 <br/>

@@ -9,17 +9,15 @@ import { connect } from "react-redux";
 
 import { SnapMode } from "@bentley/imodeljs-frontend";
 import { ConfigurableUiActions } from "../configurableui/state";
-import { StatusBarFieldId, IStatusBar } from "../widgets/StatusBarWidgetControl";
+import { StatusBarFieldId } from "../widgets/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
-
-import { SnapModeIndicator, SnapModeIcon, SnapModeDialog, Snap as SnapRow } from "@bentley/ui-ninezone";
+import { SnapMode as NZ_SnapMode, SnapModePanel, Snap, FooterPopup, FooterPopupContentType } from "@bentley/ui-ninezone";
+import { StatusFieldProps } from "./StatusFieldProps";
 
 // cSpell:ignore multione
-/** Defines properties supported by the SnapMode Field Component. */
-interface SnapModeFieldProps {
-  statusBar: IStatusBar;
-  isInFooterMode: boolean;
-  openWidget: StatusBarFieldId;
+/** Defines properties supported by the SnapMode Field Component.
+ */
+interface SnapModeFieldProps extends StatusFieldProps {
   snapMode: number;
   setSnapMode: (mode: number) => any;
 }
@@ -31,7 +29,8 @@ interface SnapModeFieldEntry {
   iconName: string;
 }
 
-/** Snap Mode Field React component. This component is designed to be specified in a status bar definition. It will
+/**
+ * Snap Mode Field React component. This component is designed to be specified in a status bar definition. It will
  * display the active snap mode that AccuSnap will use and allow the user to select a new snap mode.
  */
 class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
@@ -45,9 +44,11 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
     { label: UiFramework.i18n.translate("UiFramework:snapModeField.midpoint"), value: SnapMode.MidPoint as number, iconName: "snaps-midpoint" },
     { label: UiFramework.i18n.translate("UiFramework:snapModeField.bisector"), value: SnapMode.Bisector as number, iconName: "snaps-bisector" },
   ];
+  private _target = React.createRef<HTMLDivElement>();
+  private _indicator = React.createRef<HTMLDivElement>();
 
-  constructor(props?: any, context?: any) {
-    super(props, context);
+  constructor(props: SnapModeFieldProps) {
+    super(props);
 
     const instance = this.constructor;
     this._className = instance.name;
@@ -71,22 +72,50 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
   /** Standard React render method. */
   public render(): React.ReactNode {
     return (
-      <SnapModeIndicator
-        label={UiFramework.i18n.translate("UiFramework:snapModeField.snapMode")}
-        isLabelVisible={this.props.isInFooterMode}
-        onClick={this._handleSnapModeIndicatorClick}
-        icon={
-          <SnapModeIcon iconName={this.getSnapModeIconNameFromMode(this.props.snapMode)} className="nz-footer-icon" />
-        }
-        dialog={
-          this.props.openWidget !== this._className ? undefined :
-            <SnapModeDialog
-              title={UiFramework.i18n.translate("UiFramework:snapModeField.snapMode")}
-              snaps={this.getSnapEntries()}
-            />
-        }
-      />
+      <>
+        <div ref={this._target}
+          className={this.props.className}
+          style={this.props.style}
+        >
+          <NZ_SnapMode
+            icon={
+              <i className={`icon icon-${this.getSnapModeIconNameFromMode(this.props.snapMode)}`} />
+            }
+            indicatorRef={this._indicator}
+            isInFooterMode={this.props.isInFooterMode}
+            onClick={this._handleSnapModeIndicatorClick}
+          >
+            {this.props.isInFooterMode ? UiFramework.i18n.translate("UiFramework:snapModeField.snapMode") : undefined}
+          </NZ_SnapMode>
+        </div>
+        <FooterPopup
+          contentType={FooterPopupContentType.Panel}
+          isOpen={this.props.openWidget === this._className}
+          onClose={this._handleClose}
+          onOutsideClick={this._handleOutsideClick}
+          target={this._target}
+        >
+          <SnapModePanel
+            title={UiFramework.i18n.translate("UiFramework:snapModeField.snapMode")}
+          >
+            {this.getSnapEntries()}
+          </SnapModePanel>
+        </FooterPopup>
+      </>
     );
+  }
+
+  private _handleClose = () => {
+    this.setOpenWidget(null);
+  }
+
+  private _handleOutsideClick = (e: MouseEvent) => {
+    if (!this._indicator.current ||
+      !(e.target instanceof Node) ||
+      this._indicator.current.contains(e.target))
+      return;
+
+    this._handleClose();
   }
 
   /** Return array of SnapRow elements, one for each support snap mode. This array will populate the pop-up used
@@ -95,16 +124,16 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
   private getSnapEntries(): JSX.Element[] {
     return this._snapModeFieldArray.map((item: SnapModeFieldEntry, index: number) => {
       return (
-        <SnapRow
+        <Snap
           key={`SM_${index}`}
           onClick={() => this._handleSnapModeFieldClick(item.value)}
           isActive={(this.props.snapMode & item.value) === item.value}
-          label={item.label}
           icon={
-            <SnapModeIcon isActive={(this.props.snapMode & item.value) === item.value}
-              text={item.iconName} iconName={item.iconName} />
+            <i className={`icon icon-${item.iconName}`} />
           }
-        />
+        >
+          {item.label}
+        </Snap >
       );
     });
   }
@@ -125,7 +154,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
 
   /** Opens the pop-up window. */
   private setOpenWidget(openWidget: StatusBarFieldId) {
-    this.props.statusBar!.setOpenWidget(openWidget);
+    this.props.onOpenWidget(openWidget);
   }
 }
 
@@ -145,5 +174,10 @@ function mapStateToProps(state: any) {
 }
 
 // we declare the variable and export that rather than using export default.
-/** Snap Mode Field React component that is Redux connected. */ // tslint:disable-next-line:variable-name
+/**
+ * Snap Mode Field React component. This component is designed to be specified in a status bar definition. It will
+ * display the active snap mode that AccuSnap will use and allow the user to select a new snap mode.
+ * This Field React component is Redux connected.
+ * @public
+ */ // tslint:disable-next-line:variable-name
 export const SnapModeField = connect(mapStateToProps, mapDispatch)(SnapModeFieldComponent);

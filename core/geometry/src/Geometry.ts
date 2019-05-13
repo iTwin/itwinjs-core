@@ -13,8 +13,10 @@ import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
 import { Point4d } from "./geometry4d/Point4d";
 import { AngleSweep } from "./geometry3d/AngleSweep";
 
-/** Enumeration of the 6 possible orderings of XYZ axis order */
-export const enum AxisOrder {
+/** Enumeration of the 6 possible orderings of XYZ axis order
+ * @public
+ */
+export enum AxisOrder {
   /** Right handed system, X then Y then Z */
   XYZ = 0,
   /** Right handed system, Y then Z then X */
@@ -28,16 +30,22 @@ export const enum AxisOrder {
   /** Left handed system, Z then Y then X */
   ZYX = 6,
 }
-/* Enumeration of the 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z */
-export const enum AxisIndex {
+/** Enumeration of numeric indices of 3 axes AxisIndex.X, AxisIndex.Y, AxisIndex.Z
+ * @public
+ */
+export enum AxisIndex {
+  /** x axis is index 0 */
   X = 0,
+  /** y axis is index 1 */
   Y = 1,
+  /** 2 axis is index 2 */
   Z = 2,
 }
 
-/* Standard views.   Used in `Matrix3d.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
-*/
-export const enum StandardViewIndex {
+/** Standard views.   Used in `Matrix3d.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
+ * @public
+ */
+export enum StandardViewIndex {
   Top = 1,
   Bottom = 2,
   Left = 3,
@@ -48,8 +56,10 @@ export const enum StandardViewIndex {
   RightIso = 8,
 }
 
-/** Enumeration among choice for how a coordinate transformation should incorporate scaling. */
-export const enum AxisScaleSelect {
+/** Enumeration among choice for how a coordinate transformation should incorporate scaling.
+ * @public
+ */
+export enum AxisScaleSelect {
   /** All axes of unit length. */
   Unit = 0,
   /** On each axis, the vector length matches the longest side of the range of the data. */
@@ -57,6 +67,9 @@ export const enum AxisScaleSelect {
   /** On each axis, the vector length matches he length of the corresponding edge of the range. */
   NonUniformRangeContainment = 2,
 }
+/** object with a radians value and its associated cosine and sine values.
+ * @public
+ */
 export interface TrigValues { c: number; s: number; radians: number; }
 /**
  * Interface so various plane representations can be used by algorithms that just want altitude evaluations.
@@ -64,6 +77,7 @@ export interface TrigValues { c: number; s: number; radians: number; }
  * Specific implementors are
  * * Plane3dByOriginAndUnitNormal
  * * Point4d (used for homogeneous plane coefficients)
+ * @public
  */
 export interface PlaneAltitudeEvaluator {
   /**
@@ -88,6 +102,10 @@ export interface PlaneAltitudeEvaluator {
    */
   weightedAltitude(point: Point4d): number;
 }
+/**
+ * Interace for `toJSON` and `setFromJSON` methods
+ * @public
+ */
 export interface BeJSONFunctions {
   /**
    * Set content from a JSON object.
@@ -100,6 +118,7 @@ export interface BeJSONFunctions {
 /** The Properties for a JSON representation of an Angle.
  * If value is a number, it is in *degrees*.
  * If value is an object, it can have either degrees or radians.
+ * @public
  */
 export type AngleProps = { degrees: number } | { radians: number } | { _radians: number } | { _degrees: number } | number;
 
@@ -108,6 +127,7 @@ export type AngleProps = { degrees: number } | { radians: number } | { _radians:
  * If AngleProps data is an array of two numbers, it is an angle in degrees.
  * If the AngleProps is an object with key degrees, the degrees value must be an array with the two degrees angles as numbers
  * If the AngleProps is an object with key radians, the radians value must be an array with the two radians angles as numbers
+ * @public
  */
 export type AngleSweepProps =
   AngleSweep |
@@ -115,19 +135,39 @@ export type AngleSweepProps =
   { radians: [number, number] } |
   [number, number];
 
+/**
+ * Class containing static methods for typical numeric operations.
+ * * Experimentally, methods like Geometry.hypotenuse are observed to be faster than the system intrinsics.
+ * * This is probably due to
+ *    * Fixed length arg lists
+ *    * strongly typed parameters
+ * @public
+ */
 export class Geometry {
+  /** Tolerance for small distances in metric coordinates */
   public static readonly smallMetricDistance = 1.0e-6;
+  /** Square of `smallMetricTolerance` */
   public static readonly smallMetricDistanceSquared = 1.0e-12;
+  /** tolerance for small angle measured in radians. */
   public static readonly smallAngleRadians = 1.0e-12;
+  /** square of `smallAngleRadians` */
   public static readonly smallAngleRadiansSquared = 1.0e-24;
+  /** numeric value that may considered huge for numbers expected to be 0..1 fractions. */
   public static readonly largeFractionResult = 1.0e10;
+  /** numeric value that may considered infinite for metric coordinates.
+   * * This coordinate should be used only as a placeholder indicating "at infinity" -- computing actual points at this coordinate invites numerical problems.
+   */
+  public static readonly hugeCoordinate = 1.0e12;
+  /** Test if absolute value of x is huge.
+   * * See `Geometry.hugeCoordinate`
+   */
+  public static isHugeCoordinate(x: number): boolean {
+    return x > this.hugeCoordinate || x < - this.hugeCoordinate;
+  }
+
+  /** Radians value for full circle 2PI radians minus `smallAngleRadians` */
   public static readonly fullCircleRadiansMinusSmallAngle = 2.0 * Math.PI - 1.0e-12;    // smallAngleRadians less than 360degrees
-  /** Points and vectors can be emitted in two forms:
-    *
-    * *  preferJSONArray === true :       [x,y,z]
-    * *  preferJSONArray === false :      {x: 1, y: 2, z: 3}
-    */
-  // possible names for this class: Geometry, Distance, Units
+  /** Correct `distance` to zero if smaller than metric tolernace.   Otherwise return it unchnaged. */
   public static correctSmallMetricDistance(distance: number, replacement: number = 0.0): number {
     if (Math.abs(distance) < Geometry.smallMetricDistance) {
       return replacement;
@@ -135,34 +175,45 @@ export class Geometry {
     return distance;
   }
   /**
- * @returns If `a` is large enough, return `1/a`, using Geometry.smallMetricDistance as the tolerance for declaring it as divide by zero.  Otherwise return `undefined`.
+ * If `a` is large enough for safe division, return `1/a`, using Geometry.smallMetricDistance as the tolerance for declaring it as divide by zero.  Otherwise return `undefined`.
  * @param a denominator of division
  */
   public static inverseMetricDistance(a: number): number | undefined { return (Math.abs(a) <= Geometry.smallMetricDistance) ? undefined : 1.0 / a; }
   /**
-   * @returns If `a` is large enough, return `1/a`, using the square of Geometry.smallMetricDistance as the tolerance for declaring it as divide by zero.  Otherwise return `undefined`.
+   * If `a` is large enough, return `1/a`, using the square of Geometry.smallMetricDistance as the tolerance for declaring it as divide by zero.  Otherwise return `undefined`.
    * @param a denominator of division
    */
   public static inverseMetricDistanceSquared(a: number): number | undefined {
     return (Math.abs(a) <= Geometry.smallMetricDistanceSquared) ? undefined : 1.0 / a;
   }
+  /** Boolean test for metric coordinate near-equality */
   public static isSameCoordinate(x: number, y: number, tol?: number): boolean {
     if (tol)
       return Math.abs(x - y) < Math.abs(tol);
     return Math.abs(x - y) < Geometry.smallMetricDistance;
   }
+  /** Boolean test for squared metric coordinate near-equality */
   public static isSameCoordinateSquared(x: number, y: number): boolean {
     return Math.abs(Math.sqrt(x) - Math.sqrt(y)) < Geometry.smallMetricDistance;
   }
+  /** boolean test for smalll `dataA.distance (dataB)`  within `smallMetricDistance` */
   public static isSamePoint3d(dataA: Point3d, dataB: Point3d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
+  /** boolean test for distance between `XYZ` objects within `smallMetricDistance`
+   *  * Note that Point3d and Vector3d are both derived from XYZ, so this method tolerates mixed types.
+   */
   public static isSameXYZ(dataA: XYZ, dataB: XYZ): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
+  /** boolean test for smalll `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
   public static isSamePoint3dXY(dataA: Point3d, dataB: Point3d): boolean { return dataA.distanceXY(dataB) < Geometry.smallMetricDistance; }
+  /** boolean test for smalll `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
   public static isSameVector3d(dataA: Vector3d, dataB: Vector3d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
+  /** boolean test for smalll `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
   public static isSamePoint2d(dataA: Point2d, dataB: Point2d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
+  /** boolean test for smalll `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
   public static isSameVector2d(dataA: Vector2d, dataB: Vector2d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
 
   /**
    * Lexical comparison of (a.x,a.y) (b.x,b.y) with x as first test, y second.
+   * * This is appropriate for a horizontal sweep in the plane.
    */
   public static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ) {
     if (a.x < b.x)
@@ -177,6 +228,7 @@ export class Geometry {
   }
   /**
    * Lexical comparison of (a.x,a.y) (b.x,b.y) with y as first test, x second.
+   * * This is appropriate for a vertical sweep in the plane.
    */
   public static lexicalYXLessThan(a: XY | XYZ, b: XY | XYZ) {
     if (a.y < b.y)
@@ -189,7 +241,9 @@ export class Geometry {
       return 1;
     return 0;
   }
-
+  /**
+   * Lexical test, based on x first, y second, z third.
+   */
   public static lexicalXYZLessThan(a: XYZ, b: XYZ) {
     if (a.x < b.x)
       return -1;
@@ -205,22 +259,32 @@ export class Geometry {
       return 1;
     return 0;
   }
-
+  /** Test if `value` is small compared to `smallAngleRadians`.
+   * * This is appropriate if `value` is know to be a typical 0..1 fraction.
+   */
   public static isSmallRelative(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
+  /** Test if `value` is small compared to `smallAngleRadians` */
   public static isSmallAngleRadians(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
+  /** Toleranced equality test, using tolerance `smallAngleRadians * ( 1 + abs(a) + (abs(b)))`
+   * * Effectively an absolute tolerance of `smallAngleRadians`, with tolernace increasing for larger values of a and b.
+  */
   public static isAlmostEqualNumber(a: number, b: number) {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
     return Math.abs(a - b) <= Geometry.smallAngleRadians * sumAbs;
   }
+  /** Toleranced equality test, using caller-supplied tolerance. */
   public static isDistanceWithinTol(distance: number, tol: number) {
     return Math.abs(distance) <= Math.abs(tol);
   }
+  /** Toleranced equality test, using `smallMetricDistance` tolerance. */
   public static isSmallMetricDistance(distance: number): boolean {
     return Math.abs(distance) <= Geometry.smallMetricDistance;
   }
+  /** Toleranced equality, using `smallMetricDistanceSquared` tolerance. */
   public static isSmallMetricDistanceSquared(distanceSquared: number): boolean {
     return Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared;
   }
+  /** Return `axis modulo 3` with proper handling of negative indices (-1 is z), -2 is y, -3 is x etc) */
   public static cyclic3dAxis(axis: number): number {
     /* Direct test for the most common cases, avoid modulo */
     if (axis >= 0) {
@@ -246,43 +310,45 @@ export class Geometry {
     if (axisIndex === 2) return AxisOrder.ZXY;
     return Geometry.axisIndexToRightHandedAxisOrder(Geometry.cyclic3dAxis(axisIndex));
   }
-  /** @returns the largest absolute distance from a to either of b0 or b1 */
+  /** Return the largest absolute distance from a to either of b0 or b1 */
   public static maxAbsDiff(a: number, b0: number, b1: number): number { return Math.max(Math.abs(a - b0), Math.abs(a - b1)); }
-  /** @returns the largest absolute absolute value among x,y,z */
+  /** Return the largest absolute absolute value among x,y,z */
   public static maxAbsXYZ(x: number, y: number, z: number): number {
     return Geometry.maxXYZ(Math.abs(x), Math.abs(y), Math.abs(z));
   }
-  /** @returns the largest absolute absolute value among x,y */
+  /** Return the largest absolute absolute value among x,y */
   public static maxAbsXY(x: number, y: number): number {
     return Geometry.maxXY(Math.abs(x), Math.abs(y));
   }
 
-  /** @returns the largest signed value among a, b, c */
+  /** Return the largest signed value among a, b, c */
   public static maxXYZ(a: number, b: number, c: number): number {
     let q = a;
     if (b > q) q = b;
     if (c > q) q = c;
     return q;
   }
-  /** @returns the largest signed value among a, b*/
+  /** Return the largest signed value among a, b */
   public static maxXY(a: number, b: number): number {
     let q = a;
     if (b > q) q = b;
     return q;
   }
 
-  /** @returns Return the hypotenuse sqrt(x\*x + y\*y). This is much faster than Math.hypot(x,y).*/
+  /** Return the hypotenuse `sqrt(x*x + y*y)`. This is much faster than `Math.hypot(x,y)`. */
   public static hypotenuseXY(x: number, y: number) { return Math.sqrt(x * x + y * y); }
-  /** @returns Return the squared hypotenuse (x\*x + y\*y). */
+  /** Return the squared `hypotenuse (x*x + y*y)`. */
   public static hypotenuseSquaredXY(x: number, y: number) { return x * x + y * y; }
-  /** @returns Return the square of x */
+  /** Return the square of x */
   public static square(x: number) { return x * x; }
 
-  /** @returns Return the hypotenuse sqrt(x\*x + y\*y). This is much faster than Math.hypot(x,y, z).*/
+  /** Return the hypotenuse `sqrt(x*x + y*y + z*z)`. This is much faster than `Math.hypot(x,y,z)`. */
   public static hypotenuseXYZ(x: number, y: number, z: number) { return Math.sqrt(x * x + y * y + z * z); }
+  /** Return the squared hypetenuse `(x*x + y*y + z*z)`. This is much faster than `Math.hypot(x,y,z)`. */
   public static hypotenuseSquaredXYZ(x: number, y: number, z: number) { return x * x + y * y + z * z; }
-
+  /** Return the (full 4d) hypotenuse `sqrt(x*x + y*y + z*z + w*w)`. This is much faster than `Math.hypot(x,y,z,w)`. */
   public static hypotenuseXYZW(x: number, y: number, z: number, w: number) { return Math.sqrt(x * x + y * y + z * z + w * w); }
+  /** Return the squared hypetenuse `(x*x + y*y + z*z+w*w)`. This is much faster than `Math.hypot(x,y,z)`. */
   public static hypotenuseSquaredXYZW(x: number, y: number, z: number, w: number) { return x * x + y * y + z * z + w * w; }
   /**
    * Return the distance between xy points given as numbers.
@@ -306,7 +372,7 @@ export class Geometry {
   public static distanceXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): number {
     return Geometry.hypotenuseXYZ(x1 - x0, y1 - y0, z1 - z0);
   }
-  /** @returns Returns the triple product of 3 vectors provided as x,y,z number sequences.
+  /** Returns Returns the triple product of 3 vectors provided as x,y,z number sequences.
    *
    * * The triple product is the determinant of the 3x3 matrix with the 9 numbers placed in either row or column order.
    * * The triple product is positive if the 3 vectors form a right handed coordinate system.
@@ -331,7 +397,7 @@ export class Geometry {
   }
 
   /**
- * @returns Returns curvature magnitude from a first and second derivative vector.
+ * Returns curvature magnitude from a first and second derivative vector.
  * @param ux  first derivative x component
  * @param uy first derivative y component
  * @param uz first derivative z component
@@ -385,12 +451,12 @@ export class Geometry {
       columnA.y, columnB.y, columnC.y,
       columnA.w, columnB.w, columnC.w);
   }
-  /**  2D cross product of vectors layed out as scalars. */
+  /** 2D cross product of vectors layed out as scalars. */
   public static crossProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
     return ux * vy - uy * vx;
   }
 
-  /**  3D cross product of vectors layed out as scalars. */
+  /** 3D cross product of vectors layed out as scalars. */
   public static crossProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d): Vector3d {
     return Vector3d.create(
       uy * vz - uz * vy,
@@ -398,14 +464,14 @@ export class Geometry {
       ux * vy - uy * vx, result);
   }
 
-  /**  magnitude of 3D cross product of vectors, with the vectors presented as */
+  /** magnitude of 3D cross product of vectors, with the vectors presented as */
   public static crossProductMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return Geometry.hypotenuseXYZ(
       uy * vz - uz * vy,
       uz * vx - ux * vz,
       ux * vy - uy * vx);
   }
-  /**  3D dot product of vectors layed out as scalars. */
+  /** 3D dot product of vectors layed out as scalars. */
   public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return ux * vx + uy * vy + uz * vz;
   }
@@ -431,7 +497,7 @@ export class Geometry {
    * @param max
    */
   public static clamp(value: number, min: number, max: number): number { return Math.max(min, Math.min(max, value)); }
-
+  /** If given a number, return it.   If given undefined, return `defaultValue`. */
   public static resolveNumber(value: number | undefined, defaultValue: number = 0): number {
     return value !== undefined ? value : defaultValue;
   }

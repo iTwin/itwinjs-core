@@ -6,40 +6,52 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
 import "./Footer.scss";
 
-/** Properties of [[Footer]] component. */
-export interface FooterProps extends CommonProps, NoChildrenProps {
+/** Properties of [[Footer]] component.
+ * @beta
+ */
+export interface FooterProps extends CommonProps {
   /**
-   * Status indicators.
-   * I.e: [[ToolAssistanceIndicator]], [[SnapModeIndicator]], [[MessageCenterIndicator]]
+   * Footer indicators and separators. I.e: [[FooterSeparator]], [[FooterIndicator]],
+   * [[MessageCenter]], [[ToolAssistance]], [[SnapMode]]
    */
-  indicators?: React.ReactNode;
-  /** Specifies if the footer is in widget mode.  */
-  isInWidgetMode?: boolean;
-  /** One of footer messages: [[Toast]], [[Temporary]], [[Sticky]], [[Modal]], [[Activity]] */
-  message?: React.ReactNode;
+  children?: React.ReactNode;
+  /** Describes whether the footer is in footer or widget mode.  */
+  isInFooterMode?: boolean;
+  /** Footer messages. I.e. [[Message]], [[Toast]] */
+  messages?: React.ReactNode;
+  /** Handler for mouse enter */
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  /** Handler for mouse leave */
+  onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
-/** Footer component. Should be used in [[FooterZone]] */
+/** Footer component. Used in [[StatusZone]] component.
+ * @beta
+ */
 export class Footer extends React.PureComponent<FooterProps> {
   public render() {
     const className = classnames(
       "nz-footer-footer",
-      this.props.isInWidgetMode && "nz-widget-mode",
+      this.props.isInFooterMode && "nz-footer-mode",
       this.props.className);
 
     return (
       <div
         className={className}
         style={this.props.style}
+        onMouseEnter={this.props.onMouseEnter}
+        onMouseLeave={this.props.onMouseLeave}
       >
-        <div className="nz-message">
-          {this.props.message}
-        </div>
-        <div className="nz-indicators">
-          {this.props.indicators}
+        <div>
+          <div className="nz-messages">
+            {this.props.messages}
+          </div>
+          <div className="nz-indicators">
+            {this.props.children}
+          </div>
         </div>
       </div>
     );

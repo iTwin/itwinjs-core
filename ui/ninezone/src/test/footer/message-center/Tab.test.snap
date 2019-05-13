@@ -1,5 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`<MessageCenterTab /> renders active correctly 1`] = `
+<div
+  className="nz-footer-messageCenter-tab nz-active"
+/>
+`;
+
 exports[`<MessageCenterTab /> renders correctly 1`] = `
 <div
   className="nz-footer-messageCenter-tab"

@@ -11,7 +11,9 @@ import { UiCore } from "../UiCore";
 
 import "./SearchBox.scss";
 
-/** Property interface for [[SearchBox]] */
+/** Properties for [[SearchBox]] component
+ * @beta
+ */
 export interface SearchBoxProps extends CommonProps {
   /** value to set SearchBox to initially */
   initialValue?: string;
@@ -29,27 +31,32 @@ export interface SearchBoxProps extends CommonProps {
   onClear?: () => void;
 }
 
-/** @hidden */
-export interface SearchBoxState {
+/** @internal */
+interface SearchBoxState {
   value: string;
 }
 
 /**
  * Input box with builtin icon right justified bounded by the SearchBox
+ * @beta
  */
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   private _inputElement: HTMLInputElement | null = null;
   private _timeoutId: number = 0;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<SearchBoxState> = { value: this.props.initialValue || "" };
 
-  /** @hidden */
+  constructor(props: SearchBoxProps) {
+    super(props);
+  }
+
+  /** @internal */
   public render(): React.ReactNode {
-    const searchClassName = classnames("searchbox", this.props.className);
+    const searchClassName = classnames("core-searchbox", this.props.className);
     const emptyString = this.state.value === "";
     const iconClassName = classnames(
-      "searchbox-icon",
+      "core-searchbox-icon",
       "icon",
       {
         "icon-search": emptyString,
@@ -57,7 +64,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
       },
     );
     return (
-      <div className={searchClassName}>
+      <div className={searchClassName} style={this.props.style}>
         <input
           ref={(el) => { this._inputElement = el; }}
           onChange={this._trackChange}
@@ -66,7 +73,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
           onCut={this._trackChange}
           placeholder={this.props.placeholder ? this.props.placeholder : UiCore.i18n.translate("UiCore:searchbox.search")}
         ></input>
-        <div className="searchbox-button" onClick={this._handleIconClick}>
+        <div className="core-searchbox-button" onClick={this._handleIconClick}>
           <span className={iconClassName} />
         </div>
       </div>
@@ -133,10 +140,8 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     this._unsetTimeout();
   }
 
-  public focus () {
+  public focus() {
     if (this._inputElement)
       this._inputElement.focus();
   }
 }
-
-export default SearchBox;

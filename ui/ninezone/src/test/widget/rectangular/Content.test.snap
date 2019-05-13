@@ -2,7 +2,8 @@
 
 exports[`<WidgetContent /> renders correctly 1`] = `
 <div
-  className="nz-widget-rectangular-content"
+  className="nz-widget-rectangular-content nz-right-anchor"
+  onScroll={[Function]}
 >
   <div
     className="nz-container"

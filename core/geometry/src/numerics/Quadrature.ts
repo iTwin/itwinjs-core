@@ -12,6 +12,7 @@
  * allocation.
  * For methods names setupGauss<N> (where N is a smallish integer), the CALLER creates arrays xMapped and wMapped
  * The method installs particular x and weight values.
+ * @internal
  */
 export class Quadrature {
 

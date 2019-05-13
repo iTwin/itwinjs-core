@@ -7,7 +7,11 @@
 import { CompositeFlags } from "./RenderFlags";
 import { assert } from "@bentley/bentleyjs-core";
 
-/** Technique enumeration */
+// tslint:disable:no-const-enum
+
+/** Technique enumeration
+ * @internal
+ */
 export const enum TechniqueId {
   // Techniques with many different variations
   Invalid = -1,
@@ -54,6 +58,7 @@ const compositeTechniqueIds = [
   TechniqueId.CompositeAll, // Translucent | Hilite | AmbientOcclusion == 1 | 2 | 4 == 7
 ];
 
+/** @internal */
 export function computeCompositeTechniqueId(flags: CompositeFlags): TechniqueId {
   assert(flags >= 0 && flags <= 7);
   return compositeTechniqueIds[flags];

@@ -2,7 +2,14 @@
 
 - binary – An array of bytes
 - boolean (bool) – A boolean value
-- dateTime – A System.DateTime value in .NET and a BentleyGXX.DateTime value in native
+- dateTime – A DateTime value.
+  - Can store a Date, a Time, or a Date and Time.  Use the CoreCustomAttribute 'DateTimeInfo' to identify which component of time a DateTime the value is storing and if it is in UTC or Local timezone.
+  ```xml
+          <DateTimeInfo xmlns="CoreCustomAttributes.01.00.02">
+            <DateTimeKind>Utc</DateTimeKind>
+            <DateTimeComponent>Date</DateTimeComponent>
+          </DateTimeInfo>
+  ```
 - double – A double precision float value
 - int – A 32 bit integer value
 - long – A 64 bit integer value

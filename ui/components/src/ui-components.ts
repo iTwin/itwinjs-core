@@ -9,11 +9,12 @@ export * from "./ui-components/breadcrumb/BreadcrumbPath";
 export * from "./ui-components/breadcrumb/BreadcrumbTreeUtils";
 export { BreadcrumbDragDropProps, withBreadcrumbDragDrop } from "./ui-components/breadcrumb/hoc/withDragDrop";
 export * from "./ui-components/breadcrumb/breadcrumbdetails/BreadcrumbDetails";
-export { BreadcrumbDetailsDragDropProps, withBreadcrumbDetailsDragDrop } from "./ui-components/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+export { BreadcrumbDetailsDragDropProps, withBreadcrumbDetailsDragDrop, BreadcrumbDetailsDragDropType } from "./ui-components/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 
 export { PageOptions } from "./ui-components/common/PageOptions";
 export { SelectionMode } from "./ui-components/common/selection/SelectionModes";
-export { SelectionHandler } from "./ui-components/common/selection/SelectionHandler";
+export * from "./ui-components/common/IImageLoader";
+// export { SelectionHandler } from "./ui-components/common/selection/SelectionHandler";  // Is this needed outside ui-components?
 export * from "./ui-components/common/showhide/ShowHideDialog";
 export * from "./ui-components/common/showhide/ShowHideItem";
 export * from "./ui-components/common/showhide/ShowHideMenu";
@@ -29,8 +30,7 @@ export * from "./ui-components/converters/NumericTypeConverter";
 export * from "./ui-components/converters/PointTypeConverter";
 export * from "./ui-components/converters/StringTypeConverter";
 
-import * as ConvertedPrimitives from "./ui-components/converters/valuetypes/ConvertedTypes";
-export { ConvertedPrimitives };
+export * from "./ui-components/converters/valuetypes/ConvertedTypes";
 
 export * from "./ui-components/dragdrop/DragDropDef";
 export * from "./ui-components/dragdrop/withDragSource";
@@ -45,9 +45,13 @@ export * from "./ui-components/editors/EnumButtonGroupEditor";
 export * from "./ui-components/editors/BooleanEditor";
 export * from "./ui-components/editors/ToggleEditor";
 export * from "./ui-components/editors/ColorEditor";
+export * from "./ui-components/editors/WeightEditor";
+export * from "./ui-components/editors/CustomNumberEditor";
 
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
+
+export * from "./ui-components/oidc/SignIn";
 
 export * from "./ui-components/properties/ValueRendererManager";
 
@@ -56,8 +60,18 @@ export * from "./ui-components/properties/renderers/PrimitivePropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyView";
 
+export * from "./ui-components/timeline/interfaces";
+export * from "./ui-components/timeline/BaseTimelineDataProvider";
+export * from "./ui-components/timeline/ContextMenu";
+export * from "./ui-components/timeline/InlineEdit";
+export * from "./ui-components/timeline/PlayerButton";
+export * from "./ui-components/timeline/Scrubber";
+export * from "./ui-components/timeline/Timeline";
+export * from "./ui-components/timeline/TimelineComponent";
+
 export * from "./ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./ui-components/properties/renderers/label/PrimitivePropertyLabelRenderer";
+export * from "./ui-components/properties/renderers/label/PropertyLabelRenderer";
 
 export * from "./ui-components/properties/renderers/value/PrimitivePropertyValueRenderer";
 export * from "./ui-components/properties/renderers/value/ArrayPropertyValueRenderer";
@@ -79,16 +93,34 @@ export * from "./ui-components/color/AlphaSlider";
 export * from "./ui-components/color/SaturationPicker";
 export * from "./ui-components/color/ColorPickerButton";
 
+export * from "./ui-components/lineweight/Swatch";
+export * from "./ui-components/lineweight/WeightPickerButton";
+
 export * from "./ui-components/table/TableDataProvider";
 export * from "./ui-components/table/SimpleTableDataProvider";
-export { Table, TableProps, TableSelectionTarget } from "./ui-components/table/component/Table";
-export { TableCellEditorState, TableCellUpdatedArgs } from "./ui-components/table/component/Table";
+export {
+  Table,
+  TableProps,
+  TableSelectionTarget,
+  TableCellEditorState,
+  TableCellUpdatedArgs,
+  TableRow,
+  TableRowProps,
+} from "./ui-components/table/component/Table";
 export { TableDragDropType, TableDropTargetProps, TableDragDropProps, withTableDragDrop } from "./ui-components/table/hocs/withDragDrop";
 
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/HighlightingEngine";
-export { Tree, TreeProps } from "./ui-components/tree/component/Tree";
-export { TreeCellUpdatedArgs } from "./ui-components/tree/CellEditingEngine";
+export {
+  Tree,
+  TreeProps,
+  NodesSelectedCallback,
+  NodesDeselectedCallback,
+  NodeRenderer,
+} from "./ui-components/tree/component/Tree";
+export * from "./ui-components/tree/component/BeInspireTree";
+export { TreeCellUpdatedArgs, EditableTreeProps } from "./ui-components/tree/CellEditingEngine";
+export * from "./ui-components/tree/ImageLoader";
 export { TreeDragDropType, TreeDragDropProps, withTreeDragDrop } from "./ui-components/tree/hocs/withDragDrop";
 export { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./ui-components/tree/SimpleTreeDataProvider";
 
@@ -128,6 +160,14 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for working with filtering.
  */
 /**
+ * @docs-group-description LineWeight
+ * Classes for working with and picking a Line Weight.
+ */
+/**
+ * @docs-group-description OIDC
+ * Components for working with OIDC and Sign-in.
+ */
+/**
  * @docs-group-description Properties
  * Classes for working with Properties.
  */
@@ -142,6 +182,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Table
  * Classes for working with a Table.
+ */
+/**
+ * @docs-group-description Timeline
+ * Classes for working with a Timeline.
  */
 /**
  * @docs-group-description Tree

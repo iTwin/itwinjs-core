@@ -10,10 +10,15 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
+/** @internal */
 export type NodeFunction = (node: HalfEdge) => any;
+/** @internal */
 export type NodeToNumberFunction = (node: HalfEdge) => number;
+/** @internal */
 export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
+/** @internal */
 export type HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean;
+/** @internal */
 export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
 /**
  *
@@ -29,18 +34,24 @@ export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolea
  * * In properly connected planar graph, interior face loops are counterclockwise.  But that property (along with
  *      expected masking) is a result of extensive validation of inputs, and is not true in intermediate phases
  *      of graph manipulation.
+ * @internal
  */
 export class HalfEdge {
-  // vertice index in coordinates array
+  /** Vertex index in some parent object's numbering. */
   public i: number;
-  // buffer of 4 bytes, used to mark nodes as part of a triangle (idx 0) or visited when flipping (idx 1)
+  /** bitmask bits, used to mark nodes as part of a triangle(idx 0) or visited when flipping(idx 1) */
   public maskBits: number;
-  // vertex coordinates
+  /** Vertex x coordinate */
   public x: number;
+  /** Vertex y coordinate */
   public y: number;
+  /** Vertex z coordinate */
   public z: number;
+  /** angle used for sort-around-vertex */
   public sortAngle?: number;  // used in sorting around vertex.
+
   private _id: any;   // immutable id useful for debuggging.
+  /** id assigned sequentially during construction --- useful for debugging. */
   public get id() { return this._id; }
 
   private _facePredecessor!: HalfEdge;
@@ -54,7 +65,18 @@ export class HalfEdge {
   /** Half edge on the other side of this edge.
    */
   public get edgeMate(): HalfEdge { return this._edgeMate; }
-
+  /** Take numStep face steps and return y coordinate
+   * * positive steps are through faceSuccessor
+   * * negative steps are through facePredecessor
+   */
+  public faceStepY(numStep: number): number {
+    let node: HalfEdge = this;
+    if (numStep > 0)
+      for (let i = 0; i < numStep; i++) node = node.faceSuccessor;
+    else if (numStep < 0)
+      for (let i = 0; i > numStep; i++) node = node.facePredecessor;
+    return node.y;
+  }
   /**
    * * Create 2 half edges.
    * * The two edges are joined as edgeMate pair.
@@ -172,11 +194,11 @@ export class HalfEdge {
   }
 
   /**
-   * @returns Return the next outbound half edge around this vertex in the CCW direction
+   * Return the next outbound half edge around this vertex in the CCW direction
    */
   get vertexSuccessor(): HalfEdge { return this.facePredecessor.edgeMate; }
   /**
-   * @returns Return the next outbound half edge around this vertex in the CW direction
+   * Return the next outbound half edge around this vertex in the CW direction
    */
   get vertexPredecessor(): HalfEdge { return this.edgeMate.faceSuccessor; }
   /**
@@ -219,9 +241,7 @@ export class HalfEdge {
     } while (node !== this);
   }
 
-  /**
-   * @returns Returns the number of edges around this face.
-   */
+  /** Returns the number of edges around this face. */
   public countEdgesAroundFace(): number {
     let count = 0;
     let node: HalfEdge = this;
@@ -232,9 +252,7 @@ export class HalfEdge {
     return count;
   }
 
-  /**
-   * @returns Returns the number of edges around vertex.
-   */
+  /** Returns the number of edges around vertex. */
   public countEdgesAroundVertex(): number {
     let count = 0;
     let node: HalfEdge = this;
@@ -245,9 +263,7 @@ export class HalfEdge {
     return count;
   }
 
-  /**
-   * @returns Returns the number of nodes found with the given mask value around this vertex loop.
-   */
+  /** Returns the number of nodes found with the given mask value around this vertex loop. */
   public countMaskAroundFace(mask: HalfEdgeMask, value: boolean = true): number {
     let count = 0;
     let node: HalfEdge = this;
@@ -265,9 +281,7 @@ export class HalfEdge {
     return count;
   }
 
-  /**
-   * @returns Returns the number of nodes found with the given mask value around this vertex loop.
-   */
+  /** Returns the number of nodes found with the given mask value around this vertex loop.   */
   public countMaskAroundVertex(mask: HalfEdgeMask, value: boolean = true): number {
     let count = 0;
     let node: HalfEdge = this;
@@ -285,8 +299,7 @@ export class HalfEdge {
     return count;
   }
 
-  /**
-   * @returns the mask value prior to the call to this method.
+  /** Set a mask, and return prior value.
    * @param mask mask to apply
    */
   public testAndSetMask(mask: HalfEdgeMask): number {
@@ -338,20 +351,20 @@ export class HalfEdge {
    * * is the universal manipulator for manipulating a node's next and prev pointers
    * * swaps face precessors of nodeA and nodeB.
    * *  is its own inverse.
-   * *  does nothing if either node does not have a predecessor (this is obviously a logic error in the caller algorithm)
    * *  if nodeA, nodeB are in different face loops, the loops join to one loop.
    * *  if nodeA, nodeB are in the same face loop, the loop splits into two loops.
    */
   public static pinch(nodeA: HalfEdge, nodeB: HalfEdge) {
-    const predA = nodeA._facePredecessor;
-    const predB = nodeB._facePredecessor;
-    if (predA && predB) {
+    if (nodeA !== nodeB) {
+      const predA = nodeA._facePredecessor;
+      const predB = nodeB._facePredecessor;
       nodeB._facePredecessor = predA;
       nodeA._facePredecessor = predB;
       predB._faceSuccessor = nodeA;
       predA._faceSuccessor = nodeB;
     }
   }
+
   /** Turn all pointers to undefined so garbage collector can reuse the object.
    *  This is to be called only by a Graph object that is being decomissioned.
    */
@@ -539,6 +552,39 @@ export class HalfEdge {
       result);
   }
   /**
+   * * interpolate xy coordinates at fractionAlong between this node and its face successor.
+   * * shift to left by fractionPerpendicular
+   * @param fraction fractional position along this edge.
+   * @param result xy coordinates
+   */
+  public fractionAlongAndPerpendicularToPoint2d(fractionAlong: number, fractionPerpendicular: number, result?: Point2d): Point2d {
+    const node1 = this.faceSuccessor;
+    const dx = node1.x - this.x;
+    const dy = node1.y - this.y;
+    return Point2d.create(
+      this.x + dx * fractionAlong - dy * fractionPerpendicular,
+      this.y + dy * fractionAlong + dx * fractionPerpendicular,
+      result);
+  }
+
+  /**
+   * @returns interpolated x coordinate between this node and its face successor.
+   * @param fraction fractional position along this edge.
+   */
+  public fractionToX(fraction: number): number {
+    const node1 = this.faceSuccessor;
+    return this.x + (node1.x - this.x) * fraction;
+  }
+  /**
+   * @returns interpolated x coordinate between this node and its face successor.
+   * @param fraction fractional position along this edge.
+   */
+  public fractionToY(fraction: number): number {
+    const node1 = this.faceSuccessor;
+    return this.y + (node1.y - this.y) * fraction;
+  }
+
+  /**
    * * Compute fractional coordintes of the intersection of edges from given base nodes
    * * If parallel or colinear, return undefined.
    * * If (possibly extended) lines intersect, return the fractions of intersection as x,y in the result.
@@ -577,10 +623,30 @@ export class HalfEdge {
     return Geometry.conditionalDivideFraction(y - node0.y, dy);
   }
 
+  /**
+   * * Compute fractional coordintes of the intersection of a horizontal line with an edge.
+   * * If the edge is horizontal return undefined (no test for horizontal at y!!!)
+   * * If the edge is not horizontal and y is between its end y's, return the fraction
+   * @param nodeA Base node of edge
+   * @param result optional preallocated result
+   */
+  public static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined {
+    const node1 = node0.faceSuccessor;
+    const dy = node1.y - node0.y;
+    if (Geometry.isSameCoordinate(y, node0.y) && Geometry.isSameCoordinate(y, node1.y))
+      return undefined;
+    if (Geometry.isSameCoordinate(dy, 0.0))
+      return undefined;
+    const fraction = Geometry.conditionalDivideFraction(y - node0.y, dy);
+    if (fraction !== undefined && fraction >= 0.0 && fraction <= 1.0)
+      return fraction;
+    return undefined;
+  }
 }
 /**
  * A HalfEdgeGraph has:
  * * An array of (pointers to ) HalfEdge objects.
+ * @internal
  */
 export class HalfEdgeGraph {
   public allHalfEdges: HalfEdge[];
@@ -773,9 +839,9 @@ export class HalfEdgeGraph {
   /** @returns Return the number of nodes in the graph */
   public countNodes(): number { return this.allHalfEdges.length; }
 }
-
-export const enum HalfEdgeMask {
-  EXTERIOR = 0x00000001,
+/** @internal */
+export const enum HalfEdgeMask { // tslint:disable-line:no-const-enum
+EXTERIOR = 0x00000001,
   BOUNDARY = 0x00000002,
   CONSTU_MASK = 0x00000004,
   CONSTV_MASK = 0x00000008,

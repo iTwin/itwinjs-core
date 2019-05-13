@@ -36,7 +36,6 @@ export class Frontstage3 extends FrontstageProvider {
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       { // Three Views, one on the left, two stacked on the right.
         descriptionKey: "SampleApp:ContentLayoutDef.ThreeRightStacked",
-        priority: 85,
         verticalSplit: {
           percentage: 0.50,
           left: 0,

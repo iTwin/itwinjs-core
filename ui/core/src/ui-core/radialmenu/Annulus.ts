@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RadialMenu */
 
-/** @hidden
+/**
  * 2D Point
+ * @internal
  */
 export class Point {
   public x: number = 0;
@@ -27,8 +28,9 @@ export class Point {
   public equals = (point: Point) => this.x === point.x && this.y === point.y;
 }
 
-/** @hidden
+/**
  * 2D Line consisting of a start point, and an end point
+ * @internal
  */
 export class Line {
   public p1: Point;
@@ -43,7 +45,7 @@ export class Line {
   public equals = (line: Line) => this.p1.equals(line.p1) && this.p2.equals(line.p2);
 }
 
-/** @hidden
+/** @internal
  * 2D Circle
  */
 export class Circle {
@@ -55,7 +57,7 @@ export class Circle {
   }
 }
 
-/** @hidden
+/** @internal
  * 2D Annulus (2D doughnut shape/flattened torus) defined by an inner and outer circle with a shared center point.
  */
 export class Annulus {
@@ -71,7 +73,7 @@ export class Annulus {
   }
 }
 
-/** @hidden
+/** @internal
  * 2D Sector of an Annulus, defined by both a parent annulus, a startAngle, and an endAngle.
  */
 export class AnnularSector {

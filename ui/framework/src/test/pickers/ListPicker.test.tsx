@@ -15,6 +15,7 @@ import {
   ListPickerBase,
   ListItemType,
 } from "../../ui-framework";
+import { Item } from "@bentley/ui-ninezone";
 
 const title = "Test";
 const listItems = new Array<ListItem>();
@@ -25,31 +26,51 @@ describe("ListPicker", () => {
     await TestUtils.initializeUiFramework();
   });
 
-  it("should render correctly", () => {
-    enzyme.shallow(
-      <ListPicker
-        title={title}
-        items={listItems}
-        setEnabled={setEnabled}
-      />,
-    ).should.matchSnapshot();
-  });
+  describe("rendering", () => {
+    it("should render correctly", () => {
+      enzyme.shallow(
+        <ListPicker
+          title={title}
+          items={listItems}
+          setEnabled={setEnabled}
+        />,
+      ).should.matchSnapshot();
+    });
 
-  let listPickerWrapper: enzyme.ShallowWrapper<any>;
-  let listPickerInstance: ListPicker;
+    it("should mount & unmount correctly", () => {
+      const enableAllFunc = () => { };
+      const disableAllFunc = () => { };
+      const invertFunc = () => { };
 
-  beforeEach(() => {
-    listPickerWrapper = enzyme.shallow(
-      <ListPicker
-        title={title}
-        items={listItems}
-        setEnabled={setEnabled}
-      />,
-    );
-    listPickerInstance = listPickerWrapper.instance() as ListPicker;
+      const component = enzyme.mount(
+        <ListPicker
+          title={title}
+          items={listItems}
+          setEnabled={setEnabled}
+          enableAllFunc={enableAllFunc}
+          disableAllFunc={disableAllFunc}
+          invertFunc={invertFunc}
+        />,
+      );
+      component.unmount();
+    });
   });
 
   describe("isSpecialItem", () => {
+    let listPickerWrapper: enzyme.ShallowWrapper<any>;
+    let listPickerInstance: ListPicker;
+
+    beforeEach(() => {
+      listPickerWrapper = enzyme.shallow(
+        <ListPicker
+          title={title}
+          items={listItems}
+          setEnabled={setEnabled}
+        />,
+      );
+      listPickerInstance = listPickerWrapper.instance() as ListPicker;
+    });
+
     it("should return true if item key is special", () => {
       expect(
         listPickerInstance.isSpecialItem({
@@ -101,105 +122,138 @@ describe("ListPicker", () => {
     });
   });
 
-  it("should unmount correctly", () => {
-    const component = enzyme.mount(
-      <ListPicker
-        title={title}
-        items={listItems}
-        setEnabled={setEnabled}
-      />,
-    );
-    component.unmount();
-  });
-});
+  describe("ListPickerItem", () => {
+    it("should render correctly", () => {
+      enzyme.shallow(
+        <ListPickerItem
+          key="key"
+        />,
+      ).should.matchSnapshot();
+    });
 
-describe("ListPickerItem", () => {
-  it("should render correctly", () => {
-    enzyme.shallow(
-      <ListPickerItem
-        key="key"
-      />,
-    ).should.matchSnapshot();
-  });
+    it("should unmount correctly", () => {
+      const unknownItem: ListItem = {
+        key: "unknown-item",
+        name: "unknown",
+        enabled: false,
+        type: ListItemType.Item,
+      };
 
-  it("should unmount correctly", () => {
-    const component = enzyme.mount(
-      <ListPicker
-        title={title}
-        items={listItems}
-        setEnabled={setEnabled}
-      />,
-    );
-    component.unmount();
-  });
-});
+      const singleItemList = new Array<ListItem>();
+      singleItemList.push(unknownItem);
 
-describe("ExpandableSection", () => {
-  it("should render correctly", () => {
-    enzyme.shallow(<ExpandableSection />);
+      const component = enzyme.mount(
+        <ListPickerItem
+          key="key"
+          isActive={true}
+          isFocused={true}
+        />,
+      );
+      component.unmount();
+    });
   });
 
-  it("should unmount correctly", () => {
-    const component = enzyme.mount(
-      <ExpandableSection />,
-    );
-    component.unmount();
-  });
-});
+  describe("ExpandableSection", () => {
+    it("should render correctly", () => {
+      enzyme.shallow(<ExpandableSection />);
+    });
 
-describe("ListPickerBase", () => {
-  let listPickerBaseWrapper: enzyme.ShallowWrapper<any>;
-  let listPickerBaseInstance: ListPickerBase;
+    it("should unmount correctly", () => {
+      const component = enzyme.mount(
+        <ExpandableSection />,
+      );
+      component.unmount();
+    });
 
-  beforeEach(() => {
-    listPickerBaseWrapper = enzyme.shallow(
-      <ListPickerBase
-        title={title}
-        items={listItems}
-        setEnabled={setEnabled}
-      />);
-    listPickerBaseInstance = listPickerBaseWrapper.instance() as ListPickerBase;
-  });
-
-  it("should render correctly", () => {
-    enzyme.shallow(
-      <ListPickerBase
-        title={title}
-        items={listItems}
-        setEnabled={setEnabled}
-      />,
-    ).should.matchSnapshot();
+    it("should handle onClick", () => {
+      const component = enzyme.mount(
+        <ExpandableSection />,
+      );
+      component.find("div.ListPickerInnerContainer-header").simulate("click");
+      component.update();
+      component.find("div.ListPickerInnerContainer-header-expanded");
+      expect(component.length).to.eq(1);
+      component.unmount();
+    });
   });
 
-  it("should minimize", () => {
-    listPickerBaseInstance.minimize();
-    expect(listPickerBaseWrapper.state("expanded")).to.be.false;
-  });
+  describe("ListPickerBase", () => {
+    let listPickerBaseWrapper: enzyme.ShallowWrapper<any>;
+    let listPickerBaseInstance: ListPickerBase;
 
-  it("should return true if expanded", () => {
-    listPickerBaseWrapper.setState({ expanded: true });
-    listPickerBaseInstance.forceUpdate();
-    expect(listPickerBaseInstance.isExpanded()).to.be.true;
-  });
+    beforeEach(() => {
+      listPickerBaseWrapper = enzyme.shallow(
+        <ListPickerBase
+          title={title}
+          items={listItems}
+          setEnabled={setEnabled}
+        />);
+      listPickerBaseInstance = listPickerBaseWrapper.instance() as ListPickerBase;
+    });
 
-  it("should return false if not expanded", () => {
-    listPickerBaseWrapper.setState({ expanded: false });
-    listPickerBaseInstance.forceUpdate();
-    expect(listPickerBaseInstance.isExpanded()).to.be.false;
-  });
+    it("should render correctly", () => {
+      enzyme.shallow(
+        <ListPickerBase
+          title={title}
+          items={listItems}
+          setEnabled={setEnabled}
+        />,
+      ).should.matchSnapshot();
+    });
 
-  it("should return expanded content", () => {
-    listPickerBaseInstance.getExpandedContent();
-  });
+    it("should minimize", () => {
+      listPickerBaseInstance.minimize();
+      expect(listPickerBaseWrapper.state("expanded")).to.be.false;
+    });
 
-  it("should unmount correctly", () => {
-    const component = enzyme.mount(
-      <ListPickerBase
-        title={title}
-        items={listItems}
-        setEnabled={setEnabled}
-      />,
-    );
-    component.unmount();
+    it("should return true if expanded", () => {
+      listPickerBaseWrapper.setState({ expanded: true });
+      listPickerBaseInstance.forceUpdate();
+      expect(listPickerBaseInstance.isExpanded()).to.be.true;
+    });
+
+    it("should return false if not expanded", () => {
+      listPickerBaseWrapper.setState({ expanded: false });
+      listPickerBaseInstance.forceUpdate();
+      expect(listPickerBaseInstance.isExpanded()).to.be.false;
+    });
+
+    it("should return expanded content", () => {
+      listPickerBaseInstance.getExpandedContent();
+    });
+
+    it("simulate expanding via click", () => {
+      const spyOnExpanded = sinon.spy();
+
+      const component = enzyme.mount(
+        <ListPickerBase
+          title={title}
+          items={listItems}
+          setEnabled={setEnabled}
+          onExpanded={spyOnExpanded}
+        />,
+      );
+
+      const itemComponent = component.find(Item);
+      expect(itemComponent).not.to.be.undefined;
+      itemComponent.simulate("click");
+      component.update();
+
+      // tslint:disable-next-line:no-console
+      // console.log(component.debug());
+      expect(spyOnExpanded.calledOnce).to.be.true;
+      component.unmount();
+    });
+
+    it("should unmount correctly", () => {
+      const component = enzyme.mount(
+        <ListPickerBase
+          title={title}
+          items={listItems}
+          setEnabled={setEnabled}
+        />,
+      );
+      component.unmount();
+    });
   });
 });

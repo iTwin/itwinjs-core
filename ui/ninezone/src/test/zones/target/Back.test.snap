@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Back /> renders correctly 1`] = `
-<MergeTarget
-  className="nz-zones-target-back nz-zone-9"
+exports[`<BackTarget /> renders correctly 1`] = `
+<ZoneTarget
+  className="nz-zones-target-back"
   zoneIndex={9}
 >
   <Arrow
-    className="nz-arrow"
+    zoneIndex={9}
   />
-</MergeTarget>
+</ZoneTarget>
 `;

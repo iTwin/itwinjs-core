@@ -9,8 +9,11 @@ import { PropertyRecord, PropertyValue } from "@bentley/imodeljs-frontend";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 import "./EditorContainer.scss";
+import { CommonProps } from "@bentley/ui-core";
 
-/** Arguments for the Property Updated event callback */
+/** Arguments for the Property Updated event callback
+ * @beta
+ */
 export interface PropertyUpdatedArgs {
   /** The property being updated. */
   propertyRecord: PropertyRecord;
@@ -18,38 +21,56 @@ export interface PropertyUpdatedArgs {
   newValue: PropertyValue;
 }
 
-/** Properties for a property editor component */
-export interface PropertyEditorProps {
+/** Properties for a property editor component
+ * @beta
+ */
+export interface PropertyEditorProps extends CommonProps {
+  /** The property being updated. */
   propertyRecord?: PropertyRecord;
+  /** Handler for commit */
   onCommit?: (args: PropertyUpdatedArgs) => void;
+  /** Handler for cancel */
   onCancel?: () => void;
+  /** Handler for blur */
   onBlur?: (event: React.FocusEvent) => void;
+  /** Indicates whether the Property Editor should set focus */
   setFocus?: boolean;
 }
 
-/** [[EditorContainer]] React component properties */
-export interface EditorContainerProps {
+/** [[EditorContainer]] React component properties
+ * @beta
+ */
+export interface EditorContainerProps extends CommonProps {
+  /** The property being updated. */
   propertyRecord: PropertyRecord;
+  /** Tooltip text */
   title?: string;
+  /** Handler for commit */
   onCommit: (args: PropertyUpdatedArgs) => void;
+  /** Handler for cancel */
   onCancel: () => void;
+  /** Indicates whether the Property Editor should set focus */
   setFocus?: boolean;
 
-  /** @hidden */
+  /** @internal */
   ignoreEditorBlur?: boolean;
 }
 
+/** @internal */
 interface CloneProps extends PropertyEditorProps {
   ref: (ref: any) => void;
 }
 
-/** Interface implemented by React based type editors  */
+/** Interface implemented by React based type editors
+ * @beta
+ */
 export interface TypeEditor {
   getPropertyValue: () => Promise<PropertyValue | undefined>;
 }
 
 /**
  * EditorContainer React component
+ * @beta
  */
 export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
@@ -70,6 +91,8 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       onBlur: this._handleEditorBlur,
       propertyRecord: this.props.propertyRecord,
       setFocus: this.props.setFocus !== undefined ? this.props.setFocus : true,
+      className: this.props.className,
+      style: this.props.style,
     };
 
     let editorNode: React.ReactNode;
@@ -177,6 +200,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     this.props.onCancel();
   }
 
+  /** @internal */
   public render() {
     return (
       <span className="components-editor-container"

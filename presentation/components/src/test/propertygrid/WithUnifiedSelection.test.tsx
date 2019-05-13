@@ -8,14 +8,16 @@ import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment
 import * as React from "react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
+import * as path from "path";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import {
   Presentation,
-  SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider,
+  SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, PresentationManager,
 } from "@bentley/presentation-frontend";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid, PropertyGridProps, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
@@ -27,6 +29,13 @@ import { IPresentationPropertyDataProvider } from "../../propertygrid/DataProvid
 const PresentationPropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 
 describe("PropertyGrid withUnifiedSelection", () => {
+
+  before(() => {
+    Presentation.presentation = moq.Mock.ofType<PresentationManager>().object;
+    Presentation.i18n = new I18N([], "", {
+      urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
+    });
+  });
 
   let testRulesetId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -55,11 +64,12 @@ describe("PropertyGrid withUnifiedSelection", () => {
         records: {},
       };
     }
+    const evt = new PropertyDataChangeEvent();
     providerMock.reset();
     providerMock.setup((x) => x.imodel).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
     providerMock.setup((x) => x.getData()).returns(async () => propertyData!);
-    providerMock.setup((x) => x.onDataChanged).returns(() => new PropertyDataChangeEvent());
+    providerMock.setup((x) => x.onDataChanged).returns(() => evt);
   };
 
   it("mounts", () => {
@@ -97,12 +107,26 @@ describe("PropertyGrid withUnifiedSelection", () => {
     expect(component.selectionHandler!.imodel).to.eq(imodelMock.object);
   });
 
-  it("renders correctly", () => {
+  it("renders correctly with no data", () => {
     expect(shallow(<PresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />)).to.matchSnapshot();
+  });
+
+  it("renders correctly when data provider keys count exceeds limit", () => {
+    const keys = new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]);
+    selectionHandlerMock.reset();
+    selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => [0]);
+    selectionHandlerMock.setup((x) => x.getSelection(moq.It.isAnyNumber())).returns(() => keys);
+    const wrapper = shallow(<PresentationPropertyGrid
+      orientation={Orientation.Horizontal}
+      dataProvider={dataProviderMock.object}
+      selectionHandler={selectionHandlerMock.object}
+      requestedContentInstancesLimit={1}
+    />);
+    expect(wrapper).to.matchSnapshot();
   });
 
   it("disposes selection handler when unmounts", () => {
@@ -155,9 +179,12 @@ describe("PropertyGrid withUnifiedSelection", () => {
 
   describe("selection handling", () => {
 
+    beforeEach(() => {
+      selectionHandlerMock.reset();
+    });
+
     it("sets data provider keys to overall selection when mounts", () => {
       const keysOverall = new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]);
-      selectionHandlerMock.reset();
       selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => [1, 2]);
       selectionHandlerMock.setup((x) => x.getSelection(2)).returns(() => new KeySet());
       selectionHandlerMock.setup((x) => x.getSelection(1)).returns(() => keysOverall);
@@ -166,13 +193,12 @@ describe("PropertyGrid withUnifiedSelection", () => {
         dataProvider={dataProviderMock.object}
         selectionHandler={selectionHandlerMock.object}
       />);
-      dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysOverall), moq.Times.once());
     });
 
     it("sets data provider keys to overall selection on selection changes", () => {
       const keysOverall = new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]);
       const keysAdded = new KeySet([createRandomECInstanceKey()]);
-      selectionHandlerMock.reset();
       selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
       selectionHandlerMock.setup((x) => x.getSelection(0)).returns(() => keysOverall);
       shallow(<PresentationPropertyGrid
@@ -188,14 +214,13 @@ describe("PropertyGrid withUnifiedSelection", () => {
         keys: keysAdded,
         timestamp: new Date(),
       }, moq.Mock.ofType<ISelectionProvider>().object);
-      dataProviderMock.verify((x) => x.keys = keysOverall, moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(keysOverall), moq.Times.once());
     });
 
     it("sets data provider keys to an empty KeySet when overall selection is empty", () => {
       const emptyKeySet = new KeySet();
-      const selectionProviderMock = moq.Mock.ofType<ISelectionProvider>();
-      selectionProviderMock.setup((x) => x.getSelection(imodelMock.object, 0))
-        .returns(() => emptyKeySet);
+      selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
+      selectionHandlerMock.setup((x) => x.getSelection(0)).returns(() => emptyKeySet);
       shallow(<PresentationPropertyGrid
         orientation={Orientation.Vertical}
         dataProvider={dataProviderMock.object}
@@ -208,7 +233,29 @@ describe("PropertyGrid withUnifiedSelection", () => {
         level: 0,
         keys: emptyKeySet,
         timestamp: new Date(),
-      }, selectionProviderMock.object);
+      }, moq.Mock.ofType<ISelectionProvider>().object);
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(emptyKeySet), moq.Times.once());
+    });
+
+    it("sets data provider keys to an empty KeySet when overall selection contains more keys than set limit", () => {
+      const emptyKeySet = new KeySet();
+      const twoInstanceKeys = new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]);
+      selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
+      selectionHandlerMock.setup((x) => x.getSelection(0)).returns(() => twoInstanceKeys);
+      shallow(<PresentationPropertyGrid
+        orientation={Orientation.Vertical}
+        dataProvider={dataProviderMock.object}
+        selectionHandler={selectionHandlerMock.object}
+        requestedContentInstancesLimit={1}
+      />);
+      selectionHandlerMock.target.onSelect!({
+        imodel: imodelMock.object,
+        source: faker.random.word(),
+        changeType: SelectionChangeType.Clear,
+        level: 0,
+        keys: emptyKeySet,
+        timestamp: new Date(),
+      }, moq.Mock.ofType<ISelectionProvider>().object);
       dataProviderMock.verify((x) => x.keys = moq.isKeySet(emptyKeySet), moq.Times.once());
     });
 

@@ -24,7 +24,8 @@ describe("<Title />", () => {
   });
 
   it("has correct text", () => {
-    const wrapper = shallow(<Title>Test Content</Title>);
+    const wrapper = mount(<Title>Test Content</Title>);
     wrapper.find(".uicore-text-title").text().should.equal("Test Content");
+    wrapper.unmount();
   });
 });

@@ -4,11 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-/** Signature for [[Timer]] execute callback. */
+/** Signature for [[Timer]] execute callback.
+ * @public
+ */
 export type ExecuteHandler = (this: void) => void;
 
-/** Notifies handler after a set interval. */
-export default class Timer {
+/** Notifies handler after a set interval.
+ * @public
+ */
+export class Timer {
   private _delay: number;
   private _isRunning = false;
   private _timerId = 0;

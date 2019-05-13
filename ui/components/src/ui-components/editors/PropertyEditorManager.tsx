@@ -10,6 +10,7 @@ import { AsyncValueProcessingResult } from "../converters/TypeConverter";
 import { TextEditor } from "./TextEditor";
 
 /** DataControllers can be implemented per typename to validate and commit values.
+ * @beta
  */
 export interface DataController {
   validateValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult>;
@@ -17,6 +18,7 @@ export interface DataController {
 }
 
 /** PropertyEditor is the base class for all property editors.
+ * @beta
  */
 export abstract class PropertyEditorBase implements DataController {
   public customDataController: DataController | undefined = undefined;
@@ -42,6 +44,7 @@ export abstract class PropertyEditorBase implements DataController {
 }
 
 /** DataControllerBase is the base class for all Data Controllers.
+ * @beta
  */
 export abstract class DataControllerBase implements DataController {
   public async commitValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
@@ -54,6 +57,7 @@ export abstract class DataControllerBase implements DataController {
 }
 
 /** Manages Property Editors. Property Editors are registered with and created by the manager.
+ * @beta
  */
 export class PropertyEditorManager {
   private static _editors: { [index: string]: (new () => PropertyEditorBase) } = {};
@@ -110,7 +114,9 @@ export class PropertyEditorManager {
   }
 }
 
-/** BasicPropertyEditor React component that uses the [[TextEditor]] property editor. */
+/** BasicPropertyEditor React component that uses the [[TextEditor]] property editor.
+ * @beta
+ */
 export class BasicPropertyEditor extends PropertyEditorBase {
 
   public get reactElement(): React.ReactNode {

@@ -42,7 +42,8 @@ export function createComboBox<T>(props: ComboBoxProps<T>): ComboBox {
   for (const entry of props.entries) {
     const option = document.createElement("option") as HTMLOptionElement;
     option.innerText = entry.name;
-    option.value = entry.value.toString();
+    if (undefined !== entry.value)
+      option.value = entry.value.toString();
     select.appendChild(option);
   }
 

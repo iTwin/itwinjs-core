@@ -10,7 +10,9 @@ import { PrimitivePropertyLabelRendererProps } from "./PrimitivePropertyLabelRen
 
 import "./PropertyLabelRenderer.scss";
 
-/** Properties for the [[NonPrimitivePropertyLabelRenderer]] React component */
+/** Properties for the [[NonPrimitivePropertyLabelRenderer]] React component
+ * @public
+ */
 export interface NonPrimitivePropertyLabelRendererProps extends PrimitivePropertyLabelRendererProps {
   isExpanded: boolean;
   onExpand: () => void;
@@ -20,6 +22,7 @@ export interface NonPrimitivePropertyLabelRendererProps extends PrimitivePropert
 /**
  * A React component that renders a non-primitive property label.
  * It renders an animated arrow with text which expands when label is clicked.
+ * @public
  */
 export class NonPrimitivePropertyLabelRenderer extends React.PureComponent<NonPrimitivePropertyLabelRendererProps> {
   private _onClick = () => {
@@ -36,7 +39,9 @@ export class NonPrimitivePropertyLabelRenderer extends React.PureComponent<NonPr
         className={"components-nonprimitive-property-label-renderer " + (this.props.className ? this.props.className : "")}
         onClick={this._onClick}
       >
-        <i className={"icon icon-chevron-right" + (this.props.isExpanded ? " components-expanded" : "")} />
+        <div className={(this.props.isExpanded ? " components-expanded" : "")}>
+          <i className="icon icon-chevron-right" />
+        </div>
         <PropertyLabelRenderer renderColon={this.props.renderColon}>{this.props.children}</PropertyLabelRenderer>
       </div>
     );

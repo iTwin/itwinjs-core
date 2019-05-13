@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 "use strict";
 
-const spawn = require('cross-spawn');
+const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 const argv = require("yargs").argv;
 const fs = require("fs-extra");
 
@@ -14,34 +14,54 @@ if (argv.entry === undefined) {
 }
 
 const isCI = (process.env.TF_BUILD);
-var errorCode = 0;
 const entryPointFileName = argv.entry;
 const isPresentation = argv.isPresentation;
+const ignoreMissingTags = argv.ignoreMissingTags;
 
 const config = {
-  $schema: "https://developer.microsoft.com/json-schemas/api-extractor/api-extractor.schema.json",
+  $schema: "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+  projectFolder: isPresentation ? "../src" : "../",
   compiler: {
-    configType: "tsconfig",
-    rootFolder: isPresentation ? "./src" : "."
+    tsconfigFilePath: "<projectFolder>/tsconfig.json"
   },
-  project: {
-    entryPointSourceFile: isPresentation ? `../lib/${entryPointFileName}.d.ts` : `lib/${entryPointFileName}.d.ts`
+  mainEntryPointFilePath: `${entryPointFileName}.d.ts`,
+  apiReport: {
+    enabled: true,
+    reportFolder: "../../../common/api",
+    reportTempFolder: "../../../common/temp/api"
   },
-  policies: {
-    namespaceSupport: "permissive"
-  },
-  validationRules: {
-    missingReleaseTags: "allow"
-  },
-  apiJsonFile: {
+  docModel: {
     enabled: false
   },
-  apiReviewFile: {
-    enabled: true,
-    apiReviewFolder: isPresentation ? "../../../common/api" : "../../common/api",
-    tempFolder: isPresentation ? "../../../common/temp/api" : "../../common/temp/api"
+  dtsRollup: {
+    enabled: false
+  },
+  tsdocMetadata: {
+    enabled: false
+  },
+  messages: {
+    tsdocMessageReporting: {
+      default: {
+        logLevel: "none"
+      }
+    },
+    extractorMessageReporting: {
+      "ae-missing-release-tag": {
+        logLevel: ignoreMissingTags ? "none" : "error",
+        addToApiReportFile: true
+      },
+      "ae-internal-missing-underscore": {
+        addToApiReportFile: false,
+        logLevel: "none"
+      }
+    }
   }
 };
+
+if (!fs.existsSync("lib")) {
+  process.stderr.write("lib folder not found. Run `rush build` before extract-api");
+  process.exit(1);
+}
 
 const configFileName = `lib/${entryPointFileName}.json`;
 fs.writeFileSync(configFileName, JSON.stringify(config, null, 2));
@@ -53,45 +73,9 @@ const args = [
 if (!isCI)
   args.push("-l");
 
-
-//Temporarily re-implementing features of simple-spawn till version 7 of api-extractor is released
-//Spawns a child process to run api-extractor and pipes the errors to be handled in this script
-const cwd = process.cwd();
-const child = spawn("api-extractor", args, {
-  cwd: cwd,
-});
-child.stdout.on('data', (data) => {
-  process.stdout.write(data);
-})
-child.stderr.on('data', (data) => {
-  if (data.includes("You have changed the public API signature for this project.") && isCI)
-    errorCode = 1;
-
-  // Workaround: Errors we currently hit in the iModel.js that will be fixed with API-extractor v7.
-  if (data.includes("The @param block") ||
-    data.includes("TSDoc") ||
-    data.includes("HTML") ||
-    data.includes("Structured content") ||
-    data.includes("The code span") ||
-    data.includes("A backslash can only be used") ||
-    data.includes("for a code fence")) {
-    //Filter out these errors
-  } else {
-    process.stderr.write(data);
-    if (isCI)
-      errorCode = 1;
-  }
-});
-child.on('error', (data) => {
-  console.log(data);
-});
-child.on('close', (code) => {
+spawn(require.resolve(".bin/api-extractor"), args).then((code) => {
   if (fs.existsSync(configFileName))
     fs.unlinkSync(configFileName);
-
-  if (fs.existsSync("dist/tsdoc-metadata.json")) {
-    fs.unlinkSync("dist/tsdoc-metadata.json");
-    fs.rmdirSync("dist");
-  }
-  process.exit(errorCode);
+  process.exit(code);
 });
+handleInterrupts();

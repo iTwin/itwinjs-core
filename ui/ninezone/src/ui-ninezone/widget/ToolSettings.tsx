@@ -6,22 +6,31 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../utilities/Props";
+import { CommonProps } from "@bentley/ui-core";
+import { TitleBar } from "../footer/dialog/TitleBar";
 import "./ToolSettings.scss";
 
-/** Properties of [[ToolSettings]] component. */
-export interface ToolSettingsWidgetProps extends CommonProps, NoChildrenProps {
-  /** Content of this ToolSettings widget. See: [[Nested]], [[ToolSettings]] */
-  content?: React.ReactNode;
-  /** Tab to control the content. See [[ToolSettingsTab]] */
-  tab?: React.ReactNode;
+/** Properties of [[ToolSettings]] component.
+ * @beta
+ */
+export interface ToolSettingsProps extends CommonProps {
+  /** Title bar buttons. I.e. [[TitleBarButton]] */
+  buttons?: React.ReactNode;
+  /** Tool settings content or content container. I.e. [[NestedToolSettings]], [[ScrollableToolSettings]] */
+  children?: React.ReactNode;
+  /** Tool settings title bar title. */
+  title?: string;
+  /** Handler for mouse enter */
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  /** Handler for mouse leave */
+  onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
-/**
- * Tool settings widget is used to display Tool Settings and Tool Assistance (Zone 2 in 9-Zone UI).
+/** Tool settings widget is used to display Tool Settings and Tool Assistance (in Zone 2 of 9-Zone UI).
  * @note Should be placed in [[Zone]] component.
+ * @beta
  */
-export class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps> {
+export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings",
@@ -31,14 +40,17 @@ export class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetPr
       <div
         className={className}
         style={this.props.style}
+        onMouseEnter={this.props.onMouseEnter}
+        onMouseLeave={this.props.onMouseLeave}
       >
-        {!this.props.content ? undefined :
-          <div className="nz-content">
-            {this.props.content}
-          </div>
-        }
-        <div className="nz-tab">
-          {this.props.tab}
+        <TitleBar
+          title={this.props.title}
+          className="nz-title"
+        >
+          {this.props.buttons}
+        </TitleBar>
+        <div className="nz-content">
+          {this.props.children}
         </div>
       </div>
     );

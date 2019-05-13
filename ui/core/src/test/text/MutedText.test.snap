@@ -1,15 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<MutedText /> content renders correctly 1`] = `
-<span
-  className="uicore-text-muted"
+<StyledText
+  mainClassName="uicore-text-muted"
 >
   Test content
-</span>
+</StyledText>
 `;
 
 exports[`<MutedText /> renders correctly 1`] = `
-<span
-  className="uicore-text-muted"
+<StyledText
+  mainClassName="uicore-text-muted"
 />
 `;

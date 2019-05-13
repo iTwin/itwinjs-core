@@ -9,12 +9,17 @@ import { PropertyCategoryBlock, PropertyCategoryBlockProps } from "./PropertyCat
 import { PropertyList, PropertyListProps, getPropertyKey } from "./PropertyList";
 import { PropertyCategory } from "../PropertyDataProvider";
 
-/** @hidden */
+/** @internal */
 export interface SelectablePropertyBlockProps extends PropertyCategoryBlockProps, Omit<PropertyListProps, "onColumnChanged" | "columnRatio"> {
+  /* The property category to display */
   category: PropertyCategory;
+  /** Custom CSS class name for the property list */
+  listClassName?: string;
+  /** Custom CSS Style for the property list */
+  listStyle?: React.CSSProperties;
 }
 
-/** @hidden */
+/** @internal */
 export interface SelectablePropertyBlockState {
   keyMatched: boolean;
   columnRatio: number;
@@ -22,7 +27,7 @@ export interface SelectablePropertyBlockState {
 
 /**
  * Wrapped PropertyCategoryBlock React component with list of properties and render optimization
- * @hidden
+ * @internal
  */
 export class SelectablePropertyBlock extends React.Component<SelectablePropertyBlockProps, SelectablePropertyBlockState> {
   private readonly _initialRatio = 0.25;
@@ -72,14 +77,18 @@ export class SelectablePropertyBlock extends React.Component<SelectablePropertyB
   }
 
   public render() {
-    const { children, onExpansionToggled, ...props } = this.props;
+    const { children, onExpansionToggled, className, style, listClassName, listStyle, ...props } = this.props;
     const listProps: PropertyListProps = {
       ...props,
       onColumnChanged: this._onRatioChanged,
       columnRatio: this.state.columnRatio,
+      className: listClassName,
+      style: listStyle,
     };
     return (
-      <PropertyCategoryBlock category={this.props.category} onExpansionToggled={this.props.onExpansionToggled}>
+      <PropertyCategoryBlock category={this.props.category} onExpansionToggled={this.props.onExpansionToggled}
+        className={className} style={style}
+      >
         <PropertyList {...listProps} />
       </PropertyCategoryBlock>
     );

@@ -54,15 +54,15 @@ describe("GeometryAccumulator tests", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    iModel = await IModelConnection.openStandalone(iModelLocation);
+    WebGLTestContext.startup();
+    iModel = await IModelConnection.openSnapshot(iModelLocation);
     spatialView = await iModel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
-    WebGLTestContext.startup();
   });
 
   after(async () => {
+    if (iModel) await iModel.closeSnapshot();
     WebGLTestContext.shutdown();
-    if (iModel) await iModel.closeStandalone();
   });
 
   it("addPath works as expected", () => {
@@ -232,7 +232,7 @@ describe("GeometryAccumulator tests", () => {
 
     expect(accum.geometries.length).to.equal(2);
     const map = accum.toMeshBuilderMap(new GeometryOptions(), 0.22);
-    expect(map.length).to.equal(2);
+    expect(map.size).to.equal(2);
   });
 
   it("toMeshes works as expected", () => {

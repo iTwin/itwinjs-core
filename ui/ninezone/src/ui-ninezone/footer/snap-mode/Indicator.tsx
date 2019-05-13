@@ -6,53 +6,50 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { FooterIndicator, FooterIndicatorProps } from "../Indicator";
 import "./Indicator.scss";
 
-/** Properties of [[SnapModeIndicator]] component. */
-export interface SnapModeIndicatorProps extends CommonProps, NoChildrenProps {
-  /** Dialog that is opened when indicator is clicked. See [[SnapModeDialog]] */
-  dialog?: React.ReactChild;
-  /** Indicator icon. I.e. [[SnapModeIcon]] */
-  icon?: React.ReactNode;
-  /** Describes if the label is visible. Pass true if the [[Footer]] is in footer mode. */
-  isLabelVisible?: boolean;
+/** Properties of [[SnapMode]] component.
+ * @beta
+ */
+export interface SnapModeProps extends FooterIndicatorProps {
   /** Indicator label. */
-  label?: string;
+  children?: string;
+  /** Indicator icon. */
+  icon?: React.ReactNode;
+  /** Clickable part of the indicator. */
+  indicatorRef?: React.Ref<HTMLDivElement>;
   /** Function called when indicator is clicked. */
   onClick?: () => void;
 }
 
-/** One of [[Footer]] indicators. */
-export class SnapModeIndicator extends React.PureComponent<SnapModeIndicatorProps> {
+/** Snap mode indicator used in [[Footer]] component.
+ * @note Used with [[SnapModePanel]] component.
+ * @beta
+ */
+export class SnapMode extends React.PureComponent<SnapModeProps> {
   public render() {
-    const className = classnames(
-      "nz-footer-snapMode-indicator",
-      this.props.className);
-
-    const labelClassName = classnames(
-      "nz-label",
-      this.props.isLabelVisible && "nz-is-visible",
-    );
-
+    const { children, className, icon, indicatorRef, onClick, ...props } = this.props;
     return (
-      <div
-        className={className}
-        style={this.props.style}
-        onClick={this.props.onClick}
+      <FooterIndicator
+        className={classnames("nz-footer-snapMode-indicator", this.props.className)}
+        {...props}
       >
-        <div className="nz-indicator">
-          <span className={labelClassName}>{this.props.label}</span>
+        <div
+          className="nz-indicator"
+          onClick={onClick}
+          ref={indicatorRef}
+        >
+          {children !== undefined &&
+            <span className="nz-label">{children}</span>
+          }
           <div
             className="nz-icon"
           >
-            {this.props.icon}
+            {icon}
           </div>
         </div>
-        <div className="nz-dialog">
-          {this.props.dialog}
-        </div>
-      </div>
+      </FooterIndicator>
     );
   }
 }

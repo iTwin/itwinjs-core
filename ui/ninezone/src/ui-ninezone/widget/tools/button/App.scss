@@ -7,15 +7,16 @@
 .nz-toolbar-button-app {
   > .nz-bars {
     height: 100%;
-    position: relative;
-    top: -100%;
+    position: absolute;
+    top: 0;
+    left: 0;
     display: flex;
     flex-flow: column;
-    align-items: start;
+    align-items: flex-start;
     justify-content: center;
 
     > .nz-bar {
-      background-color: $button-stroke-color;
+      background-color: $buic-foreground-disabled;
       width: $bar-width;
       height: $bar-height;
       border-top-right-radius: $bar-right-corner-radius;

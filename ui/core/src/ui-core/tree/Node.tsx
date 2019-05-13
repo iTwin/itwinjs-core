@@ -8,16 +8,21 @@ import * as classnames from "classnames";
 import * as React from "react";
 import { Checkbox, CheckboxProps } from "../inputs/checkbox/Checkbox";
 import { CheckBoxState } from "../enums/CheckBoxState";
-import ExpansionToggle from "./ExpansionToggle";
+import { ExpansionToggle } from "./ExpansionToggle";
 import { Spinner, SpinnerSize } from "../loading/Spinner";
 import { Omit } from "../utils/typeUtils";
 
 import "./Node.scss";
+import { CommonProps } from "../utils/Props";
 
-/** Props for node checkbox renderer */
+/** Props for node checkbox renderer
+ * @public
+ */
 export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange"> & { onChange: (checked: boolean) => void };
 
-/** Type for node checkbox renderer */
+/** Type for node checkbox renderer
+ * @public
+ */
 export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode;
 
 /** Number of pixels the node gets offset per each hierarchy level */
@@ -25,7 +30,9 @@ export const LEVEL_OFFSET = 20;
 
 const EXPANSION_TOGGLE_WIDTH = 24;
 
-/** Properties for [[TreeNode]] checkbox */
+/** Properties for [[TreeNode]] checkbox
+ * @public
+ */
 export interface NodeCheckboxProps {
   /** State of the checkbox */
   state?: CheckBoxState;
@@ -33,10 +40,14 @@ export interface NodeCheckboxProps {
   onClick?: (newState: CheckBoxState) => void;
   /** Indicates whether checkbox is disabled */
   isDisabled?: boolean;
+  /** Tooltip to be displayed when mouse is hovered over checkbox */
+  tooltip?: string;
 }
 
-/** Properties for the [[TreeNode]] React component */
-export interface NodeProps {
+/** Properties for the [[TreeNode]] React component
+ * @public
+ */
+export interface TreeNodeProps extends CommonProps {
   label: React.ReactNode;
   level: number;
   icon?: React.ReactChild;
@@ -54,8 +65,6 @@ export interface NodeProps {
   onMouseUp?: (e: React.MouseEvent) => void;
   onClickExpansionToggle?: () => void;
   children?: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
   /** Contains render overrides for different pieces of the node component */
   renderOverrides?: {
     /** Callback to render a checkbox. Only called when checkbox is displayed */
@@ -64,8 +73,14 @@ export interface NodeProps {
   ["data-testid"]?: string;
 }
 
-/** Presentation React component for a Tree node  */
-export default class TreeNode extends React.Component<NodeProps> {
+/** Presentation React component for a Tree node
+ * @public
+ */
+export class TreeNode extends React.Component<TreeNodeProps> {
+  constructor(props: TreeNodeProps) {
+    super(props);
+  }
+
   public render() {
     const className = classnames(
       "core-tree-node",
@@ -85,6 +100,7 @@ export default class TreeNode extends React.Component<NodeProps> {
         label: "",
         checked: this.props.checkboxProps.state === CheckBoxState.On,
         disabled: this.props.checkboxProps.isDisabled,
+        title: this.props.checkboxProps.tooltip,
         onClick: this._onCheckboxClick,
         onChange: this._onCheckboxChange,
       };

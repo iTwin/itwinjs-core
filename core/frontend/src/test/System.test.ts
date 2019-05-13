@@ -2,8 +2,52 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { Capabilities, RenderType, DepthType } from "../webgl";
+import { IModelApp } from "../IModelApp";
+import { MockRender } from "../render/MockRender";
+import { TileAdmin } from "../tile/TileAdmin";
+import { RenderSystem } from "../render/System";
+
+describe("Instancing", () => {
+  class TestApp extends MockRender.App {
+    public static start(enableInstancing: boolean, supportsInstancing: boolean): void {
+      const tileAdminProps: TileAdmin.Props = { enableInstancing };
+      const renderSysOpts: RenderSystem.Options = {};
+      if (!supportsInstancing)
+        renderSysOpts.disabledExtensions = ["ANGLE_instanced_arrays"];
+
+      IModelApp.startup({
+        renderSys: renderSysOpts,
+        tileAdmin: TileAdmin.create(tileAdminProps),
+      });
+    }
+  }
+
+  after(async () => {
+    // make sure app shut down if exception occurs during test
+    if (IModelApp.initialized)
+      TestApp.shutdown();
+  });
+
+  it("should properly toggle instancing", () => {
+    TestApp.start(true, true);
+    assert.equal(IModelApp.tileAdmin.enableInstancing, true, "should produce tileAdmin.enableInstancing=true from TestApp.start(true,true)");
+    TestApp.shutdown();
+
+    TestApp.start(true, false);
+    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(true,false)");
+    TestApp.shutdown();
+
+    TestApp.start(false, true);
+    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(false,true)");
+    TestApp.shutdown();
+
+    TestApp.start(false, false);
+    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(false,false)");
+    TestApp.shutdown();
+  });
+});
 
 describe("System WebGL Capabilities", () => {
   it("capabilities should all default to 0 or false", () => {

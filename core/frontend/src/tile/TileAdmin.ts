@@ -10,6 +10,7 @@ import { Dictionary, SortedArray, PriorityQueue, assert } from "@bentley/bentley
 import { RpcOperation, IModelTileRpcInterface, TileTreeProps } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";
+import { IModelApp } from "../IModelApp";
 
 /** Provides functionality associated with [[Tile]]s, mostly in the area of scheduling requests for tile content.
  * The TileAdmin tracks [[Viewport]]s which have requested tile content, maintaining a priority queue of pending requests and
@@ -40,7 +41,10 @@ export abstract class TileAdmin {
 
   /** @internal */
   public abstract get enableInstancing(): boolean;
+  /** @internal */
   public abstract get elideEmptyChildContentRequests(): boolean;
+  /** @internal */
+  public abstract get requestTilesWithoutEdges(): boolean;
 
   /** Returns the union of the input set and the input viewport.
    * @internal
@@ -159,6 +163,18 @@ export namespace TileAdmin {
      * Default value: false
      */
     elideEmptyChildContentRequests?: boolean;
+
+    /** By default, when requesting tiles for a 3d view for which edge display is turned off, the response will include both surfaces and edges in the tile data.
+     * The tile deserialization code will then discard the edge data to save memory. This wastes bandwidth downloading unused data.
+     *
+     * Setting the following option to `true` will instead produce a response which omits all of the edge data, improving download speed and reducing space used in the browser cache.
+     *
+     * Default value: false
+     *
+     * @note This is a temporary workaround until a better solution is implemented (namely, edges and surfaces will be able to be requested separately).
+     * @internal
+     */
+    requestTilesWithoutEdges?: boolean;
   }
 
   /** A set of [[Viewport]]s.
@@ -294,6 +310,7 @@ class Admin extends TileAdmin {
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
   private readonly _elideEmptyChildContentRequests: boolean;
+  private readonly _requestTilesWithoutEdges: boolean;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
   private _swapActiveRequests = new Set<TileRequest>();
@@ -332,19 +349,21 @@ class Admin extends TileAdmin {
     super();
 
     if (undefined === options)
-      options = { };
+      options = {};
 
     this._throttle = !options.disableThrottling;
     this._maxActiveRequests = undefined !== options.maxActiveRequests ? options.maxActiveRequests : 10;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 0;
     this._enableInstancing = !!options.enableInstancing;
     this._elideEmptyChildContentRequests = !!options.elideEmptyChildContentRequests;
+    this._requestTilesWithoutEdges = !!options.requestTilesWithoutEdges;
 
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
   }
 
-  public get enableInstancing() { return this._enableInstancing; }
+  public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   public get elideEmptyChildContentRequests() { return this._elideEmptyChildContentRequests; }
+  public get requestTilesWithoutEdges() { return this._requestTilesWithoutEdges; }
 
   public get maxActiveRequests() { return this._maxActiveRequests; }
   public set maxActiveRequests(max: number) {

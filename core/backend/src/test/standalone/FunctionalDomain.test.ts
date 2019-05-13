@@ -4,27 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { ActivityLoggingContext, DbResult, Guid, Id64String, Id64, Logger } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64String, Id64, Logger } from "@bentley/bentleyjs-core";
 import { Code, CodeSpec, CodeScopeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
-import { BriefcaseManager, ECSqlStatement, Functional, FunctionalModel, IModelDb, SqliteStatement } from "../../imodeljs-backend";
+import { BriefcaseManager, ECSqlStatement, FunctionalSchema, FunctionalModel, IModelDb, SqliteStatement, BackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
-  const activityLoggingContext = new ActivityLoggingContext("");
-
-  before(() => {
-    // Logger.initializeToConsole();
-    // Logger.setLevelDefault(LogLevel.Warning);
-    // Logger.setLevel("FunctionalDomain.test", LogLevel.Info);
-    // Logger.setLevel("imodeljs-addon", LogLevel.Warning);
-    // Logger.setLevel("imodeljs-backend", LogLevel.Warning);
-    // Logger.setLevel("DgnCore", LogLevel.Warning);
-    // Logger.setLevel("ECObjectsNative", LogLevel.Warning);
-    // Logger.setLevel("ECDb", LogLevel.Warning);
-  });
+  const requestContext = new BackendRequestContext();
 
   it("should populate FunctionalModel", async () => {
-    const iModelDb: IModelDb = IModelTestUtils.createStandaloneIModel("FunctionalTest.bim", {
+    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },
       client: "Functional",
       globalOrigin: { x: 0, y: 0 },
@@ -33,8 +22,8 @@ describe("Functional Domain", () => {
     });
 
     // Import the Functional schema
-    await Functional.importSchema(activityLoggingContext, iModelDb);
-    Functional.registerSchema();
+    await FunctionalSchema.importSchema(requestContext, iModelDb);
+    FunctionalSchema.registerSchema();
 
     let commits = 0;
     let committed = 0;
@@ -49,7 +38,7 @@ describe("Functional Domain", () => {
 
     BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchema below will fail if this is not called to flush local changes
 
-    await iModelDb.importSchema(activityLoggingContext, path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
+    await iModelDb.importSchema(requestContext, path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
 
     iModelDb.saveChanges("Import TestFunctional schema");
     assert.equal(commits, 1);
@@ -102,6 +91,6 @@ describe("Functional Domain", () => {
       }
     });
 
-    iModelDb.closeStandalone();
+    iModelDb.closeSnapshot();
   });
 });

@@ -10,10 +10,11 @@ import { RobotWorld } from "./RobotWorldSchema";
 /**
  * An example of defining a subclass of SpatialLocationElement.
  * Normally, you would start writing a class like this by generating the TypeScript class
- * definition from the ecschema. Then, you would then hand-edit it to add methods.
+ * definition from the schema. Then, you would then hand-edit it to add methods.
  * In this example, a "barrier" is represented as a line in the X-Y plane.
  */
 export class Barrier extends SpatialLocationElement {
+  public static get className(): string { return "Barrier"; }
   //  Define the properties added by this subclass
   public length: number = 1.0;                    // The length of the barrier
   public angle: number = 0.0;                     // The orientation angle of the barrier

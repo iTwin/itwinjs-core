@@ -2,17 +2,24 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../../ui-framework";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import {
-  FrontstageManager, ContentControlActivatedEventArgs, ContentLayoutActivatedEventArgs,
+  FrontstageManager,
   FrontstageActivatedEventArgs, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs,
-  NavigationAidActivatedEventArgs, ToolActivatedEventArgs, WidgetStateChangedEventArgs,
+  ToolActivatedEventArgs,
 } from "../../ui-framework/frontstage/FrontstageManager";
 import { Backstage, BackstageCloseEventArgs } from "../../ui-framework/backstage/Backstage";
 import { WorkflowManager, TaskActivatedEventArgs, WorkflowActivatedEventArgs } from "../../ui-framework/workflow/Workflow";
 import { ContentViewManager, ActiveContentChangedEventArgs } from "../../ui-framework/content/ContentViewManager";
+import {
+  SyncUiEventDispatcher,
+  SyncUiEventArgs,
+  WidgetStateChangedEventArgs,
+  ContentControlActivatedEventArgs,
+  ContentLayoutActivatedEventArgs,
+  NavigationAidActivatedEventArgs,
+} from "../../ui-framework";
 
 describe("SyncUiEventDispatcher", () => {
   let clock = sinon.useFakeTimers(Date.now());
@@ -170,7 +177,7 @@ describe("SyncUiEventDispatcher", () => {
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    Backstage.onBackstageCloseEventEvent.emit({} as BackstageCloseEventArgs);
+    Backstage.onBackstageCloseEvent.emit({} as BackstageCloseEventArgs);
     clock.tick(20); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 

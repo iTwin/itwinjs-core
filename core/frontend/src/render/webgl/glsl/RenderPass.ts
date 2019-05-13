@@ -10,6 +10,7 @@ import { RenderPass } from "../RenderFlags";
 /**
  * Adds a uniform holding the current render pass and a set of kRenderPass_* constants
  * uniform float u_renderPass
+ * @internal
  */
 export function addRenderPass(builder: ShaderBuilder) {
   builder.addUniform("u_renderPass", VariableType.Float, (prog) => {

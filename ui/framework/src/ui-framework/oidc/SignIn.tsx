@@ -5,54 +5,57 @@
 /** @module OIDC */
 
 import * as React from "react";
-import * as classnames from "classnames";
-import "./SignIn.scss";
+import { SignIn as SignInBase } from "@bentley/ui-components";
+import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { CommonProps } from "@bentley/ui-core";
 
-/************************************************************************
- * SignInDialog - OIDC sign-in dialog.
- ***********************************************************************/
-
-/** Properties for the [[SignIn]] component */
-export interface SignInProps {
-  onSignIn?: () => void;
+/** Properties for the [[SignIn]] component
+ * @public
+ */
+export interface SignInProps extends CommonProps {
+  /** Handler called after sign-in has completed */
+  onSignedIn: () => void;
+  /** Handler for the Register link */
+  onRegister?: () => void;
+  /** Handler for the Offline link */
   onOffline?: () => void;
 }
 
-interface SignInState {
-  isSigningIn: boolean;
-}
-
 /**
- * SignIn React component
+ * SignIn React component.
+ * `OidcClientWrapper.oidcClient.signIn` is called when the "Sign In" button is pressed,
+ * then `props.onSignedIn` is called after sign-in has completed.
+ * @public
  */
-export class SignIn extends React.Component<SignInProps, SignInState> {
-  constructor(props: SignInProps, context?: any) {
-    super(props, context);
-    this.state = { isSigningIn: false };
+export class SignIn extends React.PureComponent<SignInProps> {
+  constructor(props: SignInProps) {
+    super(props);
   }
 
-  private _onSignInClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    this.setState(Object.assign({}, this.state, { isSigningIn: true }));
-    if (this.props.onSignIn)
-      this.props.onSignIn();
+  public componentDidMount() {
+    if (OidcClientWrapper.oidcClient)
+      OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
-  private _onRegisterShow = () => {
+  private _onUserStateChanged() {
+    if (OidcClientWrapper.oidcClient.isAuthorized && this.props.onSignedIn)
+      this.props.onSignedIn();
+  }
+
+  public componentWillUnmount() {
+    if (OidcClientWrapper.oidcClient)
+      OidcClientWrapper.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+  }
+
+  private _onStartSignin = async () => {
+    OidcClientWrapper.oidcClient.signIn(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
   }
 
   public render() {
-    const signinButtonClassName = classnames("signin-button", this.state.isSigningIn && "signin-button-disabled");
-    return (
-      <div className="signin2">
-        <div className="signin-content">
-          <span className="icon icon-placeholder" />
-          <span className="prompt">Please sign in to access your Bentley Services.</span>
-          <button className={signinButtonClassName} type="button" onClick={this._onSignInClick}>Sign In</button>
-          <span className="signin-register-div">Don't have a profile?<a onClick={this._onRegisterShow}>Register</a></span>
-          <a className="signin-offline" onClick={this.props.onOffline}>Work Offline?</a>
-        </div>
-      </div>
-    );
+    return <SignInBase className={this.props.className} style={this.props.style}
+      onSignIn={this._onStartSignin}
+      onRegister={this.props.onRegister}
+      onOffline={this.props.onOffline} />;
   }
 }

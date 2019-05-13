@@ -3,9 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { SampleAppIModelApp } from "../..";
 import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 class Tool2UiProvider extends ToolUiProvider {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -29,11 +28,11 @@ class Tool2Settings extends React.Component {
               <th>Input</th>
             </tr>
             <tr>
-              <td>{SampleAppIModelApp.i18n.translate("SampleApp:tool2.month")}</td>
+              <td>{IModelApp.i18n.translate("SampleApp:tool2.month")}</td>
               <td> <input type="month" /> </td>
             </tr>
             <tr>
-              <td>{SampleAppIModelApp.i18n.translate("SampleApp:tool2.number")}</td>
+              <td>{IModelApp.i18n.translate("SampleApp:tool2.number")}</td>
               <td> <input type="number" min="10" max="20" /> </td>
             </tr>
           </tbody>

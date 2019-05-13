@@ -22,6 +22,7 @@ import {
   FrontstageManager,
   CoreTools,
   ContentLayoutManager,
+  StagePanel,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -86,6 +87,49 @@ export class Frontstage1 extends FrontstageProvider {
             ]}
           />
         }
+
+        topMostPanel={
+          <StagePanel size="64px"
+            widgets={[
+              <Widget element={<h2>TopMost panel</h2>} />,
+            ]}
+          />
+        }
+        topPanel={
+          <StagePanel size="64px"
+            widgets={[
+              <Widget element={<h2>Top panel</h2>} />,
+            ]}
+          />
+        }
+        leftPanel={
+          <StagePanel size="100px"
+            widgets={[
+              <Widget element={<h2>Left panel</h2>} />,
+            ]}
+          />
+        }
+        rightPanel={
+          <StagePanel size="100px"
+            widgets={[
+              <Widget element={<h2>Right panel</h2>} />,
+            ]}
+          />
+        }
+        bottomPanel={
+          <StagePanel size="64px"
+            widgets={[
+              <Widget element={<h2>Bottom panel</h2>} />,
+            ]}
+          />
+        }
+        bottomMostPanel={
+          <StagePanel size="64px"
+            widgets={[
+              <Widget element={<h2>BottomMost panel</h2>} />,
+            ]}
+          />
+        }
       />
     );
   }
@@ -107,7 +151,7 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
-  /** Command that opens a nested Frontstage */
+  /** Command that opens switches the content layout */
   private get _switchLayout() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder",

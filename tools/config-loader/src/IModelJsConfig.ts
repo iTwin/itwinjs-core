@@ -57,7 +57,7 @@ export class IModelJsConfig {
     }
 
     // tslint:disable-next-line:no-console
-    console.log(`Found configuration folder at: ${chalk.default.bold(repositoryRootDir)}`);
+    // console.log(`Found configuration folder at: ${chalk.default.bold(repositoryRootDir)}`);
     return repositoryRootDir;
   }
   public static init(suppressException: boolean = false, suppressErrorMessage: boolean = false, config?: any): any {

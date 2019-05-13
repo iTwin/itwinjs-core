@@ -5,7 +5,7 @@
 
 import { Checker } from "../Checker";
 import { expect } from "chai";
-import { ClipPrimitive, ClipShape, PlaneSetParamsCache, ClipMask } from "../../clipping/ClipPrimitive";
+import { ClipPrimitive, ClipMaskXYZRangePlanes, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
@@ -13,50 +13,16 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Geometry } from "../../Geometry";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { Triangulator } from "../../topology/Triangulation";
 import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../../topology/Graph";
+import { ClipVector } from "../../clipping/ClipVector";
+import { Angle } from "../../geometry3d/Angle";
+import { prettyPrint } from "../testFunctions";
 
 // tslint:disable:no-console
 
-/** Returns true if the range given does not contain any values extending to +/- infinity. */
-function isFiniteRange(range: Range3d): boolean {
-  if (range.low.x === -Number.MAX_VALUE)
-    return false;
-  if (range.low.y === -Number.MAX_VALUE)
-    return false;
-  if (range.low.z === -Number.MAX_VALUE)
-    return false;
-  if (range.high.x === Number.MAX_VALUE)
-    return false;
-  if (range.high.y === Number.MAX_VALUE)
-    return false;
-  if (range.high.z === Number.MAX_VALUE)
-    return false;
-  return true;
-}
-
-/**
- * For every ClipPlane in this ClipPrimitive, perform a function in the form (ClipPlane) => boolean. Will return true if all calls to
- * function return true, otherwise, returns false immediately.
- */
-function applyFunctionToPlanes(clipPrimitive: ClipPrimitive, isMask: boolean, func: ((plane: ClipPlane) => boolean)): boolean {
-  let set: UnionOfConvexClipPlaneSets | undefined;
-  if (isMask)
-    set = clipPrimitive.fetchMaskPlanesRef();
-  else
-    set = clipPrimitive.fetchClipPlanesRef();
-  if (set === undefined)
-    return false;
-  for (const convexSet of set.convexSets)
-    for (const plane of convexSet.planes)
-      if (!func(plane))
-        return false;
-  return true;
-}
-
-/** EXPENSIVE -- Returns true if two convex sets are equal. */
+/** EXPENSIVE -- Returns true if two convex sets are equal, allowing reordering of arrays */
 function convexSetsAreEqual(convexSet0: ConvexClipPlaneSet, convexSet1: ConvexClipPlaneSet): boolean {
   if (convexSet0.planes.length !== convexSet1.planes.length)
     return false;
@@ -75,13 +41,18 @@ function convexSetsAreEqual(convexSet0: ConvexClipPlaneSet, convexSet1: ConvexCl
   return true;
 }
 
-function clipPlaneSetsAreEqual(set0: UnionOfConvexClipPlaneSets, set1: UnionOfConvexClipPlaneSets): boolean {
-  if (set0.convexSets.length !== set1.convexSets.length)
+function clipPlaneSetsAreEqual(set0: UnionOfConvexClipPlaneSets | undefined, set1: UnionOfConvexClipPlaneSets | undefined): boolean {
+  // both undefined is equal . ..
+  if (set0 === undefined && set1 === undefined)
+    return true;
+  if (set0 === undefined || set1 === undefined)
+    return false;
+  if (set0!.convexSets.length !== set1!.convexSets.length)
     return false;
 
-  for (const convexSet0 of set0.convexSets) {
+  for (const convexSet0 of set0!.convexSets) {
     let foundMatch = false;
-    for (const convexSet1 of set1.convexSets) {
+    for (const convexSet1 of set1!.convexSets) {
       if (convexSetsAreEqual(convexSet0, convexSet1)) {
         foundMatch = true;
         break;
@@ -96,12 +67,6 @@ function clipPlaneSetsAreEqual(set0: UnionOfConvexClipPlaneSets, set1: UnionOfCo
 export function clipShapesAreEqual(clip0: ClipShape, clip1: ClipShape): boolean {
   if (!clipPlaneSetsAreEqual(clip0.fetchClipPlanesRef(), clip1.fetchClipPlanesRef()))
     return false;
-  if (clip0.fetchMaskPlanesRef() === undefined && clip1.fetchMaskPlanesRef() !== undefined)
-    return false;
-  if (clip0.fetchMaskPlanesRef() !== undefined && clip1.fetchMaskPlanesRef() === undefined)
-    return false;
-  if (clip0.fetchMaskPlanesRef() !== undefined && !clipPlaneSetsAreEqual(clip0.fetchMaskPlanesRef()!, clip1.fetchMaskPlanesRef()!))
-    return false;
   if (clip0.invisible !== clip1.invisible)
     return false;
   for (let i = 0; i < clip0.polygon.length; i++)  // Polygon points should be in the same order
@@ -115,15 +80,17 @@ export function clipShapesAreEqual(clip0: ClipShape, clip1: ClipShape): boolean 
     return false;
   if (clip0.transformValid && (!clip0.transformFromClip!.isAlmostEqual(clip1.transformFromClip!) || !clip1.transformToClip!.isAlmostEqual(clip1.transformToClip!)))
     return false;
-  if (clip0.bCurve === undefined && clip1.bCurve !== undefined)
-    return false;
-  if (clip0.bCurve !== undefined && clip1.bCurve === undefined)
-    return false;
-  if (clip0.bCurve !== undefined && !clip0.bCurve!.isAlmostEqual(clip1.bCurve!))
-    return false;
   return true;
 }
 
+export function clipPrimitivesAreEqual(clip0: ClipPrimitive, clip1: ClipPrimitive): boolean {
+  if (clip0 instanceof ClipShape && clip1 instanceof ClipShape)
+    return clipShapesAreEqual(clip0, clip1);
+  if (clipPlaneSetsAreEqual(clip0.fetchClipPlanesRef(), clip1.fetchClipPlanesRef())) {
+    return true;
+  }
+  return false;
+}
 /** Function for sorting planes in order of increasing x, increasing y. */
 function compareXYSector1(a: ClipPlane, b: ClipPlane): number {
   if (a.inwardNormalRef.x < b.inwardNormalRef.x)
@@ -313,7 +280,7 @@ function getPointIntersectionsOfConvexSetPlanes(convexSet: ConvexClipPlaneSet, c
 }
 
 /** Simple 2D area of triangle calculation given three points. This does not take into account values along the z-axis. */
-function triangleArea(pointA: Point3d, pointB: Point3d, pointC: Point3d): number {
+function triangleAreaXY(pointA: Point3d, pointB: Point3d, pointC: Point3d): number {
   const a = pointA.x * (pointB.y - pointC.y);
   const b = pointB.x * (pointC.y - pointA.y);
   const c = pointC.x * (pointA.y - pointB.y);
@@ -338,7 +305,6 @@ function pointArrayIsSubsetOfOther(arrayA: Point3d[], arrayB: Point3d[]): boolea
 }
 
 describe("ClipPrimitive", () => {
-  const ck = new Checker();
   const min2D = Point3d.create(-54, 18);  // Bottom left point of the octogon formed from octogonalPoints
   const max2D = Point3d.create(-42, 42);  // Top right point of the octogon formed from octogonalPoints
   let octogonalPoints: Point3d[];         // Points array representing an octogon in quadrant II
@@ -390,8 +356,8 @@ describe("ClipPrimitive", () => {
   });
 
   it("GetRange", () => {
+    const ck = new Checker();
     const clipPrimitive = ClipShape.createEmpty();
-    const clipPrimitiveRange = Range3d.createNull();
     const convexSet = ConvexClipPlaneSet.createEmpty();
     const convexSetRange = Range3d.createNull();
     const numIterations = 10;
@@ -402,15 +368,13 @@ describe("ClipPrimitive", () => {
       // Test with positive box
       ConvexClipPlaneSet.createXYBox(p, p, p + 1, p + 1, convexSet);
       convexSet.addZClipPlanes(false, p, p + 1);
-      ClipShape.createBlock(Range3d.createXYZXYZ(p, p, p, p + 1, p + 1, p + 1), ClipMask.All, false, false, undefined, clipPrimitive);
+      ClipShape.createBlock(Range3d.createXYZXYZ(p, p, p, p + 1, p + 1, p + 1), ClipMaskXYZRangePlanes.All, false, false, undefined, clipPrimitive);
       ck.testFalse(clipPrimitive.arePlanesDefined());
       clipPrimitive.fetchClipPlanesRef();
       ck.testTrue(clipPrimitive.arePlanesDefined());
-      convexSet.getRangeOfAlignedPlanes(undefined, convexSetRange);
+      convexSetRange.setNull();
+      convexSet.computePlanePlanePlaneIntersections(undefined, convexSetRange);
       ck.testTrue(convexSetRange !== undefined);
-      clipPrimitive.getRange(false, undefined, clipPrimitiveRange);
-      ck.testTrue(clipPrimitiveRange !== undefined);
-      ck.testRange3d(convexSetRange, clipPrimitiveRange, "Expect range of convex set to be equal to range of ClipShape");
 
       ck.testTrue(clipPrimitive.isValidPolygon);
 
@@ -418,11 +382,9 @@ describe("ClipPrimitive", () => {
       ConvexClipPlaneSet.createXYBox(-p - 1, -p - 1, -p, -p, convexSet);
       convexSet.addZClipPlanes(false, p, p + 1);
       clipPrimitive.setPolygon([Point3d.create(-p - 1, -p - 1), Point3d.create(-p - 1, -p), Point3d.create(-p, -p), Point3d.create(-p, -p - 1)]);
-      convexSet.getRangeOfAlignedPlanes(undefined, convexSetRange);
+      convexSetRange.setNull();
+      convexSet.computePlanePlanePlaneIntersections(undefined, convexSetRange);
       ck.testTrue(convexSetRange !== undefined);
-      clipPrimitive.getRange(false, undefined, clipPrimitiveRange);
-      ck.testTrue(clipPrimitiveRange !== undefined);
-      ck.testRange3d(convexSetRange, clipPrimitiveRange, "Expect range of convex set to be equal to range of ClipShape");
     }
 
     // Exercise check for z-clips
@@ -431,19 +393,17 @@ describe("ClipPrimitive", () => {
     ck.testFalse(clipPrimitive.containsZClip(), "Expected clip primitive of box with open top and bottom to not contain z-clip");
 
     // Exercise invisibility switch
-    clipPrimitive.setInvisible(true);
-    const checkIsInvisible = (plane: ClipPlane): boolean => {
-      if (plane.invisible)
-        return true;
-      return false;
-    };
-    ck.testTrue(applyFunctionToPlanes(clipPrimitive, false, checkIsInvisible), "All planes should be invisible after setInvisible() call.");
+    for (const a of [false, true]) {
+      clipPrimitive.setInvisible(a);
+      ck.testBoolean(a, clipPrimitive.invisible);
+    }
 
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("Transformations", () => {
+    const ck = new Checker();
     const originalPoint = Point3d.create(5.7865, 1.24123, 0.000009);
     const testPoint = originalPoint.clone();
     // Created with identity transform - should create no changes
@@ -459,83 +419,12 @@ describe("ClipPrimitive", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("Plane edge additions using PlaneSetParamsCache", () => {
-    const clipCache = new PlaneSetParamsCache(-5, 5);
-    const values = [-87, -30, 0, 15.45, 1067];
-    const sideLength = 10;
-    // Creates several boxed regions using an AddPlaneSetParams object
-    for (const i of values)
-      ClipPrimitive.addOutsideEdgeSetToParams(i, i, i + sideLength, i, clipCache);   // This will take care of z clipping specified by low and high of params
-    ck.testFalse(isFiniteRange(clipCache.clipPlaneSet.getRangeOfAlignedPlanes()!), "Unbounded planes in AddPlaneSetParams will have undefined range");
-    let idx = 0;
-    for (const convexSet of clipCache.clipPlaneSet.convexSets) {
-      const xPlane = convexSet.planes[0];
-      const yPlane = convexSet.planes[1];
-      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(xPlane.inwardNormalRef.negate(), Point3d.create(values[idx] + sideLength, values[idx] - sideLength, 0)));
-      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(yPlane.inwardNormalRef.negate(), Point3d.create(values[idx] + sideLength, values[idx] - sideLength, 0)));
-      idx++;
-    }
-    const expectedRange = Range3d.createXYZXYZ(values[0], values[0] - sideLength, clipCache.zLow, values[values.length - 1] + sideLength, values[values.length - 1], clipCache.zHigh);
-    const range = clipCache.clipPlaneSet.getRangeOfAlignedPlanes();
-    ck.testTrue(isFiniteRange(range!), "After closing unbounded planes in AddPlaneSetParams, expect range to form");
-    ck.testRange3d(range!, expectedRange, "After closing unbounded planes in AddPlaneSetParams, expected range to match with the array extremities");
-
-    // Loop through and check that each convex set correctly formed an enclosed box of expected size
-    const expectedDiagonal = Math.sqrt(3 * (sideLength * sideLength));
-    for (const convexSet of clipCache.clipPlaneSet.convexSets) {
-      const setRange = convexSet.getRangeOfAlignedPlanes();
-      ck.testTrue(setRange !== undefined, "Convex set representing box should have defined range");
-      const diagonal = setRange!.diagonal().magnitude();
-      ck.testTrue(Geometry.isAlmostEqualNumber(diagonal, expectedDiagonal), "Diagonals of convex set boxes should match expected value");
-    }
-
-    ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  it("Plane set additions using PlaneSetParamsCache", () => {
-    const minZ = -10;
-    const maxZ = 10;
-    const clipCache = new PlaneSetParamsCache(minZ, maxZ);
-    ClipPrimitive.addShapeToParams(octogonalPoints, [], clipCache);
-
-    const midpoint = Point3d.create((min2D.x + max2D.x) / 2, (min2D.y + max2D.y) / 2, (minZ + maxZ) / 2);    // Is midpoint of polygon
-
-    // check corners
-    const planeSet = clipCache.clipPlaneSet;
-    for (const point of octogonalPoints) {
-      ck.testTrue(planeSet.isPointOnOrInside(point, Geometry.smallMetricDistanceSquared), "Corner point should be on plane");
-      ck.testFalse(planeSet.isPointInside(point), "Corner points should not be inside of clipped region");
-    }
-    // check midpoint and 3 extremities (one from each axis)
-    ck.testTrue(planeSet.isPointInside(midpoint), "Midpoint should be inside of clipped region");
-    const testPoint = Point3d.create(midpoint.x, midpoint.y, midpoint.z + maxZ);
-    ck.testTrue(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "Extremity should fall on object");
-    testPoint.z += 0.0001;
-    ck.testFalse(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "External point should be outside object");
-    testPoint.set(min2D.x - 5, midpoint.y, 0);
-    ck.testTrue(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "Extremity should fall on object");
-    testPoint.x -= 0.0001;
-    ck.testFalse(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "External point should be outside object");
-    testPoint.set(midpoint.x, max2D.y, 0);
-    ck.testTrue(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "Extremity should fall on object");
-    testPoint.y += 0.0001;
-    ck.testFalse(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "External point should be outside object");
-    // Angled edge case
-    testPoint.set((min2D.x + octogonalPoints[octogonalPoints.length - 1].x) / 2, (min2D.y + octogonalPoints[octogonalPoints.length - 1].y) / 2, 0);
-    ck.testTrue(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "Midpoint of angled edge should fall on object");
-    testPoint.x -= .0001;
-    ck.testFalse(planeSet.isPointOnOrInside(testPoint, Geometry.smallMetricDistanceSquared), "External point should be outside object");
-
-    ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
-  });
-
   it("ClipShape creation (linear) and point classification", () => {
-    // Create a ClipShape from a linear set of 3 points
+    const ck = new Checker();
+    // Create a ClipShape from 3 colinear points (degenerate!)
     const clipShape = ClipShape.createShape([Point3d.create(-5, 0, 0), Point3d.create(5, 0, 0), Point3d.create(-5, 0, 0)],
       -3, 3, undefined, false, false)!;
-    ck.testTrue(clipShape !== undefined, "Can create ClipShape that will be parsed into a linear set of planes");
+    ck.testPointer(clipShape, "Can create ClipShape that will be parsed into a linear set of planes");
     clipShape!.fetchClipPlanesRef();
     ck.testExactNumber(clipShape!.classifyPointContainment([Point3d.create(-5.00001, 0, 0)], true), 3, "Point does not fall on line outside of sides - strongly outside");
     ck.testExactNumber(clipShape!.classifyPointContainment([Point3d.create(0, 3, 0), Point3d.create(2, -5, 0)], true), 2, "Points cross line and within sides - ambiguous");
@@ -547,44 +436,49 @@ describe("ClipPrimitive", () => {
   });
 
   it("ClipShape creation (polygonal) and point proximity", () => {
+    const ck = new Checker();
     const minZ = -5;
     const maxZ = 5;
     // Test point location
-    const clipPrimitive0 = ClipShape.createEmpty();
-    ck.testFalse(clipPrimitive0.isXYPolygon, "ClipShape does not contain polygon when no points are present");
-    ck.testTrue(ClipShape.createShape(octogonalPoints, minZ, maxZ, undefined, true, true, clipPrimitive0) !== undefined);
+    const clipShape0 = ClipShape.createEmpty();
+    ck.testFalse(clipShape0.isXYPolygon, "ClipShape does not contain polygon when no points are present");
+    ck.testTrue(ClipShape.createShape(octogonalPoints, minZ, maxZ, undefined, true, true, clipShape0) !== undefined);
     const midpoint = Point3d.create((min2D.x + max2D.x) / 2, (min2D.y + max2D.y) / 2, (minZ + maxZ) / 2);    // Is midpoint of polygon
-    ck.testFalse(clipPrimitive0.pointInside(midpoint, 0), "Midpoint of polygon is not inside due to mask.");
-    ck.testExactNumber(clipPrimitive0.classifyPointContainment([midpoint], false), 3, "Midpoint is completely outside when ClipShape is a mask");
-    const clipPrimitive1 = ClipShape.createShape(octogonalPoints, minZ, maxZ, undefined, false, false);
-    ck.testTrue(clipPrimitive1!.pointInside(midpoint, 0), "Midpoint of polygon is inside.");
+    ck.testFalse(clipShape0.pointInside(midpoint, 0), "Midpoint of polygon is not inside due to mask.");
+    ck.testExactNumber(clipShape0.classifyPointContainment([midpoint], false), 3, "Midpoint is completely outside when ClipShape is a mask");
+    const clipShape1 = ClipShape.createShape(octogonalPoints, minZ, maxZ, undefined, false, false);
+    ck.testTrue(clipShape1!.pointInside(midpoint, 0), "Midpoint of polygon is inside.");
 
     // Test createFrom method
-    ClipShape.createFrom(clipPrimitive0, clipPrimitive1!);
-    ck.testTrue(clipShapesAreEqual(clipPrimitive0, clipPrimitive1!), "createfrom() method should clone the ClipShape");
+    ClipShape.createFrom(clipShape0, clipShape1!);
+    ck.testTrue(clipShapesAreEqual(clipShape0, clipShape1!), "createfrom() method should clone the ClipShape");
 
     // Test JSON parsing
-    const jsonValue = clipPrimitive1!.toJSON();
-    ck.testTrue(jsonValue.shape.points !== undefined && jsonValue.shape.points.length === clipPrimitive1!.polygon.length, "Points prop created in toJSON");
+    const jsonValue = clipShape1!.toJSON();
+    ck.testTrue(jsonValue.shape.points !== undefined && jsonValue.shape.points.length === clipShape1!.polygon.length, "Points prop created in toJSON");
     ck.testTrue(jsonValue.shape.invisible !== undefined && jsonValue.shape.invisible === true, "Invisible prop created in toJSON");
     ck.testUndefined(jsonValue.shape.trans, "Transform is undefined prop in toJSON having not given one to original ClipShape");
     ck.testTrue(jsonValue.shape.mask !== undefined && jsonValue.shape.mask === true, "Mask prop created in toJSON");
-    ck.testTrue(jsonValue.shape.zlow !== undefined && jsonValue.shape.zlow === clipPrimitive1!.zLow, "ZLow prop created in toJSON");
-    ck.testTrue(jsonValue.shape.zhigh !== undefined && jsonValue.shape.zhigh === clipPrimitive1!.zHigh, "ZHigh prop is set in toJSON");
+    ck.testTrue(jsonValue.shape.zlow !== undefined && jsonValue.shape.zlow === clipShape1!.zLow, "ZLow prop created in toJSON");
+    ck.testTrue(jsonValue.shape.zhigh !== undefined && jsonValue.shape.zhigh === clipShape1!.zHigh, "ZHigh prop is set in toJSON");
 
-    const clipPrimitive1Copy = ClipShape.fromJSON(jsonValue);
-    ck.testTrue(clipPrimitive1Copy !== undefined);
-    ck.testTrue(clipShapesAreEqual(clipPrimitive1!, clipPrimitive1Copy!), "to and from JSON yields same ClipPrimitive");
+    const clipShape1Copy = ClipShape.fromJSON(jsonValue) as ClipShape;
+    ck.testTrue(clipShape1Copy !== undefined);
+    ck.testTrue(clipShapesAreEqual(clipShape1!, clipShape1Copy!), "to and from JSON yields same ClipPrimitive");
 
     // Test clone method
-    const clipPrimitive2 = clipPrimitive1Copy!.clone();
-    ck.testTrue(clipShapesAreEqual(clipPrimitive2, clipPrimitive1!), "clone method produces a copy of ClipShape");
+    const clipShape2 = clipShape1Copy!.clone() as ClipShape;
+    ck.testTrue(clipShapesAreEqual(clipShape2, clipShape1!), "clone method produces a copy of ClipShape");
+    const generalTransform = Transform.createFixedPointAndMatrix(Point3d.create(3, 2, 1), Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(24)));
 
+    clipShape2.transformInPlace(generalTransform);
+    ck.testFalse(clipShape2.isXYPolygon);
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("ClipShape plane parsing for simple concave polygon", () => {
+    const ck = new Checker();
     const clipShape = ClipShape.createShape(clipPointsA)!;
     ck.testTrue(clipShape !== undefined);
 
@@ -592,42 +486,44 @@ describe("ClipPrimitive", () => {
     const areaRestriction = (originalRange.high.x - originalRange.low.x) * (originalRange.high.y - originalRange.low.y);
 
     const convexSetUnion = clipShape.fetchClipPlanesRef();
-
-    // Let us check the area and range of these convex sets put together
-    const unionRange = Range3d.create();
-    let unionArea = 0;
-    for (const convexSet of convexSetUnion.convexSets) {
-      const trianglePoints = getPointIntersectionsOfConvexSetPlanes(convexSet, ck);
-      ck.testExactNumber(trianglePoints.length, 3);
-      unionRange.extendArray(trianglePoints);
-      ck.testTrue(pointArrayIsSubsetOfOther(trianglePoints, clipShape.polygon), "All points of triangulated convex area of polygon should fall on boundary");
-      unionArea += triangleArea(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+    if (ck.testPointer(convexSetUnion) && convexSetUnion !== undefined) {
+      // Let us check the area and range of these convex sets put together
+      const unionRange = Range3d.create();
+      let unionArea = 0;
+      for (const convexSet of convexSetUnion.convexSets) {
+        const trianglePoints = getPointIntersectionsOfConvexSetPlanes(convexSet, ck);
+        ck.testExactNumber(trianglePoints.length, 3);
+        unionRange.extendArray(trianglePoints);
+        ck.testTrue(pointArrayIsSubsetOfOther(trianglePoints, clipShape.polygon), "All points of triangulated convex area of polygon should fall on boundary");
+        unionArea += triangleAreaXY(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+      }
+      ck.testRange3d(originalRange, unionRange, "Range extended by all convex regions should match range of entire concave region.");
+      ck.testTrue(unionArea <= areaRestriction, "Total area of unioned convex triangles should be less than or equal to area of entire range.");
     }
-    ck.testRange3d(originalRange, unionRange, "Range extended by all convex regions should match range of entire concave region.");
-    ck.testTrue(unionArea <= areaRestriction, "Total area of unioned convex triangles should be less than or equal to area of entire range.");
-
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("ClipShape with simple concave area clips simple polygon", () => {
+    const ck = new Checker();
     const clipShape = ClipShape.createShape(clipPointsA)!;
-    const convexSetUnion = clipShape.fetchClipPlanesRef();
 
+    const convexSetUnion = clipShape.fetchClipPlanesRef()!;
     // Get total area of clipshape convex regions generated
     let clipShapeArea = 0;
     for (const convexSet of convexSetUnion.convexSets) {
       const trianglePoints = getPointIntersectionsOfConvexSetPlanes(convexSet, ck);
-      clipShapeArea += triangleArea(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+      clipShapeArea += triangleAreaXY(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
     }
 
-    const clippedPolygons = ClipUtilities.clipPolygonToClipShape(polygonA, clipShape);
+    const clippedPolygons = ClipUtilities.clipPolygonToClipShapeReturnGrowableXYZArrays(polygonA, clipShape);
 
     // Triangulate any resulting smaller polygons that have a vertex length of greater than 3 and find total area of clipped result
     let clippedPolygonArea = 0;
     for (const polygon of clippedPolygons) {
       if (polygon.length <= 3) {
-        clippedPolygonArea += triangleArea(polygon[0], polygon[1], polygon[2]);
+        if (polygon.length === 3)
+          clippedPolygonArea += Math.abs (polygon.crossProductIndexIndexIndex(0, 1, 2)!.z * 0.5);
         continue;
       }
 
@@ -641,7 +537,7 @@ describe("ClipPrimitive", () => {
             subTrianglePoints.push(Point3d.create(node.x, node.y, 0));
           });
           ck.testExactNumber(3, subTrianglePoints.length, "Length clipped polygon piece after further triangulation must be 3");
-          clippedPolygonArea += triangleArea(subTrianglePoints[0], subTrianglePoints[1], subTrianglePoints[2]);
+          clippedPolygonArea += triangleAreaXY(subTrianglePoints[0], subTrianglePoints[1], subTrianglePoints[2]);
         }
         return true;
       });
@@ -653,6 +549,7 @@ describe("ClipPrimitive", () => {
   });
 
   it("ClipShape with complex concave area clips polygon", () => {
+    const ck = new Checker();
     const clipShape = ClipShape.createShape(clipPointsB)!;
     ck.testTrue(clipShape !== undefined);
 
@@ -677,4 +574,133 @@ describe("ClipPrimitive", () => {
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("ClipPrimitve base class", () => {
+    const ck = new Checker();
+    for (const invert of [false, true]) {
+      const clipper = ConvexClipPlaneSet.createXYBox(1, 1, 10, 8);
+      const prim0 = ClipPrimitive.createCapture(clipper, invert);
+      const prim1 = prim0.clone();
+      const json2 = prim0.toJSON();
+      const prim2 = ClipPrimitive.fromJSON(json2);
+      if (ck.testPointer(prim2) && prim2) {
+        ck.testTrue(clipPrimitivesAreEqual(prim0, prim2), "JSON round trip");
+      }
+
+      for (const prim of [prim0, prim1]) {
+        ck.testBoolean(!invert, prim.pointInside(Point3d.create(7, 2, 0)));
+        ck.testBoolean(invert, prim.pointInside(Point3d.create(-2, 0, 0)));
+      }
+
+    }
+    ck.checkpoint();
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("jsonFragment", () => {
+    const ck = new Checker();
+    const json = [{
+      planes: {
+        clips: [[
+          { dist: -0.09250245365197406, normal: [0, 6.123233995736765e-17, 0.9999999999999999] },
+          { dist: -4.284169242532198, normal: [0, -6.123233995736765e-17, -0.9999999999999999] },
+          { dist: -0.09250245365197413, normal: [0.9999999999999999, 0, 0] },
+          { dist: -4.620474647250288, normal: [-0.9999999999999999, 0, 0] },
+          { dist: -6.984123210872675, normal: [0, -0.9999999999999999, 6.123233995736765e-17] },
+          { dist: -0.09250245365197496, normal: [0, 0.9999999999999999, -6.123233995736765e-17] }]],
+      },
+    }];
+    const clipper = ClipVector.fromJSON(json);
+    if (ck.testPointer(clipper, "ClipVector.fromJSON for test fragment") && clipper) {
+      const q = 10.0; // big enough so that adding or subtracting from any inside point moves outside.
+      for (const x of [0, 4]) {
+        for (const y of [0, 6]) {
+          for (const z of [0, 4]) {
+            ck.testTrue(clipper.pointInside(Point3d.create(x, y, z)), x, y, z);
+            ck.testFalse(clipper.pointInside(Point3d.create(x + q, y, z)), x, y, z);
+            ck.testFalse(clipper.pointInside(Point3d.create(x - q, y, z)), x, y, z);
+
+            ck.testFalse(clipper.pointInside(Point3d.create(x, y + q, z)), x, y, z);
+            ck.testFalse(clipper.pointInside(Point3d.create(x, y - q, z)), x, y, z);
+
+            ck.testFalse(clipper.pointInside(Point3d.create(x, y, z + q)), x, y, z);
+            ck.testFalse(clipper.pointInside(Point3d.create(x, y, z - q)), x, y, z);
+          }
+        }
+      }
+
+      const clipPrimitives = clipper.clips!;
+      for (const p of clipPrimitives) {
+        const convexSets = p.fetchClipPlanesRef()!;
+        for (const cs of convexSets.convexSets) {
+          const r = Range3d.createNull();
+          const points: Point3d[] = [];
+          cs.computePlanePlanePlaneIntersections(points, r);
+          for (const xyz of points) {
+            ck.testTrue(cs.isPointOnOrInside(xyz, 0.001), xyz);
+          }
+          if (Checker.noisy.ConvexSetCorners) {
+            console.log(" Convex Set range" + prettyPrint(r.toJSON()));
+            for (const xyz of points) {
+              console.log("Corner" + prettyPrint(xyz));
+            }
+          }
+        }
+      }
+    }
+    ck.checkpoint();
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ClipVectorWithHole", () => {
+    const ck = new Checker();
+    const convexClip = ConvexClipPlaneSet.createXYBox(-1, -2, 8, 10);
+    const outerClip = ClipPrimitive.createCapture(convexClip.clone());
+    ck.testFalse(outerClip.invisible);
+    const rangeB = Range3d.createXYZXYZ(2000, 2000, 2000, 2001, 2001, 2001);
+    const holeClip = ClipPrimitive.createCapture(ConvexClipPlaneSet.createXYBox(1, 1, 4, 5), true);
+    ck.testTrue(holeClip.invisible);
+    const clipVector0 = ClipVector.create([outerClip, holeClip]);
+    const clipVector1 = clipVector0.clone();
+    const json0 = clipVector0.toJSON();
+    const clipVector2 = ClipVector.fromJSON(json0);
+    // console.log(prettyPrint(json0));
+    // const json2 = clipVector2.toJSON();
+    // console.log(prettyPrint(json2));
+    for (const cv of [clipVector0, clipVector1, clipVector2]) {
+      ck.testTrue(cv.pointInside(Point3d.create(7, 2)));
+      ck.testTrue(cv.pointInside(Point3d.create(0, 0)));
+      ck.testFalse(cv.pointInside(Point3d.create(20, 2)));
+      ck.testFalse(cv.pointInside(Point3d.create(-1.1, 0)));
+      ck.testFalse(cv.pointInside(Point3d.create(2, 2)));
+    }
+    const bigQ = 1000.0;
+    const outerRange = Range3d.createXYZXYZ(-bigQ, -bigQ, -bigQ, bigQ, bigQ, bigQ);
+
+    for (const range of [outerRange, rangeB]) {
+      const rangeOfUndefinedClipper = ClipUtilities.rangeOfClipperIntersectionWithRange(undefined, range);
+      ck.testRange3d(rangeOfUndefinedClipper, range, "undefined clipper");
+      ck.testBoolean(ClipUtilities.doesClipperIntersectRange(undefined, range), !rangeOfUndefinedClipper.isNull);
+
+      const outerClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(outerClip, range);
+      ck.testBoolean(ClipUtilities.doesClipperIntersectRange(outerClip, range), !outerClipRange.isNull, "outer clipper");
+
+      const holeClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(holeClip, range);
+      ck.testBoolean(ClipUtilities.doesClipperIntersectRange(holeClip, range), !holeClipRange.isNull, "hole clipper");
+
+      const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clipVector1, range);
+      ck.testBoolean(ClipUtilities.doesClipperIntersectRange(clipVector1, range), !clippedRange.isNull, "ClipVector clipper");
+
+      const convexClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(convexClip, range);
+      ck.testBoolean(ClipUtilities.doesClipperIntersectRange(convexClip, range), !convexClipRange.isNull, "convex clipper");
+
+      console.log("outerRange", outerRange);
+      console.log("outerClipRange", outerClipRange);
+      console.log("holeClipRange", holeClipRange);
+      console.log("clippedRange", clippedRange);
+    }
+    ck.checkpoint();
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

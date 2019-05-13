@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-/** Available directions. */
+/** Available directions.
+ * @beta
+ */
 export enum Direction {
   Left,
   Top,
@@ -12,7 +14,9 @@ export enum Direction {
   Bottom,
 }
 
-/** Helpers for [[Direction]]. */
+/** Helpers for [[Direction]].
+ * @internal
+ */
 export class DirectionHelpers {
   /** Class name of [[Direction.Left]] */
   public static readonly LEFT_CLASS_NAME = "nz-direction-left";
@@ -50,13 +54,17 @@ export class DirectionHelpers {
   }
 }
 
-/** Available orthogonal directions. */
+/** Available orthogonal directions.
+ * @alpha
+ */
 export enum OrthogonalDirection {
   Vertical,
   Horizontal,
 }
 
-/** Helpers for [[OrthogonalDirection]]. */
+/** Helpers for [[OrthogonalDirection]].
+ * @internal
+ */
 export class OrthogonalDirectionHelpers {
   /** Class name of [[OrthogonalDirection.Vertical]] */
   public static readonly VERTICAL_CLASS_NAME = "nz-vertical";

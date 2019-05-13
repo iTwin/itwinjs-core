@@ -7,3 +7,22 @@
   -moz-backface-visibility: $value;
   backface-visibility: $value;
 }
+
+@mixin nz-transition($value) {
+  -webkit-transition: $value;
+  -moz-transition: $value;
+  -o-transition: $value;
+  transition: $value;
+}
+
+@mixin nz-transform($value) {
+  -moz-transform: $value;
+  -webkit-transform: $value;
+  transform: $value;
+}
+
+@mixin nz-border-radius($value) {
+  -webkit-border-radius: $value;
+  -moz-border-radius: $value;
+  border-radius: $value;
+}

@@ -52,7 +52,7 @@ These packages provide the following functions to support backend operations:
 For services and app backends:
 
 * Correlating backend operations with frontend Requests
-  * [Manage the ActivityLoggingContext](./ManagingActivityLoggingContext.md).
+  * [Manage the ClientRequestContext](./ManagingClientRequestContext.md).
 
 * Exposing the operations of the backend as RpcInterfaces
   * [Define](../RpcInterface.md#define-the-interface) one or more RpcInterfaces.

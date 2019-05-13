@@ -29,7 +29,7 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-import { StringDecoder, NodeStringDecoder } from "string_decoder";
+import { NodeStringDecoder, StringDecoder } from "string_decoder";
 import { RpcSerializedValue } from "../../core/RpcMarshaling";
 
 const START = 0;

@@ -3,12 +3,30 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "tool-settings/_variables";
+@import "../widgetopacity";
 
 .nz-widget-toolSettings {
-  display: grid;
+  border: {
+    color: $nz-widget-border-color;
+    radius: $nz-widget-border-radius;
+    style: solid;
+    width: $nz-widget-border-width;
+  }
 
-  >* {
-    display: grid;
-    justify-content: center;
+  background-color: $nz-widget-background-color;
+  height: fit-content;
+  width: fit-content;
+  pointer-events: auto;
+  margin: 0 auto;
+
+  @include nz-widget-opacity;
+
+  > .nz-title {
+    min-height: $nz-tool-settings-title-bar-min-height;
+  }
+
+  > .nz-content {
+    padding: $nz-tool-settings-content-padding;
   }
 }

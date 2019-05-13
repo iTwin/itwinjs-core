@@ -56,24 +56,6 @@ export default class KeySet {
   public get guid(): GuidString { return this._guid; }
 
   /**
-   * Serializes this KeySet to JSON
-   *
-   * @hidden
-   */
-  public toJSON(): KeySetJSON {
-    const instanceKeys = new Array();
-    for (const entry of this._instanceKeys.entries())
-      instanceKeys.push([entry["0"], [...entry["1"]]]);
-    const nodeKeys = new Array<NodeKeyJSON>();
-    for (const serializedKey of this._nodeKeys.values())
-      nodeKeys.push(JSON.parse(serializedKey));
-    return {
-      instanceKeys,
-      nodeKeys,
-    };
-  }
-
-  /**
    * Get a map of instance keys stored in this KeySet
    *
    * **Warning**: getting instance keys might be expensive for
@@ -193,14 +175,14 @@ export default class KeySet {
     } else if (this.isKeysArray(value)) {
       for (const key of value)
         this.add(key);
-    } else if (this.isNodeKey(value)) {
-      this._nodeKeys.add(JSON.stringify(value));
+    } else if (this.isEntityProps(value)) {
+      this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) } as InstanceKey);
     } else if (this.isInstanceKey(value)) {
       if (!this._instanceKeys.has(value.className))
         this._instanceKeys.set(value.className, new Set());
       this._instanceKeys.get(value.className)!.add(value.id);
-    } else if (this.isEntityProps(value)) {
-      this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) } as InstanceKey);
+    } else if (this.isNodeKey(value)) {
+      this._nodeKeys.add(JSON.stringify(value));
     } else {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     }
@@ -251,14 +233,14 @@ export default class KeySet {
     } else if (this.isKeysArray(value)) {
       for (const key of value)
         this.delete(key);
-    } else if (this.isNodeKey(value)) {
-      this._nodeKeys.delete(JSON.stringify(value));
+    } else if (this.isEntityProps(value)) {
+      this.delete({ className: value.classFullName, id: value.id! } as InstanceKey);
     } else if (this.isInstanceKey(value)) {
       const set = this._instanceKeys.get(value.className);
       if (set)
         set.delete(value.id);
-    } else if (this.isEntityProps(value)) {
-      this.delete({ className: value.classFullName, id: value.id! } as InstanceKey);
+    } else if (this.isNodeKey(value)) {
+      this._nodeKeys.delete(JSON.stringify(value));
     } else {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     }
@@ -274,14 +256,14 @@ export default class KeySet {
   public has(value: Key): boolean {
     if (!value)
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
-    if (this.isNodeKey(value))
-      return this._nodeKeys.has(JSON.stringify(value));
+    if (this.isEntityProps(value))
+      return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
     if (this.isInstanceKey(value)) {
       const set = this._instanceKeys.get(value.className);
       return !!(set && set.has(value.id));
     }
-    if (this.isEntityProps(value))
-      return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
+    if (this.isNodeKey(value))
+      return this._nodeKeys.has(JSON.stringify(value));
     throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
   }
 
@@ -410,4 +392,25 @@ export default class KeySet {
   public get isEmpty(): boolean {
     return 0 === this.size;
   }
+}
+
+
+/**
+ * Serializes this KeySet to JSON
+ *
+ * @hidden
+ */
+export const toJSON = (keyset: Readonly<KeySet>): KeySetJSON => {
+  const instanceKeys = new Array();
+  for (const entry of (keyset as any)._instanceKeys.entries()) {
+    if (entry["1"].size > 0)
+      instanceKeys.push([entry["0"], [...entry["1"]]]);
+  }
+  const nodeKeys = new Array<NodeKeyJSON>();
+  for (const serializedKey of (keyset as any)._nodeKeys.values())
+    nodeKeys.push(JSON.parse(serializedKey));
+  return {
+    instanceKeys,
+    nodeKeys,
+  };
 }

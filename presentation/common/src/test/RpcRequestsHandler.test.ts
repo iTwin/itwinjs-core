@@ -12,13 +12,12 @@ import {
   createRandomContent, createRandomDescriptor,
   createRandomSelectionScope,
 } from "./_helpers/random";
-import { BeEvent, using } from "@bentley/bentleyjs-core";
-import { IModelToken, RpcManager, RpcInterface, RpcInterfaceDefinition, EntityProps } from "@bentley/imodeljs-common";
+import { BeEvent, using, Id64String } from "@bentley/bentleyjs-core";
+import { IModelToken, RpcManager, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import {
   RpcRequestsHandler, PresentationRpcInterface,
-  KeySet, Paged, SelectionInfo,
-  PresentationStatus,
-  HierarchyRequestOptions, ContentRequestOptions, SelectionScopeRequestOptions, PresentationError,
+  KeySet, Paged, SelectionInfo, PresentationStatus,
+  HierarchyRequestOptions, ContentRequestOptions, SelectionScopeRequestOptions, PresentationError, LabelRequestOptions,
 } from "../presentation-common";
 import { RpcRequestOptions, ClientStateSyncRequestOptions, RpcResponse, PresentationRpcResponse } from "../PresentationRpcInterface";
 import { IClientStateHolder } from "../RpcRequestsHandler";
@@ -495,6 +494,30 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
+    it("forwards getDisplayLabel call", async () => {
+      const key = createRandomECInstanceKey();
+      const options: LabelRequestOptions<IModelToken> = {
+        imodel: token,
+      };
+      const rpcOptions = { ...defaultRpcOptions, ...options };
+      const result = faker.random.word();
+      rpcInterfaceMock.setup(async (x) => x.getDisplayLabel(token, rpcOptions, key)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.getDisplayLabel(options, key)).to.eq(result);
+      rpcInterfaceMock.verifyAll();
+    });
+
+    it("forwards getDisplayLabels call", async () => {
+      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const options: LabelRequestOptions<IModelToken> = {
+        imodel: token,
+      };
+      const rpcOptions = { ...defaultRpcOptions, ...options };
+      const result = [faker.random.word(), faker.random.word()];
+      rpcInterfaceMock.setup(async (x) => x.getDisplayLabels(token, rpcOptions, keys)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.getDisplayLabels(options, keys)).to.deep.eq(result);
+      rpcInterfaceMock.verifyAll();
+    });
+
     it("forwards getSelectionScopes call", async () => {
       const options: SelectionScopeRequestOptions<IModelToken> = {
         imodel: token,
@@ -511,11 +534,11 @@ describe("RpcRequestsHandler", () => {
         imodel: token,
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
-      const keys = new Array<EntityProps>();
+      const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
       const result = new KeySet();
-      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions, keys, scopeId)).returns(async () => successResponse(result)).verifiable();
-      expect(await handler.computeSelection(options, keys, scopeId)).to.eq(result);
+      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions, ids, scopeId)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.computeSelection(options, ids, scopeId)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

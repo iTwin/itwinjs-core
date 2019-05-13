@@ -5,33 +5,38 @@
 /** @module StatusBar */
 
 import * as React from "react";
-
 import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { StatusBar } from "../widgets/StatusBar";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
+import { StatusZoneManagerProps as NZ_ZoneProps, DropTarget, Zone, RectangleProps, Outline } from "@bentley/ui-ninezone";
+import { CommonProps } from "@bentley/ui-core";
 
-// import TemporaryMessage from "@bentley/ui-ninezone/messages/Temporary";
-import { StatusZoneProps as NZ_ZoneProps, DropTarget, FooterZone as NZ_FooterZone, RectangleProps, GhostOutline } from "@bentley/ui-ninezone";
-
-/** Properties for the [[StatusBarZone]] component */
-export interface StatusBarZoneProps {
+/** Properties for the [[StatusBarZone]] component
+ * @internal
+ */
+export interface StatusBarZoneProps extends CommonProps {
   widgetControl?: StatusBarWidgetControl;
   zoneProps: NZ_ZoneProps;
   targetedBounds: RectangleProps | undefined;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
   dropTarget: DropTarget;
+  isHidden: boolean;
 }
 
 /** Status Bar Zone React component.
+ * @internal
  */
-export class StatusBarZone extends React.Component<StatusBarZoneProps, {}> {
+export class StatusBarZone extends React.Component<StatusBarZoneProps> {
   public render(): React.ReactNode {
     return (
       <>
-        <NZ_FooterZone
+        <Zone
+          className={this.props.className}
+          style={this.props.style}
           isInFooterMode={this.props.zoneProps.isInFooterMode}
+          isHidden={this.props.isHidden}
           bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}
         >
           {
@@ -41,20 +46,15 @@ export class StatusBarZone extends React.Component<StatusBarZoneProps, {}> {
               widgetControl={this.props.widgetControl}
             />
           }
-        </NZ_FooterZone>
-        <NZ_FooterZone bounds={this.props.zoneProps.bounds}>
+        </Zone>
+        <Zone bounds={this.props.zoneProps.bounds}>
           <ZoneTargets
             zoneId={this.props.zoneProps.id}
             dropTarget={this.props.dropTarget}
             targetChangeHandler={this.props.targetChangeHandler}
           />
-        </NZ_FooterZone>
-        {
-          this.props.targetedBounds &&
-          <NZ_FooterZone bounds={this.props.targetedBounds}>
-            <GhostOutline />
-          </NZ_FooterZone>
-        }
+        </Zone>
+        {this.props.targetedBounds && <Outline bounds={this.props.targetedBounds} />}
       </>
     );
   }

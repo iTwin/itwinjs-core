@@ -1,6 +1,6 @@
 {
-  "rushVersion": "5.5.4",
-  "pnpmVersion": "2.25.6",
+  "rushVersion": "5.7.1",
+  "pnpmVersion": "2.25.7",
   "nodeSupportedVersionRange": ">=10.6.0 <11.0.0",
   "projectFolderMinDepth": 2,
   "ensureConsistentVersions": true,
@@ -69,14 +69,14 @@
     {
       "packageName": "@bentley/imodeljs-clients-backend",
       "projectFolder": "core/clients-backend",
-      "reviewCategory": "common",
+      "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/imodeljs-webserver",
       "projectFolder": "core/webserver",
-      "reviewCategory": "common",
+      "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -186,6 +186,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/imodeljs-markup",
+      "projectFolder": "core/markup",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/electron-manager",
       "projectFolder": "core/electron-manager",
       "reviewCategory": "backend",
@@ -193,8 +200,22 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/express-server",
+      "projectFolder": "core/express-server",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/certa",
       "projectFolder": "tools/certa",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/perf-tools",
+      "projectFolder": "tools/perf-tools",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -272,18 +293,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/plugin-markup",
-      "projectFolder": "plugins/markup",
-      "reviewCategory": "frontend",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "agent-test-app",
-      "projectFolder": "test-apps/agent-test-app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "webworker-test-app",
       "projectFolder": "test-apps/webworker-test-app",
       "reviewCategory": "internal",
@@ -298,6 +307,12 @@
     {
       "packageName": "rpc-integration-tests",
       "projectFolder": "integration-tests/rpc",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "perf-test-app",
+      "projectFolder": "test-apps/perf-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     }

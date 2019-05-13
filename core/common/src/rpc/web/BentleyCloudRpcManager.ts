@@ -12,7 +12,9 @@ import { OpenAPIInfo } from "./OpenAPI";
 import { BentleyCloudRpcProtocol } from "./BentleyCloudRpcProtocol";
 import { RpcRequestEvent } from "../core/RpcConstants";
 
-/** Initialization parameters for BentleyCloudRpcConfiguration. */
+/** Initialization parameters for BentleyCloudRpcConfiguration.
+ * @public
+ */
 export interface BentleyCloudRpcParams {
   /** Identifies the remote server that implements a set of RpcInterfaces. Note that the ID of the remote server is not a URI or hostname. It is a string that matches a key in the orchestrator's app registry. */
   info: OpenAPIInfo;
@@ -24,19 +26,17 @@ export interface BentleyCloudRpcParams {
   pendingRequestListener?: RpcRequestEventHandler;
 }
 
-/** Operating parameters for Bentley cloud RPC interface deployments. */
+/** Operating parameters for Bentley cloud RPC interface deployments.
+ * @public
+ */
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
-  /** Bentley user authorization header. */
-  public applicationAuthorizationKey = "Authorization";
-
-  /** Bentley frontend application version id header. */
-  public applicationVersionKey = "X-Application-Version";
-
   /** The protocol of the configuration. */
   public abstract readonly protocol: BentleyCloudRpcProtocol;
 }
 
-/** Coordinates usage of RPC interfaces for Bentley cloud deployments. */
+/** Coordinates usage of RPC interfaces for Bentley cloud deployments.
+ * @public
+ */
 export class BentleyCloudRpcManager extends RpcManager {
   /** Initializes BentleyCloudRpcManager for the frontend of an application. */
   public static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration {

@@ -1,6 +1,63 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Support spatial classification of context reality models.
+- Fix incorrect elevation for background map display.
+- Adds parameter for api-extractor to validate missing release tags
+- remove requirement that JavaScript classnames match BIS classnames
+- Avoided iModelHub calls when opening iModels for Design Review. 
+- Fixed reinitializing briefcase cache when there are .tiles files.
+- Enabled use of checkpoint service. 
+- Added option to use azure-based tile caching
+- Added a utility to diagnose backends
+- Improved backend diagnostic utility. 
+- adapt to Range2d name change
+- Allow a view to define a set of elements which should never be drawn in that view.
+- Added texture support to exportGraphics
+- Fixes for file-based tile caching"
+- Catch tile upload errors
+- fix for release tags
+- Fix broken links
+- LoggerCategory -> BackendLoggerCategory
+- cleanup old imodelbank references
+- back out experimental changes
+- crash reporting WIP
+- Add InformationRecordModel.insert, GroupModel.insert
+- Fixed integration tests. 
+- Introduce LoggerCategory enum to advertise logger categories used by this package.
+- Limited maximum cache size of the backend PromiseMemoizer. 
+- missing dependency on node-report
+- rush update
+- node-report
+- Fixed memoization problem that caused an endless stream of 404 NotFound errors. 
+- Reinstated old version of OidcAgentClient
+- Unauthorized open requests should cause a more obvious error. 
+- Improved performance logging, especially of IModelDb open operations; ChangeSets are merged one-by-one to prevent hogging the event loop. 
+- Memoization fix when opening iModels in shared, read-only mode .
+- Fixed setup of application version. 
+- Updated Element CRUD perf tests
+- added tile generation perf test
+- queryPage use memoization/pending pattern
+- Remove IModelDb.createStandalone, use IModelDb.createSnapshot instead.
+- Remove ElementPropertyFormatter, IModelDb.getElementPropertiesForDisplay (use presentation rules instead)
+- Remove StandaloneIModelRpcImpl
+- Fix for Render Gradient.Symb test
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Add IModelDb.createSnapshot/openSnapshot/closeSnapshot, deprecate IModelDb.createStandalone/openStandalone/closeStandalone
+- Moved IModelJsExpressServer class into a new package (@bentley/express-server).
+- Simplified tile caching IModelHost config and removed dev flags. Allow
+- typo in documentation
+- fix missing ULAS client request data
+- ExportGraphicsFunction return type is now void
+- Upgrade TypeDoc dependency to 0.14.2
+- add usage logging tests
+- edit usage logging tests to support revised usage logging syntax
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -20,7 +77,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - AxisAlignedBox and ElementAlignedBox are now typed to Range3d rather than classes
 - Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package. 
 - clone methods are no longer generic
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.
 - Added async method for ECSqlStatement and SqliteStatement for step and stepAndInsert
 - Create iModel from empty template if seed file path not defined.

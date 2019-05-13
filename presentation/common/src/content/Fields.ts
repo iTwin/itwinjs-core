@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Content */
 
-import * as ec from "../EC";
+import { ClassInfo, ClassInfoJSON, classInfoFromJSON, RelationshipPathInfo, RelationshipPathInfoJSON, relatedClassInfoFromJSON } from "../EC";
 import CategoryDescription from "./Category";
 import EditorDescription from "./Editor";
 import Property, { PropertyJSON, propertyFromJSON } from "./Property";
@@ -40,8 +40,8 @@ export interface PropertiesFieldJSON extends BaseFieldJSON {
  * @hidden
  */
 export interface NestedContentFieldJSON extends BaseFieldJSON {
-  contentClassInfo: ec.ClassInfoJSON;
-  pathToPrimaryClass: ec.RelationshipPathInfoJSON;
+  contentClassInfo: ClassInfoJSON;
+  pathToPrimaryClass: RelationshipPathInfoJSON;
   nestedFields: FieldJSON[];
 }
 
@@ -233,9 +233,9 @@ export class PropertiesField extends Field {
  */
 export class NestedContentField extends Field {
   /** Information about an ECClass whose properties are nested inside this field */
-  public contentClassInfo: ec.ClassInfo;
+  public contentClassInfo: ClassInfo;
   /** Relationship path to [Primary class]($docs/learning/content/Terminology#primary-class) */
-  public pathToPrimaryClass: ec.RelationshipPathInfo;
+  public pathToPrimaryClass: RelationshipPathInfo;
   /** Contained nested fields */
   public nestedFields: Array<Readonly<Field>>;
 
@@ -253,7 +253,7 @@ export class NestedContentField extends Field {
    * @param editor Property editor used to edit values of this field
    */
   public constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription,
-    isReadonly: boolean, priority: number, contentClassInfo: ec.ClassInfo, pathToPrimaryClass: ec.RelationshipPathInfo,
+    isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPathInfo,
     nestedFields: Field[], editor?: EditorDescription) {
     super(category, name, label, description, isReadonly, priority, editor);
     this.contentClassInfo = contentClassInfo;
@@ -285,8 +285,8 @@ export class NestedContentField extends Field {
     const field = Object.create(NestedContentField.prototype);
     return Object.assign(field, json, {
       nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson)),
-      contentClassInfo: ec.classInfoFromJSON(json.contentClassInfo),
-      pathToPrimaryClass: json.pathToPrimaryClass.map((p) => ec.relatedClassInfoFromJSON(p)),
+      contentClassInfo: classInfoFromJSON(json.contentClassInfo),
+      pathToPrimaryClass: json.pathToPrimaryClass.map((p) => relatedClassInfoFromJSON(p)),
     } as Partial<NestedContentField>);
   }
 

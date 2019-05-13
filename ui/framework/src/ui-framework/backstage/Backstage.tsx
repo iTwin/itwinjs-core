@@ -7,116 +7,128 @@
 import * as React from "react";
 
 import { SignOutModalFrontstage } from "../oidc/SignOut";
-import { LabelProps, DescriptionProps, TooltipProps } from "../shared/ItemProps";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { IconProps, IconSpec } from "../shared/IconComponent";
-import { PropsHelper } from "../utils/PropsHelper";
 
-import { UiEvent } from "@bentley/ui-core";
-import { Backstage as NZ_Backstage, BackstageSeparator as NZ_BackstageSeparator, UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
+import { UiEvent, CommonProps, getUserColor } from "@bentley/ui-core";
+import { Backstage as NZ_Backstage, UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
 import { AccessToken } from "@bentley/imodeljs-clients";
+import { CommandItemDef } from "../shared/CommandItemDef";
 
-/** Base properties for a [[Backstage]] item.
- */
-export interface BackstageItemProps extends LabelProps, DescriptionProps, TooltipProps, IconProps {
-  /** if set, component will be enabled - defaults to true */
-  isEnabled?: boolean;
-  /** if set, component will be shown with as the active item - defaults to false */
-  isActive?: boolean;
-  /** optional function to set state of backstage item */
-  stateFunc?: (state: Readonly<BackstageItemState>) => BackstageItemState;
-  /** optional SyncUi event ids that will trigger the state function to run. */
-  stateSyncIds?: string[];
-}
-
-/** Properties that define the state of a Backstage items.
- */
-export interface BackstageItemState {
-  isEnabled: boolean;
-  label: string;
-  subtitle: string;
-  tooltip: string;
-  iconSpec: IconSpec;
-  isActive?: boolean;
-}
-
-/** Helper method to set backstage item state from props */
-export const getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => {
-  const labelSpec = PropsHelper.getStringSpec(props.label, props.labelKey);
-  const subtitleSpec = PropsHelper.getStringSpec(props.description, props.descriptionKey);
-  const tooltipSpec = PropsHelper.getStringSpec(props.tooltip, props.tooltipKey);
-
-  return {
-    isEnabled: undefined !== props.isEnabled ? props.isEnabled : true,
-    label: PropsHelper.getStringFromSpec(labelSpec),
-    subtitle: PropsHelper.getStringFromSpec(subtitleSpec),
-    tooltip: PropsHelper.getStringFromSpec(tooltipSpec),
-    iconSpec: props.iconSpec,
-    isActive: undefined !== props.isActive ? props.isActive : false,
-  };
-};
-
-/** Separator Backstage item.
+/** [[BackstageEvent]] arguments.
+ * @public
  */
-export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
-  private static _sSeparatorBackstageItemKey: number;
-  private _key: number;
-
-  constructor(separatorBackstageItemDef: BackstageItemProps) {
-    super(separatorBackstageItemDef);
-
-    SeparatorBackstageItem._sSeparatorBackstageItemKey++;
-    this._key = SeparatorBackstageItem._sSeparatorBackstageItemKey;
-  }
-
-  public render(): React.ReactNode {
-    return (
-      <NZ_BackstageSeparator key={this._key} />
-    );
-  }
+export interface BackstageEventArgs {
+  isVisible: boolean;
 }
 
-/** [[BackstageCloseEventEvent]] arguments.
+/** Backstage Event class.
+ * @public
+ */
+export class BackstageEvent extends UiEvent<BackstageEventArgs> { }
+
+/** [[BackstageCloseEvent]] arguments.
+ * @alpha @deprecated BackstageEventArgs should be used instead.
  */
 export interface BackstageCloseEventArgs {
   isVisible: boolean;
 }
 
 /** Backstage Close Event class.
+ * @alpha @deprecated BackstageEvent should be used instead.
  */
-export class BackstageCloseEventEvent extends UiEvent<BackstageCloseEventArgs> { }
-
-function closeBackStage() {
-  Backstage.onBackstageCloseEventEvent.emit({ isVisible: false });
-}
+export class BackstageCloseEvent extends UiEvent<BackstageCloseEventArgs> { }
 
 /** Properties for the [[Backstage]] React component.
+ * @public
  */
-export interface BackstageProps {
+export interface BackstageProps extends CommonProps {
   accessToken?: AccessToken;
-  isVisible: boolean;
-  className?: string;
+  isVisible?: boolean;
   showOverlay?: boolean;
-  style?: React.CSSProperties;
   onClose?: () => void;
 }
 
-/** Backstage React component.
+/** State for the [[Backstage]] React component.
+ * @internal
  */
-export class Backstage extends React.Component<BackstageProps> {
-  private static _backstageCloseEventEvent: BackstageCloseEventEvent = new BackstageCloseEventEvent();
-  public static get onBackstageCloseEventEvent(): BackstageCloseEventEvent { return Backstage._backstageCloseEventEvent; }
+interface BackstageState {
+  isVisible: boolean;
+}
 
-  constructor(props?: any, context?: any) {
-    super(props, context);
+/** Backstage React component.
+ * @public
+ */
+export class Backstage extends React.Component<BackstageProps, BackstageState> {
+
+  public static readonly onBackstageEvent = new BackstageEvent();
+  public static isBackstageVisible: boolean;
+
+  /** @alpha @deprecated */
+  public static readonly onBackstageCloseEvent = new BackstageCloseEvent();
+
+  /** Shows the Backstage */
+  public static show(): void {
+    Backstage.onBackstageEvent.emit({ isVisible: true });
   }
 
+  /** Hides the Backstage */
   public static hide(): void {
-    closeBackStage();
+    Backstage.onBackstageEvent.emit({ isVisible: false });
+  }
+
+  /** Command that toggles the Backstage */
+  public static get backstageToggleCommand() {
+    return new CommandItemDef({
+      iconSpec: "icon-home",
+      labelKey: "UiFramework:commands.openBackstage",
+      execute: () => {
+        if (Backstage.isBackstageVisible)
+          Backstage.hide();
+        else
+          Backstage.show();
+      },
+    });
+  }
+
+  /** @internal */
+  public readonly state: BackstageState;
+
+  constructor(props: BackstageProps) {
+    super(props);
+
+    this.state = {
+      isVisible: !!this.props.isVisible,
+    };
+  }
+
+  public componentDidMount() {
+    Backstage.onBackstageEvent.addListener(this._handleBackstageEvent);
+  }
+
+  public componentWillUnmount() {
+    Backstage.onBackstageEvent.removeListener(this._handleBackstageEvent);
+  }
+
+  private _handleBackstageEvent = (args: BackstageEventArgs) => {
+    this.setState({ isVisible: args.isVisible });
+
+    /** @deprecated */
+    Backstage.onBackstageCloseEvent.emit({ isVisible: args.isVisible });
+  }
+
+  public componentDidUpdate(prevProps: BackstageProps) {
+    if (this.props.isVisible !== prevProps.isVisible)
+      this.setState({ isVisible: !!this.props.isVisible });
+  }
+
+  private _onClose = () => {
+    Backstage.hide();
+    if (this.props.onClose)
+      this.props.onClose();
   }
 
   private _onSignOut = () => {
-    closeBackStage();
+    Backstage.hide();
     FrontstageManager.openModalFrontstage(new SignOutModalFrontstage(this.props.accessToken));
   }
 
@@ -125,8 +137,13 @@ export class Backstage extends React.Component<BackstageProps> {
       const userInfo = this.props.accessToken.getUserInfo();
       if (userInfo) {
         return (
-          <NZ_UserProfile firstName={userInfo.profile!.firstName} lastName={userInfo.profile!.lastName} email={userInfo.email!.id}
-            onClick={this._onSignOut.bind(this)} />
+          <NZ_UserProfile
+            color={getUserColor(userInfo.email!.id)}
+            initials={this._getInitials(userInfo.profile!.firstName, userInfo.profile!.lastName)}
+            onClick={this._onSignOut}
+          >
+            {this._getFullName(userInfo.profile!.firstName, userInfo.profile!.lastName)}
+          </NZ_UserProfile>
         );
       }
     }
@@ -134,17 +151,28 @@ export class Backstage extends React.Component<BackstageProps> {
     return undefined;
   }
 
+  private _getInitials(firstName: string, lastName: string): string {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+  }
+
+  private _getFullName(firstName: string, lastName: string): string {
+    return `${firstName} ${lastName}`;
+  }
+
   public render(): React.ReactNode {
+    Backstage.isBackstageVisible = this.state.isVisible;
+
     return (
-      <>
-        <NZ_Backstage
-          isOpen={this.props.isVisible}
-          showOverlay={this.props.showOverlay}
-          onClose={closeBackStage}
-          header={this._getUserInfo()}
-          items={this.props.children}
-        />
-      </>
+      <NZ_Backstage
+        className={this.props.className}
+        header={this._getUserInfo()}
+        isOpen={this.state.isVisible}
+        onClose={this._onClose}
+        showOverlay={this.props.showOverlay}
+        style={this.props.style}
+      >
+        {this.props.children}
+      </NZ_Backstage>
     );
   }
 }

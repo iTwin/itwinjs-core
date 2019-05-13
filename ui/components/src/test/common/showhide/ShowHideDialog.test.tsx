@@ -27,11 +27,11 @@ describe("ShowHideDialog", () => {
       const { rerender, getByTestId, queryByTestId } = render(<ShowHideDialog
         items={items}
         opened={true} />);
-      expect(getByTestId("dialog-container")).to.exist;
+      expect(getByTestId("core-dialog-container")).to.exist;
       rerender(<ShowHideDialog
         items={items}
         opened={false} />);
-      expect(queryByTestId("dialog-container" as any)).to.not.exist;
+      expect(queryByTestId("core-dialog-container" as any)).to.not.exist;
     });
     it("should render with initialHidden", () => {
       const { getByLabelText } = render(<ShowHideDialog

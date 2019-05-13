@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, ViewState, SpatialViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
 
-export class RobotWorldApp extends IModelApp {
+export class RobotWorldApp {
 
   private static _robotIModel: IModelConnection;
 
   // __PUBLISH_EXTRACT_START__ IModelConnection.Views.getViewList
   /** Get the list of Spatial views from the robot iModel. */
   public static async getSpatialViews(): Promise<IModelConnection.ViewSpec[]> {
-    return this._robotIModel.views.getViewList({ from: SpatialViewState.sqlName });
+    return this._robotIModel.views.getViewList({ from: SpatialViewState.classFullName });
   }
   // __PUBLISH_EXTRACT_END__
 
@@ -43,7 +43,7 @@ export class RobotWorldApp extends IModelApp {
   public static async openView(viewDiv: HTMLDivElement) {
     const viewState = await this.loadOneView();
     const viewPort = ScreenViewport.create(viewDiv, viewState);
-    this.viewManager.addViewport(viewPort);
+    IModelApp.viewManager.addViewport(viewPort);
   }
   // __PUBLISH_EXTRACT_END__
 

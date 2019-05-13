@@ -7,8 +7,8 @@ import { expect } from "chai";
 import { render, cleanup } from "react-testing-library";
 
 import TestUtils from "../../TestUtils";
-import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools, ToolUiManager } from "../../../ui-framework";
-import { ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams } from "@bentley/imodeljs-frontend";
+import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools, ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../../../ui-framework";
+import { ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams, ToolSettingsPropertySyncItem } from "@bentley/imodeljs-frontend";
 
 describe("DefaultToolUiSettingsProvider", () => {
 
@@ -80,7 +80,10 @@ describe("DefaultToolUiSettingsProvider", () => {
     if (frontstageDef) {
       await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
 
-      // do not define FrontstageManager.toolSettingsProperties to test that case.
+      FrontstageManager.ensureToolInformationIsSet(firstToolId);
+
+      // If a tool does not define toolSettingsProperties then useDefaultToolSettingsProvider should be false, but make sure we can gracefully handle
+      // case where useDefaultToolSettingsProvider is true but toolSettingsProperties are not defined.
       ToolUiManager.useDefaultToolSettingsProvider = true;
 
       FrontstageManager.setActiveToolId(firstToolId);
@@ -91,11 +94,7 @@ describe("DefaultToolUiSettingsProvider", () => {
 
       if (toolInformation) {
         const toolUiProvider = toolInformation.toolUiProvider;
-        expect(toolUiProvider).to.not.be.undefined;
-
-        if (toolUiProvider) {
-          expect(toolUiProvider.toolSettingsNode).to.be.null;
-        }
+        expect(toolUiProvider).to.be.undefined;
       }
     }
   });
@@ -115,8 +114,11 @@ describe("DefaultToolUiSettingsProvider", () => {
       toolSettingsProperties.push(new ToolSettingsPropertyRecord(useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnIndex: 1 }));
       toolSettingsProperties.push(new ToolSettingsPropertyRecord(lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnIndex: 3 }));
       toolSettingsProperties.push(new ToolSettingsPropertyRecord(enumValue.clone() as PrimitiveValue, enumDescription, { rowPriority: 1, columnIndex: 3 }));
-      ToolUiManager.useDefaultToolSettingsProvider = true;
+      ToolUiManager.cacheToolSettingsProperties(toolSettingsProperties, testToolId, "testToolLabel", "testToolDescription");
 
+      expect(ToolUiManager.useDefaultToolSettingsProvider).to.be.true;
+      expect(ToolUiManager.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
+      FrontstageManager.ensureToolInformationIsSet(testToolId);
       FrontstageManager.setActiveToolId(testToolId);
       expect(FrontstageManager.activeToolId).to.eq(testToolId);
 
@@ -155,6 +157,12 @@ describe("DefaultToolUiSettingsProvider", () => {
 
       const enumEditor = renderedComponent.getByTestId("components-select-editor");
       expect(enumEditor).not.to.be.undefined;
+
+      // simulate sync from tool
+      const newUseLengthValue = new ToolSettingsValue(false);
+      const syncItem = new ToolSettingsPropertySyncItem(newUseLengthValue, useLengthDescription.name, false);
+      const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
+      ToolUiManager.onSyncToolSettingsProperties.emit(syncArgs);
     }
   });
 

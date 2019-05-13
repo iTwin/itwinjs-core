@@ -5,12 +5,16 @@
 /** @module ElementSeparator */
 
 import * as React from "react";
+import * as classnames from "classnames";
 
 import "./ElementSeparator.scss";
 import { Orientation } from "../enums/Orientation";
+import { CommonProps } from "../utils/Props";
 
-/** Properties of [[ElementSeparator]] React component */
-export interface ElementSeparatorProps {
+/** Properties of [[ElementSeparator]] React component
+ * @public
+ */
+export interface ElementSeparatorProps extends CommonProps {
   /** Separator orientation */
   orientation: Orientation;
   /** Ratio between left cell and right cell */
@@ -23,7 +27,9 @@ export interface ElementSeparatorProps {
   onRatioChanged: (ratio: number) => void;
 }
 
-/** A movable button, which allows to change the ratio between left element and right element */
+/** A movable button, which allows to change the ratio between left element and right element
+ * @public
+ */
 export class ElementSeparator extends React.PureComponent<ElementSeparatorProps> {
   private _dragStarted = false;
   private _initialGlobalPosition = 0;
@@ -95,16 +101,20 @@ export class ElementSeparator extends React.PureComponent<ElementSeparatorProps>
   }
 
   public render() {
-    let className = "core-element-separator";
-    if (this.props.orientation === Orientation.Horizontal)
-      className += " core-element-separator--horizontal";
-    else
-      className += " core-element-separator--vertical";
+    const classNames = classnames(
+      "core-element-separator",
+      (this.props.orientation === Orientation.Horizontal) ? "core-element-separator--horizontal" : "core-element-separator--vertical",
+      this.props.className,
+    );
+    const styles: React.CSSProperties = {
+      ...this.getStyle(this.props.orientation),
+      ...this.props.style,
+    };
 
     return (
       <button
-        style={this.getStyle(this.props.orientation)}
-        className={className}
+        style={styles}
+        className={classNames}
         onPointerDown={this._onPointerDown}
       />
     );

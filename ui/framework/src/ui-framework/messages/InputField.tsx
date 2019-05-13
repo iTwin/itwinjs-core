@@ -7,15 +7,16 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
+import { CommonProps, withOnOutsideClick } from "@bentley/ui-core";
+import { MessageButton, Status, Message, MessageLayout } from "@bentley/ui-ninezone";
 import "./InputField.scss";
-import { withOnOutsideClick } from "@bentley/ui-core";
-
-import { CommonProps, MessageButton, Status, StatusMessage, MessageLayout as StatusMessageLayout } from "@bentley/ui-ninezone";
 
 // tslint:disable-next-line:variable-name
 const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />));
 
-/** Properties of [[InputFieldMessage]] component. */
+/** Properties of [[InputFieldMessage]] component.
+ * @beta
+ */
 export interface InputFieldMessageProps extends CommonProps {
   /** Parent of message. */
   target: Element;
@@ -25,8 +26,10 @@ export interface InputFieldMessageProps extends CommonProps {
   onClose: () => void;
 }
 
-/** InputField message is a popup error message that appears under invalid user input. */
-export class InputFieldMessage extends React.Component<InputFieldMessageProps> {
+/** InputField message is a popup error message that appears under invalid user input.
+ * @beta
+ */
+export class InputFieldMessage extends React.PureComponent<InputFieldMessageProps> {
   public render(): React.ReactNode {
     return ReactDOM.createPortal(this._getErrorMessage(), this.props.target);
   }
@@ -45,27 +48,26 @@ export class InputFieldMessage extends React.Component<InputFieldMessageProps> {
         style={this.props.style}
         // TODO: dismiss onOutsideClick without immediately dismissing message
         children={
-          <StatusMessage
+          <Message
             className="uifw-popup-message-inputField"
             status={Status.Error}
             icon={
               <i className="icon icon-status-error-hollow" />
             }
           >
-            <StatusMessageLayout
-              className="uifw-message-inputField-content"
-              label={this.props.children}
+            <MessageLayout
               buttons={
                 <MessageButton onClick={this.props.onClose}>
                   <i className="icon icon-close" />
                 </MessageButton>
               }
-            />
-          </StatusMessage>
+              className="uifw-message-inputField-content"
+            >
+              {this.props.children}
+            </MessageLayout>
+          </Message>
         }
       />
     );
   }
 }
-
-export default InputFieldMessage;

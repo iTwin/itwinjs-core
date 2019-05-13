@@ -14,18 +14,22 @@ import { IndexedXYCollection } from "./IndexedXYCollection";
  * * The collection holds only a reference to the actual array.
  * * The actual array may be replaced by the user as needed.
  * * When replaced, there is no cached data to be updated.
+ * @public
 */
 export class Point2dArrayCarrier extends IndexedXYCollection {
+  /** reference to array being queried. */
   public data: Point2d[];
   /** CAPTURE caller supplied array ... */
   public constructor(data: Point2d[]) {
     super();
     this.data = data;
   }
+  /** test if index is valid  */
   public isValidIndex(index: number): boolean {
     return index >= 0 && index < this.data.length;
   }
   /**
+   * Access by index, returning strongly typed Point2d
    * @param index index of point within the array
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
@@ -38,6 +42,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
     return undefined;
   }
   /**
+   * Access by index, returning strongly typed Vector2d
    * @param index index of point within the array
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds
@@ -50,6 +55,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
     return undefined;
   }
   /**
+   * Return a vector from the point at indexA to the point at indexB
    * @param indexA index of point within the array
    * @param indexB index of point within the array
    * @param result caller-allocated vector.
@@ -61,6 +67,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
     return undefined;
   }
   /**
+   * Return a vector from given origin to point at indexB
    * @param origin origin for vector
    * @param indexB index of point within the array
    * @param result caller-allocated vector.
@@ -73,6 +80,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
   }
 
   /**
+   * Return the cross product of vectors from origin to points at indexA and indexB
    * @param origin origin for vector
    * @param indexA index of first target within the array
    * @param indexB index of second target within the array
@@ -85,6 +93,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
     return undefined;
   }
   /**
+ * Return the cross product of vectors from point at originIndex to points at indexA and indexB
  * @param originIndex index of origin
  * @param indexA index of first target within the array
  * @param indexB index of second target within the array

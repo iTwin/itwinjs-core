@@ -60,3 +60,6 @@ export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => 
 
 /** @public */
 export function compareStringsOrUndefined(lhs?: string, rhs?: string): number { return comparePossiblyUndefined(compareStrings, lhs, rhs); }
+
+/** @public */
+export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number { return comparePossiblyUndefined(compareNumbers, lhs, rhs); }

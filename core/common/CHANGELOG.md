@@ -1,6 +1,41 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Support spatial classification of context reality models. 
+- Added OpenAPIInfo to the barrel file
+- Adds parameter for api-extractor to validate missing release tags
+- Adds ignoreMissingTags flag
+- Added option to use azure-based tile caching
+- Added a utility to diagnose backends
+- Do not cache pending http responses.
+- Allow a view to define a set of elements which should never be drawn in that view.
+- Allow snapshot imodeltokens through bentleycloudrpcprotocol in development mode only.
+- Fix broken links
+- LoggerCategory -> CommonLoggerCategory
+- Fix default line pattern for hidden edges.
+- Introduce LoggerCategory enum to advertise logger categories used by this package.
+- Logging fixes. 
+- Put sourcemap in npm package.
+- add SVG to ImageSourceFormat
+- add imodeljs-markup
+- New tile cache naming scheme.
+- queryPage use memoization/pending pattern
+- Remove StandaloneIModelRpcInterface
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Prefer the IModelToken values in the url (if different from values in JSON body -- should never happen except in a malicious request).
+- Exports interface MarshalingBinaryMarker to prevent errors in api-extractor V7
+- Add SnapshotIModelRpcInterface
+- Refactor solar shadow settings - make these 3d only.
+- Support solar shadow display.
+- Simplified tile caching IModelHost config and removed dev flags. Allow browser caching of tiles
+- Upgrade TypeDoc dependency to 0.14.2
+- only save viewing volume for view undo rather than cloning ViewState
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -26,7 +61,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Add release tags to indicate API stability
 - Handle transforms on child tiles.
 - Optimize use of animation cutting planes.
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Add support for draco compressed meshes.
 - Consistent naming of "get" methods in Growable arrays.
 - Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.

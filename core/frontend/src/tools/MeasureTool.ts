@@ -16,8 +16,10 @@ import { GeometryStreamProps, ColorDef } from "@bentley/imodeljs-common";
 import { QuantityType } from "../QuantityFormatter";
 import { BeButtonEvent, EventHandled } from "./Tool";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
+import { AccuDrawShortcuts } from "./AccuDrawTool";
+import { AccuDrawHintBuilder } from "../AccuDraw";
 
-/** @hidden */
+/** @internal */
 class MeasureLabel implements CanvasDecoration {
   public worldLocation = new Point3d();
   public position = new Point3d();
@@ -29,13 +31,13 @@ class MeasureLabel implements CanvasDecoration {
   }
 
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    ctx.font = "14px san-serif";
+    ctx.font = "16px san-serif";
     const labelHeight = ctx.measureText("M").width; // Close enough for border padding...
     const labelWidth = ctx.measureText(this.label).width + labelHeight;
 
     ctx.lineWidth = 1;
     ctx.strokeStyle = "white";
-    ctx.fillStyle = "rgba(0,0,0,.15)";
+    ctx.fillStyle = "rgba(0,0,0,.4)";
     ctx.shadowColor = "black";
     ctx.shadowBlur = 10;
     ctx.fillRect(-(labelWidth / 2), -labelHeight, labelWidth, labelHeight * 2);
@@ -60,7 +62,7 @@ class MeasureLabel implements CanvasDecoration {
   }
 }
 
-/** @hidden */
+/** @internal */
 class MeasureMarker extends Marker {
   public isSelected: boolean = false;
   constructor(label: string, title: string, worldLocation: XYAndZ, size: XAndY) {
@@ -85,7 +87,7 @@ class MeasureMarker extends Marker {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class MeasureDistanceTool extends PrimitiveTool {
   public static toolId = "Measure.Distance";
   protected readonly _locationData = new Array<{ point: Point3d, refAxes: Matrix3d }>();
@@ -103,7 +105,10 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
   protected setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
-    IModelApp.accuDraw.deactivate(); // Don't enable AccuDraw automatically when starting dynamics.
+    const hints = new AccuDrawHintBuilder();
+    hints.enableSmartRotation = true;
+    hints.setModeRectangular();
+    hints.sendHints(false);
     IModelApp.toolAdmin.setCursor(0 === this._locationData.length ? IModelApp.viewManager.crossHairCursor : IModelApp.viewManager.dynamicsCursor);
     this.showPrompt();
   }
@@ -343,8 +348,12 @@ export class MeasureDistanceTool extends PrimitiveTool {
     return toolTip;
   }
 
-  protected async updateSelectedMarkerToolTip(seg: any): Promise<void> {
+  protected async updateSelectedMarkerToolTip(seg: any, ev: BeButtonEvent): Promise<void> {
     seg.marker.title = await this.getMarkerToolTip(seg.distance, seg.slope, seg.start, seg.end, seg.marker.isSelected ? seg.delta : undefined);
+    if (undefined === ev.viewport || !IModelApp.notifications.isToolTipOpen)
+      return;
+    IModelApp.notifications.clearToolTip();
+    ev.viewport.openToolTip(seg.marker.title, ev.viewPoint);
   }
 
   protected async acceptNewSegments(): Promise<void> {
@@ -379,7 +388,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
             const wasSelected = seg.marker.isSelected;
             seg.marker.isSelected = (seg.marker === selectedMarker);
             if (wasSelected !== seg.marker.isSelected)
-              this.updateSelectedMarkerToolTip(seg); // tslint:disable-line:no-floating-promises
+              this.updateSelectedMarkerToolTip(seg, ev); // tslint:disable-line:no-floating-promises
           }
 
           if (undefined !== ev.viewport)
@@ -480,6 +489,12 @@ export class MeasureDistanceTool extends PrimitiveTool {
     return true;
   }
 
+  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
+      return EventHandled.Yes;
+    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
+  }
+
   public onRestartTool(): void {
     const tool = new MeasureDistanceTool();
     if (!tool.run())
@@ -487,7 +502,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class MeasureLocationTool extends PrimitiveTool {
   public static toolId = "Measure.Location";
   protected readonly _acceptedLocations: MeasureMarker[] = [];
@@ -501,7 +516,6 @@ export class MeasureLocationTool extends PrimitiveTool {
 
   protected setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
-    IModelApp.accuDraw.deactivate(); // Don't enable AccuDraw automatically when starting dynamics.
     this.showPrompt();
   }
 

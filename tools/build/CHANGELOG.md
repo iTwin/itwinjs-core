@@ -1,6 +1,24 @@
 # Change Log - @bentley/build-tools
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Adds error handling in api-extractor to handle no lib folder
+- Updates api-=extractor to accept parameters for missing release tags
+- ""
+- Move to @microsoft/api-extractor 7.0.35 to fix issue when reporting missing tags
+- "Updates API extractor to v7"
+- Added tools/build/tslint-docs.json. Added SvgPath & SvgSprite to ui-core.
+- Fix broken links
+- Fix the extract-api script to use this packages dependency instead of requiring consumers to take a devDep on api-extractor.
+- Import within package lint rule
+- Remove the mastermodule as it is not used.
+- Upgrade TypeDoc dependency to 0.14.2
+- Update the version of nyc to 14.0.0
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -17,7 +35,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Changes extract-api script to remove tsdoc-metadata.json files
 - Changes error hadling in extract-api
 - Use new buildIModelJsBuild script
-- Remove uneeded typedoc plugin depedency
+- Remove unneeded typedoc plugin dependency
 - Changed stripInternal to false so @internal-marked symbols still put in .d.ts files
 - upgrade to TypeScript 3.2.2
 

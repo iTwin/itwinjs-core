@@ -1,0 +1,19 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+.viewport-dialog {
+  opacity: 0.90;
+
+  &:hover {
+    opacity: 1.00;
+  }
+
+  .viewport-dialog-container {
+    /* Required so Viewport does not overlap title bar */
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+}

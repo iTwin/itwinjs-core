@@ -1,6 +1,50 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Backstage <Backstage /> CommandLaunchBackstageItem renders correctly 1`] = `
+exports[`Backstage <Backstage /> renders correctly - !isVisible 1`] = `
+<Backstage
+  isOpen={false}
+  onClose={[Function]}
+  showOverlay={true}
+/>
+`;
+
+exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `
+<Backstage
+  isOpen={true}
+  onClose={[Function]}
+  showOverlay={true}
+/>
+`;
+
+exports[`Backstage <Backstage /> with child items 1`] = `
+<Backstage
+  isOpen={true}
+  onClose={[Function]}
+  showOverlay={true}
+>
+  <CommandLaunchBackstageItem
+    commandId="my-command-id"
+    execute={[Function]}
+    iconSpec="icon-placeholder"
+    labelKey="UiFramework:tests.label"
+  />
+  <SeparatorBackstageItem />
+  <FrontstageLaunchBackstageItem
+    frontstageId="Test1"
+    iconSpec="icon-placeholder"
+    labelKey="UiFramework:tests.label"
+  />
+  <SeparatorBackstageItem />
+  <TaskLaunchBackstageItem
+    iconSpec="icon-placeholder"
+    labelKey="UiFramework:tests.label"
+    taskId="Task1"
+    workflowId="ExampleWorkflow"
+  />
+</Backstage>
+`;
+
+exports[`Backstage <CommandLaunchBackstageItem /> CommandLaunchBackstageItem renders correctly 1`] = `
 <BackstageItem
   icon={
     <Unknown
@@ -10,12 +54,30 @@ exports[`Backstage <Backstage /> CommandLaunchBackstageItem renders correctly 1`
   isActive={false}
   isDisabled={false}
   key="my-command-id"
-  label="tests.label"
   onClick={[Function]}
-/>
+>
+  tests.label
+</BackstageItem>
 `;
 
-exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly 1`] = `
+exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageItem renders correctly when active 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={true}
+  isDisabled={false}
+  key="Test1"
+  onClick={[Function]}
+  subtitle=""
+>
+  tests.label
+</BackstageItem>
+`;
+
+exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageItem renders correctly when inactive 1`] = `
 <BackstageItem
   icon={
     <Unknown
@@ -25,19 +87,36 @@ exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly
   isActive={false}
   isDisabled={false}
   key="Test1"
-  label="tests.label"
   onClick={[Function]}
   subtitle=""
-/>
+>
+  tests.label
+</BackstageItem>
 `;
 
-exports[`Backstage <Backstage /> SeparatorBackstageItem renders correctly 1`] = `
+exports[`Backstage <SeparatorBackstageItem /> SeparatorBackstageItem renders correctly 1`] = `
 <BackstageSeparator
   key="NaN"
 />
 `;
 
-exports[`Backstage <Backstage /> TaskLaunchBackstageItem renders correctly 1`] = `
+exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders correctly when active 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={true}
+  isDisabled={false}
+  key="ExampleWorkflow:Task1"
+  onClick={[Function]}
+>
+  tests.label
+</BackstageItem>
+`;
+
+exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders correctly when inactive 1`] = `
 <BackstageItem
   icon={
     <Unknown
@@ -47,60 +126,8 @@ exports[`Backstage <Backstage /> TaskLaunchBackstageItem renders correctly 1`] =
   isActive={false}
   isDisabled={false}
   key="ExampleWorkflow:Task1"
-  label="tests.label"
   onClick={[Function]}
-/>
-`;
-
-exports[`Backstage <Backstage /> renders correctly - !isVisible 1`] = `
-<Fragment>
-  <Backstage
-    isOpen={false}
-    onClose={[Function]}
-    showOverlay={true}
-  />
-</Fragment>
-`;
-
-exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `
-<Fragment>
-  <Backstage
-    isOpen={true}
-    onClose={[Function]}
-    showOverlay={true}
-  />
-</Fragment>
-`;
-
-exports[`Backstage <Backstage /> with child items 1`] = `
-<Fragment>
-  <Backstage
-    isOpen={true}
-    items={
-      Array [
-        <CommandLaunchBackstageItem
-          commandId="my-command-id"
-          execute={[Function]}
-          iconSpec="icon-placeholder"
-          labelKey="UiFramework:tests.label"
-        />,
-        <SeparatorBackstageItem />,
-        <FrontstageLaunchBackstageItem
-          frontstageId="Test1"
-          iconSpec="icon-placeholder"
-          labelKey="UiFramework:tests.label"
-        />,
-        <SeparatorBackstageItem />,
-        <TaskLaunchBackstageItem
-          iconSpec="icon-placeholder"
-          labelKey="UiFramework:tests.label"
-          taskId="Task1"
-          workflowId="ExampleWorkflow"
-        />,
-      ]
-    }
-    onClose={[Function]}
-    showOverlay={true}
-  />
-</Fragment>
+>
+  tests.label
+</BackstageItem>
 `;

@@ -81,6 +81,7 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust) {
 }
 `;
 
+/** @internal */
 export const adjustWidth = `
 void adjustWidth(inout float width, vec2 d2, vec2 org) {
   // calculate slope based width adjustment for non-AA lines, widths 1 to 4
@@ -130,6 +131,7 @@ void adjustWidth(inout float width, vec2 d2, vec2 org) {
 }
 `;
 
+/** @internal */
 export function addLineCodeTexture(frag: FragmentShaderBuilder) {
   frag.addUniform("u_lineCodeTexture", VariableType.Sampler2D, (prog) => {
     prog.addProgramUniform("u_lineCodeTexture", (uniform) => {
@@ -141,6 +143,7 @@ export function addLineCodeTexture(frag: FragmentShaderBuilder) {
   });
 }
 
+/** @internal */
 export function addLineCode(prog: ProgramBuilder, args: string) {
   const vert = prog.vert;
   const frag = prog.frag;
@@ -209,29 +212,23 @@ function addCommon(prog: ProgramBuilder) {
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.addVarying("v_lnInfo", VariableType.Vec4);
   vert.addFunction(adjustWidth);
+  vert.addFunction(decodePosition);
 }
 
+const decodePosition = `
+vec4 decodePosition(vec3 baseIndex) {
+  float index = decodeUInt32(baseIndex);
+  vec2 tc = compute_vert_coords(index);
+  vec4 e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  tc.x += g_vert_stepX;
+  vec4 e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  vec3 qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
+  return unquantizePosition(qpos, u_qOrigin, u_qScale);
+}`;
+
 const decodeAdjacentPositions = `
-  float index;
-  vec2 tc;
-  vec4 e0, e1;
-  vec3 qpos;
-
-  index = decodeUInt32(a_prevIndex);
-  tc = computeLUTCoords(index, u_vertParams.xy, g_vert_center, u_vertParams.z);
-  e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  tc += g_vert_stepX;
-  e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
-  g_prevPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
-
-  index = decodeUInt32(a_nextIndex);
-  tc = computeLUTCoords(index, u_vertParams.xy, g_vert_center, u_vertParams.z);
-  e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  tc += g_vert_stepX;
-  e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
-  g_nextPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
+  g_prevPos = decodePosition(a_prevIndex);
+  g_nextPos = decodePosition(a_nextIndex);
 `;
 
 const computePosition = `
@@ -344,6 +341,7 @@ const computePosition = `
 
 const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 
+/** @internal */
 export function createPolylineBuilder(instanced: IsInstanced): ProgramBuilder {
   const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   addShaderFlags(builder);
@@ -358,6 +356,7 @@ export function createPolylineBuilder(instanced: IsInstanced): ProgramBuilder {
   return builder;
 }
 
+/** @internal */
 export function createPolylineHiliter(instanced: IsInstanced): ProgramBuilder {
   const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   addCommon(builder);

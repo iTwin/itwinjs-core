@@ -7,7 +7,7 @@
 import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { Point3d, Vector2d } from "@bentley/geometry-core";
+import { Point3d, Range3d, Vector2d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
@@ -26,7 +26,9 @@ import { SkyBox } from "../../DisplayStyleState";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { SurfaceGeometry, MeshGeometry, EdgeGeometry, SilhouetteEdgeGeometry } from "./Mesh";
 
-/** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
+/** Represents a geometric primitive ready to be submitted to the GPU for rendering.
+ * @internal
+ */
 export abstract class CachedGeometry implements IDisposable, RenderMemory.Consumer {
   /**
    * Functions for obtaining a subclass of CachedGeometry.
@@ -124,7 +126,9 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
-// Geometry which is drawn using indices into a look-up texture of vertex data, via gl.drawArrays()
+/** Geometry which is drawn using indices into a look-up texture of vertex data, via gl.drawArrays()
+ * @internal
+ */
 export abstract class LUTGeometry extends CachedGeometry {
   // The texture containing the vertex data.
   public abstract get lut(): VertexLUT;
@@ -141,10 +145,30 @@ export abstract class LUTGeometry extends CachedGeometry {
   public get qScale(): Float32Array { return this.lut.qScale; }
   public get hasAnimation() { return this.lut.hasAnimation; }
 
+  public computeRange(output?: Range3d): Range3d {
+    const range = undefined !== output ? output : new Range3d();
+    range.setNull();
+
+    const lowX = this.qOrigin[0];
+    const lowY = this.qOrigin[1];
+    const lowZ = this.qOrigin[2];
+
+    const hiX = 0xffff * this.qScale[0] + lowX;
+    const hiY = 0xffff * this.qScale[1] + lowY;
+    const hiZ = 0xffff * this.qScale[2] + lowZ;
+
+    range.setXYZ(lowX, lowY, lowZ);
+    range.extendXYZ(hiX, hiY, hiZ);
+
+    return range;
+  }
+
   protected constructor() { super(); }
 }
 
-// Parameters used to construct an IndexedGeometry
+/** Parameters used to construct an IndexedGeometry
+ * @internal
+ */
 export class IndexedGeometryParams implements IDisposable {
   public readonly positions: QBufferHandle3d;
   public readonly indices: BufferHandle;
@@ -174,7 +198,9 @@ export class IndexedGeometryParams implements IDisposable {
   }
 }
 
-/** A geometric primitive which is rendered using gl.drawElements() with one or more vertex buffers indexed by an index buffer. */
+/** A geometric primitive which is rendered using gl.drawElements() with one or more vertex buffers indexed by an index buffer.
+ * @internal
+ */
 export abstract class IndexedGeometry extends CachedGeometry {
   protected readonly _params: IndexedGeometryParams;
   protected _wantWoWReversal(_target: Target): boolean { return false; }
@@ -199,7 +225,9 @@ export abstract class IndexedGeometry extends CachedGeometry {
   public get qScale() { return this._params.positions.scale; }
 }
 
-/** A geometric primitive representative of a set of clipping planes to clip a volume of space. */
+/** A geometric primitive representative of a set of clipping planes to clip a volume of space.
+ * @internal
+ */
 export class ClipMaskGeometry extends IndexedGeometry {
   public constructor(indices: Uint32Array, vertices: QPoint3dList) {
     super(IndexedGeometryParams.createFromList(vertices, indices)!);
@@ -214,7 +242,9 @@ export class ClipMaskGeometry extends IndexedGeometry {
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
 }
 
-// a cube of quads in normalized device coordinates for skybox rendering techniques
+/** a cube of quads in normalized device coordinates for skybox rendering techniques
+ * @internal
+ */
 class SkyBoxQuads {
   public readonly vertices: Uint16Array;
   public readonly vertexParams: QParams3d;
@@ -286,7 +316,9 @@ class SkyBoxQuads {
   }
 }
 
-// Parameters used to construct an SkyBox
+/** Parameters used to construct an SkyBox
+ * @internal
+ */
 export class SkyBoxGeometryParams implements IDisposable {
   public readonly positions: QBufferHandle3d;
 
@@ -307,6 +339,7 @@ export class SkyBoxGeometryParams implements IDisposable {
   }
 }
 
+/** @internal */
 namespace SkyBoxQuads {
   let _skyBoxQuads: SkyBoxQuads | undefined;
 
@@ -318,7 +351,9 @@ namespace SkyBoxQuads {
   }
 }
 
-// Geometry used for view-space rendering techniques.
+/** Geometry used for view-space rendering techniques.
+ * @internal
+ */
 export class SkyBoxQuadsGeometry extends CachedGeometry {
   protected _techniqueId: TechniqueId;
   public readonly cube: RenderTexture;
@@ -362,7 +397,9 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
   protected _wantWoWReversal(_target: Target): boolean { return false; }
 }
 
-// A quad with its corners mapped to the dimensions as the viewport, used for special rendering techniques.
+/** A quad with its corners mapped to the dimensions as the viewport, used for special rendering techniques.
+ * @internal
+ */
 class ViewportQuad {
   public readonly vertices: Uint16Array;
   public readonly vertexParams: QParams3d;
@@ -395,6 +432,7 @@ class ViewportQuad {
   }
 }
 
+/** @internal */
 namespace ViewportQuad {
   let _viewportQuad: ViewportQuad | undefined;
 
@@ -406,7 +444,9 @@ namespace ViewportQuad {
   }
 }
 
-// Geometry used for view-space rendering techniques.
+/** Geometry used for view-space rendering techniques.
+ * @internal
+ */
 export class ViewportQuadGeometry extends IndexedGeometry {
   protected _techniqueId: TechniqueId;
 
@@ -428,7 +468,9 @@ export class ViewportQuadGeometry extends IndexedGeometry {
   }
 }
 
-// Geometry used for view-space rendering techniques which involve sampling one or more textures.
+/** Geometry used for view-space rendering techniques which involve sampling one or more textures.
+ * @internal
+ */
 export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
   protected readonly _textures: WebGLTexture[];
 
@@ -442,7 +484,9 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
   }
 }
 
-// Geometry used for rendering default gradient-style or single texture spherical skybox.
+/** Geometry used for rendering default gradient-style or single texture spherical skybox.
+ * @internal
+ */
 export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
   public worldPos: Float32Array; // LeftBottom, RightBottom, RightTop, LeftTop worl pos of frustum at mid depth.
   public readonly typeAndExponents: Float32Array; // [0] -1.0 for 2-color gradient, 1.0 for 4-color gradient, 0.0 for texture; [1] sky exponent (4-color only) [2] ground exponent (4-color only)
@@ -541,7 +585,9 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
   }
 }
 
-// Geometry used when rendering ambient occlusion information to an output texture
+/** Geometry used when rendering ambient occlusion information to an output texture
+ * @internal
+ */
 export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
   public static createGeometry(depthAndOrder: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
@@ -561,6 +607,7 @@ export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
   }
 }
 
+/** @internal */
 export class BlurGeometry extends TexturedViewportQuadGeometry {
   public readonly blurDir: Vector2d;
 
@@ -581,7 +628,9 @@ export class BlurGeometry extends TexturedViewportQuadGeometry {
   }
 }
 
-// Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
+/** Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
+ * @internal
+ */
 export class CompositeGeometry extends TexturedViewportQuadGeometry {
   public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
@@ -598,7 +647,7 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
   public get hilite() { return this._textures[3]; }
   public get occlusion(): WebGLTexture | undefined {
     return this._textures.length > 4 ? this._textures[4] : undefined;
-   }
+  }
   public set occlusion(occlusion: WebGLTexture | undefined) {
     assert((undefined === occlusion) === (undefined !== this.occlusion));
     if (undefined !== occlusion)
@@ -620,7 +669,9 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
   }
 }
 
-// Geometry used to ping-pong the pick buffer data in between opaque passes.
+/** Geometry used to ping-pong the pick buffer data in between opaque passes.
+ * @internal
+ */
 export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
   public static createGeometry(featureId: WebGLTexture, depthAndOrder: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
@@ -639,6 +690,7 @@ export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
   }
 }
 
+/** @internal */
 export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeometry {
   public static createGeometry(texture: WebGLTexture, techId: TechniqueId) {
     const params = ViewportQuad.getInstance().createParams();
@@ -657,6 +709,7 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
   }
 }
 
+/** @internal */
 export class PolylineBuffers implements IDisposable {
   public indices: BufferHandle;
   public prevIndices: BufferHandle;

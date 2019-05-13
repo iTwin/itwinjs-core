@@ -18,6 +18,8 @@ import { TileTree, TileTreeState } from "./tile/TileTree";
  * @public
  */
 export class ModelState extends EntityState implements ModelProps {
+  /** The name of the associated ECClass */
+  public static get className() { return "Model"; }
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
   public parentModel: Id64String;
@@ -67,17 +69,31 @@ export class ModelState extends EntityState implements ModelProps {
  * such as a background map provider or a set of "context" reality models not directly embedded into the iModel.
  * An application typically does not interact directly with tile trees; instead it interacts with a [[ViewState]] or [[Viewport]] which
  * coordinates with tile trees on its behalf.
- * @beta
+ * @alpha
  */
 export interface TileTreeModelState {
-  /** @internal */
+  /** If the tile tree is loaded, returns it.
+   * @see [[load]]
+   * @internal
+   */
   readonly tileTree: TileTree | undefined;
   /** @internal */
   readonly loadStatus: TileTree.LoadStatus;
   /** @internal */
-  readonly treeModelId: Id64String;    // Model Id, or transient Id if not a model (context reality model)
+  readonly treeModelId: Id64String; // Model Id, or transient Id if not a model (context reality model)
   /** @internal */
-  loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
+  readonly jsonProperties: { [key: string]: any };
+  /** @internal */
+  readonly iModel: IModelConnection;
+  /** If no attempt has yet been made to load the tile tree, enqueue it for asynchronous loading.
+   * @param edgesRequired If true, the loaded tile tree will include graphics for edges of surfaces.
+   * @param animationId The Id of the source animation node, if any.
+   * @returns The current load status of the tile tree.
+   * @note This function is *not* asynchronous, but may trigger an internal asynchronous operation.
+   * @see [[TileTreeModelState.loadStatus]] to query the current state of the tile tree's loading operation.
+   * @internal
+   */
+  loadTree(edgesRequired: boolean, animationId?: Id64String): TileTree.LoadStatus;
 }
 
 /** Represents the front-end state of a [GeometricModel]($backend).
@@ -85,6 +101,9 @@ export interface TileTreeModelState {
  * @public
  */
 export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
+  /** The name of the associated ECClass */
+  public static get className() { return "GeometricModel"; }
+
   private _modelRange?: Range3d;
   /** @internal */
   protected _tileTreeState: TileTreeState = new TileTreeState(this.iModel, !this.is2d, this.id);
@@ -98,82 +117,92 @@ export abstract class GeometricModelState extends ModelState implements TileTree
   /** Returns true if this is a 2d model (a [[GeometricModel2dState]]). */
   public get is2d(): boolean { return !this.is3d; }
 
-  /** If this model's tile tree is loaded, returns it.
-   * @see [[loadTileTree]]
-   * @internal
-   */
+  /** @internal */
   public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
   /** @internal */
   public get classifierTileTree(): TileTree | undefined { return this._classifierTileTreeState.tileTree; }
 
-  /** The current status of this model's asynchronously-loaded tile tree.
-   * @internal
-   */
+  /** @internal */
   public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
   public set loadStatus(status: TileTree.LoadStatus) { this._tileTreeState.loadStatus = status; }
+
   /** @internal */
   public get isGeometricModel(): boolean { return true; }
   /** @internal */
   public get treeModelId(): Id64String { return this.id; }
 
-  /** Attempt to obtain this model's tile tree, enqueueing it for asynchronous loading if necessary.
-   * @param edgesRequired If true, the loaded tile tree will include graphics for edges of surfaces.
-   * @returns The tile tree if it is loaded, or undefined if it is currently loading or has failed to load.
-   * @note This function is *not* asynchronous, but may trigger an internal asynchronous operation.
-   * @see [[GeometricModelState.loadStatus]] to query the current state of the tile tree's loading operation.
-   * @internal
-   */
-  public getOrLoadTileTree(edgesRequired: boolean): TileTree | undefined {
-    if (undefined === this.tileTree)
-      this.loadTileTree(edgesRequired);
+  /** @internal */
+  public loadTree(edgesRequired: boolean, animationId?: Id64String): TileTree.LoadStatus {
+    // If this is a reality model, its tile tree is obtained from reality data service URL.
+    if (undefined !== this.jsonProperties.tilesetUrl) {
+      if (TileTree.LoadStatus.NotLoaded === this.loadStatus) {
+        this.loadStatus = TileTree.LoadStatus.Loading;
+        RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this.jsonProperties.tilesetToDbTransform, this._tileTreeState);
+      }
 
-    return this.tileTree;
-  }
-
-  /** @see [[getOrLoadTileTree]]
-   * @internal
-   */
-  public loadTileTree(edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
-    const tileTreeState = asClassifier ? this._classifierTileTreeState : this._tileTreeState;
-    if (tileTreeState.edgesOmitted && edgesRequired)
-      tileTreeState.clearTileTree();
-
-    if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
-      return tileTreeState.loadStatus;
-
-    tileTreeState.loadStatus = TileTree.LoadStatus.Loading;
-
-    if (!asClassifier && this.jsonProperties.tilesetUrl !== undefined) {
-      RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this.jsonProperties.tilesetToDbTransform, tileTreeState);
-      return tileTreeState.loadStatus;
+      return this.loadStatus;
     }
 
-    return this.loadIModelTileTree(tileTreeState, edgesRequired, animationId, asClassifier, classifierExpansion);
+    return this.loadTileTree({ type: BatchType.Primary, edgesRequired, animationId });
   }
 
-  private loadIModelTileTree(tileTreeState: TileTreeState, edgesRequired: boolean, animationId?: Id64String, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
-    const id = (asClassifier ? ("C:" + classifierExpansion as string + "_") : "") + (animationId ? ("A:" + animationId + "_") : "") + this.id;
+  /** @internal */
+  public loadClassifierTileTree(type: BatchType.PlanarClassifier | BatchType.VolumeClassifier, expansion: number): TileTree.LoadStatus {
+    return this.loadTileTree({ type, expansion });
+  }
 
+  /** @internal */
+  public loadTileTree(treeId: IModelTile.TreeId): TileTree.LoadStatus {
+    // Determine which tree we want, and invalidate if incompatible with supplied options.
+    let state: TileTreeState;
+    let allowInstancing = false;
+    let batchType: BatchType;
+    let edgesRequired = false;
+    if (treeId.type === BatchType.Primary) {
+      batchType = BatchType.Primary;
+      edgesRequired = treeId.edgesRequired;
+      state = this._tileTreeState;
+      if (edgesRequired && state.edgesOmitted)
+        state.clearTileTree();
+
+      if (undefined === treeId.animationId)
+        allowInstancing = true;
+    } else {
+      state = this._classifierTileTreeState;
+      batchType = treeId.type;
+      if (state.classifierExpansion !== treeId.expansion) {
+        state.clearTileTree();
+        state.classifierExpansion = treeId.expansion;
+      }
+    }
+
+    // If we've already tried to load, return current status.
+    if (TileTree.LoadStatus.NotLoaded !== state.loadStatus)
+      return state.loadStatus;
+
+    // Enqueue the tree for loading.
+    state.loadStatus = TileTree.LoadStatus.Loading;
+
+    const id = IModelTile.treeIdToString(this.id, treeId);
     this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
-      // NB: Make sure root content ID matches that expected by tile format major version...
-      // back-end uses old format ("0/0/0/0/1") to support older front-ends.
-      const loader = new IModelTile.Loader(this.iModel, result.formatVersion, asClassifier ? BatchType.Classifier : BatchType.Primary, edgesRequired);
+      const loader = new IModelTile.Loader(this.iModel, result.formatVersion, batchType, edgesRequired, allowInstancing);
       result.rootTile.contentId = loader.rootContentId;
-      tileTreeState.setTileTree(result, loader);
+      state.setTileTree(result, loader);
 
-      this._tileTreeState.edgesOmitted = !edgesRequired;
+      state.edgesOmitted = !edgesRequired;
+
       IModelApp.viewManager.onNewTilesReady();
-    }).catch((_err) => {
+    }).catch((err) => {
       // Retry in case of timeout; otherwise fail.
-      if (_err instanceof ServerTimeoutError)
-        this._tileTreeState.loadStatus = TileTree.LoadStatus.NotLoaded;
+      if (err instanceof ServerTimeoutError)
+        state.loadStatus = TileTree.LoadStatus.NotLoaded;
       else
-        this._tileTreeState.loadStatus = TileTree.LoadStatus.NotFound;
+        state.loadStatus = TileTree.LoadStatus.NotFound;
 
       IModelApp.viewManager.onNewTilesReady();
     });
 
-    return tileTreeState.loadStatus;
+    return state.loadStatus;
   }
 
   /** @internal */
@@ -196,6 +225,8 @@ export abstract class GeometricModelState extends ModelState implements TileTree
  * @public
  */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
+  /** The name of the associated ECClass */
+  public static get className() { return "GeometricModel2d"; }
   /** @internal */
   public readonly globalOrigin: Point2d;
 
@@ -220,6 +251,8 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
  * @public
  */
 export class GeometricModel3dState extends GeometricModelState {
+  /** The name of the associated ECClass */
+  public static get className() { return "GeometricModel3d"; }
   /** @internal */
   public get is3d(): boolean { return true; }
   /** @internal */
@@ -229,19 +262,47 @@ export class GeometricModel3dState extends GeometricModelState {
 /** Represents the front-end state of a [SheetModel]($backend).
  * @public
  */
-export class SheetModelState extends GeometricModel2dState { }
+export class SheetModelState extends GeometricModel2dState {
+  /** The name of the associated ECClass */
+  public static get className() { return "SheetModel"; }
+}
 
 /** Represents the front-end state of a [SpatialModel]($backend).
  * @public
  */
-export class SpatialModelState extends GeometricModel3dState { }
+export class SpatialModelState extends GeometricModel3dState {
+  /** The name of the associated ECClass */
+  public static get className() { return "SpatialModel"; }
+}
+
+/** Represents the front-end state of a [PhysicalModel]($backend).
+ * @public
+ */
+export class PhysicalModelState extends SpatialModelState {
+  /** The name of the associated ECClass */
+  public static get className() { return "PhysicalModel"; }
+}
+
+/** Represents the front-end state of a [SpatialLocationModel]($backend).
+ * @public
+ */
+export class SpatialLocationModelState extends SpatialModelState {
+  /** The name of the associated ECClass */
+  public static get className() { return "SpatialLocationModel"; }
+}
 
 /** Represents the front-end state of a [DrawingModel]($backend).
  * @public
  */
-export class DrawingModelState extends GeometricModel2dState { }
+export class DrawingModelState extends GeometricModel2dState {
+  /** The name of the associated ECClass */
+  public static get className() { return "DrawingModel"; }
+}
 
 /** Represents the front-end state of a [SectionDrawingModel]($backend).
  * @public
  */
-export class SectionDrawingModelState extends DrawingModelState { }
+export class SectionDrawingModelState extends DrawingModelState {
+  /** The name of the associated ECClass */
+  public static get className() { return "SectionDrawingModel"; }
+}

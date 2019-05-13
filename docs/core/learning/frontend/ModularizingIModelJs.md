@@ -14,7 +14,7 @@ There are a number of advantages to creating a separately loadable module for ea
 
 1. We (and our users and third-party developers) will have many iModel.js applications. The system iModel.js modules can be shared by multiple such applications. They can be delivered to the browser by a simple web server or by a content delivery network (CDN). They can also be loaded directly from the browser cache if they have been previously downloaded.
 
-2. We (and our users and third-party developers) can develop plugins for our applications that can be loaded dynamically. Such plugins are webpacked as external modules, using the exact same method that we use to webpack our packages as modules, and then loaded into the browswer or Electron environment that already has the iModel.js modules loaded. The plugins can be very small if they add only simple functionality, or quite large if necessary.
+2. We (and our users and third-party developers) can develop plugins for our applications that can be loaded dynamically. Such plugins are webpacked as external modules, using the exact same method that we use to webpack our packages as modules, and then loaded into the browser or Electron environment that already has the iModel.js modules loaded. The plugins can be very small if they add only simple functionality, or quite large if necessary.
 
 3. Faster startup time during development. Our previous development environment used the webpack development server for most of our test programs (e.g. ui-test-app). In that case, each time a browser application is started, it is webpacked into memory from the ground up, a process that can take several minutes. With the application and our packages modularized and webpacked to disk, startup is very fast.
 
@@ -28,7 +28,7 @@ There are probably advantages to be gained by further optimizing our loading str
 
 JavaScript has a confusing array of "module" systems, because of its chaotic evolution from a simple scripting language to a credible development environment. ES2015 and later version of JavaScript have a builtin module system, the syntax of which we make extensive use of in our source. Every "import" statement in our source code (sort of) makes use of this ES2015 module system. The TypeScript transpiler looks at the "source" for the imported module. It's either another TypeScript file (if it is specified with a full file specification), or it's the ".d.ts" typings file when the TypeScript transpiler doesn't have access to actual TypeScript source. The information from those files is used to enforce type safety at compile time. Since JavaScript sources have no transpiler step, no use is made of the import statements until runtime. But runtime is when it get tricky, because there are multiple runtime environments with differing levels of support for ES2015 modules. Since the 8.x version of Node doesn't support ES2015 modules, we have typescript configured to transpile all "import" statements to "require" statements in the output javascript files. The require syntax is from the older "CommonJs" module system that Node does support. You can look at the .js files in our output "lib" directories to see that substitution.
 
-We wouldn't want each of our source files to be separately loaded modules even if all of our runtime environments supported ES2015 modules. There would be way too many of them and nobody would be able to figure out how they were organized. As mentioned above, a good structure is to bundle the source files from each of our packages into a separately loaded JavaScript module. Actually, we are concerned only with the  frontend modules (those that are used in the browser), as those are the ones that are downloaded to clients using the HTTP protocol. Backend modules are loaded by Node using file system reads, so there is less to be gained by having fewer of them.
+We wouldn't want each of our source files to be separately loaded modules even if all of our runtime environments supported ES2015 modules. There would be way too many of them and nobody would be able to figure out how they were organized. As mentioned above, a good structure is to bundle the source files from each of our packages into a separately loaded JavaScript module. Actually, we are concerned only with the frontend modules (those that are used in the browser), as those are the ones that are downloaded to clients using the HTTP protocol. Backend modules are loaded by Node using file system reads, so there is less to be gained by having fewer of them.
 
 ## Webpacking Modules
 
@@ -42,9 +42,9 @@ The Webpack documentation differentiates between "bundles" and "modules" as desc
 
 ### Modules
 
-The discussion in the [Webpack Modules](https://webpack.js.org/concepts/modules/) portion of the documentation  is highly relevant to our goals. It describes a way to webpack code into a JavaScript module that can be output as a Universal Module Definition (UMD) file, which means that it can be loaded into various JavaScript environments that support different varieties of modules - CommonJs, Asynchronous Module Definition (AMD), and ES2015 modules. This is accomplished by putting a JavaScript header into the bundled file with the appropriate logic for figuring out which module system is trying to load it and responding accordingly.
+The discussion in the [Webpack Modules](https://webpack.js.org/concepts/modules/) portion of the documentation is highly relevant to our goals. It describes a way to webpack code into a JavaScript module that can be output as a Universal Module Definition (UMD) file, which means that it can be loaded into various JavaScript environments that support different varieties of modules - CommonJs, Asynchronous Module Definition (AMD), and ES2015 modules. This is accomplished by putting a JavaScript header into the bundled file with the appropriate logic for figuring out which module system is trying to load it and responding accordingly.
 
-To use separately webpacked modules in a webpacked application (for example, to  use our iModel.js modules in our applications), they are specified in the "externals" key of the webpack configuration object.
+To use separately webpacked modules in a webpacked application (for example, to use our iModel.js modules in our applications), they are specified in the "externals" key of the webpack configuration object.
 
 Unfortunately, the Webpack Module is not an exact match for our requirements. By default, it is oriented towards small modules that have a shallow dependency tree on other external modules (or are not dependent on any other external modules). That is not the case we have - our modules have a pretty deep dependency stack that looks something like this, with each module possibly dependent on multiple modules above it in this list:
 
@@ -116,35 +116,35 @@ I have written a tool that analyzes the JSON output of our webpacked modules to 
 
 ## Building the IModel.js External Modules
 
-The "rush build" command now webpacks each package into a separate module. There are separate modules built for development and production purposes. For efficiency during development, rush build creates only the development version. The "rush webpackModule-prod" command builds all of the production modules. All of the modules are webpacked using webpackModule.config.js. That script is specified as the --config argument to webpack-cli. Arguments are passed to it from "script" tags in package.json.
+The "rush build" command now builds each system module in the iModel.js repository using the buildIModelJsModule script, which sequences the transpilation and webpacking steps. Separate system modules are built for development and production purposes. For efficiency during development, "rush build" creates only the development version. To build the the production version of the modules, add the --production argument ("rush build --production"). For a complete discussion of building modules, including the additional steps needed to build application modules, please see the [BuildingIModelJsModules](./BuildingIModelJsModules.md) documentation.
 
 ## Gathering External Modules for an IModel.js Application
 
-For a browser application, the module files must be available to be delivered by a web server. There is a copyExternalModules script provided in the tools/webpack/modules directory that should be used to gather those external modules. It should be wired to one of the "script" entries in package.json with appropriate arguments (usually called "copy:modules"). The copyExternalModules script examines package.json file for dependencies and if a dependency is within the set of IModel.js external modules (including the open source external modules listed above), it symlinks them to the indicated destination directory. The IModel.js modules are symlinked to a subdirectory of the form `v<version>`, where version is read from the corresponding package.json. Currently, the script does not recurse through the dependencies of dependencies, so you must put all of the iModel.js packages that you need to be copied. For example, you might not have a direct dependence on imodeljs-quantity, but imodeljs-frontend does, so list that in the "dependencies" key of your package.json. For build simplicity, the "copy:modules" script should be incorporated into the "build" script so it is not forgotten. See test-apps/ui-test-apps/package.json for an example.
+For a browser application, the module files must be available to be delivered by a web server. When building an application module, the buildIModelJsModule script analyzes those external modules by examining the dependencies in package.json. The IModel.js modules are symlinked or copied to a subdirectory of the form `v<version>`, where version is read from the corresponding package.json. The other (non-iModel.js) external modules are symlinked or copied into the origin directory of the webserver.
 
 ## Building Applications to Use External Modules>
 
-An application that uses the IModel.js external module system should be built in the same way as the IModel.js external modules, so it has the correct webpack runtime. The easiest way to do that is to use the same webpackModule.config.js configuration script. See test-app/ui-test-app/package.json for an example.
+An application that uses the IModel.js external module system should be built in the same way as the IModel.js external modules, so it has the correct webpack runtime. The buildIModelJsModule script ensures that.
 
 ## Loading Modules at Runtime
 
-When a browser application relies on external modules, they must be loaded prior to the application module. A typical way to do that for single page applications (like most IModel.js applications) is to add script tags in the application's HTML template. The script tags have to be added in the correct order, because all of the dependents of a particular module must be loaded before it is loaded (hence the necessity of an acyclic dependency graph). Loading modules through script tags in that manner would require every application to put script tags for the entire set of modules in the correct sequence, and would require revision to each template HTML file whenever there was a change to the set of external modules, so instead there is an iModelJsLoader module that supervises the loading of all the other external modules. To use that loader, the application inserts two script tags into the `<head>` section of its HTML template:
+When a browser application relies on external modules, they must be loaded prior to the application module. A typical way to do that for single page applications (like most IModel.js applications) is to add script tags in the application's HTML template. The script tags have to be added in the correct order, because all of the dependents of a particular module must be loaded before it is loaded (hence the necessity of an acyclic dependency graph). Loading modules through script tags in that manner would require every application to put script tags for the entire set of modules in the correct sequence, and would require revision to each template HTML file whenever there was a change to the set of external modules, so instead there is an IModelJsLoader module that supervises the loading of all the other external modules. To use that loader, the application inserts two script tags into the `<head>` section of its HTML template:
 
   ```json
   <!-- use the IModelJs loader to load the system iModel.js modules -->
   <script type="text/javascript" src="runtime.bundle.js"></script>
-  <script type="text/javascript" src="IModelJsLoader.js" data-imjsversion="0.170.0" data-uicomponents="true" data-uiframework="true"></script>
+  <script type="text/javascript" src="IModelJsLoader.js" data-imjsversions= '<%= htmlWebpackPlugin.options.imjsVersions %>'></script>
   ```
 
 The first script tag loads the webpack runtime. This is built by the application (when it follows the webpack guidelines in the [Building Application to Use External Modules](#building-applications-to-use-external-modules) section above.
 
-The [HTML data attributes](https://www.w3schools.com/tags/att_global_data.asp) pass arguments to the IModelJsLoader script. The version number must be set to the desired SemVer version of all the IModel.js external modules in the rush repository.
+The [HTML data attributes](https://www.w3schools.com/tags/att_global_data.asp) pass arguments to the IModelJsLoader script. The portion enclosed by <% and %> is a lodash template that is filled in by webpack when it is orchestrated by buildIModelJsModule.
 
 ## Separating the Backend Server and Web Server
 
 With the modularization changes described above, we can see a clear distinction between two different types of servers needed to support iModel.js.
 
-The "backend server" needs access to an iModel briefcase, and supports the iModel.js frontend API's by providing the servcies through a remote procedure call (RPC) interface. If an application requires particular services, it can develop its own RPC protocol and implement it in the backend, so the backend server might be application specific. Native code is required to perform the services. All that means that an intelligent router is required to instantiate a virtual machine to run the code and instantiate the briefcase for it to use.
+The "backend server" needs access to an iModel briefcase, and supports the iModel.js frontend API's by providing the services through a remote procedure call (RPC) interface. If an application requires particular services, it can develop its own RPC protocol and implement it in the backend, so the backend server might be application specific. Native code is required to perform the services. All that means that an intelligent router is required to instantiate a virtual machine to run the code and instantiate the briefcase for it to use.
 
 On the other hand, the resources needed by the web browser (the imodel.js system modules, application code, fonts, icons, images, SVG files, etc.) are static and can be delivered by any web server or a CDN.
 
@@ -156,15 +156,19 @@ where the "port" and "resources" arguments specify the port used by the webserve
 
 Generally, it's easiest to put this as "start:webserver" into the "scripts" tag in your package.json:
 
-`"start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/WebServer.js --port=3000 --resources=./lib/webresources/"`
+  `"start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/WebServer.js --port=3000 --resources=./lib/webresources/"`
 
-The script that starts the backend server is unchanged. Creating a script that starts both the static webserver and the backend server can be easily accomplished as follows:
+The script that starts the backend server on localhost is unchanged, generally looking something like this:
+
+  `"start:backend": "node --max-http-header-size=16000 lib/backend/main.js"`
+
+Creating a script that starts both the static webserver and the backend server can be easily accomplished as follows:
 
 `"start:servers": "run-p \"start:webserver\" \"start:backend\"",`
 
 run-p runs both npm scripts in parallel. To use it, you must add "npm-run-all" to the devDependencies in your package.json file.
 
-The code that configures the RPC configuration for your application needs a slight modification to specify the URL prefix since it is now separate from the web server's URL:
+The code that configures the RPC configuration for your application needs a slight modification to specify the URL prefix since it is now separate from the web server's URL. The following code is used when running the backend server on localhost (as will be the case when you use something like the start:backend script above).
 
 On the frontend:
 
@@ -184,7 +188,7 @@ On the backend, the port for the server is set with code like this:
 app.set("port", serverConfig.port);
 ```
 
-Make sure it is set to match the `urlPrefix` specifed in the call to `BentleyCloudRpcManager.initializeClient`.
+Make sure it is set to match the `urlPrefix` specified in the call to `BentleyCloudRpcManager.initializeClient`.
 
 (Clearly this needs more work to be useful outside the development environment).
 

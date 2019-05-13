@@ -19,25 +19,29 @@ import {
   PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams, PrimitiveValue, PropertyValueFormat,
 } from "@bentley/imodeljs-frontend";
 
-class TsLabel {
+/** @internal */
+export class TsLabel {
   constructor(public readonly label: string, public isDisabled?: boolean) { }
 }
 
-enum ColumnType {
+/** @internal */
+export enum ColumnType {
   Label,
   Record,
   RecordSpan,
   Empty,
 }
 
-class TsCol {
+/** @internal */
+export class TsCol {
   public type: ColumnType = ColumnType.Empty;
   public name: string = "";
   public columnSpan = 1;
   constructor(readonly columnIndex: number) { }
 }
 
-class TsRow {
+/** @internal */
+export class TsRow {
   public priority = 0;
   public cols: TsCol[] = [];
   constructor(priority: number, numColumns: number) {
@@ -64,8 +68,9 @@ interface TsState {
   labelMap: Map<string, TsLabel>;
 }
 
-/** Component to populate ToolSetting for ToolSettings properties */
-export class DefaultToolSettings extends React.Component<TsProps, TsState> {
+/** Component to populate ToolSetting for ToolSettings properties
+ */
+class DefaultToolSettings extends React.Component<TsProps, TsState> {
   constructor(props: TsProps) {
     super(props);
 
@@ -82,6 +87,7 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
       // tslint:disable-next-line:no-console
       // (`[_handleSyncToolSettingsPropertiesEvent] Tool updating '${syncItem.propertyName}' to value of ${(syncItem.value as ToolSettingsValue).value}`);
       const colValue = this.state.valueMap.get(syncItem.propertyName);
+      /* istanbul ignore else */
       if (colValue) {
         const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(colValue, syncItem.value as ToolSettingsValue);
         updatedPropertyRecord.isDisabled = syncItem.isDisabled;
@@ -89,6 +95,7 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
 
         // keep label enable state in sync with property editor
         const labelCol = this.state.labelMap.get(syncItem.propertyName);
+        /* istanbul ignore else */
         if (labelCol)
           labelCol.isDisabled = syncItem.isDisabled;
         needToForceUpdate = true;
@@ -116,19 +123,22 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
       // ToolSettings supports only primitive property types
       if (commit.newValue.valueFormat === PropertyValueFormat.Primitive && commit.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
         const newPrimitiveValue = (commit.newValue as PrimitiveValue).value;
-        const currentPrimitiveValue = (commit.propertyRecord.value as PrimitiveValue).value;
-        if (newPrimitiveValue === currentPrimitiveValue) {
+        if (newPrimitiveValue === (commit.propertyRecord.value as PrimitiveValue).value) {
           // tslint:disable-next-line:no-console
           // console.log(`Ignore commit - value of '${propertyName}' has not changed`);
           return;  // don't sync if no change occurred
         }
 
+        // update the propertyRecord's value since this value is cached by ToolUiManager and is used if the ToolSettings widget is redrawn.
+        (commit.propertyRecord.value as PrimitiveValue).value = newPrimitiveValue;
+
+        // create a new property record and put it in valueMap - a new property record ensure a re-render with the updated value
         const colValue = this.state.valueMap.get(propertyName);
         if (colValue) {
           const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(colValue, commit.newValue as ToolSettingsValue);
           this.state.valueMap.set(propertyName, updatedPropertyRecord);
           // tslint:disable-next-line:no-console
-          // console.log(`Updating data in column - value=${(commit.newValue as PrimitiveValue).value} property='${propertyName}'`);
+          // console.log(`Updating data in column - value=${(commit.newValue as PrimitiveValue).value} property = '${propertyName}'`);
         }
 
         // if we updated state then force child components to update
@@ -136,19 +146,20 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
           // send change to active tool
           const syncItem: ToolSettingsPropertySyncItem = { value: commit.newValue as ToolSettingsValue, propertyName };
           // tslint:disable-next-line:no-console
-          // console.log(`Sending new value of ${(commit.newValue as PrimitiveValue).value} for '${propertyName}' to tool`);
+          // console.log(`Sending new value of ${ (commit.newValue as PrimitiveValue).value } for '${propertyName}' to tool`);
           activeTool.applyToolSettingPropertyChange(syncItem);
         });
       }
     }
   }
 
-  /** @hidden */
+  /** @internal */
   public componentDidUpdate(prevProps: TsProps, _prevState: TsState) {
     // if the props have changed then we need to update the state
     const prevRecord = prevProps.rows;
     const currentRecord = this.props.rows;
     let refreshRequired = false;
+    /* istanbul ignore next */
     if (prevRecord !== currentRecord)
       refreshRequired = true;
 
@@ -173,8 +184,8 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
   private getCol(col: TsCol, rowIndex: number, colIndex: number) {
     if (col.type === ColumnType.Empty) {
       return ( // return a <span> as a placeholder elements
-        <React.Fragment key={`${rowIndex.toString()}-${colIndex.toString()}`}>
-          <span key={`${rowIndex.toString()}-${colIndex.toString()}`}></span>
+        <React.Fragment key={`${rowIndex.toString()} -${colIndex.toString()}`}>
+          <span key={`${rowIndex.toString()} -${colIndex.toString()}`}></span>
         </React.Fragment>
       );
     }
@@ -197,11 +208,14 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
       }
     }
 
+    // istanbul ignore if
     if (col.type === ColumnType.RecordSpan)
       return null;
 
+    /* istanbul ignore else */
     if (col.type === ColumnType.Record) {
       const record = this.state.valueMap.get(col.name);
+      /* istanbul ignore else */
       if (record) {
         const editor = this.getEditor(record);
         let spanStyle: React.CSSProperties | undefined;
@@ -257,7 +271,9 @@ export class DefaultToolSettings extends React.Component<TsProps, TsState> {
   }
 }
 
-/** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool. */
+/** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool.
+ * @internal
+ */
 export class DefaultToolSettingsProvider extends ToolUiProvider {
   public rows: TsRow[] = [];
   public valueMap = new Map<string, ToolSettingsPropertyRecord>();
@@ -297,6 +313,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
   private setEditorLabel(row: TsRow, record: ToolSettingsPropertyRecord, propertyName: string): void {
 
     const suppressLabelEditorParams = this.hasSuppressEditorLabelParam(record);
+    // istanbul ignore if
     if (suppressLabelEditorParams && suppressLabelEditorParams.suppressLabelPlaceholder)
       return;
 
@@ -322,6 +339,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
   private setPropertyRecord(row: TsRow, record: ToolSettingsPropertyRecord): void {
     const editCol = record.editorPosition.columnIndex;
 
+    // istanbul ignore if
     if (row.cols[editCol].type !== ColumnType.Empty) {
       // tslint:disable-next-line:no-console
       console.log(`Default ToolSettings Provider - label column for ${record.property.name} is already in use`);
@@ -334,6 +352,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     this.valueMap.set(recordName, record);
 
     let columnSpan = 1;
+    // istanbul ignore if
     if (record.editorPosition.columnSpan)
       columnSpan = record.editorPosition.columnSpan;
 

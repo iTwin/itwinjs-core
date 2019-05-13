@@ -4,21 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
+import { BentleyStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
-import { BentleyStatus, RpcInterfaceStatus, Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcInterface } from "../../RpcInterface";
-import { RpcOperation } from "./RpcOperation";
-import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";
-import { RpcProtocol, SerializedRpcRequest, RpcRequestFulfillment } from "./RpcProtocol";
 import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
-import { RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import { RpcOperation } from "./RpcOperation";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
+import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
+import { IModelToken } from "../../IModel";
 
-/** Notification callback for an RPC invocation. */
+/** Notification callback for an RPC invocation.
+ * @public
+ */
 export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
 
-/** An RPC operation invocation in response to a request. */
+/** An RPC operation invocation in response to a request.
+ * @public
+ */
 export class RpcInvocation {
   private _threw: boolean = false;
   private _pending: boolean = false;
@@ -92,7 +98,6 @@ export class RpcInvocation {
       }
 
       this.operation.policy.invocationCallback(this);
-      protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
       this.result = this.resolve();
     } catch (error) {
       this.result = this.reject(error);
@@ -106,13 +111,49 @@ export class RpcInvocation {
   }
 
   private async resolve(): Promise<any> {
+    const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
+    clientRequestContext.enter();
+
+    this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
+
     const parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
+    this.applyPolicies(parameters);
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
     const op = this.lookupOperationFunction(impl);
-    const context = new ActivityLoggingContext(this.request.id, this.request.version);
-    context.enter();
+
     return Promise.resolve(op.call(impl, ...parameters));
+  }
+
+  private applyPolicies(parameters: any) {
+    if (!parameters || !Array.isArray(parameters)) {
+      return;
+    }
+
+    for (let i = 0; i !== parameters.length; ++i) {
+      const parameter = parameters[i];
+      const isToken = typeof (parameter) === "object" && parameter !== null && parameter.hasOwnProperty("iModelId") && parameter.hasOwnProperty("contextId");
+      if (isToken && this.protocol.checkToken && !this.operation.policy.allowTokenMismatch) {
+        const inflated = this.protocol.inflateToken(parameter, this.request);
+        parameters[i] = inflated;
+
+        if (!RpcInvocation.compareTokens(parameter as IModelToken, inflated)) {
+          if (RpcConfiguration.throwOnTokenMismatch) {
+            throw new IModelError(BentleyStatus.ERROR, "IModelToken mismatch detected for this request.");
+          } else {
+            Logger.logWarning(CommonLoggerCategory.RpcInterfaceBackend, "IModelToken mismatch detected for this request.");
+          }
+        }
+      }
+    }
+  }
+
+  private static compareTokens(a: IModelToken, b: IModelToken): boolean {
+    return a.key === b.key &&
+      a.contextId === b.contextId &&
+      a.iModelId === b.iModelId &&
+      a.changeSetId === b.changeSetId &&
+      a.openMode === b.openMode;
   }
 
   private async reject(error: any): Promise<any> {
@@ -121,19 +162,19 @@ export class RpcInvocation {
     return Promise.reject(error);
   }
 
-  private fulfillResolved(value: any): RpcRequestFulfillment {
+  private async fulfillResolved(value: any): Promise<RpcRequestFulfillment> {
     this._timeOut = new Date().getTime();
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
-    const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
+    const result = await RpcMarshaling.serialize(this.operation, this.protocol, value);
     return this.fulfill(result, value);
   }
 
-  private fulfillRejected(reason: any): RpcRequestFulfillment {
+  private async fulfillRejected(reason: any): Promise<RpcRequestFulfillment> {
     this._timeOut = new Date().getTime();
     if (!RpcConfiguration.developmentMode)
       reason.stack = undefined;
 
-    const result = RpcMarshaling.serialize(this.operation, this.protocol, reason);
+    const result = await RpcMarshaling.serialize(this.operation, this.protocol, reason);
 
     if (reason instanceof RpcPendingResponse) {
       this._pending = true;
@@ -165,7 +206,7 @@ export class RpcInvocation {
   private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => any {
     const func = (implementation as any)[this.operation.operationName];
     if (!func || typeof (func) !== "function") {
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`, Logger.logError, "imodeljs-backend.RpcInterface");
+      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`, Logger.logError, CommonLoggerCategory.RpcInterfaceBackend);
     }
 
     return func;

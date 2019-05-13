@@ -5,7 +5,7 @@
 
 import { IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 
-// Binary tile data produced using version 1.2 of the tile format.
+// Binary tile data produced using version 1.3 of the tile format.
 export const TILE_DATA_1_3 = {
   versionMajor: 1,
   versionMinor: 3,

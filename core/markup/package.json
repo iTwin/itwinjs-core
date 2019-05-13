@@ -1,0 +1,77 @@
+{
+  "name": "@bentley/imodeljs-markup",
+  "version": "0.191.0",
+  "description": "iModel.js markup package",
+  "license": "MIT",
+  "main": "lib/imodeljs-markup.js",
+  "scripts": {
+    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "clean": "rimraf lib package-deps.json",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-markup/file.json --tsIndexFile=./imodeljs-markup.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-markup",
+    "lint": "tslint --project . 1>&2",
+    "test": "",
+    "cover": ""
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "system",
+      "sourceResources": [
+        {
+          "source": "./src/public/**/*",
+          "dest": "./lib/public"
+        }
+      ],
+      "webpack": {
+        "dest": "./lib/module",
+        "entry": "./lib/imodeljs-markup.js",
+        "bundleName": "imodeljs-markup"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "@svgdotjs/svg.js": "~3.0.12"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^0.191.0",
+    "@bentley/imodeljs-frontend": "^0.191.0",
+    "@bentley/imodeljs-common": "^0.191.0",
+    "@bentley/geometry-core": "^0.191.0",
+    "@bentley/imodeljs-i18n": "^0.191.0"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "0.191.0",
+    "@bentley/imodeljs-frontend": "0.191.0",
+    "@bentley/imodeljs-common": "0.191.0",
+    "@bentley/geometry-core": "0.191.0",
+    "@bentley/imodeljs-i18n": "0.191.0",
+    "@bentley/build-tools": "0.191.0",
+    "@bentley/webpack-tools": "0.191.0",
+    "@types/node": "10.14.1",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "rimraf": "^2.6.2",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.2.2",
+    "typedoc": "^0.14.2"
+  },
+  "nyc": {
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
+    "all": true
+  }
+}

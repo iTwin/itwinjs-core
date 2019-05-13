@@ -36,7 +36,6 @@ export class Frontstage2 extends FrontstageProvider {
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       { // Four Views, two stacked on the left, two stacked on the right.
         descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
-        priority: 85,
         verticalSplit: {
           percentage: 0.50,
           left: { horizontalSplit: { percentage: 0.50, top: 0, bottom: 1 } },
