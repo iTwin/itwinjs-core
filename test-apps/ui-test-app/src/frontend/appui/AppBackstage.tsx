@@ -18,7 +18,7 @@ import {
   BooleanSyncUiListener,
 } from "@bentley/ui-framework";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { LocalFileStage } from "./frontstages/LocalFileStage";
+import { LocalFileOpenFrontstage } from "./frontstages/LocalFileStage";
 
 interface AppBackstageProps {
   /** AccessToken from sign-in */
@@ -53,7 +53,7 @@ class AppBackstageComponent extends React.Component<AppBackstageProps> {
           {(isEnabled: boolean) => <FrontstageLaunchBackstageItem frontstageId="IModelIndex" labelKey="SampleApp:backstage.imodelindex" iconSpec="icon-placeholder" isEnabled={isEnabled} />}
         </BooleanSyncUiListener>
         <CommandLaunchBackstageItem labelKey="SampleApp:backstage:fileSelect" iconSpec="icon-placeholder"
-          commandId="SampleApp:backstage:fileSelect" execute={() => LocalFileStage.open()} />
+          commandId="SampleApp:backstage:fileSelect" execute={() => LocalFileOpenFrontstage.open()} />
         <SeparatorBackstageItem />
         <CommandLaunchBackstageItem labelKey="SampleApp:backstage.testFrontstage6" iconSpec="icon-settings"
           commandId="SampleApp:backstage.testFrontstage6" execute={() => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage())} />

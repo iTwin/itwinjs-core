@@ -7,26 +7,32 @@ import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { FillCentered, Button, ButtonSize, ButtonType } from "@bentley/ui-core";
-import { UiFramework, ModalFrontstageInfo, FrontstageManager } from "@bentley/ui-framework";
+import { FillCentered, Button, ButtonSize, ButtonType, Headline } from "@bentley/ui-core";
+import {
+  UiFramework,
+  FrontstageManager,
+  ContentControl,
+  ConfigurableCreateInfo,
+  FrontstageProvider,
+  FrontstageProps,
+  ContentGroup,
+  Frontstage,
+  CoreTools,
+  ToolWidget,
+  Zone,
+  Widget,
+} from "@bentley/ui-framework";
 
 import { LocalFileSupport } from "../LocalFileSupport";
 import { IModelViewPicker } from "../imodelopen/IModelViewPicker";
 import { SampleAppIModelApp } from "../..";
+import { AppTools } from "../../tools/ToolSpecifications";
 
-/** Modal frontstage for opening a local file.
- */
-export class LocalFileStage implements ModalFrontstageInfo {
-  public static open() {
-    if (LocalFileSupport.localFilesSupported()) {
-      FrontstageManager.openModalFrontstage(new LocalFileStage());
-    }
-  }
+class LocalFileOpenControl extends ContentControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
 
-  public title: string = UiFramework.i18n.translate("SampleApp:localFileStage.localFile");
-
-  public get content(): React.ReactNode {
-    return <LocalFilePage onClose={this._handleClose} onViewsSelected={this._handleViewsSelected} />;
+    this.reactElement = <LocalFilePage onClose={this._handleClose} onViewsSelected={this._handleViewsSelected} />;
   }
 
   private _handleClose = () => {
@@ -36,6 +42,55 @@ export class LocalFileStage implements ModalFrontstageInfo {
   private _handleViewsSelected = async (iModelConnection: IModelConnection, views: Id64String[]) => {
     FrontstageManager.closeModalFrontstage();
     await SampleAppIModelApp.openViews(iModelConnection, views);
+  }
+}
+
+/** LocalFileOpenFrontstage displays the file picker and view picker. */
+export class LocalFileOpenFrontstage extends FrontstageProvider {
+  public static async open() {
+    if (LocalFileSupport.localFilesSupported()) {
+      const frontstageProvider = new LocalFileOpenFrontstage();
+      FrontstageManager.addFrontstageProvider(frontstageProvider);
+      await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    }
+  }
+
+  public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentGroup: ContentGroup = new ContentGroup({
+      contents: [
+        {
+          classId: LocalFileOpenControl,
+        },
+      ],
+    });
+
+    return (
+      <Frontstage id="LocalFileOpen"
+        defaultTool={CoreTools.selectElementCommand}
+        defaultLayout="SingleContent"
+        contentGroup={contentGroup}
+        isInFooterMode={false}
+        topLeft={
+          <Zone
+            widgets={[
+              <Widget isFreeform={true} element={<FrontstageToolWidget />} />,
+            ]}
+          />
+        }
+      />
+    );
+  }
+}
+
+/** Define a ToolWidget with Buttons to display in the TopLeft zone.
+ */
+class FrontstageToolWidget extends React.Component {
+  public render() {
+    return (
+      <ToolWidget
+        appButton={AppTools.backstageToggleCommand}
+      />
+    );
   }
 }
 
@@ -96,15 +151,22 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
 
   public render() {
     if (!this.state.iModelConnection) {
+      const title = UiFramework.i18n.translate("SampleApp:localFileStage.localFile");
+
       return (
-        <FillCentered>
-          <input id="file-input" ref={(e) => this._input = e}
-            type="file" accept=".bim,.ibim" onChange={this._handleChange}
-            style={{ display: "none" }} />
-          <Button size={ButtonSize.Large} buttonType={ButtonType.Primary} onClick={this._clickInput}>
-            {UiFramework.i18n.translate("SampleApp:localFileStage.selectFile")}
-          </Button>
-        </FillCentered >
+        <>
+          <div style={{ position: "absolute", top: "16px", left: "100px" }}>
+            <Headline>{title}</Headline>
+          </div>
+          <FillCentered>
+            <input id="file-input" ref={(e) => this._input = e}
+              type="file" accept=".bim,.ibim" onChange={this._handleChange}
+              style={{ display: "none" }} />
+            <Button size={ButtonSize.Large} buttonType={ButtonType.Primary} onClick={this._clickInput}>
+              {UiFramework.i18n.translate("SampleApp:localFileStage.selectFile")}
+            </Button>
+          </FillCentered >
+        </>
       );
     } else {
       return (

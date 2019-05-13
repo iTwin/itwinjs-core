@@ -37,7 +37,7 @@ import { configure as mobxConfigure } from "mobx";
 
 import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
-import { LocalFileStage } from "./appui/frontstages/LocalFileStage";
+import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -318,8 +318,8 @@ export class SampleAppIModelApp {
         await SampleAppIModelApp.showIModelIndex(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId);
       }
     } else if (testAppConfiguration.startWithSnapshots) {
-      // open to the Local File modal stage
-      LocalFileStage.open();
+      // open to the Local File frontstage
+      await LocalFileOpenFrontstage.open();
     } else {
       // open to the IModelOpen frontstage
       await SampleAppIModelApp.showIModelOpen(undefined);

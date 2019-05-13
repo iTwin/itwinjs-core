@@ -47,12 +47,12 @@ export class IModelViewportControl extends ViewportContentControl {
 
     this._options = options;
 
-    // if (options.viewId) {
-    //   this.reactElement = this.getReactElement(options.iModelConnection, options.viewId);
-    // } else {
-    this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
-    this.setIsReady();
-    // }
+    if (options.viewId) {
+      this.reactElement = this.getReactElement(options.iModelConnection, options.viewId);
+    } else {
+      this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
+      this.setIsReady();
+    }
   }
   /** Returns a promise that resolves when the control is ready for usage.
    */
