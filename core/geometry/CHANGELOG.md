@@ -1,6 +1,39 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Adds parameter for api-extractor to validate missing release tags
+- Fix for PolygonOps.centroidAreaNormal.
+- View clip fixes and start of tools.
+- Range1dArray coverage
+- Coverage; enable public/internal verification.
+- y
+- Add doc to many methods.  Modernize ray intersect clip plane logic and methods.
+- closestApproachRay3dRay3d.  centroid bugs
+- ClipPlane enhancements;  method to compute clip faces for convex set intersection with range
+- ClipPrimitive modernization
+- Debug json clip plane usage
+- add docs for methods in Arc3d, CurvePrimitive, Newton
+- Add comments to (undocumented) methods
+- LineString3d code coverage
+- public and internal doc markup
+- @public markup
+- In FrustumAnimation, detect true center of rotationn
+- Reduce memory allocations in clipping.
+- Method docs, ConvexClipPlaneSetIntersectRange enhancements
+- new method to check of clipper intersects range, with quick exit
+-  ClipVector and ClipUtilities test and enhancements
+- Triangulation bug (multiple holes not linked correctly)
+- Fix broken links
+- Put sourcemap in npm package.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- New code for regularizing a single face.
+- Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT

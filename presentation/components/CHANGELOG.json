@@ -2,6 +2,69 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/presentation-components_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ViewportSelectionHandler to the barrel file"
+          },
+          {
+            "comment": "Adds parameter for api-extractor to validate missing release tags"
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "Forward React.Ref from TreeWithUnifiedSelection HOC"
+          },
+          {
+            "comment": "Fix marshaling class instances through RPC by removing use of Readonly"
+          },
+          {
+            "comment": "Add APIs to retrieve instance labels"
+          },
+          {
+            "comment": "Avoid making a backend request when we know there will be no content"
+          },
+          {
+            "comment": "Do not load property grid data if more than 100 (configurable) elements are selected"
+          },
+          {
+            "comment": "Fix a warning in `propertyGridWithUnifiedSelection` due to state being set after unmounting component"
+          },
+          {
+            "comment": "Add `IPresentationTableDataProvider.getRowKey` method"
+          },
+          {
+            "comment": "`viewWithUnifiedSelection` was refactored to only do 1 way synchronization: logical selection -> iModel hilite list"
+          },
+          {
+            "comment": "Supply default presentation ruleset for the viewports hilite list when using the `viewWithUnifiedSelection` HOC"
+          },
+          {
+            "comment": "Avoid making a descriptor request when requesting content for property grid and hilite list"
+          },
+          {
+            "comment": "Require React & React-dom 16.8"
+          },
+          {
+            "comment": "remove IModelApp subclasses"
+          },
+          {
+            "comment": "Temporarily disable hiliting model and category elements until a more performant way to do that exists"
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/presentation-components_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",

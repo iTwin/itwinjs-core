@@ -1,6 +1,40 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Update to latest version of icon library.
+- @beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds.
+- Added CommonProps to many component Props in ui-core & ui-components
+- Added tools/build/tslint-docs.json. Added SvgPath & SvgSprite to ui-core.
+- Added missing package prefix to some CSS class names in ui-core, ui-components & ui-framework
+- Reverted CubeNavigationAid changes
+- Added 100% coverage to getDisplayName and shallowDiffers
+- Show/Hide UI enhancements. Widget Opacity enhancements.
+- Added local snapshot support to ui-test-app. Added specialized div components to ui-core.
+- Fix broken links
+- Small tweak to Popup class.
+- Put sourcemap in npm package.
+- Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
+- Require React & React-dom 16.8
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
+- Update icons-generic-webfont version to latest available.
+- Added TableProp to hide header and supporting style changes
+- Fixed _scrollbar.scss include
+- Modify GlobalContextMenu to better follow UX guidelines
+- Added release tags to ui-framework, ui-components and ui-core.
+- UI documentation - added to Learning section
+- Fix tree placeholder styling (set correct background and offset)
+- Added ModelessDialog & ModelessDialogManager
+- Add onOutsideClick prop to Popup.
+- Add ability to set tooltips on tree node checkboxes
+- Unit tests and fixed ColorEditor alignment
+- Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT

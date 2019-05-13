@@ -2,6 +2,72 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/imodeljs-clients_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Adds parameter for api-extractor to validate missing release tags"
+          },
+          {
+            "comment": "Allowed setup of global Request timeouts. "
+          },
+          {
+            "comment": "Added initial iModelHub Checkpoint API."
+          },
+          {
+            "comment": "Added 'query' method for Config, which combines the functions of 'has' and 'get'"
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "LoggerCategory -> ClientsLoggerCategory"
+          },
+          {
+            "comment": "Enhance Config so that it can contain nested properties - used by Design Review"
+          },
+          {
+            "comment": "add support for imodelbank use in clients-backend"
+          },
+          {
+            "comment": "Introduce LoggerCategory enum to advertise logger categories used by this package."
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "Fixes to OidcBrowserClient. "
+          },
+          {
+            "comment": "Added Reality Data creation/delete/update and relationship support."
+          },
+          {
+            "comment": "remove .only from test"
+          },
+          {
+            "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
+          },
+          {
+            "comment": "Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s. "
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          },
+          {
+            "comment": "add sessionId to usage logging"
+          },
+          {
+            "comment": "remove redundant usage and feature log properties"
+          },
+          {
+            "comment": "VSTS#114189 Reality data shown as Model and picker"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/imodeljs-clients_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",

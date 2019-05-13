@@ -2,6 +2,339 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/imodeljs-frontend_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support spatial classification of context reality models."
+          },
+          {
+            "comment": "API methods for adding and removing context reality models"
+          },
+          {
+            "comment": "Account for view clip in adjustZPlanes. Fit view needs to check clipVolume ViewFlag."
+          },
+          {
+            "comment": "Increase ambient light to .2"
+          },
+          {
+            "comment": "Adds parameter for api-extractor to validate missing release tags"
+          },
+          {
+            "comment": "Eliminate display performance issue caused by normal matrix computation."
+          },
+          {
+            "comment": "remove requirement that JavaScript classnames match BIS classnames"
+          },
+          {
+            "comment": "Reduce the number of geocoordination requests produced when loading map tiles."
+          },
+          {
+            "comment": "Save ClipVector on ViewState instead of always creating new one from json."
+          },
+          {
+            "comment": "Set initial GL state to match default"
+          },
+          {
+            "comment": "Dispose of planar classifiers."
+          },
+          {
+            "comment": "Add spatial classifier UX "
+          },
+          {
+            "comment": "Hide clip decoration during modify. Easier right-click/touch tap support for non-handle pickable decoration."
+          },
+          {
+            "comment": "Add orientation option button to toolsettings for ClipByPlane/ClipByShape tools."
+          },
+          {
+            "comment": "ConvexClipPlaneSet modify handles. Make EmphasizeElements internal."
+          },
+          {
+            "comment": "ClipShape modify handles."
+          },
+          {
+            "comment": "Fix clip to element tool. wip: Compute clp plane offset in world to support tool settings to enter distance."
+          },
+          {
+            "comment": "#114939 Fix handle drag test. Support smart lock wth clip shape tool. Offset all clip planes w/shift."
+          },
+          {
+            "comment": "View clip fixes and start of tools."
+          },
+          {
+            "comment": "Fit view support for planes clip primitive. View clipping tools."
+          },
+          {
+            "comment": "Fix tolerance multiplier for reality models"
+          },
+          {
+            "comment": "Cull geometry outside view clipping volume before drawing."
+          },
+          {
+            "comment": "Fix root tile range on webmercator tile tree for ground bias."
+          },
+          {
+            "comment": "Added support for disabling certain capabilities for performance testing"
+          },
+          {
+            "comment": "Adding support for readPixels performance testing"
+          },
+          {
+            "comment": "Prevent tooltip from blocking tool event loop."
+          },
+          {
+            "comment": "add test coverage in frontend"
+          },
+          {
+            "comment": "Debug json clip plane usage."
+          },
+          {
+            "comment": "ClipVector and ClipUtilities test and enhancements"
+          },
+          {
+            "comment": "Add backface culling feature to improve performance."
+          },
+          {
+            "comment": "Continue showing old skybox until new is ready"
+          },
+          {
+            "comment": "Add method to return available reality models excluding attached."
+          },
+          {
+            "comment": "Allow a view to define a set of elements which should never be drawn in that view."
+          },
+          {
+            "comment": "Allow selected viewport to be changed when filterViewport rejects view."
+          },
+          {
+            "comment": "Support instanced geometry."
+          },
+          {
+            "comment": "Support clipping view volume with multiple convex clipPlane sets."
+          },
+          {
+            "comment": "Fix rare failure to refine tiles displayed in view resulting in missing geometry."
+          },
+          {
+            "comment": "Fix display of animated edges."
+          },
+          {
+            "comment": "fixes for release tags"
+          },
+          {
+            "comment": "When loading a perspective view, fix up potentially bad camera settings."
+          },
+          {
+            "comment": "Reduce mininum front clip (Defect 103868)."
+          },
+          {
+            "comment": "Ensure webgl resources allocated by clip volumes are properly released."
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "LoggerCategory -> FrontendLoggerCategory"
+          },
+          {
+            "comment": "Fix IModelJsLoader to load imodeljs-markup only when needed"
+          },
+          {
+            "comment": "Export solar calculations for UI"
+          },
+          {
+            "comment": "Fix scenario in which lower-resolution tiles would be inappropriately substituted for tiles of appropriate resolution."
+          },
+          {
+            "comment": "Fix multipass depth issue"
+          },
+          {
+            "comment": "Fixed visual artifacts when drawing large batches of polylines."
+          },
+          {
+            "comment": "Handle non-rds tile tree URLS when signed in."
+          },
+          {
+            "comment": "Fix issue in which tiles of incorrect LOD would be drawn."
+          },
+          {
+            "comment": "Fix issue with undo/redo view not having render materials"
+          },
+          {
+            "comment": "Fixes to web mercator. "
+          },
+          {
+            "comment": "Interfaces used by PropertyRecord are set to either beta or alpha as modules that use them to implement UI are not finalized."
+          },
+          {
+            "comment": "eliminate depedency on JavaScript class names for EnityState subclasses"
+          },
+          {
+            "comment": "Add support for appending GeoJson to existing IModel"
+          },
+          {
+            "comment": "Use default background map type if an invalid type is specified in JSON."
+          },
+          {
+            "comment": "Ensure queries for large numbers of subcategories are paged appropriately."
+          },
+          {
+            "comment": "Improve graphics performance in Firefox."
+          },
+          {
+            "comment": "Only use instancing optimization if the system supports instancing."
+          },
+          {
+            "comment": "update Sprite after it is loaded"
+          },
+          {
+            "comment": "Introduce LoggerCategory enum to advertise logger categories used by this package."
+          },
+          {
+            "comment": "Logging fixes. "
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "documentation cleanup"
+          },
+          {
+            "comment": "add SVG to ImageSourceFormat"
+          },
+          {
+            "comment": "add imodeljs-markup"
+          },
+          {
+            "comment": "added vpDiv between parent and canvas"
+          },
+          {
+            "comment": "Allow a view's extent limits to be overridden."
+          },
+          {
+            "comment": "#108055 Update measure distance tooltip on click. Improve total distance visibility."
+          },
+          {
+            "comment": "Add alpha tags to PropertyEditorParams interfaces that are not ready for public use."
+          },
+          {
+            "comment": "Improved performance of multipass rendering"
+          },
+          {
+            "comment": "#96348 Improve default rotate point for navigation cube"
+          },
+          {
+            "comment": "Fixes to OidcBrowserClient. "
+          },
+          {
+            "comment": "Optimize frontend renderer's performance by minimizing allocations of float arrays passed to the GPU."
+          },
+          {
+            "comment": "Add more discrete, efficient Viewport synchronization events."
+          },
+          {
+            "comment": "Added the ability to override category visibility on a per-model basis."
+          },
+          {
+            "comment": "Rework projection of planar classifiers"
+          },
+          {
+            "comment": "Refactor classification  rename to SpatialClassification"
+          },
+          {
+            "comment": "Remove \"assembly lock\" from SelectTool now that SelectionScope has been implemented."
+          },
+          {
+            "comment": "remove IModelApp subclasses"
+          },
+          {
+            "comment": "Remove IModelConnection.openStandalone and IModelConnection.closeStandalone"
+          },
+          {
+            "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
+          },
+          {
+            "comment": "Allow tile content to be requested without edge data, reducing tile size and download time."
+          },
+          {
+            "comment": "Support image textures larger than WebGL capabilities by resizing them."
+          },
+          {
+            "comment": "Update icons-generic-webfont version to latest available."
+          },
+          {
+            "comment": "Update the ToolSettings properties defined in the Select Tool so two groups of options are presented, one for selection method and one for selection mode."
+          },
+          {
+            "comment": "Simplify SelectTool SelectionMethod and SelectionMode."
+          },
+          {
+            "comment": "Remove need to sync SelectionMethod since it is not changed within tool code."
+          },
+          {
+            "comment": "Add IModelConnection.openSnapshot/closeSnapshot, deprecate IModelConnection.openStandalone/closeStandalone"
+          },
+          {
+            "comment": "Refactor solar shadow settings - make these 3d only."
+          },
+          {
+            "comment": "Support solar shadow display."
+          },
+          {
+            "comment": "Make sky sphere / sky gradient use separate rendering primitive from sky cube."
+          },
+          {
+            "comment": "don't draw Sprite before it is loaded"
+          },
+          {
+            "comment": "Unit tests and fixed ColorEditor alignment"
+          },
+          {
+            "comment": "Fix errors on Linux caused by case-sensitivity and shader optimizations."
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          },
+          {
+            "comment": "Update the primitive types to be within a Primitives namespace."
+          },
+          {
+            "comment": "allow IModelApp subclass to override applicationId & applicationVersion"
+          },
+          {
+            "comment": "revert static inheritance in IModelApp.ts"
+          },
+          {
+            "comment": "wrap applicationId & applicationVersion in IModelApp"
+          },
+          {
+            "comment": "Changes to build process to put all JavaScript files in version-specific subdirectories to avoid browser caching problems when deploying new versions."
+          },
+          {
+            "comment": "view undo only saves changes to ViewState, not categories, models, or diplayStyle"
+          },
+          {
+            "comment": "Clip tool changes now that undo/redo does not affect clipping. Right-click menu support for clip handles."
+          },
+          {
+            "comment": "only save viewing volume for view undo rather than cloning ViewState"
+          },
+          {
+            "comment": "Tools to create and modify view clip."
+          },
+          {
+            "comment": "VSTS#114189 Reality data shown as Model and picker"
+          },
+          {
+            "comment": "World decorations ignore symbology overrides defined for the view."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/imodeljs-frontend_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",

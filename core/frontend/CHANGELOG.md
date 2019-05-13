@@ -1,6 +1,120 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Support spatial classification of context reality models.
+- API methods for adding and removing context reality models
+- Account for view clip in adjustZPlanes. Fit view needs to check clipVolume ViewFlag.
+- Increase ambient light to .2
+- Adds parameter for api-extractor to validate missing release tags
+- Eliminate display performance issue caused by normal matrix computation.
+- remove requirement that JavaScript classnames match BIS classnames
+- Reduce the number of geocoordination requests produced when loading map tiles.
+- Save ClipVector on ViewState instead of always creating new one from json.
+- Set initial GL state to match default
+- Dispose of planar classifiers.
+- Add spatial classifier UX 
+- Hide clip decoration during modify. Easier right-click/touch tap support for non-handle pickable decoration.
+- Add orientation option button to toolsettings for ClipByPlane/ClipByShape tools.
+- ConvexClipPlaneSet modify handles. Make EmphasizeElements internal.
+- ClipShape modify handles.
+- Fix clip to element tool. wip: Compute clp plane offset in world to support tool settings to enter distance.
+- #114939 Fix handle drag test. Support smart lock wth clip shape tool. Offset all clip planes w/shift.
+- View clip fixes and start of tools.
+- Fit view support for planes clip primitive. View clipping tools.
+- Fix tolerance multiplier for reality models
+- Cull geometry outside view clipping volume before drawing.
+- Fix root tile range on webmercator tile tree for ground bias.
+- Added support for disabling certain capabilities for performance testing
+- Adding support for readPixels performance testing
+- Prevent tooltip from blocking tool event loop.
+- add test coverage in frontend
+- Debug json clip plane usage.
+- ClipVector and ClipUtilities test and enhancements
+- Add backface culling feature to improve performance.
+- Continue showing old skybox until new is ready
+- Add method to return available reality models excluding attached.
+- Allow a view to define a set of elements which should never be drawn in that view.
+- Allow selected viewport to be changed when filterViewport rejects view.
+- Support instanced geometry.
+- Support clipping view volume with multiple convex clipPlane sets.
+- Fix rare failure to refine tiles displayed in view resulting in missing geometry.
+- Fix display of animated edges.
+- fixes for release tags
+- When loading a perspective view, fix up potentially bad camera settings.
+- Reduce mininum front clip (Defect 103868).
+- Ensure webgl resources allocated by clip volumes are properly released.
+- Fix broken links
+- LoggerCategory -> FrontendLoggerCategory
+- Fix IModelJsLoader to load imodeljs-markup only when needed
+- Export solar calculations for UI
+- Fix scenario in which lower-resolution tiles would be inappropriately substituted for tiles of appropriate resolution.
+- Fix multipass depth issue
+- Fixed visual artifacts when drawing large batches of polylines.
+- Handle non-rds tile tree URLS when signed in.
+- Fix issue in which tiles of incorrect LOD would be drawn.
+- Fix issue with undo/redo view not having render materials
+- Fixes to web mercator. 
+- Interfaces used by PropertyRecord are set to either beta or alpha as modules that use them to implement UI are not finalized.
+- eliminate depedency on JavaScript class names for EnityState subclasses
+- Add support for appending GeoJson to existing IModel
+- Use default background map type if an invalid type is specified in JSON.
+- Ensure queries for large numbers of subcategories are paged appropriately.
+- Improve graphics performance in Firefox.
+- Only use instancing optimization if the system supports instancing.
+- update Sprite after it is loaded
+- Introduce LoggerCategory enum to advertise logger categories used by this package.
+- Logging fixes. 
+- Put sourcemap in npm package.
+- documentation cleanup
+- add SVG to ImageSourceFormat
+- add imodeljs-markup
+- added vpDiv between parent and canvas
+- Allow a view's extent limits to be overridden.
+- #108055 Update measure distance tooltip on click. Improve total distance visibility.
+- Add alpha tags to PropertyEditorParams interfaces that are not ready for public use.
+- Improved performance of multipass rendering
+- #96348 Improve default rotate point for navigation cube
+- Fixes to OidcBrowserClient. 
+- Optimize frontend renderer's performance by minimizing allocations of float arrays passed to the GPU.
+- Add more discrete, efficient Viewport synchronization events.
+- Added the ability to override category visibility on a per-model basis.
+- Rework projection of planar classifiers
+- Refactor classification  rename to SpatialClassification
+- Remove "assembly lock" from SelectTool now that SelectionScope has been implemented.
+- remove IModelApp subclasses
+- Remove IModelConnection.openStandalone and IModelConnection.closeStandalone
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Allow tile content to be requested without edge data, reducing tile size and download time.
+- Support image textures larger than WebGL capabilities by resizing them.
+- Update icons-generic-webfont version to latest available.
+- Update the ToolSettings properties defined in the Select Tool so two groups of options are presented, one for selection method and one for selection mode.
+- Simplify SelectTool SelectionMethod and SelectionMode.
+- Remove need to sync SelectionMethod since it is not changed within tool code.
+- Add IModelConnection.openSnapshot/closeSnapshot, deprecate IModelConnection.openStandalone/closeStandalone
+- Refactor solar shadow settings - make these 3d only.
+- Support solar shadow display.
+- Make sky sphere / sky gradient use separate rendering primitive from sky cube.
+- don't draw Sprite before it is loaded
+- Unit tests and fixed ColorEditor alignment
+- Fix errors on Linux caused by case-sensitivity and shader optimizations.
+- Upgrade TypeDoc dependency to 0.14.2
+- Update the primitive types to be within a Primitives namespace.
+- allow IModelApp subclass to override applicationId & applicationVersion
+- revert static inheritance in IModelApp.ts
+- wrap applicationId & applicationVersion in IModelApp
+- Changes to build process to put all JavaScript files in version-specific subdirectories to avoid browser caching problems when deploying new versions.
+- view undo only saves changes to ViewState, not categories, models, or diplayStyle
+- Clip tool changes now that undo/redo does not affect clipping. Right-click menu support for clip handles.
+- only save viewing volume for view undo rather than cloning ViewState
+- Tools to create and modify view clip.
+- VSTS#114189 Reality data shown as Model and picker
+- World decorations ignore symbology overrides defined for the view.
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -56,7 +170,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Fix clipping volume being inconsistently applied to view.
 - Dont make textures transparent unless technique enables it.
 - Fix incorrect "fit view" behavior when empty tiles exist.
-- Handle relative subpaths in reality model tile trees.  Handle Y for axis/
+- Handle relative subpaths in reality model tile trees.  Handle Y for axis/ 
 - Fix handling of null animation visibility - should be 100% not 0.
 - Added spatial <-> cartographic methods that check/use the geographic coordinate system before using ecef location.
 - DefaultViewTouchTool should not call handleEvent until it's installed as the active ViewTool.
@@ -79,10 +193,10 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Omit animation branches that are not visible.
 - Improve efficiency and completeness of SubCategory loading for ViewStates.
 - Save BUILD_SEMVER to globally accessible map. PluginAdmin and Plugin classes defined. IModelJsLoader improved.
-- add optional iModel argument to EntityState.clone
+- add optional iModel argument to EntityState.clone 
 - added GeometricModelState.queryModelRange
 - Added creatorId, new method to list RD per project, identified numerous area for changes WIP
-- IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections.
+- IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections. 
 - Implemented spatial criterai when searching through all reality data associated to a project.
 - Problem with root document of reality data not in root of blob. Tiles could not be fetched. Root path is added to tiles names.
 - Threading issue accessing Reality Data, RealityData class was transformed to be the main data access object instead of the client that was used by most/all reality data causing cache data clash and mix between many reality data.
@@ -142,7 +256,7 @@ Thu, 10 Jan 2019 22:46:17 GMT
 - Fix IModelJsLoader to ensure react loaded before bwc.
 - MeasureLocationTool show lat/long and altitude.
 - Make raster text locate behave better.
-- Removed default OIDC scopes. All applications must now explicitly pass the required scopes.
+- Removed default OIDC scopes. All applications must now explicitly pass the required scopes. 
 - Can now await result from QuantityFormatter. Report delta relative to ACS when context lock enabled. Cleanup "Measure.Points" plug-in example until real measure tools are available.
 - Quantity formatter now allows async method to get FormatterSpec that can be used to format quantities.
 - QuantityFormatter.formatQuantity is now the only method to format quantities.
@@ -317,7 +431,7 @@ Mon, 12 Nov 2018 16:42:10 GMT
 
 ### Updates
 
-- Hydrated briefcases for ReadOnly cases from the latest checkpoint, rather than the seed files. This significantly improves performance of IModelDb/IModelConnection.open() for typical cases.
+- Hydrated briefcases for ReadOnly cases from the latest checkpoint, rather than the seed files. This significantly improves performance of IModelDb/IModelConnection.open() for typical cases. 
 
 ## 0.165.0
 Mon, 12 Nov 2018 15:47:00 GMT

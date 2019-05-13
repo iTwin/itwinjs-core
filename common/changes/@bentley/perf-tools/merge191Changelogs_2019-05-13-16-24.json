@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "packageName": "@bentley/perf-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/perf-tools",
+  "email": "Caleb.Shafer@bentley.com"
+}

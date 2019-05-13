@@ -2,6 +2,21 @@
   "name": "@bentley/certa",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/certa_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "\"Adds copyright header to readme\""
+          },
+          {
+            "comment": "Update the version of nyc to 14.0.0"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/certa_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",

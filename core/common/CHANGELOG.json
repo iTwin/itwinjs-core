@@ -2,6 +2,102 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/imodeljs-common_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support spatial classification of context reality models. "
+          },
+          {
+            "comment": "Added OpenAPIInfo to the barrel file"
+          },
+          {
+            "comment": "Adds parameter for api-extractor to validate missing release tags"
+          },
+          {
+            "comment": "Adds ignoreMissingTags flag"
+          },
+          {
+            "comment": "Added option to use azure-based tile caching"
+          },
+          {
+            "comment": "Added a utility to diagnose backends"
+          },
+          {
+            "comment": "Do not cache pending http responses."
+          },
+          {
+            "comment": "Allow a view to define a set of elements which should never be drawn in that view."
+          },
+          {
+            "comment": "Allow snapshot imodeltokens through bentleycloudrpcprotocol in development mode only."
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "LoggerCategory -> CommonLoggerCategory"
+          },
+          {
+            "comment": "Fix default line pattern for hidden edges."
+          },
+          {
+            "comment": "Introduce LoggerCategory enum to advertise logger categories used by this package."
+          },
+          {
+            "comment": "Logging fixes. "
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "add SVG to ImageSourceFormat"
+          },
+          {
+            "comment": "add imodeljs-markup"
+          },
+          {
+            "comment": "New tile cache naming scheme."
+          },
+          {
+            "comment": "queryPage use memoization/pending pattern"
+          },
+          {
+            "comment": "Remove StandaloneIModelRpcInterface"
+          },
+          {
+            "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
+          },
+          {
+            "comment": "Prefer the IModelToken values in the url (if different from values in JSON body -- should never happen except in a malicious request)."
+          },
+          {
+            "comment": "Exports interface MarshalingBinaryMarker to prevent errors in api-extractor V7"
+          },
+          {
+            "comment": "Add SnapshotIModelRpcInterface"
+          },
+          {
+            "comment": "Refactor solar shadow settings - make these 3d only."
+          },
+          {
+            "comment": "Support solar shadow display."
+          },
+          {
+            "comment": "Simplified tile caching IModelHost config and removed dev flags. Allow browser caching of tiles"
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          },
+          {
+            "comment": "only save viewing volume for view undo rather than cloning ViewState"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/imodeljs-common_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",

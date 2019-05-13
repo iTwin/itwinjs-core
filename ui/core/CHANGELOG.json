@@ -2,6 +2,99 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/ui-core_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to latest version of icon library."
+          },
+          {
+            "comment": "@beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds."
+          },
+          {
+            "comment": "Added CommonProps to many component Props in ui-core & ui-components"
+          },
+          {
+            "comment": "Added tools/build/tslint-docs.json. Added SvgPath & SvgSprite to ui-core."
+          },
+          {
+            "comment": "Added missing package prefix to some CSS class names in ui-core, ui-components & ui-framework"
+          },
+          {
+            "comment": "Reverted CubeNavigationAid changes"
+          },
+          {
+            "comment": "Added 100% coverage to getDisplayName and shallowDiffers"
+          },
+          {
+            "comment": "Show/Hide UI enhancements. Widget Opacity enhancements."
+          },
+          {
+            "comment": "Added local snapshot support to ui-test-app. Added specialized div components to ui-core."
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "Small tweak to Popup class."
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option."
+          },
+          {
+            "comment": "Require React & React-dom 16.8"
+          },
+          {
+            "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
+          },
+          {
+            "comment": "Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags."
+          },
+          {
+            "comment": "Update icons-generic-webfont version to latest available."
+          },
+          {
+            "comment": "Added TableProp to hide header and supporting style changes"
+          },
+          {
+            "comment": "Fixed _scrollbar.scss include"
+          },
+          {
+            "comment": "Modify GlobalContextMenu to better follow UX guidelines"
+          },
+          {
+            "comment": "Added release tags to ui-framework, ui-components and ui-core."
+          },
+          {
+            "comment": "UI documentation - added to Learning section"
+          },
+          {
+            "comment": "Fix tree placeholder styling (set correct background and offset)"
+          },
+          {
+            "comment": "Added ModelessDialog & ModelessDialogManager"
+          },
+          {
+            "comment": "Add onOutsideClick prop to Popup."
+          },
+          {
+            "comment": "Add ability to set tooltips on tree node checkboxes"
+          },
+          {
+            "comment": "Unit tests and fixed ColorEditor alignment"
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/ui-core_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",

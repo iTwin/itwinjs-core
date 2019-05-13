@@ -1,6 +1,26 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Adds parameter for api-extractor to validate missing release tags
+- remove requirement that JavaScript classnames match BIS classnames
+- Fix broken links
+- Fix marshaling class instances through RPC by removing use of Readonly
+- Fix content requests for BisCore.Element instances when only the base class name is specified (usual case when selecting elements from the viewport)
+- Disable "category" and "model" selection scopes
+- Dispose PresentationManager in the same client request context as it was created in.
+- Fix `computeSelection` and content requests failing when given a key with invalid BisCore:Element id
+- Add APIs to retrieve instance labels
+- Fixed `PresentationRpcImpl.computeSelection` for "model", "category" and "element" scope to return specific class names instead of "BisCore:Model", "BisCore:Category" or "BisCore:Element"
+- Allow requesting content with descriptor overrides instead of descriptor. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content
+- Do not attempt to handle transient element ids when computing selection based on scope
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT

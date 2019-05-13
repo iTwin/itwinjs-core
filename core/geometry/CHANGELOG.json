@@ -2,6 +2,96 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/geometry-core_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Adds parameter for api-extractor to validate missing release tags"
+          },
+          {
+            "comment": "Fix for PolygonOps.centroidAreaNormal."
+          },
+          {
+            "comment": "View clip fixes and start of tools."
+          },
+          {
+            "comment": "Range1dArray coverage"
+          },
+          {
+            "comment": "Coverage; enable public/internal verification."
+          },
+          {
+            "comment": "y"
+          },
+          {
+            "comment": "Add doc to many methods.  Modernize ray intersect clip plane logic and methods."
+          },
+          {
+            "comment": "closestApproachRay3dRay3d.  centroid bugs"
+          },
+          {
+            "comment": "ClipPlane enhancements;  method to compute clip faces for convex set intersection with range"
+          },
+          {
+            "comment": "ClipPrimitive modernization"
+          },
+          {
+            "comment": "Debug json clip plane usage"
+          },
+          {
+            "comment": "add docs for methods in Arc3d, CurvePrimitive, Newton"
+          },
+          {
+            "comment": "Add comments to (undocumented) methods"
+          },
+          {
+            "comment": "LineString3d code coverage"
+          },
+          {
+            "comment": "public and internal doc markup"
+          },
+          {
+            "comment": "@public markup"
+          },
+          {
+            "comment": "In FrustumAnimation, detect true center of rotationn"
+          },
+          {
+            "comment": "Reduce memory allocations in clipping."
+          },
+          {
+            "comment": "Method docs, ConvexClipPlaneSetIntersectRange enhancements"
+          },
+          {
+            "comment": "new method to check of clipper intersects range, with quick exit"
+          },
+          {
+            "comment": " ClipVector and ClipUtilities test and enhancements"
+          },
+          {
+            "comment": "Triangulation bug (multiple holes not linked correctly)"
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
+          },
+          {
+            "comment": "New code for regularizing a single face."
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/geometry-core_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",

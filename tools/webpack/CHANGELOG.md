@@ -1,6 +1,23 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Added a way for buildIModelJsModule to combine multiple json5 files into an output config.json file.
+- Fix analyzeWebpackStats to account for npm node_module location difference
+- Fix case of IModelJsLoader
+- Fix packageSizesProd.bat script
+- add imodeljs-markup as a module
+- Backends must be started up with a larger limit on http headers. 
+- Change version compare for plugin to >=
+- Require React & React-dom 16.8
+- Remove the copyExternalModules script as it is unnecessary by the buildiModelJsModule script.
+- Update the version of nyc to 14.0.0
+- Changes to build process to put all JavaScript files in version-specific subdirectories to avoid browser caching problems when deploying new versions.
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT

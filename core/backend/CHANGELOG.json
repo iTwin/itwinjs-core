@@ -2,6 +2,168 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.191.0",
+      "tag": "@bentley/imodeljs-backend_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support spatial classification of context reality models."
+          },
+          {
+            "comment": "Fix incorrect elevation for background map display."
+          },
+          {
+            "comment": "Adds parameter for api-extractor to validate missing release tags"
+          },
+          {
+            "comment": "remove requirement that JavaScript classnames match BIS classnames"
+          },
+          {
+            "comment": "Avoided iModelHub calls when opening iModels for Design Review. "
+          },
+          {
+            "comment": "Fixed reinitializing briefcase cache when there are .tiles files."
+          },
+          {
+            "comment": "Enabled use of checkpoint service. "
+          },
+          {
+            "comment": "Added option to use azure-based tile caching"
+          },
+          {
+            "comment": "Added a utility to diagnose backends"
+          },
+          {
+            "comment": "Improved backend diagnostic utility. "
+          },
+          {
+            "comment": "adapt to Range2d name change"
+          },
+          {
+            "comment": "Allow a view to define a set of elements which should never be drawn in that view."
+          },
+          {
+            "comment": "Added texture support to exportGraphics"
+          },
+          {
+            "comment": "Fixes for file-based tile caching\""
+          },
+          {
+            "comment": "Catch tile upload errors"
+          },
+          {
+            "comment": "fix for release tags"
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "LoggerCategory -> BackendLoggerCategory"
+          },
+          {
+            "comment": "cleanup old imodelbank references"
+          },
+          {
+            "comment": "back out experimental changes"
+          },
+          {
+            "comment": "crash reporting WIP"
+          },
+          {
+            "comment": "Add InformationRecordModel.insert, GroupModel.insert"
+          },
+          {
+            "comment": "Fixed integration tests. "
+          },
+          {
+            "comment": "Introduce LoggerCategory enum to advertise logger categories used by this package."
+          },
+          {
+            "comment": "Limited maximum cache size of the backend PromiseMemoizer. "
+          },
+          {
+            "comment": "missing dependency on node-report"
+          },
+          {
+            "comment": "rush update"
+          },
+          {
+            "comment": "node-report"
+          },
+          {
+            "comment": "Fixed memoization problem that caused an endless stream of 404 NotFound errors. "
+          },
+          {
+            "comment": "Reinstated old version of OidcAgentClient"
+          },
+          {
+            "comment": "Unauthorized open requests should cause a more obvious error. "
+          },
+          {
+            "comment": "Improved performance logging, especially of IModelDb open operations; ChangeSets are merged one-by-one to prevent hogging the event loop. "
+          },
+          {
+            "comment": "Memoization fix when opening iModels in shared, read-only mode ."
+          },
+          {
+            "comment": "Fixed setup of application version. "
+          },
+          {
+            "comment": "Updated Element CRUD perf tests"
+          },
+          {
+            "comment": "added tile generation perf test"
+          },
+          {
+            "comment": "queryPage use memoization/pending pattern"
+          },
+          {
+            "comment": "Remove IModelDb.createStandalone, use IModelDb.createSnapshot instead."
+          },
+          {
+            "comment": "Remove ElementPropertyFormatter, IModelDb.getElementPropertiesForDisplay (use presentation rules instead)"
+          },
+          {
+            "comment": "Remove StandaloneIModelRpcImpl"
+          },
+          {
+            "comment": "Fix for Render Gradient.Symb test"
+          },
+          {
+            "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
+          },
+          {
+            "comment": "Add IModelDb.createSnapshot/openSnapshot/closeSnapshot, deprecate IModelDb.createStandalone/openStandalone/closeStandalone"
+          },
+          {
+            "comment": "Moved IModelJsExpressServer class into a new package (@bentley/express-server)."
+          },
+          {
+            "comment": "Simplified tile caching IModelHost config and removed dev flags. Allow"
+          },
+          {
+            "comment": "typo in documentation"
+          },
+          {
+            "comment": "fix missing ULAS client request data"
+          },
+          {
+            "comment": "ExportGraphicsFunction return type is now void"
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          },
+          {
+            "comment": "add usage logging tests"
+          },
+          {
+            "comment": "edit usage logging tests to support revised usage logging syntax"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.190.0",
       "tag": "@bentley/imodeljs-backend_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",

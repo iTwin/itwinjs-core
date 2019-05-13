@@ -1,6 +1,76 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Update to when active tool properties are cached for toolsettings.
+- Fixed NotificationManager.openMessageBox amd OutputMessageAlert.Dialog implementations to support HTML tags
+- @beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds.
+- Fixed AppButton onClick on Firefox and bar color
+- Removed Redux from AppState in ui-test-app and made Backstage stateful
+- Refactor category/model picker
+- CommonProps usage in ui-framework. SvgPath sample in ui-test-app. Added tools/build/tslint-docs.json.
+- Added 'Register' link back to SignIn component. Added ExternalIModel test widget. Made AppBackstage in ui-test-app Redux connected again.
+- Added missing package prefix to some CSS class names in ui-core, ui-components & ui-framework
+- Reverted CubeNavigationAid changes
+- Added 2D drawing navigation aid
+- Added 100% coverage to DrawingNavigationAid, fixed snapshot leaks for InputField.test.snap
+- Show/Hide UI enhancements. Widget Opacity enhancements.
+- Added local snapshot support to ui-test-app. Added specialized div components to ui-core.
+- Fix broken links
+- Fixed Viewport heights & initial navigation aid. Widget transparency.
+- Added StagePanel support to the Frontstage
+- From hackathon-ui-team: StagePanels, UI Show/Hide, PopupButtons
+- Put sourcemap in npm package.
+- Correctly align ElementTooltip in subsequent Viewports.
+- Render ElementTooltip above ViewportDialog.
+- Add unmount component test.
+- Move AnalysisAnimation Tool to ui-test-app. To be replaced by new timeline animation component.
+- Fixed navigation aid bugs
+- Fixes to OidcBrowserClient. 
+- Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
+- Require React & React-dom 16.8
+- remove IModelApp subclasses
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
+- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s. 
+- Rename AppState to SessionState to avoid collision with acutal App's state. Add AvailableSectionScopes to SessionState.
+- Move SelectionScope status field from test app to ui-framework. Update icons-generic-webfont version to latest available.
+- Remove need to sync SelectionMethod since it is not changed within tool code.
+- Move timeline components from ui-test-app to ui-components package
+- Tool Settings: removed minimize tab, added min to title bar, styled title
+- Auto close popups when clicking outside.
+- Return rulset promises in Category/Model picker _initialize()
+- Use GlobalContextMenu in category picker and modify to better follow UX standards.
+- Added ui-framework release tags and common/api/ui-framework.api.md
+- UI documentation - added to Learning section
+- Fix hidden tabs issue.
+- Added ModelessDialog & ModelessDialogManager
+- In Category picker show only categories with elements
+- Check for ruleset before removing
+- Wait for category/model rulsets to load before creating groups.
+- Manage category picker tree nodes via id instead of node
+- Fix Model Selector's ruleset. It contained invalid ECExpression for LabelOverride rule which caused labels in some cases to be incorrect and ECExpression parsing errors in our logs.
+- Prevent widget content unmount.
+- Removed IStatusBar and fixed incorrect Toast animateOuTo prop value.
+- Visibility Tree: Use per-model category display overrides
+- Visibility Tree: Show tooltips explaining why checkbox status is what it is
+- Visibility Tree: Fix some subjects not being displayed in the hierarchy
+- Visibility Tree: Do not show nodes for reference subjects with no children
+- Visibility Tree: Set correct icons
+- Visibility Tree: Update hierarchy to hide specific kinds of nodes
+- Visibility Tree: When changing assembly display state, also change its children state
+- Visibility Tree: Update checkbox states when activeView prop is changed
+- Visibility Tree: Set paging size on the data provider to avoid excessive backend requests
+- Update tests for better coverage and move certain components to test app that should not be in framework.
+- Unit tests and fixed ColorEditor alignment
+- Upgrade TypeDoc dependency to 0.14.2
+- Add ListPickerBase test to trigger item expansion.
+- Changed props for CubeRotationChangeEvents
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -183,7 +253,7 @@ Mon, 03 Dec 2018 18:52:58 GMT
 
 ### Updates
 
-- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application.
+- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application. 
 - Unit tests
 - Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components
 
@@ -192,7 +262,7 @@ Mon, 26 Nov 2018 19:38:42 GMT
 
 ### Updates
 
-- Fix to OIDC browser client.
+- Fix to OIDC browser client. 
 
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT
@@ -236,7 +306,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- OIDC related enhancments (WIP).
+- OIDC related enhancments (WIP). 
 - Updated to TypeScript 3.1
 - ui-core unit tests. Fixed backstage open issue.
 - Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files.

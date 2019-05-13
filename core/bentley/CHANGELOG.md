@@ -1,6 +1,25 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Thu, 14 Mar 2019 14:26:49 GMT and should not be manually modified.
+This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+
+## 0.191.0
+Mon, 13 May 2019 15:52:05 GMT
+
+### Updates
+
+- Adds parameter for api-extractor to validate missing release tags
+- Add a Dictionary-based least-recently-used cache.
+- Fix broken links
+- LoggerCategory -> BentleyLoggerCategory
+- Logged the fields in ClientRequestContext
+- Logging fixes. 
+- Put sourcemap in npm package.
+- Fixed logger to not mutate incoming objects. 
+- Improved performance logging
+- Added functions for iterating and obtaining the number of elements of a collection of Id64s represented as an Id64Arg.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Use TextDecoder to decode binary utf-8 strings if supported.
+- Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -34,7 +53,7 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
@@ -141,7 +160,7 @@ Fri, 16 Nov 2018 21:45:44 GMT
 
 ### Updates
 
-- changes to debug utilities.
+- changes to debug utilities. 
 - Fluentd Bunnyan Logger added
 
 ## 0.166.0
