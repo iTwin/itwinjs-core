@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added NumericInput component to ui-core. Added dependency on react-numeric-input.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

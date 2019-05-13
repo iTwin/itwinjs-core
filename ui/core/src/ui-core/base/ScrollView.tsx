@@ -8,10 +8,10 @@ import * as React from "react";
 import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
-/** Scroll View div
+/** Scroll View React functional component
  * @beta
  */
 // tslint:disable-next-line:variable-name
-export const ScrollView: React.FunctionComponent<CommonDivProps> = (props) => {
+export const ScrollView: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
   return <Div {...props} mainClassName="uicore-scrollview" />;
 };

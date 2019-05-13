@@ -8,6 +8,7 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
+import * as ReactNumericInput from 'react-numeric-input';
 
 // @internal
 export class AnnularSector {
@@ -47,6 +48,9 @@ export class Annulus {
 
 // @beta
 export const BodyText: React.FunctionComponent<TextProps>;
+
+// @alpha (undocumented)
+export type BoundsFunctionProp = number | (() => number | undefined);
 
 // @public
 export class Button extends React.PureComponent<ButtonProps> {
@@ -302,8 +306,7 @@ export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">
 }
 
 // @beta
-export class Cube extends React.Component<CubeProps> {
-    constructor(props: CubeProps);
+export class Cube extends React.PureComponent<CubeProps> {
     // (undocumented)
     render(): React.ReactNode;
 }
@@ -877,6 +880,60 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange"> & {
     onChange: (checked: boolean) => void;
 };
 
+// @alpha (undocumented)
+export class NumericInput extends React.Component<NumericInputProps> {
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha (undocumented)
+export interface NumericInputProps extends Omit<ReactNumericInput.NumericInputProps, "min" | "max" | "step" | "precision" | "defaultValue" | "onInvalid" | "style" | "nostyle" | "mobile">, CommonProps {
+    // (undocumented)
+    componentClass?: string;
+    // (undocumented)
+    defaultValue?: number | string;
+    // (undocumented)
+    format?: ((value: number | null) => string);
+    // (undocumented)
+    max?: BoundsFunctionProp;
+    // (undocumented)
+    maxLength?: number;
+    // (undocumented)
+    min?: BoundsFunctionProp;
+    // (undocumented)
+    mobile?: boolean | "auto" | (() => boolean);
+    // (undocumented)
+    noValidate?: boolean | string;
+    // (undocumented)
+    onBlur?: React.FocusEventHandler<HTMLDivElement | HTMLInputElement>;
+    // (undocumented)
+    onChange?: ((value: number | null, stringValue: string, input: HTMLInputElement) => void);
+    // (undocumented)
+    onFocus?: React.FocusEventHandler<HTMLDivElement | HTMLInputElement>;
+    // (undocumented)
+    onInput?: React.FormEventHandler<HTMLInputElement>;
+    // (undocumented)
+    onInvalid?: ((error: string, value: number | null, stringValue: string) => void);
+    // (undocumented)
+    onKeyDown?: React.KeyboardEventHandler<HTMLDivElement | HTMLInputElement>;
+    // (undocumented)
+    onSelect?: React.ReactEventHandler<HTMLInputElement>;
+    // (undocumented)
+    onValid?: ((value: number | null, stringValue: string) => void);
+    // (undocumented)
+    parse?: ((stringValue: string) => number | null);
+    // (undocumented)
+    precision?: number | (() => number | null | undefined);
+    // (undocumented)
+    snap?: boolean;
+    // (undocumented)
+    step?: StepFunctionProp;
+    // (undocumented)
+    strict?: boolean;
+    // (undocumented)
+    value?: number | string;
+}
+
 // @public
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
@@ -1119,14 +1176,17 @@ export interface SplitButtonProps extends CommonProps {
     onClick?: (event: any) => any;
 }
 
+// @alpha (undocumented)
+export type StepFunctionProp = number | ((direction: string) => number | undefined);
+
 // @internal
-export class StyledText extends React.PureComponent<StyleTextProps> {
+export class StyledText extends React.PureComponent<StyledTextProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @internal
-export interface StyleTextProps extends TextProps {
+export interface StyledTextProps extends TextProps {
     mainClassName: string;
 }
 

@@ -8,9 +8,9 @@ import * as React from "react";
 import { TextProps } from "./TextProps";
 import { StyledText } from "./StyledText";
 
-/** Styled small text
+/** Styled small text React functional component
  * @beta
  */
-export const SmallText: React.FunctionComponent<TextProps> = (props) => {  // tslint:disable-line:variable-name
+export const SmallText: React.FunctionComponent<TextProps> = (props: TextProps) => {  // tslint:disable-line:variable-name
   return <StyledText {...props} mainClassName="uicore-text-small" />;
 };

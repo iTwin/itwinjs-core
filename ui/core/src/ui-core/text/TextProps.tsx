@@ -10,5 +10,4 @@ import { CommonProps } from "../utils/Props";
 /** Properties for various text components
  * @beta
  */
-
 export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement>, CommonProps { }

@@ -6,10 +6,15 @@
 
 .mobx-demo-view {
   color: $buic-text-color;
+  margin: 0 6px;
 }
 
 .bird-name {
-  width: 200px;
+  width: 100%;
   display: inline-block;
-  margin-right: 6px;
+}
+
+.numeric-input {
+  width: 100%;
+  display: inline-block;
 }

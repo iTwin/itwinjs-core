@@ -8,9 +8,9 @@ import * as React from "react";
 import { TextProps } from "./TextProps";
 import { StyledText } from "./StyledText";
 
-/** Styled headline text
+/** Styled headline text React functional component
  * @beta
  */
-export const Headline: React.FunctionComponent<TextProps> = (props) => {  // tslint:disable-line:variable-name
+export const Headline: React.FunctionComponent<TextProps> = (props: TextProps) => {  // tslint:disable-line:variable-name
   return <StyledText {...props} mainClassName="uicore-text-headline" />;
 };

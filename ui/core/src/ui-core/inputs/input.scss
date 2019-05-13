@@ -20,6 +20,7 @@
     border:                 1px solid $buic-inputs-border;
     border-radius:          $uicore-border-radius;
     box-shadow:             $buic-inputs-boxshadow 0px 1px 1px inset;
+    box-sizing:             border-box;
     transition:             border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
     &:-ms-input-placeholder {       color: $buic-foreground-disabled; }

@@ -91,6 +91,7 @@ dependencies:
   '@types/react-data-grid': 4.0.2
   '@types/react-dom': 16.8.4
   '@types/react-highlight-words': 0.11.1
+  '@types/react-numeric-input': 2.2.3
   '@types/react-redux': 7.0.8
   '@types/react-resize-detector': 3.1.1
   '@types/react-router-dom': 4.3.3
@@ -208,6 +209,7 @@ dependencies:
   postcss-flexbugs-fixes: 3.3.1
   postcss-loader: 2.1.6
   promise: 8.0.3
+  prop-types: 15.7.2
   puppeteer: 1.11.0
   qs: 6.7.0
   raf: 3.4.1
@@ -223,6 +225,7 @@ dependencies:
   react-dom: 16.8.6
   react-highlight-words: 0.14.0
   react-markdown: 3.6.0
+  react-numeric-input: 2.2.3
   react-redux: 5.1.1
   react-resize-detector: 3.4.0
   react-router-dom: 4.3.1
@@ -924,6 +927,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-zBrtCb0qhn6XqmkIPZhDzLjZ41k4ppeGoC5iaZotAwBEThGO0BrcpRTLWX69oWplnuBsbiNFvHj0IcT6gl9mdg==
+  /@types/react-numeric-input/2.2.3:
+    dependencies:
+      '@types/react': 16.8.17
+    dev: false
+    resolution:
+      integrity: sha512-TQtZ+0PM3/Pk15YYY3xJGOmfwETFQYHGydMaY42OvAbRTBmYJSmGPL7f/Yi/9FfXWb4m4T8FrZborccZX6VXDw==
   /@types/react-redux/7.0.8:
     dependencies:
       '@types/hoist-non-react-statics': 3.3.1
@@ -10109,6 +10118,21 @@ packages:
       react: ^15.0.0 || ^16.0.0
     resolution:
       integrity: sha512-TV0wQDHHPCEeKJHWXFfEAKJ8uSEsJ9LgrMERkXx05WV/3q6Ig+59KDNaTmjcoqlCpE/sH5PqqLMh4t0QWKrJ8Q==
+  /react-numeric-input/2.2.3:
+    dev: false
+    peerDependencies:
+      react: '>=0.14.0 || ^15.6.1 || ^16.0.0'
+    resolution:
+      integrity: sha1-S/WRjD6v7YUagN8euZLZQQArtVI=
+  /react-numeric-input/2.2.3/react@16.8.6:
+    dependencies:
+      react: 16.8.6
+    dev: false
+    id: registry.npmjs.org/react-numeric-input/2.2.3
+    peerDependencies:
+      react: '>=0.14.0 || ^15.6.1 || ^16.0.0'
+    resolution:
+      integrity: sha1-S/WRjD6v7YUagN8euZLZQQArtVI=
   /react-redux/5.1.1:
     dependencies:
       '@babel/runtime': 7.4.4
@@ -15034,6 +15058,7 @@ packages:
       '@types/node': 10.14.1
       '@types/react': 16.8.17
       '@types/react-dom': 16.8.4
+      '@types/react-numeric-input': 2.2.3
       '@types/sinon': 5.0.7
       '@types/sinon-chai': 3.2.2
       chai: 4.2.0
@@ -15051,9 +15076,11 @@ packages:
       jsdom-global: /jsdom-global/3.0.2/jsdom@11.12.0
       mocha: 5.2.0
       nyc: 14.1.1
+      prop-types: 15.7.2
       raf: 3.4.1
       react: 16.8.6
       react-dom: /react-dom/16.8.6/react@16.8.6
+      react-numeric-input: /react-numeric-input/2.2.3/react@16.8.6
       react-testing-library: /react-testing-library/5.9.0/react-dom@16.8.6+react@16.8.6
       rimraf: 2.6.3
       sinon: 7.3.2
@@ -15477,6 +15504,7 @@ specifiers:
   '@types/react-data-grid': 4.0.2
   '@types/react-dom': ^16.8.0
   '@types/react-highlight-words': ^0.11.1
+  '@types/react-numeric-input': ^2.2.3
   '@types/react-redux': ^7.0.1
   '@types/react-resize-detector': ^3.1.0
   '@types/react-router-dom': ^4.2.7
@@ -15594,6 +15622,7 @@ specifiers:
   postcss-flexbugs-fixes: ^3.3.1
   postcss-loader: ^2.1.6
   promise: ^8.0.1
+  prop-types: ^15.7.2
   puppeteer: ~1.11.0
   qs: ^6.5.1
   raf: ^3.4.0
@@ -15609,6 +15638,7 @@ specifiers:
   react-dom: ^16.8.0
   react-highlight-words: ^0.14.0
   react-markdown: ^3.2.1
+  react-numeric-input: ^2.2.3
   react-redux: ^5.0.7
   react-resize-detector: ^3.2.0
   react-router-dom: ^4.2.2

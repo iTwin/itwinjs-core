@@ -539,6 +539,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "prop-types",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "puppeteer",
       "allowedCategories": [ "tools" ]
     },
@@ -596,6 +600,10 @@
     },
     {
       "name": "react-markdown",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-numeric-input",
       "allowedCategories": [ "frontend" ]
     },
     {

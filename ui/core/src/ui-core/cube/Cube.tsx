@@ -36,11 +36,7 @@ export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, Comm
 /** Cube React component used by the 3d Cube Navigation Aid
  * @beta
  */
-export class Cube extends React.Component<CubeProps> {
-  constructor(props: CubeProps) {
-    super(props);
-  }
-
+export class Cube extends React.PureComponent<CubeProps> {
   public render(): React.ReactNode {
     const { faces, rotMatrix, className, ...props } = this.props;
     return (

@@ -8,10 +8,10 @@ import * as React from "react";
 import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
-/** Flex Wrap Container div
+/** Flex Wrap Container React functional component
  * @beta
  */
 // tslint:disable-next-line:variable-name
-export const FlexWrapContainer: React.FunctionComponent<CommonDivProps> = (props) => {
+export const FlexWrapContainer: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
   return <Div {...props} mainClassName="uicore-flex-wrap-container" />;
 };
