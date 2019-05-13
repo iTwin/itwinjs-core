@@ -221,10 +221,12 @@ describe("iModel", () => {
   });
 
   it("should use schema to look up classes by name", () => {
-    const elementClass = BisCoreSchema.getClass(Element.className, imodel1);
-    const categoryClass = BisCoreSchema.getClass(Category.className, imodel1);
+    const elementClass = ClassRegistry.findRegisteredClass(Element.classFullName);
+    const categoryClass = ClassRegistry.findRegisteredClass(Category.classFullName);
     assert.isDefined(elementClass);
     assert.isDefined(categoryClass);
+    assert.equal(elementClass!.schema, BisCoreSchema);
+    assert.equal(categoryClass!.schema, BisCoreSchema);
     assert.equal(elementClass!.className, "Element");
     assert.equal(categoryClass!.className, "Category");
   });

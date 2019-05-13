@@ -102,7 +102,7 @@ export class IModelHost {
   public static get platform(): typeof IModelJsNative { return this._platform!; }
 
   public static configuration?: IModelHostConfiguration;
-  /** Event raised just after the backend IModelHost was started up */
+  /** Event raised just after the backend IModelHost was started */
   public static readonly onAfterStartup = new BeEvent<() => void>();
 
   /** Event raised just before the backend IModelHost is to be shut down */
@@ -118,12 +118,8 @@ export class IModelHost {
   public static applicationVersion: string;
 
   /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
-  public static get authorizationClient(): IAuthorizationClient | undefined {
-    return IModelHost._authorizationClient;
-  }
-  public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) {
-    IModelHost._authorizationClient = authorizationClient;
-  }
+  public static get authorizationClient(): IAuthorizationClient | undefined { return IModelHost._authorizationClient; }
+  public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
 
   /** Get the active authorization/access token for use with various services
    * @throws [[BentleyError]] if the access token cannot be obtained
@@ -141,7 +137,7 @@ export class IModelHost {
 
   private static registerPlatform(platform: typeof IModelJsNative, region: number): void {
     this._platform = platform;
-    if (!platform)
+    if (undefined === platform)
       return;
 
     if (!Platform.isMobile)
@@ -166,15 +162,11 @@ export class IModelHost {
 
   private static validateNodeJsVersion(): void {
     const requiredVersion = require("../package.json").engines.node;
-    if (!semver.satisfies(process.version, requiredVersion)) {
+    if (!semver.satisfies(process.version, requiredVersion))
       throw new IModelError(IModelStatus.BadRequest, `Node.js version ${process.version} is not within the range acceptable to imodeljs-backend: (${requiredVersion})`);
-    }
-    return;
   }
 
-  private static getApplicationVersion(): string {
-    return require("../package.json").version;
-  }
+  private static getApplicationVersion(): string { return require("../package.json").version; }
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
@@ -283,33 +275,37 @@ export class IModelHost {
     IModelHost.configuration = undefined;
   }
 
-  /** The directory where the app's assets may be found */
-  public static get appAssetsDir(): string | undefined {
-    return (IModelHost.configuration === undefined) ? undefined : IModelHost.configuration.appAssetsDir;
-  }
+  /** The directory where application assets may be found */
+  public static get appAssetsDir(): string | undefined { return undefined !== IModelHost.configuration ? IModelHost.configuration.appAssetsDir : undefined; }
 
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status. */
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status.
+   * @internal
+   */
   public static get tileTreeRequestTimeout(): number {
     return undefined !== IModelHost.configuration ? IModelHost.configuration.tileTreeRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
   }
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status. */
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status.
+   * @internal
+   */
   public static get tileContentRequestTimeout(): number {
     return undefined !== IModelHost.configuration ? IModelHost.configuration.tileContentRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
   }
 
-  /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
+  /** If true, requests for tile content will execute on a separate thread pool to avoid blocking other, less expensive asynchronous requests such as ECSql queries.
+   * @internal
+   */
   public static get useTileContentThreadPool(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useTileContentThreadPool; }
 
-  /** Whether external tile caching is active. */
-  public static get usingExternalTileCache(): boolean { return (undefined !== IModelHost.configuration && IModelHost.configuration.tileCacheCredentials) ? true : false; }
+  /** Whether external tile caching is active.
+   * @internal
+   */
+  public static get usingExternalTileCache(): boolean { return undefined !== IModelHost.configuration && undefined !== IModelHost.configuration.tileCacheCredentials; }
 
   private static setupTileCache() {
     const config = IModelHost.configuration!;
-
     const credentials = config.tileCacheCredentials;
-    if (!credentials) {
+    if (undefined === credentials)
       return;
-    }
 
     if (credentials.service === "azure") {
       IModelHost.tileCacheService = new AzureBlobStorage(credentials);
@@ -360,7 +356,7 @@ export class Platform {
   }
 }
 
-/** Well known directories that may be used by the app. Also see [[Platform]]
+/** Well known directories that may be used by the application. Also see [[Platform]]
  * @public
  */
 export class KnownLocations {
@@ -379,14 +375,9 @@ export class KnownLocations {
     return path.join(__dirname, "assets");
   }
 
-  /** The temp directory. */
+  /** The temporary directory. */
   public static get tmpdir(): string {
     const imodeljsMobile = Platform.imodeljsMobile;
-    if (imodeljsMobile !== undefined) {
-      return imodeljsMobile.knownLocations.tempDir;
-    }
-
-    // Assume that we are running in nodejs
-    return os.tmpdir();
+    return imodeljsMobile !== undefined ? imodeljsMobile.knownLocations.tempDir : os.tmpdir();
   }
 }

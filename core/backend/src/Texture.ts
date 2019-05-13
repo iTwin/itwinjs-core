@@ -9,10 +9,11 @@ import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ImageSourceFormat, Texture
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
-/** Defines a rendering texture which is associated with a Material and applied to surface geometry.
+/** Defines a rendering texture that is associated with a Material and applied to surface geometry.
  * @public
  */
 export class Texture extends DefinitionElement implements TextureProps {
+  /** @internal */
   public static get className(): string { return "Texture"; }
   public format: ImageSourceFormat;
   public data: string;

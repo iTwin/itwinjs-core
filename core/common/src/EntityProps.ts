@@ -54,7 +54,7 @@ export enum PrimitiveTypeCode {
   String = 0x901,
 }
 
-/** a callback function to process properties of an Entity
+/** A callback function to process properties of an Entity
  * @beta
  */
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;

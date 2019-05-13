@@ -6,12 +6,8 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { ClassRegistry } from "./ClassRegistry";
-import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-
-const loggerCategory: string = BackendLoggerCategory.Schemas;
+import { ClassRegistry } from "./ClassRegistry";
 
 /** Base class for all schema classes - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).
  * @public
@@ -29,13 +25,6 @@ export class Schema {
    * @internal
    */
   protected constructor() { throw new Error("cannot create an instance of a Schema " + this.constructor.name); }
-
-  /** Get the Entity class for the specified class name
-   * @param className The name of the Entity
-   * @param iModel The IModel that contains the class definitions
-   * @returns The corresponding entity class
-   */
-  public static getClass(className: string, iModel: IModelDb): typeof Entity | undefined { return ClassRegistry.getClass(this.schemaName + ":" + className, iModel); }
 }
 
 /** Manages registered schemas
@@ -43,6 +32,7 @@ export class Schema {
  */
 export class Schemas {
   private static readonly _registeredSchemas = new Map<string, typeof Schema>();
+  private constructor() { } // this is a singleton
 
   /** Register a schema prior to using it.
    * @throws [[IModelError]] if a schema of the same name is already registered.
@@ -50,7 +40,7 @@ export class Schemas {
   public static registerSchema(schema: typeof Schema) {
     const key = schema.schemaName.toLowerCase();
     if (this.getRegisteredSchema(key))
-      throw new IModelError(IModelStatus.DuplicateName, "Schema \"" + schema.schemaName + "\" is already registered", Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.DuplicateName, "Schema \"" + schema.schemaName + "\" is already registered", Logger.logWarning, BackendLoggerCategory.Schemas);
     this._registeredSchemas.set(key, schema);
   }
 
@@ -60,7 +50,13 @@ export class Schemas {
    * @return true if the schema was unregistered
    * @internal
    */
-  public static unregisterSchema(schemaName: string): boolean { return this._registeredSchemas.delete(schemaName.toLowerCase()); }
+  public static unregisterSchema(schemaName: string): boolean {
+    const schema = this.getRegisteredSchema(schemaName);
+    if (undefined !== schema)
+      ClassRegistry.unregisterClassesFrom(schema);
+
+    return this._registeredSchemas.delete(schemaName.toLowerCase());
+  }
 
   /** Look up a previously registered schema
    * @param schemaName The name of the schema

@@ -10,7 +10,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
-const loggerCategory: string = BackendLoggerCategory.CodeSpecs;
+const loggerCategory = BackendLoggerCategory.CodeSpecs;
 
 /** Manages [CodeSpecs]($docs/BIS/intro/element-fundamentals.md#codespec) within an [[IModelDb]]
  * @public
@@ -44,9 +44,7 @@ export class CodeSpecs {
       throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggerCategory);
 
     // good chance it is already loaded - check there before running a query
-    const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec: CodeSpec) => {
-      return codeSpec.id === codeSpecId;
-    });
+    const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec) => codeSpec.id === codeSpecId);
     if (found !== undefined)
       return found;
 
@@ -72,9 +70,7 @@ export class CodeSpecs {
    */
   public getByName(name: string): CodeSpec {
     // good chance it is already loaded - check there before running a query
-    const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec: CodeSpec) => {
-      return codeSpec.name === name;
-    });
+    const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec) => codeSpec.name === name);
     if (found !== undefined)
       return found;
     const codeSpecId = this.queryId(name);
@@ -92,7 +88,7 @@ export class CodeSpecs {
     }
   }
 
-  /** Add a new CodeSpec to the IModelDb.
+  /** Add a new CodeSpec to the iModel.
    * @param codeSpec The CodeSpec to insert
    * @returns The Id of the persistent CodeSpec.
    * @note If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
@@ -106,7 +102,6 @@ export class CodeSpecs {
    * @throws IModelError if the insertion fails
    */
   public insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
-  // Overloads funnel here...
   public insert(codeSpecOrName: CodeSpec | string, scopeType?: CodeScopeSpec.Type): Id64String {
     if (codeSpecOrName instanceof CodeSpec) {
       const codeSpec = codeSpecOrName as CodeSpec;
@@ -122,13 +117,12 @@ export class CodeSpecs {
     throw new IModelError(IModelStatus.BadArg, "Invalid argument", Logger.logError, loggerCategory);
   }
 
-  /** Load a CodeSpec from IModel
+  /** Load a CodeSpec from the iModel
    * @param id  The persistent Id of the CodeSpec to load
    */
   public load(id: Id64String): CodeSpec {
-    if (Id64.isInvalid(id)) {
+    if (Id64.isInvalid(id))
       throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggerCategory);
-    }
 
     return this._imodel.withPreparedStatement("SELECT name,jsonProperties FROM BisCore.CodeSpec WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
       stmt.bindId(1, id);

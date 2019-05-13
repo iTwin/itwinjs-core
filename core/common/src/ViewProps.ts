@@ -543,6 +543,7 @@ export class DisplayStyleSettings {
     this._excludedElements.delete(id);
   }
 
+  /** @internal */
   public toJSON(): DisplayStyleSettingsProps { return this._json; }
 
   private findIndexOfSubCategoryOverrideInJSON(id: Id64String, allowAppend: boolean): number {
@@ -616,6 +617,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._solarShadows = SolarShadows.Settings.fromJSON(this._json3d.solarShadows);
   }
 
+  /** @internal */
   public toJSON(): DisplayStyle3dSettingsProps { return this._json3d; }
 
   /** The settings that control how visible and hidden edges are displayed.

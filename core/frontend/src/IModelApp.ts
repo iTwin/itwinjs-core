@@ -90,7 +90,7 @@ export interface IModelAppOptions {
  * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
  * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
  *
- * Before any interactive operations may be performed by the @bentley/imodeljs-frontend package, [[IModelApp.startup]] must be called.
+ * Before any interactive operations may be performed by the `@bentley/imodeljs-frontend package`, [[IModelApp.startup]] must be called.
  * Applications may customize the frontend behavior of iModel.js by supplying options to [[IModelApp.startup]].
  *
  * @public
@@ -184,9 +184,11 @@ export class IModelApp {
    */
   public static registerEntityState(classFullName: string, classType: typeof EntityState) {
     const lowerName = classFullName.toLowerCase();
-    if (this._entityClasses.has(lowerName))
-      throw new IModelError(IModelStatus.DuplicateName, "Class " + classFullName + " is already registered. Make sure static schemaName and className members are correct on class " + classType.name,
-        Logger.logWarning, FrontendLoggerCategory.IModelConnection);
+    if (this._entityClasses.has(lowerName)) {
+      const errMsg = "Class " + classFullName + " is already registered. Make sure static schemaName and className members are correct on class " + classType.name;
+      Logger.logError(FrontendLoggerCategory.IModelConnection, errMsg);
+      throw new Error(errMsg);
+    }
 
     this._entityClasses.set(lowerName, classType);
   }
@@ -204,9 +206,9 @@ export class IModelApp {
 
   /**
    * This method must be called before any iModel.js frontend services are used.
-   * In your code, somewhere before you use any iModel.js services, call IModelApp.startup. E.g.:
+   * In your code, somewhere before you use any iModel.js services, call [[IModelApp.startup]]. E.g.:
    * ``` ts
-   * IModelApp.startup({applicationId: myAppId, i18n: myi18Opts});
+   * IModelApp.startup( {applicationId: myAppId, i18n: myi18Opts} );
    * ```
    * @param opts The options for configuring IModelApp
    */

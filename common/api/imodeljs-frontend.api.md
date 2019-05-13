@@ -1015,6 +1015,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
     constructor(props: AuxCoordSystem2dProps, iModel: IModelConnection);
     // (undocumented)
     angle: number;
+    // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
     getOrigin(result?: Point3d): Point3d;
@@ -1033,6 +1034,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
 // @public
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
     constructor(props: AuxCoordSystem3dProps, iModel: IModelConnection);
+    // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
     getOrigin(result?: Point3d): Point3d;
@@ -1056,12 +1058,14 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
 
 // @public
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
+    // @internal (undocumented)
     static readonly className: string;
 }
 
 // @public
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
     constructor(props: AuxCoordSystemProps, iModel: IModelConnection);
+    // @internal (undocumented)
     static readonly className: string;
     static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState;
     // (undocumented)
@@ -1285,6 +1289,7 @@ export class CategorySelectorState extends ElementState {
     // (undocumented)
     categories: Set<string>;
     changeCategoryDisplay(arg: Id64Arg, add: boolean): void;
+    // @internal (undocumented)
     static readonly className: string;
     dropCategories(arg: Id64Arg): void;
     equalState(other: CategorySelectorState): boolean;
@@ -1741,6 +1746,7 @@ export class DevTools {
 // @public
 export class DisplayStyle2dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
+    // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
     readonly settings: DisplayStyleSettings;
@@ -1749,6 +1755,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
 // @public
 export class DisplayStyle3dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
+    // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
     clone(iModel: IModelConnection): this;
@@ -1774,6 +1781,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     readonly backgroundMap: BackgroundMapState;
     // @internal (undocumented)
     readonly backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined;
+    // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
     containsContextRealityModel(contextRealityModel: ContextRealityModelState): boolean;
@@ -1804,11 +1812,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
 // @public
 export class DrawingModelState extends GeometricModel2dState {
+    // @internal (undocumented)
     static readonly className: string;
 }
 
 // @public
 export class DrawingViewState extends ViewState2d {
+    // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined;
@@ -2013,18 +2023,14 @@ export class ElementPicker {
 // @public
 export class ElementState extends EntityState implements ElementProps {
     constructor(props: ElementProps, iModel: IModelConnection);
+    // @internal (undocumented)
     static readonly className: string;
-    // (undocumented)
     readonly code: Code;
-    // (undocumented)
     readonly federationGuid?: GuidString;
-    // (undocumented)
     readonly model: Id64String;
-    // (undocumented)
     readonly parent?: RelatedElement;
-    // (undocumented)
+    // @internal (undocumented)
     toJSON(): ElementProps;
-    // (undocumented)
     readonly userLabel?: string;
 }
 
@@ -2101,23 +2107,19 @@ export interface EmphasizeElementsProps {
 // @public
 export class EntityState implements EntityProps {
     constructor(props: EntityProps, iModel: IModelConnection, _state?: EntityState);
-    static readonly classFullName: string;
-    // (undocumented)
     readonly classFullName: string;
+    static readonly classFullName: string;
+    readonly className: string;
     static readonly className: string;
     clone(iModel?: IModelConnection): this;
-    // (undocumented)
     equals(other: this): boolean;
-    // (undocumented)
     readonly id: Id64String;
-    // (undocumented)
     readonly iModel: IModelConnection;
-    // (undocumented)
     readonly jsonProperties: {
         [key: string]: any;
     };
     static readonly schemaName: string;
-    // (undocumented)
+    // @internal (undocumented)
     toJSON(): EntityProps;
 }
 
@@ -2394,7 +2396,9 @@ export enum FrontendLoggerCategory {
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
     OidcBrowserClient = "imodeljs-frontend.OidcBrowserClient",
-    OidcIOSClient = "imodeljs-frontend.OidcIOSClient"
+    OidcIOSClient = "imodeljs-frontend.OidcIOSClient",
+    // (undocumented)
+    Package = "imodeljs-frontend"
 }
 
 // @public
@@ -2477,6 +2481,7 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
     constructor(props: GeometricModel2dProps, iModel: IModelConnection);
     // @internal (undocumented)
     readonly asGeometricModel2d: GeometricModel2dState;
+    // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
     readonly globalOrigin: Point2d;
@@ -2490,6 +2495,7 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
 export class GeometricModel3dState extends GeometricModelState {
     // @internal (undocumented)
     readonly asGeometricModel3d: GeometricModel3dState;
+    // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
     readonly is3d: boolean;
@@ -2505,6 +2511,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     readonly classifierTileTree: TileTree | undefined;
     // @internal (undocumented)
     protected _classifierTileTreeState: TileTreeState;
+    // @internal (undocumented)
     static readonly className: string;
     readonly is2d: boolean;
     abstract readonly is3d: boolean;
@@ -3656,6 +3663,7 @@ export namespace MockRender {
 export class ModelSelectorState extends ElementState {
     constructor(props: ModelSelectorProps, iModel: IModelConnection);
     addModels(arg: Id64Arg): void;
+    // @internal (undocumented)
     static readonly className: string;
     containsModel(modelId: Id64String): boolean;
     dropModels(arg: Id64Arg): void;
@@ -3674,6 +3682,7 @@ export class ModelState extends EntityState implements ModelProps {
     readonly asGeometricModel: GeometricModelState | undefined;
     readonly asGeometricModel2d: GeometricModel2dState | undefined;
     readonly asGeometricModel3d: GeometricModel3dState | undefined;
+    // @internal (undocumented)
     static readonly className: string;
     readonly isGeometricModel: boolean;
     // (undocumented)
@@ -3914,6 +3923,7 @@ export class OnScreenTarget extends Target {
 // @public
 export class OrthographicViewState extends SpatialViewState {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
+    // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
     supportsCamera(): boolean;
@@ -4075,6 +4085,7 @@ export namespace PerModelCategoryVisibility {
 
 // @public
 export class PhysicalModelState extends SpatialModelState {
+    // @internal (undocumented)
     static readonly className: string;
 }
 
@@ -4988,6 +4999,7 @@ export class ScrollViewTool extends ViewManip {
 
 // @public
 export class SectionDrawingModelState extends DrawingModelState {
+    // @internal (undocumented)
     static readonly className: string;
 }
 
@@ -5150,12 +5162,14 @@ export class SheetBorder {
 
 // @public
 export class SheetModelState extends GeometricModel2dState {
+    // @internal (undocumented)
     static readonly className: string;
 }
 
 // @public
 export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
+    // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
     computeFitRange(): Range3d;
@@ -5376,11 +5390,13 @@ export namespace SpatialClassification {
 
 // @public
 export class SpatialLocationModelState extends SpatialModelState {
+    // @internal (undocumented)
     static readonly className: string;
 }
 
 // @public
 export class SpatialModelState extends GeometricModel3dState {
+    // @internal (undocumented)
     static readonly className: string;
 }
 
@@ -5389,6 +5405,7 @@ export class SpatialViewState extends ViewState3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
     // (undocumented)
     addViewedModel(id: Id64String): void;
+    // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
     clearViewedModels(): void;
@@ -6566,9 +6583,12 @@ export type ToolList = ToolType[];
 // @public
 export class ToolRegistry {
     create(toolId: string, ...args: any[]): Tool | undefined;
+    // @internal
     executeExactMatch(keyin: string, ...args: any[]): boolean;
     find(toolId: string): ToolType | undefined;
+    // @internal
     findExactMatch(keyin: string): ToolType | undefined;
+    // @internal
     findPartialMatches(keyin: string): FuzzySearchResults<ToolType>;
     getToolList(): ToolList;
     register(toolClass: ToolType, namespace?: I18NNamespace): void;
@@ -7722,6 +7742,7 @@ export abstract class ViewState extends ElementState {
     readonly backgroundColor: ColorDef;
     calculateFrustum(result?: Frustum): Frustum | undefined;
     categorySelector: CategorySelectorState;
+    // @internal (undocumented)
     static readonly className: string;
     abstract computeFitRange(): Range3d;
     // @internal (undocumented)
@@ -7837,6 +7858,7 @@ export abstract class ViewState2d extends ViewState {
     readonly angle: Angle;
     // (undocumented)
     readonly baseModelId: Id64String;
+    // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
     computeFitRange(): Range3d;
@@ -7889,6 +7911,7 @@ export abstract class ViewState3d extends ViewState {
     protected _cameraOn: boolean;
     centerEyePoint(backDistance?: number): void;
     centerFocusDistance(): void;
+    // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;

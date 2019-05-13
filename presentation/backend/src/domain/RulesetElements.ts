@@ -9,8 +9,9 @@ import { Id64String } from "@bentley/bentleyjs-core";
 
 /** @module Core */
 
-/** @hidden */
+/** @internal */
 export class Ruleset extends DefinitionElement {
+  /** @internal */
   public static get className(): string { return "Ruleset"; }
 
   /**

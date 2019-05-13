@@ -32,9 +32,12 @@ import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
 
-export type TxnIdString = string;
-
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
+
+/** A string that identifies a Txn.
+ * @public
+ */
+export type TxnIdString = string;
 
 /** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId.
  * @public

@@ -81,6 +81,7 @@ export class SubCategoryAppearance {
       this.transparency === other.transparency;
   }
 
+  /** @internal */
   public toJSON(): SubCategoryAppearance.Props {
     const val = { color: this.color.toJSON() } as SubCategoryAppearance.Props;
     if (this.invisible) val.invisible = true;
@@ -182,7 +183,9 @@ export class SubCategoryOverride {
     return new SubCategoryAppearance(props);
   }
 
-  /** Convert this SubCategoryOverride to a JSON object */
+  /** Convert this SubCategoryOverride to a JSON object
+   * @internal
+   */
   public toJSON(): SubCategoryAppearance.Props {
     const val: SubCategoryAppearance.Props = {
       invisible: this.invisible,

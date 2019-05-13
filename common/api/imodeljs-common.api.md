@@ -1179,7 +1179,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     environment: EnvironmentProps;
     hiddenLineSettings: HiddenLine.Settings;
     solarShadowsSettings: SolarShadows.Settings;
-    // (undocumented)
+    // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
 }
 
@@ -1218,7 +1218,7 @@ export class DisplayStyleSettings {
     protected readonly _json: DisplayStyleSettingsProps;
     monochromeColor: ColorDef;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
-    // (undocumented)
+    // @internal (undocumented)
     toJSON(): DisplayStyleSettingsProps;
     viewFlags: ViewFlags;
     }
@@ -4644,7 +4644,7 @@ export class SubCategoryAppearance {
     readonly materialId: Id64String;
     readonly priority: number;
     readonly styleId: Id64String;
-    // (undocumented)
+    // @internal (undocumented)
     toJSON(): SubCategoryAppearance.Props;
     readonly transparency: number;
     readonly weight: number;
@@ -4682,6 +4682,7 @@ export class SubCategoryOverride {
     readonly priority?: number;
     // @internal
     readonly style?: Id64String;
+    // @internal
     toJSON(): SubCategoryAppearance.Props;
     readonly transparency?: number;
     readonly weight?: number;

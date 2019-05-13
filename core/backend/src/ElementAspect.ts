@@ -14,6 +14,7 @@ import { IModelDb } from "./IModelDb";
  * @public
  */
 export class ElementAspect extends Entity implements ElementAspectProps {
+  /** @internal */
   public static get className(): string { return "ElementAspect"; }
   public element: RelatedElement;
 
@@ -35,6 +36,7 @@ export class ElementAspect extends Entity implements ElementAspectProps {
  * @public
  */
 export class ElementUniqueAspect extends ElementAspect {
+  /** @internal */
   public static get className(): string { return "ElementUniqueAspect"; }
 }
 
@@ -42,5 +44,6 @@ export class ElementUniqueAspect extends ElementAspect {
  * @public
  */
 export class ElementMultiAspect extends ElementAspect {
+  /** @internal */
   public static get className(): string { return "ElementMultiAspect"; }
 }

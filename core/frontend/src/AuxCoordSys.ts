@@ -50,7 +50,7 @@ const enum ACSDisplaySizes {
  * @public
  */
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "AuxCoordSystem"; }
   public type: number;
   public description?: string;
@@ -293,7 +293,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
  * @public
  */
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "AuxCoordSystem2d"; }
   public readonly origin: Point2d;
   public angle: number; // in degrees
@@ -326,7 +326,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
  * @public
  */
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "AuxCoordSystem3d"; }
   public readonly origin: Point3d;
   public yaw: number; // in degrees
@@ -369,6 +369,6 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
  * @public
  */
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "AuxCoordSystemSpatial"; }
 }

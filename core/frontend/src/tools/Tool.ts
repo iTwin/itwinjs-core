@@ -696,6 +696,7 @@ export class ToolRegistry {
    * Find a tool by its localized keyin using a FuzzySearch
    * @param keyin the localized keyin string of the Tool.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
+   * @internal
    */
   public findPartialMatches(keyin: string): FuzzySearchResults<ToolType> {
     return new FuzzySearch<ToolType>().search(this.getToolList(), ["keyin"], keyin);
@@ -706,6 +707,7 @@ export class ToolRegistry {
    * @param keyin the localized keyin string of the Tool to run.
    * @param args the arguments for the tool. Note: these argument are passed to both the constructor and the tools' run method.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
+   * @internal
    */
   public executeExactMatch(keyin: string, ...args: any[]): boolean {
     const foundClass = this.findExactMatch(keyin);
@@ -717,6 +719,7 @@ export class ToolRegistry {
    * @param keyin the localized keyin string of the Tool.
    * @returns the Tool class, if an exact match is found, otherwise returns undefined.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
+   * @internal
    */
   public findExactMatch(keyin: string): ToolType | undefined { return this.getToolList().find((thisTool) => thisTool.keyin === keyin); }
 }

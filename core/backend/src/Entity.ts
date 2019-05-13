@@ -18,7 +18,7 @@ export class Entity implements EntityProps {
 
   private get _ctor(): typeof Entity { return this.constructor as typeof Entity; }
 
-  /** The name of the BIS class handled by this Entity.
+  /** The name of the BIS class associated with this class.
    * @note Every subclass of Entity **MUST** override this method to identify its BIS class.
    * Failure to do so will ordinarily result in an error when the class is registered, since there may only
    * be one JavaScript class for a given BIS class (usually the errant class will collide with its superclass.)
@@ -27,10 +27,10 @@ export class Entity implements EntityProps {
 
   [propName: string]: any;
 
-  /** Get the name of the Bis Schema that defines this class */
+  /** The name of the BIS Schema that defines this class */
   public get schemaName(): string { return this._ctor.schema.schemaName; }
 
-  /** Get the BIS Class name for this class */
+  /** The name of the BIS class associated with this class. */
   public get className(): string { return this._ctor.className; }
 
   /** The [[IModelDb]] that contains this Entity */
@@ -57,15 +57,16 @@ export class Entity implements EntityProps {
     return val;
   }
 
-  /**
-   * Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
+  /** Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
    * @param _opcode The operation that will be performed on the element.
+   * @note subclasses must override this method
+   * @alpha
    */
-  public buildConcurrencyControlRequest(_opcode: DbOpcode): void {
-    // subclasses must override this method to build a request for the locks and codes and other concurrency control token that they know that they need.
-  }
+  public buildConcurrencyControlRequest(_opcode: DbOpcode): void { }
 
-  /** Call a function for each property of this Entity. Function arguments are property name and property metadata. */
+  /** Call a function for each property of this Entity.
+   * @beta
+   */
   public forEachProperty(func: PropertyCallback, includeCustom: boolean = false) { IModelDb.forEachMetaData(this.iModel, this.classFullName, true, func, includeCustom); }
 
   /**  Get the full BIS class name of this Entity in the form "schema:class"  */

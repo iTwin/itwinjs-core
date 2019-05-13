@@ -41,7 +41,7 @@ import { calculateSolarDirection } from "./SolarCalculate";
  * @public
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "DisplayStyle"; }
   private _backgroundMap: BackgroundMapState;
   private _contextRealityModels: ContextRealityModelState[];
@@ -229,7 +229,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
  * @public
  */
 export class DisplayStyle2dState extends DisplayStyleState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
@@ -567,7 +567,7 @@ function isSameSkyBox(a: SkyBoxProps | undefined, b: SkyBoxProps | undefined): b
  * @public
  */
 export class DisplayStyle3dState extends DisplayStyleState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "DisplayStyle3d"; }
   private _skyBoxParams?: SkyBox.CreateParams;
   private _skyBoxParamsLoaded?: boolean;

@@ -15,7 +15,7 @@ import { SpatialClassification } from "./SpatialClassification";
  * @public
  */
 export class ModelSelectorState extends ElementState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "ModelSelector"; }
 
   /** The set of ModelIds of this ModelSelectorState */
