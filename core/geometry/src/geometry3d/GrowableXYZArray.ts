@@ -41,10 +41,10 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     this._xyzInUse = 0;
     this._xyzCapacity = numPoints;
   }
-  /** @returns Return the number of points in use. */
+  /** Return the number of points in use. */
   public get length() { return this._xyzInUse; }
 
-  /** @returns Return the number of float64 in use. */
+  /** Return the number of float64 in use. */
   public get float64Length() { return this._xyzInUse * 3; }
   /** Return the raw packed data.
    * * Note that the length of the returned FLoat64Array is a count of doubles, and includes the excess capacity
@@ -164,7 +164,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
       }
     }
   }
-
+  /** append a new point with given x,y,z */
   public pushXYZ(x: number, y: number, z: number) {
     const index = this._xyzInUse * 3;
     if (index >= this._data.length)
@@ -175,7 +175,10 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     this._xyzInUse++;
   }
 
-  /** Remove one point from the back. */
+  /** Remove one point from the back.
+   * * NOTE that (in the manner of std::vector native) this is "just" removing the point -- no point is NOT returned.
+   * * Use `back ()` to get the last x,y,z assembled into a `Point3d `
+   */
   public pop() {
     if (this._xyzInUse > 0)
       this._xyzInUse--;
@@ -299,14 +302,14 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   }
 
   /**
-   * @returns Return the first point, or undefined if the array is empty.
+   * Return the first point, or undefined if the array is empty.
    */
   public front(result?: Point3d): Point3d | undefined {
     if (this._xyzInUse === 0) return undefined;
     return this.getPoint3dAtUncheckedPointIndex(0, result);
   }
   /**
-   * @returns Return the last point, or undefined if the array is empty.
+   * Return the last point, or undefined if the array is empty.
    */
   public back(result?: Point3d): Point3d | undefined {
     if (this._xyzInUse < 1) return undefined;
@@ -344,7 +347,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   }
 
   /**
-   * @returns Copy all points into a simple array of Point3d
+   * Copy all points into a simple array of Point3d
    */
   public getPoint3dArray(): Point3d[] {
     const result = [];
@@ -467,6 +470,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
     return true;
   }
+  /** Extend `range` to extend by all points. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const numDouble = this.float64Length;
     const data = this._data;
@@ -479,6 +483,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
 
     }
   }
+  /** Sum the lengths of segments between points. */
   public sumLengths(): number {
     let sum = 0.0;
     const n = 3 * (this._xyzInUse - 1);  // Length already takes into account what specifically is in use
@@ -500,6 +505,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
         this._data[i] = this._data[i] * factor;
     }
   }
+  /** test if all points are within tolerance of a plane. */
   public isCloseToPlane(plane: Plane3dByOriginAndUnitNormal, tolerance: number = Geometry.smallMetricDistance): boolean {
     const numCoordinate = 3 * this._xyzInUse;
     const data = this._data;
@@ -675,7 +681,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
     return undefined;
   }
-
+/** test for near equality between two `GrowableXYZArray`. */
   public static isAlmostEqual(dataA: GrowableXYZArray | undefined, dataB: GrowableXYZArray | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)

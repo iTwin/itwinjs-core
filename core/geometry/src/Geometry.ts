@@ -46,13 +46,21 @@ export enum AxisIndex {
  * @public
  */
 export enum StandardViewIndex {
+  /** X to right, Y up */
   Top = 1,
+  /** X to right, negative Y up */
   Bottom = 2,
+  /** negative Y to right, Z up */
   Left = 3,
+  /**  Y to right, Z up */
   Right = 4,
+  /** X to right, Z up */
   Front = 5,
+  /** negative X to right, Z up */
   Back = 6,
+  /** View towards origin from (-1,-1,1) */
   Iso = 7,
+  /** View towars origin from (1,-1,1) */
   RightIso = 8,
 }
 
@@ -70,7 +78,14 @@ export enum AxisScaleSelect {
 /** object with a radians value and its associated cosine and sine values.
  * @public
  */
-export interface TrigValues { c: number; s: number; radians: number; }
+export interface TrigValues {
+  /** the cosine value */
+  c: number;
+  /** the sine value */
+  s: number;
+  /** the radians value */
+  radians: number;
+}
 /**
  * Interface so various plane representations can be used by algorithms that just want altitude evaluations.
  *
@@ -112,6 +127,7 @@ export interface BeJSONFunctions {
    * If the json object is undefined or unrecognized, always set a default value.
    */
   setFromJSON(json: any): void;
+  /** Return a json object with this object's contents. */
   toJSON(): any;
 }
 

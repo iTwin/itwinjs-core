@@ -42,7 +42,7 @@ export class TriDiagonalSystem {
     this.reset();
   }
 
-  // Reset to RawMatrix state with all coefficients zero
+  /** Reset to RawMatrix state with all coefficients zero */
   public reset() {
     this._dataState = DataState.RawMatrix;
     const n = this._aDiag.length;
@@ -50,43 +50,43 @@ export class TriDiagonalSystem {
       this._aLeft[i] = this._aRight[i] = this._aDiag[i] = this._b[i] = this._x[i] = 0.0;
     }
   }
-  // Install data in a row of the matrix
+  /** Install data in a row of the matrix */
   public setRow(row: number, left: number, diag: number, right: number) {
     this._aLeft[row] = left;
     this._aDiag[row] = diag;
     this._aRight[row] = right;
   }
-  // Add to row of matrix
+  /** Add to row of matrix */
   public addToRow(row: number, left: number, diag: number, right: number) {
     this._aLeft[row] += left;
     this._aDiag[row] += diag;
     this._aRight[row] += right;
   }
-  // Install data in the right side (B) vector
+  /** Install data in the right side (B) vector */
   public setB(row: number, bb: number) {
     this._b[row] = bb;
   }
-  // Add to an entry in the right side (B) vector
+  /** Add to an entry in the right side (B) vector */
   public addToB(row: number, bb: number) {
     this._b[row] += bb;
   }
-  // Access data from the right side (B) vector
+  /** Access data from the right side (B) vector */
   public getB(row: number): number {
     return this._b[row];
   }
-  // Install data in the solution (X) vector
+  /** Install data in the solution (X) vector */
   public setX(row: number, xx: number) {
     this._x[row] = xx;
   }
-  // Access data frin the solution (X) vector
+  /** Access data frin the solution (X) vector */
   public getX(row: number): number {
     return this._x[row];
   }
-  // Get method for matrix and vector order
+  /** Get method for matrix and vector order */
   public order(): number {
     return this._aDiag.length;
   }
-  // Compute product of AX and save as B
+  /** Compute product of AX and save as B */
   public multiplyAX(): boolean {
     if (this._dataState === DataState.FactorFailed) {
       return false;
@@ -116,7 +116,7 @@ export class TriDiagonalSystem {
     }
   }
 
-  // Compute product of AX and save as B
+  /** Compute product of AX and save as B */
   public multiplyAXPoints(pointX: Point3d[], pointB: Point3d[]): boolean {
     pointB.length = 0;
     while (pointB.length < pointX.length)
@@ -155,7 +155,7 @@ export class TriDiagonalSystem {
     }
   }
 
-  // Multiply the stored factors together to return to plain matrix form
+  /** Multiply the stored factors together to return to plain matrix form */
   public defactor(): boolean {
     if (this._dataState === DataState.RawMatrix) {
       return true;
@@ -173,7 +173,7 @@ export class TriDiagonalSystem {
     this._dataState = DataState.RawMatrix;
     return true;
   }
-  // Factor the tridiagonal matrix to LU parts. b, x, not altered
+  /** Factor the tridiagonal matrix to LU parts. b, x, not altered */
   public factor(): boolean {
     if (this._dataState === DataState.FactorOK) {
       return true;
@@ -195,7 +195,7 @@ export class TriDiagonalSystem {
     this._dataState = DataState.FactorOK;
     return true;
   }
-  // Solve AX=B. A is left in factored state. B unchanged.
+  /** Solve AX=B. A is left in factored state. B unchanged. */
   public factorAndBackSubstitute(): boolean {
     const n = this._aDiag.length;
     const n1 = n - 1;
@@ -221,7 +221,7 @@ export class TriDiagonalSystem {
 
     return true;
   }
-  // Solve AX=B. A is left in factored state. B unchanged. vectorB and vectorX may be the same array
+  /** Solve AX=B. A is left in factored state. B unchanged. vectorB and vectorX may be the same array */
   public factorAndBackSubstitutePointArrays(vectorB: Point3d[], vectorX: Point3d[]): boolean {
     const n = this._aDiag.length;
     if (vectorB.length < n)
@@ -268,7 +268,7 @@ export class TriDiagonalSystem {
 
     return true;
   }
-  // Allocate a complete copy
+  /** Allocate a complete copy */
   public copy(): TriDiagonalSystem {
     const n = this._aDiag.length;
     const B = new TriDiagonalSystem(n);
@@ -283,7 +283,7 @@ export class TriDiagonalSystem {
     return B;
   }
 
-  // return an array form that may be useful for display ...
+  /** return an array form that may be useful for display ... */
   public flatten(): any {
     const n = this._aDiag.length;
     const data = [];
@@ -295,7 +295,7 @@ export class TriDiagonalSystem {
     return data;
   }
 
-  // return an array form that may be useful for display ...
+  /** return an array form that may be useful for display ... */
   public flattenWithPoints(xyzB: Point3d[]): any {
     const n = this._aDiag.length;
     const data = [];

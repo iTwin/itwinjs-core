@@ -128,13 +128,15 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     c.tryTransformInPlace(transform);
     return c;
   }
-
+  /** Create a linestring, using flex length arg list and any typical combination of points such as
+   * Point3d, Point2d, `[1,2,3]', array of any of those, or GrowableXYZArray
+   */
   public static create(...points: any[]): LineString3d {
     const result = new LineString3d();
     result.addPoints(points);
     return result;
   }
-/** Create a linestring from `XAndY` points, with a specified z applied to all. */
+  /** Create a linestring from `XAndY` points, with a specified z applied to all. */
   public static createXY(points: XAndY[], z: number, enforceClosure: boolean = false): LineString3d {
     const result = new LineString3d();
     const xyz = result._points;
@@ -163,7 +165,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * * An array of any of the above
    */
   public addPoints(...points: any[]) {
-    this._points.pushFrom (points);
+    this._points.pushFrom(points);
   }
   /** Add points accessed by index in a GrowableXYZArray, with a specified index step. */
   public addSteppedPoints(source: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number) {
@@ -415,7 +417,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     else
       this._uvParams = undefined;
   }
-/** Create a linestring from an array of points. */
+  /** Create a linestring from an array of points. */
   public static createPoints(points: Point3d[]): LineString3d {
     const ls = new LineString3d();
     let point;
@@ -440,16 +442,16 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       ls._points.push(Point3d.create(xyzData[i], xyzData[i + 1], xyzData[i + 2]));
     return ls;
   }
-/** Return a clone of this linestring. */
+  /** Return a clone of this linestring. */
   public clone(): LineString3d {
     const retVal = new LineString3d();
     retVal.setFrom(this);
     return retVal;
   }
-/** Set point coordinates from a json array, e.g. `[[1,2,3],[4,5,6] . . .]`
- * * The `json` parameter must be an array.
- * * Each member `i` of the array is converted to a point with `Point3d.fromJSON(json[i]`)
- */
+  /** Set point coordinates from a json array, e.g. `[[1,2,3],[4,5,6] . . .]`
+   * * The `json` parameter must be an array.
+   * * Each member `i` of the array is converted to a point with `Point3d.fromJSON(json[i]`)
+   */
   public setFromJSON(json?: any) {
     this._points.clear();
     if (Array.isArray(json)) {
@@ -607,7 +609,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       return Transform.createOriginAndMatrix(origin, matrix, result);
     return Transform.createTranslation(origin, result);
   }
-/** evaluate the start point of the linestring. */
+  /** evaluate the start point of the linestring. */
   public startPoint() {
     if (this._points.length === 0)
       return Point3d.createZero();
@@ -637,15 +639,15 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       return this._surfaceNormals.getVector3dAtCheckedVectorIndex(i, result);
     return undefined;
   }
-/** Return the number of points in this linestring. */
+  /** Return the number of points in this linestring. */
   public numPoints(): number { return this._points.length; }
-/** evaluate the end point of the linestring. */
+  /** evaluate the end point of the linestring. */
   public endPoint() {
     if (this._points.length === 0)
       return Point3d.createZero();
     return this._points.getPoint3dAtUncheckedPointIndex(this._points.length - 1);
   }
-/** Reverse the points within the linestring. */
+  /** Reverse the points within the linestring. */
   public reverseInPlace(): void {
     if (this._points.length >= 2) {
       let i0 = 0;
@@ -748,7 +750,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
   }
 
-/** summ lengths of segments in the linestring.  (This is a true lenght.) */
+  /** summ lengths of segments in the linestring.  (This is a true lenght.) */
   public quickLength(): number { return this.curveLength(); }
   /**
    * compute and normalize cross product among 3 points on the linestring.
@@ -800,7 +802,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return result;
   }
-/** Test if all points of the linestring are in a plane. */
+  /** Test if all points of the linestring are in a plane. */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return this._points.isCloseToPlane(plane, Geometry.smallMetricDistance);
   }
@@ -856,9 +858,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return result.length - initialLength;
   }
-/** Extend `rangeToExtend` to include all points of this linestring. */
+  /** Extend `rangeToExtend` to include all points of this linestring. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void { this._points.extendRange(rangeToExtend, transform); }
-/** Test if each point of this linestrints isAlmostEqual with correspoding point in `other`. */
+  /** Test if each point of this linestrints isAlmostEqual with correspoding point in `other`. */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (!(other instanceof LineString3d))
       return false;
@@ -1227,12 +1229,13 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
  * @internal
  */
 export class AnnotatedLineString3d {
+  /** parameter along curve being faceted.  */
   public curveParam?: GrowableFloat64Array;
-  /**
-   * uv parameters, stored as uvw with the w possibly used for distinguishing among multiple "faces".
-   */
+  /** uv parameters, stored as uvw with the w possibly used for distinguishing among multiple "faces". */
   public uvwParam?: GrowableXYZArray;
+  /** u direction tangent vectors from surface being faceted. */
   public vecturU?: GrowableXYZArray;
+  /** v direction tangent vectors from surface being faceted. */
   public vectorV?: GrowableXYZArray;
 }
 /**

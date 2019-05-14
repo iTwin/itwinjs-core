@@ -310,8 +310,13 @@ export enum CurveCurveApproachType {
  * @public
  */
 export class CurveLocationDetailPair {
+  /** The first of the two details ... */
   public detailA: CurveLocationDetail;
+  /** The second of the two details ... */
   public detailB: CurveLocationDetail;
+  /** enumeration of how the detail pairs relate.
+   * * This is set only by certain closeApproach calculations.
+   */
   public approachType?: CurveCurveApproachType;
 
   public constructor() {

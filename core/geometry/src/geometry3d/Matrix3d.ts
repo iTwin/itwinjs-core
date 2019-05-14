@@ -124,8 +124,17 @@ class PackedMatrix3dOps {
  * @public
  */
 export enum InverseMatrixState {
+  /**
+   * * The invertibility of the  `coffs` array has not been determined.
+   * * Any `inverseCoffs` contents are random.
+   */
   unknown,
+  /** An inverse was computed and stored as the `inverseCoffs` */
   inverseStored,
+  /**
+   * * The `coffs` array is known to be singular.
+   * * Any `inverseCoffs` contents are random.
+   */
   singular,
 }
 /** A Matrix3d is a 3x3 matrix.
@@ -201,7 +210,11 @@ export class Matrix3d implements BeJSONFunctions {
     [this.coffs[3], this.coffs[4], this.coffs[5]],
     [this.coffs[6], this.coffs[7], this.coffs[8]]];
   }
-
+  /** copy data from various input forms to this matrix:
+   * * Another `Matrix3d`
+   * * An array of 3 arrays, each of which has the 3 numbers for a roww of the matrix.
+   * * An array of 9 numbers in row major order.
+   */
   public setFromJSON(json?: Matrix3dProps): void {
     this.inverseCoffs = undefined;
     if (!json) {
@@ -237,7 +250,7 @@ export class Matrix3d implements BeJSONFunctions {
         0, 0, 1);
     }
   }
-  /** Return a new Matrix3d constructed from contents of the json value. */
+  /** Return a new Matrix3d constructed from contents of the json value. Se `setFromJSON` for layout rules */
   public static fromJSON(json?: Matrix3dProps): Matrix3d { const result = Matrix3d.createIdentity(); result.setFromJSON(json); return result; }
   /** Test if this Matrix3d and other are within tolerance in all numeric entries.
    * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
@@ -1165,8 +1178,13 @@ export class Matrix3d implements BeJSONFunctions {
     this.setColumn(1, vectorY);
     this.setColumn(2, vectorZ);
   }
-  public setRow(columnIndex: number, value: Vector3d) {
-    const index = 3 * Geometry.cyclic3dAxis(columnIndex);
+  /**
+   * set entries in one row of the matrix.
+   * @param rowIndex row index. this is interpreted cyclically.
+   * @param value x,yz, values for row.  If undefined, zeros are installed.
+   */
+  public setRow(rowIndex: number, value: Vector3d) {
+    const index = 3 * Geometry.cyclic3dAxis(rowIndex);
     this.coffs[index] = value.x;
     this.coffs[index + 1] = value.y;
     this.coffs[index + 2] = value.z;
@@ -1786,6 +1804,7 @@ export class Matrix3d implements BeJSONFunctions {
       return true;
     }
   */
+  /** convert a (row,column) index pair to the single index within flattened array of 9 numbers in row-major-order  */
   public static flatIndexOf(row: number, column: number): number {
     return 3 * Geometry.cyclic3dAxis(row) + Geometry.cyclic3dAxis(column);
   }

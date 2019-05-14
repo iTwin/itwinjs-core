@@ -20,13 +20,19 @@ import { Geometry } from "../../Geometry";
  * @public
  */
 export class StrokeCountMap {
-
+/** number of strokes expected in this interval. */
   public numStroke: number;
+  /** Length of the curve interval. */
   public curveLength: number;
+  /** start coordinate (in user-defined space) for fraction 0 on this primitive or component */
   public a0: number;
+  /** end coordinate (in user-defined space) for fraction 0 on this primitive or component */
   public a1: number;
+  /** further StrokeCountMap's within this interval (e.g. for individual segments of a linestring.) */
   public componentData?: StrokeCountMap[];
+  /** The curve that this map represents */
   public primitive?: CurvePrimitive;
+  /** this curve's index within its parent. */
   public componentIndex?: number;
   /**
    * Constructor.  Initialize all fields from arguments.

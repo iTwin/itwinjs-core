@@ -15,7 +15,9 @@ import { IndexedPolyface, IndexedPolyfaceVisitor } from "./Polyface";
 export class FacetFaceData {
   private _paramDistanceRange: Range2d;
   private _paramRange: Range2d;
+  /** (property accessor) Return a reference to the distance-scaled parameter range. */
   public get paramDistanceRange(): Range2d { return this._paramDistanceRange; }
+  /** (property accessor) Return a reference to the parameter range. */
   public get paramRange(): Range2d { return this._paramRange; }
   private constructor(distanceRange: Range2d, paramRange: Range2d) {
     this._paramDistanceRange = distanceRange;

@@ -194,9 +194,11 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   public handleBSplineSurface3dH(_g: BSplineSurface3dH): any { return undefined; }
   /** no-action implementation */
   public handleIndexedPolyface(_g: IndexedPolyface): any { return undefined; }
-  /** @alpha */
+  /** no-action implementation
+   * @alpha
+   */
   public handleTransitionSpiral(_g: TransitionSpiral3d): any { return undefined; }
-
+/** Invoke `child.dispatchToGeometryHandler(this)` for each child in the array returned by the query `g.children` */
   public handleChildren(g: GeometryQuery): any {
     const children = g.children;
     if (children)
@@ -262,8 +264,13 @@ export interface IStrokeHandler {
    * * startParentCurvePrimitive() ...endParentCurvePrimitive() are wrapped around startCurvePrimitive and endCurvePrimitive when the interior primitive is a proxy.
    */
   startParentCurvePrimitive(cp: CurvePrimitive): void;
+  /** Announce the curve primitive that will be described in subsequent calls. */
   startCurvePrimitive(cp: CurvePrimitive): void;
-  // remark ... point and tangent data is to be cloned !!!
+  /**
+   * announce a single point with its fraction and tangent.
+   * * (IMPORTANT) the same Point3d and Vector3d will be reset and passed on multiple calls.
+   * * (THEREFORE) if the implementation is saving coordinates, it must copy the xyz data out into its own data strucuture rather than save the references.
+   */
   announcePointTangent(xyz: Point3d, fraction: number, tangent: Vector3d): void;
 
   /** Announce that curve primitive cp should be evaluated in the specified fraction interval. */
@@ -280,7 +287,9 @@ export interface IStrokeHandler {
     numStrokes: number,
     fraction0: number,
     fraction1: number): void;
+    /** Announce that all data about `cp` has been annonced. */
   endCurvePrimitive(cp: CurvePrimitive): void;
+  /** Announce that all data about the parent primitive has been announced. */
   endParentCurvePrimitive(cp: CurvePrimitive): void;
   /**
    * Announce a bezier curve fragment.

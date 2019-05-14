@@ -41,7 +41,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     }
     return val;
   }
-
+/** Convert json `UnionOfConvexClipPlaneSets`, using `setFromJSON`. */
   public static fromJSON(json: any, result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     result = result ? result : new UnionOfConvexClipPlaneSets();
     result._convexSets.length = 0;
@@ -61,7 +61,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     return new UnionOfConvexClipPlaneSets();
   }
   /**
-   * @returns Return true if all member convex sets are almostEqual to corresponding members of other.  This includes identical order in array.
+   * Return true if all member convex sets are almostEqual to corresponding members of other.  This includes identical order in array.
    * @param other clip plane to compare
    */
   public isAlmostEqual(other: UnionOfConvexClipPlaneSets): boolean {
@@ -162,7 +162,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
           intervals.push(Segment1d.create(fraction0, fraction1)));
     }
   }
-
+/** apply `transform` to all the ConvexClipPlaneSet's */
   public transformInPlace(transform: Transform) {
     for (const convexSet of this._convexSets) {
       convexSet.transformInPlace(transform);

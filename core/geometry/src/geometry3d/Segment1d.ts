@@ -22,7 +22,9 @@ import { Geometry } from "../Geometry";
  * @public
  */
 export class Segment1d {
+  /** start coordinate */
   public x0: number;
+  /** end coordinate */
   public x1: number;
   private constructor(x0: number, x1: number) {
     this.x0 = x0;
@@ -61,7 +63,7 @@ export class Segment1d {
    */
   public clone(): Segment1d { return new Segment1d(this.x0, this.x1); }
   /**
-   * @returns true if both coordinates (`x0` and `x1`) are in the 0..1 range.
+   * Returns true if both coordinates (`x0` and `x1`) are in the 0..1 range.
    */
   public get isIn01() {
     return Geometry.isIn01(this.x0) && Geometry.isIn01(this.x1);

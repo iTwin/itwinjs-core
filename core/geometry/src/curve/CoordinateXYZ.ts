@@ -15,6 +15,7 @@ import { GeometryQuery } from "./GeometryQuery";
  */
 export class CoordinateXYZ extends GeometryQuery {
   private _xyz: Point3d;
+  /** Retun a (REFERENCE TO) the coordinate data. */
   public get point() { return this._xyz; }
   /**
    * @param xyz point to be CAPTURED.

@@ -67,7 +67,9 @@ class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
  * @public
  */
 export class CurveLocationDetailArrayPair {
+  /** first array of details ... */
   public dataA: CurveLocationDetail[];
+  /** second array of details ... */
   public dataB: CurveLocationDetail[];
   public constructor() {
     this.dataA = [];

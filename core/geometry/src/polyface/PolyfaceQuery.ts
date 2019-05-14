@@ -37,7 +37,7 @@ export class PolyfaceQuery {
     }
     return result;
   }
-  /** @returns Return the sum of all facets areas. */
+  /** Return the sum of all facets areas. */
   public static sumFacetAreas(source: Polyface | PolyfaceVisitor): number {
     let s = 0;
     if (source instanceof Polyface)

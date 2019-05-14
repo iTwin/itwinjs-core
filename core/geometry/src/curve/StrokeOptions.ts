@@ -67,11 +67,17 @@ export class StrokeOptions {
     }
     return minCount;
   }
-  // return stroke count which is the larger of the existing count or count needed for angle condition for given sweepRadians
-  // defaultStepRadians is assumed to be larger than zero.
+
+  /**
+   * return stroke count which is the larger of the existing count or count needed for angle condition for given sweepRadians
+   * * defaultStepRadians is assumed to be larger than zero.
+   */
   public applyAngleTol(minCount: number, sweepRadians: number, defaultStepRadians: number): number {
     return StrokeOptions.applyAngleTol(this, minCount, sweepRadians, defaultStepRadians);
   }
+  /**
+   * return stroke count which is the larger of minCount and the count required to turn sweepRadians, using tolerance from the options.
+   */
   public static applyAngleTol(options: StrokeOptions | undefined, minCount: number, sweepRadians: number, defaultStepRadians?: number): number {
     sweepRadians = Math.abs(sweepRadians);
     let stepRadians = defaultStepRadians ? defaultStepRadians : Math.PI / 8.0;
@@ -82,7 +88,7 @@ export class StrokeOptions {
     return minCount;
   }
   /**
-   *
+   * Return the number of strokes needed for given edgeLength curve.
    * @param options
    * @param minCount smallest allowed count
    * @param edgeLength
@@ -97,7 +103,9 @@ export class StrokeOptions {
     }
     return minCount;
   }
-
+/**
+ * Determine a stroke count for a (partial) circular arc of given radius. This considers angle, maxEdgeLength, chord, and minimum stroke.
+ */
   public applyTolerancesToArc(radius: number, sweepRadians: number = Math.PI * 2): number {
     let numStrokes = 1;
     numStrokes = this.applyAngleTol(numStrokes, sweepRadians, Math.PI * 0.25);
@@ -107,7 +115,7 @@ export class StrokeOptions {
     return numStrokes;
   }
 
-  // return stroke count which is the larger of existing count or count needed for circular arc chord tolerance condition.
+  /** return stroke count which is the larger of existing count or count needed for circular arc chord tolerance condition. */
   public applyChordTol(minCount: number, radius: number, sweepRadians: number): number {
     if (this.chordTol && this.chordTol > 0.0 && this.chordTol < radius) {
       const a = this.chordTol;
@@ -116,17 +124,27 @@ export class StrokeOptions {
     }
     return minCount;
   }
+  /** return stroke count which is the larger of existing count or `this.minStrokesPerPrimitive` */
   public applyMinStrokesPerPrimitive(minCount: number): number {
     if (this.minStrokesPerPrimitive !== undefined && Number.isFinite(this.minStrokesPerPrimitive)
       && this.minStrokesPerPrimitive > minCount)
       minCount = this.minStrokesPerPrimitive;
     return minCount;
   }
+
+  /** create `StrokeOptions` with defaults appropriate for curves.
+   * * angle tolerance of 15 degrees.
+   * * all others inactive.
+   */
   public static createForCurves(): StrokeOptions {
     const options = new StrokeOptions();
     options.angleTol = Angle.createDegrees(15.0);
     return options;
   }
+  /** create `StrokeOptions` with defaults appropriate for surfaces facets
+   * * angle tolerance of 22.5 degrees.
+   * * all others inactive.
+   */
   public static createForFacets(): StrokeOptions {
     const options = new StrokeOptions();
     options.angleTol = Angle.createDegrees(22.5);

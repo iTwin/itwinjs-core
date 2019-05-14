@@ -47,7 +47,7 @@ export class Transform implements BeJSONFunctions {
 
     return this._identity;
   }
-
+  /** Freeze this instance (and its deep content) so it can be considered read-only */
   public freeze() { Object.freeze(this); Object.freeze(this._origin); this._matrix.freeze(); }
   /**
    * Copy contents from other Transform into this Transform
@@ -56,6 +56,10 @@ export class Transform implements BeJSONFunctions {
   public setFrom(other: Transform) { this._origin.setFrom(other._origin), this._matrix.setFrom(other._matrix); }
   /** Set this Transform to be an identity. */
   public setIdentity() { this._origin.setZero(); this._matrix.setIdentity(); }
+  /** Set this Transform instance from flexible inputs:
+   * * Any object (such as another Transform) that has `origin` and `matrix` members accepted by Point3d.setFromJSON and Matrix3d.setFromJSON
+   * * An array of 3 number arrays, each with 4 entries which are rows in a 3x4 matrix.
+   */
   public setFromJSON(json?: TransformProps): void {
     if (json) {
       if (json instanceof Object && (json as any).origin && (json as any).matrix) {
@@ -82,6 +86,9 @@ export class Transform implements BeJSONFunctions {
    * @param other Transform to compare to.
    */
   public isAlmostEqual(other: Transform): boolean { return this._origin.isAlmostEqual(other._origin) && this._matrix.isAlmostEqual(other._matrix); }
+  /** Return a 3 by 4 matrix containing the rows of this Transofrm
+   * * This transform's origin is the [3] entry of the json arrays
+   */
   public toJSON(): TransformProps {
     // return { origin: this._origin.toJSON(), matrix: this._matrix.toJSON() };
     return [
@@ -90,7 +97,7 @@ export class Transform implements BeJSONFunctions {
       [this._matrix.coffs[6], this._matrix.coffs[7], this._matrix.coffs[8], this._origin.z],
     ];
   }
-
+  /** Return a new Transform initialized by `setFromJSON (json)` */
   public static fromJSON(json?: TransformProps): Transform {
     const result = Transform.createIdentity();
     result.setFromJSON(json);
@@ -107,7 +114,10 @@ export class Transform implements BeJSONFunctions {
       Point3d.createFrom(this._origin),
       this._matrix.clone());
   }
-  /** @returns Return a copy of this Transform, modified so that its axes are rigid
+  /** Return a copy of this Transform, modified so that its axes are rigid
+   * * The first axis direction named in axisOrder is preserved
+   * * The plane of the first tand second directions is preserved, and its vector in the rigid matrix has positive dot product with the corresponding vector if the instance
+   * * The third named column is the cross product of the first and second.
    */
   public cloneRigid(axisOrder: AxisOrder = AxisOrder.XYZ): Transform | undefined {
     const axes0 = Matrix3d.createRigidFromMatrix3d(this.matrix, axisOrder);

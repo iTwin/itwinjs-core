@@ -21,6 +21,7 @@ import { AnyCurve } from "./CurveChain";
 export class UnionRegion extends CurveCollection {
   /** test if `other` is a `UnionRegion` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof UnionRegion; }
+  /** collection of Loop and ParityRegion children. */
   protected _children: Array<ParityRegion | Loop>;
   /** Return the array of regions */
   public get children(): Array<ParityRegion | Loop> { return this._children; }
@@ -34,8 +35,9 @@ export class UnionRegion extends CurveCollection {
     }
     return result;
   }
-/** Return the boundary type (5) of a corresponding  Microstation CurveVector */
-public dgnBoundaryType(): number { return 5; }
+  /** Return the boundary type (5) of a corresponding  Microstation CurveVector */
+  public dgnBoundaryType(): number { return 5; }
+  /** dispatch to more strongly typed  `processor.announceUnionRegion(this, indexInParent)` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceUnionRegion(this, indexInParent);
   }

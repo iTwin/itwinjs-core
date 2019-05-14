@@ -280,15 +280,15 @@ describe("ImplicitSurface", () => {
       ck.testPerpendicular(vectorX, ddPhi, "implicit sphere perpendicular derivatives");
       ck.testCoordinate(r, vectorX.magnitude(), "implicit sphere distance from origin");
       const thetaPhiA = sphere.xyzToThetaPhiR(xyz);
-      ck.testCoordinate(thetaPhi[0], thetaPhiA.theta, "implicit sphere theta inverse");
-      ck.testCoordinate(thetaPhi[1], thetaPhiA.phi, "implicit sphere phi inverse");
+      ck.testCoordinate(thetaPhi[0], thetaPhiA.thetaRadians, "implicit sphere theta inverse");
+      ck.testCoordinate(thetaPhi[1], thetaPhiA.phiRadians, "implicit sphere phi inverse");
     }
     for (const sphereA of [
       new SphereImplicit(0), new SphereImplicit(1)]) {
       const thetaPhiB = sphereA.xyzToThetaPhiR(Point3d.create(0, 0, 0));
       const thetaPhiC = sphereA.xyzToThetaPhiR(Point3d.create(0, 0, 1));
-      ck.testExactNumber(0.0, thetaPhiB.phi);
-      ck.testExactNumber(0.0, thetaPhiC.theta);
+      ck.testExactNumber(0.0, thetaPhiB.phiRadians);
+      ck.testExactNumber(0.0, thetaPhiC.thetaRadians);
     }
     ck.checkpoint("ImplicitSurface.Sphere");
     expect(ck.getNumErrors()).equals(0);

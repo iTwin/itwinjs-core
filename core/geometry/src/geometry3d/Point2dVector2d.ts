@@ -34,6 +34,7 @@ export class XY implements XAndY {
       this.x = 0; this.y = 0;
     }
   }
+  /** Freeze this instance (and its deep content) so it can be considered read-only */
   public freeze() { Object.freeze(this); }
 
   /** Returns true if this and other have equal x,y parts within Geometry.smallMetricDistance. */

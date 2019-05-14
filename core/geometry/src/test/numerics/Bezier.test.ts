@@ -80,7 +80,7 @@ describe("Bezier", () => {
     const e5 = new Order5Bezier(0, 0, 0, 0, 0);
     const e3A = new Order3Bezier(2, 4, 3);
     const e3B = new Order3Bezier(2, -4, 1);
-    e5.addProduct(e3A, e3B, scaleB);
+    e5.addProductOrder3BezierOrder3Bezier(e3A, e3B, scaleB);
 
     for (const f of [0.0, 0.1, 0.4, 1.0, 1.1]) {
       ck.testCoordinate(b2.evaluate(f) * b3.evaluate(f), b2b3.evaluate(f));

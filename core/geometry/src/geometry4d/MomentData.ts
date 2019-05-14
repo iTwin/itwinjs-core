@@ -25,7 +25,12 @@ import { Point4d } from "./Point4d";
  * @public
  */
 export class MomentData {
+  /** Origin used for sums. */
   public origin: Point3d;
+  /** Moment sums.
+   * * Set to zero at initialization and if requested later.
+   * * Accumulated during data entry phase.
+   */
   public sums: Matrix4d;
   /** the maapping between principal and world system.
    * * This set up with its inverse already constructed.

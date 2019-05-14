@@ -20,8 +20,11 @@ import { ClipVector } from "./ClipVector";
  * @public
  */
 export enum ClipPlaneContainment {
+  /** All points inside */
   StronglyInside = 1,
+  /** Inside/outside state unknown. */
   Ambiguous = 2,
+  /** All points outside */
   StronglyOutside = 3,
 }
 
@@ -29,8 +32,11 @@ export enum ClipPlaneContainment {
  * @public
  */
 export enum ClipStatus {
+  /** some geometry may cross the clip boundaries */
   ClipRequired,
+  /** geometry is clearly outside */
   TrivialReject,
+  /** geometry is clearly inside */
   TrivialAccept,
 }
 
@@ -38,20 +44,26 @@ export enum ClipStatus {
  * @public
  */
 export interface Clipper {
+  /** test if `point` is on or inside the Clipper's volume. */
   isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
   /** Find the parts of the line segment  (if any) that is within the convex clip volume.
    * * The input fractional interval from fraction0 to fraction1 (increasing!!) is the active part to consider.
    * * To clip to the usual bounded line segment, start with fractions (0,1).
    * If the clip volume is unbounded, the line interval may also be unbounded.
    * * An unbounded line portion will have fraction coordinates positive or negative Number.MAX_VALUE.
-   * @param fraction0 fraction that is the initial lower fraction of the active interval. (e.g. 0.0 for bounded segment)
-   * @param fraction1 fraction that is the initial upper fraction of the active interval.  (e.g. 1.0 for bounded segment)
+   * @param f0 fraction that is the initial lower fraction of the active interval. (e.g. 0.0 for bounded segment)
+   * @param f1 fraction that is the initial upper fraction of the active interval.  (e.g. 1.0 for bounded segment)
    * @param pointA segment start (fraction 0)
    * @param pointB segment end (fraction 1)
    * @param announce function to be called to announce a fraction interval that is within the convex clip volume.
    * @returns true if a segment was announced, false if entirely outside.
    */
   announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
+  /** Find the portion (or portions) of the arc (if any) that are within the convex clip volume.
+   * * The input fractional interval from fraction0 to fraction1 (increasing!!) is the active part to consider.
+   * @param announce function to be called to announce a fraction interval that is within the convex clip volume.
+   * @returns true if one or more arcs portions were announced, false if entirely outside.
+   */
   announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
 }
 
@@ -105,6 +117,9 @@ export class ClipUtilities {
     return intervals.length > 0;
   }
 
+  /** Find portions of the curve that are within the clipper.
+   * Collect them into an array of curve primitives.
+   */
   public static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[] {
     const result: CurvePrimitive[] = [];
     curve.announceClipIntervals(clipper,

@@ -53,10 +53,10 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
     if (origin)
       return Plane3dByOriginAndUnitNormal._create(origin.x, origin.y, origin.z, 0, 1, 0);
     return Plane3dByOriginAndUnitNormal._create(0, 0, 0, 0, 1, 0);
-
+  }
   /** create a new  Plane3dByOriginAndUnitNormal with given origin and normal.
    * * Returns undefined if the normal vector is all zeros.
-   */}
+   */
   public static create(origin: Point3d, normal: Vector3d, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
     const normalized = normal.normalize();
     if (!normalized)
@@ -140,7 +140,8 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
 
   /** Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
   public weightedAltitude(spacePoint: Point4d): number {
-    return this._normal.dotProductStart3dEnd4d(this._origin, spacePoint); }
+    return this._normal.dotProductStart3dEnd4d(this._origin, spacePoint);
+  }
 
   /** return a point at specified (signed) altitude */
   public altitudeToPoint(altitude: number, result?: Point3d): Point3d {

@@ -29,6 +29,7 @@ export class Angle implements BeJSONFunctions {
     private constructor(radians = 0, degrees?: number) { this._radians = radians; this._degrees = degrees; }
     /** Return a new angle with the same content. */
     public clone(): Angle { return new Angle(this._radians, this._degrees); }
+    /** Freeze this instance so it can be considered read-only */
     public freeze() { Object.freeze(this); }
 
     /**
@@ -108,6 +109,7 @@ export class Angle implements BeJSONFunctions {
     }
     /** Convert an Angle to a JSON object as a number in degrees */
     public toJSON(): AngleProps { return this.degrees; }
+    /** Return a json object with radians keyword, e.g. `{ radians: 0.10}` */
     public toJSONRadians(): AngleProps { return { radians: this.radians }; }
     /**  Return the angle measured in radians. */
     public get radians(): number { return this._radians; }
@@ -151,6 +153,7 @@ export class Angle implements BeJSONFunctions {
      * Return the tangent of this Angle object's angle.
      */
     public tan(): number { return Math.tan(this._radians); }
+    /** Test if a radians value is nearly 2PI or larger (!) */
     public static isFullCircleRadians(radians: number) { return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle; }
     /** Test if the radians value  is a cmoplete circle */
     public static isHalfCircleRadians(radians: number) { return (Math.abs(Math.abs(radians)) - Math.PI) <= Geometry.smallAngleRadians; }

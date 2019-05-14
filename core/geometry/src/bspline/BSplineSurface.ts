@@ -24,7 +24,9 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
  * @public
  */
 export enum UVSelect {
+  /** index of u direction */
   uDirection = 0,
+  /** index of v direction */
   VDirection = 1,
 
 }
@@ -76,18 +78,36 @@ export interface PackedPointGrid {
  * @public
  */
 export interface BSplineSurface3dQuery {
+  /** Evaluate xyz coordinates at fractional parameter u,v */
   fractionToPoint(uFractioin: number, vFraction: number): Point3d;
+  /** Evaluate a rigid frame at fractional parameter u,v
+   * * origin is at the surface point
+   * * x column is a unit vector in the direction of the u derivative
+   * * y column is a unit vector in the direction of the v derivative
+   * * z direction is the surface normal
+   */
   fractionToRigidFrame(uFraction: number, vFraction: number): Transform | undefined;
+  /** Evaluate xyz coordinates at knot values (uKnot, vKnot) */
   knotToPoint(uKnot: number, vKnot: number): Point3d;
+  /**  appply a transform to the surface */
   tryTransformInPlace(transform: Transform): boolean;
+  /** clone the surface */
   clone(): BSplineSurface3dQuery;
+  /** clone and transform */
   cloneTransformed(transform: Transform): BSplineSurface3dQuery;
+  /** Reverse one of the parameterization directions. */
   reverseInPlace(select: UVSelect): void;
+  /** Test if `this` and `other` are the same geometry class. */
   isSameGeometryClass(other: any): boolean;
-  extendRange(range: Range3d, transform?: Transform): void;
+  /** Extend `rangeToExtend` so this surface is included. */
+  extendRange(rangeToExtend: Range3d, transform?: Transform): void;
+  /** test for nearly equality with `other` */
   isAlmostEqual(other: any): boolean;
+  /** ask if the u or v direction could be converted to periodic form */
   isClosable(select: UVSelect): boolean;
+  /** Ask if the entire surface is within a plane. */
   isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+  /** return the total number of poles (product of u,v counts) */
   numPolesTotal(): number;
   /**
    * turn a numeric variable into a UVSelect (strict 0 or 1).
@@ -141,18 +161,29 @@ export interface BSplineSurface3dQuery {
  * @public
  */
 export abstract class BSpline2dNd extends GeometryQuery {
+  /** Array of (exactly 2) knot vectors for the u, v directions */
   public knots: KnotVector[];
+  /** flat array of coordinate daa, blocked by poleDimension and row */
   public coffs: Float64Array;
+  /** Number of componets per pole.
+   * * 3 for conventional xyz surface
+   * * 4 for weighted (wx, wy, wz, w) surface.
+   */
   public poleDimension: number;
   private _numPoles: number[];
-
+  /** Return the degree (one less than order) for the `select` direction (0 or 1) */
   public degreeUV(select: UVSelect): number { return this.knots[select].degree; }
+  /** Return the order (one more than degree) for the `select` direction (0 or 1) */
   public orderUV(select: UVSelect): number { return this.knots[select].degree + 1; }
+  /** Return the number of spans (INCLUDING NULL SPANS) for the `select` direction (0 or 1) */
   public numSpanUV(select: UVSelect): number { return this._numPoles[select] - this.knots[select].degree; }
+  /** Return the total number of poles (product of x and y pole counts) */
   public numPolesTotal(): number { return this.coffs.length / this.poleDimension; }
+  /** Return the number of poles for the `select` direction (0 or 1) */
   public numPolesUV(select: UVSelect): number { return this._numPoles[select]; }
+  /** Return the step between adjacent poles for the `select` direction (0 or 1) */
   public poleStepUV(select: UVSelect): number { return select === 0 ? 1 : this._numPoles[0]; }
-
+  /** Confirm that order and pole counts agree for both u and v directions */
   public static validOrderAndPoleCounts(orderU: number, numPolesU: number, orderV: number, numPolesV: number, numUV: number): boolean {
     if (orderU < 2 || numPolesU < orderU)
       return false;
@@ -162,17 +193,21 @@ export abstract class BSpline2dNd extends GeometryQuery {
       return false;
     return true;
   }
-
+  /** Get the Point3d by row and column.
+   * * (IMPORTANT) This assumes this is an xyz surface.  Data will be incorrect if this is an xyzw surface.
+   */
   public getPoint3dPole(i: number, j: number, result?: Point3d): Point3d | undefined {
     return Point3d.createFromPacked(this.coffs, i + j * this._numPoles[0], result);
   }
-  // Get a pole (from i,j indices) as Point3d, assuming data is stored xyzw
+  /** Get the Point3d by row and column, projecting the weight away to get to xyz
+   * * (IMPORTANT) This assumes this is an xyzw surface.  Data will be incorrect if this is an xyz surface.
+   */
   public getPoint3dPoleXYZW(i: number, j: number, result?: Point3d): Point3d | undefined {
     return Point3d.createFromPackedXYZW(this.coffs, i + j * this._numPoles[0], result);
   }
   /**
+   * Return 0 for 0 input, 1 for any nonzero input.
    * @param value numeric value to convert to strict 0 or 1.
-   * @returns Return 0 for 0 input, 1 for any nonzero input.
    */
   public numberToUVSelect(value: number): UVSelect { return value === 0 ? 0 : 1; }
   /** extend a range, treating each block as simple XYZ */
@@ -229,11 +264,11 @@ export abstract class BSpline2dNd extends GeometryQuery {
    */
   public abstract fractionToPointAndDerivatives(_fractionU: number, _fractionV: number, _result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
   /**
-     * evaluate the surface at u and v fractions. Return a (squared, right handed) coordinate frame at that point on the surface.
-     * @param fractionU u parameter
-     * @param fractionV v parameter
-     * @param result undefined if surface derivatives are parallel (or either alone is zero)
-     */
+   * evaluate the surface at u and v fractions. Return a (squared, right handed) coordinate frame at that point on the surface.
+   * @param fractionU u parameter
+   * @param fractionV v parameter
+   * @param result undefined if surface derivatives are parallel (or either alone is zero)
+   */
   public fractionToRigidFrame(fractionU: number, fractionV: number, result?: Transform): Transform | undefined {
     const skewVectors = this.fractionToPointAndDerivatives(fractionU, fractionV);
     if (!skewVectors)
@@ -245,11 +280,16 @@ export abstract class BSpline2dNd extends GeometryQuery {
       result = Transform.createOriginAndMatrix(skewVectors.origin, axes1, result);
     return result;
   }
-
+  /** a scratch array sized for `order` numbers */
   protected _basisBufferUV: Float64Array[]; //  basis function buffers for u, v directgions.   ALLOCATED BY CTOR FOR FREQUENT REUSE
+  /** a scratch array sized for `order` numbers */
   protected _basisBuffer1UV: Float64Array[]; // basis function buffers for u, v directions.   ALLOCATED BY CTOR FOR FREQUENT REUSE
 
+  /** a scratch array sized for one pole */
   protected _poleBuffer: Float64Array; // one set of target values.  ALLOCATED BY CTOR FOR FREQUENT REUSE
+  /** array of 2 scratch array, each sized for one pole
+   * * used in derivative evaluations, with respective u and v derivatives in the respective arrays.
+  */
   protected _poleBuffer1UV: Float64Array[]; // one set of target values.  ALLOCATED BY CTOR FOR FREQUENT REUSE
 
   /**
@@ -279,7 +319,11 @@ export abstract class BSpline2dNd extends GeometryQuery {
     return this.knots[select].spanFractionToKnot(span, localFraction);
   }
 
-  // ASSUME f is sized for {order} basis funtions !!!
+  /** Evaluate basis functions given
+   * * choice of u or v
+   * * span index
+   * * local fraction within the span.
+   */
   public spanFractionsToBasisFunctions(select: UVSelect, spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array) {
     spanIndex = Geometry.clampToStartEnd(spanIndex, 0, this.numSpanUV(select));
     const knotIndex0 = spanIndex + this.degreeUV(select) - 1;
@@ -343,7 +387,13 @@ export abstract class BSpline2dNd extends GeometryQuery {
       kU += stepV;
     }
   }
-
+  /**
+   * Evaluate the _basisBuffer, _poleBuffer and (optionally) _basisBuffer1 and _poleBuffer1 arrays at given knot.
+   *
+   * @param u u knot value
+   * @param v v not value
+   * @param numDerivative number of derivatives needed
+   */
   public evaluateBuffersAtKnot(u: number, v: number, numDerivative: number = 0) {
     const knotIndex0U = this.knots[0].knotToLeftKnotIndex(u);
     const knotIndex0V = this.knots[1].knotToLeftKnotIndex(v);
@@ -454,9 +504,11 @@ export abstract class BSpline2dNd extends GeometryQuery {
  * @public
  */
 export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQuery {
+  /** Test if `other` is an instance of `BSplineSurface3d */
   public isSameGeometryClass(other: any): boolean { return other instanceof BSplineSurface3d; }
+  /** Apply the transform to the poles */
   public tryTransformInPlace(transform: Transform): boolean { Point3dArray.multiplyInPlace(transform, this.coffs); return true; }
-
+  /** Return a pole by u and v indices */
   public getPole(i: number, j: number, result?: Point3d): Point3d | undefined {
     return this.getPoint3dPole(i, j, result);
   }
@@ -603,7 +655,7 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     return surface;
   }
   /**
-   * @returns Return a complete copy of the bspline surface.
+   * Return a complete copy of the bspline surface.
    */
   public clone(): BSplineSurface3d {
     const knotVector1U = this.knots[0].clone();
@@ -659,6 +711,7 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     const knotV = this.knots[1].fractionToKnot(fractionV);
     return this.knotToPointAndDerivatives(knotU, knotV, result);
   }
+  /** test for identical counts and near-equal coordinates */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof BSplineSurface3d) {
       return this.knots[0].isAlmostEqual(other.knots[0])
@@ -667,14 +720,17 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     }
     return false;
   }
-
+  /** Test if all poles are in a plane */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return Point3dArray.isCloseToPlane(this.coffs, plane);
   }
-/** Second step of double dispatch:  call `handler.handleBSplineSurface3d(this)` */
+  /** Second step of double dispatch:  call `handler.handleBSplineSurface3d(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBSplineSurface3d(this);
   }
+  /** Extend the range to include all poles
+   * * This is not a tight range.
+   */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     this.extendRangeXYZ(rangeToExtend, transform);
   }
@@ -685,11 +741,13 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
  * @public
  */
 export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQuery {
+  /** Test if `other` is an instance of `BSplineSurface3dH */
   public isSameGeometryClass(other: any): boolean { return other instanceof BSplineSurface3dH; }
+  /** Apply the transform to the poles */
   public tryTransformInPlace(transform: Transform): boolean {
     Point4dArray.multiplyInPlace(transform, this.coffs); return true;
   }
-
+  /** Return a pole by u and v indices */
   public getPole(i: number, j: number, result?: Point3d): Point3d | undefined {
     return this.getPoint3dPoleXYZW(i, j, result);
   }
@@ -822,7 +880,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     }
     return surface;
   }
-
+  /** Return a deep clone */
   public clone(): BSplineSurface3dH {
     const knotVector1U = this.knots[0].clone();
     const knotVector1V = this.knots[1].clone();
@@ -830,6 +888,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     surface1.coffs = this.coffs.slice();
     return surface1;
   }
+  /** Return a transformed clone */
   public cloneTransformed(transform: Transform): BSplineSurface3dH {
     const surface1 = this.clone();
     surface1.tryTransformInPlace(transform);
@@ -860,6 +919,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     return Plane3dByOriginAndVectors.createOriginAndVectorsWeightedArrays(this._poleBuffer, this._poleBuffer1UV[0], this._poleBuffer1UV[1], result);
   }
 
+  /** Evaluate the Point4d (leaving weights in the point) at given fractiona coordinates. */
   public fractionToPoint4d(fractionU: number, fractionV: number): Point4d {
     return this.knotToPoint4d(this.knots[0].fractionToKnot(fractionU), this.knots[1].fractionToKnot(fractionV));
   }
@@ -898,6 +958,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     const knotV = this.knots[1].fractionToKnot(fractionV);
     return this.knotToPointAndDerivatives(knotU, knotV, result);
   }
+  /** test for identical counts and near-equal coordinates */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof BSplineSurface3dH) {
       return this.knots[0].isAlmostEqual(other.knots[0])
@@ -906,10 +967,11 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     }
     return false;
   }
+  /** Test if all poles are in a plane */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return Point4dArray.isCloseToPlane(this.coffs, plane);
   }
- /** Second step of double dispatch:  call `handler.handleBSplineSurface3dH(this)` */
+  /** Second step of double dispatch:  call `handler.handleBSplineSurface3dH(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBSplineSurface3dH(this);
   }

@@ -36,7 +36,9 @@ export class ConvexClipPlaneSet implements Clipper {
     // this._parity = 1;
     this._planes = planes ? planes : [];
   }
-
+  /** Return an array containing all the planes of the convex set.
+   * * Note that this has no leading keyword identifying it as a ConvexClipPlaneSet.
+   */
   public toJSON(): any {
     const val: any = [];
     for (const plane of this._planes) {
@@ -44,7 +46,9 @@ export class ConvexClipPlaneSet implements Clipper {
     }
     return val;
   }
-
+  /** Extract clip planes from a json array `[  clipplane, clipplane ]`.
+   * * Non-clipplane members are ignored.
+   */
   public static fromJSON(json: any, result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
     result._planes.length = 0;
@@ -58,7 +62,7 @@ export class ConvexClipPlaneSet implements Clipper {
     return result;
   }
   /**
-   * @returns Return true if all members are almostEqual to corresponding members of other.  This includes identical order in array.
+   * Return true if all members are almostEqual to corresponding members of other.  This includes identical order in array.
    * @param other clip plane to compare
    */
   public isAlmostEqual(other: ConvexClipPlaneSet): boolean {

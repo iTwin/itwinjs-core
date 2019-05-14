@@ -186,9 +186,11 @@ export class Bezier1dNd {
     }
   }
   /**
-   *
-   * @param knots
-   * @param spanIndex index of span whose (unsaturated) poles are in the bezie.
+   * Compute new control points to "clamp" bspline unsaturated support to saturated form.
+   * * At input time, the control points are associated with the input knots (unsaturated)
+   * * At output, they control points are modified by repeated knot insertion to be fully clampled.
+   * @param knots knot values for the current (unsaturated) pole set
+   * @param spanIndex index of span whose (unsaturated) poles are in the bezier.
    * @param optional function for `setInterval (knotA, knotB)` call to announce knot limits.
    */
   public saturateInPlace(knots: KnotVector, spanIndex: number): boolean {

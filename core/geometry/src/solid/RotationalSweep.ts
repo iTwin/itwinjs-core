@@ -38,6 +38,7 @@ export class RotationalSweep extends SolidPrimitive {
     this.capped = capped;
     this._sweepAngle = sweepAngle;
   }
+  /** Create a rotational sweep. */
   public static create(contour: CurveCollection, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined {
     if (!axis.direction.normalizeInPlace()) return undefined;
     const sweepable = SweepContour.createForRotation(contour, axis);
@@ -59,12 +60,17 @@ export class RotationalSweep extends SolidPrimitive {
     }
     return undefined;
   }
+  /** return clone of (not reference to) the axis vector. */
   public cloneAxisRay(): Ray3d { return this._normalizedAxis.clone(); }
+  /** Return (REFERENCE TO) the swept curves. */
   public getCurves(): CurveCollection { return this._contour.curves; }
+  /** Return (REFERENCE TO) the swept curves with containing plane markup. */
   public getSweepContourRef(): SweepContour { return this._contour; }
+  /** Return the sweep angle. */
   public getSweep(): Angle { return this._sweepAngle.clone(); }
-
+/** Test if `other` is a `RotationalSweep` */
   public isSameGeometryClass(other: any): boolean { return other instanceof RotationalSweep; }
+  /** Test for same axis, capping, and swept geometry. */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof RotationalSweep) {
       return this._contour.isAlmostEqual(other._contour)
@@ -73,10 +79,11 @@ export class RotationalSweep extends SolidPrimitive {
     }
     return false;
   }
-
+/** return a deep clone */
   public clone(): RotationalSweep {
     return new RotationalSweep(this._contour.clone(), this._normalizedAxis.clone(), this._sweepAngle.clone(), this.capped);
   }
+  /** Transform the contour and axis */
   public tryTransformInPlace(transform: Transform): boolean {
     if (!transform.matrix.isSingular()
       && this._contour.tryTransformInPlace(transform)) {
@@ -85,16 +92,17 @@ export class RotationalSweep extends SolidPrimitive {
     }
     return false;
   }
+  /** return a cloned transform. */
   public cloneTransformed(transform: Transform): RotationalSweep {
     const result = this.clone();
     result.tryTransformInPlace(transform);
     return result;
   }
-
+/** Dispatch to strongly typed handler  `handler.handleRotationalSweep(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleRotationalSweep(this);
   }
-
+/** Return a transform that rotates around the rotational axis by a fraction of the total sweep. */
   public getFractionalRotationTransform(vFraction: number, result?: Transform): Transform {
     const radians = this._sweepAngle.radians * vFraction;
     const rotation = Transform.createFixedPointAndMatrix(this._normalizedAxis.origin,
@@ -103,7 +111,7 @@ export class RotationalSweep extends SolidPrimitive {
     return rotation;
   }
   /**
-   * @returns Return the curves of a constant-v section of the solid.
+   * Return the curves of a constant-v section of the solid.
    * @param vFraction fractional position along the sweep direction
    */
   public constantVSection(vFraction: number): CurveCollection | undefined {
@@ -113,7 +121,7 @@ export class RotationalSweep extends SolidPrimitive {
     }
     return section;
   }
-
+/** Extend range using sampled points on the surface. */
   public extendRange(range: Range3d, transform?: Transform) {
     const degreeStep = 360 / 32;
     const options = StrokeOptions.createForCurves();

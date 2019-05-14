@@ -37,13 +37,18 @@ export class AuxChannelData {
     this.input = input;
     this.values = values;
   }
+  /** Copy blocks of size `blockSize` from (blocked index) `thisIndex` in this AuxChannelData to (blockIndex) `otherIndex` of `other` */
   public copyValues(other: AuxChannelData, thisIndex: number, otherIndex: number, blockSize: number) {
     for (let i = 0; i < blockSize; i++)
       this.values[thisIndex * blockSize + i] = other.values[otherIndex * blockSize + i];
   }
+  /** return a deep copy */
   public clone() {
     return new AuxChannelData(this.input, this.values.slice());
   }
+  /** toleranced comparison of the `input` and `value` fields.
+   * * Default tolernace is 1.0e-8
+   */
   public isAlmostEqual(other: AuxChannelData, tol?: number) {
     const tolerance = tol ? tol : 1.0E-8;
     return Math.abs(this.input - other.input) < tolerance && NumberArray.isAlmostEqual(this.values, other.values, tolerance);
@@ -55,6 +60,7 @@ export class AuxChannelData {
 export class AuxChannel {
   /** An array of [[AuxChannelData]] that represents the vertex data at one or more input values. */
   public data: AuxChannelData[];
+  /** type indicator for this channel.  Setting this causes later transformations to be applied to point, vector, and surface normal data in appropriate ways. */
   public dataType: AuxChannelDataType;
   /** The channel name. This is used to present the [[AuxChannel]] to the user and also to select the [[AuxChannel]] for display from AnalysisStyle */
   public name?: string;
@@ -67,11 +73,13 @@ export class AuxChannel {
     this.name = name;
     this.inputName = inputName;
   }
+  /** Return a deep clone */
   public clone() {
     const clonedData = [];
     for (const data of this.data) clonedData.push(data.clone());
     return new AuxChannel(clonedData, this.dataType, this.name, this.inputName);
   }
+  /** toleranced comparison of contents. */
   public isAlmostEqual(other: AuxChannel, tol?: number) {
     if (this.dataType !== other.dataType ||
       this.name !== other.name ||
@@ -109,21 +117,25 @@ export class AuxChannel {
  * @public
  */
 export class PolyfaceAuxData {
-  /** @param channels Array with one or more channels of auxilliary data for the associated polyface.
-   * @param indices The indices (shared by all data in all channels) mapping the data to the mesh facets.
-   */
-  public channels: AuxChannel[];
+  /** Array with one or more channels of auxilliary data for the associated polyface. */
+   public channels: AuxChannel[];
+  /** indices The indices (shared by all data in all channels) mapping the data to the mesh facets. */
   public indices: number[];
 
   public constructor(channels: AuxChannel[], indices: number[]) {
     this.channels = channels;
     this.indices = indices;
   }
+  /** return a deep clone */
   public clone() {
     const clonedChannels = [];
     for (const channel of this.channels) clonedChannels.push(channel.clone());
     return new PolyfaceAuxData(clonedChannels, this.indices.slice());
   }
+  /** deep test for equality.
+   * * Exact equality for discrete number arrays.
+   * * approximate test for coordinate data.
+   */
   public isAlmostEqual(other: PolyfaceAuxData, tol?: number): boolean {
     if (!NumberArray.isExactEqual(this.indices, other.indices) || this.channels.length !== other.channels.length)
       return false;
@@ -147,6 +159,7 @@ export class PolyfaceAuxData {
       return left.isAlmostEqual(right, tol);
     return false;
   }
+  /** Create a PolyfaceAuxData for use by a facet iterator  */
   public createForVisitor() {
     const visitorChannels: AuxChannel[] = [];
 

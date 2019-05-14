@@ -113,6 +113,7 @@ export class Box extends SolidPrimitive {
   }
 
   /**
+   * Create an axis-aligned `Box` primitive for a range.
    * @param range range corners Origin of base rectangle
    * @param capped true to define top and bottom closure caps
    */

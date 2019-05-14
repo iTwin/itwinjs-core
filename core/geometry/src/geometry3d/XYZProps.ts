@@ -6,18 +6,13 @@
 /** @module CartesianGeometry */
 import { Matrix3d } from "./Matrix3d";
 /**
- * interface for class with `isNull():boolean` method
- * @public
- */
-export interface IsNullCheck {
-  isNull(): boolean;
-}
-/**
  * interface for class with `x` and `y` as number properties.
  * @public
  */
 export interface WritableXAndY {
+  /** x coordinate */
   x: number;
+  /** y coordinate */
   y: number;
 }
 /**
@@ -25,6 +20,7 @@ export interface WritableXAndY {
  * @public
  */
 export interface WriteableHasZ {
+  /** z coordinate */
   z: number;
 }
 /**
@@ -38,7 +34,9 @@ export interface WritableXYAndZ extends XAndY, WriteableHasZ {
  * @public
  */
 export interface WritableLowAndHighXY {
+  /** low x,y coordinates */
   low: WritableXAndY;
+  /** high x,y,z coordinates */
   high: WritableXAndY;
 }
 /**
@@ -46,7 +44,9 @@ export interface WritableLowAndHighXY {
  * @public
  */
 export interface WritableLowAndHighXYZ {
+  /** low x,y,z coordinates */
   low: WritableXYAndZ;
+  /** High x,y,z coordinates */
   high: WritableXYAndZ;
 }
 /**

@@ -34,10 +34,12 @@ export type Matrix4dProps = Point4dProps[];
 export class Matrix4d implements BeJSONFunctions {
   private _coffs: Float64Array;
   private constructor() { this._coffs = new Float64Array(16); }
+  /** Copy matrix entries from `other` */
   public setFrom(other: Matrix4d): void {
     for (let i = 0; i < 16; i++)
       this._coffs[i] = other._coffs[i];
   }
+  /** Return a deep clone. */
   public clone(): Matrix4d {
     const result = new Matrix4d();
     for (let i = 0; i < 16; i++)
@@ -211,6 +213,7 @@ export class Matrix4d implements BeJSONFunctions {
       a = Math.max(a, Math.abs(this._coffs[i]));
     return a;
   }
+  /** Test for near-equality with `other` */
   public isAlmostEqual(other: Matrix4d): boolean {
     return Geometry.isSmallMetricDistance(this.maxDiff(other));
   }

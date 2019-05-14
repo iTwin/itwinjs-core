@@ -46,6 +46,7 @@ export enum BSplineWrapMode {
  * @public
  */
 export class KnotVector {
+  /** The simple array of knot values. */
   public knots: Float64Array;
   /** Return the degree of basis functions defined in these knots. */
   public degree: number;
@@ -53,6 +54,7 @@ export class KnotVector {
   private _knot1: number;
 
   private _wrapMode?: BSplineWrapMode;
+  /** tolerance for considering two knots to be the same. */
   public static readonly knotTolerance = 1.0e-9;
   /** Return the leftmost knot value (of the active interval, ignoring unclamped leading knots)*/
   public get leftKnot() { return this._knot0; }

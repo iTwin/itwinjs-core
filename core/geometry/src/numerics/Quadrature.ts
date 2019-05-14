@@ -15,20 +15,29 @@
  * @internal
  */
 export class Quadrature {
-
+  /** x value for 1 point gauss rule in 0..1 interval */
   public static readonly gaussX1Interval01 = new Float64Array([0.5]);
+  /** weight for 1 point gauss rule in 0..1 interval */
   public static readonly gaussW1Interval01 = new Float64Array([1.0]);
 
+  /** x value for 2 point gauss rule in 0..1 interval */
   public static readonly gaussX2Interval01 = new Float64Array([0.21132486540518708, 0.7886751345948129]);
+  /** weight for 2 point gauss rule in 0..1 interval */
   public static readonly gaussW2Interval01 = new Float64Array([0.5, 0.5]);
 
+  /** x value for 3 point gauss rule in 0..1 interval */
   public static readonly gaussX3Interval01 = new Float64Array([0.1127016653792583, 0.5, 0.8872983346207417]);
+  /** weight for 3 point gauss rule in 0..1 interval */
   public static readonly gaussW3Interval01 = new Float64Array([0.2777777777777778, 0.4444444444444444, 0.2777777777777778]);
 
+  /** x value for 4 point gauss rule in 0..1 interval */
   public static readonly gaussX4Interval01 = new Float64Array([0.06943184420297371, 0.33000947820757187, 0.6699905217924281, 0.9305681557970262]);
+  /** weight for 4 point gauss rule in 0..1 interval */
   public static readonly gaussW4Interval01 = new Float64Array([0.17392742256872692, 0.3260725774312731, 0.3260725774312731, 0.17392742256872692]);
 
+  /** x value for 5 point gauss rule in 0..1 interval */
   public static readonly gaussX5Interval01 = new Float64Array([0.04691007703066802, 0.23076534494715845, 0.5, 0.7692346550528415, 0.9530899229693319]);
+  /** weight for 5 point gauss rule in 0..1 interval */
   public static readonly gaussW5Interval01 = new Float64Array([0.11846344252809454, 0.23931433524968324, 0.28444444444444444, 0.23931433524968324, 0.11846344252809454]);
 
   /**
@@ -54,12 +63,12 @@ export class Quadrature {
     return n;
   }
 
-  /* Install 1 (ONE) x and weight values for quadrature from xA to xB. */
+  /** Install 1 (ONE) x and weight values for quadrature from xA to xB. */
   public static setupGauss1(xA: number, xB: number, xMapped: Float64Array, wMapped: Float64Array): number {
     return Quadrature.mapWeights(xA, xB - xA, Quadrature.gaussX1Interval01, Quadrature.gaussW1Interval01, xMapped, wMapped);
   }
 
-  /* Install 2 (TWO) x and weight values for quadrature from xA to xB. */
+  /** Install 2 (TWO) x and weight values for quadrature from xA to xB. */
   public static setupGauss2(xA: number, xB: number, xMapped: Float64Array, wMapped: Float64Array): number {
     return Quadrature.mapWeights(xA, xB - xA, Quadrature.gaussX2Interval01, Quadrature.gaussW2Interval01, xMapped, wMapped);
     /*  // exact formulas for interval xA..xB:
@@ -70,7 +79,7 @@ export class Quadrature {
             wMapped[0] = wMapped[1] = h;
             */
   }
-  /* Install 3 (THREE) x and weight values for quadrature from xA to xB. */
+  /** Install 3 (THREE) x and weight values for quadrature from xA to xB. */
   public static setupGauss3(xA: number, xB: number, xMapped: Float64Array, wMapped: Float64Array): number {
     return Quadrature.mapWeights(xA, xB - xA, Quadrature.gaussX3Interval01, Quadrature.gaussW3Interval01, xMapped, wMapped);
     /*  // exact formulas for interval xA..xB:
@@ -86,9 +95,7 @@ export class Quadrature {
     */
   }
 
-  /** Caller allocates and passes Float6dArray of length
-   * These are filled with x and weight for quadrature between xA and xB
-   */
+  /** Install 5 (FIVE) x and weight values for quadrature from xA to xB. */
   public static setupGauss5(xA: number, xB: number, xMapped: Float64Array, wMapped: Float64Array): number {
     return Quadrature.mapWeights(xA, xB - xA, Quadrature.gaussX5Interval01, Quadrature.gaussW5Interval01, xMapped, wMapped);
     /*  // exact formulas for interval xA..xB:
@@ -107,6 +114,7 @@ export class Quadrature {
     */
   }
 
+  /** Install 4 (FOUR) x and weight values for quadrature from xA to xB. */
   public static setupGauss4(xA: number, xB: number, xMapped: Float64Array, wMapped: Float64Array): number {
     return Quadrature.mapWeights(xA, xB - xA, Quadrature.gaussX4Interval01, Quadrature.gaussW4Interval01, xMapped, wMapped);
     /*  // exact formulas for interval xA..xB:

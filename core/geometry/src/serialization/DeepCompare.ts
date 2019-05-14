@@ -7,10 +7,12 @@
 
 /* tslint:disable: object-literal-key-quotes */
 
-/** Comparison utilities
+/**
+ * Utilities to compare json objects by search through properties.
  * @internal
  */
 export class DeepCompare {
+  /** Statistical accumulations during searchers. */
   public typeCounts = {
     "numbers": 0,
     "arrays": 0,
@@ -20,12 +22,18 @@ export class DeepCompare {
     "booleans": 0,
     "undefined": 0,
   };
+  /** Counts of property names encountered during various searches. */
   public propertyCounts: { [key: string]: any } = {};
+  /** Array of error descriptions. */
   public errorTracker: any[] = [];
-  public constructor(public numberRelTol = 1.0e-12) { }
+  /** relative tolerance for declaring numeric values equal. */
+  public numberRelTol: number;
+  public constructor(numberRelTol = 1.0e-12) { this.numberRelTol = numberRelTol; }
 
-  // Function specifying the way two numbers will be compared (may be changed by user)
-  public compareNumber(_a: number, _b: number) {
+  /** test if _a and _b are within tolerance.
+   * * If not, push error message to errorTracker.
+   */
+public compareNumber(_a: number, _b: number) {
     if (Math.abs(_b - _a) < this.numberRelTol * (1 + Math.abs(_a) + Math.abs(_b))) {
       return this.announce(true);
     } else {
@@ -124,7 +132,9 @@ export class DeepCompare {
     return false;
   }
 
-  // Clears out the member objects, then calls the recursive compare function
+  /** Main entry for comparing deep json objects.
+   * * errorTracker, typeCounts, and propertyCounts are cleared.
+   */
   public compare(a: any, b: any, tolerance?: number): boolean {
     if (tolerance !== undefined)
       this.numberRelTol = tolerance;

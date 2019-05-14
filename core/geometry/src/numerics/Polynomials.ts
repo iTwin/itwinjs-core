@@ -19,6 +19,7 @@ import { Point4d } from "../geometry4d/Point4d";
  * @internal
  */
 export class Degree2PowerPolynomial {
+  /** The three coefficients for the quartatic */
   public coffs: number[];
 
   constructor(c0: number = 0, c1: number = 0, c2: number = 0) {
@@ -51,18 +52,18 @@ export class Degree2PowerPolynomial {
       return [x];
     return undefined;
   }
-
+  /** Add `a` to the constant term. */
   public addConstant(a: number) {
     this.coffs[0] += a;
   }
 
-  // Add s * (a + b*x)^2 to the quadratic coefficients
+  /** Add  `s * (a + b*x)^2` to the quadratic coefficients */
   public addSquaredLinearTerm(a: number, b: number, s: number = 1): void {
     this.coffs[0] += s * (a * a);
     this.coffs[1] += s * (2.0 * a * b);
     this.coffs[2] += s * (b * b);
   }
-
+  /** Return the real roots of this polynomial */
   public realRoots(): number[] | undefined {
     const ss = Degree2PowerPolynomial.solveQuadratic(this.coffs[2], this.coffs[1], this.coffs[0]);
     if (ss && ss.length > 1) {
@@ -75,9 +76,7 @@ export class Degree2PowerPolynomial {
     return ss;
   }
 
-  /**
-   * Evaluate the quadratic at x.
-   */
+  /** Evaluate the quadratic at x. */
   public evaluate(x: number): number {
     return this.coffs[0] + x * (this.coffs[1] + x * this.coffs[2]);
   }
@@ -90,7 +89,7 @@ export class Degree2PowerPolynomial {
     return this.coffs[1] + 2 * x * this.coffs[2];
   }
 
-  // Factor the polyonmial as c0 + c1 * x + c2 * x*x = y0 + c2 * (x-x0)^2
+  /** Factor the polynomial in to the form `y0 + c * (x-x0)^2)`, i.e. complete the square. */
   public tryGetVertexFactorization(): { x0: number, y0: number, c: number } | undefined {
     const x = Geometry.conditionalDivideFraction(-this.coffs[1], 2.0 * this.coffs[2]);
     if (x !== undefined) {
@@ -99,8 +98,8 @@ export class Degree2PowerPolynomial {
     }
     return undefined;
   }
-
-  public static fromRootsAndC2(root0: number, root1: number, c2: number = 1) {
+  /** Construct a quadratic from input form `c2 * (x-root0) * (x-root1)` */
+  public static fromRootsAndC2(root0: number, root1: number, c2: number = 1): Degree2PowerPolynomial {
     return new Degree2PowerPolynomial(
       c2 * root0 * root1,
       - c2 * (root0 + root1),
@@ -113,17 +112,18 @@ export class Degree2PowerPolynomial {
  * @internal
  */
 export class Degree3PowerPolynomial {
+  /** polynomial coefficients, index corresponds to power */
   public coffs: number[];
 
   constructor(c0: number = 0, c1: number = 0, c2: number = 0, c3: number = 1) {
     this.coffs = [c0, c1, c2, c3];
   }
-
+  /** Add `a` to the constant term. */
   public addConstant(a: number) {
     this.coffs[0] += a;
   }
 
-  // Add s * (a + b*x)^2 to the quadratic coefficients
+  /** Add `s * (a + b*x)^2` to the cubic */
   public addSquaredLinearTerm(a: number, b: number, s: number = 1): void {
     this.coffs[0] += s * (a * a);
     this.coffs[1] += s * (2.0 * a * b);
@@ -145,7 +145,7 @@ export class Degree3PowerPolynomial {
   public evaluateDerivative(x: number): number {
     return this.coffs[1] + x * (2.0 * this.coffs[2] + x * 3.0 * this.coffs[3]);
   }
-
+  /** Construct a cubic from the form `c3 * (x-root0) * (x - root1) * (x- root2)` */
   public static fromRootsAndC3(root0: number, root1: number, root2: number, c3: number = 1.0): Degree3PowerPolynomial {
     return new Degree3PowerPolynomial(
       -c3 * root0 * root1 * root2,
@@ -153,19 +153,19 @@ export class Degree3PowerPolynomial {
       - c3 * (root0 + root1 + root2),
       c3);
   }
-
 }
 /**
  * degree 4 (quartic) polynomial in for y = c0 + c1*x + c2*x^2 + c4*x^4
  * @internal
  */
 export class Degree4PowerPolynomial {
+  /** polynomial coefficients, index corresponds to power */
   public coffs: number[];
 
   constructor(c0: number = 0, c1: number = 0, c2: number = 0, c3: number = 0, c4: number = 0) {
     this.coffs = [c0, c1, c2, c3, c4];
   }
-
+  /** Add `a` to the constant term. */
   public addConstant(a: number) {
     this.coffs[0] += a;
   }
@@ -186,6 +186,7 @@ export class Degree4PowerPolynomial {
     return (this.coffs[1] + x * (2.0 * this.coffs[2] + x * (3.0 * this.coffs[3] + x * 4.0 * this.coffs[4])));
   }
 
+  /** Construct a quartic from the form `c3 * (x-root0) * (x - root1) * (x- root2) * (x-root3)` */
   public static fromRootsAndC4(root0: number, root1: number, root2: number, root3: number, c4: number = 1): Degree4PowerPolynomial {
     return new Degree4PowerPolynomial(
       c4 * (root0 * root1 * root2 * root3),
@@ -201,10 +202,16 @@ export class Degree4PowerPolynomial {
  * * z axis is "through the donut hole"
  * * `majorRadius` is the radius of the circle "around the z axis"
  * * `minorRadius` is the radius of circles around the major circle
+ * * for simple xyz the implict form is
+ *   * `(x^2+y^2+z^2+(R^2-r^2))^2 = 4 R^2(x^2+y^2)`
+ * * In weighted form
+ *   * `(x^2+y^2+z^2+(R^2-r^2)w^2)^2 = 4 R^2 w^2 (x^2+y^2)`
  * @internal
  */
 export class TorusImplicit {
+  /** major (xy plane) radius */
   public majorRadius: number;
+  /** hoop (perpendicular to major circle) radius */
   public minorRadius: number;
 
   constructor(majorRadiusR: number, minorRadiusr: number) {
@@ -212,11 +219,11 @@ export class TorusImplicit {
     this.minorRadius = minorRadiusr;
   }
 
-  // Return size of box (e.g. for use as scale factor)
+  /** Return sum of (absolute) major and minor radii, which is (half) the box size in x and y directions */
   public boxSize() {
     return (Math.abs(this.majorRadius) + Math.abs(this.minorRadius));
   }
-  /** @returns a scale factor appropriate to control the magnitude of the implicit function. */
+  /** Return scale factor appropriate to control the magnitude of the implicit function. */
   public implicitFunctionScale(): number {
     const a = this.boxSize();
     if (a === 0.0)
@@ -224,10 +231,9 @@ export class TorusImplicit {
     return 1.0 / (a * a * a * a);
   }
 
-  // Implicit equation for the torus is ...
-  // (x^2+y^2+z^2+(R^2-r^2))^2 = 4 R^2(x^2+y^2)
-  // x,y,z are weighted,
-  // (x^2+y^2+z^2+(R^2-r^2)w^2)^2 = 4 R^2 w^2 (x^2+y^2)
+  /**
+   * At space point (x,y,z) evaluate the implicit form of the toruns (See `ImplicitTorus`)
+   */
   public evaluateImplicitFunctionXYZ(x: number, y: number, z: number): number {
     const rho2 = x * x + y * y;
     const z2 = z * z;
@@ -237,11 +243,11 @@ export class TorusImplicit {
     const g = 4.0 * R2 * rho2;
     return (f * f - g) * this.implicitFunctionScale();
   }
-
+  /** Evaluate the implicit funciton at a point. */
   public evaluateImplicitFunctionPoint(xyz: Point3d): number {
     return this.evaluateImplicitFunctionXYZ(xyz.x, xyz.y, xyz.z);
   }
-
+  /** Evaluate the implicit function at homogeneous coordiantes */
   public evaluateImplicitFunctionXYZW(x: number, y: number, z: number, w: number) {
     const rho2 = x * x + y * y;
     const z2 = z * z;
@@ -253,33 +259,34 @@ export class TorusImplicit {
     return (f * f - g) * this.implicitFunctionScale();
   }
 
-  // public intersectRay(ray: Ray3d, rayFractions: number, points: Point3d, maxHit: number) {}
-
-  public evaluateThetaPhi(theta: number, phi: number): Point3d {
-    const c = Math.cos(theta);
-    const s = Math.sin(theta);
+  /** Evaluate the surface point at angles (in radians) on the major and minor circles. */
+  public evaluateThetaPhi(thetaRadians: number, phiRadians: number): Point3d {
+    const c = Math.cos(thetaRadians);
+    const s = Math.sin(thetaRadians);
     // theta=0 point
-    const x0 = this.majorRadius + this.minorRadius * Math.cos(phi);
-    const z0 = this.minorRadius * Math.sin(phi);
+    const x0 = this.majorRadius + this.minorRadius * Math.cos(phiRadians);
+    const z0 = this.minorRadius * Math.sin(phiRadians);
     return Point3d.create(c * x0, s * x0, z0);
   }
 
-  public evaluateDerivativesThetaPhi(theta: number, phi: number, dxdTheta: Vector3d, dxdPhi: Vector3d) {
-    const cTheta = Math.cos(theta);
-    const sTheta = Math.sin(theta);
-    const bx = this.minorRadius * Math.cos(phi);
-    const bz = this.minorRadius * Math.sin(phi);
+  /** Evaluate partial derivatives at angles (int radians) on major and minor circles. */
+  public evaluateDerivativesThetaPhi(thetaRadians: number, phiRadians: number, dxdTheta: Vector3d, dxdPhi: Vector3d) {
+    const cTheta = Math.cos(thetaRadians);
+    const sTheta = Math.sin(thetaRadians);
+    const bx = this.minorRadius * Math.cos(phiRadians);
+    const bz = this.minorRadius * Math.sin(phiRadians);
     const x0 = this.majorRadius + bx;
     Vector3d.create(-x0 * sTheta, x0 * cTheta, 0.0, dxdTheta);
     Vector3d.create(-cTheta * bz, -sTheta * bz, bx, dxdPhi);
   }
 
-  public evaluateThetaPhiDistance(theta: number, phi: number, distance: number): Point3d {
-    const c = Math.cos(theta);
-    const s = Math.sin(theta);
+  /** Evaluate space point at major and minor angles (in radians) and distance from major hoop. */
+  public evaluateThetaPhiDistance(thetaRadians: number, phiRadians: number, distance: number): Point3d {
+    const c = Math.cos(thetaRadians);
+    const s = Math.sin(thetaRadians);
     // theta=0 point
-    const x0 = this.majorRadius + distance * Math.cos(phi);
-    const z0 = distance * Math.sin(phi);
+    const x0 = this.majorRadius + distance * Math.cos(phiRadians);
+    const z0 = distance * Math.sin(phiRadians);
     return Point3d.create(c * x0, s * x0, z0);
   }
   /** Given an xyz coordinate in the local system of the toroid, compute the torus parametrization
@@ -341,29 +348,33 @@ export class TorusImplicit {
   */
 }
 /**
- * evaluation methods for an implicit sphere `x*x + y*y + z*z - r*r = 0`.
+ * evaluation methods for an implicit sphere
+ * * xyz function `x*x + y*y + z*z - r*r = 0`.
+ * * xyzw function `x*x + y*y + z*z - r*r*w*w = 0`.
  * @internal
  */
 export class SphereImplicit {
+  /** Radius of sphere. */
   public radius: number;
   constructor(r: number) { this.radius = r; }
 
-  // Evaluate the implicit function at space point
-  // @param [in] xyz coordinates
+  /** Evaluate the implicit function at coordinates x,y,z */
   public evaluateImplicitFunction(x: number, y: number, z: number): number {
     return x * x + y * y + z * z - this.radius * this.radius;
   }
 
-  // Evaluate the implicit function at weighted space point (wx, wy, wz, w)
-  // @param [in] wx (preweighted) x coordinate
-  // @param [in] wy (preweighted) y coordinate
-  // @param [in] wz (preweighted) z coordinate
-  // @param [in] w  weight
+  /** Evaluate the implicit function at homogeneous coordinates x,y,z,w */
   public evaluateImplicitFunctionXYZW(wx: number, wy: number, wz: number, w: number): number {
     return (wx * wx + wy * wy + wz * wz) - this.radius * this.radius * w * w;
   }
 
-  public xyzToThetaPhiR(xyz: Point3d): { theta: number, phi: number, r: number, valid: boolean } {
+  /** Given an xyz coordinate in the local system of the toroid, compute the sphere parametrization
+   * * theta = angular coordinate in xy plane
+   * * phi = rotation from xy plane towards z axis.
+   * @param xyz space point in local coordinates.
+   * @return object with properties thetaRadians, phi, r
+   */
+  public xyzToThetaPhiR(xyz: Point3d): { thetaRadians: number, phiRadians: number, r: number, valid: boolean } {
     const rhoSquared = xyz.x * xyz.x + xyz.y * xyz.y;
     const rho = Math.sqrt(rhoSquared);
     const r = Math.sqrt(rhoSquared + xyz.z * xyz.z);
@@ -383,7 +394,7 @@ export class SphereImplicit {
         valid = false;
       }
     }
-    return { theta: (theta), phi: (phi), r: (r), valid: (valid) };
+    return { thetaRadians: (theta), phiRadians: (phi), r: (r), valid: (valid) };
   }
 
   // public intersectRay(ray: Ray3d, maxHit: number): {rayFractions: number, points: Point3d} {
@@ -405,11 +416,10 @@ export class SphereImplicit {
   //     rayFractions[i] = ss[i];
   //     points[i] = Point3d. // What is the equivalent of FromSumOf in TS?
   //   }
-
-  // Compute the point on the surface at specified angles
-  // @param [in] theta major circle angle.
-  // @param [in] phi minor circle angle.
-  // @return point on surface
+  /** Compute the point on a sphere at angular coordinates.
+   * @param thetaRadians latitude angle
+   * @param phiRadians longitude angle
+   */
   public evaluateThetaPhi(thetaRadians: number, phiRadians: number): Point3d {
     const rc = this.radius * Math.cos(thetaRadians);
     const rs = this.radius * Math.sin(thetaRadians);
@@ -418,16 +428,15 @@ export class SphereImplicit {
     return Point3d.create(rc * cosPhi, rs * cosPhi, this.radius * sinPhi);
   }
 
-  // Compute derivatives of the point on the surface at specified angles
-  // @param [in] theta major circle angle.
-  // @param [in] phi minor circle angle.
-  // @param [out] dXdTheta derivative wrt theta
-  // @param [out] dXdPhi derivative wrt phi
-  public evaluateDerivativesThetaPhi(theta: number, phi: number, dxdTheta: Vector3d, dxdPhi: Vector3d) {
-    const rc = this.radius * Math.cos(theta);
-    const rs = this.radius * Math.sin(theta);
-    const cosPhi = Math.cos(phi);
-    const sinPhi = Math.sin(phi);
+  /** Compute the derivatives with respect to spherical angles.
+   * @param thetaRadians latitude angle
+   * @param phiRadians longitude angle
+   */
+  public evaluateDerivativesThetaPhi(thetaRadians: number, phiRadians: number, dxdTheta: Vector3d, dxdPhi: Vector3d) {
+    const rc = this.radius * Math.cos(thetaRadians);
+    const rs = this.radius * Math.sin(thetaRadians);
+    const cosPhi = Math.cos(phiRadians);
+    const sinPhi = Math.sin(phiRadians);
     Vector3d.create(-rs * cosPhi, rc * cosPhi, 0.0, dxdTheta);
     Vector3d.create(-rc * sinPhi, -rs * sinPhi, this.radius * cosPhi, dxdPhi);
   }
@@ -458,14 +467,11 @@ export class SphereImplicit {
  *
  */
 export class AnalyticRoots {
-
-  public static readonly EQN_EPS = 1.0e-9;
-  public static readonly s_safeDivideFactor = 1.0e-14;
-  public static readonly s_quadricRelTol = 1.0e-14;
-  public static readonly sTestWindow = 1.0e-6;
+  private static readonly _EQN_EPS = 1.0e-9;
+  private static readonly _safeDivideFactor = 1.0e-14;
   /** Absolute zero test with a tolerance that has worked well for the analytic root use case . . . */
-  public static isZero(x: number): boolean {
-    return Math.abs(x) < this.EQN_EPS;
+  private static isZero(x: number): boolean {
+    return Math.abs(x) < this._EQN_EPS;
   }
   /** Without actually doing a division, test if (x/y) is small.
    * @param x numerator
@@ -473,10 +479,10 @@ export class AnalyticRoots {
    * @param abstol absolute tolerance
    * @param reltol relative tolerance
    */
-  public static isSmallRatio(x: number, y: number, abstol: number = 1.0e-9, reltol: number = 8.0e-16) {
+  private static isSmallRatio(x: number, y: number, abstol: number = 1.0e-9, reltol: number = 8.0e-16) {
     return Math.abs(x) <= abstol || Math.abs(x) < reltol * Math.abs(y);
   }
-  // @returns the principal (always real) cube root of x.
+  /** Return the (real, signed) principal cube root of x */
   public static cbrt(x: number): number {
     return ((x) > 0.0
       ? Math.pow((x), 1.0 / 3.0)
@@ -492,8 +498,8 @@ export class AnalyticRoots {
    * @param defaultValue value to save if denominator is too small to divide.
    * @param offset index of value to replace.
    */
-  public static safeDivide(values: Float64Array, numerator: number, denominator: number, defaultValue: number = 0.0, offset: number): boolean {
-    if (Math.abs(denominator) > (this.s_safeDivideFactor * Math.abs(numerator))) {
+  private static safeDivide(values: Float64Array, numerator: number, denominator: number, defaultValue: number = 0.0, offset: number): boolean {
+    if (Math.abs(denominator) > (this._safeDivideFactor * Math.abs(numerator))) {
       values[offset] = numerator / denominator;
       return true;
     }
@@ -588,7 +594,10 @@ export class AnalyticRoots {
   public static appendLinearRoot(c0: number, c1: number, values: GrowableFloat64Array) {
     AnalyticRoots.appendSolution(Geometry.conditionalDivideFraction(-c0, c1), values);
   }
-  // Search an array for the value which is farthest from the average of all the values.
+  /**
+   * * Compute the mean of all the entries in `data`
+   * * Return the data value that is farthest away
+   */
   public static mostDistantFromMean(data: GrowableFloat64Array | undefined): number {
     if (!data || data.length === 0) return 0;
     let a = 0.0;  // to become the sum and finally the average.
@@ -636,6 +645,7 @@ export class AnalyticRoots {
     }
     return;
   }
+  /** Add `a` to the constant term. */
   private static addConstant(value: number, data: GrowableFloat64Array) {
     for (let i = 0; i < data.length; i++) data.reassign(i, data.atUncheckedIndex(i) + value);
   }
@@ -720,11 +730,13 @@ export class AnalyticRoots {
       return;
     }
   }
+  /** Compute roots of cubic 'c[0] + c[1] * x + c[2] * x^2 + c[3] * x^3 */
   public static appendCubicRoots(c: Float64Array | number[], results: GrowableFloat64Array) {
     this.appendCubicRootsUnsorted(c, results);
     results.sort();
   }
 
+  /** Compute roots of quartic 'c[0] + c[1] * x + c[2] * x^2 + c[3] * x^3 + c[4] * x^4 */
   public static appendQuarticRoots(c: Float64Array | number[], results: GrowableFloat64Array) {
     const coeffs = new Float64Array(4); // at various times .. coefficients of quadratic an cubic intermediates.
     let u: number;
@@ -833,64 +845,29 @@ export class AnalyticRoots {
     if (radiansValues) radiansValues.push(Math.atan2(s, c));
   }
 
-  /*-----------------------------------------------------------------
-   Solve the simultaneous equations
-   <pre>
-                 alpha + beta*c + gamma*s = 0
-                 c*c + s*s = 1
-
-   @param c1P OUT x cosine component of first solution point
-   @param s1P OUT y sine component of first solution point
-   @param c2P OUT x cosine component of second solution point
-   @param s2P OUT y sine component of second solution point
-   @param solutionType OUT One of the following values:
-  <pre>
-      -2 -- all coefficients identically 0.   The entire c,s plane -- and therefore
-          the entire unit circle -- is a solution.
-      -1 -- beta,gamma are zero, alpha is not.   There is no line defined.  There are
-          no solutions.
-      0 -- the line is well defined, but passes completely outside the unit circle.
-              In this case, (c1,s1) is the circle point closest to the line
-              and (c2,s2) is the line point closest to the circle.
-      1 -- the line is tangent to the unit circle.  As tangency is identified at
-              numerical precision, faithful interpretation of the coefficients
-              may allow for some distance from line to circle. (c1,s1) is returned
-              as the closest circle point, (c2,s2) the line point.  These are
-              nominally the same but may differ due to the tolerance
-              decision.
-      2 -- two simple intersections.
-  </pre>
-
-    @param alpha => constant coefficient on line
-   @param beta => x cosine coefficient on line
-   @param gamma => y sine coefficient on line
-   @param reltol => relative tolerance for tangencies
-   @return the (nonnegative) solution count.
-
-  @remarks Here is an example of the tangible meaning of the coefficients and
-  the cryptic 5-way solution type separation.
-  Point X on a 3D ellipse at parameter space angle theta is given by
-      X = C + U cos(theta) + V sin(theta)
-  where C,U,V are (respectively) center, 0 degree, and 90 degree vectors.
-  A plane has normal N and is at distance a from the origin.  X is on the plane if
-      X.N = a
-  i.e.
-      C.N + U.N cos(theta) + V.N sin(theta) = a
-  i.e.
-      C.N - a + U.N cos(theta) + V.N sin(theta) = 0
-  i.e.
-      alpha = C.N - a
-      beta =  U.N
-      gamma = V.N
-  If the ellipse is parallel to the plane, both beta and gamma are zero.  These are
-  the two degenerat cases.  If alpha is also zero the entire ellipse is completely
-  in the plane.   If alpha is nonzero the ellipse is completely out of plane.
-
-  If the ellipse plane is NOT parallel, there are zero, one, or two solutions according as
-  the ellipse is completly on one side, tangent or is properly split by the plane.
-
-   @bsihdr                                       EarlinLutz      12/97
-  +---------------+---------------+---------------+---------------+------*/
+  /**
+   * * Solve the simultaneous equations in variables`c` and`s`:
+   *   * A line: `alpha + beta*c + gamma*s = 0`
+   *   * The unit circle 'c*c + s*s = 1`
+   * * Solution values are returned as 0, 1, or 2(c, s) pairs
+   * * Return value indicates one of these solution states:
+   *   * -2 -- all coefficients identically 0.   The entire c, s plane-- and therefore the entire unit circle-- is a solution.
+   *   * -1 -- beta, gamma are zero, alpha is not.There is no line defined.There are no solutions.
+   *   * 0 -- the line is well defined, but passes completely outside the unit circle.
+   *     * In this case, (c1, s1) is the circle point closest to the line and(c2, s2) is the line point closest to the circle.
+   * * 1 -- the line is tangent to the unit circle.
+   *   * Tangency is determined by tolerances, which calls a "close approach" point a tangency.
+   *    * (c1, s1) is the closest circle point
+   *    * (c2, s2) is the line point.
+   * * 2 -- two simple intersections.
+   * @param alpha constant coefficient on line
+   * @param beta x cosine coefficient on line
+   * @param gamma y sine coefficient on line
+   * @param reltol relative tolerance for tangencies
+   * @param cosValues (caller allocated) array to receive solution `c` values
+   * @param sinValues (caller allocated) array to receive solution `s` values
+   * @param radiansValues (caller allocated) array to receive solution radians values.
+   */
   public static appendImplicitLineUnitCircleIntersections(alpha: number, beta: number, gamma: number,
     cosValues: OptionalGrowableFloat64Array, sinValues: OptionalGrowableFloat64Array, radiansValues: OptionalGrowableFloat64Array,
     reltol: number = 1.0e-14): number {
@@ -944,7 +921,7 @@ export class AnalyticRoots {
 
 export class PowerPolynomial {
 
-  // Evaluate a standard basis polynomial.
+  /** Evaluate a standard bais polynomial at `x`, with `degree` possibly less than `coff.length` */
   public static degreeKnownEvaluate(coff: Float64Array, degree: number, x: number): number {
     if (degree < 0) {
       return 0.0;
@@ -954,15 +931,16 @@ export class PowerPolynomial {
       p = x * p + coff[i];
     return p;
   }
-  // Evaluate a standard basis polynomial
+  /** Evaluate the standard basis polynomial of degree `coff.length` at `x` */
   public static evaluate(coff: Float64Array, x: number): number {
     const degree = coff.length - 1;
     return this.degreeKnownEvaluate(coff, degree, x);
   }
-
-  // Accumulate Q*scale into P.  Both are treated as full degree.
-  //         (Expect Address exceptions if P is smaller than Q)
-  // Returns degree of result as determined by comparing leading coefficients to zero
+  /**
+   * * Accumulate Q*scale into P.Both are treated as full degree.
+   * * (Expect Address exceptions if P is smaller than Q)
+   * * Returns degree of result as determined by comparing trailing coefficients to zero
+   */
   public static accumulate(coffP: Float64Array, coffQ: Float64Array, scaleQ: number): number {
     let degreeP = coffP.length - 1;
     const degreeQ = coffQ.length - 1;
@@ -976,7 +954,7 @@ export class PowerPolynomial {
     }
     return degreeP;
   }
-  // Zero all coefficients in a polynomial
+  /** Zero all coefficients */
   public static zero(coff: Float64Array) {
     for (let i = 0; i < coff.length; i++) {
       coff[i] = 0.0;
@@ -988,53 +966,52 @@ export class PowerPolynomial {
  * @internal
  */
 export class TrigPolynomial {
-  // Constants taken from Angle.cpp (may be later moved to a constants module)
-  public static readonly SmallAngle: number = 1.0e-11;
+  // tolerance for small angle decision.
+  private static readonly _smallAngle: number = 1.0e-11;
 
-  // Standard Basis coefficients for rational sine numerator.
+  /** Standard Basis coefficients for rational sine numerator. */
   public static readonly S = Float64Array.from([0.0, 2.0, -2.0]);
-  // Standard Basis coefficients for rational cosine numerator.
+  /** Standard Basis coefficients for rational cosine numerator. */
   public static readonly C = Float64Array.from([1.0, -2.0]);
-  // Standard Basis coefficients for rational denominator.
+  /** Standard Basis coefficients for rational denominator. */
   public static readonly W = Float64Array.from([1.0, -2.0, 2.0]);
-  // Standard Basis coefficients for cosine*weight numerator
+  /** Standard Basis coefficients for cosine*weight numerator */
   public static readonly CW = Float64Array.from([1.0, -4.0, 6.0, -4.0]);
-  // Standard Basis coefficients for sine*weight numerator
+  /** Standard Basis coefficients for sine*weight numerator */
   public static readonly SW = Float64Array.from([0.0, 2.0, -6.0, 8.0, -4.0]);
-  // Standard Basis coefficients for sine*cosine numerator
+  /** Standard Basis coefficients for sine*cosine numerator */
   public static readonly SC = Float64Array.from([0.0, 2.0, -6.0, 4.0]);
-  // Standard Basis coefficients for sine^2 numerator
+  /** Standard Basis coefficients for sine^2 numerator */
   public static readonly SS = Float64Array.from([0.0, 0.0, 4.0, -8.0, 4.0]);
-  // Standard Basis coefficients for cosine^2 numerator
+  /** Standard Basis coefficients for cosine^2 numerator */
   public static readonly CC = Float64Array.from([1.0, -4.0, 4.0]);
-  // Standard Basis coefficients for weight^2
+  /** Standard Basis coefficients for weight^2 */
   public static readonly WW = Float64Array.from([1.0, -4.0, 8.0, -8.0, 4.0]);
-  // Standard Basis coefficients for (Math.Cos^2 - sine^2) numerator
+  /** Standard Basis coefficients for (Math.Cos^2 - sine^2) numerator */
   public static readonly CCminusSS = Float64Array.from([1.0, -4.0, 0.0, 8.0, -4.0]);
 
-  /// Solve a polynomial created from trigonometric condition using
-  /// Trig.S, Trig.C, Trig.W.  Solution logic includes inferring angular roots
-  /// corresponding zero leading coefficients (roots at infinity)
-  /// <param name="coff">Coefficients</param>
-  /// <param name="nominalDegree">degree of the polynomial under most complex
-  ///     root case.  If there are any zero coefficients up to this degree, a single root
-  ///     "at infinity" is recorded as its corresponding angular parameter at negative pi/2
-  /// <param name="referenceCoefficient">A number which represents the size of coefficients
-  ///     at various stages of computation.  A small fraction of this will be used as a zero
-  ///     tolerance</param>
-  /// <param name="angles">Roots are placed here. Assumed preallocated with adequate size.</param>
-  /// <param name="numRoots">Number of roots  .  Zero roots is possible. (Passed as array of size
-  /// one to pass-by-reference)</param>
-  /// Returns false if equation is all zeros.   This usually means any angle is a solution.
-  // ------------------------------------------------------------------------------------------------
-  // Solve a standard basis polynomial.   Immediately use the roots as ordinates
-  //            in rational polynomials for sine and cosine, and convert to angle via arctan
+  /**
+   *  Solve a polynomial created from trigonometric condition using
+   * Trig.S, Trig.C, Trig.W.  Solution logic includes inferring angular roots
+   * corresponding zero leading coefficients (roots at infinity)
+   * @param coff Coefficients
+   * @param nominalDegree degree of the polynomial under most complex
+   *     root case.  If there are any zero coefficients up to this degree, a single root
+   *     "at infinity" is recorded as its corresponding angular parameter at negative pi/2
+   * @param referenceCoefficient A number which represents the size of coefficients
+   *     at various stages of computation.  A small fraction of this will be used as a zero
+   *     tolerance
+   * @param angles Roots are placed here. Assumed preallocated with adequate size.
+   * @param numRoots Number of roots  .  Zero roots is possible. (Passed as array of size
+   * one to pass-by-reference)
+   * Returns false if equation is all zeros.   This usually means any angle is a solution.
+   */
   public static solveAngles(coff: Float64Array, nominalDegree: number, referenceCoefficient: number,
     radians: number[]): boolean {
     let maxCoff = Math.abs(referenceCoefficient);
     let a;
     radians.length = 0;
-    const relTol = this.SmallAngle;
+    const relTol = this._smallAngle;
 
     for (let i = 0; i <= nominalDegree; i++) {
       a = Math.abs(coff[i]);
@@ -1091,24 +1068,26 @@ export class TrigPolynomial {
     }
     return radians.length > 0;
   }
-  public static readonly coeffientRelTol = 1.0e-12;
-  /// <summary> Compute intersections of unit circle x^2 + y 2 = 1 with general quadric
-  ///         axx*x^2 + axy*x*y + ayy*y^2 + ax * x + ay * y + a1 = 0
-  /// Solutions are returned as angles. Sine and Cosine of the angles are the x,y results.
-  /// <param name="axx">Coefficient of x^2</param>
-  /// <param name="axy">Coefficient of xy</param>
-  /// <param name="ayy">Coefficient of y^2</param>
-  /// <param name="ax">Coefficient of x</param>
-  /// <param name="ay">Coefficient of y</param>
-  /// <param name="a1">Constant coefficient</param>
-  /// <param name="angles">solution angles</param>
-  /// <param name="numAngle">number of solution angles (Passed as array to make changes to reference)</param>
+  private static readonly _coeffientRelTol = 1.0e-12;
+  /**
+   * Compute intersections of unit circle `x ^ 2 + y 2 = 1` with general quadric
+   * `axx * x ^ 2 + axy * x * y + ayy * y ^ 2 + ax * x + ay * y + a1 = 0`
+   * Solutions are returned as angles.Sine and Cosine of the angles are the x, y results.
+   * @param axx  Coefficient of x ^ 2
+   * @param axy  Coefficient of xy
+   * @param ayy  Coefficient of y ^ 2
+   * @param ax  Coefficient of x
+   * @param ay  Coefficient of y
+   * @param a1  Constant coefficient
+   * @param angles  solution angles
+   * @param numAngle  number of solution angles(Passed as array to make changes to reference)
+   */
   public static solveUnitCircleImplicitQuadricIntersection(axx: number, axy: number, ayy: number,
     ax: number, ay: number, a1: number, radians: number[]): boolean {
     const Coffs = new Float64Array(5);
     PowerPolynomial.zero(Coffs);
     let degree = 2;
-    if (Math.hypot(axx, axy, ayy) > TrigPolynomial.coeffientRelTol * Math.hypot(ax, ay, a1)) {
+    if (Math.hypot(axx, axy, ayy) > TrigPolynomial._coeffientRelTol * Math.hypot(ax, ay, a1)) {
       PowerPolynomial.accumulate(Coffs, this.CW, ax);
       PowerPolynomial.accumulate(Coffs, this.SW, ay);
       PowerPolynomial.accumulate(Coffs, this.WW, a1);
@@ -1144,18 +1123,19 @@ export class TrigPolynomial {
 
     return b;
   }
-  /// <summary> Compute intersections of unit circle x^2 + y 2 = 1 with the ellipse
-  ///         (x,y) = (cx + ux Math.Cos + vx sin, cy + uy Math.Cos + vy sin)
-  /// Solutions are returned as angles in the ellipse space.
-  /// <param name="cx">center x</param>
-  /// <param name="cy">center y</param>
-  /// <param name="ux">0 degree vector x</param>
-  /// <param name="uy">0 degree vector y</param>
-  /// <param name="vx">90 degree vector x</param>
-  /// <param name="vy">90 degree vector y</param>
-  /// <param name="ellipseAngles">solution angles in ellipse parameter space</param>
-  /// <param name="circleAngles">solution angles in circle parameter space</param>
-  /// <param name="numAngle">number of solution angles (passed as an array to change reference)</param>
+  /**
+   * Compute intersections of unit circle x^2 + y 2 = 1 with the ellipse
+   *         (x,y) = (cx + ux Math.Cos + vx sin, cy + uy Math.Cos + vy sin)
+   * Solutions are returned as angles in the ellipse space.
+   * @param cx center x
+   * @param cy center y
+   * @param ux 0 degree vector x
+   * @param uy 0 degree vector y
+   * @param vx 90 degree vector x
+   * @param vy 90 degree vector y
+   * @param ellipseRadians solution angles in ellipse parameter space
+   * @param circleRadians solution angles in circle parameter space
+   */
   public static solveUnitCircleEllipseIntersection(cx: number, cy: number, ux: number, uy: number,
     vx: number, vy: number, ellipseRadians: number[], circleRadians: number[]): boolean {
     circleRadians.length = 0;
@@ -1175,22 +1155,22 @@ export class TrigPolynomial {
     }
     return boolstat;
   }
-
-  /// <summary> Compute intersections of unit circle x^2 + y 2 = w^2 with the ellipse
-  ///         (x,y) = (cx + ux Math.Cos + vx sin, cy + uy Math.Cos + vy sin)/ (cw + uw Math.Cos + vw * Math.Sin)
-  /// Solutions are returned as angles in the ellipse space.
-  /// <param name="cx">center x</param>
-  /// <param name="cy">center y</param>
-  /// <param name="cw">center w</param>
-  /// <param name="ux">0 degree vector x</param>
-  /// <param name="uy">0 degree vector y</param>
-  /// <param name="uw">0 degree vector w</param>
-  /// <param name="vx">90 degree vector x</param>
-  /// <param name="vy">90 degree vector y</param>
-  /// <param name="vw">90 degree vector w</param>
-  /// <param name="ellipseAngles">solution angles in ellipse parameter space</param>
-  /// <param name="circleAngles">solution angles in circle parameter space</param>
-  /// <param name="numAngle">number of solution angles (passed as an array to change reference)</param>
+  /**
+   * Compute intersections of unit circle x^2 + y 2 = w^2 with the ellipse
+   *         (x,y) = (cx + ux Math.Cos + vx sin, cy + uy Math.Cos + vy sin)/ (cw + uw Math.Cos + vw * Math.Sin)
+   * Solutions are returned as angles in the ellipse space.
+   * @param cx center x
+   * @param cy center y
+   * @param cw center w
+   * @param ux 0 degree vector x
+   * @param uy 0 degree vector y
+   * @param uw 0 degree vector w
+   * @param vx 90 degree vector x
+   * @param vy 90 degree vector y
+   * @param vw 90 degree vector w
+   * @param ellipseRadians solution angles in ellipse parameter space
+   * @param circleRadians solution angles in circle parameter space
+   */
   public static solveUnitCircleHomogeneousEllipseIntersection(cx: number, cy: number, cw: number,
     ux: number, uy: number, uw: number,
     vx: number, vy: number, vw: number,
@@ -1403,18 +1383,18 @@ export class SmallSystem {
     const cv = Geometry.dotProductXYZXYZ(cx, cy, cz, bu, bv, bw);
     return SmallSystem.linearSystem2d(uu, -uv, uv, -vv, cu, cv, result);
   }
-/**
- * Solve the pair of linear equations
- * * `ux * x + vx + y = cx`
- * * `uy * x + vy * y = cy`
- * @param ux xx coefficient
- * @param vx xy coefficient
- * @param uy yx coefficient
- * @param vy yy ceofficient
- * @param cx x right hand side
- * @param cy y right hand side
- * @param result (x,y) solution.  (MUST be preallocated by caller)
- */
+  /**
+   * Solve the pair of linear equations
+   * * `ux * x + vx + y = cx`
+   * * `uy * x + vy * y = cy`
+   * @param ux xx coefficient
+   * @param vx xy coefficient
+   * @param uy yx coefficient
+   * @param vy yy ceofficient
+   * @param cx x right hand side
+   * @param cy y right hand side
+   * @param result (x,y) solution.  (MUST be preallocated by caller)
+   */
   public static linearSystem2d(
     ux: number, vx: number, // first row of matrix
     uy: number, vy: number, // second row of matrix

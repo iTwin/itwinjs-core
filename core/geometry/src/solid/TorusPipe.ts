@@ -164,7 +164,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   }
 
   /**
-   * @returns Return the Arc3d section at vFraction.  For the TorusPipe, this is a minor circle.
+   * Return the Arc3d section at vFraction.  For the TorusPipe, this is a minor circle.
    * @param vFraction fractional position along the sweep direction
    */
   public constantVSection(v: number): CurveCollection | undefined {

@@ -237,12 +237,15 @@ export abstract class CurveCollection extends GeometryQuery {
 }
 /** Shared base class for use by both open and closed paths.
  * * A `CurveChain` contains only curvePrimitives.  No other paths, loops, or regions allowed.
+ * * A single entry in the chain can in fact contain multiple curve primitives if the entry itself is (for instance) `CurveChainWithDistanceIndex`
+ *   which presents itself (through method interface) as a CurvePrimitive with well defined mappings from fraction to xyz, but in fact does all the
+ *    calculations over multiple primtitives.
  * * The specific derived classes are `Path` and `Loop`
  * * `CurveChain` is an intermediate class.   It is not instantiable on its own.
  * @public
  */
 export abstract class CurveChain extends CurveCollection {
-
+/** The curve primitives in the chain. */
   protected _curves: CurvePrimitive[];
   protected constructor() { super(); this._curves = []; }
   /** Return the array of `CurvePrimitive` */
@@ -320,6 +323,9 @@ export abstract class CurveChain extends CurveCollection {
 export class BagOfCurves extends CurveCollection {
   /** test if `other` is an instance of `BagOfCurves` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof BagOfCurves; }
+  /** Array of children.
+   * * No restrictions on type.
+   */
   protected _children: AnyCurve[];
   /** Construct an empty `BagOfCurves` */
   public constructor() { super(); this._children = []; }

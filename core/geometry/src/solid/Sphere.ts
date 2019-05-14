@@ -48,15 +48,20 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     this._localToWorld = localToWorld;
     this._latitudeSweep = latitudeSweep ? latitudeSweep : AngleSweep.createFullLatitude();
   }
+  /** return a deep clone */
   public clone(): Sphere {
     return new Sphere(this._localToWorld.clone(), this._latitudeSweep.clone(), this.capped);
   }
+  /** Transform the sphere in place.
+   * * Fails if the transform is singular.
+   */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
+  /** Return a transformed clone. */
   public cloneTransformed(transform: Transform): Sphere | undefined {
     const sphere1 = this.clone();
     transform.multiplyTransformTransform(sphere1._localToWorld, sphere1._localToWorld);
@@ -72,6 +77,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   }
   /** Return the latitude sweep as fraction of south pole to north pole. */
   public get latitudeSweepFraction(): number { return this._latitudeSweep.sweepRadians / Math.PI; }
+  /** Create from center and radius, with optional restricted latitudes. */
   public static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep): Sphere {
     const localToWorld = Transform.createOriginAndMatrix(center, Matrix3d.createUniformScale(radius));
     return new Sphere(localToWorld,
@@ -115,6 +121,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   public cloneVectorZ(): Vector3d { return this._localToWorld.matrix.columnZ(); }
   /** return (a copy of) the sphere's angle sweep. */
   public cloneLatitudeSweep(): AngleSweep { return this._latitudeSweep.clone(); }
+  /** Test if the geometry is a true sphere taking the transform (which might have nonuniform scaling) is applied. */
   public trueSphereRadius(): number | undefined {
     const factors = this._localToWorld.matrix.factorRigidWithSignedScale();
     if (!factors) return undefined;
@@ -123,11 +130,12 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return undefined;
   }
   /**
-   * @returns Return a (clone of) the sphere's local to world transformation.
+   * Return a (clone of) the sphere's local to world transformation.
    */
   public cloneLocalToWorld(): Transform { return this._localToWorld.clone(); }
+  /** Test if `other` is a `Sphere` */
   public isSameGeometryClass(other: any): boolean { return other instanceof Sphere; }
-
+/** Test for same geometry in `other` */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof Sphere) {
       if (this.capped !== other.capped) return false;
@@ -201,7 +209,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return handler.handleSphere(this);
   }
   /**
-   * @returns Return the Arc3d section at vFraction.  For the sphere, this is a latitude circle.
+   * Return the Arc3d section at vFraction.  For the sphere, this is a latitude circle.
    * @param vFraction fractional position along the sweep direction
    */
   public constantVSection(vFraction: number): CurveCollection | undefined {
@@ -214,7 +222,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     const vector90 = transform.matrix.multiplyXYZ(0, c1, 0);
     return Loop.create(Arc3d.create(center, vector0, vector90) as Arc3d);
   }
-
+/** Extend a range to contain this sphere. */
   public extendRange(range: Range3d, transform?: Transform): void {
     let placement = this._localToWorld;
     if (transform) {

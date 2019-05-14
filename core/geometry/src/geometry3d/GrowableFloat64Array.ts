@@ -42,6 +42,12 @@ export class GrowableFloat64Array {
     }
     return result;
   }
+  /** sort-compatible comparison.
+   * * Returns `(a-b)` which is
+   *   * negative if `a<b`
+   *   * zero if `a === b` (with exact equality)
+   *   * positive if `a>b`
+   */
   public static compare(a: any, b: any): number {
     return a - b;
   }
@@ -58,7 +64,8 @@ export class GrowableFloat64Array {
     return out;
   }
   /**
-   * @returns the number of entries in use.
+   * Returns the number of entries in use.
+   * * Note that this is typically smaller than the length of the length of the supporting `Float64Array`
    */
   public get length() {
     return this._inUse;
@@ -124,7 +131,8 @@ export class GrowableFloat64Array {
       this.pop();
   }
   /**
-   * @returns the number of entries in the supporting Float64Array buffer.   This number is always at least as large as the `length` property.
+   * Returns the number of entries in the supporting Float64Array buffer.
+   * * This number can be larger than the `length` property.
    */
   public capacity() {
     return this._data.length;
@@ -173,17 +181,19 @@ export class GrowableFloat64Array {
       this._inUse--;
     }
   }
-
+/** Access by index, without bounds check */
   public atUncheckedIndex(index: number): number {
     return this._data[index];
   }
-
+/** Access the 0-index member, without bounds check */
   public front() {
     return this._data[0];
   }
+  /** Access the final member, without bounds check */
   public back() {
     return this._data[this._inUse - 1];
   }
+  /** set a value by index */
   public reassign(index: number, value: number) {
     this._data[index] = value;
   }

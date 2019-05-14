@@ -104,6 +104,7 @@ export class PolygonOps {
     result.scaleInPlace(0.5);
     return result;
   }
+  /** return a vector which is perpendicular to the polygon and has magnitude equal to the polygon area. */
   public static areaNormal(points: Point3d[], result?: Vector3d): Vector3d {
     if (!result)
       result = Vector3d.create();
@@ -121,6 +122,13 @@ export class PolygonOps {
       area += points[0].crossProductToPointsXY(points[i], points[i + 1]);
     return 0.5 * area;
   }
+  /**
+   * Return a Ray3d with (assuming the polygon is planar and not self-intersecting)
+   * * origin at the centroid of the (3D) polygon
+   * * normal is a unit vector perpendicular to the plane
+   * * 'a' member is the area.
+   * @param points
+   */
   public static centroidAreaNormal(points: Point3d[]): Ray3d | undefined {
     const n = points.length;
     if (n === 3) {
@@ -163,6 +171,10 @@ export class PolygonOps {
   }
   // Has the potential to be combined with centroidAreaNormal for point3d array and Ray3d return listed above...
   // Returns undefined if given point array less than 3 or if not safe to divide at any point
+  /**
+   * * Return (in caller-allocated centroid) the centroid of the xy polygon.
+   * * Return (as function value)  the area
+   */
   public static centroidAndAreaXY(points: Point2d[], centroid: Point2d): number | undefined {
     let area = 0.0;
     centroid.set(0, 0);
@@ -188,7 +200,7 @@ export class PolygonOps {
     return area;
   }
   /**
-   *
+   * Return a unit normal to the plane of the polygon.
    * @param points array of points around the polygon.  This is assumed to NOT have closure edge.
    * @param result caller-allocated result vector.
    */

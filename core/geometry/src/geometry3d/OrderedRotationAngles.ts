@@ -31,18 +31,29 @@ export class OrderedRotationAngles {
     this._order = axisOrder;
   }
 
-  // Getters and setters
+  /** (Property accessor) Return the `AxisOrder` controlling matrix multiplication order. */
   public get order(): AxisOrder { return this._order; }
+  /** (Property accessor) Return the strongly typed angle of rotation around x. */
   public get xAngle(): Angle { return this._x.clone(); }
+  /** (Property accessor) Return the strongly typed angle of rotation around y. */
   public get yAngle(): Angle { return this._y.clone(); }
+  /** (Property accessor) Return the strongly typed angle of rotation around z. */
   public get zAngle(): Angle { return this._z.clone(); }
+  /** (Property accessor) Return the angle of rotation around x, in degrees */
   public get xDegrees(): number { return this._x.degrees; }
+  /** (Property accessor) Return the angle of rotation around y, in degrees */
   public get xRadians(): number { return this._x.radians; }
+  /** (Property accessor) Return the angle of rotation around z, in degrees */
   public get yDegrees(): number { return this._y.degrees; }
+  /** (Property accessor) Return the angle of rotation around x, in radians */
   public get yRadians(): number { return this._y.radians; }
+  /** (Property accessor) Return the angle of rotation around y, in radians */
   public get zDegrees(): number { return this._z.degrees; }
+  /** (Property accessor) Return the angle of rotation around z, in radians */
   public get zRadians(): number { return this._z.radians; }
+  /** (Property accessor) flag controlling whether vectors are treated as rows or as columns */
   public static get treatVectorsAsColumns(): boolean { return OrderedRotationAngles._sTreatVectorsAsColumns; }
+  /** (Property set) flag controlling whether vectors are treated as rows or as columns */
   public static set treatVectorsAsColumns(value: boolean) { OrderedRotationAngles._sTreatVectorsAsColumns = value; }
 
   /** Create an OrderedRotationAngles from three angles and an ordering in which to apply them when rotating.

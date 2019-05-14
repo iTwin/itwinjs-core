@@ -81,7 +81,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   public low: Point3d;
   /** high point coordinates */
   public high: Point3d;
-  /** Set this transform to values that indicate it has no contents. */
+  /** Set this transform to values that indicate it has no geometric contents. */
   public setNull() {
     this.low.x = RangeBase._EXTREME_POSITIVE;
     this.low.y = RangeBase._EXTREME_POSITIVE;
@@ -91,8 +91,11 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     this.high.z = RangeBase._EXTREME_NEGATIVE;
   }
 
+  /** Freeze this instance (and its deep content) so it can be considered read-only */
   public freeze() { Object.freeze(this); Object.freeze(this.low); Object.freeze(this.high); }
+  /** Flatten the low and high coordinates of any json object with low.x .. high.z into an array of 6 doubles */
   public static toFloat64Array(val: LowAndHighXYZ): Float64Array { return Float64Array.of(val.low.x, val.low.y, val.low.z, val.high.x, val.high.y, val.high.z); }
+  /** Flatten the low and high coordinates of this into an array of 6 doubles */
   public toFloat64Array(): Float64Array { return Range3d.toFloat64Array(this); }
   /**
    * Construct a Range3d from an array of double-precision values
@@ -119,7 +122,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     this.high = Point3d.create(highx, highy, highz);
   }
 
-  /** Returns true if this and other have equal low and high point x,y,z parts */
+  /** Returns true if this and other have equal low and high parts, or both are null ranges. */
   public isAlmostEqual(other: Range3d): boolean {
     return (this.low.isAlmostEqual(other.low) && this.high.isAlmostEqual(other.high))
       || (this.isNull && other.isNull);
@@ -160,7 +163,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
    * with points formatted by `Point3d.toJSON()`
    */
   public toJSON(): Range3dProps { return { low: this.low.toJSON(), high: this.high.toJSON() }; }
-
+  /** Use `setFromJSON` to parse `json` into a new Range3d instance. */
   public static fromJSON<T extends Range3d>(json?: Range3dProps): T {
     const result = new this() as T;
     result.setFromJSON(json);
@@ -381,7 +384,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       && this.high.z === this.low.z;
   }
 
-  /** Get the center point of this Range3d */
+  /** Return the midpoint of the diagonal.  No test for null range. */
   public get center(): Point3d { return this.low.interpolate(.5, this.high); }
   /** return the low x coordinate */
   public get xLow(): number { return this.low.x; }
@@ -735,10 +738,11 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
  * @public
  */
 export class Range1d extends RangeBase {
-
+  /** low point coordinates.  DO NOT MODIFY FROM OUTSIDE THIS CLASS */
   public low: number;
+  /** high point coordinates.  DO NOT MODIFY FROM OUTSIDE THIS CLASS */
   public high: number;
-
+  /** reset the low and high to null range state. */
   public setNull() {
     this.low = RangeBase._EXTREME_POSITIVE;
     this.high = RangeBase._EXTREME_NEGATIVE;
@@ -758,7 +762,7 @@ export class Range1d extends RangeBase {
     this.low = low; this.high = high; // duplicates set_direct, but compiler is not convinced they are set.
     this.setDirect(low, high);
   }
-  /** Returns true if this and other have equal low and high parts */
+  /** Returns true if this and other have equal low and high parts, or both are null ranges. */
   public isAlmostEqual(other: Range1d): boolean {
     return (Geometry.isSameCoordinate(this.low, other.low) && Geometry.isSameCoordinate(this.high, other.high))
       || (this.isNull && other.isNull);
@@ -784,6 +788,7 @@ export class Range1d extends RangeBase {
       this.extendX(json.high);
     }
   }
+  /** Use `setFromJSON` to parse `json` into a new Range1d instance. */
   public static fromJSON<T extends Range1d>(json?: Range1dProps): T {
     const result = new this() as T;
     if (json)
@@ -1021,16 +1026,21 @@ export class Range1d extends RangeBase {
 export class Range2d extends RangeBase implements LowAndHighXY {
   // low and high are always non-null objects
   // any direction of low.q > high.q is considered a null range.
+  /** low point coordinates.  DO NOT MODIFY FROM OUTSIDE THIS CLASS */
   public low: Point2d;
+  /** low point coordinates.  DO NOT MODIFY FROM OUTSIDE THIS CLASS */
   public high: Point2d;
 
+  /** reset the low and high to null range state. */
   public setNull() {
     this.low.x = RangeBase._EXTREME_POSITIVE;
     this.low.y = RangeBase._EXTREME_POSITIVE;
     this.high.x = RangeBase._EXTREME_NEGATIVE;
     this.high.y = RangeBase._EXTREME_NEGATIVE;
   }
+  /** Flatten the low and high coordinates of any json object with low.x .. high.y into an array of 4 doubles */
   public static toFloat64Array(val: LowAndHighXY): Float64Array { return Float64Array.of(val.low.x, val.low.y, val.high.x, val.high.y); }
+  /** Flatten the low and high coordinates of this instance into an array of 4 doubles */
   public toFloat64Array(): Float64Array { return Range2d.toFloat64Array(this); }
   /**
    * Construct a Range2d from an array of double-precision values
@@ -1055,15 +1065,17 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     this.low = Point2d.create(lowx, lowy);
     this.high = Point2d.create(highx, highy);
   }
+  /** Returns true if this and other have equal low and high parts, or both are null ranges. */
   public isAlmostEqual(other: Range2d): boolean {
     return (this.low.isAlmostEqual(other.low) && this.high.isAlmostEqual(other.high))
       || (this.isNull && other.isNull);
   }
-
+  /** copy all content from any `other` that has low and high xy data. */
   public setFrom(other: LowAndHighXY) {
     this.low.set(other.low.x, other.low.y);
     this.high.set(other.high.x, other.high.y);
   }
+  /** create a new Range2d from any `other` that has low and high xy data. */
   public static createFrom<T extends Range2d>(other: LowAndHighXY, result?: T): T {
     if (result) { result.setFrom(other); return result; }
     return this.createXYXYOrCorrectToNull(other.low.x, other.low.y, other.high.x, other.high.y, result) as T;
@@ -1086,10 +1098,11 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       this.extendPoint(high);
     }
   }
-
+  /** Freeze this instance (and its deep content) so it can be considered read-only */
   public freeze() { Object.freeze(this.low); Object.freeze(this.high); }
+  /** return json array with two points as produced by `Point2d.toJSON` */
   public toJSON(): Range2dProps { return this.isNull ? [] : [this.low.toJSON(), this.high.toJSON()]; }
-
+  /** Use `setFromJSON` to parse `json` into a new Range2d instance. */
   public static fromJSON<T extends Range2d>(json?: Range2dProps): T {
     const result = new this() as T;
     if (json)
@@ -1178,7 +1191,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     return this.high.x === this.low.x
       && this.high.y === this.low.y;
   }
-
+  /** Return the midpoint of the diagonal.  No test for null range. */
   public get center(): Point2d { return this.low.interpolate(.5, this.high); }
   /** return the low x coordinate */
   public get xLow(): number { return this.low.x; }

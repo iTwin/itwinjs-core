@@ -138,7 +138,7 @@ export class Triangulator {
   public static createTriangulatedGraphFromLoops(loops: GrowableXYZArray[] | XAndY[][]): HalfEdgeGraph | undefined {
     if (loops.length < 1)
       return undefined;
-    const mask = HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE;
+    const mask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
     const graph = new HalfEdgeGraph();
     const holeSeeds: HalfEdge[] = [];
     let maxArea = -10000.0;
@@ -256,8 +256,8 @@ export class Triangulator {
       base = base.faceSuccessor; // because typical construction process leaves the "live" edge at the end of the loop.
       const area = base.signedFaceArea();
       const mate = base.edgeMate;
-      base.setMaskAroundFace(HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE);
-      mate.setMaskAroundFace(HalfEdgeMask.BOUNDARY | HalfEdgeMask.PRIMARY_EDGE);
+      base.setMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE);
+      mate.setMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE);
 
       let preferredNode = base;
       if (returnPositiveAreaLoop === (area < 0))
@@ -289,7 +289,7 @@ export class Triangulator {
     do {
       again = false;
 
-      if (!p.steiner && (Triangulator.equalXAndY(p, p.faceSuccessor) || Triangulator.signedTriangleArea(p.facePredecessor, p, p.faceSuccessor) === 0)) {
+      if (Triangulator.equalXAndY(p, p.faceSuccessor) || Triangulator.signedTriangleArea(p.facePredecessor, p, p.faceSuccessor) === 0) {
         Triangulator.joinNeighborsOfEar(graph, p);
         p = end = p.facePredecessor;
         if (p === p.faceSuccessor) return undefined;
@@ -319,16 +319,16 @@ export class Triangulator {
     // Add two nodes alpha and beta and reassign pointers (also mark triangle nodes as part of triangle)
     HalfEdge.pinch(ear.faceSuccessor, beta);
     HalfEdge.pinch(ear.facePredecessor, alpha);
-    ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_NODE_MASK);
+    ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
   }
   private static isInteriorTriangle(a: HalfEdge) {
-    if (!a.isMaskSet(HalfEdgeMask.TRIANGULATED_NODE_MASK))
+    if (!a.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE))
       return false;
     const b = a.faceSuccessor;
-    if (!b.isMaskSet(HalfEdgeMask.TRIANGULATED_NODE_MASK))
+    if (!b.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE))
       return false;
     const c = b.faceSuccessor;
-    if (!c.isMaskSet(HalfEdgeMask.TRIANGULATED_NODE_MASK))
+    if (!c.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE))
       return false;
     return c.faceSuccessor === a;
   }
@@ -393,7 +393,7 @@ export class Triangulator {
     let numFail = 0;
     let maxFail = (ear as HalfEdge).countEdgesAroundFace();
     // iterate through ears, slicing them one by one
-    while (!ear.isMaskSet(HalfEdgeMask.TRIANGULATED_NODE_MASK)) {
+    while (!ear.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE)) {
       next = ear.faceSuccessor;
 
       if (Triangulator.isEar(ear)) {
@@ -406,9 +406,9 @@ export class Triangulator {
           ear = ear.faceSuccessor.edgeMate.faceSuccessor;
           // another step?   Nate's 2017 code went one more.
         } else {
-          ear.setMask(HalfEdgeMask.TRIANGULATED_NODE_MASK);
-          ear.faceSuccessor.setMask(HalfEdgeMask.TRIANGULATED_NODE_MASK);
-          ear.facePredecessor.setMask(HalfEdgeMask.TRIANGULATED_NODE_MASK);
+          ear.setMask(HalfEdgeMask.TRIANGULATED_FACE);
+          ear.faceSuccessor.setMask(HalfEdgeMask.TRIANGULATED_FACE);
+          ear.facePredecessor.setMask(HalfEdgeMask.TRIANGULATED_FACE);
           ear = next.faceSuccessor;
         }
         numFail = 0;

@@ -178,7 +178,7 @@ describe("BsplineCurve", () => {
           for (const spanFraction of [0.2, 0.3, 0.9]) {
             const knot = curve.spanFractionToKnot(span, spanFraction);
             const spanPoint = curve.evaluatePointInSpan(span, spanFraction);
-            const spanTangent = curve.evaluatePointAndTangentInSpan(span, spanFraction);
+            const spanTangent = curve.evaluatePointAndDerivativeInSpan(span, spanFraction);
             const spanTangent2 = curve.knotToPointAnd2Derivatives(knot);
             ck.testPoint3d(spanPoint, spanTangent2.origin, "evaluate == 2 derivative origin");
             ck.testVector3d(spanTangent.direction, spanTangent2.vectorU, "evaluate == 2 derivative origin");

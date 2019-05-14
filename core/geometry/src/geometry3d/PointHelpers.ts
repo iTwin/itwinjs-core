@@ -140,7 +140,7 @@ export class Point2dArray {
     return (!dataA && !dataB);
   }
   /**
-   * @returns return an array containing clones of the Point3d data[]
+   * Return an array containing clones of the Point3d data[]
    * @param data source data
    */
   public static clonePoint2dArray(data: Point2d[]): Point2d[] {
@@ -184,7 +184,7 @@ export class Vector3dArray {
     return (!dataA && !dataB);
   }
   /**
-   * @returns return an array containing clones of the Vector3d data[]
+   * Return an array containing clones of the Vector3d data[]
    * @param data source data
    */
   public static cloneVector3dArray(data: XYAndZ[]): Vector3d[] {
@@ -258,6 +258,7 @@ export class Point4dArray {
       xyzw[i + 3] = xyzw1.w;
     }
   }
+  /** test for near equality of all corresponding numeric values, treated as coordinates. */
   public static isAlmostEqual(dataA: Point4d[] | Float64Array | undefined, dataB: Point4d[] | Float64Array | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
@@ -624,7 +625,7 @@ export class Point3dArray {
   }
 
   /**
-   * @returns return an array containing clones of the Point3d data[]
+   * Return an array containing clones of the Point3d data[]
    * @param data source data
    */
   public static clonePoint3dArray(data: XYAndZ[]): Point3d[] {
@@ -632,7 +633,7 @@ export class Point3dArray {
   }
 
   /**
-   * @returns return an array containing Point2d with xy parts of each Point3d
+   * Return an array containing Point2d with xy parts of each Point3d
    * @param data source data
    */
   public static clonePoint2dArray(data: XYAndZ[]): Point2d[] {
