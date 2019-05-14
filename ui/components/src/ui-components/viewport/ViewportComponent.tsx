@@ -85,17 +85,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     if (!this._viewportDiv.current)
       throw new Error("Parent <div> failed to load");
 
-    let viewState: ViewState;
-    if (this.props.viewState) {
-      viewState = this.props.viewState;
-    } else if (this.props.viewDefinitionId) {
-      viewState = await this.props.imodel.views.load(this.props.viewDefinitionId);
-      // istanbul ignore next
-      if (!viewState)
-        throw new Error("View state failed to load");
-    } /* istanbul ignore next */ else {
-      throw new Error("Either viewDefinitionId or viewState must be provided as a ViewportComponent Prop");
-    }
+    const viewState = await this.getViewState();
 
     const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
     const screenViewport = this.props.screenViewportOverride ? this.props.screenViewportOverride : /* istanbul ignore next */ ScreenViewport;
@@ -118,6 +108,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   public componentWillUnmount() {
     this._mounted = false;
 
+    /* istanbul ignore else */
     if (this._vp) {
       const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
       viewManager.dropViewport(this._vp, true);
@@ -129,8 +120,46 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     ViewportComponentEvents.onStandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent, this);
   }
 
+  public async componentDidUpdate(prevProps: ViewportProps) {
+    if (this.props.imodel === prevProps.imodel &&
+      this.props.viewState === prevProps.viewState &&
+      this.props.viewDefinitionId === prevProps.viewDefinitionId)
+      return;
+
+    /* istanbul ignore else */
+    if (this._vp) {
+      const viewState = await this.getViewState();
+
+      this._vp.changeView(viewState);
+
+      /* istanbul ignore else */
+      if (this._mounted)
+        this.setState({ viewId: this._vp.view.id });
+    }
+  }
+
+  private async getViewState(): Promise<ViewState> {
+    let viewState: ViewState;
+
+    if (this.props.viewState) {
+      viewState = this.props.viewState;
+    } else if (this.props.viewDefinitionId) {
+      viewState = await this.props.imodel.views.load(this.props.viewDefinitionId);
+      // istanbul ignore next
+      if (!viewState) {
+        throw new Error("View state failed to load");
+      }
+    } /* istanbul ignore next */ else {
+      throw new Error("Either viewDefinitionId or viewState must be provided as a ViewportComponent Prop");
+    }
+
+    return viewState;
+  }
+
   private _handleDrawingViewportChangeEvent = (args: DrawingViewportChangeEventArgs) => {
     const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
+
+    /* istanbul ignore else */
     if (this._vp && viewManager.selectedView === this._vp) {
       this._vp.view.setOrigin(args.origin);
       this._vp.view.setRotation(args.rotation);
@@ -142,6 +171,8 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     const tentativePoint = this.props.tentativePointOverride ? this.props.tentativePointOverride : /* istanbul ignore next */ IModelApp.tentativePoint;
     if (tentativePoint.isActive)
       return tentativePoint.getPoint();
+
+    /* istanbul ignore else */
     if (undefined !== vp.viewCmdTargetCenter) {
       const testPt = vp.worldToView(vp.viewCmdTargetCenter);
       const viewRect = vp.viewRect;
@@ -167,8 +198,12 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
 
   private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
     const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
+
+    /* istanbul ignore else */
     if (this._vp && viewManager.selectedView === this._vp) {
       const rotMatrix = args.rotMatrix;
+
+      /* istanbul ignore else */
       if (this._vp.rotation !== rotMatrix) {
         const inverse = rotMatrix.transpose(); // rotation is from current nav cube state...
         const center = this._getRotatePoint(this._vp);
@@ -184,6 +219,8 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
 
   private _handleStandardRotationChangeEvent = (args: StandardRotationChangeEventArgs) => {
     const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
+
+    /* istanbul ignore else */
     if (this._vp && viewManager.selectedView === this._vp) {
       // this._vp.view.setStandardRotation(args.standardRotation);
       this._vp.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(args.standardRotation));
@@ -194,16 +231,20 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
   private _handleViewChanged = (vp: Viewport) => {
     ViewportComponentEvents.setViewMatrix(vp);
 
+    /* istanbul ignore else */
     if (this._viewClassFullName !== vp.view.classFullName) {
       setTimeout(() => {
         ViewportComponentEvents.onViewClassFullNameChangedEvent.emit({ viewport: vp, oldName: this._viewClassFullName, newName: vp.view.classFullName });
         this._viewClassFullName = vp.view.classFullName;
       });
     }
+
+    /* istanbul ignore else */
     if (this.state.viewId !== vp.view.id) {
       setTimeout(() => {
         ViewportComponentEvents.onViewIdChangedEvent.emit({ viewport: vp, oldId: this.state.viewId, newId: vp.view.id });
 
+        /* istanbul ignore else */
         if (this._mounted)
           this.setState({ viewId: vp.view.id });
       });

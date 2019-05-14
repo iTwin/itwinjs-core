@@ -45,7 +45,24 @@ describe("ViewportComponent", () => {
   };
   let viewState = new SpatialViewState(viewDefinitionProps, imodelMock.object, moq.Mock.ofType<CategorySelectorState>().object, moq.Mock.ofType<DisplayStyle3dState>().object, moq.Mock.ofType<ModelSelectorState>().object);
 
-  viewsMock.setup((x) => x.load).returns(() => async (viewId: string) => viewId === "id1" ? viewState : undefined as unknown as ViewState);
+  const viewDefinitionProps2: SpatialViewDefinitionProps = {
+    cameraOn: false, origin, extents,
+    camera: { lens: 0, focusDist: 1, eye: [0, 0, 0] },
+    classFullName: "Bis:SpatialViewDefinition",
+    id: "id2",
+    modelSelectorId: "id2", categorySelectorId: "id2", displayStyleId: "id2",
+    model: "model", code: { spec: "spec", scope: "scope" },
+  };
+  const viewState2 = new SpatialViewState(viewDefinitionProps2, imodelMock.object, moq.Mock.ofType<CategorySelectorState>().object, moq.Mock.ofType<DisplayStyle3dState>().object, moq.Mock.ofType<ModelSelectorState>().object);
+
+  const getViewState = (viewId: string): ViewState => {
+    let vs: ViewState;
+    if (viewId === "id1") vs = viewState;
+    else if (viewId === "id2") vs = viewState2;
+    else vs = undefined as unknown as ViewState;
+    return vs;
+  };
+  viewsMock.setup((x) => x.load).returns(() => async (viewId: string) => getViewState(viewId));
   imodelMock.setup((x) => x.views).returns(() => viewsMock.object);
 
   let tentativePointIsActive = false;
@@ -64,7 +81,7 @@ describe("ViewportComponent", () => {
   viewportMock.setup((x) => x.worldToView).returns(() => (_input: Readonly<WritableXAndY>, _out?: Point3d | undefined) => worldToViewPoint);
   viewportMock.setup((x) => x.viewRect).returns(() => viewRect);
   viewportMock.object.viewCmdTargetCenter = undefined;
-  viewportMock.setup((x) => x.pickNearestVisibleGeometry).returns(() => (_pickpoint: Point3d, _radius: number, _allowNonLocatable?: boolean | undefined, _out?: Point3d | undefined) => nearestVisibleGeometryPoint);
+  viewportMock.setup((x) => x.pickNearestVisibleGeometry).returns(() => (_pickPoint: Point3d, _radius: number, _allowNonLocatable?: boolean | undefined, _out?: Point3d | undefined) => nearestVisibleGeometryPoint);
   viewportMock.setup((x) => x.getWorldFrustum).returns(() => (_box?: Frustum | undefined) => new Frustum());
 
   const viewManager = moq.Mock.ofType<ViewManager>();
@@ -96,44 +113,67 @@ describe("ViewportComponent", () => {
     render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"id1"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
   });
 
-  it.skip("should throw error when fake viewDefinitionId is used", async () => {
-    expect(() => {
+  it("should update with viewState", async () => {
+    const component = render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+    await TestUtils.flushAsyncOperations();
+    render(<ViewportComponent imodel={imodelMock.object} viewState={viewState2} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />, component);
+  });
+
+  it("should update with viewDefinitionId", async () => {
+    const component = render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"id1"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+    await TestUtils.flushAsyncOperations();
+    render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"id2"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />, component);
+  });
+
+  it.skip("should throw error when fake viewDefinitionId is used", () => {
+    expect(async () => {
       render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"FakeId"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
-    }).to.throw("View state failed to load");
+      await TestUtils.flushAsyncOperations();
+    }).to.throw(Error);
   });
 
   it.skip("should throw error when rendering without viewState or viewDefinitionId", () => {
-    expect(() => {
+    expect(async () => {
       render(<ViewportComponent imodel={imodelMock.object} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
-    }).to.throw("Either viewDefinitionId or viewState must be provided as a ViewportComponent Prop");
+      await TestUtils.flushAsyncOperations();
+    }).to.throw(Error);
   });
+
   it("should return viewport to viewportRef callback", async () => {
     const viewportRef = sinon.spy();
     render(<ViewportComponent imodel={imodelMock.object} viewportRef={viewportRef} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+    await TestUtils.flushAsyncOperations();
     expect(viewportRef).to.be.calledWith(viewportMock.object);
   });
+
   // it("should return view to getViewOverlay callback", async () => {
   //   const getViewOverlay = sinon.spy();
   //   render(<ViewportComponent imodel={imodelMock.object} getViewOverlay={getViewOverlay} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
   //   expect(getViewOverlay).to.be.calledWith(viewState);
   // });
+
   it("should not error when contextMenu event is triggered", async () => {
     const component = render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+    await TestUtils.flushAsyncOperations();
     const viewportDiv = component.getByTestId("viewport-component");
     fireEvent.contextMenu(viewportDiv);
   });
+
   it("should call onContextMenu callback when contextMenu event is triggered", async () => {
     const onContextMenu = sinon.spy();
     const component = render(<ViewportComponent imodel={imodelMock.object} onContextMenu={onContextMenu} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+    await TestUtils.flushAsyncOperations();
     const viewportDiv = component.getByTestId("viewport-component");
     fireEvent.contextMenu(viewportDiv);
     expect(onContextMenu).to.be.called;
   });
+
   describe("drawingViewChangeEvent", () => {
     it("should register drawingViewChangeEvent", async () => {
       const or = Point3d.create(20, 20);
       const rot = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.X);
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       ViewportComponentEvents.onDrawingViewportChangeEvent.emit({ origin: or, rotation: rot, complete: false });
       expect(viewState.getOrigin().isAlmostEqual(or)).to.be.true;
       expect(viewState.getRotation().isAlmostEqual(rot)).to.be.true;
@@ -142,15 +182,18 @@ describe("ViewportComponent", () => {
       const or = Point3d.create(20, 20);
       const rot = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.X);
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       ViewportComponentEvents.onDrawingViewportChangeEvent.emit({ origin: or, rotation: rot, complete: true });
       expect(viewState.getOrigin().isAlmostEqual(or)).to.be.true;
       expect(viewState.getRotation().isAlmostEqual(rot)).to.be.true;
     });
   });
+
   describe("cubeRotationChangeEvent", () => {
     it("should register cubeRotationChangeEvent", async () => {
       const rot = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.X);
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} tentativePointOverride={tentativePointMock.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       ViewportComponentEvents.onCubeRotationChangeEvent.emit({ rotMatrix: rot, face: Face.Front });
       // for some reason not evaluating as true, but still covers code path
       // expect(viewState.getRotation().isAlmostEqual(rot)).to.be.true;
@@ -158,11 +201,13 @@ describe("ViewportComponent", () => {
     it("should register cubeRotationChangeEvent", async () => {
       const rot = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.X);
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} tentativePointOverride={tentativePointMock.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       ViewportComponentEvents.onCubeRotationChangeEvent.emit({ rotMatrix: rot, face: Face.Front, complete: true });
     });
     it("should register cubeRotationChangeEvent with visiblePoint", async () => {
       const rot = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.X);
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} tentativePointOverride={tentativePointMock.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       nearestVisibleGeometryPoint = undefined;
       worldToViewPoint = Point3d.create(200, 200);
       ViewportComponentEvents.onCubeRotationChangeEvent.emit({ rotMatrix: rot, face: Face.Front });
@@ -172,6 +217,7 @@ describe("ViewportComponent", () => {
       const rot = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.X);
       worldToViewPoint = Point3d.create(200, 200);
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} tentativePointOverride={tentativePointMock.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       ViewportComponentEvents.onCubeRotationChangeEvent.emit({ rotMatrix: rot, face: Face.Front });
       expect(viewState.getRotation().isAlmostEqual(rot)).to.be.true;
     });
@@ -179,6 +225,7 @@ describe("ViewportComponent", () => {
       const rot = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.X);
       const rot2 = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.Y);
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} tentativePointOverride={tentativePointMock.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       viewportMock.object.viewCmdTargetCenter = undefined;
       worldToViewPoint = Point3d.create(200, 200);
       ViewportComponentEvents.onCubeRotationChangeEvent.emit({ rotMatrix: rot, face: Face.Front }); // memoized
@@ -187,6 +234,7 @@ describe("ViewportComponent", () => {
     it("should register cubeRotationChangeEvent with vp.viewCmdTargetCenter defined", async () => {
       const rot = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.X);
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} tentativePointOverride={tentativePointMock.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       viewportMock.object.viewCmdTargetCenter = Point3d.create(0, 0);
       ViewportComponentEvents.onCubeRotationChangeEvent.emit({ rotMatrix: rot, face: Face.Front });
     });
@@ -194,6 +242,7 @@ describe("ViewportComponent", () => {
       const rot = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.X);
       tentativePointIsActive = true;
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} tentativePointOverride={tentativePointMock.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       ViewportComponentEvents.onCubeRotationChangeEvent.emit({ rotMatrix: rot, face: Face.Front });
       expect(viewState.getRotation().isAlmostEqual(rot)).to.be.true;
     });
@@ -202,16 +251,20 @@ describe("ViewportComponent", () => {
       viewportMock.object.viewCmdTargetCenter = Point3d.create(0, 0);
       worldToViewPoint = Point3d.create(200, 200);
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} tentativePointOverride={tentativePointMock.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       ViewportComponentEvents.onCubeRotationChangeEvent.emit({ rotMatrix: rot, face: Face.Front });
       expect(viewState.getRotation().isAlmostEqual(rot)).to.be.true;
     });
   });
+
   describe("standardRotationChangeEvent", () => {
     it("should register standardRotationChangeEvent", async () => {
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} tentativePointOverride={tentativePointMock.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       ViewportComponentEvents.onStandardRotationChangeEvent.emit({ standardRotation: StandardViewId.Front });
     });
   });
+
   describe("onViewChanged", () => {
     const viewState2Mock = moq.Mock.ofType<OrthographicViewState>();
     viewState2Mock.setup((x) => x.id).returns(() => "id2");
@@ -224,8 +277,10 @@ describe("ViewportComponent", () => {
     viewportMock2.setup((x) => x.onViewChanged).returns(() => onViewChanged);
     viewportMock2.setup((x) => x.worldToView).returns(() => (_input: Readonly<WritableXAndY>, _out?: Point3d | undefined) => worldToViewPoint);
     viewportMock2.setup((x) => x.rotation).returns(() => viewState.getRotation());
+
     it("should register onViewChanged with a new viewClassFullName", async () => {
       render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} tentativePointOverride={tentativePointMock.object} screenViewportOverride={ScreenViewportMock} />);
+      await TestUtils.flushAsyncOperations();
       onViewChanged.raiseEvent(viewportMock2.object);
     });
   });

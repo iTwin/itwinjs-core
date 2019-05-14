@@ -3386,26 +3386,31 @@ export class ViewSelector extends React_2.Component<ViewSelectorProps, ViewSelec
     // (undocumented)
     componentDidMount(): void;
     loadViews(): Promise<void>;
+    static readonly onViewSelectorChangedEvent: ViewSelectorChangedEvent;
     render(): JSX.Element;
     updateState(viewId?: any): Promise<void>;
+}
+
+// @beta
+export class ViewSelectorChangedEvent extends UiEvent<ViewSelectorChangedEventArgs> {
+}
+
+// @beta
+export interface ViewSelectorChangedEventArgs {
+    // (undocumented)
+    iModelConnection: IModelConnection;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    viewDefinitionId: Id64String;
+    // (undocumented)
+    viewState: ViewState;
 }
 
 // @beta
 export interface ViewSelectorProps {
     // (undocumented)
     imodel?: IModelConnection;
-}
-
-// @beta
-export interface ViewSelectorState {
-    // (undocumented)
-    initialized: boolean;
-    // (undocumented)
-    items: ListItem[];
-    // (undocumented)
-    selectedViewId: string | null;
-    // (undocumented)
-    title: string;
 }
 
 // @public

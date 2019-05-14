@@ -2673,6 +2673,8 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     // (undocumented)
     componentDidMount(): Promise<void>;
     // (undocumented)
+    componentDidUpdate(prevProps: ViewportProps): Promise<void>;
+    // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;

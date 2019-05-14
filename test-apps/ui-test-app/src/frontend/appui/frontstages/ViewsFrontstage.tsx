@@ -70,7 +70,7 @@ import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
-import { ExternalIModelWidgetControl } from "../widgets/ExternalIModel";
+import { ViewportWidgetControl } from "../widgets/ViewportWidget";
 import { ViewportDialog } from "../dialogs/ViewportDialog";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { SvgPath } from "@bentley/ui-core";
@@ -161,7 +161,7 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
-              <Widget iconSpec="icon-placeholder" label="External iModel View" control={ExternalIModelWidgetControl} fillZone={true}
+              <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true}
                 applicationData={{ projectName: "iModelHubTest", imodelName: "86_Hospital" }} />,
             ]}
           />

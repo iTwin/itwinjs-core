@@ -2,44 +2,47 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+
 import * as React from "react";
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 
-import { LoadingSpinner, FillCentered } from "@bentley/ui-core";
+import { LoadingSpinner } from "@bentley/ui-core";
 import { ViewportComponent } from "@bentley/ui-components";
-import { ModelessDialog, ModelessDialogManager, ViewSelector, ViewSelectorChangedEventArgs } from "@bentley/ui-framework";
+import { WidgetControl, ConfigurableCreateInfo, ViewSelector, ViewSelectorChangedEventArgs } from "@bentley/ui-framework";
 
 import { ExternalIModel } from "../ExternalIModel";
 
-import "./ViewportDialog.scss";
+/** Viewport Widget Control */
+export class ViewportWidgetControl extends WidgetControl {
 
-export interface ViewportDialogProps {
-  opened: boolean;
-  projectName: string;
-  imodelName: string;
-  dialogId: string;
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    this.reactElement = <ViewportWidget projectName={options.projectName} imodelName={options.imodelName} />;
+  }
 }
 
-export interface ViewportDialogState {
-  opened: boolean;
+interface ViewportWidgetProps {
+  projectName: string;
+  imodelName: string;
+}
+
+interface ViewportWidgetState {
   viewId?: Id64String;
   iModelConnection?: IModelConnection;
 }
 
-export class ViewportDialog extends React.Component<ViewportDialogProps, ViewportDialogState> {
+/** Widget that displays a ViewportComponent or Loading message */
+class ViewportWidget extends React.Component<ViewportWidgetProps, ViewportWidgetState> {
   private _loading = IModelApp.i18n.translate("SampleApp:Test.loading");
   private _viewport: ScreenViewport | undefined;
 
-  public readonly state: Readonly<ViewportDialogState>;
-
-  constructor(props: ViewportDialogProps) {
-    super(props);
-    this.state = {
-      opened: this.props.opened,
-    };
-  }
+  public readonly state: Readonly<ViewportWidgetState> = {
+    viewId: undefined,
+    iModelConnection: undefined,
+  };
 
   public async componentDidMount() {
     const externalIModel = new ExternalIModel(this.props.projectName, this.props.imodelName);
@@ -68,42 +71,15 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
     }
   }
 
-  public render(): JSX.Element {
-
-    /* Demo values */
-    const width = 400;
-    const height = 300;
-    const x = window.innerWidth - width - 90;
-    const y = window.innerHeight - height - 90;
-
-    return (
-      <ModelessDialog
-        className="viewport-dialog"
-        title={this.props.dialogId}
-        opened={this.state.opened}
-        resizable={true}
-        movable={true}
-        width={width} height={height}
-        x={x} y={y}
-        minWidth={200} minHeight={100}
-        onClose={() => this._handleClose()}
-        onEscape={() => this._handleClose()}
-        inset={false}
-        dialogId={this.props.dialogId}
-      >
-        <div className="viewport-dialog-container" >
-          {this.getContent()}
-        </div>
-      </ModelessDialog >
-    );
-  }
-
-  private getContent(): React.ReactNode {
+  public render() {
+    const divStyle: React.CSSProperties = {
+      height: "100%",
+    };
     let content: React.ReactNode;
 
     if (this.state.viewId === undefined || this.state.iModelConnection === undefined)
       content = (
-        <FillCentered> <LoadingSpinner message={this._loading} /> </FillCentered>
+        <div className="uifw-centered" style={divStyle}> <LoadingSpinner message={this._loading} /> </div>
       );
     else
       content = (
@@ -114,20 +90,5 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
       );
 
     return content;
-  }
-
-  private _handleClose = () => {
-    this._closeDialog(() => {
-    });
-  }
-
-  private _closeDialog = (followUp: () => void) => {
-    this.setState(() => ({
-      opened: false,
-    }), () => {
-      if (!this.state.opened)
-        ModelessDialogManager.closeDialog(this.props.dialogId);
-      followUp();
-    });
   }
 }

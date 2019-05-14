@@ -111,7 +111,8 @@ export class ViewportContentControl extends ContentControl {
   /** Process a ViewSelector change. */
   public async processViewSelectorChange(iModel: IModelConnection, viewDefinitionId: Id64String, viewState: ViewState, name: string): Promise<void> {
     if (this._viewport) {
-      this._viewport.changeView(viewState);
+      if (IModelApp.viewManager && this._viewport === IModelApp.viewManager.selectedView)
+        this._viewport.changeView(viewState);
     } else {
       this.reactElement = this.getReactElementForViewSelectorChange(iModel, viewDefinitionId, viewState, name);
       ContentViewManager.refreshActiveContent(this.reactElement);

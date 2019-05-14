@@ -5,11 +5,30 @@
 /** @module Picker */
 
 import * as React from "react";
+
+import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { UiEvent } from "@bentley/ui-core";
+
+import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ListPicker, ListItem, ListItemType } from "./ListPicker";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { UiFramework } from "../UiFramework";
 import { ContentViewManager } from "../content/ContentViewManager";
+
+/** [[ViewSelectorChangedEvent]] Args interface.
+ * @beta
+ */
+export interface ViewSelectorChangedEventArgs {
+  iModelConnection: IModelConnection;
+  viewDefinitionId: Id64String;
+  viewState: ViewState;
+  name: string;
+}
+
+/** ViewSelector Changed Event class.
+ * @beta
+ */
+export class ViewSelectorChangedEvent extends UiEvent<ViewSelectorChangedEventArgs> { }
 
 /** Properties for the [[ViewSelector]] component
  * @beta
@@ -18,10 +37,10 @@ export interface ViewSelectorProps {
   imodel?: IModelConnection;
 }
 
-/** Properties for the [[ViewSelector]] component
+/** State for the [[ViewSelector]] component
  * @beta
  */
-export interface ViewSelectorState {
+interface ViewSelectorState {
   items: ListItem[];
   selectedViewId: string | null;
   title: string;
@@ -32,6 +51,10 @@ export interface ViewSelectorState {
  * @beta
  */
 export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelectorState> {
+
+  /** Gets the [[ViewSelectorChangedEvent]] */
+  public static readonly onViewSelectorChangedEvent = new ViewSelectorChangedEvent();
+
   /** Creates a ViewSelector */
   constructor(props: ViewSelectorProps) {
     super(props);
@@ -194,6 +217,14 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     // Let activeContentControl process the ViewSelector change
     await activeContentControl.processViewSelectorChange(this.props.imodel!, item.key, viewState, item.name!);
+
+    // Emit a change event
+    ViewSelector.onViewSelectorChangedEvent.emit({
+      iModelConnection: this.props.imodel!,
+      viewDefinitionId: item.key,
+      viewState,
+      name: item.name!,
+    });
 
     // Set state to show enabled the view that got selected
     this.updateState(item.key); // tslint:disable-line:no-floating-promises
