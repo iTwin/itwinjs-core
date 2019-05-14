@@ -13,7 +13,7 @@ import {
   BriefcaseManager, IModelJsFs,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-// import { TestUsers } from "../TestUsers";
+import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
@@ -30,10 +30,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     };
     // IModelTestUtils.setupDebugLogLevels();
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Only needed for DEV
-    requestContext = await IModelTestUtils.getTestUserRequestContext({
-      email: "Ramanujam.Raman@bentley.com",
-      password: "X=p!W7_n",
-    });
+    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
   });
 
   it.skip("should be able to open the Retail Building Sample", async () => {
