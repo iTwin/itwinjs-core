@@ -158,11 +158,13 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     let allowInstancing = false;
     let batchType: BatchType;
     let edgesRequired = false;
+    let animationId: Id64String | undefined;
     if (treeId.type === BatchType.Primary) {
       batchType = BatchType.Primary;
       edgesRequired = treeId.edgesRequired;
+      animationId = treeId.animationId;
       state = this._tileTreeState;
-      if (edgesRequired && state.edgesOmitted)
+      if ((edgesRequired && state.edgesOmitted) || animationId !== state.animationId)
         state.clearTileTree();
 
       if (undefined === treeId.animationId)
@@ -190,6 +192,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
       state.setTileTree(result, loader);
 
       state.edgesOmitted = !edgesRequired;
+      state.animationId = animationId;
 
       IModelApp.viewManager.onNewTilesReady();
     }).catch((err) => {

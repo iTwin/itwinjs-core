@@ -6427,6 +6427,8 @@ export interface TileTreeModelState {
 export class TileTreeState {
     constructor(_iModel: IModelConnection, _is3d: boolean, _modelId: Id64String);
     // (undocumented)
+    animationId?: Id64String;
+    // (undocumented)
     classifierExpansion: number;
     // (undocumented)
     clearTileTree(): void;

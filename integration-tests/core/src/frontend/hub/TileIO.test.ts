@@ -669,7 +669,14 @@ describe("TileAdmin", () => {
     private static async testPrimaryTree(imodel: IModelConnection, expectedTreeIdStr: string, animationId?: Id64String) {
       // Test without edges
       const requestWithoutEdges = IModelApp.tileAdmin.requestTilesWithoutEdges;
-      const expectedTreeIdStrNoEdges = requestWithoutEdges ? "E:0_" + expectedTreeIdStr : expectedTreeIdStr;
+      let expectedTreeIdStrNoEdges = expectedTreeIdStr;
+      if (requestWithoutEdges) {
+        // "0xabc" => E:0_0xabc"
+        // "A:0x123_0xabc" => "A:0x123_E:0_0xabc"
+        const lastIndex = expectedTreeIdStr.lastIndexOf("0x");
+        expectedTreeIdStrNoEdges = expectedTreeIdStr.substring(0, lastIndex) + "E:0_" + expectedTreeIdStr.substring(lastIndex);
+      }
+
       const treeId: IModelTile.TreeId = { type: BatchType.Primary, edgesRequired: false, animationId };
       let actualTreeIdStr = IModelTile.treeIdToString("0x1c", treeId);
       expect(actualTreeIdStr).to.equal(expectedTreeIdStrNoEdges);
@@ -757,8 +764,7 @@ describe("TileAdmin", () => {
 
     public static async test(imodel: IModelConnection) {
       await this.testPrimaryTree(imodel, "0x1c");
-      // ###TODO Ray? ModelState.loadTileTree() has never bothered to store/compare current animation ID against requested animation ID...
-      // await this.testPrimaryTree(imodel, "A:0x123_0x1c", "0x123");
+      await this.testPrimaryTree(imodel, "A:0x123_0x1c", "0x123");
       // ###TODO Ray? Frontend and backend disagree as to how to format the expansion value (backend adds trailing zeroes).
       await this.testClassifierTree(imodel, "CP:12.5_0x1c", { type: BatchType.PlanarClassifier, expansion: 12.5 });
       await this.testClassifierTree(imodel, "C:0_0x1c", { type: BatchType.VolumeClassifier, expansion: 0.0 });

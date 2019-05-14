@@ -1002,6 +1002,7 @@ export class TileTreeState {
   public loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
   public edgesOmitted: boolean = false;
   public classifierExpansion: number = 0;
+  public animationId?: Id64String;
   public get iModel() { return this._iModel; }
   public get modelId() { return this._modelId; }
 

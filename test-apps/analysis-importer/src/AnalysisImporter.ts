@@ -59,7 +59,7 @@ export class AnalysisImporter {
         return analysisStyleProps;
     }
     /** Create an analysis model for a [[Polyface]] with [[PolyfaceAuxData]] and [[DisplayStyles]] for viewing the [[AuxChannels]] */
-    private createAnalysisModel(polyface: any, categoryId: Id64String, modelName: string, displacementScale = 1.0): Id64Array {
+    private createAnalysisModel(polyface: any, categoryId: Id64String, modelName: string, displacementScale = 1.0): Id64String {
         const modelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, modelName);
 
         /** generate a geometry stream containing the polyface */
@@ -82,20 +82,22 @@ export class AnalysisImporter {
         };
         this.iModelDb.elements.insertElement(props);
 
-        const viewIds: Id64Array = [];
+        const displayStyleIds: Id64Array = [];
+        const names = [];
         for (const analysisStyleProp of analysisStyleProps) {
             let name = analysisStyleProp.scalarChannelName!;
             if (undefined !== analysisStyleProp.displacementChannelName) {
                 const exaggeration = (analysisStyleProp.displacementScale === 1.0) ? "" : (" X " + analysisStyleProp.displacementScale);
                 name = modelName + ": " + name + " and " + analysisStyleProp.displacementChannelName + exaggeration;
             }
-            const displayStyleId = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, name, { viewFlags: vf, backgroundColor: bgColor, analysisStyle: analysisStyleProp });
-            const modelSelectorId = ModelSelector.insert(this.iModelDb, this.definitionModelId, name, [modelId]);
-            const categorySelectorId = CategorySelector.insert(this.iModelDb, this.definitionModelId, name, [categoryId]);
-
-            viewIds.push(OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, polyface.range()));
+            names.push(name);
+            displayStyleIds.push(DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, name, { viewFlags: vf, backgroundColor: bgColor, analysisStyle: analysisStyleProp }));
         }
-        return viewIds;
+        const modelSelectorId = ModelSelector.insert(this.iModelDb, this.definitionModelId, modelName, [modelId]);
+        const categorySelectorId = CategorySelector.insert(this.iModelDb, this.definitionModelId, modelName, [categoryId]);
+
+        DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, modelName + ": No AuxData", { viewFlags: vf, backgroundColor: bgColor });
+        return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, modelName, modelSelectorId, categorySelectorId, displayStyleIds[0], polyface.range());
     }
     /** Import a polyface with auxillary data */
     private importPolyfaceFromJson(jsonFileName: string) {
@@ -213,8 +215,8 @@ export class AnalysisImporter {
         /** import a polyface representing a cantilever beam with stress and displacement data. */
         const importedPolyface = this.importPolyfaceFromJson("Cantilever.json");
         /** create a model containing the imported data (with display styles, views etc.) */
-        const cantileverViews = this.createAnalysisModel(importedPolyface, categoryId, "Cantilever", 100.0);
-        this.iModelDb.views.setDefaultViewId(cantileverViews[0]);
+        const cantileverViewId = this.createAnalysisModel(importedPolyface, categoryId, "Cantilever", 100.0);
+        this.iModelDb.views.setDefaultViewId(cantileverViewId);
 
         /** demonstrate creation of a polyface with analytical data by creating a flat mesh and then superimposing "wave" data */
         const flatWaveMesh = this.createFlatMeshWithWaves();
