@@ -94,7 +94,6 @@
     "semver": "^5.5.0",
     "form-data": "2.3.2",
     "multiparty": "^4.2.1",
-    "node-report": "^2.2.6",
     "azure-storage": "^2.10.2"
   },
   "nyc": {

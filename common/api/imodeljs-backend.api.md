@@ -690,10 +690,13 @@ export namespace ConcurrencyControl {
 // @alpha
 export interface CrashReportingConfig {
     crashDir: string;
+    dumpProcessorScriptFileName?: string;
+    enableCrashDumps?: boolean;
+    enableNodeReport?: boolean;
     maxDumpsInDir?: number;
     params?: CrashReportingConfigNameValuePair[];
-    wantFullMemory?: boolean;
-    writeDumpsToCrashDir?: boolean;
+    uploadToBentley?: boolean;
+    wantFullMemoryDumps?: boolean;
 }
 
 // @alpha (undocumented)

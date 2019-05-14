@@ -39,16 +39,27 @@ export interface CrashReportingConfigNameValuePair {
  * @alpha
  */
 export interface CrashReportingConfig {
-  /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. */
+  /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. This directory will be created if it does not already exist. */
   crashDir: string;
   /** max # .dmp files that may exist in crashDir. The default is 50. */
   maxDumpsInDir?: number;
-  /** Write .dmp files to crashDir? The default is false. */
-  writeDumpsToCrashDir?: boolean;
-  /** If writeDumpsToCrashDir is true, do you want a full-memory dump? Defaults to false. */
-  wantFullMemory?: boolean;
+  /** Enable crash-dumps? If so, .dmp and .properties.txt files will be generated and written to crashDir in the event of an unhandled native-code exception. If not, only .properties.txt files will be written. The default is false. */
+  enableCrashDumps?: boolean;
+  /** If enableCrashDumps is true, do you want a full-memory dump? Defaults to false. */
+  wantFullMemoryDumps?: boolean;
+  /** Enable node-report? If so, node-report files will be generated in the event of an unhandled exception or fatal error and written to crashDir. The default is false. */
+  enableNodeReport?: boolean;
   /** Additional name, value pairs to write to iModelJsNativeCrash*.properties.txt file in the event of a crash. */
   params?: CrashReportingConfigNameValuePair[];
+  /** Run this .js file to process .dmp and node-report files in the event of a crash.
+   * This script will be executed with a single command-line parameter: the name of the dump or node-report file.
+   * In the case of a dump file, there will be a second file with the same basename and the extension ".properties.txt".
+   * Since it runs in a separate process, this script will have no access to the Javascript
+   * context of the exiting backend. No default.
+   */
+  dumpProcessorScriptFileName?: string;
+  /** Upload crash dump and node-reports to Bentley's crash-reporting service? Defaults to false */
+  uploadToBentley?: boolean;
 }
 
 /** Configuration of imodeljs-backend.
@@ -226,18 +237,24 @@ export class IModelHost {
     // if (configuration.crashReportingConfig === undefined) {
     //   configuration.crashReportingConfig = {
     //     crashDir: path.resolve(configuration.briefcaseCacheDir, "..", "Crashes"),
-    //     writeDumpsToCrashDir: false,
+    //     enableCrashDumps: false,
     //   };
     // }
 
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
 
-      // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
-      const nodereport = require("node-report/api");
-      nodereport.setEvents("exception+fatalerror+apicall");
-      nodereport.setDirectory(configuration.crashReportingConfig.crashDir);
-      nodereport.setVerbose("yes");
+      if (configuration.crashReportingConfig.enableNodeReport) {
+        try {
+          // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
+          const nodereport = require("node-report/api");
+          nodereport.setEvents("exception+fatalerror+apicall");
+          nodereport.setDirectory(configuration.crashReportingConfig.crashDir);
+          nodereport.setVerbose("yes");
+        } catch (err) {
+          Logger.logWarning(loggerCategory, "node-report is not installed.");
+        }
+      }
     }
 
     if (configuration.imodelClient)
