@@ -144,6 +144,9 @@ import { RenderTexture } from '@bentley/imodeljs-common';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { SceneLights } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/imodeljs-clients';
+import { SettingsMapResult } from '@bentley/imodeljs-clients';
+import { SettingsResult } from '@bentley/imodeljs-clients';
+import { SettingsStatus } from '@bentley/imodeljs-clients';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SilhouetteEdgeArgs } from '@bentley/imodeljs-common';
 import { SkyBoxProps } from '@bentley/imodeljs-common';
@@ -762,6 +765,18 @@ export enum ACSType {
     Spherical = 3
 }
 
+// @internal (undocumented)
+export enum ActiveClipStatus {
+    // (undocumented)
+    Modified = 2,
+    // (undocumented)
+    New = 1,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Saved = 3
+}
+
 // @public
 export class ActivityMessageDetails {
     constructor(showProgressBar: boolean, showPercentInMessage: boolean, supportsCancellation: boolean, showDialogInitially?: boolean);
@@ -1377,6 +1392,20 @@ export const enum ClassifierType {
     Planar = 1,
     // (undocumented)
     Volume = 0
+}
+
+// @internal
+export enum ClipEventType {
+    // (undocumented)
+    Activate = 4,
+    // (undocumented)
+    Clear = 3,
+    // (undocumented)
+    Modify = 2,
+    // (undocumented)
+    New = 0,
+    // (undocumented)
+    NewPlane = 1
 }
 
 // @internal
@@ -4887,6 +4916,36 @@ export class RoundOff {
 }
 
 // @internal (undocumented)
+export interface SavedClipCache {
+    // (undocumented)
+    clip?: ClipVector;
+    // (undocumented)
+    modified: boolean;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    shared: boolean;
+}
+
+// @internal (undocumented)
+export interface SavedClipEntry {
+    // (undocumented)
+    id: GuidString;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    shared: boolean;
+}
+
+// @internal (undocumented)
+export interface SavedClipProps {
+    // (undocumented)
+    clip: ClipVector;
+    // (undocumented)
+    name?: string;
+}
+
+// @internal (undocumented)
 export class SavedState {
     // (undocumented)
     auxRotationPlane: number;
@@ -7000,15 +7059,21 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
     // (undocumented)
     static clear(): void;
     // (undocumented)
-    clearOnUnSelect(): boolean;
+    clearDecorationOnDeselect: boolean;
+    // (undocumented)
+    clearOnDeselect(): boolean;
     // (undocumented)
     static create(): ViewClipDecorationProvider;
     // (undocumented)
     hideDecoration(): void;
     // (undocumented)
-    onClearClip(_viewport: Viewport): void;
+    onActivateClip(viewport: Viewport, interactive: boolean): void;
+    readonly onActiveClipChanged: BeEvent<(viewport: Viewport, eventType: ClipEventType, provider: ViewClipDecorationProvider) => void>;
+    readonly onActiveClipRightClick: BeEvent<(hit: HitDetail, ev: BeButtonEvent, provider: ViewClipDecorationProvider) => void>;
     // (undocumented)
-    onModifyClip(_viewport: Viewport): void;
+    onClearClip(viewport: Viewport): void;
+    // (undocumented)
+    onModifyClip(viewport: Viewport): void;
     // (undocumented)
     onNewClip(viewport: Viewport): void;
     // (undocumented)
@@ -7016,7 +7081,12 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
     // (undocumented)
     onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean;
     // (undocumented)
+    selectDecorationOnCreate: boolean;
+    // (undocumented)
     selectOnCreate(): boolean;
+    readonly settings: ViewClipSettingsProvider;
+    // (undocumented)
+    protected _settings?: ViewClipSettingsProvider;
     // (undocumented)
     showDecoration(vp: Viewport): void;
     // (undocumented)
@@ -7026,7 +7096,9 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
 // @internal
 export interface ViewClipEventHandler {
     // (undocumented)
-    clearOnUnSelect(): boolean;
+    clearOnDeselect(): boolean;
+    // (undocumented)
+    onActivateClip(viewport: Viewport, interactive: boolean): void;
     // (undocumented)
     onClearClip(viewport: Viewport): void;
     // (undocumented)
@@ -7086,6 +7158,79 @@ export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
     protected drawViewClip(context: DecorateContext): void;
     // (undocumented)
     protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean;
+}
+
+// @internal
+export class ViewClipSettingsProvider {
+    constructor(_clipEventHandler?: ViewClipEventHandler | undefined);
+    // (undocumented)
+    activateSavedClip(viewport: Viewport, id: GuidString, interactive?: boolean): Promise<SettingsStatus>;
+    // (undocumented)
+    activateSavedClipPlanes(viewport: Viewport, ids: GuidString[], interactive?: boolean): Promise<SettingsStatus>;
+    // (undocumented)
+    appSpecific: boolean;
+    // (undocumented)
+    areSavedClipPlanes(iModel: IModelConnection, ids: GuidString[]): Promise<boolean>;
+    // (undocumented)
+    clearActiveClipId(viewport: Viewport): void;
+    // (undocumented)
+    clearActiveClipIdAllViews(): void;
+    // (undocumented)
+    protected _clipEventHandler?: ViewClipEventHandler | undefined;
+    // (undocumented)
+    copyClip(iModel: IModelConnection, shared: boolean, existingId: GuidString, name?: string): Promise<GuidString | undefined>;
+    // (undocumented)
+    protected deleteCachedSetting(iModel: IModelConnection, existingId: GuidString): Promise<SettingsStatus>;
+    // (undocumented)
+    deleteClip(iModel: IModelConnection, existingId: GuidString): Promise<SettingsStatus>;
+    // (undocumented)
+    protected deleteSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult>;
+    // (undocumented)
+    getActiveClipId(viewport: Viewport): GuidString | undefined;
+    // (undocumented)
+    getActiveClipStatus(viewport: Viewport): ActiveClipStatus;
+    // (undocumented)
+    protected getAllSettings(iModel: IModelConnection, shared: boolean): Promise<SettingsMapResult>;
+    // (undocumented)
+    protected getCachedSetting(iModel: IModelConnection, existingId: GuidString): Promise<SavedClipCache>;
+    // (undocumented)
+    protected getiModelId(iModel: IModelConnection): string | undefined;
+    // (undocumented)
+    protected getProjectId(iModel: IModelConnection): string | undefined;
+    // (undocumented)
+    protected getRequestContext(): Promise<AuthorizedFrontendRequestContext>;
+    // (undocumented)
+    protected getSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult>;
+    // (undocumented)
+    getSettings(settings: SavedClipEntry[], iModel: IModelConnection, shared?: boolean): Promise<SettingsStatus>;
+    // (undocumented)
+    modifiedActiveClip(viewport: Viewport): boolean;
+    // (undocumented)
+    namespace: string;
+    // (undocumented)
+    protected newCachedSetting(iModel: IModelConnection, shared: boolean, newId: GuidString, settings: SavedClipProps): Promise<SettingsStatus>;
+    // (undocumented)
+    newClip(iModel: IModelConnection, shared: boolean, clip: ClipVector, name?: string): Promise<GuidString | undefined>;
+    // (undocumented)
+    protected renameCachedSetting(iModel: IModelConnection, existingId: GuidString, name: string): Promise<SettingsStatus>;
+    // (undocumented)
+    renameClip(iModel: IModelConnection, existingId: GuidString, name: string): Promise<SettingsStatus>;
+    // (undocumented)
+    replaceClip(iModel: IModelConnection, existingId: GuidString, clip: ClipVector): Promise<SettingsStatus>;
+    // (undocumented)
+    saveActiveClip(viewport: Viewport, shared: boolean): Promise<GuidString | undefined>;
+    // (undocumented)
+    protected saveSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsResult>;
+    // (undocumented)
+    setActiveClipId(viewport: Viewport, existingId: GuidString): void;
+    // (undocumented)
+    protected shareCachedSetting(iModel: IModelConnection, existingId: GuidString, share: boolean): Promise<SettingsStatus>;
+    // (undocumented)
+    shareClip(iModel: IModelConnection, existingId: GuidString, share: boolean): Promise<SettingsStatus>;
+    // (undocumented)
+    protected updateCachedSetting(iModel: IModelConnection, existingId: GuidString, settings: SavedClipProps): Promise<SettingsStatus>;
+    // (undocumented)
+    protected validateActiveClipId(viewport: Viewport): void;
 }
 
 // @internal

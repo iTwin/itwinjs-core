@@ -9,7 +9,7 @@ import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels } from
 import { IModelApp } from "../IModelApp";
 import { BeButtonEvent, EventHandled, CoordinateLockOverrides } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
-import { Id64Arg, Id64 } from "@bentley/bentleyjs-core";
+import { Id64Arg, Id64, BeEvent, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { Viewport, ScreenViewport } from "../Viewport";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { PrimitiveTool } from "./PrimitiveTool";
@@ -23,6 +23,9 @@ import { PropertyDescription } from "../properties/Description";
 import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 import { PrimitiveValue } from "../properties/Value";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
+import { IModelConnection } from "../IModelConnection";
+import { AuthorizedFrontendRequestContext } from "../imodeljs-frontend";
+import { SettingsResult, SettingsStatus, SettingsMapResult } from "@bentley/imodeljs-clients";
 
 /** @internal The orientation to use to define the view clip volume */
 export const enum ClipOrientation { // tslint:disable-line:no-const-enum
@@ -39,11 +42,12 @@ export const enum ClipOrientation { // tslint:disable-line:no-const-enum
 /** @internal An object that can react to a view's clip being changed by tools or modify handles. */
 export interface ViewClipEventHandler {
   selectOnCreate(): boolean; // Add newly created clip geometry to selection set and show modify controls.
-  clearOnUnSelect(): boolean; // Stop displaying clip geometry when clip is removed from the selection set.
+  clearOnDeselect(): boolean; // Stop displaying clip geometry when clip is removed from the selection set.
   onNewClip(viewport: Viewport): void; // Called by tools that set or replace the existing view clip with a new clip.
   onNewClipPlane(viewport: Viewport): void; // Called by tools that add a single plane to the view clip. When there is more than one plane, the new plane is always last.
   onModifyClip(viewport: Viewport): void; // Called by tools after modifying the view clip.
   onClearClip(viewport: Viewport): void; // Called when the view clip is cleared from the view.
+  onActivateClip(viewport: Viewport, interactive: boolean): void; // Called when the view clip is changed to a saved clip.
   onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean; // Called when user right clicks on clip geometry or clip modify handle. Return true if event handled.
 }
 
@@ -1168,7 +1172,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     }
 
     if (!showControls) {
-      if (undefined !== this._clipEventHandler && this._clipEventHandler.clearOnUnSelect())
+      if (undefined !== this._clipEventHandler && this._clipEventHandler.clearOnDeselect())
         ViewClipDecoration.clear();
       return false;
     }
@@ -1189,6 +1193,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean {
     if (undefined === this._clip || hit.sourceId === this._clipId)
       return false;
+    const saveQualifiers = IModelApp.toolAdmin.currentInputState.qualifiers;
     if (undefined !== this._clipShape) {
       const clipShapeModifyTool = new ViewClipShapeModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
       this._suspendDecorator = clipShapeModifyTool.run();
@@ -1196,6 +1201,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       const clipPlanesModifyTool = new ViewClipPlanesModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
       this._suspendDecorator = clipPlanesModifyTool.run();
     }
+    if (this._suspendDecorator)
+      IModelApp.toolAdmin.currentInputState.qualifiers = saveQualifiers; // onInstallTool cleared qualifiers, preserve for "modify all" behavior when shift was held and drag started...
     return this._suspendDecorator;
   }
 
@@ -1474,23 +1481,423 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 }
 
+/** @internal */
+export enum ActiveClipStatus { None, New, Modified, Saved }
+
+/** @internal */
+export interface SavedClipProps { clip: ClipVector; name?: string; }
+
+/** @internal */
+export interface SavedClipCache { clip?: ClipVector; name?: string; shared: boolean; modified: boolean; }
+
+/** @internal */
+export interface SavedClipEntry { id: GuidString; name?: string; shared: boolean; }
+
+/** @internal Support for saving clip information as user or project settings */
+export class ViewClipSettingsProvider {
+  private _activeClips = new Map<number, GuidString>(); // Map of viewportId to saved clip id...
+  private _cachedClips = new Map<GuidString, SavedClipCache>(); // Map of clip id to clip data + status
+  public namespace = "imodeljs-NamedClipVectors";
+  public appSpecific = false;
+
+  constructor(protected _clipEventHandler?: ViewClipEventHandler) { }
+
+  protected async getRequestContext() { return AuthorizedFrontendRequestContext.create(); }
+  protected getProjectId(iModel: IModelConnection): string | undefined { return iModel.iModelToken.contextId; }
+  protected getiModelId(iModel: IModelConnection): string | undefined { return iModel.iModelToken.iModelId; }
+
+  protected async getAllSettings(iModel: IModelConnection, shared: boolean): Promise<SettingsMapResult> {
+    const requestContext = await this.getRequestContext();
+    if (shared)
+      return IModelApp.settings.getSettingsByNamespace(requestContext, this.namespace, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+    return IModelApp.settings.getUserSettingsByNamespace(requestContext, this.namespace, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+  }
+
+  protected async getSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult> {
+    const requestContext = await this.getRequestContext();
+    if (shared)
+      return IModelApp.settings.getSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+    return IModelApp.settings.getUserSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+  }
+
+  protected async saveSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsResult> {
+    const requestContext = await this.getRequestContext();
+    if (shared)
+      return IModelApp.settings.saveSetting(requestContext, settings, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+    return IModelApp.settings.saveUserSetting(requestContext, settings, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+  }
+
+  protected async deleteSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult> {
+    const requestContext = await this.getRequestContext();
+    if (shared)
+      return IModelApp.settings.deleteSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+    return IModelApp.settings.deleteUserSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+  }
+
+  protected async getCachedSetting(iModel: IModelConnection, existingId: GuidString): Promise<SavedClipCache> {
+    const existing = this._cachedClips.get(existingId);
+    if (undefined !== existing)
+      return existing;
+    const cacheEntry: SavedClipCache = { shared: false, modified: false };
+    this._cachedClips.set(existingId, cacheEntry); // Insert invalid entry to avoid repeated failures...
+    try {
+      const resultUser = await this.getSetting(iModel, false, existingId);
+      if (SettingsStatus.Success === resultUser.status) {
+        cacheEntry.clip = ClipVector.fromJSON(resultUser.setting.clip);
+        cacheEntry.name = resultUser.setting.name;
+        cacheEntry.shared = false;
+        return cacheEntry;
+      }
+      const resultProj = await this.getSetting(iModel, true, existingId);
+      if (SettingsStatus.Success === resultProj.status) {
+        cacheEntry.clip = ClipVector.fromJSON(resultProj.setting.clip);
+        cacheEntry.name = resultProj.setting.name;
+        cacheEntry.shared = true;
+        return cacheEntry;
+      }
+      return cacheEntry;
+    } catch (error) {
+      return cacheEntry;
+    }
+  }
+
+  protected async newCachedSetting(iModel: IModelConnection, shared: boolean, newId: GuidString, settings: SavedClipProps): Promise<SettingsStatus> {
+    try {
+      const result = await this.saveSetting(iModel, shared, newId, settings);
+      if (SettingsStatus.Success === result.status)
+        this._cachedClips.set(newId, { clip: settings.clip, name: settings.name, shared, modified: false });
+      return result.status;
+    } catch (error) {
+      return SettingsStatus.AuthorizationError;
+    }
+  }
+
+  protected async updateCachedSetting(iModel: IModelConnection, existingId: GuidString, settings: SavedClipProps): Promise<SettingsStatus> {
+    const existing = await this.getCachedSetting(iModel, existingId);
+    if (undefined === existing.clip)
+      return SettingsStatus.SettingNotFound;
+    try {
+      if (undefined === settings.name)
+        settings.name = existing.name; // Preserve name when called to update clip...
+      const result = await this.saveSetting(iModel, existing.shared, existingId, settings);
+      if (SettingsStatus.Success === result.status)
+        this._cachedClips.set(existingId, { clip: settings.clip, name: settings.name, shared: existing.shared, modified: false });
+      return result.status;
+    } catch (error) {
+      return SettingsStatus.AuthorizationError;
+    }
+  }
+
+  protected async deleteCachedSetting(iModel: IModelConnection, existingId: GuidString): Promise<SettingsStatus> {
+    const existing = await this.getCachedSetting(iModel, existingId);
+    if (undefined === existing.clip)
+      return SettingsStatus.SettingNotFound;
+    try {
+      const result = await this.deleteSetting(iModel, existing.shared, existingId);
+      if (SettingsStatus.Success === result.status)
+        this._cachedClips.delete(existingId);
+      return result.status;
+    } catch (error) {
+      return SettingsStatus.AuthorizationError;
+    }
+  }
+
+  protected async renameCachedSetting(iModel: IModelConnection, existingId: GuidString, name: string): Promise<SettingsStatus> {
+    const existing = await this.getCachedSetting(iModel, existingId);
+    if (undefined === existing.clip)
+      return SettingsStatus.SettingNotFound;
+    else if (name === existing.name)
+      return SettingsStatus.Success;
+    try {
+      const result = await this.saveSetting(iModel, existing.shared, existingId, { clip: existing.clip, name });
+      if (SettingsStatus.Success === result.status)
+        this._cachedClips.set(existingId, { clip: existing.clip, name, shared: existing.shared, modified: false });
+      return result.status;
+    } catch (error) {
+      return SettingsStatus.AuthorizationError;
+    }
+  }
+
+  protected async shareCachedSetting(iModel: IModelConnection, existingId: GuidString, share: boolean): Promise<SettingsStatus> {
+    const existing = await this.getCachedSetting(iModel, existingId);
+    if (undefined === existing.clip)
+      return SettingsStatus.SettingNotFound;
+    else if (existing.shared === share)
+      return SettingsStatus.Success;
+    try {
+      const status = await this.newCachedSetting(iModel, share, existingId, { clip: existing.clip, name: existing.name });
+      if (SettingsStatus.Success === status)
+        await this.deleteSetting(iModel, !share, existingId);
+      return status;
+    } catch (error) {
+      return SettingsStatus.AuthorizationError;
+    }
+  }
+
+  protected validateActiveClipId(viewport: Viewport): void {
+    const activeId = this.getActiveClipId(viewport);
+    if (undefined !== activeId) {
+      const active = this._cachedClips.get(activeId);
+      const current = viewport.view.getViewClip();
+      if (undefined === current || undefined === active || undefined === active.clip || !ViewClipTool.areClipsEqual(current, active.clip))
+        this.clearActiveClipId(viewport);
+    }
+    if (this._cachedClips.size <= this._activeClips.size)
+      return;
+    const usedCache = new Map<GuidString, SavedClipCache>(); // Purge cache entries not currently being referenced by a view...
+    this._activeClips.forEach((usedId) => { const usedEntry = this._cachedClips.get(usedId); if (undefined !== usedEntry) usedCache.set(usedId, usedEntry); });
+    this._cachedClips = usedCache;
+  }
+
+  /** @internal */
+  public getActiveClipId(viewport: Viewport): GuidString | undefined {
+    return this._activeClips.get(viewport.viewportId);
+  }
+
+  /** @internal */
+  public setActiveClipId(viewport: Viewport, existingId: GuidString): void {
+    this._activeClips.set(viewport.viewportId, existingId);
+  }
+
+  /** @internal */
+  public clearActiveClipId(viewport: Viewport): void {
+    this._activeClips.delete(viewport.viewportId);
+  }
+
+  /** @internal */
+  public clearActiveClipIdAllViews(): void {
+    this._activeClips.clear();
+    this._cachedClips.clear();
+  }
+
+  /** @internal */
+  public modifiedActiveClip(viewport: Viewport): boolean {
+    const activeId = this.getActiveClipId(viewport);
+    if (undefined === activeId)
+      return false;
+    const clip = viewport.view.getViewClip();
+    if (undefined === clip)
+      return false; // Expected onClearClip...
+    const existing = this._cachedClips.get(activeId);
+    if (undefined === existing)
+      return false;
+    existing.modified = true; // Mark cache as changed from saved state. User must choose to update, create new, or discard the changes...
+    existing.clip = clip;
+    return true;
+  }
+
+  public async getSettings(settings: SavedClipEntry[], iModel: IModelConnection, shared?: boolean): Promise<SettingsStatus> {
+    let userStatus = SettingsStatus.Success;
+    let sharedStatus = SettingsStatus.Success;
+    if (undefined === shared || !shared) {
+      try {
+        const userResult = await this.getAllSettings(iModel, false);
+        if (SettingsStatus.Success === userResult.status && undefined !== userResult.settingsMap) {
+          for (const [key, value] of userResult.settingsMap) {
+            settings.push({ id: key, name: value.name, shared: false });
+          }
+        }
+        userStatus = userResult.status;
+      } catch (error) {
+        userStatus = SettingsStatus.AuthorizationError;
+      }
+    }
+    if (undefined === shared || shared) {
+      try {
+        const sharedResult = await this.getAllSettings(iModel, true);
+        if (SettingsStatus.Success === sharedResult.status && undefined !== sharedResult.settingsMap) {
+          for (const [key, value] of sharedResult.settingsMap) {
+            settings.push({ id: key, name: value.name, shared: true });
+          }
+        }
+        sharedStatus = sharedResult.status;
+      } catch (error) {
+        sharedStatus = SettingsStatus.AuthorizationError;
+      }
+    }
+    if (userStatus === sharedStatus)
+      return userStatus;
+    else if (SettingsStatus.SettingNotFound === userStatus)
+      return sharedStatus;
+    else if (SettingsStatus.SettingNotFound === sharedStatus)
+      return userStatus;
+    else if (SettingsStatus.Success === userStatus)
+      return sharedStatus;
+    else if (SettingsStatus.Success === sharedStatus)
+      return userStatus;
+    return userStatus;
+  }
+
+  public async newClip(iModel: IModelConnection, shared: boolean, clip: ClipVector, name?: string): Promise<GuidString | undefined> {
+    const newId = Guid.createValue();
+    if (SettingsStatus.Success === await this.newCachedSetting(iModel, shared, newId, { clip, name }))
+      return newId;
+    return undefined;
+  }
+
+  public async copyClip(iModel: IModelConnection, shared: boolean, existingId: GuidString, name?: string): Promise<GuidString | undefined> {
+    const existing = await this.getCachedSetting(iModel, existingId);
+    if (undefined === existing.clip || !existing.clip.isValid)
+      return undefined;
+    return this.newClip(iModel, shared, existing.clip, name);
+  }
+
+  public async replaceClip(iModel: IModelConnection, existingId: GuidString, clip: ClipVector): Promise<SettingsStatus> {
+    return this.updateCachedSetting(iModel, existingId, { clip }); // NOTE: Current name will be preserved when passing undefined...
+  }
+
+  public async deleteClip(iModel: IModelConnection, existingId: GuidString): Promise<SettingsStatus> {
+    return this.deleteCachedSetting(iModel, existingId);
+  }
+
+  public async renameClip(iModel: IModelConnection, existingId: GuidString, name: string): Promise<SettingsStatus> {
+    return this.renameCachedSetting(iModel, existingId, name);
+  }
+
+  public async shareClip(iModel: IModelConnection, existingId: GuidString, share: boolean): Promise<SettingsStatus> {
+    return this.shareCachedSetting(iModel, existingId, share);
+  }
+
+  public async saveActiveClip(viewport: Viewport, shared: boolean): Promise<GuidString | undefined> {
+    const clip = viewport.view.getViewClip();
+    if (undefined === clip)
+      return undefined;
+    const newId = await this.newClip(viewport.iModel, shared, clip);
+    if (undefined !== newId)
+      this.setActiveClipId(viewport, newId);
+    return newId;
+  }
+
+  public async activateSavedClip(viewport: Viewport, id: GuidString, interactive: boolean = true): Promise<SettingsStatus> {
+    const activeId = this.getActiveClipId(viewport);
+    if (id === activeId)
+      return SettingsStatus.Success; // Already active...
+    const existing = await this.getCachedSetting(viewport.iModel, id);
+    if (undefined === existing.clip || !existing.clip.isValid)
+      return SettingsStatus.SettingNotFound;
+    if (!ViewClipTool.setViewClip(viewport, existing.clip))
+      return SettingsStatus.UnknownError;
+    this.setActiveClipId(viewport, id);
+    if (undefined !== this._clipEventHandler)
+      this._clipEventHandler.onActivateClip(viewport, interactive);
+    return SettingsStatus.Success;
+  }
+
+  public async activateSavedClipPlanes(viewport: Viewport, ids: GuidString[], interactive: boolean = true): Promise<SettingsStatus> {
+    if (ids.length < 2)
+      return SettingsStatus.UnknownError;
+    const planeSet = ConvexClipPlaneSet.createEmpty();
+    for (const id of ids) {
+      const existing = await this.getCachedSetting(viewport.iModel, id);
+      if (undefined === existing.clip || !existing.clip.isValid)
+        return SettingsStatus.SettingNotFound;
+      const plane = ViewClipTool.isSingleClipPlane(existing.clip);
+      if (undefined === plane)
+        return SettingsStatus.UnknownError;
+      planeSet.addPlaneToConvexSet(plane);
+    }
+    if (!ViewClipTool.doClipToConvexClipPlaneSet(viewport, planeSet))
+      return SettingsStatus.UnknownError;
+    this.clearActiveClipId(viewport);
+    if (undefined !== this._clipEventHandler)
+      this._clipEventHandler.onActivateClip(viewport, interactive);
+    return SettingsStatus.Success;
+  }
+
+  public async areSavedClipPlanes(iModel: IModelConnection, ids: GuidString[]): Promise<boolean> {
+    for (const id of ids) {
+      const existing = await this.getCachedSetting(iModel, id);
+      if (undefined === existing.clip || !existing.clip.isValid)
+        return false;
+      const plane = ViewClipTool.isSingleClipPlane(existing.clip);
+      if (undefined === plane)
+        return false;
+    }
+    return true;
+  }
+
+  public getActiveClipStatus(viewport: Viewport): ActiveClipStatus {
+    this.validateActiveClipId(viewport);
+    if (undefined === viewport.view.getViewClip())
+      return ActiveClipStatus.None;
+    const activeId = this.getActiveClipId(viewport);
+    if (undefined === activeId)
+      return ActiveClipStatus.New;
+    const active = this._cachedClips.get(activeId);
+    if (undefined === active)
+      return ActiveClipStatus.New;
+    return (active.modified ? ActiveClipStatus.Modified : ActiveClipStatus.Saved);
+  }
+}
+
+/** @internal Event types for ViewClipDecorationProvider.onActiveClipChanged */
+export enum ClipEventType { New, NewPlane, Modify, Clear, Activate }
+
 /** @internal An implementation of ViewClipEventHandler that responds to new clips by presenting clip modification handles */
 export class ViewClipDecorationProvider implements ViewClipEventHandler {
   private static _provider?: ViewClipDecorationProvider;
-  public selectOnCreate(): boolean { return true; }
-  public clearOnUnSelect(): boolean { return true; }
-  public onNewClip(viewport: Viewport): void { ViewClipDecoration.create(viewport, this); }
-  public onNewClipPlane(viewport: Viewport): void { this.onNewClip(viewport); }
-  public onModifyClip(_viewport: Viewport): void { }
-  public onClearClip(_viewport: Viewport): void { ViewClipDecoration.clear(); }
+  protected _settings?: ViewClipSettingsProvider;
+  public selectDecorationOnCreate = true;
+  public clearDecorationOnDeselect = true;
+
+  /** Called when the active clip for a view is changed */
+  public readonly onActiveClipChanged = new BeEvent<(viewport: Viewport, eventType: ClipEventType, provider: ViewClipDecorationProvider) => void>();
+
+  /** Called on a right click over the clip geometry or clip modify handle. ViewClipDecoration provides methods for the following possible menu actions:
+   * For ClipPlanes (undefined !== clipPlaneSet): Flip (doClipPlaneNegate), Clear (doClipPlaneClear), and Orient View (doClipPlaneOrientView)
+   * For ClipShapes (undefined === clipPlaneSet): Orient View (doClipPlaneOrientView) and input fields to set world zLow/zHigh (doClipShapeSetZExtents provided isClipShapeAlignedWithWorldUp returns true)
+   */
+  public readonly onActiveClipRightClick = new BeEvent<(hit: HitDetail, ev: BeButtonEvent, provider: ViewClipDecorationProvider) => void>();
+
+  /** Call to allow saving the active clip as a setting or to set the active clip from a previously saved setting */
+  public get settings(): ViewClipSettingsProvider { if (undefined === this._settings) this._settings = new ViewClipSettingsProvider(this); return this._settings; }
+
+  public selectOnCreate(): boolean { return this.selectDecorationOnCreate; }
+  public clearOnDeselect(): boolean { return this.clearDecorationOnDeselect; }
+
+  public onNewClip(viewport: Viewport): void {
+    ViewClipDecoration.create(viewport, this);
+    if (undefined !== this._settings)
+      this._settings.clearActiveClipId(viewport);
+    this.onActiveClipChanged.raiseEvent(viewport, ClipEventType.New, this);
+  }
+
+  public onNewClipPlane(viewport: Viewport): void {
+    ViewClipDecoration.create(viewport, this);
+    if (undefined !== this._settings)
+      this._settings.clearActiveClipId(viewport);
+    this.onActiveClipChanged.raiseEvent(viewport, ClipEventType.NewPlane, this);
+  }
+
+  public onModifyClip(viewport: Viewport): void {
+    if (undefined !== this._settings)
+      this._settings.modifiedActiveClip(viewport);
+    this.onActiveClipChanged.raiseEvent(viewport, ClipEventType.Modify, this);
+  }
+
+  public onClearClip(viewport: Viewport): void {
+    ViewClipDecoration.clear();
+    if (undefined !== this._settings)
+      this._settings.clearActiveClipId(viewport);
+    this.onActiveClipChanged.raiseEvent(viewport, ClipEventType.Clear, this);
+  }
+
+  public onActivateClip(viewport: Viewport, interactive: boolean): void {
+    if (interactive)
+      ViewClipDecoration.create(viewport, this);
+    else
+      ViewClipDecoration.clear();
+    this.onActiveClipChanged.raiseEvent(viewport, ClipEventType.Activate, this);
+  }
 
   public onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean {
-    if (undefined === ev.viewport)
-      return false;
-    const decoration = ViewClipDecoration.get(ev.viewport);
+    const decoration = (undefined !== ev.viewport ? ViewClipDecoration.get(ev.viewport) : undefined);
     if (undefined === decoration)
       return false;
-    return decoration.doClipPlaneNegate(decoration.getControlIndex(hit.sourceId));
+    if (0 === this.onActiveClipRightClick.numberOfListeners)
+      return decoration.doClipPlaneNegate(decoration.getControlIndex(hit.sourceId));
+    this.onActiveClipRightClick.raiseEvent(hit, ev, this);
+    return true;
   }
 
   public showDecoration(vp: Viewport): void { ViewClipDecoration.create(vp, this); }
