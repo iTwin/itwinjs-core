@@ -3,5 +3,6 @@
   "password": "",
   "projectId": "",
   "imodelId": "",
-  "imodelPushId": ""
+  "imodelPushId": "",
+  "aspectIModelId": ""
 }
