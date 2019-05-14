@@ -2,15 +2,20 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { assert } from "chai";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, LineString3d, Point3d, Range2d, Vector3d, YawPitchRollAngles, Point2d, StandardViewIndex, Range3d } from "@bentley/geometry-core";
-import { CodeScopeSpec, ColorDef, FontType, GeometricElement2dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, SubCategoryAppearance, Code, GeometricElement3dProps, CategorySelectorProps, SubjectProps, SpatialViewDefinitionProps, ModelSelectorProps, AuxCoordSystem2dProps } from "@bentley/imodeljs-common";
+import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import {
+  AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, FontType,
+  GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
+  IModel, ModelSelectorProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
+} from "@bentley/imodeljs-common";
+import { assert } from "chai";
+import * as path from "path";
 import {
   AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
-  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, IModelDb, IModelImporter, IModelJsFs, InformationPartitionElement, InformationRecordModel,
-  ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject, GroupModel,
+  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
+  Element, GroupModel, IModelDb, IModelImporter, IModelJsFs, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
+  PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
 } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -259,5 +264,54 @@ describe("IModelImporter", () => {
     manager.testIdMaps();
     manager.importIntoTargetDb();
     manager.assertTargetDbContents();
+  });
+
+  it.skip("OPData", async () => {
+    const seedDataDirectory = "d:/temp/importer/";
+    const sourceDbFileName = "OPData.bim";
+    const targetDbFileName = "OPDataTrg.bim";
+    const dgnV8CodeSpecName = "DgnV8LW";
+    const functionalPartitionName = "ProcessFunctionalModel";
+
+    const outputDir = KnownTestLocations.outputDir;
+    if (!IModelJsFs.existsSync(outputDir))
+      IModelJsFs.mkdirSync(outputDir);
+
+    const sourceDb: IModelDb = IModelDb.openSnapshot(path.join(seedDataDirectory, sourceDbFileName));
+    const targetDb: IModelDb = IModelDb.createSnapshotFromSeed(path.join(outputDir, targetDbFileName), path.join(seedDataDirectory, targetDbFileName));
+    assert.exists(sourceDb);
+    assert.exists(targetDb);
+    assert.isTrue(sourceDb.codeSpecs.hasName(dgnV8CodeSpecName));
+    assert.isFalse(targetDb.codeSpecs.hasName(dgnV8CodeSpecName));
+
+    const importer: IModelImporter = new IModelImporter(sourceDb, targetDb);
+    assert.exists(importer);
+    importer.importCodeSpecs();
+    targetDb.saveChanges("Import CodeSpecs");
+    assert.isTrue(targetDb.codeSpecs.hasName(dgnV8CodeSpecName));
+
+    const sourceFunctionalPartitionCode: Code = InformationPartitionElement.createCode(sourceDb, IModel.rootSubjectId, functionalPartitionName);
+    const targetFunctionalPartitionCode: Code = InformationPartitionElement.createCode(targetDb, IModel.rootSubjectId, functionalPartitionName);
+    const sourceFunctionalPartitionId: Id64String = sourceDb.elements.queryElementIdByCode(sourceFunctionalPartitionCode)!;
+    const targetFunctionalPartitionId: Id64String = targetDb.elements.queryElementIdByCode(targetFunctionalPartitionCode)!;
+    assert.isTrue(Id64.isValidId64(sourceFunctionalPartitionId));
+    assert.isTrue(Id64.isValidId64(targetFunctionalPartitionId));
+    assert.exists(sourceDb.models.getModel(sourceFunctionalPartitionId));
+    assert.exists(targetDb.models.getModel(targetFunctionalPartitionId));
+    importer.addElementId(sourceFunctionalPartitionId, targetFunctionalPartitionId);
+
+    const sourceFunctionalElementCount: number = await sourceDb.queryRowCount(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Model.Id=${sourceFunctionalPartitionId}`);
+    let targetFunctionalElementCount: number = await targetDb.queryRowCount(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Model.Id=${targetFunctionalPartitionId}`);
+    assert.isAtLeast(sourceFunctionalElementCount, 1);
+    assert.equal(targetFunctionalElementCount, 0);
+    importer.importModelContents(sourceFunctionalPartitionId);
+    targetDb.saveChanges("Import FunctionalModel contents");
+    targetFunctionalElementCount = await targetDb.queryRowCount(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Model.Id=${targetFunctionalPartitionId}`);
+    assert.equal(sourceFunctionalElementCount, targetFunctionalElementCount);
+
+    importer.dispose();
+    sourceDb.closeSnapshot();
+    targetDb.closeSnapshot();
+    console.log("IMPORTER-1"); // tslint:disable-line:no-console
   });
 });

@@ -30,7 +30,10 @@ export class BriefcaseId {
   private _value: number;
   public static get Illegal(): number { return 0xffffffff; }
   public static get Master(): number { return 0; }
+  /** @deprecated */
   public static get Standalone(): number { return 1; }
+  /** @beta The *snapshot* concept is solid, but the concept name might change which would cause a rename. */
+  public static get Snapshot(): number { return 1; }
   constructor(value?: number) { this._value = value === undefined ? BriefcaseId.Illegal : value; }
   public get value(): number { return this._value; }
   public toString(): string { return this._value.toString(); }

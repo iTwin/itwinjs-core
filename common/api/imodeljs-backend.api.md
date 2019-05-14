@@ -355,7 +355,9 @@ export class BriefcaseId {
     static readonly Illegal: number;
     // (undocumented)
     static readonly Master: number;
-    // (undocumented)
+    // @beta
+    static readonly Snapshot: number;
+    // @deprecated (undocumented)
     static readonly Standalone: number;
     // (undocumented)
     toString(): string;
