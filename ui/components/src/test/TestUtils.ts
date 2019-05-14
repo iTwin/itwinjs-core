@@ -22,7 +22,7 @@ export class TestUtils {
     if (!TestUtils._i18n) {
       // const port = process.debugPort;
       // const i18nOptions = { urlTemplate: "http://localhost:" + port + "/locales/{{lng}}/{{ns}}.json" };
-      TestUtils._i18n = new I18N([], "" /*, i18nOptions*/);
+      TestUtils._i18n = new I18N();
     }
     return TestUtils._i18n;
   }

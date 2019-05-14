@@ -8,8 +8,8 @@ import * as i18next from 'i18next';
 
 // @public
 export class I18N {
-    // @internal
-    constructor(nameSpaces: string[], defaultNameSpace: string, options?: I18NOptions, renderFunction?: i18next.Callback);
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "I18NOptions" which is marked as @internal
+    constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: i18next.Callback);
     // @internal (undocumented)
     languageList(): string[];
     // @internal (undocumented)

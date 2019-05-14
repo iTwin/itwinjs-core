@@ -235,7 +235,7 @@ export class IModelApp {
     this._setupRpcRequestContext();
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    this._i18n = (opts.i18n instanceof I18N) ? opts.i18n : new I18N(["iModelJs"], "iModelJs", opts.i18n);
+    this._i18n = (opts.i18n instanceof I18N) ? opts.i18n : new I18N("iModelJs", opts.i18n);
 
     const tools = this.tools; // first register all the core tools. Subclasses may choose to override them.
     const coreNamespace = this.i18n.registerNamespace("CoreTools");

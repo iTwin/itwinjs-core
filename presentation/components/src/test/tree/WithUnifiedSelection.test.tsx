@@ -30,8 +30,7 @@ const PresentationTree = treeWithUnifiedSelection(Tree);
 
 describe("Tree withUnifiedSelection", () => {
   before(async () => {
-    const i18n = new I18N([], "");
-    await UiComponents.initialize(i18n);
+    await UiComponents.initialize(new I18N());
   });
 
   let testRulesetId: string;

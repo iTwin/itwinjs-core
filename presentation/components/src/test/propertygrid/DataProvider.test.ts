@@ -56,7 +56,7 @@ describe("PropertyDataProvider", () => {
   before(() => {
     rulesetId = faker.random.word();
     Presentation.presentation = presentationManagerMock.object;
-    Presentation.i18n = new I18N([], "", {
+    Presentation.i18n = new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     });
   });
