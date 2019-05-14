@@ -856,7 +856,7 @@ export class HalfEdgeGraph {
  *      * Never use VISITED unless the search logic is highy self contained.
  * @internal
  */
-export const enum HalfEdgeMask { // tslint:disable-line:no-const-enum
+export enum HalfEdgeMask {
   /**  Mask commonly set consistently around exterior faces.
    * * A boundary edge with interior to one side, exterior to the other will have EXTERIOR only on the outside.
    * * An an edge inserted "within a purely exterior face" can yaver EXTERIOR on both MediaStreamAudioDestinationNode[Symbol]

@@ -1058,6 +1058,7 @@ export class ConvexClipPlaneSet implements Clipper {
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
     classifyPointContainment(points: Point3d[], onIsOutside: boolean): ClipPlaneContainment;
+    clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, tolerance?: number): void;
     clipPointsOnOrInside(points: Point3d[], inOrOn: Point3d[], out: Point3d[]): void;
     clipUnboundedSegment(pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
     clone(result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
@@ -1766,7 +1767,7 @@ export class HalfEdgeGraph {
 }
 
 // @internal
-export const enum HalfEdgeMask {
+export enum HalfEdgeMask {
     ALL_MASK = 4294967295,
     BOUNDARY_EDGE = 2,
     EXTERIOR = 1,
@@ -3135,6 +3136,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addLinearSweep(surface: LinearSweep): void;
     addLinearSweepLineStringsXYZOnly(contour: AnyCurve, vector: Vector3d): void;
     addPolygon(points: Point3d[], numPointsToUse?: number): void;
+    addPolygonGrowableXYZArray(points: GrowableXYZArray): void;
     addQuadFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]): void;
     addRotationalSweep(surface: RotationalSweep): void;
     addRuledSweep(surface: RuledSweep): boolean;
@@ -3154,6 +3156,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     findOrAddParamInLineString(ls: LineString3d, index: number, v: number, priorIndexA?: number, priorIndexB?: number): number | undefined;
     findOrAddParamXY(x: number, y: number): number;
     findOrAddPoint(xyz: Point3d): number;
+    findOrAddPointInGrowableXYZArray(xyz: GrowableXYZArray, index: number, transform?: Transform, priorIndex?: number): number | undefined;
     findOrAddPointInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndex?: number): number | undefined;
     findOrAddPointXYZ(x: number, y: number, z: number): number;
     // @internal
@@ -3170,6 +3173,13 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     readonly options: StrokeOptions;
     toggleReversedFacetFlag(): void;
     }
+
+// @public
+export class PolyfaceClip {
+    static clipPolyface(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet): Polyface | undefined;
+    static clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean): Polyface;
+    static clipPolyfaceConvexClipPlaneSet(polyface: Polyface, clipper: ConvexClipPlaneSet): Polyface;
+}
 
 // @public
 export class PolyfaceData {

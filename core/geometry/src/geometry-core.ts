@@ -218,6 +218,7 @@ export * from "./polyface/Polyface";
 export * from "./polyface/PolyfaceBuilder";
 export * from "./polyface/PolyfaceData";
 export * from "./polyface/PolyfaceQuery";
+export * from "./polyface/PolyfaceClip";
 export * from "./topology/Graph";
 export * from "./topology/Triangulation";
 export * from "./serialization/IModelJsonSchema";

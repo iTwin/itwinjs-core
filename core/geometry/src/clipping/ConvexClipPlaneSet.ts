@@ -379,6 +379,22 @@ export class ConvexClipPlaneSet implements Clipper {
     }
   }
 
+  /**
+   * Clip a polygon to the inside of the convex set.
+   * * Results with 2 or fewer points are ignored.
+   * * Other than ensuring capacity in the arrays, there are no object allocations during execution of this function.
+   * @param xyz input points.
+   * @param work work buffer
+   * @param tolerance tolerance for "on plane" decision.
+   */
+  public clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, tolerance: number = Geometry.smallMetricDistance) {
+    for (const plane of this._planes) {
+      plane.clipConvexPolygonInPlace(xyz, work, true, tolerance);
+      if (xyz.length < 3)
+        return;
+    }
+  }
+
   /** Returns 1, 2, or 3 based on whether point array is strongly inside, ambiguous, or strongly outside respectively.
    * * This has a peculiar expected use case as a very fast pre-filter for more precise clipping.
    * * The expected point set is for a polygon.

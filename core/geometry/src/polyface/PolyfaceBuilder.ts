@@ -381,6 +381,21 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /**
+   * Announce point coordinates.  The implemetation is free to either create a new point or (if knonw) return indxex of a prior point with the same coordinates.
+   * @returns Returns the point index in the Polyface.
+   * @param index Index of the point in the linestring.
+   */
+  public findOrAddPointInGrowableXYZArray(xyz: GrowableXYZArray, index: number, transform?: Transform, priorIndex?: number): number | undefined {
+    const q = xyz.getPoint3dAtCheckedPointIndex(index, PolyfaceBuilder._workPointFindOrAddA);
+    if (q) {
+      if (transform)
+        transform.multiplyPoint3d(q, q);
+      return this._polyface.addPoint(q, priorIndex);
+    }
+    return undefined;
+  }
+
+  /**
    * Announce param coordinates.  The implemetation is free to either create a new param or (if knonw) return indxex of a prior point with the same coordinates.
    * @returns Returns the point index in the Polyface.
    * @param index Index of the param in the linestring.
@@ -1267,6 +1282,33 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     } else {
       for (let i = numPointsToUse; --i >= 0;) {
         index = this.findOrAddPoint(points[i]);
+        this._polyface.addPointIndex(index);
+      }
+    }
+    this._polyface.terminateFacet();
+  }
+
+  /** Add a polygon to the evolving facets.
+   *
+   * * Add points to the polyface
+   * * indices are added (in reverse order if indicated by the builder state)
+   * @param points array of points.  This may contain extra points not to be used in the polygon
+   * @param numPointsToUse number of points to use.
+   */
+  public addPolygonGrowableXYZArray(points: GrowableXYZArray) {
+    // don't use trailing points that match start point.
+    let numPointsToUse = points.length;
+    while (numPointsToUse > 1 && Geometry.isSmallMetricDistance(points.distance(0, numPointsToUse - 1)!))
+      numPointsToUse--;
+    let index = 0;
+    if (!this._reversed) {
+      for (let i = 0; i < numPointsToUse; i++) {
+        index = this.findOrAddPointInGrowableXYZArray(points, i)!;
+        this._polyface.addPointIndex(index);
+      }
+    } else {
+      for (let i = numPointsToUse; --i >= 0;) {
+        index = this.findOrAddPointInGrowableXYZArray(points, i)!;
         this._polyface.addPointIndex(index);
       }
     }
