@@ -8,6 +8,8 @@
 /**
  * Enum of logging namespaces used by Presentation library.
  * Use `@bentley/bentleyjs-core/Logger` to enable logging for these namespaces.
+ *
+ * @public
  */
 export  enum LoggingNamespaces {
   ECObjects = "ECObjects",

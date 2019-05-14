@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "comment": "Add release tags",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    },
+    {
+      "comment": "Cleanup API",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.p@gmail.com"
+}

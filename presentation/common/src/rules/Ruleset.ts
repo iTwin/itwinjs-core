@@ -18,6 +18,8 @@ import { SchemasSpecification } from "./SchemasSpecification";
  * - Content rules for content you see in content controls
  * - Customization rules used for additional customizations such as styling, labeling, checkboxes, etc.
  * - User-controllable variables.
+ *
+ * @public
  */
 export interface Ruleset {
   /**
@@ -46,6 +48,8 @@ export interface Ruleset {
 /**
  * Contains supplementation-related information for
  * [supplemental rulesets]($docs/learning/RulesetSupplementation.md).
+ *
+ * @public
  */
 export interface SupplementationInfo {
   /**

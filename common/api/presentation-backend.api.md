@@ -7,23 +7,23 @@
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { Content } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
-import { ContentResponse } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelDb } from '@bentley/imodeljs-backend';
+import { IModelDb as IModelDb_2 } from '@bentley/imodeljs-backend/lib/IModelDb';
 import { InstanceKey } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { LabelRequestOptions } from '@bentley/presentation-common';
 import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
-import { NodesResponse } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
+import { Ruleset as Ruleset_2 } from '@bentley/presentation-common/lib/rules/Ruleset';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SelectionScopeRequestOptions } from '@bentley/presentation-common';
@@ -31,16 +31,105 @@ import { VariableValue } from '@bentley/presentation-common/lib/RulesetVariables
 import { VariableValueJSON } from '@bentley/presentation-common/lib/RulesetVariables';
 import { VariableValueTypes } from '@bentley/presentation-common/lib/RulesetVariables';
 
-// Warning: (ae-missing-release-tag) "Presentation" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @beta
+export enum DuplicateRulesetHandlingStrategy {
+    // (undocumented)
+    Replace = 1,
+    // (undocumented)
+    Skip = 0
+}
+
 // @public
 export class Presentation {
     static getManager(clientId?: string): PresentationManager;
     static getRequestTimeout(): number;
-    static initialize(props?: Props): void;
-    // (undocumented)
-    static readonly initProps: Props | undefined;
+    static initialize(props?: PresentationProps): void;
+    static readonly initProps: PresentationProps | undefined;
     static terminate(): void;
+}
+
+// @public
+export class PresentationManager {
+    constructor(props?: PresentationManagerProps);
+    activeLocale: string | undefined;
+    computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet>;
+    dispose(): void;
+    getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
+    getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{
+        content: Content | undefined;
+        size: number;
+    }>;
+    getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
+    getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
+    getDisplayLabel(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<string>;
+    getDisplayLabels(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<string[]>;
+    getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
+    getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]>;
+    // @internal (undocumented)
+    getNativePlatform: () => NativePlatformDefinition;
+    getNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
+    getNodes(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<Node[]>;
+    getNodesAndCount(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<{
+        nodes: Node[];
+        count: number;
+    }>;
+    getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number>;
+    getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
+    readonly props: PresentationManagerProps;
+    rulesets(): RulesetManager;
+    vars(rulesetId: string): RulesetVariablesManager;
+}
+
+// @public
+export interface PresentationManagerProps {
+    activeLocale?: string;
+    // @internal (undocumented)
+    addon?: NativePlatformDefinition;
+    // @internal
+    id?: string;
+    localeDirectories?: string[];
+    rulesetDirectories?: string[];
+}
+
+// @public
+export interface PresentationProps extends PresentationManagerProps {
+    // @internal
+    clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
+    requestTimeout?: number;
+    unusedClientLifetime?: number;
+}
+
+// @beta
+export class RulesetEmbedder {
+    constructor(iModelDb: IModelDb_2);
+    getRulesets(): Promise<Ruleset_2[]>;
+    insertRuleset(ruleset: Ruleset_2, duplicateHandlingStrategy?: DuplicateRulesetHandlingStrategy): Promise<Id64String>;
+    }
+
+// @public
+export interface RulesetManager {
+    add(ruleset: Ruleset): RegisteredRuleset;
+    clear(): void;
+    get(id: string): RegisteredRuleset | undefined;
+    remove(ruleset: RegisteredRuleset | [string, string]): boolean;
+}
+
+// @public
+export interface RulesetVariablesManager {
+    getBool(variableId: string): boolean;
+    getId64(variableId: string): Id64String;
+    getId64s(variableId: string): Id64String[];
+    getInt(variableId: string): number;
+    getInts(variableId: string): number[];
+    getString(variableId: string): string;
+    getValue(variableId: string, type: VariableValueTypes): VariableValue;
+    setBool(variableId: string, value: boolean): void;
+    setId64(variableId: string, value: Id64String): void;
+    setId64s(variableId: string, value: Id64String[]): void;
+    setInt(variableId: string, value: number): void;
+    setInts(variableId: string, value: number[]): void;
+    setString(variableId: string, value: string): void;
+    setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
 }
 
 

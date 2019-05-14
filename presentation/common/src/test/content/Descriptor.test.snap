@@ -23,13 +23,13 @@ Object {
 `;
 
 exports[`Descriptor fromJSON creates valid Descriptor from valid JSON 1`] = `
-Descriptor {
+Object {
   "connectionId": "ec0f6245-d969-46fd-b1fe-64d24189e0d4",
   "contentFlags": 0,
   "contentOptions": "bar",
   "displayType": "incidunt magnam autem",
   "fields": Array [
-    Field {
+    Object {
       "category": Object {
         "description": "Error consequuntur voluptatum unde.",
         "expand": true,
@@ -47,7 +47,7 @@ Descriptor {
         "valueFormat": "Primitive",
       },
     },
-    Field {
+    Object {
       "category": Object {
         "description": "Debitis provident totam quia velit voluptates itaque.",
         "expand": true,
@@ -67,7 +67,7 @@ Descriptor {
         "valueFormat": "Primitive",
       },
     },
-    Field {
+    Object {
       "category": Object {
         "description": "Et officiis in ipsam.",
         "expand": true,
@@ -277,13 +277,13 @@ Descriptor {
 `;
 
 exports[`Descriptor fromJSON creates valid Descriptor from valid serialized JSON 1`] = `
-Descriptor {
+Object {
   "connectionId": "b93a4d4a-1ba6-471b-b77e-af299431011f",
   "contentFlags": 0,
   "contentOptions": "car",
   "displayType": "eius asperiores est",
   "fields": Array [
-    Field {
+    Object {
       "category": Object {
         "description": "Aut consequuntur voluptatem.",
         "expand": true,
@@ -303,7 +303,7 @@ Descriptor {
         "valueFormat": "Primitive",
       },
     },
-    Field {
+    Object {
       "category": Object {
         "description": "Ducimus et et perferendis.",
         "expand": false,
@@ -323,7 +323,7 @@ Descriptor {
         "valueFormat": "Primitive",
       },
     },
-    Field {
+    Object {
       "category": Object {
         "description": "Dolor cupiditate deserunt possimus minima eos molestiae.",
         "expand": false,

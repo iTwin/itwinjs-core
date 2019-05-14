@@ -12,6 +12,8 @@ import { SingleSchemaClassSpecification } from "../ClassSpecifications";
  *
  * **Important:** Prefer this rule over [[LabelOverride]] when possible as it
  * has better performance.
+ *
+ * @public
  */
 export interface InstanceLabelOverride extends RuleBase {
   /** Used for serializing to JSON. */

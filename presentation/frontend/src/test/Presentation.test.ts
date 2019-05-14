@@ -13,7 +13,7 @@ import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { PresentationError } from "@bentley/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import { SelectionScopesManager } from "../selection/SelectionScopesManager";
-import PresentationManager from "../PresentationManager";
+import { PresentationManager } from "../PresentationManager";
 
 describe("Presentation", () => {
 

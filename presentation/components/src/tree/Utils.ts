@@ -9,7 +9,7 @@ import { CheckBoxState } from "@bentley/ui-core";
 import { Node, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
 import { DelayLoadedTreeNodeItem, PageOptions as UiPageOptions, ItemStyle, ItemColorOverrides } from "@bentley/ui-components";
 
-/** @hidden */
+/** @internal */
 export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string): DelayLoadedTreeNodeItem[] => {
   const list = new Array<DelayLoadedTreeNodeItem>();
   for (const node of nodes)
@@ -17,7 +17,7 @@ export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parent
   return list;
 };
 
-/** @hidden */
+/** @internal */
 export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): DelayLoadedTreeNodeItem => {
   const item: DelayLoadedTreeNodeItem = {
     id: [...node.key.pathFromRoot].reverse().join("/"),
@@ -61,7 +61,7 @@ export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): Del
   return item;
 };
 
-/** @hidden */
+/** @internal */
 export const pageOptionsUiToPresentation = (pageOptions?: UiPageOptions): PresentationPageOptions | undefined => {
   if (pageOptions)
     return { ...pageOptions };

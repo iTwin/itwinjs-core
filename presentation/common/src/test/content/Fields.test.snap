@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Field fromJSON creates valid Field from valid JSON 1`] = `
-Field {
+Object {
   "category": Object {
     "description": "Tenetur quo recusandae.",
     "expand": true,
@@ -24,7 +24,7 @@ Field {
 `;
 
 exports[`Field fromJSON creates valid Field from valid serialized JSON 1`] = `
-Field {
+Object {
   "category": Object {
     "description": "Tempora eius eveniet vel.",
     "expand": false,
@@ -47,7 +47,7 @@ Field {
 `;
 
 exports[`Field fromJSON creates valid NestedContentField from valid JSON 1`] = `
-NestedContentField {
+Object {
   "category": Object {
     "description": "Facere explicabo incidunt.",
     "expand": false,
@@ -67,7 +67,7 @@ NestedContentField {
   "label": "Pines Cape Verde Refined Plastic Chair",
   "name": "California",
   "nestedFields": Array [
-    Field {
+    Object {
       "category": Object {
         "description": "Facere explicabo incidunt.",
         "expand": false,
@@ -87,7 +87,7 @@ NestedContentField {
         "valueFormat": "Primitive",
       },
     },
-    Field {
+    Object {
       "category": Object {
         "description": "Facere explicabo incidunt.",
         "expand": false,
@@ -175,7 +175,7 @@ NestedContentField {
 `;
 
 exports[`Field fromJSON creates valid PropertiesField from valid JSON 1`] = `
-PropertiesField {
+Object {
   "category": Object {
     "description": "Corporis occaecati explicabo voluptatum ipsam debitis.",
     "expand": false,
@@ -232,7 +232,7 @@ PropertiesField {
 `;
 
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid JSON 1`] = `
-NestedContentField {
+Object {
   "category": Object {
     "description": "Maiores et modi optio.",
     "expand": false,
@@ -252,7 +252,7 @@ NestedContentField {
   "label": "wireless",
   "name": "national",
   "nestedFields": Array [
-    Field {
+    Object {
       "category": Object {
         "description": "Maiores et modi optio.",
         "expand": false,
@@ -272,7 +272,7 @@ NestedContentField {
         "valueFormat": "Primitive",
       },
     },
-    Field {
+    Object {
       "category": Object {
         "description": "Maiores et modi optio.",
         "expand": false,
@@ -360,7 +360,7 @@ NestedContentField {
 `;
 
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid serialized JSON 1`] = `
-NestedContentField {
+Object {
   "category": Object {
     "description": "Voluptas esse sint dolores.",
     "expand": true,
@@ -380,7 +380,7 @@ NestedContentField {
   "label": "Incredible",
   "name": "Frozen",
   "nestedFields": Array [
-    Field {
+    Object {
       "category": Object {
         "description": "Voluptas esse sint dolores.",
         "expand": true,
@@ -400,7 +400,7 @@ NestedContentField {
         "valueFormat": "Primitive",
       },
     },
-    Field {
+    Object {
       "category": Object {
         "description": "Voluptas esse sint dolores.",
         "expand": true,
@@ -488,7 +488,7 @@ NestedContentField {
 `;
 
 exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON 1`] = `
-PropertiesField {
+Object {
   "category": Object {
     "description": "Sequi repudiandae velit atque voluptas.",
     "expand": true,
@@ -545,7 +545,7 @@ PropertiesField {
 `;
 
 exports[`PropertiesField fromJSON creates valid PropertiesField from valid serialized JSON 1`] = `
-PropertiesField {
+Object {
   "category": Object {
     "description": "Vitae deleniti eum aperiam quo recusandae doloremque voluptatum alias ut.",
     "expand": false,

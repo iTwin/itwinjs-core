@@ -7,10 +7,10 @@
 import { Guid } from "@bentley/bentleyjs-core";
 import { Ruleset } from "./rules/Ruleset";
 import { Field, PropertiesField } from "./content/Fields";
-import Item from "./content/Item";
+import { Item } from "./content/Item";
 import { RuleTypes } from "./rules/Rule";
-import { RuleSpecificationTypes } from "./rules/RuleSpecification";
-import { Value, isNestedContentValue, DisplayValue } from "./content/Value";
+import { ContentSpecificationTypes } from "./rules/content/ContentSpecification";
+import { Value, DisplayValue } from "./content/Value";
 import { MultiSchemaClassesSpecification, SingleSchemaClassSpecification } from "./rules/ClassSpecifications";
 import { PropertyValueFormat } from "./content/TypeDescription";
 import { ClassInfo, RelatedClassInfo } from "./EC";
@@ -20,6 +20,8 @@ import { RelationshipDirection } from "./rules/RelationshipDirection";
 /**
  * A factory class that can be used to create presentation rulesets targeted towards
  * specific use cases.
+ *
+ * @public
  */
 export class RulesetsFactory {
   /**
@@ -50,7 +52,7 @@ export class RulesetsFactory {
     ruleset.rules.push({
       ruleType: RuleTypes.Content,
       specifications: [{
-        specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+        specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
         classes: createMultiClassSpecification(record.classInfo),
         arePolymorphic: true,
         relatedInstances: relatedInstanceSpecs,
@@ -97,7 +99,7 @@ const getPropertyValue = (record: Item, field: Field): { v: Value, d: string } =
   let value: Value = record.values[currFieldName!];
   currFieldName = fieldNamesStack.pop();
   while (currFieldName) {
-    if (!isNestedContentValue(value) || value.length === 0)
+    if (!Value.isNestedContent(value) || value.length === 0)
       throw new Error("Invalid record value");
     if (value.length > 1)
       throw new Error("Can't create 'similar instances' for records related through many part of *-to-many relationship");

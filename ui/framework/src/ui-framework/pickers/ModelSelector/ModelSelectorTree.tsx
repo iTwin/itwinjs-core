@@ -8,10 +8,13 @@ import * as React from "react";
 import classnames from "classnames";
 import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
 import { SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { isInstanceNodeKey } from "@bentley/presentation-common";
+import { NodeKey } from "@bentley/presentation-common";
 import { treeWithFilteringSupport } from "@bentley/presentation-components";
 import { Tree, TreeNodeItem, FilteringInput, SelectionMode } from "@bentley/ui-components";
-import { CheckBoxInfo, CheckBoxState, isPromiseLike, NodeCheckboxRenderProps, ImageCheckBox, LoadingSpinner, SpinnerSize, GlobalContextMenu, ContextMenuItem } from "@bentley/ui-core";
+import {
+  CheckBoxInfo, CheckBoxState, isPromiseLike, NodeCheckboxRenderProps, ImageCheckBox,
+  LoadingSpinner, SpinnerSize, GlobalContextMenu, ContextMenuItem,
+} from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ListItem, ListItemType } from "../ListPicker";
 import { CategoryModelTreeProps, CategoryModelTreeState, Groups } from "./ModelSelectorDefinitions";
@@ -125,7 +128,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   private _getNodeFromItem = (item: ListItem, nodes: TreeNodeItem[]) => {
     for (const node of nodes) {
       const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-      if (isInstanceNodeKey(key) && key.instanceKey.id === item.key) {
+      if (NodeKey.isInstanceNodeKey(key) && key.instanceKey.id === item.key) {
         return node;
       }
     }
@@ -147,7 +150,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
 
   private getNodeCheckBoxInfo(node: TreeNodeItem): CheckBoxInfo | Promise<CheckBoxInfo> {
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-    const nodeId = isInstanceNodeKey(key) ? key.instanceKey.id : "";
+    const nodeId = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
     const item = this._getItem(nodeId);
     if (item && this.props.activeView) {
       const view = this.props.activeView.view as SpatialViewState;
@@ -433,7 +436,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
 
   private _getSelectedNodes = (node: TreeNodeItem): boolean => {
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-    const id = isInstanceNodeKey(key) ? key.instanceKey.id : "";
+    const id = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
     if (this.state.activeGroup.id === Groups.Models) {
       return this._isModelDisplayed(id);
     }
@@ -471,7 +474,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   private _onNodeExpanded = async (node: TreeNodeItem) => {
     const categories: ListItem[] = this.state.activeGroup.items;
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-    const nodeId = isInstanceNodeKey(key) ? key.instanceKey.id : "";
+    const nodeId = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
     const ecsql = "SELECT ECInstanceId as id FROM BisCore.SubCategory WHERE Parent.Id=" + nodeId;
     const rows = [];
 
@@ -517,7 +520,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     const nodeIds: string[] = [];
     nodes.forEach((node) => {
       const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-      const id = isInstanceNodeKey(key) ? key.instanceKey.id : "";
+      const id = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
       nodeIds.push(id);
     });
     return nodeIds;

@@ -10,10 +10,10 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { CheckBoxState, LoadingSpinner } from "@bentley/ui-core";
 import { CheckListBox, CheckListBoxItem, CheckBox } from "./CheckListBox";
 import { Presentation } from "@bentley/presentation-frontend";
-import { RegisteredRuleset, isInstanceNodeKey, ECInstanceNodeKey } from "@bentley/presentation-common";
-import { UiFramework } from "@bentley/ui-framework";
+import { RegisteredRuleset, NodeKey } from "@bentley/presentation-common";
 import { Tree, TreeNodeItem, DelayLoadedTreeNodeItem } from "@bentley/ui-components";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { UiFramework } from "@bentley/ui-framework";
 import "./ModelsTab.scss";
 
 interface ModelInfo {
@@ -473,9 +473,8 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     const ids: string[] = [];
     for (const node of this.state.selectedNodes) {
       const key = this._dataProvider!.getNodeKey(node);
-      if (isInstanceNodeKey(key)) {
-        const instanceNodeKey = key as ECInstanceNodeKey;
-        ids.push(instanceNodeKey.instanceKey.id);
+      if (NodeKey.isInstanceNodeKey(key)) {
+        ids.push(key.instanceKey.id);
       }
     }
 

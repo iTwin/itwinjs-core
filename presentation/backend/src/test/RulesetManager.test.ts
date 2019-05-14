@@ -8,15 +8,15 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { RegisteredRuleset } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "../NativePlatform";
-import RulesetManager from "../RulesetManager";
+import { RulesetManagerImpl } from "../RulesetManager";
 
 describe("RulesetManager", () => {
 
-  let manager: RulesetManager;
+  let manager: RulesetManagerImpl;
   const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
   beforeEach(() => {
     addonMock.reset();
-    manager = new RulesetManager(() => addonMock.object);
+    manager = new RulesetManagerImpl(() => addonMock.object);
   });
 
   describe("get", () => {

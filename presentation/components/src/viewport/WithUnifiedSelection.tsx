@@ -18,32 +18,31 @@ import { ContentDataProvider } from "../common/ContentDataProvider";
 const DEFAULT_RULESET: Ruleset = require("./HiliteRules.json");
 
 /**
- * Props that are injected to the HOC component.
+ * Props that are injected to the ViewWithUnifiedSelection HOC component.
+ * @public
  */
-export interface Props {
+export interface ViewWithUnifiedSelectionProps {
   /** Ruleset or its ID to use when determining viewport selection. */
-  ruleset: Ruleset | string;
+  ruleset?: Ruleset | string;
 
-  /** @hidden */
+  /** @internal */
   selectionHandler?: ViewportSelectionHandler;
 }
 
 /**
  * A HOC component that adds unified selection functionality to the supplied
  * viewport component.
+ *
+ * @public
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>) {
+export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & ViewWithUnifiedSelectionProps> {
 
-  type CombinedProps = P & Props;
+  type CombinedProps = P & ViewWithUnifiedSelectionProps;
 
   return class WithUnifiedSelection extends React.PureComponent<CombinedProps> implements IUnifiedSelectionComponent {
 
-    public static defaultProps = {
-      ruleset: DEFAULT_RULESET,
-    };
-
-    /** @hidden */
+    /** @internal */
     public viewportSelectionHandler?: ViewportSelectionHandler;
 
     /** Returns the display name of this component */
@@ -60,7 +59,7 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 
     public componentDidMount() {
       this.viewportSelectionHandler = this.props.selectionHandler
-        ? this.props.selectionHandler : new ViewportSelectionHandler(this.props.imodel, this.props.ruleset);
+        ? this.props.selectionHandler : new ViewportSelectionHandler(this.props.imodel, getRuleset(this.props.ruleset));
     }
 
     public componentWillUnmount() {
@@ -73,7 +72,7 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
     public componentDidUpdate() {
       if (this.viewportSelectionHandler) {
         this.viewportSelectionHandler.imodel = this.props.imodel;
-        this.viewportSelectionHandler.ruleset = this.props.ruleset;
+        this.viewportSelectionHandler.ruleset = getRuleset(this.props.ruleset);
       }
     }
 
@@ -222,7 +221,7 @@ export class ViewportSelectionHandler implements IDisposable {
 
 class SelectedElementsProvider extends ContentDataProvider {
   public constructor(imodel: IModelConnection, rulesetId: string) {
-    super(imodel, rulesetId, DefaultContentDisplayTypes.VIEWPORT);
+    super(imodel, rulesetId, DefaultContentDisplayTypes.Viewport);
   }
   protected shouldConfigureContentDescriptor() { return false; }
   protected getDescriptorOverrides() {
@@ -245,7 +244,14 @@ class SelectedElementsProvider extends ContentDataProvider {
   }
 }
 
-const getRulesetId = (ruleset: Ruleset | string): string => {
+const getRuleset = (ruleset: Ruleset | string | undefined): Ruleset | string => {
+  if (!ruleset)
+    return DEFAULT_RULESET;
+  return ruleset;
+};
+
+const getRulesetId = (ruleset: Ruleset | string | undefined): string => {
+  ruleset = getRuleset(ruleset);
   if (typeof ruleset === "string")
     return ruleset;
   return ruleset.id;

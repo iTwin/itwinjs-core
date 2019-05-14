@@ -4,11 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { createRandomECInstanceKeyJSON, createRandomECClassInfoJSON, createRandomDescriptorJSON } from "../_helpers/random";
-import { Content } from "../../presentation-common";
-import { ContentJSON } from "../../content/Content";
+import {
+  createRandomECInstanceKeyJSON, createRandomECClassInfoJSON, createRandomDescriptorJSON,
+  createRandomDescriptor,
+} from "../_helpers/random";
+import { Content, ContentJSON } from "../../content/Content";
+import { Item } from "../../content/Item";
 
 describe("Content", () => {
+
+  describe("constructor", () => {
+
+    it("creates a new instance", () => {
+      const descriptor = createRandomDescriptor();
+      const contentSet = new Array<Item>();
+      const content = new Content(descriptor, contentSet);
+      expect(content.descriptor).to.eq(descriptor);
+      expect(content.contentSet).to.eq(contentSet);
+    });
+
+  });
 
   describe("fromJSON", () => {
 
@@ -33,18 +48,30 @@ describe("Content", () => {
     });
 
     it("creates valid Content from valid JSON", () => {
-      const item = Content.fromJSON(testContentJSON);
-      expect(item).to.matchSnapshot();
+      const content = Content.fromJSON(testContentJSON);
+      expect(content).to.matchSnapshot();
     });
 
     it("creates valid Content from valid serialized JSON", () => {
-      const item = Content.fromJSON(JSON.stringify(testContentJSON));
-      expect(item).to.matchSnapshot();
+      const content = Content.fromJSON(JSON.stringify(testContentJSON));
+      expect(content).to.matchSnapshot();
     });
 
     it("returns undefined for undefined JSON", () => {
-      const item = Content.fromJSON(undefined);
-      expect(item).to.be.undefined;
+      const content = Content.fromJSON(undefined);
+      expect(content).to.be.undefined;
+    });
+
+    it("returns undefined if content has undefined descriptor", () => {
+      const json = { ...testContentJSON, descriptor: undefined } as any;
+      const content = Content.fromJSON(json);
+      expect(content).to.be.undefined;
+    });
+
+    it("skips undefined items in content set", () => {
+      const json = { ...testContentJSON, contentSet: [...testContentJSON.contentSet, undefined] } as any;
+      const content = Content.fromJSON(json);
+      expect(content!.contentSet.length).to.eq(1);
     });
 
   });

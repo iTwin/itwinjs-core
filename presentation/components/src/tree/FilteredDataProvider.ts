@@ -16,13 +16,14 @@ import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 import { memoize } from "lodash";
 
 /**
- * @hidden
+ * Rules-driven presentation tree data provider that returns filtered results.
+ * @internal
  */
 export class FilteredPresentationTreeDataProvider implements IPresentationTreeDataProvider {
   private _parentDataProvider: IPresentationTreeDataProvider;
   private _filteredDataProvider: SimpleTreeDataProvider;
   private _filter: string;
-  private _filteredResultsOccurances: Array<{ id: string, occurances: number }> = [];
+  private _filteredResultMatches: Array<{ id: string, matchesCount: number }> = [];
 
   public constructor(parentDataProvider: IPresentationTreeDataProvider, filter: string, paths: ReadonlyArray<Readonly<NodePathElement>>) {
     this._parentDataProvider = parentDataProvider;
@@ -43,8 +44,8 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
     for (let i = 0; i < paths.length; i++) {
       const node = createTreeNodeItem(paths[i].node, parentId);
 
-      if (paths[i].filteringData && paths[i].filteringData!.occurances)
-        this._filteredResultsOccurances.push({ id: node.id, occurances: paths[i].filteringData!.occurances });
+      if (paths[i].filteringData && paths[i].filteringData!.matchesCount)
+        this._filteredResultMatches.push({ id: node.id, matchesCount: paths[i].filteringData!.matchesCount });
 
       if (paths[i].children.length !== 0) {
         this.createHierarchy(paths[i].children, hierarchy, node.id);
@@ -64,8 +65,8 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
       return undefined;
 
     let i = 1;
-    for (const node of this._filteredResultsOccurances) {
-      if (index < i + node.occurances) {
+    for (const node of this._filteredResultMatches) {
+      if (index < i + node.matchesCount) {
         activeMatch = {
           nodeId: node.id,
           matchIndex: index - i,
@@ -73,7 +74,7 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
         break;
       }
 
-      i += node.occurances;
+      i += node.matchesCount;
     }
     return activeMatch;
   });
@@ -85,7 +86,7 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
     // Loops through root level only
     for (const path of nodePaths) {
       if (path.filteringData)
-        resultCount += path.filteringData.occurances + path.filteringData.childrenOccurances;
+        resultCount += path.filteringData.matchesCount + path.filteringData.childMatchesCount;
     }
 
     return resultCount;

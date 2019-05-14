@@ -4,12 +4,30 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import * as moq from "typemoq";
 import { createRandomDescriptorJSON, createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomECClassInfo, createRandomRelationshipPath } from "../_helpers/random";
-import { Descriptor, Field, NestedContentField, StructTypeDescription, PropertyValueFormat } from "../../presentation-common";
-import { DescriptorJSON } from "../../content/Descriptor";
+import { Descriptor, NestedContentField, StructTypeDescription, PropertyValueFormat } from "../../presentation-common";
+import { DescriptorJSON, DescriptorSource } from "../../content/Descriptor";
 
 describe("Descriptor", () => {
+
+  describe("constructor", () => {
+
+    it("creates Descriptor from DescriptorSource", () => {
+      const source: DescriptorSource = {
+        contentFlags: 9,
+        displayType: faker.random.word(),
+        fields: [],
+        filterExpression: faker.random.words(),
+        selectClasses: [],
+      };
+      const descriptor = new Descriptor(source);
+      for (const key in source) {
+        if (source.hasOwnProperty(key))
+          expect((descriptor as any)[key]).to.deep.eq((source as any)[key]);
+      }
+    });
+
+  });
 
   describe("fromJSON", () => {
 
@@ -106,32 +124,6 @@ describe("Descriptor", () => {
       const descriptor = createRandomDescriptor();
       descriptor.sortingField = descriptor.fields[0];
       expect(descriptor.createDescriptorOverrides()).to.matchSnapshot();
-    });
-
-  });
-
-  describe("resetParentship", () => {
-
-    it("calls resetParentship for each field", () => {
-      const fieldMock = moq.Mock.ofType<Field>();
-      fieldMock.setup((x) => x.resetParentship()).verifiable();
-      const descriptor = createRandomDescriptor();
-      descriptor.fields.push(fieldMock.object);
-      descriptor.resetParentship();
-      fieldMock.verifyAll();
-    });
-
-  });
-
-  describe("rebuildParentship", () => {
-
-    it("calls rebuildParentship for each field", () => {
-      const fieldMock = moq.Mock.ofType<Field>();
-      fieldMock.setup((x) => x.rebuildParentship()).verifiable();
-      const descriptor = createRandomDescriptor();
-      descriptor.fields.push(fieldMock.object);
-      descriptor.rebuildParentship();
-      fieldMock.verifyAll();
     });
 
   });

@@ -7,7 +7,7 @@
 import { Schema, Schemas, ClassRegistry } from "@bentley/imodeljs-backend";
 import * as RulesetElements from "./RulesetElements";
 
-/** @hidden */
+/** @internal */
 export class PresentationRules extends Schema {
   public static get schemaName(): string { return "PresentationRules"; }
 
@@ -20,7 +20,7 @@ export class PresentationRules extends Schema {
   }
 }
 
-/** @hidden */
+/** @internal */
 /* istanbul ignore next */
 export namespace PresentationRules {
   export enum CodeSpec {

@@ -12,8 +12,7 @@ import { createRandomPropertyRecord } from "./_helpers/UiComponents";
 import { IPresentationPropertyDataProvider, PresentationTableDataProvider } from "../presentation-components";
 import { DataProvidersFactory, DataProvidersFactoryProps } from "../DataProvidersFactory";
 import { RulesetsFactory, Content, Item } from "@bentley/presentation-common";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import RulesetManager from "@bentley/presentation-frontend/lib/RulesetManager";
+import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 
 describe("DataProvidersFactory", () => {
 
@@ -48,8 +47,7 @@ describe("DataProvidersFactory", () => {
     });
 
     it("throws when content has no records", async () => {
-      const content = createRandomContent();
-      content.contentSet = [];
+      const content = new Content(createRandomDescriptor(), []);
       propertiesProvider.setup(async (x) => x.getContent()).returns(async () => content);
       await expect(getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, createRandomPropertyRecord(), {})).to.eventually.be.rejected;
     });
@@ -70,11 +68,7 @@ describe("DataProvidersFactory", () => {
       const descriptor = createRandomDescriptor();
       descriptor.fields.push(field);
       const contentItem = new Item([], "", "", undefined, { [field.name]: "test value" }, { [field.name]: "test display value" }, []);
-      const content: Content = {
-        descriptor,
-        contentSet: [contentItem],
-      };
-      propertiesProvider.setup(async (x) => x.getContent()).returns(async () => content);
+      propertiesProvider.setup(async (x) => x.getContent()).returns(async () => new Content(descriptor, [contentItem]));
 
       const record = createRandomPropertyRecord();
       record.property.name = field.name;

@@ -9,21 +9,38 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { TreeNodeItem } from "@bentley/ui-components";
 
-/** A derivative of Node. Cannot have **children** property */
+/**
+ * Structure that describes a Node with any indexed properties
+ * except `children`.
+ *
+ * @public
+ */
 export interface MappedNode {
+  /** Indexer for all properties in this data structure */
   [index: string]: any;
+  /** Prohibited property */
   children?: never;
 }
 
-/** Node in a Hierarchy */
+/**
+ * Node in a hierarchy.
+ * @public
+ */
 export interface HierarchyNode extends Omit<MappedNode, "children"> {
+  /** Children of this node */
   children?: HierarchyNode[];
 }
 
-/** A function that converts `TreeNodeItem` into a new custom object */
+/**
+ * A function that converts `TreeNodeItem` into a new custom object.
+ * @public
+ */
 export type NodeMappingFunc = (node: TreeNodeItem) => MappedNode;
 
-/** Default [[NodeMappingFunc]] implementation that outputs the whole `TreeNodeItem` object */
+/**
+ * Default [[NodeMappingFunc]] implementation that outputs the whole `TreeNodeItem` object.
+ * @public
+ */
 export const defaultNodeMappingFunc: NodeMappingFunc = (node: TreeNodeItem) => {
   // Skip properties 'id', 'parentId', 'extendedData' as they contain  internal stuff
   // that callers are most likely not interested in. Otherwise they can supply
@@ -35,6 +52,8 @@ export const defaultNodeMappingFunc: NodeMappingFunc = (node: TreeNodeItem) => {
 /**
  * A class that constructs simple node hierarchy from specified
  * imodel and ruleset.
+ *
+ * @public
  */
 export class HierarchyBuilder {
   private readonly _iModel: IModelConnection;

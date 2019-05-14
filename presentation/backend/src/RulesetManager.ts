@@ -7,8 +7,37 @@
 import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "./NativePlatform";
 
-/** @hidden */
-export default class RulesetManager {
+/**
+ * Presentation ruleset registry.
+ * @public
+ */
+export interface RulesetManager {
+  /**
+   * Get a ruleset with the specified id.
+   */
+  get(id: string): RegisteredRuleset | undefined;
+
+  /**
+   * Register the supplied ruleset
+   */
+  add(ruleset: Ruleset): RegisteredRuleset;
+
+  /**
+   * Unregister the supplied ruleset
+   */
+  remove(ruleset: RegisteredRuleset | [string, string]): boolean;
+
+  /**
+   * Remove all rulesets registered in this session.
+   */
+  clear(): void;
+}
+
+/**
+ * Presentation ruleset registry implementation.
+ * @internal
+ */
+export class RulesetManagerImpl implements RulesetManager {
 
   private _getNativePlatform: () => NativePlatformDefinition;
 
@@ -32,7 +61,7 @@ export default class RulesetManager {
    */
   public add(ruleset: Ruleset): RegisteredRuleset {
     const hash = this._getNativePlatform().addRuleset(JSON.stringify(ruleset));
-    return new RegisteredRuleset(ruleset, hash, (ruleset: RegisteredRuleset) => this.remove(ruleset));
+    return new RegisteredRuleset(ruleset, hash, (r: RegisteredRuleset) => this.remove(r));
   }
 
   /**

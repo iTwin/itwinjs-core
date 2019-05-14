@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-/** Sub-specification to specify custom property editor */
+/**
+ * Sub-specification to specify custom property editor
+ * @public
+ */
 export interface PropertyEditorsSpecification {
   /** Name of the property which custom editor should be used for */
   propertyName: string;
@@ -12,17 +15,26 @@ export interface PropertyEditorsSpecification {
   /** Name of the custom editor */
   editorName: string;
 
-  /** Parameters for the editor */
+  /**
+   * Parameters for the editor
+   * @public
+   */
   parameters?: PropertyEditorParameters[];
 }
 
-/** Parameters for [[PropertyEditorsSpecification]] */
+/**
+ * Parameters for [[PropertyEditorsSpecification]]
+ * @public
+ */
 export declare type PropertyEditorParameters = PropertyEditorJsonParameters
   | PropertyEditorMultilineParameters
   | PropertyEditorRangeParameters
   | PropertyEditorSliderParameters;
 
-/** Used for serializing array of [[PropertyEditorParameters]] to JSON */
+/**
+ * Used for serializing array of [[PropertyEditorParameters]] to JSON
+ * @public
+ */
 export enum PropertyEditorParameterTypes {
   Json = "Json",
   Multiline = "Multiline",
@@ -30,13 +42,20 @@ export enum PropertyEditorParameterTypes {
   Slider = "Slider",
 }
 
-/** Base interface for [[PropertyEditorParameters]] */
+/**
+ * Base interface for [[PropertyEditorParameters]]. Not meant
+ * to be used directly, see `PropertyEditorParameters`.
+ * @public
+ */
 export interface PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
   paramsType: PropertyEditorParameterTypes;
 }
 
-/** Arbitrary JSON parameters for custom property editors */
+/**
+ * Arbitrary JSON parameters for custom property editors
+ * @public
+ */
 export interface PropertyEditorJsonParameters extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
   paramsType: PropertyEditorParameterTypes.Json;
@@ -45,7 +64,10 @@ export interface PropertyEditorJsonParameters extends PropertyEditorParametersBa
   json: any;
 }
 
-/** Multiline parameters for property editors that support multiline display */
+/**
+ * Multiline parameters for property editors that support multiline display
+ * @public
+ */
 export interface PropertyEditorMultilineParameters extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
   paramsType: PropertyEditorParameterTypes.Multiline;
@@ -59,7 +81,10 @@ export interface PropertyEditorMultilineParameters extends PropertyEditorParamet
   height?: number;
 }
 
-/** Range parameters for property editors that support ranges */
+/**
+ * Range parameters for property editors that support ranges
+ * @public
+ */
 export interface PropertyEditorRangeParameters extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
   paramsType: PropertyEditorParameterTypes.Range;
@@ -71,7 +96,10 @@ export interface PropertyEditorRangeParameters extends PropertyEditorParametersB
   max?: number;
 }
 
-/** Slider parameters for property editors that support slider display */
+/**
+ * Slider parameters for property editors that support slider display
+ * @public
+ */
 export interface PropertyEditorSliderParameters extends PropertyEditorParametersBase {
   /** Used for serializing to JSON. */
   paramsType: PropertyEditorParameterTypes.Slider;

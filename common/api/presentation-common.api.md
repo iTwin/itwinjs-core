@@ -15,64 +15,38 @@ import { IModelToken } from '@bentley/imodeljs-common';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { RpcInterface } from '@bentley/imodeljs-common';
 
-// Warning: (ae-missing-release-tag) "AllInstanceNodesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface AllInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
-    specType: RuleSpecificationTypes.AllInstanceNodes;
+    specType: ChildNodeSpecificationTypes.AllInstanceNodes;
     supportedSchemas?: SchemasSpecification;
 }
 
-// Warning: (ae-missing-release-tag) "AllRelatedInstanceNodesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface AllRelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     requiredDirection?: RelationshipDirection;
     skipRelatedLevel?: number;
-    specType: RuleSpecificationTypes.AllRelatedInstanceNodes;
+    specType: ChildNodeSpecificationTypes.AllRelatedInstanceNodes;
     supportedSchemas?: SchemasSpecification;
 }
 
-// Warning: (ae-missing-release-tag) "ArrayTypeDescription" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ArrayTypeDescription extends BaseTypeDescription {
-    // (undocumented)
     memberType: TypeDescription;
-    // (undocumented)
     valueFormat: PropertyValueFormat.Array;
 }
 
-// Warning: (ae-missing-release-tag) "BaseFieldJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface BaseFieldJSON {
-    // (undocumented)
-    category: CategoryDescription;
-    // (undocumented)
-    editor?: EditorDescription;
-    // (undocumented)
-    isReadonly: boolean;
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    priority: number;
-    // (undocumented)
-    type: TypeDescription;
-}
-
-// Warning: (ae-missing-release-tag) "BaseNodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface BaseNodeKey {
     pathFromRoot: string[];
     type: string;
 }
 
-// Warning: (ae-missing-release-tag) "CalculatedPropertiesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export interface BaseTypeDescription {
+    typeName: string;
+    valueFormat: PropertyValueFormat;
+}
+
 // @public
 export interface CalculatedPropertiesSpecification {
     label: string;
@@ -80,8 +54,6 @@ export interface CalculatedPropertiesSpecification {
     value: string;
 }
 
-// Warning: (ae-missing-release-tag) "CategoryDescription" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface CategoryDescription {
     description: string;
@@ -91,8 +63,6 @@ export interface CategoryDescription {
     priority: number;
 }
 
-// Warning: (ae-missing-release-tag) "CheckBoxRule" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface CheckBoxRule extends RuleBase, ConditionContainer {
     condition?: string;
@@ -103,16 +73,43 @@ export interface CheckBoxRule extends RuleBase, ConditionContainer {
     useInversedPropertyValue?: boolean;
 }
 
-// Warning: (ae-missing-release-tag) "ChildNodeRule" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
     condition?: string;
     ruleType: RuleTypes.ChildNodes;
 }
 
-// Warning: (ae-missing-release-tag) "ClassGroup" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export type ChildNodeSpecification = AllInstanceNodesSpecification | AllRelatedInstanceNodesSpecification | CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification;
+
+// @public
+export interface ChildNodeSpecificationBase {
+    doNotSort?: boolean;
+    hasChildren?: "Always" | "Never" | "Unknown";
+    hideIfNoChildren?: boolean;
+    hideNodesInHierarchy?: boolean;
+    nestedRules?: ChildNodeRule[];
+    priority?: number;
+    relatedInstances?: RelatedInstanceSpecification[];
+    specType: ChildNodeSpecificationTypes;
+}
+
+// @public
+export enum ChildNodeSpecificationTypes {
+    // (undocumented)
+    AllInstanceNodes = "AllInstanceNodes",
+    // (undocumented)
+    AllRelatedInstanceNodes = "AllRelatedInstanceNodes",
+    // (undocumented)
+    CustomNode = "CustomNode",
+    // (undocumented)
+    CustomQueryInstanceNodes = "CustomQueryInstanceNodes",
+    // (undocumented)
+    InstanceNodesOfSpecificClasses = "InstanceNodesOfSpecificClasses",
+    // (undocumented)
+    RelatedInstanceNodes = "RelatedInstanceNodes"
+}
+
 // @public
 export interface ClassGroup extends GroupingSpecificationBase {
     baseClass?: SingleSchemaClassSpecification;
@@ -120,66 +117,49 @@ export interface ClassGroup extends GroupingSpecificationBase {
     specType: GroupingSpecificationTypes.Class;
 }
 
-// Warning: (ae-missing-release-tag) "ClassId" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @public
 export type ClassId = Id64String;
 
-// Warning: (ae-missing-release-tag) "ClassInfo" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ClassInfo {
-    // (undocumented)
     id: ClassId;
-    // (undocumented)
     label: string;
-    // (undocumented)
     name: string;
 }
 
-// Warning: (ae-missing-release-tag) "classInfoFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export const classInfoFromJSON: (json: ClassInfoJSON) => ClassInfo;
-
-// Warning: (ae-missing-release-tag) "ClassInfoJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface ClassInfoJSON {
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    name: string;
-}
-
-// Warning: (ae-missing-release-tag) "ClientStateSyncRequestOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public (undocumented)
-export type ClientStateSyncRequestOptions = RpcRequestOptions & {
+export namespace ClassInfo {
+    // @internal
+    export function fromJSON(json: ClassInfoJSON): ClassInfo;
+    // @internal (undocumented)
+    export function toJSON(info: ClassInfo): ClassInfoJSON;
+}
+
+// @internal
+export type ClientStateSyncRequestOptions = PresentationRpcRequestOptions & {
     state: {
         [id: string]: unknown;
     };
 };
 
-// Warning: (ae-missing-release-tag) "compareInstanceKeys" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export const compareInstanceKeys: (lhs: InstanceKey, rhs: InstanceKey) => number;
-
-// Warning: (ae-missing-release-tag) "Content" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export class Content {
-    contentSet: Array<Readonly<Item>>;
-    descriptor: Readonly<Descriptor>;
-    static fromJSON(json: ContentJSON | string | undefined): Content | undefined;
-    static reviver(key: string, value: any): any;
+export interface ConditionContainer {
+    condition?: string;
 }
 
-// Warning: (ae-missing-release-tag) "ContentFlags" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export class Content {
+    constructor(descriptor: Descriptor, items: Item[]);
+    readonly contentSet: Item[];
+    readonly descriptor: Descriptor;
+    // @internal
+    static fromJSON(json: ContentJSON | string | undefined): Content | undefined;
+    // @internal
+    static reviver(key: string, value: any): any;
+    // @internal (undocumented)
+    toJSON(): ContentJSON;
+}
+
 // @public
 export enum ContentFlags {
     DistinctValues = 16,
@@ -190,28 +170,14 @@ export enum ContentFlags {
     ShowLabels = 4
 }
 
-// Warning: (ae-missing-release-tag) "ContentInstancesOfSpecificClassesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
     arePolymorphic?: boolean;
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     instanceFilter?: string;
-    specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses;
+    specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses;
 }
 
-// Warning: (ae-missing-release-tag) "ContentJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface ContentJSON {
-    // (undocumented)
-    contentSet: ItemJSON[];
-    // (undocumented)
-    descriptor: DescriptorJSON;
-}
-
-// Warning: (ae-missing-release-tag) "ContentModifier" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ContentModifier extends RuleBase {
     calculatedProperties?: CalculatedPropertiesSpecification[];
@@ -222,8 +188,6 @@ export interface ContentModifier extends RuleBase {
     ruleType: RuleTypes.ContentModifier;
 }
 
-// Warning: (ae-missing-release-tag) "ContentRelatedInstancesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
     instanceFilter?: string;
@@ -232,32 +196,16 @@ export interface ContentRelatedInstancesSpecification extends ContentSpecificati
     relationships?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     requiredDirection?: RelationshipDirection;
     skipRelatedLevel?: number;
-    specType: RuleSpecificationTypes.ContentRelatedInstances;
+    specType: ContentSpecificationTypes.ContentRelatedInstances;
 }
 
-// Warning: (ae-missing-release-tag) "ContentRequestOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
 }
 
-// Warning: (ae-missing-release-tag) "ContentResponse" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export interface ContentResponse {
-    // (undocumented)
-    content: Readonly<Content> | undefined;
-    // (undocumented)
-    size: number;
-}
+export type ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit<ContentRequestOptions<IModelToken>, "imodel">;
 
-// Warning: (ae-missing-release-tag) "ContentRpcRequestOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export type ContentRpcRequestOptions = RpcRequestOptions & Omit<ContentRequestOptions<IModelToken>, "imodel">;
-
-// Warning: (ae-missing-release-tag) "ContentRule" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ContentRule extends RuleBase, ConditionContainer {
     condition?: string;
@@ -265,161 +213,140 @@ export interface ContentRule extends RuleBase, ConditionContainer {
     specifications: ContentSpecification[];
 }
 
-// Warning: (ae-missing-release-tag) "CustomNodeSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export type ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification;
+
+// @public
+export interface ContentSpecificationBase {
+    calculatedProperties?: CalculatedPropertiesSpecification[];
+    priority?: number;
+    propertiesDisplay?: PropertiesDisplaySpecification[];
+    propertyEditors?: PropertyEditorsSpecification[];
+    relatedInstances?: RelatedInstanceSpecification[];
+    relatedProperties?: RelatedPropertiesSpecification[];
+    showImages?: boolean;
+    specType: ContentSpecificationTypes;
+}
+
+// @public
+export enum ContentSpecificationTypes {
+    // (undocumented)
+    ContentInstancesOfSpecificClasses = "ContentInstancesOfSpecificClasses",
+    // (undocumented)
+    ContentRelatedInstances = "ContentRelatedInstances",
+    // (undocumented)
+    SelectedNodeInstances = "SelectedNodeInstances"
+}
+
+// @public
+export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride;
+
 // @public
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
     description?: string;
     imageId?: string;
     label: string;
-    specType: RuleSpecificationTypes.CustomNode;
+    specType: ChildNodeSpecificationTypes.CustomNode;
     type: string;
 }
 
-// Warning: (ae-missing-release-tag) "CustomQueryInstanceNodesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     queries?: QuerySpecification[];
-    specType: RuleSpecificationTypes.CustomQueryInstanceNodes;
+    specType: ChildNodeSpecificationTypes.CustomQueryInstanceNodes;
 }
 
-// Warning: (ae-missing-release-tag) "DefaultContentDisplayTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export class DefaultContentDisplayTypes {
-    static readonly GRID = "Grid";
-    static readonly LIST = "List";
-    static readonly PROPERTY_PANE = "PropertyPane";
-    static readonly UNDEFINED = "Undefined";
-    static readonly VIEWPORT = "Graphics";
+export enum DefaultContentDisplayTypes {
+    Grid = "Grid",
+    List = "List",
+    PropertyPane = "PropertyPane",
+    Undefined = "Undefined",
+    Viewport = "Graphics"
 }
 
-// Warning: (ae-missing-release-tag) "Descriptor" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export class Descriptor {
+export interface DefaultGroupingPropertiesContainer {
+    groupByClass?: boolean;
+    groupByLabel?: boolean;
+}
+
+// @public
+export class Descriptor implements DescriptorSource {
+    constructor(source: DescriptorSource);
     connectionId: string;
     contentFlags: number;
     contentOptions: any;
-    // (undocumented)
+    // @internal (undocumented)
     createDescriptorOverrides(): DescriptorOverrides;
-    // (undocumented)
+    // @internal (undocumented)
     createStrippedDescriptor(): Descriptor;
     displayType: string;
     fields: Field[];
     filterExpression?: string;
+    // @internal
     static fromJSON(json: DescriptorJSON | string | undefined): Descriptor | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
     inputKeysHash: string;
-    // (undocumented)
-    rebuildParentship(): void;
-    // (undocumented)
-    resetParentship(): void;
+    // @internal
     static reviver(key: string, value: any): any;
+    selectClasses: SelectClassInfo[];
+    selectionInfo?: SelectionInfo;
+    sortDirection?: SortDirection;
+    sortingField?: Field;
+    // @internal (undocumented)
+    toJSON(): DescriptorJSON;
+}
+
+// @public
+export interface DescriptorOverrides {
+    contentFlags: number;
+    displayType: string;
+    filterExpression?: string;
+    hiddenFieldNames: string[];
+    sortDirection?: SortDirection;
+    sortingFieldName?: string;
+}
+
+// @public
+export interface DescriptorSource {
+    contentFlags: number;
+    displayType: string;
+    fields: Field[];
+    filterExpression?: string;
     selectClasses: SelectClassInfo[];
     selectionInfo?: SelectionInfo;
     sortDirection?: SortDirection;
     sortingField?: Field;
 }
 
-// Warning: (ae-missing-release-tag) "DescriptorJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export interface DescriptorJSON {
-    // (undocumented)
-    connectionId: string;
-    // (undocumented)
-    contentFlags: number;
-    // (undocumented)
-    contentOptions: any;
-    // (undocumented)
-    displayType: string;
-    // (undocumented)
-    fields: FieldJSON[];
-    // (undocumented)
-    filterExpression?: string;
-    // (undocumented)
-    inputKeysHash: string;
-    // (undocumented)
-    selectClasses: SelectClassInfoJSON[];
-    // (undocumented)
-    selectionInfo?: SelectionInfo;
-    // (undocumented)
-    sortDirection?: SortDirection;
-    // (undocumented)
-    sortingFieldName?: string;
+export interface DisabledSortingRule extends SortingRuleBase {
+    ruleType: RuleTypes.DisabledSorting;
 }
 
-// Warning: (ae-missing-release-tag) "DescriptorOverrides" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export interface DescriptorOverrides {
-    // (undocumented)
-    contentFlags: number;
-    // (undocumented)
-    displayType: string;
-    // (undocumented)
-    filterExpression?: string;
-    // (undocumented)
-    hiddenFieldNames: string[];
-    // (undocumented)
-    sortDirection?: SortDirection;
-    // (undocumented)
-    sortingFieldName?: string;
-}
-
-// Warning: (ae-missing-release-tag) "DisplayValue" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
 export type DisplayValue = string | undefined | DisplayValuesMap | DisplayValuesArray;
 
-// Warning: (ae-missing-release-tag) "displayValueFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public (undocumented)
-export function displayValueFromJSON(json: DisplayValueJSON): DisplayValue;
+export namespace DisplayValue {
+    // @internal (undocumented)
+    export function fromJSON(json: DisplayValueJSON): DisplayValue;
+    export function isArray(value: DisplayValue): value is DisplayValuesArray;
+    export function isMap(value: DisplayValue): value is DisplayValuesMap;
+    export function isPrimitive(value: DisplayValue): value is string | undefined;
+    // @internal (undocumented)
+    export function toJSON(value: DisplayValue): DisplayValueJSON;
+}
 
-// Warning: (ae-missing-release-tag) "DisplayValueJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export type DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON;
-
-// Warning: (ae-missing-release-tag) "DisplayValuesArray" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @public
 export interface DisplayValuesArray extends Array<DisplayValue> {
 }
 
-// Warning: (ae-missing-release-tag) "displayValuesArrayFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export function displayValuesArrayFromJSON(json: DisplayValuesArrayJSON): DisplayValuesArray;
-
-// Warning: (ae-missing-release-tag) "DisplayValuesArrayJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> {
-}
-
-// Warning: (ae-missing-release-tag) "DisplayValuesMap" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @public
 export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> {
 }
 
-// Warning: (ae-missing-release-tag) "displayValuesMapFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export function displayValuesMapFromJSON(json: DisplayValuesMapJSON): DisplayValuesMap;
-
-// Warning: (ae-missing-release-tag) "DisplayValuesMapJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> {
-}
-
-// Warning: (ae-missing-release-tag) "ECClassGroupingNodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ECClassGroupingNodeKey extends GroupingNodeKey {
     className: string;
@@ -427,8 +354,6 @@ export interface ECClassGroupingNodeKey extends GroupingNodeKey {
     type: StandardNodeTypes.ECClassGroupingNode;
 }
 
-// Warning: (ae-missing-release-tag) "ECInstanceNodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ECInstanceNodeKey extends BaseNodeKey {
     instanceKey: InstanceKey;
@@ -436,18 +361,6 @@ export interface ECInstanceNodeKey extends BaseNodeKey {
     type: StandardNodeTypes.ECInstanceNode;
 }
 
-// Warning: (ae-missing-release-tag) "ECInstanceNodeKeyJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface ECInstanceNodeKeyJSON extends BaseNodeKey {
-    // (undocumented)
-    instanceKey: InstanceKeyJSON;
-    // (undocumented)
-    type: StandardNodeTypes.ECInstanceNode;
-}
-
-// Warning: (ae-missing-release-tag) "ECPropertyGroupingNodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
     className: string;
@@ -457,77 +370,63 @@ export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
     type: StandardNodeTypes.ECPropertyGroupingNode;
 }
 
-// Warning: (ae-missing-release-tag) "ECPropertyValueQuerySpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ECPropertyValueQuerySpecification extends QuerySpecificationBase {
     parentPropertyName: string;
     specType: QuerySpecificationTypes.ECPropertyValue;
 }
 
-// Warning: (ae-missing-release-tag) "EditorDescription" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface EditorDescription {
     name: string;
     params: any;
 }
 
-// Warning: (ae-missing-release-tag) "EnumerationChoice" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface EnumerationChoice {
-    // (undocumented)
     label: string;
-    // (undocumented)
     value: string | number;
 }
 
-// Warning: (ae-missing-release-tag) "EnumerationInfo" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface EnumerationInfo {
-    // (undocumented)
     choices: EnumerationChoice[];
-    // (undocumented)
     isStrict: boolean;
 }
 
-// Warning: (ae-missing-release-tag) "Field" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class Field {
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, editor?: EditorDescription);
-    category: Readonly<CategoryDescription>;
-    editor?: Readonly<EditorDescription>;
+    category: CategoryDescription;
+    editor?: EditorDescription;
+    // @internal
     static fromJSON(json: FieldJSON | string | undefined): Field | undefined;
     isNestedContentField(): this is NestedContentField;
     isPropertiesField(): this is PropertiesField;
     isReadonly: boolean;
     label: string;
     name: string;
-    readonly parent: Readonly<NestedContentField> | undefined;
+    readonly parent: NestedContentField | undefined;
     priority: number;
-    // (undocumented)
+    // @internal (undocumented)
     rebuildParentship(parentField?: NestedContentField): void;
-    // (undocumented)
+    // @internal (undocumented)
     resetParentship(): void;
+    // @internal
     static reviver(key: string, value: any): any;
-    type: Readonly<TypeDescription>;
+    // @internal (undocumented)
+    toJSON(): FieldJSON;
+    type: TypeDescription;
 }
 
-// Warning: (ae-missing-release-tag) "FieldJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export type FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON;
-
-// Warning: (ae-missing-release-tag) "getInstancesCount" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
 
-// Warning: (ae-missing-release-tag) "GroupingRule" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export interface GroupingNodeKey extends BaseNodeKey {
+    groupedInstancesCount: number;
+}
+
 // @public
 export interface GroupingRule extends RuleBase, ConditionContainer {
     class: SingleSchemaClassSpecification;
@@ -536,13 +435,14 @@ export interface GroupingRule extends RuleBase, ConditionContainer {
     ruleType: RuleTypes.Grouping;
 }
 
-// Warning: (ae-missing-release-tag) "GroupingSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup;
 
-// Warning: (ae-missing-release-tag) "GroupingSpecificationTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export interface GroupingSpecificationBase {
+    specType: GroupingSpecificationTypes;
+}
+
 // @public
 export enum GroupingSpecificationTypes {
     // (undocumented)
@@ -553,20 +453,14 @@ export enum GroupingSpecificationTypes {
     SameLabelInstance = "SameLabelInstance"
 }
 
-// Warning: (ae-missing-release-tag) "HierarchyRequestOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
 }
 
-// Warning: (ae-missing-release-tag) "HierarchyRpcRequestOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export type HierarchyRpcRequestOptions = RpcRequestOptions & Omit<HierarchyRequestOptions<IModelToken>, "imodel">;
-
-// Warning: (ae-missing-release-tag) "IClientStateHolder" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
+export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit<HierarchyRequestOptions<IModelToken>, "imodel">;
+
+// @internal
 export interface IClientStateHolder<TState> {
     // (undocumented)
     key: string;
@@ -576,8 +470,6 @@ export interface IClientStateHolder<TState> {
     state: TState | undefined;
 }
 
-// Warning: (ae-missing-release-tag) "ImageIdOverride" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
     condition?: string;
@@ -585,43 +477,27 @@ export interface ImageIdOverride extends RuleBase, ConditionContainer {
     ruleType: RuleTypes.ImageIdOverride;
 }
 
-// Warning: (ae-missing-release-tag) "InstanceId" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @public
 export type InstanceId = Id64String;
 
-// Warning: (ae-missing-release-tag) "InstanceKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface InstanceKey {
-    // (undocumented)
     className: string;
-    // (undocumented)
     id: InstanceId;
 }
 
-// Warning: (ae-missing-release-tag) "instanceKeyFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export const instanceKeyFromJSON: (json: InstanceKeyJSON) => InstanceKey;
-
-// Warning: (ae-missing-release-tag) "InstanceKeyJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface InstanceKeyJSON {
-    // (undocumented)
-    className: string;
-    // (undocumented)
-    id: string;
+// @public (undocumented)
+export namespace InstanceKey {
+    export function compare(lhs: InstanceKey, rhs: InstanceKey): number;
+    // @internal
+    export function fromJSON(json: InstanceKeyJSON): {
+        id: string;
+        className: string;
+    };
+    // @internal (undocumented)
+    export function toJSON(json: InstanceKey): InstanceKeyJSON;
 }
 
-// Warning: (ae-missing-release-tag) "InstanceKeysList" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export type InstanceKeysList = InstanceKey[];
-
-// Warning: (ae-missing-release-tag) "InstanceLabelOverride" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface InstanceLabelOverride extends RuleBase {
     class: SingleSchemaClassSpecification;
@@ -629,116 +505,47 @@ export interface InstanceLabelOverride extends RuleBase {
     ruleType: RuleTypes.InstanceLabelOverride;
 }
 
-// Warning: (ae-missing-release-tag) "InstanceNodesOfSpecificClassesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     arePolymorphic?: boolean;
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     instanceFilter?: string;
-    specType: RuleSpecificationTypes.InstanceNodesOfSpecificClasses;
+    specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses;
 }
 
-// Warning: (ae-missing-release-tag) "isArray" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export function isArray(v: Value | ValueJSON | DisplayValue | DisplayValueJSON): v is ValuesArray | ValuesArrayJSON | DisplayValuesArray | DisplayValuesArrayJSON;
-
-// Warning: (ae-missing-release-tag) "isClassGroupingNodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export const isClassGroupingNodeKey: (key: NodeKey) => key is ECClassGroupingNodeKey;
-
-// Warning: (ae-missing-release-tag) "isGroupingNodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export const isGroupingNodeKey: (key: NodeKey) => key is GroupingNodeKey;
-
-// Warning: (ae-missing-release-tag) "isInstanceNodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export const isInstanceNodeKey: (key: NodeKey) => key is ECInstanceNodeKey;
-
-// Warning: (ae-missing-release-tag) "isLabelGroupingNodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export const isLabelGroupingNodeKey: (key: NodeKey) => key is LabelGroupingNodeKey;
-
-// Warning: (ae-missing-release-tag) "isMap" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export function isMap(v: Value | ValueJSON | DisplayValue | DisplayValueJSON): v is ValuesMap | ValuesMapJSON | DisplayValuesMap | DisplayValuesMapJSON;
-
-// Warning: (ae-missing-release-tag) "isNestedContentValue" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export function isNestedContentValue(v: Value | ValueJSON): v is NestedContentValue[] | NestedContentValueJSON[];
-
-// Warning: (ae-missing-release-tag) "isPrimitive" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export function isPrimitive(v: Value | DisplayValue): v is string | number | boolean | undefined;
-
-// Warning: (ae-missing-release-tag) "isPropertyGroupingNodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export const isPropertyGroupingNodeKey: (key: NodeKey) => key is ECPropertyGroupingNodeKey;
-
-// Warning: (ae-missing-release-tag) "Item" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class Item {
     constructor(primaryKeys: InstanceKey[], label: string, imageId: string, classInfo: ClassInfo | undefined, values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[]);
-    classInfo?: Readonly<ClassInfo>;
-    displayValues: Readonly<ValuesDictionary<DisplayValue>>;
+    classInfo?: ClassInfo;
+    displayValues: ValuesDictionary<DisplayValue>;
+    // @internal
     static fromJSON(json: ItemJSON | string | undefined): Item | undefined;
     imageId: string;
     isFieldMerged(fieldName: string): boolean;
     label: string;
     mergedFieldNames: string[];
-    primaryKeys: Array<Readonly<InstanceKey>>;
+    primaryKeys: InstanceKey[];
+    // @internal
     static reviver(key: string, value: any): any;
-    values: Readonly<ValuesDictionary<Value>>;
+    // @internal (undocumented)
+    toJSON(): ItemJSON;
+    values: ValuesDictionary<Value>;
 }
 
-// Warning: (ae-missing-release-tag) "ItemJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface ItemJSON {
-    // (undocumented)
-    classInfo?: ClassInfoJSON;
-    // (undocumented)
-    displayValues: ValuesDictionary<DisplayValueJSON>;
-    // (undocumented)
-    imageId: string;
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    mergedFieldNames: string[];
-    // (undocumented)
-    primaryKeys: InstanceKeyJSON[];
-    // (undocumented)
-    values: ValuesDictionary<ValueJSON>;
-}
-
-// Warning: (ae-missing-release-tag) "Key" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
 
-// Warning: (ae-missing-release-tag) "Keys" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export type Keys = ReadonlyArray<Key> | Readonly<KeySetJSON> | Readonly<KeySet>;
+export type Keys = ReadonlyArray<Key> | Readonly<KeySet>;
 
-// Warning: (ae-missing-release-tag) "KeySet" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class KeySet {
     constructor(source?: Keys);
     add(value: Keys | Key): KeySet;
     clear(): KeySet;
     delete(value: Keys | Key): KeySet;
+    // @internal
+    static fromJSON(json: KeySetJSON): KeySet;
     readonly guid: GuidString;
     has(value: Key): boolean;
     hasAll(keys: Keys): boolean;
@@ -749,24 +556,20 @@ export class KeySet {
     readonly nodeKeys: Set<NodeKey>;
     readonly nodeKeysCount: number;
     readonly size: number;
+    // @internal
+    toJSON(): KeySetJSON;
 }
 
-// Warning: (ae-missing-release-tag) "KindOfQuantityInfo" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface KindOfQuantityInfo {
-    // (undocumented)
+    // @alpha
     currentFormatId: string;
-    // (undocumented)
     label: string;
-    // (undocumented)
     name: string;
-    // (undocumented)
+    // @alpha
     persistenceUnit: string;
 }
 
-// Warning: (ae-missing-release-tag) "LabelGroupingNodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface LabelGroupingNodeKey extends GroupingNodeKey {
     label: string;
@@ -774,8 +577,6 @@ export interface LabelGroupingNodeKey extends GroupingNodeKey {
     type: StandardNodeTypes.DisplayLabelGroupingNode;
 }
 
-// Warning: (ae-missing-release-tag) "LabelOverride" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface LabelOverride extends RuleBase, ConditionContainer {
     condition?: string;
@@ -784,19 +585,13 @@ export interface LabelOverride extends RuleBase, ConditionContainer {
     ruleType: RuleTypes.LabelOverride;
 }
 
-// Warning: (ae-missing-release-tag) "LabelRequestOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> {
 }
 
-// Warning: (ae-missing-release-tag) "LabelRpcRequestOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export type LabelRpcRequestOptions = RpcRequestOptions & Omit<LabelRequestOptions<IModelToken>, "imodel">;
+// @public
+export type LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit<LabelRequestOptions<IModelToken>, "imodel">;
 
-// Warning: (ae-missing-release-tag) "LoggingNamespaces" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export enum LoggingNamespaces {
     // (undocumented)
@@ -829,76 +624,55 @@ export enum LoggingNamespaces {
     ECPresentation_RulesEngine_Update = "ECPresentation.RulesEngine.Update"
 }
 
-// Warning: (ae-missing-release-tag) "MultiSchemaClassesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface MultiSchemaClassesSpecification {
     classNames: string[];
     schemaName: string;
 }
 
-// Warning: (ae-missing-release-tag) "NestedContentField" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export type NavigationRule = RootNodeRule | ChildNodeRule;
+
+// @public
+export interface NavigationRuleBase extends RuleBase {
+    customizationRules?: CustomizationRule[];
+    specifications?: ChildNodeSpecification[];
+    stopFurtherProcessing?: boolean;
+    subConditions?: SubCondition[];
+}
+
 // @public
 export class NestedContentField extends Field {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPathInfo, nestedFields: Field[], editor?: EditorDescription);
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription);
     contentClassInfo: ClassInfo;
+    // @internal
     static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
-    nestedFields: Array<Readonly<Field>>;
-    pathToPrimaryClass: RelationshipPathInfo;
-    // (undocumented)
+    nestedFields: Field[];
+    pathToPrimaryClass: RelationshipPath;
+    // @internal (undocumented)
     rebuildParentship(parentField?: NestedContentField): void;
-    // (undocumented)
+    // @internal (undocumented)
     resetParentship(): void;
+    // @internal (undocumented)
+    toJSON(): NestedContentFieldJSON;
 }
 
-// Warning: (ae-missing-release-tag) "NestedContentFieldJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface NestedContentFieldJSON extends BaseFieldJSON {
-    // (undocumented)
-    contentClassInfo: ClassInfoJSON;
-    // (undocumented)
-    nestedFields: FieldJSON[];
-    // (undocumented)
-    pathToPrimaryClass: RelationshipPathInfoJSON;
-}
-
-// Warning: (ae-missing-release-tag) "NestedContentValue" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface NestedContentValue {
-    // (undocumented)
     displayValues: ValuesDictionary<DisplayValue>;
-    // (undocumented)
     mergedFieldNames: string[];
-    // (undocumented)
     primaryKeys: InstanceKey[];
-    // (undocumented)
     values: ValuesDictionary<Value>;
 }
 
-// Warning: (ae-missing-release-tag) "nestedContentValueFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public (undocumented)
-export function nestedContentValueFromJSON(json: NestedContentValueJSON): NestedContentValue;
-
-// Warning: (ae-missing-release-tag) "NestedContentValueJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface NestedContentValueJSON {
-    // (undocumented)
-    displayValues: ValuesDictionary<DisplayValueJSON>;
-    // (undocumented)
-    mergedFieldNames: string[];
-    // (undocumented)
-    primaryKeys: InstanceKeyJSON[];
-    // (undocumented)
-    values: ValuesDictionary<ValueJSON>;
+export namespace NestedContentValue {
+    // @internal (undocumented)
+    export function fromJSON(json: NestedContentValueJSON): NestedContentValue;
+    // @internal (undocumented)
+    export function toJSON(json: NestedContentValue): NestedContentValueJSON;
 }
 
-// Warning: (ae-missing-release-tag) "Node" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface Node {
     backColor?: string;
@@ -917,203 +691,168 @@ export interface Node {
     label: string;
 }
 
-// Warning: (ae-missing-release-tag) "NodeJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface NodeJSON {
-    // (undocumented)
-    backColor?: string;
-    // (undocumented)
-    description?: string;
-    // (undocumented)
-    fontStyle?: string;
-    // (undocumented)
-    foreColor?: string;
-    // (undocumented)
-    hasChildren?: boolean;
-    // (undocumented)
-    imageId?: string;
-    // (undocumented)
-    isCheckboxEnabled?: boolean;
-    // (undocumented)
-    isCheckboxVisible?: boolean;
-    // (undocumented)
-    isChecked?: boolean;
-    // (undocumented)
-    isEditable?: boolean;
-    // (undocumented)
-    isExpanded?: boolean;
-    // (undocumented)
-    isSelectionDisabled?: boolean;
-    // (undocumented)
-    key: NodeKeyJSON;
-    // (undocumented)
-    label: string;
+// @public (undocumented)
+export namespace Node {
+    // @internal
+    export function fromJSON(json: NodeJSON | string): Node;
+    // @internal
+    export function listFromJSON(json: NodeJSON[] | string): Node[];
+    // @internal
+    export function listReviver(key: string, value: any): any;
+    // @internal
+    export function reviver(key: string, value: any): any;
+    // @internal
+    export function toJSON(node: Node): NodeJSON;
 }
 
-// Warning: (ae-missing-release-tag) "NodeKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type NodeKey = BaseNodeKey | ECInstanceNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 
-// Warning: (ae-missing-release-tag) "nodeKeyFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export const nodeKeyFromJSON: (json: NodeKeyJSON) => NodeKey;
+// @public (undocumented)
+export namespace NodeKey {
+    // @internal
+    export function fromJSON(json: NodeKeyJSON): NodeKey;
+    export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey;
+    export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey;
+    export function isInstanceNodeKey(key: NodeKey): key is ECInstanceNodeKey;
+    export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey;
+    export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey;
+    // @internal
+    export function toJSON(key: NodeKey): NodeKeyJSON;
+}
 
-// Warning: (ae-missing-release-tag) "NodeKeyJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export type NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
-
-// Warning: (ae-missing-release-tag) "NodeKeyPath" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type NodeKeyPath = NodeKey[];
 
-// Warning: (ae-missing-release-tag) "NodePathElement" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface NodePathElement {
-    // (undocumented)
     children: NodePathElement[];
-    // (undocumented)
     filteringData?: NodePathFilteringData;
-    // (undocumented)
     index: number;
-    // (undocumented)
-    isMarked: boolean;
-    // (undocumented)
+    isMarked?: boolean;
     node: Node;
 }
 
-// Warning: (ae-missing-release-tag) "NodesResponse" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface NodesResponse {
-    // (undocumented)
-    count: number;
-    // (undocumented)
-    nodes: ReadonlyArray<Node>;
+// @public (undocumented)
+export namespace NodePathElement {
+    // @internal
+    export function fromJSON(json: NodePathElementJSON | string): NodePathElement;
+    // @internal
+    export function listFromJSON(json: NodePathElementJSON[] | string): NodePathElement[];
+    // @internal
+    export function listReviver(key: string, value: any): any;
+    // @internal
+    export function reviver(key: string, value: any): any;
+    // @internal
+    export function toJSON(npe: NodePathElement): NodePathElementJSON;
 }
 
-// Warning: (ae-missing-release-tag) "Omit" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @public
+export interface NodePathFilteringData {
+    childMatchesCount: number;
+    matchesCount: number;
+}
+
+// @public
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
-// Warning: (ae-missing-release-tag) "Paged" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type Paged<TOptions extends {}> = TOptions & {
     paging?: PageOptions;
 };
 
-// Warning: (ae-missing-release-tag) "PageOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface PageOptions {
     size?: number;
     start?: number;
 }
 
-// Warning: (ae-missing-release-tag) "PersistentKeysContainer" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface PersistentKeysContainer {
-    // (undocumented)
     elements: Id64String[];
-    // (undocumented)
     models: Id64String[];
-    // (undocumented)
     nodes: NodeKey[];
 }
 
-// Warning: (ae-missing-release-tag) "PresentationError" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class PresentationError extends BentleyError {
     constructor(errorNumber: PresentationStatus, message?: string, log?: LogFunction, getMetaData?: GetMetaDataFunction);
     protected _initName(): string;
 }
 
-// Warning: (ae-missing-release-tag) "PresentationRpcInterface" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class PresentationRpcInterface extends RpcInterface {
     // (undocumented)
-    computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySet>;
+    computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
     // (undocumented)
-    getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Descriptor | DescriptorOverrides, _keys: KeySet): PresentationRpcResponse<Content | undefined>;
+    getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<ContentJSON | undefined>;
     // (undocumented)
-    getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Descriptor | DescriptorOverrides, _keys: KeySet): PresentationRpcResponse<ContentResponse>;
+    getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<{
+        content?: ContentJSON;
+        size: number;
+    }>;
     // (undocumented)
-    getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: KeySet, _selection: SelectionInfo | undefined): PresentationRpcResponse<Descriptor | undefined>;
+    getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: KeySetJSON, _selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined>;
     // (undocumented)
-    getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: Descriptor | DescriptorOverrides, _keys: KeySet): PresentationRpcResponse<number>;
+    getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<number>;
     // (undocumented)
-    getDisplayLabel(_token: IModelToken, _options: LabelRpcRequestOptions, _key: InstanceKey): PresentationRpcResponse<string>;
+    getDisplayLabel(_token: IModelToken, _options: LabelRpcRequestOptions, _key: InstanceKeyJSON): PresentationRpcResponse<string>;
     // (undocumented)
-    getDisplayLabels(_token: IModelToken, _options: LabelRpcRequestOptions, _keys: InstanceKey[]): PresentationRpcResponse<string[]>;
+    getDisplayLabels(_token: IModelToken, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<string[]>;
     // (undocumented)
-    getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: Descriptor, _keys: KeySet, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
+    getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
     // (undocumented)
-    getFilteredNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElement[]>;
+    getFilteredNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)
-    getNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _paths: InstanceKey[][], _markedIndex: number): PresentationRpcResponse<NodePathElement[]>;
+    getNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _paths: InstanceKeyJSON[][], _markedIndex: number): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)
-    getNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKey): PresentationRpcResponse<Node[]>;
+    getNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKeyJSON): PresentationRpcResponse<NodeJSON[]>;
     // (undocumented)
-    getNodesAndCount(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKey): PresentationRpcResponse<NodesResponse>;
+    getNodesAndCount(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKeyJSON): PresentationRpcResponse<{
+        nodes: NodeJSON[];
+        count: number;
+    }>;
     // (undocumented)
-    getNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey?: NodeKey): PresentationRpcResponse<number>;
+    getNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey?: NodeKeyJSON): PresentationRpcResponse<number>;
     // (undocumented)
     getSelectionScopes(_token: IModelToken, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
-    // (undocumented)
+    // @internal
     syncClientState(_token: IModelToken, _options: ClientStateSyncRequestOptions): PresentationRpcResponse;
-    static types: () => (typeof KeySet | typeof Field | typeof PropertiesField | typeof NestedContentField | typeof Descriptor | typeof Item | typeof Content)[];
+    static types: () => never[];
     static version: string;
 }
 
-// Warning: (ae-missing-release-tag) "PresentationRpcResponse" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export type PresentationRpcResponse<P = undefined> = Promise<RpcResponse<P> | RpcResponse<undefined>>;
+// @public
+export interface PresentationRpcRequestOptions {
+    clientId?: string;
+    clientStateId?: string;
+}
 
-// Warning: (ae-missing-release-tag) "PresentationStatus" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export type PresentationRpcResponse<TResult = undefined> = Promise<{
+    statusCode: PresentationStatus;
+    errorMessage?: string;
+    result?: TResult;
+}>;
+
 // @public
 export enum PresentationStatus {
-    // (undocumented)
     BackendOutOfSync = 65542,
-    // (undocumented)
     BackendTimeout = 65543,
-    // (undocumented)
     Error = 65536,
-    // (undocumented)
     InvalidArgument = 65539,
-    // (undocumented)
     InvalidResponse = 65540,
-    // (undocumented)
     NoContent = 65541,
-    // (undocumented)
     NotInitialized = 65537,
-    // (undocumented)
     Success = 0,
-    // (undocumented)
     UseAfterDisposal = 65538
 }
 
-// Warning: (ae-missing-release-tag) "PrimitiveTypeDescription" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface PrimitiveTypeDescription extends BaseTypeDescription {
-    // (undocumented)
     valueFormat: PropertyValueFormat.Primitive;
 }
 
-// Warning: (ae-missing-release-tag) "PropertiesDisplaySpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface PropertiesDisplaySpecification {
     isDisplayed?: boolean;
@@ -1121,49 +860,50 @@ export interface PropertiesDisplaySpecification {
     propertyNames: string[];
 }
 
-// Warning: (ae-missing-release-tag) "PropertiesField" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class PropertiesField extends Field {
     constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription);
+    // @internal
     static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined;
-    properties: Array<Readonly<Property>>;
+    properties: Property[];
+    // @internal (undocumented)
+    toJSON(): PropertiesFieldJSON;
 }
 
-// Warning: (ae-missing-release-tag) "PropertiesFieldJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface PropertiesFieldJSON extends BaseFieldJSON {
-    // (undocumented)
-    properties: PropertyJSON[];
-}
-
-// Warning: (ae-missing-release-tag) "Property" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface Property {
-    property: Readonly<PropertyInfo>;
-    relatedClassPath: Readonly<RelationshipPathInfo>;
+    property: PropertyInfo;
+    relatedClassPath: RelationshipPath;
 }
 
-// Warning: (ae-missing-release-tag) "PropertyEditorJsonParameters" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public (undocumented)
+export namespace Property {
+    // @internal
+    export function fromJSON(json: PropertyJSON): Property;
+    // @internal (undocumented)
+    export function toJSON(prop: Property): PropertyJSON;
+}
+
 // @public
 export interface PropertyEditorJsonParameters extends PropertyEditorParametersBase {
     json: any;
     paramsType: PropertyEditorParameterTypes.Json;
 }
 
-// Warning: (ae-missing-release-tag) "PropertyEditorMultilineParameters" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface PropertyEditorMultilineParameters extends PropertyEditorParametersBase {
     height?: number;
     paramsType: PropertyEditorParameterTypes.Multiline;
 }
 
-// Warning: (ae-missing-release-tag) "PropertyEditorParameterTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export type PropertyEditorParameters = PropertyEditorJsonParameters | PropertyEditorMultilineParameters | PropertyEditorRangeParameters | PropertyEditorSliderParameters;
+
+// @public
+export interface PropertyEditorParametersBase {
+    paramsType: PropertyEditorParameterTypes;
+}
+
 // @public
 export enum PropertyEditorParameterTypes {
     // (undocumented)
@@ -1176,8 +916,6 @@ export enum PropertyEditorParameterTypes {
     Slider = "Slider"
 }
 
-// Warning: (ae-missing-release-tag) "PropertyEditorRangeParameters" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface PropertyEditorRangeParameters extends PropertyEditorParametersBase {
     max?: number;
@@ -1185,8 +923,6 @@ export interface PropertyEditorRangeParameters extends PropertyEditorParametersB
     paramsType: PropertyEditorParameterTypes.Range;
 }
 
-// Warning: (ae-missing-release-tag) "PropertyEditorSliderParameters" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface PropertyEditorSliderParameters extends PropertyEditorParametersBase {
     intervalsCount?: number;
@@ -1196,8 +932,6 @@ export interface PropertyEditorSliderParameters extends PropertyEditorParameters
     paramsType: PropertyEditorParameterTypes.Slider;
 }
 
-// Warning: (ae-missing-release-tag) "PropertyEditorsSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface PropertyEditorsSpecification {
     editorName: string;
@@ -1205,8 +939,6 @@ export interface PropertyEditorsSpecification {
     propertyName: string;
 }
 
-// Warning: (ae-missing-release-tag) "PropertyGroup" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface PropertyGroup extends GroupingSpecificationBase {
     createGroupForSingleItem?: boolean;
@@ -1219,63 +951,30 @@ export interface PropertyGroup extends GroupingSpecificationBase {
     specType: GroupingSpecificationTypes.Property;
 }
 
-// Warning: (ae-missing-release-tag) "PropertyGroupingValue" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export enum PropertyGroupingValue {
     DisplayLabel = "DisplayLabel",
     PropertyValue = "PropertyValue"
 }
 
-// Warning: (ae-missing-release-tag) "PropertyInfo" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface PropertyInfo {
-    // (undocumented)
     classInfo: ClassInfo;
-    // (undocumented)
     enumerationInfo?: EnumerationInfo;
-    // (undocumented)
+    // @alpha
     kindOfQuantity?: KindOfQuantityInfo;
-    // (undocumented)
     name: string;
-    // (undocumented)
     type: string;
 }
 
-// Warning: (ae-missing-release-tag) "propertyInfoFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export const propertyInfoFromJSON: (json: PropertyInfoJSON) => PropertyInfo;
-
-// Warning: (ae-missing-release-tag) "PropertyInfoJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface PropertyInfoJSON {
-    // (undocumented)
-    classInfo: ClassInfoJSON;
-    // (undocumented)
-    enumerationInfo?: EnumerationInfo;
-    // (undocumented)
-    kindOfQuantity?: KindOfQuantityInfo;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    type: string;
+// @public (undocumented)
+export namespace PropertyInfo {
+    // @internal
+    export function fromJSON(json: PropertyInfoJSON): PropertyInfo;
+    // @internal (undocumented)
+    export function toJSON(info: PropertyInfo): PropertyInfoJSON;
 }
 
-// Warning: (ae-missing-release-tag) "PropertyJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface PropertyJSON {
-    // (undocumented)
-    property: PropertyInfoJSON;
-    // (undocumented)
-    relatedClassPath: RelationshipPathInfoJSON;
-}
-
-// Warning: (ae-missing-release-tag) "PropertyRangeGroupSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface PropertyRangeGroupSpecification {
     fromValue: string;
@@ -1284,20 +983,29 @@ export interface PropertyRangeGroupSpecification {
     toValue: string;
 }
 
-// Warning: (ae-missing-release-tag) "PropertyValueFormat" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export interface PropertySortingRule extends SortingRuleBase {
+    propertyName: string;
+    ruleType: RuleTypes.PropertySorting;
+    sortAscending?: boolean;
+}
+
 // @public
 export enum PropertyValueFormat {
-    // (undocumented)
     Array = "Array",
-    // (undocumented)
     Primitive = "Primitive",
-    // (undocumented)
     Struct = "Struct"
 }
 
-// Warning: (ae-missing-release-tag) "QuerySpecificationTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export type QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification;
+
+// @public
+export interface QuerySpecificationBase {
+    class: SingleSchemaClassSpecification;
+    specType: QuerySpecificationTypes;
+}
+
 // @public
 export enum QuerySpecificationTypes {
     // (undocumented)
@@ -1306,12 +1014,9 @@ export enum QuerySpecificationTypes {
     String = "String"
 }
 
-// Warning: (ae-missing-release-tag) "RegisteredRuleset" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class RegisteredRuleset implements IDisposable, Ruleset {
     constructor(ruleset: Ruleset, uniqueIdentifier: string, disposeFunc: (ruleset: RegisteredRuleset) => void);
-    // (undocumented)
     dispose(): void;
     // (undocumented)
     readonly id: string;
@@ -1329,8 +1034,6 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
     readonly vars: VariablesGroup[] | undefined;
 }
 
-// Warning: (ae-missing-release-tag) "RelatedClassInfo" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface RelatedClassInfo {
     isForwardRelationship: boolean;
@@ -1340,29 +1043,14 @@ export interface RelatedClassInfo {
     targetClassInfo: ClassInfo;
 }
 
-// Warning: (ae-missing-release-tag) "relatedClassInfoFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export const relatedClassInfoFromJSON: (json: RelatedClassInfoJSON) => RelatedClassInfo;
-
-// Warning: (ae-missing-release-tag) "RelatedClassInfoJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface RelatedClassInfoJSON {
-    // (undocumented)
-    isForwardRelationship: boolean;
-    // (undocumented)
-    isPolymorphicRelationship: boolean;
-    // (undocumented)
-    relationshipInfo: ClassInfoJSON;
-    // (undocumented)
-    sourceClassInfo: ClassInfoJSON;
-    // (undocumented)
-    targetClassInfo: ClassInfoJSON;
+// @public (undocumented)
+export namespace RelatedClassInfo {
+    // @internal
+    export function fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo;
+    // @internal (undocumented)
+    export function toJSON(info: RelatedClassInfo): RelatedClassInfoJSON;
 }
 
-// Warning: (ae-missing-release-tag) "RelatedInstanceNodesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     instanceFilter?: string;
@@ -1370,12 +1058,10 @@ export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificatio
     relationships?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     requiredDirection?: RelationshipDirection;
     skipRelatedLevel?: number;
-    specType: RuleSpecificationTypes.RelatedInstanceNodes;
+    specType: ChildNodeSpecificationTypes.RelatedInstanceNodes;
     supportedSchemas?: string[];
 }
 
-// Warning: (ae-missing-release-tag) "RelatedInstanceSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface RelatedInstanceSpecification {
     alias: string;
@@ -1385,8 +1071,11 @@ export interface RelatedInstanceSpecification {
     requiredDirection: RelationshipDirection.Forward | RelationshipDirection.Backward;
 }
 
-// Warning: (ae-missing-release-tag) "RelatedPropertiesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export enum RelatedPropertiesSpecialValues {
+    None = "_none_"
+}
+
 // @public
 export interface RelatedPropertiesSpecification {
     isPolymorphic?: boolean;
@@ -1398,8 +1087,6 @@ export interface RelatedPropertiesSpecification {
     requiredDirection?: RelationshipDirection;
 }
 
-// Warning: (ae-missing-release-tag) "RelationshipDirection" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export enum RelationshipDirection {
     Backward = "Backward",
@@ -1407,97 +1094,76 @@ export enum RelationshipDirection {
     Forward = "Forward"
 }
 
-// Warning: (ae-missing-release-tag) "RelationshipMeaning" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export enum RelationshipMeaning {
     RelatedInstance = "RelatedInstance",
     SameInstance = "SameInstance"
 }
 
-// Warning: (ae-missing-release-tag) "RelationshipPathInfo" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export type RelationshipPathInfo = RelatedClassInfo[];
+export type RelationshipPath = RelatedClassInfo[];
 
-// Warning: (ae-missing-release-tag) "RelationshipPathInfoJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export type RelationshipPathInfoJSON = RelatedClassInfoJSON[];
-
-// Warning: (ae-missing-release-tag) "RequestOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface RequestOptions<TIModel> {
     imodel: TIModel;
     locale?: string;
 }
 
-// Warning: (ae-missing-release-tag) "RequestOptionsWithRuleset" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @public
 export interface RequestOptionsWithRuleset<TIModel> extends RequestOptions<TIModel> {
     rulesetId: string;
 }
 
-// Warning: (ae-missing-release-tag) "RootNodeRule" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface RootNodeRule extends NavigationRuleBase {
     autoExpand?: boolean;
     ruleType: RuleTypes.RootNodes;
 }
 
-// Warning: (ae-missing-release-tag) "RpcRequestOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export interface RpcRequestOptions {
-    // (undocumented)
-    clientId?: string;
-    // (undocumented)
-    clientStateId?: string;
-}
-
-// Warning: (ae-missing-release-tag) "RpcRequestsHandler" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
+// @internal
 export class RpcRequestsHandler implements IDisposable {
-    constructor(props?: Props);
+    constructor(props?: RpcRequestsHandlerProps);
     readonly clientId: string;
     readonly clientStateId: string | undefined;
     // (undocumented)
-    computeSelection(options: SelectionScopeRequestOptions<IModelToken>, ids: Id64String[], scopeId: string): Promise<KeySet>;
+    computeSelection(options: SelectionScopeRequestOptions<IModelToken>, ids: Id64String[], scopeId: string): Promise<KeySetJSON>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    getContent(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
+    getContent(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<ContentJSON | undefined>;
     // (undocumented)
-    getContentAndSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<ContentResponse>;
+    getContentAndSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<{
+        content?: ContentJSON | undefined;
+        size: number;
+    }>;
     // (undocumented)
-    getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
+    getContentDescriptor(options: ContentRequestOptions<IModelToken>, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): Promise<DescriptorJSON | undefined>;
     // (undocumented)
-    getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
+    getContentSetSize(options: ContentRequestOptions<IModelToken>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<number>;
     // (undocumented)
-    getDisplayLabel(options: LabelRequestOptions<IModelToken>, key: InstanceKey): Promise<string>;
+    getDisplayLabel(options: LabelRequestOptions<IModelToken>, key: InstanceKeyJSON): Promise<string>;
     // (undocumented)
-    getDisplayLabels(options: LabelRequestOptions<IModelToken>, keys: InstanceKey[]): Promise<string[]>;
+    getDisplayLabels(options: LabelRequestOptions<IModelToken>, keys: InstanceKeyJSON[]): Promise<string[]>;
     // (undocumented)
-    getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number): Promise<string[]>;
+    getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]>;
     // (undocumented)
-    getFilteredNodePaths(options: HierarchyRequestOptions<IModelToken>, filterText: string): Promise<NodePathElement[]>;
+    getFilteredNodePaths(options: HierarchyRequestOptions<IModelToken>, filterText: string): Promise<NodePathElementJSON[]>;
     // (undocumented)
-    getNodePaths(options: HierarchyRequestOptions<IModelToken>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
+    getNodePaths(options: HierarchyRequestOptions<IModelToken>, paths: InstanceKeyJSON[][], markedIndex: number): Promise<NodePathElementJSON[]>;
     // (undocumented)
-    getNodes(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: NodeKey): Promise<Node[]>;
+    getNodes(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: NodeKeyJSON): Promise<NodeJSON[]>;
     // (undocumented)
-    getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: NodeKey): Promise<NodesResponse>;
+    getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelToken>>, parentKey?: NodeKeyJSON): Promise<{
+        nodes: NodeJSON[];
+        count: number;
+    }>;
     // (undocumented)
-    getNodesCount(options: HierarchyRequestOptions<IModelToken>, parentKey?: NodeKey): Promise<number>;
+    getNodesCount(options: HierarchyRequestOptions<IModelToken>, parentKey?: NodeKeyJSON): Promise<number>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelToken>): Promise<SelectionScope[]>;
     // (undocumented)
     registerClientStateHolder(holder: IClientStateHolder<any>): void;
-    request<TResult, TOptions extends RpcRequestOptions & {
+    request<TResult, TOptions extends PresentationRpcRequestOptions & {
         imodel: IModelToken;
     }, TArg = any>(context: any, func: (token: IModelToken, options: Omit<TOptions, "imodel">, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: TArg[]): Promise<TResult>;
     sync(token: IModelToken): Promise<void>;
@@ -1505,25 +1171,21 @@ export class RpcRequestsHandler implements IDisposable {
     unregisterClientStateHolder(holder: IClientStateHolder<any>): void;
 }
 
-// Warning: (ae-missing-release-tag) "RpcResponse" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export interface RpcResponse<TResult = undefined> {
-    // (undocumented)
-    errorMessage?: string;
-    // (undocumented)
-    result: TResult;
-    // (undocumented)
-    statusCode: PresentationStatus;
+// @internal
+export interface RpcRequestsHandlerProps {
+    clientId?: string;
 }
 
-// Warning: (ae-missing-release-tag) "Rule" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier;
 
-// Warning: (ae-missing-release-tag) "Ruleset" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export interface RuleBase {
+    onlyIfNotHandled?: boolean;
+    priority?: number;
+    ruleType: RuleTypes;
+}
+
 // @public
 export interface Ruleset {
     id: string;
@@ -1533,19 +1195,15 @@ export interface Ruleset {
     vars?: VariablesGroup[];
 }
 
-// Warning: (ae-missing-release-tag) "RulesetManagerState" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @internal (undocumented)
 export type RulesetManagerState = Ruleset[];
 
-// @public (undocumented)
+// @internal (undocumented)
 export namespace RulesetManagerState {
     const // (undocumented)
     STATE_ID = "rulesets";
 }
 
-// Warning: (ae-missing-release-tag) "RulesetsFactory" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class RulesetsFactory {
     createSimilarInstancesRuleset(field: Field, record: Item): {
@@ -1554,46 +1212,18 @@ export class RulesetsFactory {
     };
 }
 
-// Warning: (ae-missing-release-tag) "RulesetVariablesState" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @internal (undocumented)
 export interface RulesetVariablesState {
     // (undocumented)
     [rulesetId: string]: Array<[string, VariableValueTypes, VariableValue]>;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export namespace RulesetVariablesState {
     const // (undocumented)
     STATE_ID = "ruleset variables";
 }
 
-// Warning: (ae-missing-release-tag) "RuleSpecificationTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export enum RuleSpecificationTypes {
-    // (undocumented)
-    AllInstanceNodes = "AllInstanceNodes",
-    // (undocumented)
-    AllRelatedInstanceNodes = "AllRelatedInstanceNodes",
-    // (undocumented)
-    ContentInstancesOfSpecificClasses = "ContentInstancesOfSpecificClasses",
-    // (undocumented)
-    ContentRelatedInstances = "ContentRelatedInstances",
-    // (undocumented)
-    CustomNode = "CustomNode",
-    // (undocumented)
-    CustomQueryInstanceNodes = "CustomQueryInstanceNodes",
-    // (undocumented)
-    InstanceNodesOfSpecificClasses = "InstanceNodesOfSpecificClasses",
-    // (undocumented)
-    RelatedInstanceNodes = "RelatedInstanceNodes",
-    // (undocumented)
-    SelectedNodeInstances = "SelectedNodeInstances"
-}
-
-// Warning: (ae-missing-release-tag) "RuleTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export enum RuleTypes {
     // (undocumented)
@@ -1622,99 +1252,60 @@ export enum RuleTypes {
     StyleOverride = "StyleOverride"
 }
 
-// Warning: (ae-missing-release-tag) "SameLabelInstanceGroup" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
     specType: GroupingSpecificationTypes.SameLabelInstance;
 }
 
-// Warning: (ae-missing-release-tag) "SchemasSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface SchemasSpecification {
     isExclude?: boolean;
     schemaNames: string[];
 }
 
-// Warning: (ae-missing-release-tag) "SelectClassInfo" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface SelectClassInfo {
     isSelectPolymorphic: boolean;
-    pathToPrimaryClass: RelationshipPathInfo;
-    relatedPropertyPaths: RelationshipPathInfo[];
+    pathToPrimaryClass: RelationshipPath;
+    relatedPropertyPaths: RelationshipPath[];
     selectClassInfo: ClassInfo;
 }
 
-// Warning: (ae-missing-release-tag) "SelectClassInfoJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface SelectClassInfoJSON {
-    // (undocumented)
-    isSelectPolymorphic: boolean;
-    // (undocumented)
-    pathToPrimaryClass: RelationshipPathInfoJSON;
-    // (undocumented)
-    relatedPropertyPaths: RelationshipPathInfoJSON[];
-    // (undocumented)
-    selectClassInfo: ClassInfoJSON;
-}
-
-// Warning: (ae-missing-release-tag) "SelectedNodeInstancesSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface SelectedNodeInstancesSpecification extends ContentSpecificationBase {
     acceptableClassNames?: string[];
     acceptablePolymorphically?: boolean;
     acceptableSchemaName?: string;
     onlyIfNotHandled?: boolean;
-    specType: RuleSpecificationTypes.SelectedNodeInstances;
+    specType: ContentSpecificationTypes.SelectedNodeInstances;
 }
 
-// Warning: (ae-missing-release-tag) "SelectionInfo" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface SelectionInfo {
-    // (undocumented)
     level?: number;
-    // (undocumented)
     providerName: string;
 }
 
-// Warning: (ae-missing-release-tag) "SelectionScope" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface SelectionScope {
-    // (undocumented)
     description?: string;
-    // (undocumented)
     id: string;
-    // (undocumented)
     label: string;
 }
 
-// Warning: (ae-missing-release-tag) "SelectionScopeRequestOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {
 }
 
-// Warning: (ae-missing-release-tag) "SelectionScopeRpcRequestOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export type SelectionScopeRpcRequestOptions = RpcRequestOptions & Omit<SelectionScopeRequestOptions<IModelToken>, "imodel">;
+// @public
+export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions & Omit<SelectionScopeRequestOptions<IModelToken>, "imodel">;
 
-// Warning: (ae-missing-release-tag) "SingleSchemaClassSpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface SingleSchemaClassSpecification {
     className: string;
     schemaName: string;
 }
 
-// Warning: (ae-missing-release-tag) "SortDirection" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export enum SortDirection {
     // (undocumented)
@@ -1723,13 +1314,16 @@ export enum SortDirection {
     Descending = 1
 }
 
-// Warning: (ae-missing-release-tag) "SortingRule" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type SortingRule = PropertySortingRule | DisabledSortingRule;
 
-// Warning: (ae-missing-release-tag) "StandardNodeTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export interface SortingRuleBase extends RuleBase, ConditionContainer {
+    class?: SingleSchemaClassSpecification;
+    condition?: string;
+    isPolymorphic?: boolean;
+}
+
 // @public
 export enum StandardNodeTypes {
     // (undocumented)
@@ -1742,26 +1336,25 @@ export enum StandardNodeTypes {
     ECPropertyGroupingNode = "ECPropertyGroupingNode"
 }
 
-// Warning: (ae-missing-release-tag) "StringQuerySpecification" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface StringQuerySpecification extends QuerySpecificationBase {
     query: string;
     specType: QuerySpecificationTypes.String;
 }
 
-// Warning: (ae-missing-release-tag) "StructTypeDescription" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export interface StructFieldMemberDescription {
+    label: string;
+    name: string;
+    type: TypeDescription;
+}
+
 // @public
 export interface StructTypeDescription extends BaseTypeDescription {
-    // (undocumented)
     members: StructFieldMemberDescription[];
-    // (undocumented)
     valueFormat: PropertyValueFormat.Struct;
 }
 
-// Warning: (ae-missing-release-tag) "StyleOverride" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface StyleOverride extends RuleBase, ConditionContainer {
     backColor?: string;
@@ -1771,8 +1364,6 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
     ruleType: RuleTypes.StyleOverride;
 }
 
-// Warning: (ae-missing-release-tag) "SubCondition" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface SubCondition extends ConditionContainer {
     condition?: string;
@@ -1780,82 +1371,46 @@ export interface SubCondition extends ConditionContainer {
     subConditions?: SubCondition[];
 }
 
-// Warning: (ae-missing-release-tag) "Subtract" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @public
 export type Subtract<T, K> = Omit<T, keyof K>;
 
-// Warning: (ae-missing-release-tag) "SupplementationInfo" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface SupplementationInfo {
     supplementationPurpose: string;
 }
 
-// Warning: (ae-missing-release-tag) "TypeDescription" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription;
 
-// Warning: (ae-missing-release-tag) "Value" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @public
 export type Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[];
 
-// Warning: (ae-missing-release-tag) "valueFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public (undocumented)
-export function valueFromJSON(json: ValueJSON): Value;
+export namespace Value {
+    // @internal (undocumented)
+    export function fromJSON(json: ValueJSON): Value;
+    export function isArray(value: Value): value is ValuesArray;
+    export function isMap(value: Value): value is ValuesMap;
+    export function isNestedContent(value: Value): value is NestedContentValue[];
+    export function isPrimitive(value: Value): value is string | number | boolean | undefined;
+    // @internal (undocumented)
+    export function toJSON(value: Value): ValueJSON;
+}
 
-// Warning: (ae-missing-release-tag) "ValueJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export type ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NestedContentValueJSON[];
-
-// Warning: (ae-missing-release-tag) "ValuesArray" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @public
 export interface ValuesArray extends Array<Value> {
 }
 
-// Warning: (ae-missing-release-tag) "valuesArrayFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export function valuesArrayFromJSON(json: ValuesArrayJSON): ValuesArray;
-
-// Warning: (ae-missing-release-tag) "ValuesArrayJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export interface ValuesArrayJSON extends Array<ValueJSON> {
-}
-
-// Warning: (ae-missing-release-tag) "ValuesDictionary" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface ValuesDictionary<T> {
     // (undocumented)
     [key: string]: T;
 }
 
-// Warning: (ae-missing-release-tag) "ValuesMap" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @public
 export interface ValuesMap extends ValuesDictionary<Value> {
 }
 
-// Warning: (ae-missing-release-tag) "valuesMapFromJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export function valuesMapFromJSON(json: ValuesMapJSON): ValuesMap;
-
-// Warning: (ae-missing-release-tag) "ValuesMapJSON" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
-export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> {
-}
-
-// Warning: (ae-missing-release-tag) "Variable" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface Variable {
     defaultValue?: string;
@@ -1864,8 +1419,6 @@ export interface Variable {
     type?: VariableValueType;
 }
 
-// Warning: (ae-missing-release-tag) "VariablesGroup" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface VariablesGroup {
     label: string;
@@ -1873,13 +1426,9 @@ export interface VariablesGroup {
     vars: Variable[];
 }
 
-// Warning: (ae-missing-release-tag) "VariableValue" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
+// @internal
 export type VariableValue = boolean | string | number | number[] | Id64String[];
 
-// Warning: (ae-missing-release-tag) "VariableValueType" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export enum VariableValueType {
     Int = "IntValue",
@@ -1888,9 +1437,7 @@ export enum VariableValueType {
     YesNo = "YesNo"
 }
 
-// Warning: (ae-missing-release-tag) "VariableValueTypes" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
+// @internal
 export enum VariableValueTypes {
     Bool = "bool",
     Id64 = "id64",

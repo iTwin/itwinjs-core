@@ -70,17 +70,14 @@ describe("TableDataProvider", () => {
     while (recordsCount--) {
       records.push(itemsGenerator());
     }
-    return {
-      descriptor,
-      contentSet: records,
-    };
+    return new Content(descriptor, records);
   };
   const createSingleRecordContent = (itemsGenerator?: () => Item) => createContent(1, itemsGenerator);
 
   describe("constructor", () => {
 
     it("sets display type to GRID", () => {
-      expect(provider.displayType).to.eq(DefaultContentDisplayTypes.GRID);
+      expect(provider.displayType).to.eq(DefaultContentDisplayTypes.Grid);
     });
 
     it("sets default sorting properties", () => {
@@ -338,10 +335,7 @@ describe("TableDataProvider", () => {
     it("throws when content record is invalid - contains invalid number of primary keys", async () => {
       const record = createEmptyContentItem();
       record.primaryKeys = [];
-      (provider as any).getContent = async (): Promise<Content> => ({
-        descriptor: createRandomDescriptor(),
-        contentSet: [record],
-      });
+      (provider as any).getContent = async () => new Content(createRandomDescriptor(), [record]);
       await expect(provider.getRow(0)).to.eventually.be.rejectedWith(PresentationError);
     });
 
@@ -383,11 +377,7 @@ describe("TableDataProvider", () => {
       });
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-      const c: Content = {
-        descriptor,
-        contentSet: [record],
-      };
-      (provider as any).getContent = async () => c;
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
       const row = await provider.getRow(0);
       expect(row).to.matchSnapshot();
     });

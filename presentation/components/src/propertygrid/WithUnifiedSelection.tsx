@@ -5,7 +5,7 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { KeySet, Subtract } from "@bentley/presentation-common";
+import { KeySet } from "@bentley/presentation-common";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { PropertyGridProps } from "@bentley/ui-components";
 import { getDisplayName, translate } from "../common/Utils";
@@ -16,9 +16,10 @@ import "./WithUnifiedSelection.scss";
 const DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT = 100;
 
 /**
- * Props that are injected to the HOC component.
+ * Props that are injected to the PropertyGridWithUnifiedSelection HOC component.
+ * @public
  */
-export interface Props {
+export interface PropertyGridWithUnifiedSelectionProps {
   /** The data provider used by the property grid. */
   dataProvider: IPresentationPropertyDataProvider;
 
@@ -28,7 +29,7 @@ export interface Props {
    */
   requestedContentInstancesLimit?: number;
 
-  /** @hidden */
+  /** @internal */
   selectionHandler?: SelectionHandler;
 }
 
@@ -44,11 +45,13 @@ interface State {
  * property grid component.
  *
  * **Note:** it is required for the property grid to use [[IPresentationPropertyDataProvider]]
+ *
+ * @public
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
+export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<P & PropertyGridWithUnifiedSelectionProps> {
 
-  type CombinedProps = Subtract<P, Props> & Props;
+  type CombinedProps = P & PropertyGridWithUnifiedSelectionProps;
 
   return class WithUnifiedSelection extends React.Component<CombinedProps, State> implements IUnifiedSelectionComponent {
 

@@ -7,8 +7,10 @@
 /**
  * A data structure which describes property editor used
  * for a content [[Field]].
+ *
+ * @public
  */
-export default interface EditorDescription {
+export interface EditorDescription {
   /** Unique name */
   name: string;
   /** Editor-specific parameters */

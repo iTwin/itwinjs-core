@@ -6,28 +6,58 @@
 
 import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 
+/**
+ * Type of an ECClass ID.
+ * @public
+ */
 export type ClassId = Id64String;
 
+/**
+ * Type of an ECInstance ID.
+ * @public
+ */
 export type InstanceId = Id64String;
 
-/** A key that uniquely identifies an instance in an iModel */
+/**
+ * A key that uniquely identifies an instance in an iModel
+ * @public
+ */
 export interface InstanceKey {
+  /** Full class name in format `SchemaName:ClassName` */
   className: string;
+  /** ECInstance ID */
   id: InstanceId;
 }
+/** @public */
+export namespace InstanceKey {
+  /**
+   * Compare 2 instance keys
+   * @public
+   */
+  export function compare(lhs: InstanceKey, rhs: InstanceKey): number {
+    const classNameCompare = lhs.className.localeCompare(rhs.className);
+    if (classNameCompare !== 0)
+      return classNameCompare;
+    return lhs.id.localeCompare(rhs.id);
+  }
 
-/** Compare 2 instance keys */
-export const compareInstanceKeys = (lhs: InstanceKey, rhs: InstanceKey) => {
-  const classNameCompare = lhs.className.localeCompare(rhs.className);
-  if (classNameCompare !== 0)
-    return classNameCompare;
-  return lhs.id.localeCompare(rhs.id);
-};
+  /** @internal */
+  export function toJSON(json: InstanceKey): InstanceKeyJSON {
+    return { ...json, id: json.id.toString() };
+  }
+
+  /**
+   * Deserializes [[InstanceKey]] from [[InstanceKeyJSON]]
+   * @internal
+   */
+  export function fromJSON(json: InstanceKeyJSON) {
+    return { ...json, id: Id64.fromJSON(json.id) };
+  }
+}
 
 /**
  * A serialized version of [[InstanceKey]]
- *
- * @hidden
+ * @internal
  */
 export interface InstanceKeyJSON {
   className: string;
@@ -35,28 +65,35 @@ export interface InstanceKeyJSON {
 }
 
 /**
- * Deserializes [[InstanceKey]] from [[InstanceKeyJSON]]
- *
- * @hidden
+ * Information about an ECClass
+ * @public
  */
-export const instanceKeyFromJSON = (json: InstanceKeyJSON): InstanceKey => {
-  return { ...json, id: Id64.fromJSON(json.id) };
-};
-
-/** An array of [[InstanceKey]] objects */
-export type InstanceKeysList = InstanceKey[];
-
-/** Information about an ECClass */
 export interface ClassInfo {
+  /** ECClass ID */
   id: ClassId;
+  /** Full class name in format `SchemaName:ClassName` */
   name: string;
+  /** ECClass label */
   label: string;
+}
+/** @public */
+export namespace ClassInfo {
+  /** @internal */
+  export function toJSON(info: ClassInfo): ClassInfoJSON {
+    return { ...info, id: info.id.toString() };
+  }
+  /**
+   * Deserializes [[ClassInfo]] from [[ClassInfoJSON]]
+   * @internal
+   */
+  export function fromJSON(json: ClassInfoJSON): ClassInfo {
+    return { ...json, id: Id64.fromJSON(json.id) };
+  }
 }
 
 /**
  * A serialized version of [[ClassInfo]]
- *
- * @hidden
+ * @internal
  */
 export interface ClassInfoJSON {
   id: string;
@@ -65,47 +102,85 @@ export interface ClassInfoJSON {
 }
 
 /**
- * Deserializes [[ClassInfo]] from [[ClassInfoJSON]]
- *
- * @hidden
+ * A single choice in enumeration
+ * @public
  */
-export const classInfoFromJSON = (json: ClassInfoJSON): ClassInfo => {
-  return { ...json, id: Id64.fromJSON(json.id) };
-};
-
-/** A single choice in enumeration */
 export interface EnumerationChoice {
+  /** Label of the choice */
   label: string;
+  /** Value of the choice */
   value: string | number;
 }
 
-/** Enumeration information */
+/**
+ * Enumeration information
+ * @public
+ */
 export interface EnumerationInfo {
+  /** Available enumeration choices */
   choices: EnumerationChoice[];
+  /** Is the enumeration strict (values only allowed from `choices` list) */
   isStrict: boolean;
 }
 
-/** Kind of quantity information */
+/**
+ * Kind of quantity information
+ * @public
+ */
 export interface KindOfQuantityInfo {
+  /** Full name of KindOfQuantity in format `SchemaName:KindOfQuantityName` */
   name: string;
+  /** Label of KindOfQuantity */
   label: string;
+  /**
+   * Persistence unit identifier.
+   * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
+   */
   persistenceUnit: string;
+  /**
+   * Current format identifier
+   * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
+   */
   currentFormatId: string;
 }
 
-/** A structure that describes an ECProperty */
+/**
+ * A structure that describes an ECProperty
+ * @public
+ */
 export interface PropertyInfo {
+  /** Information about ECProperty class */
   classInfo: ClassInfo;
+  /** Name of the ECProperty */
   name: string;
+  /** Type name of the ECProperty */
   type: string;
+  /** Enumeration info if the property is enumerable */
   enumerationInfo?: EnumerationInfo;
+  /**
+   * Kind of quantity information, if any.
+   * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
+   */
   kindOfQuantity?: KindOfQuantityInfo;
+}
+/** @public */
+export namespace PropertyInfo {
+  /** @internal */
+  export function toJSON(info: PropertyInfo): PropertyInfoJSON {
+    return { ...info, classInfo: ClassInfo.toJSON(info.classInfo) };
+  }
+  /**
+   * Deserializes [[PropertyInfo]] from [[PropertyInfoJSON]]
+   * @internal
+   */
+  export function fromJSON(json: PropertyInfoJSON): PropertyInfo {
+    return { ...json, classInfo: ClassInfo.fromJSON(json.classInfo) };
+  }
 }
 
 /**
  * A serialized version of [[PropertyInfo]]
- *
- * @hidden
+ * @internal
  */
 export interface PropertyInfoJSON {
   classInfo: ClassInfoJSON;
@@ -116,15 +191,9 @@ export interface PropertyInfoJSON {
 }
 
 /**
- * Deserializes [[PropertyInfo]] from [[PropertyInfoJSON]]
- *
- * @hidden
+ * A structure that describes a related class and the properties of that relationship.
+ * @public
  */
-export const propertyInfoFromJSON = (json: PropertyInfoJSON): PropertyInfo => {
-  return { ...json, classInfo: classInfoFromJSON(json.classInfo) };
-};
-
-/** A structure that describes a related class and the properties of that relationship. */
 export interface RelatedClassInfo {
   /** Information about the source ECClass */
   sourceClassInfo: ClassInfo;
@@ -132,7 +201,7 @@ export interface RelatedClassInfo {
   /** Information about the target ECClass */
   targetClassInfo: ClassInfo;
 
-  /** Information about the relationship ECClass */
+  /** Information about the ECRelationship */
   relationshipInfo: ClassInfo;
 
   /** Should the relationship be followed in a forward direction to access the related class. */
@@ -141,11 +210,34 @@ export interface RelatedClassInfo {
   /** Is the relationship handled polymorphically */
   isPolymorphicRelationship: boolean;
 }
+/** @public */
+export namespace RelatedClassInfo {
+  /** @internal */
+  export function toJSON(info: RelatedClassInfo): RelatedClassInfoJSON {
+    return {
+      ...info,
+      sourceClassInfo: ClassInfo.toJSON(info.sourceClassInfo),
+      targetClassInfo: ClassInfo.toJSON(info.targetClassInfo),
+      relationshipInfo: ClassInfo.toJSON(info.relationshipInfo),
+    };
+  }
+  /**
+   * Deserializes [[RelatedClassInfo]] from [[RelatedClassInfoJSON]]
+   * @internal
+   */
+  export function fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo {
+    return {
+      ...json,
+      sourceClassInfo: ClassInfo.fromJSON(json.sourceClassInfo),
+      targetClassInfo: ClassInfo.fromJSON(json.targetClassInfo),
+      relationshipInfo: ClassInfo.fromJSON(json.relationshipInfo),
+    };
+  }
+}
 
 /**
  * A serialized version of [[RelatedClassInfo]]
- *
- * @hidden
+ * @internal
  */
 export interface RelatedClassInfoJSON {
   sourceClassInfo: ClassInfoJSON;
@@ -156,25 +248,13 @@ export interface RelatedClassInfoJSON {
 }
 
 /**
- * Deserializes [[RelatedClassInfo]] from [[RelatedClassInfoJSON]]
- *
- * @hidden
+ * A structure that describes a related class path.
+ * @public
  */
-export const relatedClassInfoFromJSON = (json: RelatedClassInfoJSON): RelatedClassInfo => {
-  return {
-    ...json,
-    sourceClassInfo: classInfoFromJSON(json.sourceClassInfo),
-    targetClassInfo: classInfoFromJSON(json.targetClassInfo),
-    relationshipInfo: classInfoFromJSON(json.relationshipInfo),
-  };
-};
-
-/** A structure that describes a related class path. */
-export type RelationshipPathInfo = RelatedClassInfo[];
+export type RelationshipPath = RelatedClassInfo[];
 
 /**
  * Serialized [[RelationshipPathInfo]]
- *
- * @hidden
+ * @internal
  */
-export type RelationshipPathInfoJSON = RelatedClassInfoJSON[];
+export type RelationshipPathJSON = RelatedClassInfoJSON[];

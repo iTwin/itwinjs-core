@@ -15,7 +15,7 @@ import {
   PresentationError, PresentationStatus,
   DefaultContentDisplayTypes, Descriptor, SortDirection,
   Content, Field, PropertyValueFormat, Item, Ruleset,
-  InstanceKey, instanceKeyFromJSON,
+  InstanceKey,
 } from "@bentley/presentation-common";
 import { ContentDataProvider, CacheInvalidationProps, IContentDataProvider } from "../common/ContentDataProvider";
 import { ContentBuilder } from "../common/ContentBuilder";
@@ -26,14 +26,21 @@ interface PromisedPage<TItem> extends Page<TItem> {
   promise?: Promise<void>;
 }
 
-/** The default number of rows in a single page requested by [[PresentationTableDataProvider]] */
+/**
+ * The default number of rows in a single page requested by [[PresentationTableDataProvider]]
+ * @public
+ */
 export const TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20;
 
-/** The default number of pages cached by [[PresentationTableDataProvider]] */
+/**
+ * The default number of pages cached by [[PresentationTableDataProvider]]
+ * @public
+ */
 export const TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5;
 
 /**
  * Interface for presentation rules-driven table data provider.
+ * @public
  */
 export type IPresentationTableDataProvider = ITableDataProvider & IContentDataProvider & {
   /** Get key of ECInstance that's represented by the supplied row */
@@ -42,6 +49,7 @@ export type IPresentationTableDataProvider = ITableDataProvider & IContentDataPr
 
 /**
  * Initialization properties for [[PresentationTableDataProvider]]
+ * @public
  */
 export interface PresentationTableDataProviderProps {
   /** IModel to pull data from */
@@ -62,6 +70,7 @@ export interface PresentationTableDataProviderProps {
 
 /**
  * Presentation Rules-driven table data provider.
+ * @public
  */
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
   private _sortColumnKey: string | undefined;
@@ -73,7 +82,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
 
   /** Constructor. */
   constructor(props: PresentationTableDataProviderProps) {
-    super(props.imodel, props.ruleset, props.displayType || DefaultContentDisplayTypes.GRID);
+    super(props.imodel, props.ruleset, props.displayType || DefaultContentDisplayTypes.Grid);
     this._pages = new PageContainer(props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE,
       props.cachedPagesCount || TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT);
     this.pagingSize = props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE;
@@ -81,7 +90,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
 
   /** Get key of ECInstance that's represented by the supplied row */
   public getRowKey(row: RowItem): InstanceKey {
-    return instanceKeyFromJSON(JSON.parse(row.key));
+    return InstanceKey.fromJSON(JSON.parse(row.key));
   }
 
   /**

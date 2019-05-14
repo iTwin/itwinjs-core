@@ -4,8 +4,11 @@ exports[`TreeDataProvider getFilteredNodes returns presentation manager result 1
 Array [
   Object {
     "children": Array [],
+    "filteringData": Object {
+      "childMatchesCount": 5837,
+      "matchesCount": 76356,
+    },
     "index": 769,
-    "isMarked": false,
     "node": Object {
       "backColor": "rgb(
     96,
@@ -38,32 +41,31 @@ Array [
   },
   Object {
     "children": Array [],
-    "index": 136,
-    "isMarked": false,
+    "index": 989,
     "node": Object {
       "backColor": undefined,
       "description": undefined,
-      "foreColor": undefined,
+      "foreColor": "#A93236",
       "hasChildren": false,
-      "imageId": "SAS",
+      "imageId": "Frozen",
       "isCheckboxEnabled": false,
-      "isCheckboxVisible": true,
+      "isCheckboxVisible": false,
       "isChecked": false,
-      "isEditable": true,
+      "isEditable": false,
       "isExpanded": true,
-      "isSelectionDisabled": false,
+      "isSelectionDisabled": true,
       "key": Object {
         "instanceKey": Object {
-          "className": "Sausages",
-          "id": "0xd4fd000001090c",
+          "className": "Cote d'Ivoire",
+          "id": "0xddf20000011fe3",
         },
         "pathFromRoot": Array [
-          "dc083a9d-7f77-44e8-b8a3-94442664d120",
-          "27c2244b-3f70-475d-8284-5797cdfdf346",
+          "83a9d7f7-74e8-4f8a-b944-42664d12027c",
+          "2244b3f7-075d-4c28-8579-7cdfdf3462fa",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "hard drive",
+      "label": "Refined neural",
     },
   },
 ]

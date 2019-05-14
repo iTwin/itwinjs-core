@@ -17,6 +17,7 @@ import { IDisposable } from "@bentley/bentleyjs-core";
 
 /**
  * Properties for invalidating content cache.
+ * @public
  */
 export interface CacheInvalidationProps {
   /**
@@ -50,6 +51,7 @@ export interface CacheInvalidationProps {
    */
   content?: boolean;
 }
+/** @public */
 namespace CacheInvalidationProps {
   /**
    * Create CacheInvalidationProps to fully invalidate all caches.
@@ -59,6 +61,7 @@ namespace CacheInvalidationProps {
 
 /**
  * Interface for all presentation-driven content providers.
+ * @public
  */
 export interface IContentDataProvider extends IPresentationDataProvider, IDisposable {
   /** Display type used to format content */
@@ -87,6 +90,7 @@ export interface IContentDataProvider extends IPresentationDataProvider, IDispos
 
 /**
  * Base class for all presentation-driven content providers.
+ * @public
  */
 export class ContentDataProvider implements IContentDataProvider {
   private _imodel: IModelConnection;
@@ -118,6 +122,7 @@ export class ContentDataProvider implements IContentDataProvider {
     }
   }
 
+  /** Destructor. Must be called to clean up.  */
   public dispose() {
     this._isDisposed = true;
     this.disposeRegisteredRuleset();
@@ -222,10 +227,7 @@ export class ContentDataProvider implements IContentDataProvider {
       if (this.shouldExcludeFromDescriptor(field))
         fields.splice(i, 1);
     }
-    const customDescriptor = Object.create(Descriptor.prototype);
-    return Object.assign(customDescriptor, descriptor, Descriptor, {
-      fields,
-    });
+    return new Descriptor({ ...descriptor, fields });
   }
 
   /**

@@ -9,7 +9,7 @@ import {
   createRandomId, createRandomECClassInfo,
 } from "./_helpers/random";
 import {
-  RulesetsFactory, Rule, RuleTypes, RuleSpecificationTypes,
+  RulesetsFactory, Rule, RuleTypes, ContentSpecificationTypes,
   Property, PropertiesField, Field, Item, PropertyValueFormat,
   PrimitiveTypeDescription, StructTypeDescription, ArrayTypeDescription,
   NestedContentField, RelatedClassInfo, NestedContentValue, RelationshipDirection, ClassInfo,
@@ -72,7 +72,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
           arePolymorphic: true,
           relatedInstances: [],
@@ -105,7 +105,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
           arePolymorphic: true,
           relatedInstances: [],
@@ -138,7 +138,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
           arePolymorphic: true,
           relatedInstances: [],
@@ -171,7 +171,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
           arePolymorphic: true,
           relatedInstances: [],
@@ -204,7 +204,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
           arePolymorphic: true,
           relatedInstances: [],
@@ -237,7 +237,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
           arePolymorphic: true,
           relatedInstances: [],
@@ -270,7 +270,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
           arePolymorphic: true,
           relatedInstances: [],
@@ -337,7 +337,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
@@ -410,7 +410,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
@@ -465,7 +465,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
@@ -520,7 +520,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
@@ -600,7 +600,7 @@ describe("RulesetsFactory", () => {
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses,
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{

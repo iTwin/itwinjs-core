@@ -8,20 +8,20 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as faker from "faker";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
-import RulesetManager from "../RulesetManager";
+import { RulesetManagerImpl } from "../RulesetManager";
 
 describe("RulesetManager", () => {
 
-  let manager: RulesetManager;
+  let manager: RulesetManagerImpl;
 
   beforeEach(() => {
-    manager = new RulesetManager();
+    manager = new RulesetManagerImpl();
   });
 
   describe("[get] state", () => {
 
     beforeEach(() => {
-      manager = new RulesetManager();
+      manager = new RulesetManagerImpl();
     });
 
     it("returns empty list when manager has no rulesets", async () => {

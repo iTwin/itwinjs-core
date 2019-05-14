@@ -9,10 +9,10 @@ import * as moq from "typemoq";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { PresentationError } from "@bentley/presentation-common";
-import Presentation from "../Presentation";
-import PresentationManager from "../PresentationManager";
+import { Presentation } from "../Presentation";
+import { PresentationManager } from "../PresentationManager";
 import "./IModelHostSetup";
-import TemporaryStorage from "../TemporaryStorage";
+import { TemporaryStorage } from "../TemporaryStorage";
 
 describe("Presentation", () => {
 

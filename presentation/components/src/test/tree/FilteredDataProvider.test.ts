@@ -157,33 +157,36 @@ describe("FilteredTreeDataProvider", () => {
 
   filteredNodePaths[0] = createRandomNodePathElement();
   filteredNodePaths[0].node.label = "A-1";
-  filteredNodePaths[0].filteringData = { occurances: 0, childrenOccurances: 1 };
+  filteredNodePaths[0].filteringData = { matchesCount: 0, childMatchesCount: 1 };
 
   filteredNodePaths[0].children = [];
   filteredNodePaths[0].children[0] = createRandomNodePathElement();
   filteredNodePaths[0].children[0].node.label = "A-1-1 test";
-  filteredNodePaths[0].children[0].filteringData = { occurances: 1, childrenOccurances: 0 };
+  filteredNodePaths[0].children[0].filteringData = { matchesCount: 1, childMatchesCount: 0 };
 
   filteredNodePaths[1] = createRandomNodePathElement();
   filteredNodePaths[1].node.label = "A-2 test";
-  filteredNodePaths[1].filteringData = { occurances: 1, childrenOccurances: 0 };
+  filteredNodePaths[1].filteringData = { matchesCount: 1, childMatchesCount: 0 };
 
   filteredNodePaths[1].children = [];
   filteredNodePaths[1].children[0] = createRandomNodePathElement();
   filteredNodePaths[1].children[0].node.label = "A-2-1";
-  filteredNodePaths[1].children[0].filteringData = { occurances: 0, childrenOccurances: 0 };
+  filteredNodePaths[1].children[0].filteringData = { matchesCount: 0, childMatchesCount: 0 };
 
   filteredNodePaths[1].children[1] = createRandomNodePathElement();
   filteredNodePaths[1].children[1].node.label = "A-2-2";
-  filteredNodePaths[1].children[1].filteringData = { occurances: 0, childrenOccurances: 0 };
+  filteredNodePaths[1].children[1].filteringData = { matchesCount: 0, childMatchesCount: 0 };
 
   describe("countFilteringResults", () => {
-    it("all occurances get counted", () => {
+    it("all matches get counted", () => {
       expect(provider.countFilteringResults(filteredNodePaths)).to.be.eq(2);
     });
 
-    it("Doesn't count if nodePaths don't have filtering data", () => {
-      expect(provider.countFilteringResults(nodePaths)).to.be.eq(0);
+    it("doesn't count if node paths don't have filtering data", () => {
+      const paths: NodePathElement[] = [];
+      paths[0] = createRandomNodePathElement();
+      paths[0].node.label = "A-1";
+      expect(provider.countFilteringResults(paths)).to.eq(0);
     });
   });
 

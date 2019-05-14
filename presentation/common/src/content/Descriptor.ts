@@ -5,14 +5,14 @@
 /** @module Content */
 
 import {
-  ClassInfo, ClassInfoJSON, classInfoFromJSON,
-  RelationshipPathInfo, RelationshipPathInfoJSON, relatedClassInfoFromJSON,
+  ClassInfo, ClassInfoJSON,
+  RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
 } from "../EC";
-// import * as ec from "../EC";
 import { Field, FieldJSON } from "./Fields";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].
+ * @public
  */
 export interface SelectClassInfo {
   /** Information about the ECClass */
@@ -20,34 +20,34 @@ export interface SelectClassInfo {
   /** Is the class handled polymorphically */
   isSelectPolymorphic: boolean;
   /** Relationship path to the [Primary class]($docs/learning/content/Terminology#primary-class) */
-  pathToPrimaryClass: RelationshipPathInfo;
+  pathToPrimaryClass: RelationshipPath;
   /** Relationship paths to [Related property]($docs/learning/content/Terminology#related-properties) classes */
-  relatedPropertyPaths: RelationshipPathInfo[];
+  relatedPropertyPaths: RelationshipPath[];
 }
 
 /**
  * Serialized [[SelectClassInfo]]
- *
- * @hidden
+ * @internal
  */
 export interface SelectClassInfoJSON {
   selectClassInfo: ClassInfoJSON;
   isSelectPolymorphic: boolean;
-  pathToPrimaryClass: RelationshipPathInfoJSON;
-  relatedPropertyPaths: RelationshipPathInfoJSON[];
+  pathToPrimaryClass: RelationshipPathJSON;
+  relatedPropertyPaths: RelationshipPathJSON[];
 }
 
 const selectClassInfoFromJSON = (json: SelectClassInfoJSON): SelectClassInfo => {
   return {
     ...json,
-    selectClassInfo: classInfoFromJSON(json.selectClassInfo),
-    pathToPrimaryClass: json.pathToPrimaryClass.map((p) => relatedClassInfoFromJSON(p)),
-    relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => (rp.map((p) => relatedClassInfoFromJSON(p)))),
+    selectClassInfo: ClassInfo.fromJSON(json.selectClassInfo),
+    pathToPrimaryClass: json.pathToPrimaryClass.map((p) => RelatedClassInfo.fromJSON(p)),
+    relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => (rp.map((p) => RelatedClassInfo.fromJSON(p)))),
   };
 };
 
 /**
  * Flags that control content format.
+ * @public
  */
 export enum ContentFlags {
   /** Each content record only has [[InstanceKey]] and no data */
@@ -71,6 +71,7 @@ export enum ContentFlags {
 
 /**
  * Data sorting direction
+ * @public
  */
 export enum SortDirection {
   Ascending,
@@ -80,16 +81,19 @@ export enum SortDirection {
 /**
  * Data structure that contains selection information. Used
  * for cases when requesting content after a selection change.
+ *
+ * @public
  */
 export interface SelectionInfo {
+  /** Name of selection provider which cause the selection change */
   providerName: string;
+  /** Level of selection that changed */
   level?: number;
 }
 
 /**
  * Serialized [[Descriptor]] JSON representation.
- *
- * @hidden
+ * @internal
  */
 export interface DescriptorJSON {
   connectionId: string;
@@ -108,21 +112,54 @@ export interface DescriptorJSON {
 /**
  * Descriptor overrides that can be used to customize
  * content.
+ *
+ * @public
  */
 export interface DescriptorOverrides {
+  /** Content display type. Can be accessed in presentation rules and used to modify content in various ways */
   displayType: string;
+  /** Names of fields which should be excluded from content */
   hiddenFieldNames: string[];
+  /** Content flags used for content customization. See [[ContentFlags]] */
   contentFlags: number;
+  /** Name of the sorting field */
   sortingFieldName?: string;
+  /** Sort direction. Defaults to [[SortDirection.Ascending]] */
   sortDirection?: SortDirection;
+  /** [ECExpression]($docs/learning/ECExpressions.md) for filtering content */
+  filterExpression?: string;
+}
+
+/**
+ * Descriptor properties
+ * @public
+ */
+export interface DescriptorSource {
+  /** Selection info used to create the descriptor */
+  selectionInfo?: SelectionInfo;
+  /** Display type used to create the descriptor */
+  displayType: string;
+  /** A list of classes that will be selected from when creating content with this descriptor */
+  selectClasses: SelectClassInfo[];
+  /** A list of fields contained in the descriptor */
+  fields: Field[];
+  /** [[ContentFlags]] used to create the descriptor */
+  contentFlags: number;
+  /** Field used to sort the content */
+  sortingField?: Field;
+  /** Sorting direction */
+  sortDirection?: SortDirection;
+  /** Content filtering [ECExpression]($docs/learning/ECExpressions) */
   filterExpression?: string;
 }
 
 /**
  * Data structure that describes content: fields, sorting, filtering, format, etc.
  * Descriptor may be changed to control how content is created.
+ *
+ * @public
  */
-export default class Descriptor {
+export class Descriptor implements DescriptorSource {
   /** Id of the connection used to create the descriptor */
   public connectionId!: string;
   /** Hash of the input keys used to create the descriptor */
@@ -146,21 +183,27 @@ export default class Descriptor {
   /** Content filtering [ECExpression]($docs/learning/ECExpressions) */
   public filterExpression?: string;
 
-  /* istanbul ignore next */
-  private constructor() { }
+  /** Construct a new Descriptor using a `DescriptorSource` */
+  public constructor(source: DescriptorSource) {
+    Object.assign(this, source, {
+      selectClasses: [...source.selectClasses],
+      fields: [...source.fields],
+    });
+  }
 
-  /*public toJSON(): DescriptorJSON {
+  /** @internal */
+  public toJSON(): DescriptorJSON {
     return Object.assign({}, this, {
       fields: this.fields.map((field: Field) => field.toJSON()),
     });
-  }*/
+  }
 
   /**
    * Deserialize Descriptor from JSON
    * @param json JSON or JSON serialized to string to deserialize from
    * @returns Deserialized descriptor or undefined if deserialization failed
    *
-   * @hidden
+   * @internal
    */
   public static fromJSON(json: DescriptorJSON | string | undefined): Descriptor | undefined {
     if (!json)
@@ -178,7 +221,7 @@ export default class Descriptor {
    * Reviver function that can be used as a second argument for
    * `JSON.parse` method when parsing Content objects.
    *
-   * @hidden
+   * @internal
    */
   public static reviver(key: string, value: any): any {
     return key === "" ? Descriptor.fromJSON(value) : value;
@@ -193,7 +236,7 @@ export default class Descriptor {
     return findField(this.fields, name, recurse);
   }
 
-  /** @hidden */
+  /** @internal */
   public createDescriptorOverrides(): DescriptorOverrides {
     return {
       displayType: this.displayType,
@@ -205,19 +248,7 @@ export default class Descriptor {
     };
   }
 
-  /** @hidden */
-  public resetParentship(): void {
-    for (const field of this.fields)
-      field.resetParentship();
-  }
-
-  /** @hidden */
-  public rebuildParentship(): void {
-    for (const field of this.fields)
-      field.rebuildParentship();
-  }
-
-  /** @hidden */
+  /** @internal */
   public createStrippedDescriptor(): Descriptor {
     const stripped = Object.create(Descriptor.prototype);
     return Object.assign(stripped, this, {

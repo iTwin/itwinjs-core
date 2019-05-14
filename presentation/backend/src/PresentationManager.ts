@@ -11,23 +11,19 @@ import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
-  NodesResponse, ContentResponse, DescriptorOverrides,
-  Paged, KeySet, InstanceKey, LabelRequestOptions,
+  DescriptorOverrides, Paged, KeySet, InstanceKey, LabelRequestOptions,
   SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
-  compareInstanceKeys,
   ContentFlags,
 } from "@bentley/presentation-common";
-import { toJSON as keysetToJSON } from "@bentley/presentation-common/lib/KeySet";
-import { listReviver as nodesListReviver } from "@bentley/presentation-common/lib/hierarchy/Node";
-import { listReviver as nodePathElementReviver } from "@bentley/presentation-common/lib/hierarchy/NodePathElement";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
-import RulesetVariablesManager from "./RulesetVariablesManager";
-import RulesetManager from "./RulesetManager";
+import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
+import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 
 /**
  * Properties that can be used to configure [[PresentationManager]]
+ * @public
  */
-export interface Props {
+export interface PresentationManagerProps {
   /**
    * A list of directories containing presentation rulesets.
    */
@@ -51,21 +47,23 @@ export interface Props {
    * and try to share the same resources, which we don't want. With this identifier
    * set, managers put their resources into id-named subdirectories.
    *
-   * @hidden
+   * @internal
    */
   id?: string;
 
-  /** @hidden */
+  /** @internal */
   addon?: NativePlatformDefinition;
 }
 
 /**
  * Backend Presentation manager which pulls the presentation data from
  * an iModel using native platform.
+ *
+ * @public
  */
-export default class PresentationManager {
+export class PresentationManager {
 
-  private _props: Props;
+  private _props: PresentationManagerProps;
   private _nativePlatform?: NativePlatformDefinition;
   private _rulesets: RulesetManager;
   private _isDisposed: boolean;
@@ -79,7 +77,7 @@ export default class PresentationManager {
    * Creates an instance of PresentationManager.
    * @param props Optional configuration properties.
    */
-  constructor(props?: Props) {
+  constructor(props?: PresentationManagerProps) {
     this._props = props || {};
     this._isDisposed = false;
     if (props && props.addon)
@@ -89,7 +87,7 @@ export default class PresentationManager {
     if (props)
       this.activeLocale = props.activeLocale;
     this.setupLocaleDirectories(props);
-    this._rulesets = new RulesetManager(this.getNativePlatform);
+    this._rulesets = new RulesetManagerImpl(this.getNativePlatform);
   }
 
   /**
@@ -103,7 +101,7 @@ export default class PresentationManager {
     this._isDisposed = true;
   }
 
-  /** @hidden */
+  /** Properties used to initialize the manager */
   public get props() { return this._props; }
 
   /**
@@ -116,10 +114,10 @@ export default class PresentationManager {
    * @param rulesetId Id of the ruleset to get variables manager for
    */
   public vars(rulesetId: string): RulesetVariablesManager {
-    return new RulesetVariablesManager(this.getNativePlatform, rulesetId);
+    return new RulesetVariablesManagerImpl(this.getNativePlatform, rulesetId);
   }
 
-  /** @hidden */
+  /** @internal */
   public getNativePlatform = (): NativePlatformDefinition => {
     if (this._isDisposed)
       throw new PresentationError(PresentationStatus.UseAfterDisposal, "Attempting to use Presentation manager after disposal");
@@ -130,7 +128,7 @@ export default class PresentationManager {
     return this._nativePlatform!;
   }
 
-  private setupLocaleDirectories(props?: Props) {
+  private setupLocaleDirectories(props?: PresentationManagerProps) {
     const localeDirectories = [path.join(__dirname, "assets", "locales")];
     if (props && props.localeDirectories) {
       props.localeDirectories.forEach((dir) => {
@@ -148,15 +146,14 @@ export default class PresentationManager {
    * @param parentKey Key of the parentNode
    * @return A promise object that returns either a node response containing nodes and node count on success or an error string on error
    */
-  public async getNodesAndCount(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: Readonly<NodeKey>): Promise<Readonly<NodesResponse>> {
+  public async getNodesAndCount(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey) {
     requestContext.enter();
-
     const nodesCount = await this.getNodesCount(requestContext, requestOptions, parentKey);
-    requestContext.enter();
 
+    requestContext.enter();
     const nodesList = await this.getNodes(requestContext, requestOptions, parentKey);
-    requestContext.enter();
 
+    requestContext.enter();
     return { nodes: nodesList, count: nodesCount };
   }
 
@@ -167,14 +164,14 @@ export default class PresentationManager {
    * @param parentKey    Key of the parent node if requesting for child nodes.
    * @return A promise object that returns either an array of nodes on success or an error string on error.
    */
-  public async getNodes(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
+  public async getNodes(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<Node[]> {
     requestContext.enter();
     let params;
     if (parentKey)
       params = this.createRequestParams(NativePlatformRequestTypes.GetChildren, requestOptions, { nodeKey: parentKey });
     else
       params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodes, requestOptions);
-    return this.request<Node[]>(requestContext, requestOptions.imodel, params, nodesListReviver);
+    return this.request<Node[]>(requestContext, requestOptions.imodel, params, Node.listReviver);
   }
 
   /**
@@ -184,7 +181,7 @@ export default class PresentationManager {
    * @param parentKey Key of the parent node if requesting for child nodes.
    * @return A promise object that returns the number of nodes.
    */
-  public async getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: Readonly<NodeKey>): Promise<number> {
+  public async getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number> {
     requestContext.enter();
     let params;
     if (parentKey)
@@ -208,7 +205,7 @@ export default class PresentationManager {
       paths,
       markedIndex,
     });
-    return this.request<NodePathElement[]>(requestContext, requestOptions.imodel, params, nodePathElementReviver);
+    return this.request<NodePathElement[]>(requestContext, requestOptions.imodel, params, NodePathElement.listReviver);
   }
 
   /**
@@ -223,7 +220,7 @@ export default class PresentationManager {
     const params = this.createRequestParams(NativePlatformRequestTypes.GetFilteredNodePaths, requestOptions, {
       filterText,
     });
-    return this.request<NodePathElement[]>(requestContext, requestOptions.imodel, params, nodePathElementReviver);
+    return this.request<NodePathElement[]>(requestContext, requestOptions.imodel, params, NodePathElement.listReviver);
   }
 
   /**
@@ -235,11 +232,11 @@ export default class PresentationManager {
    * @param selection    Optional selection info in case the content is being requested due to selection change.
    * @return A promise object that returns either a descriptor on success or an error string on error.
    */
-  public async getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: Readonly<KeySet>, selection: Readonly<SelectionInfo> | undefined): Promise<Readonly<Descriptor> | undefined> {
+  public async getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined> {
     requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContentDescriptor, requestOptions, {
       displayType,
-      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
+      keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       selection,
     });
     return this.request<Descriptor | undefined>(requestContext, requestOptions.imodel, params, Descriptor.reviver);
@@ -255,21 +252,13 @@ export default class PresentationManager {
    * Even if concrete implementation returns content in pages, this function returns the total
    * number of records in the content set.
    */
-  public async getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<number> {
+  public async getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number> {
     requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, requestOptions, {
-      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
+      keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
-    // wip: the try/catch block is a temp workaround until native platform changes
-    // are available for the backend
-    try {
-      return await this.request<number>(requestContext, requestOptions.imodel, params);
-    } catch (e) {
-      // wip: temporary code:
-      // istanbul ignore next
-      return 0;
-    }
+    return this.request<number>(requestContext, requestOptions.imodel, params);
   }
 
   /**
@@ -280,21 +269,13 @@ export default class PresentationManager {
    * @param keys                    Keys of ECInstances to get the content for.
    * @return A promise object that returns either content on success or an error string on error.
    */
-  public async getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Readonly<Content> | undefined> {
+  public async getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined> {
     requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, requestOptions, {
-      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
+      keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
     });
-    // wip: the try/catch block is a temp workaround until native platform changes
-    // are available for the backend
-    try {
-      return await this.request<Content | undefined>(requestContext, requestOptions.imodel, params, Content.reviver);
-    } catch (e) {
-      // wip: temporary code:
-      // istanbul ignore next
-      return undefined;
-    }
+    return this.request<Content | undefined>(requestContext, requestOptions.imodel, params, Content.reviver);
   }
 
   /**
@@ -305,24 +286,16 @@ export default class PresentationManager {
    * @param keys                    Keys of ECInstances to get the content for
    * @return A promise object that returns either content and content set size on success or an error string on error.
    */
-  public async getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides, keys: Readonly<KeySet>): Promise<Readonly<ContentResponse>> {
+  public async getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet) {
     requestContext.enter();
-    // wip: the try/catch block is a temp workaround until native platform changes
-    // are available for the backend
-    try {
-      const size = await this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys);
-      requestContext.enter();
-      const content = await this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys);
-      requestContext.enter();
-      return { content, size };
-    } catch (e) {
-      // wip: temporary code:
-      // istanbul ignore next
-      return { content: undefined, size: 0 };
-    }
+    const size = await this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys);
+    requestContext.enter();
+    const content = await this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys);
+    requestContext.enter();
+    return { content, size };
   }
 
-  private createContentDescriptorOverrides(descriptorOrOverrides: Readonly<Descriptor> | DescriptorOverrides): DescriptorOverrides {
+  private createContentDescriptorOverrides(descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides {
     if (descriptorOrOverrides instanceof Descriptor)
       return descriptorOrOverrides.createDescriptorOverrides();
     return descriptorOrOverrides as DescriptorOverrides;
@@ -338,10 +311,10 @@ export default class PresentationManager {
    * @param maximumValueCount    Maximum numbers of values that can be returned. Unlimited if 0.
    * @return A promise object that returns either distinct values on success or an error string on error.
    */
-  public async getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
+  public async getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
     requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetDistinctValues, requestOptions, {
-      keys: keysetToJSON(this.getKeysForContentRequest(requestOptions.imodel, keys)),
+      keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       descriptorOverrides: descriptor.createDescriptorOverrides(),
       fieldName,
       maximumValueCount,
@@ -375,14 +348,14 @@ export default class PresentationManager {
     }).filter<InstanceKey>((k): k is InstanceKey => (undefined !== k));
     const rulesetId = "RulesDrivenECPresentationManager_RulesetId_DisplayLabel";
     const overrides: DescriptorOverrides = {
-      displayType: DefaultContentDisplayTypes.LIST,
+      displayType: DefaultContentDisplayTypes.List,
       contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
       hiddenFieldNames: [],
     };
     const content = await this.getContent(requestContext, { ...requestOptions, rulesetId }, overrides, new KeySet(instanceKeys));
     requestContext.enter();
     return instanceKeys.map((key) => {
-      const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && compareInstanceKeys(it.primaryKeys[0], key) === 0) : undefined;
+      const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
       if (!item)
         return "";
       return item.label;
@@ -546,7 +519,7 @@ export default class PresentationManager {
     return JSON.stringify(request);
   }
 
-  private getKeysForContentRequest(imodel: IModelDb, keys: Readonly<KeySet>): Readonly<KeySet> {
+  private getKeysForContentRequest(imodel: IModelDb, keys: KeySet): KeySet {
     const elementClassName = "BisCore:Element";
     const instanceKeys = keys.instanceKeys;
     if (!instanceKeys.has(elementClassName))

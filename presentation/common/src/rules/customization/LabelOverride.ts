@@ -12,6 +12,8 @@ import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
  *
  * **Important:** Prefer [[InstanceLabelOverride]] over this rule when possible as it
  * has better performance.
+ *
+ * @public
  */
 export interface LabelOverride extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */

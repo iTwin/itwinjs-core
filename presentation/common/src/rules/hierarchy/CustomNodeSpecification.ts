@@ -4,13 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ChildNodeSpecificationBase } from "./ChildNodeSpecification";
-import { RuleSpecificationTypes } from "../RuleSpecification";
+import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes } from "./ChildNodeSpecification";
 
-/** Returns a custom-defined node. */
+/**
+ * Creates a custom-defined node.
+ * @public
+ */
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
   /** Used for serializing to JSON. */
-  specType: RuleSpecificationTypes.CustomNode;
+  specType: ChildNodeSpecificationTypes.CustomNode;
 
   /** Type of the node. */
   type: string;

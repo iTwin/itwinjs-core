@@ -6,20 +6,25 @@
 
 import { Id64, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { InstanceId, InstanceKey } from "./EC";
-import { NodeKey, NodeKeyJSON, nodeKeyFromJSON } from "./hierarchy/Key";
+import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
 import { EntityProps } from "@bentley/imodeljs-common";
 import { PresentationError, PresentationStatus } from "./Error";
 
-/** A single key that identifies something that can be selected */
+/**
+ * A single key that identifies something in iModel.js application
+ * @public
+ */
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
 
-/** A type for multiple keys that identify something that can be selected */
-export type Keys = ReadonlyArray<Key> | Readonly<KeySetJSON> | Readonly<KeySet>;
+/**
+ * A type for multiple keys that identify something in iModel.js application
+ * @public
+ */
+export type Keys = ReadonlyArray<Key> | Readonly<KeySet>;
 
 /**
  * A data structure of serialized [[KeySet]]
- *
- * @hidden
+ * @internal
  */
 export interface KeySetJSON {
   instanceKeys: Array<[string, string[]]>;
@@ -29,8 +34,10 @@ export interface KeySetJSON {
 /**
  * A class that holds multiple [[Key]] objects. It's basically
  * used as a container that holds multiple keys of different types.
+ *
+ * @public
  */
-export default class KeySet {
+export class KeySet {
   // note: all keys are stored as strings because we need ability to find them by value
   private _instanceKeys: Map<string, Set<string>>; // class name => instance ids
   private _nodeKeys: Set<string>;
@@ -86,7 +93,7 @@ export default class KeySet {
   public get nodeKeys(): Set<NodeKey> {
     const set = new Set<NodeKey>();
     for (const serialized of this._nodeKeys) {
-      const key = nodeKeyFromJSON(JSON.parse(serialized));
+      const key = NodeKey.fromJSON(JSON.parse(serialized));
       set.add(key);
     }
     return set;
@@ -97,10 +104,6 @@ export default class KeySet {
    */
   public get nodeKeysCount(): number {
     return this._nodeKeys.size;
-  }
-
-  private isKeySetJSON(set: Keys | Key): set is Readonly<KeySetJSON> {
-    return Array.isArray((set as any).nodeKeys) && Array.isArray((set as any).instanceKeys);
   }
 
   private isKeySet(set: Keys | Key): set is Readonly<KeySet> {
@@ -170,8 +173,6 @@ export default class KeySet {
     const sizeBefore = this.size;
     if (this.isKeySet(value)) {
       this.addKeySet(value);
-    } else if (this.isKeySetJSON(value)) {
-      this.addKeySetJSON(value);
     } else if (this.isKeysArray(value)) {
       for (const key of value)
         this.add(key);
@@ -204,19 +205,6 @@ export default class KeySet {
     }
   }
 
-  private deleteKeySetJSON(keyset: Readonly<KeySetJSON>): void {
-    for (const key of keyset.nodeKeys)
-      this._nodeKeys.delete(JSON.stringify(key));
-    for (const entry of keyset.instanceKeys) {
-      const set = this._instanceKeys.get(entry["0"]);
-      if (set) {
-        entry["1"].forEach((key: string) => {
-          set.delete(key);
-        });
-      }
-    }
-  }
-
   /**
    * Deletes a key or keys from this KeySet.
    * @param value A key or keys to delete.
@@ -228,8 +216,6 @@ export default class KeySet {
     const sizeBefore = this.size;
     if (this.isKeySet(value)) {
       this.deleteKeySet(value);
-    } else if (this.isKeySetJSON(value)) {
-      this.deleteKeySetJSON(value);
     } else if (this.isKeysArray(value)) {
       for (const key of value)
         this.delete(key);
@@ -297,33 +283,6 @@ export default class KeySet {
     return false;
   }
 
-  private hasKeySetJSON(keys: Readonly<KeySetJSON>, checkType: "all" | "any"): boolean {
-    if (checkType === "all") {
-      if (this._nodeKeys.size < keys.nodeKeys.length || this._instanceKeys.size < keys.instanceKeys.length)
-        return false;
-      if ([...keys.nodeKeys].some((key) => !this._nodeKeys.has(JSON.stringify(key))))
-        return false;
-      for (const otherEntry of keys.instanceKeys) {
-        const thisEntryKeys = this._instanceKeys.get(otherEntry["0"]);
-        if (!thisEntryKeys || thisEntryKeys.size < otherEntry["1"].length)
-          return false;
-        if ([...otherEntry["1"]].some((key) => !thisEntryKeys.has(key)))
-          return false;
-      }
-      return true;
-    }
-
-    // "any" check type
-    if ([...keys.nodeKeys].some((key) => this._nodeKeys.has(JSON.stringify(key))))
-      return true;
-    for (const otherEntry of keys.instanceKeys) {
-      const thisEntryKeys = this._instanceKeys.get(otherEntry["0"]);
-      if (thisEntryKeys && [...otherEntry["1"]].some((key) => thisEntryKeys.has(key)))
-        return true;
-    }
-    return false;
-  }
-
   private hasKeysArray(keys: ReadonlyArray<Key>, checkType: "all" | "any"): boolean {
     if (checkType === "all") {
       if (this.size < keys.length)
@@ -352,8 +311,6 @@ export default class KeySet {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${keys}`);
     if (this.isKeySet(keys))
       return this.hasKeySet(keys, "all");
-    if (this.isKeySetJSON(keys))
-      return this.hasKeySetJSON(keys, "all");
     if (this.isKeysArray(keys))
       return this.hasKeysArray(keys, "all");
     throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: keys = ${keys}`);
@@ -368,8 +325,6 @@ export default class KeySet {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${keys}`);
     if (this.isKeySet(keys))
       return this.hasKeySet(keys, "any");
-    if (this.isKeySetJSON(keys))
-      return this.hasKeySetJSON(keys, "any");
     if (this.isKeysArray(keys))
       return this.hasKeysArray(keys, "any");
     throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: keys = ${keys}`);
@@ -392,25 +347,33 @@ export default class KeySet {
   public get isEmpty(): boolean {
     return 0 === this.size;
   }
-}
 
-
-/**
- * Serializes this KeySet to JSON
- *
- * @hidden
- */
-export const toJSON = (keyset: Readonly<KeySet>): KeySetJSON => {
-  const instanceKeys = new Array();
-  for (const entry of (keyset as any)._instanceKeys.entries()) {
-    if (entry["1"].size > 0)
-      instanceKeys.push([entry["0"], [...entry["1"]]]);
+  /**
+   * Serializes this KeySet to JSON
+   * @internal
+   */
+  public toJSON(): KeySetJSON {
+    const instanceKeys = new Array();
+    for (const entry of this._instanceKeys.entries()) {
+      if (entry["1"].size > 0)
+        instanceKeys.push([entry["0"], [...entry["1"]]]);
+    }
+    const nodeKeys = new Array<NodeKeyJSON>();
+    for (const serializedKey of this._nodeKeys.values())
+      nodeKeys.push(JSON.parse(serializedKey));
+    return {
+      instanceKeys,
+      nodeKeys,
+    };
   }
-  const nodeKeys = new Array<NodeKeyJSON>();
-  for (const serializedKey of (keyset as any)._nodeKeys.values())
-    nodeKeys.push(JSON.parse(serializedKey));
-  return {
-    instanceKeys,
-    nodeKeys,
-  };
+
+  /**
+   * Creates a KeySet from JSON
+   * @internal
+   */
+  public static fromJSON(json: KeySetJSON): KeySet {
+    const keyset = new KeySet();
+    keyset.addKeySetJSON(json);
+    return keyset;
+  }
 }

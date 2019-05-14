@@ -9,21 +9,33 @@ import { InstanceKey, KeySet, Ruleset, RegisteredRuleset, PageOptions, DefaultCo
 import { ContentBuilder as PresentationContentBuilder, ContentDataProvider } from "@bentley/presentation-components";
 import { using, Id64String } from "@bentley/bentleyjs-core";
 
-/** Interface for a data provider, which is used by ContentBuilder */
+/**
+ * Interface for a data provider, which is used by ContentBuilder.
+ * @public
+ */
 export interface IContentBuilderDataProvider {
+  /** Keys the data provider is creating content for */
   keys: Readonly<KeySet>;
+  /** Get the size of content result set */
   getContentSetSize: () => Promise<number>;
+  /** Get the content */
   getContent: (options?: PageOptions) => Promise<Readonly<Content> | undefined>;
 }
 
-/** Property records grouped under a single className */
+/**
+ * Property records grouped under a single className
+ * @public
+ */
 export interface ContentBuilderResult {
+  /** Full name of ECClass whose records are contained in this data structure */
   className: string;
+  /** Property records for the ECClass instance */
   records: PropertyRecord[];
 }
 
 /**
  * A class that constructs content from specified imodel and ruleset.
+ * @public
  */
 export class ContentBuilder {
   private readonly _iModel: IModelConnection;
@@ -78,7 +90,7 @@ export class ContentBuilder {
    * @param displayType Type of content container display. For example:
    * "PropertyPane", "Grid", "List" etc.
    */
-  public async createContent(rulesetOrId: Ruleset | string, instanceKeys: InstanceKey[], displayType: string = DefaultContentDisplayTypes.PROPERTY_PANE) {
+  public async createContent(rulesetOrId: Ruleset | string, instanceKeys: InstanceKey[], displayType: string = DefaultContentDisplayTypes.PropertyPane) {
     if (typeof rulesetOrId === "string")
       return this.doCreateContent(rulesetOrId, instanceKeys, displayType);
 
@@ -128,7 +140,7 @@ export class ContentBuilder {
    * @param displayType Type of content container display. For example:
    * "PropertyPane", "Grid", "List" etc.
    */
-  public async createContentForAllInstances(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PROPERTY_PANE) {
+  public async createContentForAllInstances(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane) {
     return this.createContentForClasses(rulesetOrId, false, displayType);
   }
 
@@ -139,7 +151,7 @@ export class ContentBuilder {
    * @param displayType Type of content container display. For example:
    * "PropertyPane", "Grid", "List" etc.
    */
-  public async createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PROPERTY_PANE) {
+  public async createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane) {
     return this.createContentForClasses(rulesetOrId, true, displayType);
   }
 }

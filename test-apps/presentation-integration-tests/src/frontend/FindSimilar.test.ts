@@ -7,7 +7,7 @@ import * as faker from "faker";
 import { initialize, terminate } from "../IntegrationTests";
 import { Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
-import { KeySet, Ruleset, RuleTypes, RuleSpecificationTypes, RegisteredRuleset, InstanceKey, instanceKeyFromJSON } from "@bentley/presentation-common";
+import { KeySet, Ruleset, RuleTypes, ContentSpecificationTypes, RegisteredRuleset, InstanceKey } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import {
   PresentationPropertyDataProvider, IPresentationPropertyDataProvider,
@@ -41,7 +41,7 @@ describe("Find Similar", () => {
       rules: [{
         ruleType: RuleTypes.Content,
         specifications: [{
-          specType: RuleSpecificationTypes.SelectedNodeInstances,
+          specType: ContentSpecificationTypes.SelectedNodeInstances,
         }],
       }],
     };
@@ -73,7 +73,7 @@ describe("Find Similar", () => {
   };
 
   const getAllRowsInstanceKeys = async (provider: IPresentationTableDataProvider): Promise<InstanceKey[]> => {
-    return (await getAllRows(provider)).map((r) => instanceKeyFromJSON(JSON.parse(r.key)));
+    return (await getAllRows(provider)).map((r) => InstanceKey.fromJSON(JSON.parse(r.key)));
   };
 
   const getAllRowsInstanceIds = async (provider: IPresentationTableDataProvider): Promise<Id64String[]> => {

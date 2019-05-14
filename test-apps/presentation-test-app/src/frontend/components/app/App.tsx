@@ -96,7 +96,7 @@ export default class App extends React.Component<{}, State> {
     try {
       const factory = new DataProvidersFactory();
       const similarInstancesProvider = await factory.createSimilarInstancesTableDataProvider(provider,
-        record, { displayType: DefaultContentDisplayTypes.LIST });
+        record, { displayType: DefaultContentDisplayTypes.List });
       await this._selectAllInstances(similarInstancesProvider);
       this.setState({ similarInstancesProvider });
     } catch (e) {

@@ -3,17 +3,18 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
-import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
-import { RuleSpecificationTypes } from "../RuleSpecification";
+import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 import { SchemasSpecification } from "../SchemasSpecification";
 
 /**
- * Returns all available instance nodes filtered only by the
+ * Creates nodes for all available instances filtered only by the
  * [[supportedSchemas]] properties of the specification or the ruleset.
+ *
+ * @public
  */
 export interface AllInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */
-  specType: RuleSpecificationTypes.AllInstanceNodes;
+  specType: ChildNodeSpecificationTypes.AllInstanceNodes;
 
   /**
    * Specification of schemas whose instances should be returned.

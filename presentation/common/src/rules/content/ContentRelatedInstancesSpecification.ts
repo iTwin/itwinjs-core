@@ -4,19 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ContentSpecificationBase } from "./ContentSpecification";
+import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
 import { RelationshipDirection } from "../RelationshipDirection";
-import { RuleSpecificationTypes } from "../RuleSpecification";
 import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
 
 /**
- * Returns ECInstance(s) related to current selection.
+ * Creates content for ECInstance(s) related to current selection.
  *
  * **Note:** Use [[ContentRule.condition]] to apply specification on correct selection.
+ *
+ * @public
  */
 export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
-  specType: RuleSpecificationTypes.ContentRelatedInstances;
+  specType: ContentSpecificationTypes.ContentRelatedInstances;
 
   /**
    * List of ECRelationship specifications to follow when looking for related instances.

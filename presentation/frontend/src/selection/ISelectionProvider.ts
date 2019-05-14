@@ -6,12 +6,13 @@
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
-import SelectionChangeEvent from "./SelectionChangeEvent";
+import { SelectionChangeEvent } from "./SelectionChangeEvent";
 
 /**
- * Selection provider interface which provides main selection and sub-selection
+ * Selection provider interface which provides main selection and sub-selection.
+ * @public
  */
-export default interface ISelectionProvider {
+export interface ISelectionProvider {
   /** An event that's fired when selection changes */
   selectionChange: SelectionChangeEvent;
 

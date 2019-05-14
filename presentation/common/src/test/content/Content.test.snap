@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Content fromJSON creates valid Content from valid JSON 1`] = `
-Content {
+Object {
   "contentSet": Array [
-    Item {
+    Object {
       "classInfo": Object {
         "id": "0x4c8b00000131af",
         "label": "deposit",
@@ -26,13 +26,13 @@ Content {
       },
     },
   ],
-  "descriptor": Descriptor {
+  "descriptor": Object {
     "connectionId": "ae351acd-eef3-43c8-995b-67c79b260315",
     "contentFlags": 0,
     "contentOptions": "bar",
     "displayType": "qui voluptatem repellendus",
     "fields": Array [
-      Field {
+      Object {
         "category": Object {
           "description": "Molestiae maxime culpa aliquam.",
           "expand": true,
@@ -50,7 +50,7 @@ Content {
           "valueFormat": "Primitive",
         },
       },
-      Field {
+      Object {
         "category": Object {
           "description": "Rerum amet odio libero tenetur numquam.",
           "expand": false,
@@ -68,7 +68,7 @@ Content {
           "valueFormat": "Primitive",
         },
       },
-      Field {
+      Object {
         "category": Object {
           "description": "Qui aut cum nam voluptas dolorem.",
           "expand": false,
@@ -281,9 +281,9 @@ Content {
 `;
 
 exports[`Content fromJSON creates valid Content from valid serialized JSON 1`] = `
-Content {
+Object {
   "contentSet": Array [
-    Item {
+    Object {
       "classInfo": Object {
         "id": "0x1821b000001150a",
         "label": "synthesizing encryption",
@@ -306,13 +306,13 @@ Content {
       },
     },
   ],
-  "descriptor": Descriptor {
+  "descriptor": Object {
     "connectionId": "c7cc673b-0110-4180-8565-cc9aff73bb20",
     "contentFlags": 0,
     "contentOptions": "bar",
     "displayType": "aut nostrum repudiandae",
     "fields": Array [
-      Field {
+      Object {
         "category": Object {
           "description": "Ea et nisi velit nam ab enim eligendi.",
           "expand": false,
@@ -332,7 +332,7 @@ Content {
           "valueFormat": "Primitive",
         },
       },
-      Field {
+      Object {
         "category": Object {
           "description": "Nulla perferendis provident quasi dolores doloribus voluptatem ut.",
           "expand": true,
@@ -340,6 +340,7 @@ Content {
           "name": "multi-state",
           "priority": 14220,
         },
+        "editor": undefined,
         "isReadonly": false,
         "label": "1080p streamline CSS",
         "name": "Fish",
@@ -349,7 +350,7 @@ Content {
           "valueFormat": "Primitive",
         },
       },
-      Field {
+      Object {
         "category": Object {
           "description": "Id aut veniam eum dolorum qui.",
           "expand": false,
@@ -357,6 +358,7 @@ Content {
           "name": "Program",
           "priority": 86529,
         },
+        "editor": undefined,
         "isReadonly": true,
         "label": "Rand Loti HDD Car",
         "name": "unleash",

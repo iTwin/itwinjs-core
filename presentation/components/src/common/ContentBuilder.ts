@@ -7,7 +7,6 @@
 import { assert } from "@bentley/bentleyjs-core";
 import {
   ValuesDictionary, PresentationError, PresentationStatus,
-  isArray, isMap, isNestedContentValue, isPrimitive,
   Field, Item, DisplayValue, Value, PropertyValueFormat,
   NestedContentValue, NestedContentField,
   TypeDescription, StructTypeDescription, ArrayTypeDescription,
@@ -75,12 +74,12 @@ const createValue = (propertyDescription: PropertyDescription, typeDescription: 
   }
   if (!isMerged) {
     if (typeDescription.valueFormat === PropertyValueFormat.Array) {
-      if (!isArray(value) || !isArray(displayValue))
+      if (!Value.isArray(value) || !DisplayValue.isArray(displayValue))
         throw new PresentationError(PresentationStatus.InvalidArgument, "value and displayValue should both be arrays");
       return createArrayValue(propertyDescription, typeDescription, value, displayValue);
     }
     if (typeDescription.valueFormat === PropertyValueFormat.Struct) {
-      if (!isMap(value) || !isMap(displayValue))
+      if (!Value.isMap(value) || !DisplayValue.isMap(displayValue))
         throw new PresentationError(PresentationStatus.InvalidArgument, "value and displayValue should both be of map type");
       return createStructValue(typeDescription, value, displayValue);
     }
@@ -91,7 +90,7 @@ const createValue = (propertyDescription: PropertyDescription, typeDescription: 
 const createRecordDescription = (typeDescription: TypeDescription, displayValue: Omit<DisplayValue, "undefined">): string | undefined => {
   if (PropertyValueFormat.Array === typeDescription.valueFormat || PropertyValueFormat.Struct === typeDescription.valueFormat)
     return undefined;
-  if (PropertyValueFormat.Primitive !== typeDescription.valueFormat || !isPrimitive(displayValue))
+  if (PropertyValueFormat.Primitive !== typeDescription.valueFormat || !DisplayValue.isPrimitive(displayValue))
     throw new PresentationError(PresentationStatus.InvalidArgument, "displayValue is of wrong type");
   return displayValue.toString();
 };
@@ -141,7 +140,7 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, path?:
 
   if (isMerged) {
     const displayValue = item.displayValues[field.name];
-    if (!isPrimitive(displayValue))
+    if (!DisplayValue.isPrimitive(displayValue))
       throw new PresentationError(PresentationStatus.Error, "displayValue should be primitive");
     // if the value is merged, just take the display value
     value = {
@@ -151,7 +150,7 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, path?:
     };
   } else {
     const dictionaryValue = item.values[field.name];
-    if (!isNestedContentValue(dictionaryValue))
+    if (!Value.isNestedContent(dictionaryValue))
       throw new PresentationError(PresentationStatus.Error, "value should be nested content");
     // nested content value is in NestedContent[] format
     const nestedContentArray: NestedContentValue[] = dictionaryValue;
@@ -175,6 +174,7 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, path?:
 
 /**
  * A helper class which creates `ui-components` objects from `presentation` objects.
+ * @internal
  */
 export class ContentBuilder {
   /**

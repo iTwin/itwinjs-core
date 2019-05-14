@@ -10,17 +10,17 @@ import { Presentation } from "@bentley/presentation-frontend";
 
 /**
  * An interface of something that has a priority.
- *
- * @hidden
+ * @internal
  */
 export interface IPrioritized {
   priority: number;
 }
+
 /**
  * A sorting algorithm for `Array.sort` that sorts items by priority.
  * Higher priority items appear first in the list.
  *
- * @hidden
+ * @internal
  */
 export const prioritySortFunction = (a: IPrioritized, b: IPrioritized): number => {
   if (a.priority > b.priority)
@@ -36,7 +36,7 @@ let localizationNamespace: I18NNamespace | undefined;
  * localization namespace. The `stringId` should not contain namespace - it's
  * prepended automatically.
  *
- * @hidden
+ * @internal
  */
 export const translate = async (stringId: string): Promise<string> => {
   const localizationNamespaceName = "PresentationComponents";
@@ -50,8 +50,7 @@ export const translate = async (stringId: string): Promise<string> => {
 
 /**
  * Creates a display name for the supplied component
- *
- * @hidden
+ * @internal
  */
 export const getDisplayName = <P>(component: React.ComponentType<P>): string => {
   if (component.displayName)

@@ -11,7 +11,12 @@ import { SubCondition } from "./SubCondition";
 import { RootNodeRule } from "./RootNodeRule";
 import { ChildNodeRule } from "./ChildNodeRule";
 
-/** Base class for all [[NavigationRule]] implementations. */
+/**
+ * Base class for all [[NavigationRule]] implementations. Not
+ * meant to be used directly, see `NavigationRule`.
+ *
+ * @public
+ */
 export interface NavigationRuleBase extends RuleBase {
   /**
    * Specifications that define what content the rule returns.
@@ -41,5 +46,6 @@ export interface NavigationRuleBase extends RuleBase {
 
 /**
  * Navigation rules define the hierarchy that's created for navigation controls.
+ * @public
  */
 export type NavigationRule = RootNodeRule | ChildNodeRule;

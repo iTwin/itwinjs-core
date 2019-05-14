@@ -5,7 +5,7 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { KeySet, InstanceKey, Subtract } from "@bentley/presentation-common";
+import { KeySet, InstanceKey } from "@bentley/presentation-common";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { Table as BaseTable, TableProps, RowItem } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
@@ -13,9 +13,10 @@ import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent
 import { IPresentationTableDataProvider } from "./DataProvider";
 
 /**
- * Props that are injected to the HOC component.
+ * Props that are injected to the TableWithUnifiedSelection HOC component.
+ * @public
  */
-export interface Props {
+export interface TableWithUnifiedSelectionProps {
   /** The data provider used by the property grid. */
   dataProvider: IPresentationTableDataProvider;
 
@@ -38,7 +39,7 @@ export interface Props {
    */
   selectionLevel?: number;
 
-  /** @hidden */
+  /** @internal */
   selectionHandler?: SelectionHandler;
 }
 
@@ -47,11 +48,13 @@ export interface Props {
  * table component.
  *
  * **Note:** it is required for the table to use [[PresentationTableDataProvider]]
+ *
+ * @public
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
+export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableWithUnifiedSelectionProps> {
 
-  type CombinedProps = Subtract<P, Props> & Props;
+  type CombinedProps = P & TableWithUnifiedSelectionProps;
 
   return class WithUnifiedSelection extends React.Component<CombinedProps> implements IUnifiedSelectionComponent {
 
@@ -226,6 +229,6 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
 
 let counter = 1;
 
-function getBoundarySelectionLevelFromProps(props: Props): number {
+function getBoundarySelectionLevelFromProps(props: TableWithUnifiedSelectionProps): number {
   return (undefined !== props.selectionLevel) ? props.selectionLevel : 1;
 }

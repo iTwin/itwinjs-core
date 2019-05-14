@@ -5,13 +5,15 @@
 /** @module Content */
 
 import {
-  PropertyInfo, PropertyInfoJSON, propertyInfoFromJSON,
-  RelationshipPathInfo, RelationshipPathInfoJSON, relatedClassInfoFromJSON,
+  PropertyInfo, PropertyInfoJSON,
+  RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
 } from "../EC";
 
 /**
  * Data structure that describes one step of property
  * accessor path.
+ *
+ * @public
  */
 export interface PropertyAccessor {
   /** Name of ECProperty */
@@ -22,41 +24,51 @@ export interface PropertyAccessor {
 
 /**
  * Describes path to a property.
+ * @public
  */
 export type PropertyAccessorPath = PropertyAccessor[];
 
 /**
  * Data structure that describes a single ECProperty that's
  * included in a [[PropertiesField]].
+ *
+ * @public
  */
-export default interface Property {
+export interface Property {
   /** ECProperty information */
-  property: Readonly<PropertyInfo>;
+  property: PropertyInfo;
   /**
    * Relationship path from [Primary instance]($docs/learning/content/Terminology#primary-instance) to
    * this property. This array is not empty only for [Related properties]($docs/learning/content/Terminology#related-properties).
    */
-  relatedClassPath: Readonly<RelationshipPathInfo>;
+  relatedClassPath: RelationshipPath;
+}
+/** @public */
+export namespace Property {
+  /** @internal */
+  export function toJSON(prop: Property): PropertyJSON {
+    return {
+      property: PropertyInfo.toJSON(prop.property),
+      relatedClassPath: prop.relatedClassPath.map((rci) => RelatedClassInfo.toJSON(rci)),
+    };
+  }
+  /**
+   * Deserializes [[Property]] from [[PropertyJSON]]
+   * @internal
+   */
+  export function fromJSON(json: PropertyJSON): Property {
+    return {
+      property: PropertyInfo.fromJSON(json.property),
+      relatedClassPath: json.relatedClassPath.map((p) => RelatedClassInfo.fromJSON(p)),
+    };
+  }
 }
 
 /**
  * Serialized [[Property]]
- *
- * @hidden
+ * @internal
  */
 export interface PropertyJSON {
   property: PropertyInfoJSON;
-  relatedClassPath: RelationshipPathInfoJSON;
+  relatedClassPath: RelationshipPathJSON;
 }
-
-/**
- * Deserializes [[Property]] from [[PropertyJSON]]
- *
- * @hidden
- */
-export const propertyFromJSON = (json: PropertyJSON): Property => {
-  return {
-    property: propertyInfoFromJSON(json.property),
-    relatedClassPath: json.relatedClassPath.map((p) => relatedClassInfoFromJSON(p)),
-  };
-};

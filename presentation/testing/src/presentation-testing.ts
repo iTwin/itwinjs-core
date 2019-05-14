@@ -3,6 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./HierarchyBuilder";
-export * from "./ContentBuilder";
+export { HierarchyBuilder, HierarchyNode, MappedNode, NodeMappingFunc } from "./HierarchyBuilder";
+export { ContentBuilder, ContentBuilderResult, IContentBuilderDataProvider } from "./ContentBuilder";
 export * from "./Helpers";

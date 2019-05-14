@@ -13,10 +13,9 @@ import {
   KeySet, Paged,
 } from "../presentation-common";
 import {
-  RpcRequestOptions, HierarchyRpcRequestOptions, ContentRpcRequestOptions,
-  ClientStateSyncRequestOptions,
-  SelectionScopeRpcRequestOptions,
-  LabelRpcRequestOptions,
+  PresentationRpcRequestOptions, LabelRpcRequestOptions,
+  HierarchyRpcRequestOptions, ContentRpcRequestOptions,
+  ClientStateSyncRequestOptions, SelectionScopeRpcRequestOptions,
 } from "../PresentationRpcInterface";
 
 describe("PresentationRpcInterface", () => {
@@ -56,7 +55,7 @@ describe("PresentationRpcInterface", () => {
     let rpcInterface: PresentationRpcInterface;
     let mock: moq.IMock<(<T>(parameters: IArguments) => Promise<T>)>;
     const token = new IModelToken();
-    const defaultRpcOptions: RpcRequestOptions = {};
+    const defaultRpcOptions: PresentationRpcRequestOptions = {};
 
     beforeEach(() => {
       rpcInterface = new PresentationRpcInterface();
@@ -135,7 +134,7 @@ describe("PresentationRpcInterface", () => {
         ...defaultRpcOptions,
         rulesetId: faker.random.word(),
       };
-      const keys = new KeySet();
+      const keys = new KeySet().toJSON();
       await rpcInterface.getContentDescriptor(token, options, "test", keys, undefined);
       mock.verify(async (x) => x(toArguments(token, options, "test", keys, undefined)), moq.Times.once());
     });
@@ -146,7 +145,7 @@ describe("PresentationRpcInterface", () => {
         rulesetId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
-      const keys = new KeySet();
+      const keys = new KeySet().toJSON();
       await rpcInterface.getContentSetSize(token, options, descriptor, keys);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
@@ -157,7 +156,7 @@ describe("PresentationRpcInterface", () => {
         rulesetId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
-      const keys = new KeySet();
+      const keys = new KeySet().toJSON();
       await rpcInterface.getContent(token, options, descriptor, keys);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
@@ -168,7 +167,7 @@ describe("PresentationRpcInterface", () => {
         rulesetId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
-      const keys = new KeySet();
+      const keys = new KeySet().toJSON();
       await rpcInterface.getContentAndSize(token, options, descriptor, keys);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
@@ -181,7 +180,7 @@ describe("PresentationRpcInterface", () => {
       const descriptor = createRandomDescriptor();
       const fieldName = faker.random.word();
       const maximumValueCount = faker.random.number();
-      const keys = new KeySet();
+      const keys = new KeySet().toJSON();
       await rpcInterface.getDistinctValues(token, options, descriptor, keys, fieldName, maximumValueCount);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys, fieldName, maximumValueCount)), moq.Times.once());
     });

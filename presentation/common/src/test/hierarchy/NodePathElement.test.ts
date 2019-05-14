@@ -3,63 +3,63 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { NodeJSON } from "../../hierarchy/Node";
-import { NodePathElementJSON, fromJSON, listFromJSON } from "../../hierarchy/NodePathElement";
-import {
-  createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement,
-  createRandomECInstanceKeyJSON,
-} from "../_helpers/random";
-import { ECInstanceNodeKeyJSON } from "../../hierarchy/Key";
+import { NodePathElement } from "../../hierarchy/NodePathElement";
+import { createRandomNodePathElement, createRandomNodePathElementJSON } from "../_helpers/random";
 
-const createRandomECInstanceNodeKeyJSON = (): ECInstanceNodeKeyJSON => {
-  return {
-    ...createRandomECInstanceNodeKey(),
-    instanceKey: createRandomECInstanceKeyJSON(),
-  };
-};
+describe("NodePathElement", () => {
 
-const createRandomNodeJSON = (): NodeJSON => {
-  return {
-    ...createRandomECInstanceNode(),
-    key: createRandomECInstanceNodeKeyJSON(),
-  };
-};
+  describe("toJSON", () => {
 
-const createRandomNodePathElementJSON = (): NodePathElementJSON => {
-  return {
-    ...createRandomNodePathElement(),
-    node: createRandomNodeJSON(),
-  };
-};
+    it("serializes NodePathElement", () => {
+      const npe = { ...createRandomNodePathElement(), isMarked: true };
+      const json = NodePathElement.toJSON(npe);
+      expect(json).to.matchSnapshot();
+    });
 
-describe("NodePathElement fromJSON", () => {
+    it("serializes NodePathElement with undefined `isMarked` flag", () => {
+      const npe = { ...createRandomNodePathElement(), isMarked: undefined };
+      const json = NodePathElement.toJSON(npe);
+      expect(json).to.matchSnapshot();
+    });
 
-  it("creates valid NodePathElement from JSON", () => {
-    const json = createRandomNodePathElementJSON();
-    const node = fromJSON(json);
-    expect(node).to.matchSnapshot();
+    it("serializes NodePathElement with undefined filtering data", () => {
+      const npe = { ...createRandomNodePathElement(), filteringData: undefined };
+      const json = NodePathElement.toJSON(npe);
+      expect(json).to.matchSnapshot();
+    });
+
   });
 
-  it("creates valid NodePathElement from serialized JSON", () => {
-    const json = createRandomNodePathElementJSON();
-    const node = fromJSON(JSON.stringify(json));
-    expect(node).to.matchSnapshot();
+  describe("fromJSON", () => {
+
+    it("creates valid NodePathElement from JSON", () => {
+      const json = createRandomNodePathElementJSON();
+      const node = NodePathElement.fromJSON(json);
+      expect(node).to.matchSnapshot();
+    });
+
+    it("creates valid NodePathElement from serialized JSON", () => {
+      const json = createRandomNodePathElementJSON();
+      const node = NodePathElement.fromJSON(JSON.stringify(json));
+      expect(node).to.matchSnapshot();
+    });
+
   });
 
-});
+  describe("listFromJSON", () => {
 
-describe("NodePathElement[] fromJSON", () => {
+    it("creates valid NodePathElement[] from JSON", () => {
+      const json = [createRandomNodePathElementJSON(), createRandomNodePathElementJSON()];
+      const nodes = NodePathElement.listFromJSON(json);
+      expect(nodes).to.matchSnapshot();
+    });
 
-  it("creates valid NodePathElement[] from JSON", () => {
-    const json = [createRandomNodePathElementJSON(), createRandomNodePathElementJSON()];
-    const nodes = listFromJSON(json);
-    expect(nodes).to.matchSnapshot();
-  });
+    it("creates valid NodePathElement[] from serialized JSON", () => {
+      const json = [createRandomNodePathElementJSON(), createRandomNodePathElementJSON()];
+      const nodes = NodePathElement.listFromJSON(JSON.stringify(json));
+      expect(nodes).to.matchSnapshot();
+    });
 
-  it("creates valid NodePathElement[] from serialized JSON", () => {
-    const json = [createRandomNodePathElementJSON(), createRandomNodePathElementJSON()];
-    const nodes = listFromJSON(JSON.stringify(json));
-    expect(nodes).to.matchSnapshot();
   });
 
 });

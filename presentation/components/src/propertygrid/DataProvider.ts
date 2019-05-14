@@ -203,11 +203,13 @@ class PropertyDataBuilder {
 
 /**
  * Interface for presentation rules-driven property data provider.
+ * @public
  */
 export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
 
 /**
  * Presentation Rules-driven property data provider implementation.
+ * @public
  */
 export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
   private _includeFieldsWithNoValues: boolean;
@@ -215,7 +217,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
 
   /** Constructor. */
   constructor(imodel: IModelConnection, rulesetId: string) {
-    super(imodel, rulesetId, DefaultContentDisplayTypes.PROPERTY_PANE);
+    super(imodel, rulesetId, DefaultContentDisplayTypes.PropertyPane);
     this._includeFieldsWithNoValues = true;
   }
 

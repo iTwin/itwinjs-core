@@ -25,16 +25,18 @@ import { ElementProps, Code } from "@bentley/imodeljs-common";
 import { IModelConnection, ViewState3d, NoRenderApp, HilitedSet, IModelApp } from "@bentley/imodeljs-frontend";
 import {
   KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item,
-  RegisteredRuleset, DescriptorOverrides, ContentFlags,
+  RegisteredRuleset, DescriptorOverrides, ContentFlags, Ruleset,
 } from "@bentley/presentation-common";
 import {
-  Presentation, PresentationManager,
+  Presentation, PresentationManager, RulesetManager,
   SelectionManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/presentation-frontend";
 import { ViewportComponent } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
 import { viewWithUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
-import RulesetManager from "@bentley/presentation-frontend/lib/RulesetManager";
+
+// tslint:disable-next-line: no-var-requires
+const defaultRuleset = require("../../viewport/HiliteRules") as Ruleset;
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);
@@ -87,6 +89,15 @@ describe("Viewport withUnifiedSelection", () => {
 
     expect(component.imodel).to.equal(imodelMock.object);
     expect(component.rulesetId).to.equal(rulesetId);
+  });
+
+  it("uses default ruleset if not provided", () => {
+    const component = shallow(<PresentationViewport
+      imodel={imodelMock.object}
+      viewDefinitionId={viewDefinitionId}
+      selectionHandler={selectionHandlerMock.object}
+    />).instance() as any as IUnifiedSelectionComponent;
+    expect(component.rulesetId).to.equal(defaultRuleset.id);
   });
 
   it("renders correctly", () => {
@@ -327,17 +338,14 @@ describe("ViewportSelectionHandler", () => {
 
       // then it asks for content for that selection
       const overrides: DescriptorOverrides = {
-        displayType: DefaultContentDisplayTypes.VIEWPORT,
+        displayType: DefaultContentDisplayTypes.Viewport,
         contentFlags: ContentFlags.KeysOnly,
         hiddenFieldNames: [],
       };
-      const expectedContent: Content = {
-        descriptor: createRandomDescriptor(),
-        contentSet: [
-          new Item([createRandomECInstanceKey(), createRandomECInstanceKey()], "", "", undefined, {}, {}, []),
-          new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, []),
-        ],
-      };
+      const expectedContent = new Content(createRandomDescriptor(), [
+        new Item([createRandomECInstanceKey(), createRandomECInstanceKey()], "", "", undefined, {}, {}, []),
+        new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, []),
+      ]);
       presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, moq.isKeySet(keys)))
         .returns(async () => expectedContent);
 
@@ -376,7 +384,7 @@ describe("ViewportSelectionHandler", () => {
         level: 0,
       };
       presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
-        DefaultContentDisplayTypes.VIEWPORT, moq.isKeySet(keys), selectionInfo)).returns(async () => undefined);
+        DefaultContentDisplayTypes.Viewport, moq.isKeySet(keys), selectionInfo)).returns(async () => undefined);
 
       // trigger the selection change
       const selectionChangeArgs: SelectionChangeEventArgs = {
@@ -408,7 +416,7 @@ describe("ViewportSelectionHandler", () => {
         level: 0,
       };
       presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
-        DefaultContentDisplayTypes.VIEWPORT, moq.isKeySet(keys), selectionInfo)).returns(async () => undefined);
+        DefaultContentDisplayTypes.Viewport, moq.isKeySet(keys), selectionInfo)).returns(async () => undefined);
 
       // trigger the selection change
       const selectionChangeArgs: SelectionChangeEventArgs = {
@@ -437,7 +445,7 @@ describe("ViewportSelectionHandler", () => {
       selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => keys);
 
       const overrides: DescriptorOverrides = {
-        displayType: DefaultContentDisplayTypes.VIEWPORT,
+        displayType: DefaultContentDisplayTypes.Viewport,
         contentFlags: ContentFlags.KeysOnly,
         hiddenFieldNames: [],
       };

@@ -58,3 +58,62 @@ Object {
   "type": "DisplayLabelGroupingNode",
 }
 `;
+
+exports[`NodeKey toJSON serializes BaseNodeKey 1`] = `
+Object {
+  "pathFromRoot": Array [
+    "6464da39-91d1-4780-9a76-ca73a4a24a4f",
+    "e897c093-6593-4c57-b654-422ec7b5ed55",
+  ],
+  "type": "Grocery",
+}
+`;
+
+exports[`NodeKey toJSON serializes ECClassGroupingNodeKey 1`] = `
+Object {
+  "className": "sky blue",
+  "groupedInstancesCount": 66056,
+  "pathFromRoot": Array [
+    "3a2a9f3e-b31d-425a-b80a-fbae54967d0f",
+  ],
+  "type": "ECClassGroupingNode",
+}
+`;
+
+exports[`NodeKey toJSON serializes ECInstanceNodeKey 1`] = `
+Object {
+  "instanceKey": Object {
+    "className": "Books",
+    "id": "0x17b7800000025f8",
+  },
+  "pathFromRoot": Array [
+    "270a1514-1263-4847-bf49-80742bfcb7ec",
+    "2d1e20e7-bd06-4db3-993f-498713b28b45",
+  ],
+  "type": "ECInstanceNode",
+}
+`;
+
+exports[`NodeKey toJSON serializes ECPropertyGroupingNodeKey 1`] = `
+Object {
+  "className": "United States of America",
+  "groupedInstancesCount": 5097,
+  "groupingValue": 752,
+  "pathFromRoot": Array [
+    "c1b68531-e5c1-4481-890e-24c7709ea698",
+  ],
+  "propertyName": "Synergized",
+  "type": "ECPropertyGroupingNode",
+}
+`;
+
+exports[`NodeKey toJSON serializes LabelGroupingNodeKey 1`] = `
+Object {
+  "groupedInstancesCount": 66080,
+  "label": "Assurance",
+  "pathFromRoot": Array [
+    "46f714a1-68b6-425d-8ee6-0c175c6be362",
+  ],
+  "type": "DisplayLabelGroupingNode",
+}
+`;

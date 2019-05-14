@@ -4,9 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
 
-/** Data structure that describes a [selection scope]($docs/learning/unified-selection/Terminology#selection-scope) */
+/**
+ * Data structure that describes a [selection scope]($docs/learning/unified-selection/Terminology#selection-scope)
+ *
+ * @public
+ */
 export interface SelectionScope {
+  /** Unique ID of the selection scope */
   id: string;
+  /** Label */
   label: string;
+  /** Description */
   description?: string;
 }

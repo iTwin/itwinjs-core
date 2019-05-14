@@ -10,6 +10,7 @@ import { NodeKey, NodePathElement } from "@bentley/presentation-common";
 
 /**
  * Presentation tree data provider.
+ * @public
  */
 export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPresentationDataProvider {
   /**

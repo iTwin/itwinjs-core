@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { RpcConfiguration, RpcInterfaceDefinition, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
 
-export default class TestRpcManager {
+export class TestRpcManager {
   public static initializeClient(interfaces: RpcInterfaceDefinition[]) {
     const config = class extends RpcDefaultConfiguration {
       public interfaces: any = () => interfaces;

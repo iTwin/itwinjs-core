@@ -7,18 +7,22 @@
 import { IDisposable, Id64Set, GuidString, Guid, Id64Arg, Id64, Id64Array } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectEventType, ElementLocateManager, IModelApp } from "@bentley/imodeljs-frontend";
 import { KeySet, Keys, SelectionScope } from "@bentley/presentation-common";
-import ISelectionProvider from "./ISelectionProvider";
-import SelectionChangeEvent, { SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
+import { ISelectionProvider } from "./ISelectionProvider";
+import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
 import { SelectionScopesManager } from "./SelectionScopesManager";
 
-/** Properties for creating [[SelectionManager]] */
+/**
+ * Properties for creating [[SelectionManager]].
+ * @public
+ */
 export interface SelectionManagerProps {
   /** A manager for [selection scopes]($docs/learning/unified-selection/Terminology#selection-scope) */
   scopes: SelectionScopesManager;
 }
 
 /**
- * The selection manager which stores the overall selection
+ * The selection manager which stores the overall selection.
+ * @public
  */
 export class SelectionManager implements ISelectionProvider {
   private _selectionContainerMap = new Map<IModelConnection, SelectionContainer>();
@@ -245,7 +249,7 @@ export class SelectionManager implements ISelectionProvider {
   }
 }
 
-/** @hidden */
+/** @internal */
 class SelectionContainer {
   private readonly _selectedItemsSetMap: Map<number, KeySet>;
 
@@ -282,7 +286,7 @@ class SelectionContainer {
   }
 }
 
-/** @hidden */
+/** @internal */
 export class ToolSelectionSyncHandler implements IDisposable {
 
   private _selectionSourceName = "Tool";
@@ -391,7 +395,7 @@ const getPersistentElementIds = (ids: Id64Set): Id64Array | Id64Set => {
   return persistentElementIds;
 };
 
-/** @hidden */
+/** @internal */
 class ScopedSelectionChanger {
   public readonly name: string;
   public readonly imodel: IModelConnection;

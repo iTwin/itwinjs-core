@@ -8,8 +8,82 @@ import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { VariableValueTypes, VariableValue, VariableValueJSON } from "@bentley/presentation-common/lib/RulesetVariables";
 import { NativePlatformDefinition } from "./NativePlatform";
 
-/** @hidden */
-export default class RulesetVariablesManager {
+/**
+ * Presentation ruleset variables registry.
+ * @public
+ */
+export interface RulesetVariablesManager {
+  /** Gets a value of the specified type and ID */
+  getValue(variableId: string, type: VariableValueTypes): VariableValue;
+  /** Sets a value of the specified type */
+  setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
+
+  /**
+   * Retrieves `string` variable value.
+   * Returns empty string if variable does not exist or does not convert to string.
+   */
+  getString(variableId: string): string;
+  /**
+   * Sets `string` variable value
+   */
+  setString(variableId: string, value: string): void;
+
+  /**
+   * Retrieves `boolean` variable value.
+   * Returns `false` if variable does not exist or does not convert to boolean.
+   */
+  getBool(variableId: string): boolean;
+  /**
+   * Sets `boolean` variable value
+   */
+  setBool(variableId: string, value: boolean): void;
+
+  /**
+   * Retrieves `number` variable value.
+   * Returns `0` if variable does not exist or does not convert to integer.
+   */
+  getInt(variableId: string): number;
+  /**
+   * Sets `number` variable value
+   */
+  setInt(variableId: string, value: number): void;
+
+  /**
+   * Retrieves `number[]` variable value.
+   * Returns empty array if variable does not exist or does not convert to integer array.
+   */
+  getInts(variableId: string): number[];
+  /**
+   * Sets `number[]` variable value
+   */
+  setInts(variableId: string, value: number[]): void;
+
+  /**
+   * Retrieves `Id64String` variable value.
+   * Returns invalid Id64String if variable does not exist or does not convert to Id64String.
+   */
+  getId64(variableId: string): Id64String;
+  /**
+   * Sets `Id64String` variable value
+   */
+  setId64(variableId: string, value: Id64String): void;
+
+  /**
+   * Retrieves `Id64String[]` variable value.
+   * Returns empty array if variable does not exist or does not convert to Id64String array.
+   */
+  getId64s(variableId: string): Id64String[];
+  /**
+   * Sets `Id64String[]` variable value
+   */
+  setId64s(variableId: string, value: Id64String[]): void;
+}
+
+/**
+ * Presentation ruleset variables registry implementation.
+ * @internal
+ */
+export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
   private _getNativePlatform: () => NativePlatformDefinition;
   private _rulesetId: string;
 

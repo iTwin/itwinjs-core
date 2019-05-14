@@ -3,102 +3,131 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  nodeKeyFromJSON,
-  isInstanceNodeKey, isGroupingNodeKey, isLabelGroupingNodeKey,
-  isClassGroupingNodeKey, isPropertyGroupingNodeKey,
-} from "../../hierarchy/Key";
+import { NodeKey } from "../../hierarchy/Key";
 import {
   createRandomECInstanceNodeKeyJSON, createRandomECInstanceNodeKey,
   createRandomECClassGroupingNodeKey, createRandomECPropertyGroupingNodeKey,
-  createRandomLabelGroupingNodeKey, createRandomBaseNodeKey
+  createRandomLabelGroupingNodeKey, createRandomBaseNodeKey,
 } from "../_helpers/random";
 
-describe("NodeKey fromJSON", () => {
+describe("NodeKey", () => {
 
-  it("creates BaseNodeKey", () => {
-    const key = nodeKeyFromJSON(createRandomBaseNodeKey());
-    expect(key).to.matchSnapshot();
+  describe("toJSON", () => {
+
+    it("serializes BaseNodeKey", () => {
+      const key = NodeKey.toJSON(createRandomBaseNodeKey());
+      expect(key).to.matchSnapshot();
+    });
+
+    it("serializes ECInstanceNodeKey", () => {
+      const key = NodeKey.toJSON(createRandomECInstanceNodeKey());
+      expect(key).to.matchSnapshot();
+    });
+
+    it("serializes ECClassGroupingNodeKey", () => {
+      const key = NodeKey.toJSON(createRandomECClassGroupingNodeKey());
+      expect(key).to.matchSnapshot();
+    });
+
+    it("serializes ECPropertyGroupingNodeKey", () => {
+      const key = NodeKey.toJSON(createRandomECPropertyGroupingNodeKey());
+      expect(key).to.matchSnapshot();
+    });
+
+    it("serializes LabelGroupingNodeKey", () => {
+      const key = NodeKey.toJSON(createRandomLabelGroupingNodeKey());
+      expect(key).to.matchSnapshot();
+    });
+
   });
 
-  it("creates ECInstanceNodeKey", () => {
-    const key = nodeKeyFromJSON(createRandomECInstanceNodeKeyJSON());
-    expect(key).to.matchSnapshot();
+  describe("fromJSON", () => {
+
+    it("creates BaseNodeKey", () => {
+      const key = NodeKey.fromJSON(createRandomBaseNodeKey());
+      expect(key).to.matchSnapshot();
+    });
+
+    it("creates ECInstanceNodeKey", () => {
+      const key = NodeKey.fromJSON(createRandomECInstanceNodeKeyJSON());
+      expect(key).to.matchSnapshot();
+    });
+
+    it("creates ECClassGroupingNodeKey", () => {
+      const key = NodeKey.fromJSON(createRandomECClassGroupingNodeKey());
+      expect(key).to.matchSnapshot();
+    });
+
+    it("creates ECPropertyGroupingNodeKey", () => {
+      const key = NodeKey.fromJSON(createRandomECPropertyGroupingNodeKey());
+      expect(key).to.matchSnapshot();
+    });
+
+    it("creates LabelGroupingNodeKey", () => {
+      const key = NodeKey.fromJSON(createRandomLabelGroupingNodeKey());
+      expect(key).to.matchSnapshot();
+    });
+
   });
 
-  it("creates ECClassGroupingNodeKey", () => {
-    const key = nodeKeyFromJSON(createRandomECClassGroupingNodeKey());
-    expect(key).to.matchSnapshot();
+  describe("isInstanceNodeKey", () => {
+
+    it("returns correct results for different types of nodes", () => {
+      expect(NodeKey.isInstanceNodeKey(createRandomBaseNodeKey())).to.be.false;
+      expect(NodeKey.isInstanceNodeKey(createRandomECInstanceNodeKey())).to.be.true;
+      expect(NodeKey.isInstanceNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isInstanceNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isInstanceNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
+    });
+
   });
 
-  it("creates ECPropertyGroupingNodeKey", () => {
-    const key = nodeKeyFromJSON(createRandomECPropertyGroupingNodeKey());
-    expect(key).to.matchSnapshot();
+  describe("isClassGroupingNodeKey", () => {
+
+    it("returns correct results for different types of nodes", () => {
+      expect(NodeKey.isClassGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
+      expect(NodeKey.isClassGroupingNodeKey(createRandomECInstanceNodeKey())).to.be.false;
+      expect(NodeKey.isClassGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isClassGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isClassGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
+    });
+
   });
 
-  it("creates LabelGroupingNodeKey", () => {
-    const key = nodeKeyFromJSON(createRandomLabelGroupingNodeKey());
-    expect(key).to.matchSnapshot();
+  describe("isPropertyGroupingNodeKey", () => {
+
+    it("returns correct results for different types of nodes", () => {
+      expect(NodeKey.isPropertyGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
+      expect(NodeKey.isPropertyGroupingNodeKey(createRandomECInstanceNodeKey())).to.be.false;
+      expect(NodeKey.isPropertyGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isPropertyGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isPropertyGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
+    });
+
   });
 
-});
+  describe("isLabelGroupingNodeKey", () => {
 
-describe("isInstanceNodeKey", () => {
+    it("returns correct results for different types of nodes", () => {
+      expect(NodeKey.isLabelGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createRandomECInstanceNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.true;
+    });
 
-  it("returns correct results for different types of nodes", () => {
-    expect(isInstanceNodeKey(createRandomBaseNodeKey())).to.be.false;
-    expect(isInstanceNodeKey(createRandomECInstanceNodeKey())).to.be.true;
-    expect(isInstanceNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
-    expect(isInstanceNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
-    expect(isInstanceNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
   });
 
-});
+  describe("isGroupingNodeKey", () => {
 
-describe("isClassGroupingNodeKey", () => {
+    it("returns correct results for different types of nodes", () => {
+      expect(NodeKey.isGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
+      expect(NodeKey.isGroupingNodeKey(createRandomECInstanceNodeKey())).to.be.false;
+      expect(NodeKey.isGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.true;
+    });
 
-  it("returns correct results for different types of nodes", () => {
-    expect(isClassGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
-    expect(isClassGroupingNodeKey(createRandomECInstanceNodeKey())).to.be.false;
-    expect(isClassGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.true;
-    expect(isClassGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
-    expect(isClassGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
-  });
-
-});
-
-describe("isPropertyGroupingNodeKey", () => {
-
-  it("returns correct results for different types of nodes", () => {
-    expect(isPropertyGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
-    expect(isPropertyGroupingNodeKey(createRandomECInstanceNodeKey())).to.be.false;
-    expect(isPropertyGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
-    expect(isPropertyGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.true;
-    expect(isPropertyGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
-  });
-
-});
-
-describe("isLabelGroupingNodeKey", () => {
-
-  it("returns correct results for different types of nodes", () => {
-    expect(isLabelGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
-    expect(isLabelGroupingNodeKey(createRandomECInstanceNodeKey())).to.be.false;
-    expect(isLabelGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
-    expect(isLabelGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
-    expect(isLabelGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.true;
-  });
-
-});
-
-describe("isGroupingNodeKey", () => {
-
-  it("returns correct results for different types of nodes", () => {
-    expect(isGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
-    expect(isGroupingNodeKey(createRandomECInstanceNodeKey())).to.be.false;
-    expect(isGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.true;
-    expect(isGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.true;
-    expect(isGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.true;
   });
 
 });

@@ -8,22 +8,22 @@ import { DisposeFunc, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import {
-  PresentationRpcInterface,
-  PresentationError, PresentationStatus,
+  PresentationRpcInterface, PresentationError, PresentationStatus,
 } from "@bentley/presentation-common";
-import PresentationRpcImpl from "./PresentationRpcImpl";
-import PresentationManager, { Props as PresentationManagerProps } from "./PresentationManager";
-import TemporaryStorage from "./TemporaryStorage";
+import { PresentationRpcImpl } from "./PresentationRpcImpl";
+import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
+import { TemporaryStorage } from "./TemporaryStorage";
 
 const defaultResultWaitTime: number = 500;
 
 /**
  * Properties that can be used to configure [[Presentation]] API
+ * @public
  */
-export interface Props extends PresentationManagerProps {
+export interface PresentationProps extends PresentationManagerProps {
   /**
    * Factory method for creating separate managers for each client
-   * @hidden
+   * @internal
    */
   clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
 
@@ -51,10 +51,12 @@ interface ClientStoreItem {
  * - Create a singleton [[PresentationManager]] instance
  * - Subscribe for [IModelHost.onBeforeShutdown]($imodeljs-backend) event and terminate
  *   the presentation manager when that happens.
+ *
+ * @public
  */
-export default class Presentation {
+export class Presentation {
 
-  private static _initProps: Props | undefined;
+  private static _initProps: PresentationProps | undefined;
   private static _clientsStorage: TemporaryStorage<ClientStoreItem> | undefined;
   private static _requestTimeout: number | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
@@ -62,6 +64,7 @@ export default class Presentation {
   /* istanbul ignore next */
   private constructor() { }
 
+  /** Properties used to initialize the presentation framework */
   public static get initProps() { return this._initProps; }
 
   /**
@@ -76,7 +79,7 @@ export default class Presentation {
    *
    * @param props Optional properties for PresentationManager
    */
-  public static initialize(props?: Props): void {
+  public static initialize(props?: PresentationProps): void {
     try {
       RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl);
     } catch (_e) {

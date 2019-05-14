@@ -9,11 +9,11 @@ import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/r
 import { Id64String } from "@bentley/bentleyjs-core";
 import { VariableValueTypes } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "../NativePlatform";
-import RulesetVariablesManager from "../RulesetVariablesManager";
+import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
 
 describe("RulesetVariablesManager", () => {
 
-  let manager: RulesetVariablesManager;
+  let manager: RulesetVariablesManagerImpl;
   let rulesetId = "";
   let variableId = "";
   const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
@@ -21,7 +21,7 @@ describe("RulesetVariablesManager", () => {
     addonMock.reset();
     rulesetId = faker.random.word();
     variableId = faker.random.word();
-    manager = new RulesetVariablesManager(() => addonMock.object, rulesetId);
+    manager = new RulesetVariablesManagerImpl(() => addonMock.object, rulesetId);
   });
 
   describe("setValue", () => {

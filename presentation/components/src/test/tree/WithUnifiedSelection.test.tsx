@@ -13,6 +13,7 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, BaseNodeKey, ECInstanceNodeKey } from "@bentley/presentation-common";
 import {
@@ -21,7 +22,6 @@ import {
   ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/presentation-frontend";
 import { Tree, TreeProps, TreeNodeItem, UiComponents } from "@bentley/ui-components";
-import { I18N } from "@bentley/imodeljs-i18n";
 import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
 import { IPresentationTreeDataProvider, treeWithUnifiedSelection } from "../../presentation-components";
 

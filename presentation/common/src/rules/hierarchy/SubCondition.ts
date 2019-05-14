@@ -10,6 +10,8 @@ import { ConditionContainer } from "../Rule";
 /**
  * Defines child node specifications which should only be handled when a condition
  * is satisfied.
+ *
+ * @public
  */
 export interface SubCondition extends ConditionContainer {
   /**

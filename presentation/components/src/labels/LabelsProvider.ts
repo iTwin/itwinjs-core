@@ -11,6 +11,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 
 /**
  * Interface for presentation rules-driven labels provider.
+ * @public
  */
 export interface IPresentationLabelsProvider {
   /** [[IModelConnection]] used by this data provider */
@@ -27,6 +28,7 @@ export interface IPresentationLabelsProvider {
 
 /**
  * Presentation Rules-driven labels provider implementation.
+ * @public
  */
 export class LabelsProvider implements IPresentationLabelsProvider {
 

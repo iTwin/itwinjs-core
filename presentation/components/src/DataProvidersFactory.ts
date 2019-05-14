@@ -14,14 +14,18 @@ import {
 
 /**
  * Data structure holding initialization properties for [[DataProvidersFactory]]
+ * @public
  */
 export interface DataProvidersFactoryProps {
+  /** Rulesets' factory to use when creating data providers */
   rulesetsFactory?: RulesetsFactory;
 }
 
 /**
  * A factory class than can be used to create presentation data providers targeted towards
  * specific use cases.
+ *
+ * @public
  */
 export class DataProvidersFactory {
   private _rulesetsFactory: RulesetsFactory;

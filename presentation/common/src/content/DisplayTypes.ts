@@ -6,21 +6,23 @@
 
 /**
  * Displayed content types. Affects how the content is formatted, e.g.
- * the [[ContentFlags]]
+ * the [[ContentFlags]].
+ *
+ * @public
  */
-export default class DefaultContentDisplayTypes {
+export enum DefaultContentDisplayTypes {
   /** Unknown content type. */
-  public static readonly UNDEFINED = "Undefined";
+  Undefined = "Undefined",
 
   /** Grid or table view content type. By default adds [[ContentFlags.ShowLabels]] flag. */
-  public static readonly GRID = "Grid";
+  Grid = "Grid",
 
   /** Property pane content type. By default adds [[ContentFlags.MergeResults]] flag. */
-  public static readonly PROPERTY_PANE = "PropertyPane";
+  PropertyPane = "PropertyPane",
 
   /** List content type. By default adds [[ContentFlags.NoFields]] and [[ContentFlags.ShowLabels]] flags */
-  public static readonly LIST = "List";
+  List = "List",
 
   /** Viewport content type. By default adds [[ContentFlags.KeysOnly]] flag. */
-  public static readonly VIEWPORT = "Graphics";
+  Viewport = "Graphics",
 }

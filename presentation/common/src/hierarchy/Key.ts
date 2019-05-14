@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Hierarchies */
 
-import { InstanceKey, InstanceKeyJSON, instanceKeyFromJSON } from "../EC";
+import { InstanceKey, InstanceKeyJSON } from "../EC";
 
 /**
  * Standard node types
+ * @public
  */
 export enum StandardNodeTypes {
   ECInstanceNode = "ECInstanceNode",
@@ -16,14 +17,86 @@ export enum StandardNodeTypes {
   DisplayLabelGroupingNode = "DisplayLabelGroupingNode",
 }
 
-/** One of the node key types */
+/**
+ * One of the node key types
+ * @public
+ */
 export type NodeKey = BaseNodeKey | ECInstanceNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
+/** @public */
+export namespace NodeKey {
+  /**
+   * Serialize given [[NodeKey]] to JSON
+   * @internal
+   */
+  export function toJSON(key: NodeKey): NodeKeyJSON {
+    if (isInstanceNodeKey(key))
+      return { ...key, instanceKey: InstanceKey.toJSON(key.instanceKey) };
+    return { ...key };
+  }
 
-/** Node key path. Can be used to define path from root to some specific node */
+  /**
+   * Deserialize node key from JSON
+   * @param json JSON or JSON serialized to string to deserialize from
+   * @returns Deserialized node key
+   *
+   * @internal
+   */
+  export function fromJSON(json: NodeKeyJSON): NodeKey {
+    if (isInstanceNodeKey(json))
+      return { ...json, instanceKey: InstanceKey.fromJSON(json.instanceKey) };
+    return { ...json };
+  }
+
+  /**
+   * Checks if the supplied key is an [[ECInstanceNodeKey]]
+   * @public
+   */
+  export function isInstanceNodeKey(key: NodeKey): key is ECInstanceNodeKey {
+    return key.type === StandardNodeTypes.ECInstanceNode;
+  }
+
+  /**
+   * Checks if the supplied key is an [[ECClassGroupingNodeKey]]
+   * @public
+   */
+  export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey {
+    return key.type === StandardNodeTypes.ECClassGroupingNode;
+  }
+
+  /**
+   * Checks if the supplied key is an [[ECPropertyGroupingNodeKey]]
+   * @public
+   */
+  export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey {
+    return key.type === StandardNodeTypes.ECPropertyGroupingNode;
+  }
+
+  /**
+   * Checks if the supplied key is a [[LabelGroupingNodeKey]]
+   * @public
+   */
+  export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey {
+    return key.type === StandardNodeTypes.DisplayLabelGroupingNode;
+  }
+
+  /**
+   * Checks if the supplied key is a grouping node key
+   * @public
+   */
+  export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey {
+    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key);
+  }
+}
+
+/**
+ * Node key path. Can be used to define path from one node to another.
+ * @public
+ */
 export type NodeKeyPath = NodeKey[];
 
 /**
  * Data structure that describes a basic node key
+ * @public
  */
 export interface BaseNodeKey {
   /** Node type */
@@ -34,6 +107,7 @@ export interface BaseNodeKey {
 
 /**
  * Data structure that describes an ECInstance node key
+ * @public
  */
 export interface ECInstanceNodeKey extends BaseNodeKey {
   type: StandardNodeTypes.ECInstanceNode;
@@ -43,8 +117,7 @@ export interface ECInstanceNodeKey extends BaseNodeKey {
 
 /**
  * Serialized [[ECInstanceNodeKey]] JSON representation.
- *
- * @hidden
+ * @internal
  */
 export interface ECInstanceNodeKeyJSON extends BaseNodeKey {
   type: StandardNodeTypes.ECInstanceNode;
@@ -53,6 +126,7 @@ export interface ECInstanceNodeKeyJSON extends BaseNodeKey {
 
 /**
  * Data structure that describes a grouping node key
+ * @public
  */
 export interface GroupingNodeKey extends BaseNodeKey {
   /**
@@ -67,6 +141,7 @@ export interface GroupingNodeKey extends BaseNodeKey {
 
 /**
  * Data structure that describes an ECClass grouping node key
+ * @public
  */
 export interface ECClassGroupingNodeKey extends GroupingNodeKey {
   type: StandardNodeTypes.ECClassGroupingNode;
@@ -76,6 +151,7 @@ export interface ECClassGroupingNodeKey extends GroupingNodeKey {
 
 /**
  * Data structure that describes an ECProperty grouping node key
+ * @public
  */
 export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
   type: StandardNodeTypes.ECPropertyGroupingNode;
@@ -89,6 +165,7 @@ export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
 
 /**
  * Data structure that describes a display label grouping node key
+ * @public
  */
 export interface LabelGroupingNodeKey extends GroupingNodeKey {
   type: StandardNodeTypes.DisplayLabelGroupingNode;
@@ -98,48 +175,6 @@ export interface LabelGroupingNodeKey extends GroupingNodeKey {
 
 /**
  * One of the serialized node key types
- *
- * @hidden
+ * @internal
  */
 export type NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
-
-/**
- * Deserialize node key from JSON
- * @param json JSON or JSON serialized to string to deserialize from
- * @returns Deserialized node key
- *
- * @hidden
- */
-export const nodeKeyFromJSON = (json: NodeKeyJSON): NodeKey => {
-  switch (json.type) {
-    case StandardNodeTypes.ECInstanceNode:
-      return { ...json, instanceKey: instanceKeyFromJSON((json as ECInstanceNodeKeyJSON).instanceKey) };
-    default:
-      return { ...json };
-  }
-};
-
-/** Checks if the supplied key is an [[ECInstanceNodeKey]] */
-export const isInstanceNodeKey = (key: NodeKey): key is ECInstanceNodeKey => {
-  return key.type === StandardNodeTypes.ECInstanceNode;
-};
-
-/** Checks if the supplied key is an [[ECClassGroupingNodeKey]] */
-export const isClassGroupingNodeKey = (key: NodeKey): key is ECClassGroupingNodeKey => {
-  return key.type === StandardNodeTypes.ECClassGroupingNode;
-};
-
-/** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]] */
-export const isPropertyGroupingNodeKey = (key: NodeKey): key is ECPropertyGroupingNodeKey => {
-  return key.type === StandardNodeTypes.ECPropertyGroupingNode;
-};
-
-/** Checks if the supplied key is a [[LabelGroupingNodeKey]] */
-export const isLabelGroupingNodeKey = (key: NodeKey): key is LabelGroupingNodeKey => {
-  return key.type === StandardNodeTypes.DisplayLabelGroupingNode;
-};
-
-/** Checks if the supplied key is a grouping node key */
-export const isGroupingNodeKey = (key: NodeKey): key is GroupingNodeKey => {
-  return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key);
-};

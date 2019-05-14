@@ -5,14 +5,16 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import {
-  ValuesArray, ValuesMap, NestedContentValue,
-  isNestedContentValue, isArray, isMap, isPrimitive,
-  ValuesArrayJSON, ValuesMapJSON, valueFromJSON,
-  DisplayValuesArrayJSON, DisplayValuesMapJSON, displayValueFromJSON,
+  Value, ValuesArray, ValuesMap, NestedContentValue,
+  ValuesArrayJSON, ValuesMapJSON,
+  DisplayValuesArrayJSON, DisplayValuesMapJSON,
   NestedContentValueJSON,
+  DisplayValue,
+  DisplayValuesArray,
+  DisplayValuesMap,
 } from "../../content/Value";
-import { createRandomECInstanceKeyJSON } from "../_helpers/random";
-import { instanceKeyFromJSON } from "../../presentation-common";
+import { createRandomECInstanceKeyJSON, createRandomECInstanceKey } from "../_helpers/random";
+import { InstanceKey } from "../../EC";
 
 describe("Value", () => {
 
@@ -37,14 +39,14 @@ describe("Value", () => {
       };
     });
 
-    describe("isNestedContentValue", () => {
+    describe("isNestedContent", () => {
 
       it("returns correct results for different values", () => {
-        expect(isNestedContentValue(primitiveValue)).to.be.false;
-        expect(isNestedContentValue(arrayValue)).to.be.false;
-        expect(isNestedContentValue(mapValue)).to.be.false;
-        expect(isNestedContentValue([nestedContentValue])).to.be.true;
-        expect(isNestedContentValue([])).to.be.true;
+        expect(Value.isNestedContent(primitiveValue)).to.be.false;
+        expect(Value.isNestedContent(arrayValue)).to.be.false;
+        expect(Value.isNestedContent(mapValue)).to.be.false;
+        expect(Value.isNestedContent([nestedContentValue])).to.be.true;
+        expect(Value.isNestedContent([])).to.be.true;
       });
 
     });
@@ -52,11 +54,11 @@ describe("Value", () => {
     describe("isArray", () => {
 
       it("returns correct results for different values", () => {
-        expect(isArray(primitiveValue)).to.be.false;
-        expect(isArray(arrayValue)).to.be.true;
-        expect(isArray(mapValue)).to.be.false;
-        expect(isArray([nestedContentValue])).to.be.true;
-        expect(isArray([])).to.be.true;
+        expect(Value.isArray(primitiveValue)).to.be.false;
+        expect(Value.isArray(arrayValue)).to.be.true;
+        expect(Value.isArray(mapValue)).to.be.false;
+        expect(Value.isArray([nestedContentValue])).to.be.true;
+        expect(Value.isArray([])).to.be.true;
       });
 
     });
@@ -64,10 +66,10 @@ describe("Value", () => {
     describe("isMap", () => {
 
       it("returns correct results for different values", () => {
-        expect(isMap(primitiveValue)).to.be.false;
-        expect(isMap(arrayValue)).to.be.false;
-        expect(isMap(mapValue)).to.be.true;
-        expect(isMap([nestedContentValue])).to.be.false;
+        expect(Value.isMap(primitiveValue)).to.be.false;
+        expect(Value.isMap(arrayValue)).to.be.false;
+        expect(Value.isMap(mapValue)).to.be.true;
+        expect(Value.isMap([nestedContentValue])).to.be.false;
       });
 
     });
@@ -75,20 +77,20 @@ describe("Value", () => {
     describe("isPrimitive", () => {
 
       it("returns correct results for different values", () => {
-        expect(isPrimitive(primitiveValue)).to.be.true;
-        expect(isPrimitive(arrayValue)).to.be.false;
-        expect(isPrimitive(mapValue)).to.be.false;
-        expect(isPrimitive([nestedContentValue])).to.be.false;
+        expect(Value.isPrimitive(primitiveValue)).to.be.true;
+        expect(Value.isPrimitive(arrayValue)).to.be.false;
+        expect(Value.isPrimitive(mapValue)).to.be.false;
+        expect(Value.isPrimitive([nestedContentValue])).to.be.false;
       });
 
     });
 
   });
 
-  describe("valueFromJSON", () => {
+  describe("fromJSON", () => {
 
     it("returns undefined for null value", () => {
-      expect(valueFromJSON(null)).to.eq(undefined);
+      expect(Value.fromJSON(null)).to.eq(undefined);
     });
 
     it("returns valid nested content value", () => {
@@ -103,9 +105,9 @@ describe("Value", () => {
         },
         mergedFieldNames: [faker.random.word()],
       };
-      const result = valueFromJSON([v]);
+      const result = Value.fromJSON([v]);
       expect(result).to.deep.eq([{
-        primaryKeys: v.primaryKeys.map(instanceKeyFromJSON),
+        primaryKeys: v.primaryKeys.map(InstanceKey.fromJSON),
         values: {
           key1: v.values.key1,
           key2: undefined,
@@ -119,7 +121,7 @@ describe("Value", () => {
 
     it("returns valid array value", () => {
       const v: ValuesArrayJSON = [faker.random.word(), faker.random.word()];
-      expect(valueFromJSON(v)).to.deep.eq(v);
+      expect(Value.fromJSON(v)).to.deep.eq(v);
     });
 
     it("returns valid map value", () => {
@@ -127,27 +129,153 @@ describe("Value", () => {
         a: faker.random.word(),
         b: faker.random.number(),
       };
-      expect(valueFromJSON(v)).to.deep.eq(v);
+      expect(Value.fromJSON(v)).to.deep.eq(v);
     });
 
   });
 
-  describe("displayValueFromJSON", () => {
+  describe("toJSON", () => {
+
+    it("returns null for undefined value", () => {
+      expect(Value.toJSON(undefined)).to.eq(null);
+    });
+
+    it("returns 0 for 0 number value", () => {
+      expect(Value.toJSON(0)).to.eq(0);
+    });
+
+    it("returns valid JSON for nested content value", () => {
+      const v: NestedContentValue = {
+        primaryKeys: [createRandomECInstanceKey()],
+        values: {
+          key1: faker.random.word(),
+          key2: undefined,
+        },
+        displayValues: {
+          key3: undefined,
+        },
+        mergedFieldNames: [faker.random.word()],
+      };
+      const result = Value.toJSON([v]);
+      expect(result).to.deep.eq([{
+        primaryKeys: v.primaryKeys.map(InstanceKey.toJSON),
+        values: {
+          key1: v.values.key1,
+          key2: null,
+        },
+        displayValues: {
+          key3: null,
+        },
+        mergedFieldNames: v.mergedFieldNames,
+      }]);
+    });
+
+    it("returns valid JSON for array value", () => {
+      const v: ValuesArray = [faker.random.word(), faker.random.word()];
+      expect(Value.toJSON(v)).to.deep.eq(v);
+    });
+
+    it("returns valid JSON for map value", () => {
+      const v: ValuesMap = {
+        a: faker.random.word(),
+        b: faker.random.number(),
+      };
+      expect(Value.toJSON(v)).to.deep.eq(v);
+    });
+
+  });
+
+});
+
+describe("DisplayValue", () => {
+
+  describe("type checks", () => {
+
+    let primitiveValue: string;
+    let arrayValue: DisplayValuesArray;
+    let mapValue: DisplayValuesMap;
+
+    beforeEach(() => {
+      primitiveValue = faker.random.words();
+      arrayValue = [faker.random.word()];
+      mapValue = {
+        test: faker.random.word(),
+      };
+    });
+
+    describe("isArray", () => {
+
+      it("returns correct results for different values", () => {
+        expect(DisplayValue.isArray(primitiveValue)).to.be.false;
+        expect(DisplayValue.isArray(arrayValue)).to.be.true;
+        expect(DisplayValue.isArray(mapValue)).to.be.false;
+        expect(DisplayValue.isArray([])).to.be.true;
+      });
+
+    });
+
+    describe("isMap", () => {
+
+      it("returns correct results for different values", () => {
+        expect(DisplayValue.isMap(primitiveValue)).to.be.false;
+        expect(DisplayValue.isMap(arrayValue)).to.be.false;
+        expect(DisplayValue.isMap(mapValue)).to.be.true;
+      });
+
+    });
+
+    describe("isPrimitive", () => {
+
+      it("returns correct results for different values", () => {
+        expect(DisplayValue.isPrimitive(primitiveValue)).to.be.true;
+        expect(DisplayValue.isPrimitive(arrayValue)).to.be.false;
+        expect(DisplayValue.isPrimitive(mapValue)).to.be.false;
+      });
+
+    });
+
+  });
+
+  describe("fromJSON", () => {
 
     it("returns undefined for null value", () => {
-      expect(displayValueFromJSON(null)).to.eq(undefined);
+      expect(DisplayValue.fromJSON(null)).to.eq(undefined);
     });
 
     it("returns valid array value", () => {
       const v: DisplayValuesArrayJSON = [faker.random.word(), faker.random.word()];
-      expect(displayValueFromJSON(v)).to.deep.eq(v);
+      expect(DisplayValue.fromJSON(v)).to.deep.eq(v);
     });
 
     it("returns valid map value", () => {
       const v: DisplayValuesMapJSON = {
         a: faker.random.word(),
       };
-      expect(displayValueFromJSON(v)).to.deep.eq(v);
+      expect(DisplayValue.fromJSON(v)).to.deep.eq(v);
+    });
+
+  });
+
+  describe("toJSON", () => {
+
+    it("returns null for undefined value", () => {
+      expect(DisplayValue.toJSON(undefined)).to.eq(null);
+    });
+
+    it("returns \"\" for empty string value", () => {
+      expect(DisplayValue.toJSON("")).to.eq("");
+    });
+
+    it("returns valid JSON for array value", () => {
+      const v: DisplayValuesArray = [faker.random.word(), faker.random.word()];
+      expect(DisplayValue.toJSON(v)).to.deep.eq(v);
+    });
+
+    it("returns valid JSON for map value", () => {
+      const v: DisplayValuesMap = {
+        a: faker.random.word(),
+      };
+      expect(DisplayValue.toJSON(v)).to.deep.eq(v);
     });
 
   });

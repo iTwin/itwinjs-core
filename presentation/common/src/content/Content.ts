@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Content */
 
-import Descriptor, { DescriptorJSON } from "./Descriptor";
-import Item, { ItemJSON } from "./Item";
+import { Descriptor, DescriptorJSON } from "./Descriptor";
+import { Item, ItemJSON } from "./Item";
 
 /**
  * Serialized [[Content]] JSON representation.
- *
- * @hidden
+ * @internal
  */
 export interface ContentJSON {
   descriptor: DescriptorJSON;
@@ -20,50 +19,58 @@ export interface ContentJSON {
 /**
  * A data structure that contains the [[Descriptor]] and a list of [[Item]]
  * objects which are based on that descriptor.
+ *
+ * @public
  */
-export default class Content {
+export class Content {
   /** Descriptor used to create the content */
-  public descriptor: Readonly<Descriptor>;
+  public readonly descriptor: Descriptor;
   /** Content items */
-  public contentSet: Array<Readonly<Item>>;
+  public readonly contentSet: Item[];
 
-  /* istanbul ignore next */
-  private constructor(descriptor: Readonly<Descriptor>, items: Array<Readonly<Item>>) {
+  /** Create a new [[Content]] instance */
+  public constructor(descriptor: Descriptor, items: Item[]) {
     this.descriptor = descriptor;
     this.contentSet = items;
   }
 
-  /*public toJSON(): ContentJSON {
+  /** @internal */
+  public toJSON(): ContentJSON {
     return {
       descriptor: this.descriptor.toJSON(),
       contentSet: this.contentSet.map((item: Item) => item.toJSON()),
     };
-  }*/
+  }
 
   /**
    * Deserialize Content from JSON
    * @param json JSON or JSON serialized to string to deserialize from
    * @returns Deserialized content or undefined if deserialization failed
    *
-   * @hidden
+   * @internal
    */
   public static fromJSON(json: ContentJSON | string | undefined): Content | undefined {
     if (!json)
       return undefined;
+
     if (typeof json === "string")
       return JSON.parse(json, Content.reviver);
-    const content = Object.create(Content.prototype);
-    return Object.assign(content, {
-      descriptor: Descriptor.fromJSON(json.descriptor),
-      contentSet: json.contentSet.map((itemJson: ItemJSON) => Item.fromJSON(itemJson)),
-    });
+
+    const descriptor = Descriptor.fromJSON(json.descriptor);
+    if (!descriptor)
+      return undefined;
+
+    const contentSet = json.contentSet
+      .map((itemJson: ItemJSON) => Item.fromJSON(itemJson))
+      .filter<Item>((item): item is Item => (item !== undefined));
+    return new Content(descriptor, contentSet);
   }
 
   /**
    * Reviver function that can be used as a second argument for
    * `JSON.parse` method when parsing Content objects.
    *
-   * @hidden
+   * @internal
    */
   public static reviver(key: string, value: any): any {
     return key === "" ? Content.fromJSON(value) : value;

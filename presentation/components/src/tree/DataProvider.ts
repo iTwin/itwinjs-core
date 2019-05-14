@@ -15,6 +15,7 @@ import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 
 /**
  * Presentation Rules-driven tree data provider.
+ * @public
  */
 export class PresentationTreeDataProvider implements IPresentationTreeDataProvider {
   private _rulesetId: string;

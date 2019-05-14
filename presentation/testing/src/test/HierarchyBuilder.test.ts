@@ -5,12 +5,11 @@
 import * as moq from "typemoq";
 import { expect } from "chai";
 import { HierarchyBuilder, NodeMappingFunc } from "../HierarchyBuilder";
-import { PresentationManager, Presentation } from "@bentley/presentation-frontend";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Ruleset, Node, NodeKey } from "@bentley/presentation-common";
-// tslint:disable-next-line:no-direct-imports
-import RulesetManager from "@bentley/presentation-frontend/lib/RulesetManager";
+import { Node, NodeKey, Ruleset, RegisteredRuleset } from "@bentley/presentation-common";
+import { PresentationManager, Presentation, RulesetManager } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
+import { Guid } from "@bentley/bentleyjs-core";
 
 async function getRootNodes() {
   const root: Node = {
@@ -37,13 +36,14 @@ async function getChildrenNodes({ }, parentKey: NodeKey) {
 
 describe("HierarchyBuilder", () => {
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-  const rulesetManager = new RulesetManager();
+  const rulesetManagerMock = moq.Mock.ofType<RulesetManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const rulesetMock = moq.Mock.ofType<Ruleset>();
 
   beforeEach(() => {
     rulesetMock.setup((ruleset) => ruleset.id).returns(() => "1");
-    presentationManagerMock.setup((manager) => manager.rulesets()).returns(() => rulesetManager);
+    rulesetManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async (ruleset) => new RegisteredRuleset(ruleset, Guid.createValue(), () => { }));
+    presentationManagerMock.setup((manager) => manager.rulesets()).returns(() => rulesetManagerMock.object);
   });
 
   afterEach(() => {

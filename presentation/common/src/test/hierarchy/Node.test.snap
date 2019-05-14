@@ -58,14 +58,43 @@ Object {
 }
 `;
 
-exports[`Node[] fromJSON creates valid Node[] from JSON 1`] = `
+exports[`Node listFromJSON creates valid Node[] from JSON 1`] = `
 Array [
+  Object {
+    "backColor": "rgb(
+    8,
+    226,
+    135
+  )",
+    "description": "Officia id quia ducimus porro ipsum ut labore non odit.",
+    "foreColor": undefined,
+    "hasChildren": true,
+    "imageId": "payment",
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": false,
+    "isChecked": false,
+    "isEditable": true,
+    "isExpanded": true,
+    "isSelectionDisabled": true,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "generating",
+        "id": "0xa1f40000015019",
+      },
+      "pathFromRoot": Array [
+        "a4e3157e-9efc-44ab-9ccd-51f6568818bb",
+        "5969c069-8a07-4d76-8acd-5b9e0d056fcd",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "Massachusetts",
+  },
   Object {
     "backColor": undefined,
     "description": undefined,
-    "foreColor": "#5E6F81",
+    "foreColor": undefined,
     "hasChildren": true,
-    "imageId": "Lakes",
+    "imageId": "calculate",
     "isCheckboxEnabled": false,
     "isCheckboxVisible": true,
     "isChecked": false,
@@ -74,101 +103,100 @@ Array [
     "isSelectionDisabled": true,
     "key": Object {
       "instanceKey": Object {
-        "className": "transmitting",
-        "id": "0x8e74000000d40f",
+        "className": "algorithm",
+        "id": "0x116990000004b3f",
       },
       "pathFromRoot": Array [
-        "c99a680f-d47b-4e42-b668-4f1292101320",
-        "e47fd2d0-a94a-4ce7-8668-f8e80df18df8",
+        "e690a051-8d92-4dd1-89f9-a8a212f6872f",
+        "d8f9f659-cef9-4c2d-bb44-acc219c15dbf",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "generate facilitate",
-  },
-  Object {
-    "backColor": "rgb(
-    238,
-    21,
-    103
-  )",
-    "description": undefined,
-    "foreColor": "#3761D6",
-    "hasChildren": false,
-    "imageId": undefined,
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": false,
-    "isChecked": false,
-    "isEditable": false,
-    "isExpanded": false,
-    "isSelectionDisabled": true,
-    "key": Object {
-      "instanceKey": Object {
-        "className": "Home Loan Account",
-        "id": "0xd6cb000000e969",
-      },
-      "pathFromRoot": Array [
-        "78878301-e425-470a-854b-4c38f51d18ca",
-        "318edf6d-0eae-461d-830f-666a9d97a840",
-      ],
-      "type": "ECInstanceNode",
-    },
-    "label": "multi-byte",
+    "label": "compress payment Tanzanian Shilling",
   },
 ]
 `;
 
-exports[`Node[] fromJSON creates valid Node[] from serialized JSON 1`] = `
+exports[`Node listFromJSON creates valid Node[] from serialized JSON 1`] = `
 Array [
   Object {
     "backColor": "rgb(
-    214,
-    106,
-    164
+    142,
+    32,
+    151
   )",
-    "foreColor": "#D67CE8",
+    "description": "Qui facilis nihil veniam non quia et odit.",
+    "foreColor": "#825EAE",
     "hasChildren": true,
-    "imageId": "Handcrafted Granite Bike",
-    "isCheckboxEnabled": false,
-    "isCheckboxVisible": false,
-    "isChecked": false,
-    "isEditable": false,
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": true,
+    "isChecked": true,
+    "isEditable": true,
     "isExpanded": true,
     "isSelectionDisabled": true,
     "key": Object {
       "instanceKey": Object {
-        "className": "Lead",
-        "id": "0x39350000007c1b",
+        "className": "withdrawal",
+        "id": "0x963e0000011977",
       },
       "pathFromRoot": Array [
-        "d393c8ea-c63f-48bc-aa0e-a5a67f574125",
-        "f60e3df7-2246-4437-89a6-82a872f1a833",
+        "b791d53b-d36d-4463-a93b-d6f88836fa7b",
+        "bcc61160-44ce-4214-88a0-7beca55cff90",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "exuding",
+    "label": "Baby reboot Pre-emptive",
   },
   Object {
-    "foreColor": "#CA2B2F",
+    "description": "Sint sunt ut.",
     "hasChildren": true,
-    "imageId": "Global",
-    "isCheckboxEnabled": false,
-    "isCheckboxVisible": true,
-    "isChecked": true,
+    "imageId": "Kip",
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": false,
+    "isChecked": false,
     "isEditable": true,
-    "isExpanded": false,
+    "isExpanded": true,
     "isSelectionDisabled": true,
     "key": Object {
       "instanceKey": Object {
-        "className": "invoice",
-        "id": "0xb186000000601f",
+        "className": "Manager",
+        "id": "0x1489c0000004432",
       },
       "pathFromRoot": Array [
-        "b2663b91-5980-4e5e-befd-53da598eaaa6",
-        "17fd8971-5255-495f-a055-1d8de08102d3",
+        "969ce80c-c7a4-46b3-b4ba-8b1b8f5df1f0",
+        "18740c50-8a89-4eb7-ab84-4fa51f5b070a",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "Savings Account fuchsia global",
+    "label": "Fresh Refined Plastic Chair Gorgeous Granite Chicken",
   },
 ]
+`;
+
+exports[`Node toJSON serializes Node 1`] = `
+Object {
+  "backColor": undefined,
+  "description": "Dicta ut est autem suscipit laboriosam dolore placeat quam.",
+  "foreColor": undefined,
+  "hasChildren": true,
+  "imageId": "array",
+  "isCheckboxEnabled": true,
+  "isCheckboxVisible": false,
+  "isChecked": true,
+  "isEditable": false,
+  "isExpanded": true,
+  "isSelectionDisabled": true,
+  "key": Object {
+    "instanceKey": Object {
+      "className": "Accounts",
+      "id": "0x16f0900000018e7",
+    },
+    "pathFromRoot": Array [
+      "49751a56-5950-4ae3-be3b-c39c1d6f2a17",
+      "055caccb-47fb-48ce-938e-485a20877ad8",
+    ],
+    "type": "ECInstanceNode",
+  },
+  "label": "circuit Dynamic multimedia",
+}
 `;

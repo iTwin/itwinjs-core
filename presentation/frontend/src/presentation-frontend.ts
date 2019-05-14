@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-export { default as PersistenceHelper } from "./PersistenceHelper";
-export { default as Presentation } from "./Presentation";
-export { default as PresentationManager } from "./PresentationManager";
-export { default as RulesetVariablesManager } from "./RulesetVariablesManager";
+export { PersistenceHelper } from "./PersistenceHelper";
+export { Presentation } from "./Presentation";
+export { PresentationManager, PresentationManagerProps } from "./PresentationManager";
+export { RulesetManager } from "./RulesetManager";
+export { RulesetVariablesManager } from "./RulesetVariablesManager";
 
 /** @module UnifiedSelection */
-export { default as SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionChangesListener } from "./selection/SelectionChangeEvent";
-export { default as ISelectionProvider } from "./selection/ISelectionProvider";
-export { SelectionManager } from "./selection/SelectionManager";
-export { default as SelectionHandler } from "./selection/SelectionHandler";
+export { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionChangesListener } from "./selection/SelectionChangeEvent";
+export { ISelectionProvider } from "./selection/ISelectionProvider";
+export { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager";
+export { SelectionScopesManager, SelectionScopesManagerProps } from "./selection/SelectionScopesManager";
+export { SelectionHandler } from "./selection/SelectionHandler";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

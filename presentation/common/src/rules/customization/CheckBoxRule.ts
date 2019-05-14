@@ -11,6 +11,8 @@ import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
  *
  * Is also allows binding check box state with boolean properties by setting [[propertyName]] parameter.
  * If [[propertyName]] is not set, then [[defaultValue]] is used for default check box state.
+ *
+ * @public
  */
 export interface CheckBoxRule extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */

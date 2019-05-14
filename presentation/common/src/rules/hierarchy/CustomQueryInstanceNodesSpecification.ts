@@ -4,18 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
-import { RuleSpecificationTypes } from "../RuleSpecification";
+import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
 
 /**
- * Returns nodes for instances which are returned by an ECSQL query.
+ * Creates nodes for instances which are returned by an ECSQL query.
  *
  * **Note:** this specification is formerly known as `SearchResultInstanceNodesSpecification`.
+ *
+ * @public
  */
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */
-  specType: RuleSpecificationTypes.CustomQueryInstanceNodes;
+  specType: ChildNodeSpecificationTypes.CustomQueryInstanceNodes;
 
   /**
    * Specifications of queries used to create the content.
@@ -25,16 +26,26 @@ export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecific
   queries?: QuerySpecification[];
 }
 
-/** Query specifications used in [[CustomQueryInstanceNodesSpecification]]. */
+/**
+ * Query specifications used in [[CustomQueryInstanceNodesSpecification]].
+ * @public
+ */
 export declare type QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification;
 
-/** Used for serializing array of [[QuerySpecification]] to JSON. */
+/**
+ * Used for serializing array of [[QuerySpecification]] to JSON.
+ * @public
+ */
 export enum QuerySpecificationTypes {
   String = "String",
   ECPropertyValue = "ECPropertyValue",
 }
 
-/** Base interface for all [[QuerySpecification]] implementations */
+/**
+ * Base interface for all [[QuerySpecification]] implementations. Not meant
+ * to be used directly, see `QuerySpecification`.
+ * @public
+ */
 export interface QuerySpecificationBase {
   /** Used for serializing to JSON. */
   specType: QuerySpecificationTypes;
@@ -45,6 +56,7 @@ export interface QuerySpecificationBase {
 
 /**
  * Specification which contains an ECSQL query used to query for instances.
+ * @public
  */
 export interface StringQuerySpecification extends QuerySpecificationBase {
   /** Used for serializing to JSON. */
@@ -60,6 +72,8 @@ export interface StringQuerySpecification extends QuerySpecificationBase {
  *
  * **Precondition:** can be used only if parent node is ECInstance node.
  * If there is no immediate parent instance node it will go up until it finds one.
+ *
+ * @public
  */
 export interface ECPropertyValueQuerySpecification extends QuerySpecificationBase {
   /** Used for serializing to JSON. */

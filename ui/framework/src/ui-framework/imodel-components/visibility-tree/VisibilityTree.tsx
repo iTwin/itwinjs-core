@@ -7,9 +7,12 @@
 import * as React from "react";
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection, Viewport, PerModelCategoryVisibility } from "@bentley/imodeljs-frontend";
-import { KeySet, isInstanceNodeKey, Ruleset, InstanceKey, RegisteredRuleset, ContentFlags, DescriptorOverrides } from "@bentley/presentation-common";
+import { KeySet, Ruleset, NodeKey, InstanceKey, RegisteredRuleset, ContentFlags, DescriptorOverrides } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { IPresentationTreeDataProvider, PresentationTreeDataProvider, treeWithUnifiedSelection, ContentDataProvider } from "@bentley/presentation-components";
+import {
+  IPresentationTreeDataProvider, PresentationTreeDataProvider,
+  treeWithUnifiedSelection, ContentDataProvider,
+} from "@bentley/presentation-components";
 import {
   CheckBoxInfo, CheckBoxState, isPromiseLike, ImageCheckBox, NodeCheckboxRenderProps,
 } from "@bentley/ui-core";
@@ -290,7 +293,7 @@ export class VisibilityHandler implements IDisposable {
 
   public getDisplayStatus(node: TreeNodeItem): VisibilityStatus | Promise<VisibilityStatus> {
     const key = this._props.dataProvider.getNodeKey(node);
-    if (isInstanceNodeKey(key)) {
+    if (NodeKey.isInstanceNodeKey(key)) {
       switch (key.instanceKey.className) {
         case "BisCore:Subject":
           return this.getSubjectDisplayStatus(key.instanceKey.id);
@@ -317,7 +320,7 @@ export class VisibilityHandler implements IDisposable {
     }
 
     const parentNodeKey = this._props.dataProvider.getNodeKey(parentNode);
-    if (!isInstanceNodeKey(parentNodeKey)) {
+    if (!NodeKey.isInstanceNodeKey(parentNodeKey)) {
       return undefined;
     }
 
@@ -384,7 +387,7 @@ export class VisibilityHandler implements IDisposable {
 
   public async changeVisibility(node: TreeNodeItem, on: boolean) {
     const key = this._props.dataProvider.getNodeKey(node);
-    if (isInstanceNodeKey(key)) {
+    if (NodeKey.isInstanceNodeKey(key)) {
       switch (key.instanceKey.className) {
         case "BisCore:Subject":
           await this.changeSubjectState(key.instanceKey.id, on);

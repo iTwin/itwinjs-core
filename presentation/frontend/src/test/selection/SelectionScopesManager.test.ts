@@ -106,7 +106,7 @@ describe("SelectionScopesManager", () => {
       const result = new KeySet();
       rpcRequestsHandlerMock
         .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), ids, scope.id))
-        .returns(async () => result)
+        .returns(async () => result.toJSON())
         .verifiable();
       const computedResult = await getManager().computeSelection(imodelMock.object, ids, scope);
       rpcRequestsHandlerMock.verifyAll();
@@ -120,7 +120,7 @@ describe("SelectionScopesManager", () => {
       const result = new KeySet();
       rpcRequestsHandlerMock
         .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), ids, scope.id))
-        .returns(async () => result)
+        .returns(async () => result.toJSON())
         .verifiable();
       const computedResult = await getManager().computeSelection(imodelMock.object, ids, scope.id);
       rpcRequestsHandlerMock.verifyAll();
@@ -137,11 +137,11 @@ describe("SelectionScopesManager", () => {
       const result2 = new KeySet([createRandomECInstanceKey()]);
       rpcRequestsHandlerMock
         .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), moq.It.is((inIds: string[]): boolean => (inIds.length === 10000)), scope.id))
-        .returns(async () => result1)
+        .returns(async () => result1.toJSON())
         .verifiable();
       rpcRequestsHandlerMock
         .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), moq.It.is((inIds: string[]): boolean => (inIds.length === 1)), scope.id))
-        .returns(async () => result2)
+        .returns(async () => result2.toJSON())
         .verifiable();
       const computedResult = await getManager().computeSelection(imodelMock.object, ids, scope.id);
       rpcRequestsHandlerMock.verifyAll();
@@ -156,7 +156,7 @@ describe("SelectionScopesManager", () => {
       const result = new KeySet();
       rpcRequestsHandlerMock
         .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), moq.It.is((a) => a.length === 1 && a[0] === id), scope.id))
-        .returns(async () => result)
+        .returns(async () => result.toJSON())
         .verifiable();
       const computedResult = await getManager().computeSelection(imodelMock.object, id, scope);
       rpcRequestsHandlerMock.verifyAll();
@@ -170,7 +170,7 @@ describe("SelectionScopesManager", () => {
       const result = new KeySet();
       rpcRequestsHandlerMock
         .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), moq.It.is((a) => a.length === 1 && a[0] === id), scope.id))
-        .returns(async () => result)
+        .returns(async () => result.toJSON())
         .verifiable();
       const computedResult = await getManager().computeSelection(imodelMock.object, new Set([id]), scope);
       rpcRequestsHandlerMock.verifyAll();

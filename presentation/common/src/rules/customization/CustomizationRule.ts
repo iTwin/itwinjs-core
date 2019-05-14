@@ -28,6 +28,8 @@ import { StyleOverride } from "./StyleOverride";
  * Customization rules have a `priority` attribute which defines the order in which they're applied. If priorities match,
  * rules engine looks at the nesting level - the deeper the rule is nested, the higher is its `priority`.
  * If the nesting levels also match, the rule defined first wins.
+ *
+ * @public
  */
 export declare type CustomizationRule = InstanceLabelOverride |
   CheckBoxRule |
