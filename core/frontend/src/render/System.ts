@@ -331,7 +331,7 @@ export class RenderClassifierModel {
  */
 export type GraphicList = RenderGraphic[];
 
-/** A [Decoration]($docs/learning/frontend/ViewDecorations#canvas-decorations))] that is drawn onto the
+/** A [Decoration]($docs/learning/frontend/ViewDecorations#canvas-decorations) that is drawn onto the
  * [2d canvas](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) on top of a ScreenViewport.
  * CanvasDecorations may be pickable by implementing [[pick]].
  * @public

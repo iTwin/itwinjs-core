@@ -289,7 +289,7 @@ The following JavaDoc tags are supported by TypeDoc:
   * If a method can potentially throw an `Error`, it should be documented with `@throws` as there is no automated way that thrown errors make it into the generated documentation.
   * There can be multiple `@throws` lines (one for each different `Error` class) in a method comment.
   * A link to the `Error` class should be incorporated into the description.
-* `@hidden`
+* `@internal`
   * TypeDoc will not document the class, method, or member. This is useful for internal-only utility methods that must be public, but should not be called directly by outside API users.
 
 See below for the recommended format of documentation comments:
@@ -372,7 +372,7 @@ Every .ts file should have this notice as its **first lines**:
 
 ```ts
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 20xx - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 20xx Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 ```
