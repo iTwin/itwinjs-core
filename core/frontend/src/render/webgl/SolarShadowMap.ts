@@ -60,6 +60,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
   public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
   public get depthTexture(): Texture | undefined { return this._depthTexture; }
   public get settings(): SolarShadows.Settings { return this._settings; }
+  public get direction(): Vector3d | undefined { return this._direction; }
   public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
   private static _scratchRange = Range3d.createNull();
   private static _scratchTransform = Transform.createIdentity();

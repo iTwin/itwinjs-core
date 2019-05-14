@@ -80,6 +80,8 @@ export class InstanceBuffers implements IDisposable {
     dispose(this.symbology);
   }
 
+  public get rtcCenter(): Point3d { return this._rtcCenter; }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     const featureBytes = undefined !== this.featureIds ? this.featureIds.bytesUsed : 0;
     const symBytes = undefined !== this.symbology ? this.symbology.bytesUsed : 0;
@@ -164,6 +166,8 @@ export class InstancedGeometry extends CachedGeometry {
   public wantWoWReversal(params: ShaderProgramParams) { return this._repr.wantWoWReversal(params); }
   public getLineCode(params: ShaderProgramParams) { return this._repr.getLineCode(params); }
   public getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
+
+  public get rtcCenter(): Point3d { return this._buffers.rtcCenter; }
 
   public constructor(repr: LUTGeometry, ownsRepr: boolean, buffers: InstanceBuffers) {
     super();

@@ -7,6 +7,7 @@ import { VariableType, ProgramBuilder, FragmentShaderComponent } from "../Shader
 import { assert } from "@bentley/bentleyjs-core";
 import { TextureUnit } from "../RenderFlags";
 import { addUInt32s } from "./Common";
+import { addModelMatrix } from "./Vertex";
 
 const applyPlanarClassificationColor = `
   vec4 colorTexel = TEXTURE(s_pClassColorSampler, v_pClassPos.xy);
@@ -50,7 +51,7 @@ const computeClassifiedSurfaceHiliteColorNoTexture = `
   return vec4(hiliteTexel.a > 0.5 ? 1.0 : 0.0);
 `;
 
-const computeClassifierPos = "vec4 proj = u_pClassProj * u_m * rawPosition; v_pClassPos = proj.xyz/proj.w;";
+const computeClassifierPos = "vec4 proj = u_pClassProj * MAT_MODEL * rawPosition; v_pClassPos = proj.xyz/proj.w;";
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchBaseComponents = [0, 0, 0, 0];
@@ -66,12 +67,7 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
     });
   });
 
-  vert.addUniform("u_m", VariableType.Mat4, (prog) => {     // TBD.  Instancing.
-    prog.addGraphicUniform("u_m", (uniform, params) => {
-      uniform.setMatrix4(params.modelMatrix);
-    });
-  });
-
+  addModelMatrix(vert);
   builder.addInlineComputedVarying("v_pClassPos", VariableType.Vec3, computeClassifierPos);
 }
 
@@ -106,11 +102,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder) {
     });
   });
 
-  vert.addUniform("u_m", VariableType.Mat4, (prog) => {     // TBD.  Instancing.
-    prog.addGraphicUniform("u_m", (uniform, params) => {
-      uniform.setMatrix4(params.modelMatrix);
-    });
-  });
+  addModelMatrix(vert);
   frag.set(FragmentShaderComponent.ApplyPlanarClassifier, applyPlanarClassificationColor);
 }
 

@@ -76,6 +76,41 @@ export function addProjectionMatrix(vert: VertexShaderBuilder): void {
   });
 }
 
+const scratchRTC = new Float32Array(3);
+
+const computeInstancedModelMatrix = `
+  g_instancedModelMatrix = g_modelMatrixRTC;
+  g_instancedModelMatrix[3].xyz = u_instancedRTC;
+`;
+
+/** @internal */
+export function addModelMatrix(vert: VertexShaderBuilder): void {
+  if (vert.usesInstancedGeometry) {
+    assert(undefined !== vert.find("g_modelMatrixRTC")); // set up in VertexShaderBuilder constructor...
+    if (undefined === vert.find("g_instancedModelMatrix")) {
+      vert.addUniform("u_instancedRTC", VariableType.Vec3, (prog) => {
+        prog.addGraphicUniform("u_instancedRTC", (uniform, params) => {
+          const rtc = params.geometry.asInstanced!.rtcCenter;
+          scratchRTC[0] = rtc.x;
+          scratchRTC[1] = rtc.y;
+          scratchRTC[2] = rtc.z;
+          uniform.setUniform3fv(scratchRTC);
+        });
+      });
+
+      vert.addGlobal("g_instancedModelMatrix", VariableType.Mat4);
+      vert.addInitializer(computeInstancedModelMatrix);
+    }
+  } else if (undefined === vert.find("u_modelMatrix")) {
+    vert.addUniform("u_modelMatrix", VariableType.Mat4, (prog) => {
+      // ###TODO: We only need 3 rows, not 4...
+      prog.addGraphicUniform("u_modelMatrix", (uniform, params) => {
+        uniform.setMatrix4(params.modelMatrix);
+      });
+    });
+  }
+}
+
 /** @internal */
 export function addModelViewMatrix(vert: VertexShaderBuilder): void {
   if (vert.usesInstancedGeometry) {
@@ -86,7 +121,7 @@ export function addModelViewMatrix(vert: VertexShaderBuilder): void {
     });
 
     vert.addGlobal("g_mv", VariableType.Mat4);
-    vert.addInitializer("g_mv = u_instanced_modelView * g_modelMatrix;");
+    vert.addInitializer("g_mv = u_instanced_modelView * g_modelMatrixRTC;");
   } else {
     vert.addUniform("u_mv", VariableType.Mat4, (prog) => {
       // ###TODO: We only need 3 rows, not 4...
