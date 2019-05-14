@@ -178,7 +178,7 @@ export class SampleAppIModelApp {
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
-    const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read";
+    const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
     if (ElectronRpcConfiguration.isElectron) {
       const clientId = Config.App.get("imjs_electron_test_client_id");
       const redirectUri = Config.App.get("imjs_electron_test_redirect_uri");

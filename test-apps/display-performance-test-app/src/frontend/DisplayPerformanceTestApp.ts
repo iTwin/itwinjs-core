@@ -503,7 +503,7 @@ async function initializeOidc(requestContext: FrontendRequestContext) {
 
   const clientId = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_client_id") : Config.App.get("imjs_browser_test_client_id");
   const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
-  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read" };
+  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service" };
 
   await OidcClientWrapper.initialize(requestContext, oidcConfig);
   IModelApp.authorizationClient = OidcClientWrapper.oidcClient;
