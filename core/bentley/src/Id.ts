@@ -403,7 +403,7 @@ export namespace Id64 {
    */
   export function isId64(id: string): boolean {
     const len = id.length;
-    if (0 === len)
+    if (0 === len || 18 < len)
       return false;
 
     if ("0" !== id[0])
