@@ -240,7 +240,7 @@ class ModuleCopier {
         }
     }
     // this function adds the dependencies found in package.json that are external modules. Recurses, but only to depth 1.
-    findExternalModuleDependents(parentPackageRoot, depth) {
+    findExternalModuleDependents(parentPackageRoot, depth, problemPackages) {
         const packageFileContents = Utils.readPackageFileContents(parentPackageRoot);
         // find new dependents from this packageFileContents
         const newDependents = [];
@@ -252,10 +252,17 @@ class ModuleCopier {
             // we only care about external modules and their dependents that might be external modules.
             for (const externalModule of this._externalModules) {
                 if (externalModule.moduleName === dependent) {
-                    const dependentPackageRoot = path.resolve(parentPackageRoot, "node_modules", dependent);
+                    // first look for the package.json file in the "root" node_modules directory.
+                    let dependentPackageRoot = path.resolve(this._nodeModulesDirectory, dependent);
+                    if (!fs.existsSync(dependentPackageRoot)) {
+                        dependentPackageRoot = path.resolve(parentPackageRoot, "node_modules", dependent);
+                        if (!fs.existsSync(dependentPackageRoot)) {
+                            problemPackages.push(`Cannot find package.json for dependent ${dependent}`);
+                        }
+                    }
                     const dependentPackageContents = Utils.readPackageFileContents(dependentPackageRoot);
                     if (!dependentPackageContents.version) {
-                        console.log("  Cannot find version in package.json of dependent:", dependent);
+                        problemPackages.push(`Cannot find version in package.json of dependent: ${dependent}`);
                     }
                     newDependents.push(new DependentInfo(dependent, dependentPackageRoot, parentPackageRoot, externalModule, packageFileContents.dependencies[dependent], dependentPackageContents.version));
                 }
@@ -268,7 +275,7 @@ class ModuleCopier {
         // we need to check the first level of dependents of our direct dependents to find the non-imodeljs dependencies like lodash, react, redux, etc.
         if (depth < 2) {
             for (const newDependent of newDependents) {
-                this.findExternalModuleDependents(newDependent.packageRoot, depth + 1);
+                this.findExternalModuleDependents(newDependent.packageRoot, depth + 1, problemPackages);
             }
         }
     }
@@ -313,7 +320,10 @@ class ModuleCopier {
                 fs.mkdirSync(outputDirectory, { recursive: true });
             }
             // Read the package file for the current directory, and add the dependents recursively (to depth 2) to the sub-dependencies of the iModelJs modules.
-            this.findExternalModuleDependents(process.cwd(), 0);
+            const problemPackages = [];
+            this.findExternalModuleDependents(process.cwd(), 0, problemPackages);
+            if (problemPackages.length > 0)
+                return new Result("Symlink or Copy ExternalModules", 1, undefined, undefined, "Failure to process some dependent packages: \n".concat(...problemPackages));
             const missingPeerDependencies = this.checkPeerDependencies();
             if (missingPeerDependencies.length > 0)
                 return new Result("Symlink or Copy External Modules", 1, undefined, undefined, "You are missing one or more dependencies in package.json: \n".concat(...missingPeerDependencies));
@@ -694,14 +704,21 @@ class IModelJsModuleBuilder {
             child_process.execFile(webpackFullPath, args, { cwd: process.cwd() }, (error, stdout, stderr) => {
                 if (this._detail > 0)
                     console.log("Finished", operation);
-                // if we are building an application, move the main.js to the version directory.
-                if (buildType === "application" && version) {
-                    const destPath = path.resolve(outputPath, "v" + version);
-                    Utils.makeDirectoryNoError(destPath);
-                    Utils.moveFile(outputPath, destPath, "main.js");
-                    Utils.moveFile(outputPath, destPath, "main.js.map");
-                    Utils.moveFile(outputPath, destPath, "runtime.js");
-                    Utils.moveFile(outputPath, destPath, "runtime.js.map");
+                if ((null == error) || (!stderr || (0 === stderr.length))) {
+                    // if we are building an application, move the main.js to the version directory.
+                    if (buildType === "application" && version) {
+                        try {
+                            const destPath = path.resolve(outputPath, "v" + version);
+                            Utils.makeDirectoryNoError(destPath);
+                            Utils.moveFile(outputPath, destPath, "main.js");
+                            Utils.moveFile(outputPath, destPath, "main.js.map");
+                            Utils.moveFile(outputPath, destPath, "runtime.js");
+                            Utils.moveFile(outputPath, destPath, "runtime.js.map");
+                        }
+                        catch (moveError) {
+                            resolve(new Result(operation.concat(" (move file)"), 1, moveError));
+                        }
+                    }
                 }
                 resolve(new Result(operation, (null !== error) || (stderr && stderr.length) ? 1 : 0, error, stdout, stderr));
             });
