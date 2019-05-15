@@ -1,0 +1,205 @@
+sep=;
+Release Tag;API Item
+public;AllInstanceNodesSpecification 
+public;AllRelatedInstanceNodesSpecification 
+public;ArrayTypeDescription 
+public;BaseNodeKey
+public;BaseTypeDescription
+public;CalculatedPropertiesSpecification
+public;CategoryDescription
+public;CheckBoxRule 
+public;ChildNodeRule 
+public;ChildNodeSpecification = AllInstanceNodesSpecification | AllRelatedInstanceNodesSpecification | CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification
+public;ChildNodeSpecificationBase
+public;ChildNodeSpecificationTypes
+public;ClassGroup 
+public;ClassId = Id64String
+public;ClassInfo
+public;ClassInfo
+internal;fromJSON(json: ClassInfoJSON): ClassInfo
+internal;toJSON(info: ClassInfo): ClassInfoJSON
+internal;ClientStateSyncRequestOptions = PresentationRpcRequestOptions &
+public;ConditionContainer
+public;Content
+public;ContentFlags
+public;ContentInstancesOfSpecificClassesSpecification 
+public;ContentModifier 
+public;ContentRelatedInstancesSpecification 
+public;ContentRequestOptions
+public;ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit
+public;ContentRule 
+public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification
+public;ContentSpecificationBase
+public;ContentSpecificationTypes
+public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride
+public;CustomNodeSpecification 
+public;CustomQueryInstanceNodesSpecification 
+public;DefaultContentDisplayTypes
+public;DefaultGroupingPropertiesContainer
+public;Descriptor 
+public;DescriptorOverrides
+public;DescriptorSource
+public;DisabledSortingRule 
+public;DisplayValue = string | undefined | DisplayValuesMap | DisplayValuesArray
+public;DisplayValue
+internal;fromJSON(json: DisplayValueJSON): DisplayValue
+internal;toJSON(value: DisplayValue): DisplayValueJSON
+public;DisplayValuesArray 
+public;DisplayValuesMap 
+public;ECClassGroupingNodeKey 
+public;ECInstanceNodeKey 
+public;ECPropertyGroupingNodeKey 
+public;ECPropertyValueQuerySpecification 
+public;EditorDescription
+public;EnumerationChoice
+public;EnumerationInfo
+public;Field
+public;getInstancesCount: (keys: Readonly
+public;GroupingNodeKey 
+public;GroupingRule 
+public;GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup
+public;GroupingSpecificationBase
+public;GroupingSpecificationTypes
+public;HierarchyRequestOptions
+public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions & Omit
+internal;IClientStateHolder
+public;ImageIdOverride 
+public;InstanceId = Id64String
+public;InstanceKey
+public;InstanceKey
+internal;fromJSON(json: InstanceKeyJSON):
+internal;toJSON(json: InstanceKey): InstanceKeyJSON
+public;InstanceLabelOverride 
+public;InstanceNodesOfSpecificClassesSpecification 
+public;Item
+public;Key = Readonly
+public;Keys = ReadonlyArray
+public;KeySet
+public;KindOfQuantityInfo
+public;LabelGroupingNodeKey 
+public;LabelOverride 
+public;LabelRequestOptions
+public;LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit
+public;LoggingNamespaces
+public;MultiSchemaClassesSpecification
+public;NavigationRule = RootNodeRule | ChildNodeRule
+public;NavigationRuleBase 
+public;NestedContentField 
+public;NestedContentValue
+public;NestedContentValue
+internal;fromJSON(json: NestedContentValueJSON): NestedContentValue
+internal;toJSON(json: NestedContentValue): NestedContentValueJSON
+public;Node
+public;Node
+internal;fromJSON(json: NodeJSON | string): Node
+internal;listFromJSON(json: NodeJSON[] | string): Node[]
+internal;listReviver(key: string, value: any): any
+internal;reviver(key: string, value: any): any
+internal;toJSON(node: Node): NodeJSON
+public;NodeKey = BaseNodeKey | ECInstanceNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
+public;NodeKey
+internal;fromJSON(json: NodeKeyJSON): NodeKey
+internal;toJSON(key: NodeKey): NodeKeyJSON
+public;NodeKeyPath = NodeKey[]
+public;NodePathElement
+public;NodePathElement
+internal;fromJSON(json: NodePathElementJSON | string): NodePathElement
+internal;listFromJSON(json: NodePathElementJSON[] | string): NodePathElement[]
+internal;listReviver(key: string, value: any): any
+internal;reviver(key: string, value: any): any
+internal;toJSON(npe: NodePathElement): NodePathElementJSON
+public;NodePathFilteringData
+public;Omit
+public;Paged
+public;PageOptions
+public;PersistentKeysContainer
+public;PresentationError 
+public;PresentationRpcInterface 
+public;PresentationRpcRequestOptions
+public;PresentationStatus
+public;PrimitiveTypeDescription 
+public;PropertiesDisplaySpecification
+public;PropertiesField 
+public;Property
+public;Property
+internal;fromJSON(json: PropertyJSON): Property
+internal;toJSON(prop: Property): PropertyJSON
+public;PropertyEditorJsonParameters 
+public;PropertyEditorMultilineParameters 
+public;PropertyEditorParameters = PropertyEditorJsonParameters | PropertyEditorMultilineParameters | PropertyEditorRangeParameters | PropertyEditorSliderParameters
+public;PropertyEditorParametersBase
+public;PropertyEditorParameterTypes
+public;PropertyEditorRangeParameters 
+public;PropertyEditorSliderParameters 
+public;PropertyEditorsSpecification
+public;PropertyGroup 
+public;PropertyGroupingValue
+public;PropertyInfo
+public;PropertyInfo
+internal;fromJSON(json: PropertyInfoJSON): PropertyInfo
+internal;toJSON(info: PropertyInfo): PropertyInfoJSON
+public;PropertyRangeGroupSpecification
+public;PropertySortingRule 
+public;PropertyValueFormat
+public;QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification
+public;QuerySpecificationBase
+public;QuerySpecificationTypes
+public;RegisteredRuleset 
+public;RelatedClassInfo
+public;RelatedClassInfo
+internal;fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo
+internal;toJSON(info: RelatedClassInfo): RelatedClassInfoJSON
+public;RelatedInstanceNodesSpecification 
+public;RelatedInstanceSpecification
+public;RelatedPropertiesSpecialValues
+public;RelatedPropertiesSpecification
+public;RelationshipDirection
+public;RelationshipMeaning
+public;RelationshipPath = RelatedClassInfo[]
+public;RequestOptions
+public;RequestOptionsWithRuleset
+public;RootNodeRule 
+internal;RpcRequestsHandler 
+internal;RpcRequestsHandlerProps
+public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier
+public;RuleBase
+public;Ruleset
+internal;RulesetManagerState = Ruleset[]
+internal;RulesetManagerState
+public;RulesetsFactory
+internal;RulesetVariablesState
+internal;RulesetVariablesState
+public;RuleTypes
+public;SameLabelInstanceGroup 
+public;SchemasSpecification
+public;SelectClassInfo
+public;SelectedNodeInstancesSpecification 
+public;SelectionInfo
+public;SelectionScope
+public;SelectionScopeRequestOptions
+public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions & Omit
+public;SingleSchemaClassSpecification
+public;SortDirection
+public;SortingRule = PropertySortingRule | DisabledSortingRule
+public;SortingRuleBase 
+public;StandardNodeTypes
+public;StringQuerySpecification 
+public;StructFieldMemberDescription
+public;StructTypeDescription 
+public;StyleOverride 
+public;SubCondition 
+public;Subtract
+public;SupplementationInfo
+public;TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription
+public;Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[]
+public;Value
+internal;fromJSON(json: ValueJSON): Value
+internal;toJSON(value: Value): ValueJSON
+public;ValuesArray 
+public;ValuesDictionary
+public;ValuesMap 
+public;Variable
+public;VariablesGroup
+internal;VariableValue = boolean | string | number | number[] | Id64String[]
+public;VariableValueType
+internal;VariableValueTypes

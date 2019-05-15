@@ -1,0 +1,10 @@
+sep=;
+Release Tag;API Item
+beta;DuplicateRulesetHandlingStrategy
+public;Presentation
+public;PresentationManager
+public;PresentationManagerProps
+public;PresentationProps 
+beta;RulesetEmbedder
+public;RulesetManager
+public;RulesetVariablesManager

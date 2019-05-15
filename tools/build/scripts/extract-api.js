@@ -7,6 +7,7 @@
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 const argv = require("yargs").argv;
 const fs = require("fs-extra");
+const path = require("path");
 
 if (argv.entry === undefined) {
   console.log("No argument found");
@@ -80,6 +81,19 @@ if (!isCI)
 spawn(require.resolve(".bin/api-extractor"), args).then((code) => {
   if (fs.existsSync(configFileName))
     fs.unlinkSync(configFileName);
-  process.exit(code);
+
+  // Only generate the extraction of the summary locally.
+  if (isCI)
+    process.exit(code);
+
+  const extractSummaryArgs = [
+    path.resolve(__dirname, "extract-api-summary.js"),
+    "--apiSignature", path.resolve(`../../common/api/${entryPointFileName}.api.md`),
+    "--outDir", path.resolve("../../common/api/summary")
+  ];
+
+  spawn("node", extractSummaryArgs).then((code) => {
+    process.exit(code);
+  });
 });
 handleInterrupts();

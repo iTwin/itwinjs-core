@@ -1,0 +1,365 @@
+sep=;
+Release Tag;API Item
+public;AccuDraw
+internal;AccudrawData
+internal;AccuDrawFlags
+internal;AccuDrawHintBuilder
+internal;AccuDrawShortcuts
+internal;class AccuDrawTool
+public;AccuSnap 
+public;AccuSnap
+public;ACSDisplayOptions
+public;ACSType
+public;ActivityMessageDetails
+public;ActivityMessageEndReason
+internal;AnimationBranchState
+internal;AnimationBranchStates = Map
+internal;AppearanceOverrideProps
+beta;ArrayValue 
+internal;Attachments
+public;AuthorizedFrontendRequestContext 
+public;AuxCoordSystem2dState 
+public;AuxCoordSystem3dState 
+public;AuxCoordSystemSpatialState 
+public;class AuxCoordSystemState 
+alpha;BasePropertyEditorParams
+beta;BasePropertyValue
+public;BeButton
+public;BeButtonEvent
+public;BeButtonState
+public;BeModifierKeys
+public;BeTouchEvent 
+public;BeWheelEvent 
+internal;bisectRange2d(range: Range3d, takeUpper: boolean): void
+internal;bisectRange3d(range: Range3d, takeUpper: boolean): void
+alpha;ButtonGroupEditorParams 
+internal;CachedIModelCoordinatesResponseProps
+beta;calculateSolarAngles(date: Date, location: Cartographic):
+beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
+beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
+public;CanvasDecoration
+public;CanvasDecorationList = CanvasDecoration[]
+public;CategorySelectorState 
+beta;ChangeFlag
+beta;ChangeFlags
+alpha;CheckBoxIconsEditorParams 
+beta;enum ClassifierType
+internal;enum ClipOrientation
+beta;enum ClippingType
+beta;ClipResult
+internal;Clips
+public;Cluster
+alpha;ColorEditorParams 
+public;CompassMode
+internal;ContextMode
+internal;ContextRealityModelState 
+alpha;ConversionData 
+public;CoordinateLockOverrides
+public;CoordSource
+public;CoordSystem
+internal;CurrentInputState
+internal;CurrentState
+alpha;CustomFormattedNumberParams 
+public;DecorateContext 
+alpha;DecorationAnimator 
+public;Decorations 
+public;Decorator
+internal;DefaultViewTouchTool 
+public;DepthRangeNpc
+internal;DevTools
+public;DisplayStyle2dState 
+public;DisplayStyle3dState 
+public;class DisplayStyleState 
+public;DrawingModelState 
+public;DrawingViewState 
+public;DynamicsContext 
+public;EditManipulator
+beta;EditorPosition
+beta;ElementAgenda
+public;ElementLocateManager
+public;ElementPicker
+public;ElementState 
+beta;ElemMethod
+beta;ElemSource
+internal;EmphasizeElements 
+internal;EmphasizeElementsProps
+public;EntityState 
+beta;EnumerationChoice
+beta;EnumerationChoicesInfo
+public;Environment 
+beta;ErrorNums
+public;EventController
+public;EventHandled
+public;ExtentLimits
+public;extractImageSourceDimensions(source: ImageSource): Promise
+public;FeatureOverrideProvider
+internal;FeatureOverrideType
+public;FeatureSymbology
+public;FitViewTool 
+internal;Flags
+public;FlyViewTool 
+internal;fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d): Point3d
+public;FrontendLoggerCategory
+public;FrontendRequestContext 
+internal;FrustumUniforms
+internal;enum FrustumUniformType
+public;FuzzySearch
+public;FuzzySearchResult
+public;FuzzySearchResults
+internal;GeoConverter
+public;GeometricModel2dState 
+public;GeometricModel3dState 
+public;class GeometricModelState 
+internal;GeoServices
+public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
+public;getImageSourceMimeType(format: ImageSourceFormat): string
+public;GraphicBranch 
+public;class GraphicBuilder
+public;GraphicList = RenderGraphic[]
+public;GraphicType
+public;GridOrientationType
+beta;GroupMark
+public;HilitedSet
+beta;HilitedState
+public;HitDetail
+public;HitDetailType
+public;HitGeomType
+public;HitList
+public;HitListHolder
+public;HitParentGeomType
+public;HitPriority
+public;HitSource
+alpha;IconDefinition
+alpha;IconEditorParams 
+public;IconSprites
+public;IdleTool 
+public;imageBufferToBase64EncodedPng(buffer: ImageBuffer): string | undefined
+public;imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined
+public;imageElementFromImageSource(source: ImageSource): Promise
+public;imageElementFromUrl(url: string): Promise
+public;IModelApp
+public;IModelAppOptions
+public;IModelConnection 
+public;IModelConnection
+internal;Tiles
+public;class InputCollector 
+alpha;InputEditorSizeParams 
+public;InputSource
+internal;InstancedGraphicParams
+public;class InteractiveTool 
+public;IntersectDetail 
+internal;ItemField
+alpha;JsonEditorParams 
+internal;KeyinStatus
+internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
+beta;LinkElementsInfo
+public;LocateAction
+public;LocateFilterStatus
+public;LocateOptions
+public;LocateResponse
+internal;LockedStates
+public;LookViewTool 
+public;ManipulatorToolEvent
+public;MarginPercent
+public;Marker 
+public;MarkerFillStyle = string | CanvasGradient | CanvasPattern
+public;MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap
+public;class MarkerSet
+public;MarkerTextAlign = "left" | "right" | "center" | "start" | "end"
+public;MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom"
+internal;MeasureDistanceTool 
+internal;MeasureLocationTool 
+public;MessageBoxIconType
+public;MessageBoxType
+public;MessageBoxValue
+internal;MockRender
+public;ModelSelectorState 
+public;ModelState 
+public;ModifyElementSource
+alpha;MultilineTextEditorParams 
+internal;NoRenderApp
+public;NotificationManager
+public;NotifyMessageDetails
+internal;NullRenderSystem 
+internal;NullTarget 
+internal;OffScreenTarget 
+internal;OffScreenViewport 
+beta;OidcBrowserClient 
+internal;OidcClientWrapper
+internal;OnScreenTarget 
+public;OrthographicViewState 
+public;OutputMessageAlert
+public;OutputMessagePriority
+public;OutputMessageType
+internal;PackedFeature
+internal;PackedFeatureTable
+public;PanViewTool 
+alpha;ParseResults
+internal;PerformanceMetrics
+alpha;PerModelCategoryVisibility
+beta;Override
+beta;Overrides
+public;PhysicalModelState 
+internal;PingTestResult
+beta;Pixel
+beta;PlanarClassifierMap = Map
+internal;PlanarClassifiers
+public;class Plugin
+public;PluginAdmin
+beta;Primitives
+public;class PrimitiveTool 
+beta;PrimitiveValue 
+internal;enum PrimitiveVisibility
+beta;PropertyDescription
+beta;PropertyEditorInfo
+alpha;PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams
+alpha;PropertyEditorParamTypes
+beta;PropertyRecord
+beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
+beta;PropertyValueFormat
+alpha;QuantityFormatter 
+alpha;QuantityType
+alpha;RangeEditorParams 
+public;RelativePosition
+public;RemoveMe
+beta;RenderClassifierModel
+beta;class RenderClipVolume 
+public;RenderContext
+internal;enum RenderDiagnostics
+public;class RenderGraphic 
+internal;RenderMemory
+internal;RenderPlan
+beta;class RenderPlanarClassifier 
+internal;class RenderSolarShadowMap 
+public;class RenderSystem 
+public;RenderSystem
+beta;Options
+internal;class RenderTarget 
+public;RotateViewTool 
+public;RotationMode
+internal;RoundOff
+internal;SavedState
+internal;SceneContext 
+public;ScreenViewport 
+public;ScrollViewTool 
+public;SectionDrawingModelState 
+public;SelectedViewportChangedArgs
+public;SelectEventType
+public;SelectionMethod
+public;SelectionMode
+public;SelectionProcessing
+public;SelectionSet
+public;SelectionTool 
+internal;SheetBorder
+public;SheetModelState 
+public;SheetViewState 
+public;class SkyBox 
+public;SkyBox
+internal;SkyBoxParams = Promise
+public;SkyCube 
+public;SkyGradient 
+public;SkySphere 
+alpha;SliderEditorParams 
+public;SnapDetail 
+public;SnapHeat
+public;SnapMode
+public;SnapStatus
+beta;SpatialClassification
+internal;addModelClassifierToScene(classifiedModel: TileTreeModelState, context: SceneContext): void
+beta;addSpatialClassifier(model: TileTreeModelState, classifier: SpatialClassificationProps.PropertiesProps): void
+internal;createClassifier(id: Id64String, iModel: IModelConnection): Promise
+beta;getActiveSpatialClassifier(model: TileTreeModelState): number
+internal;getClassifierProps(model: TileTreeModelState): SpatialClassificationProps.Properties | undefined
+beta;getSpatialClassifier(model: TileTreeModelState, index: number): SpatialClassificationProps.Properties | undefined
+internal;loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise
+internal;loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise
+beta;setActiveSpatialClassifier(model: TileTreeModelState, classifierIndex: number, active: boolean): Promise
+beta;setSpatialClassifier(model: TileTreeModelState, index: number, classifier: SpatialClassificationProps.Properties): void
+public;SpatialLocationModelState 
+public;SpatialModelState 
+public;SpatialViewState 
+public;Sprite
+public;SpriteLocation 
+public;StandardView
+public;StandardViewId
+public;StandardViewTool 
+public;StartOrResume
+beta;StructValue 
+internal;SubCategoriesCache
+internal;SubCategoriesCache
+internal;SubCategoriesRequest
+alpha;SuppressLabelEditorParams 
+alpha;SuppressUnitLabelEditorParams 
+internal;SuspendedToolState
+internal;SyncFlags
+internal;class Target 
+internal;TentativeOrAccuSnap
+public;TentativePoint
+internal;TextureImage
+internal;ThreeAxes
+internal;Tile 
+internal;Tile
+alpha;class TileAdmin
+alpha;TileAdmin
+internal;ViewportSet 
+internal;class TileLoader
+internal;TileTree 
+internal;TileTree
+alpha;TileTreeModelState
+internal;TileTreeState
+public;Tool
+public;ToolAdmin
+public;ToolList = ToolType[]
+public;ToolRegistry
+public;ToolSettings
+beta;ToolSettingsPropertyRecord 
+beta;ToolSettingsPropertySyncItem
+beta;ToolSettingsValue 
+internal;ToolState
+public;ToolTipOptions
+public;ToolType = typeof Tool
+internal;TouchCursor 
+alpha;TwoWayViewportSync
+alpha;Unit 
+beta;UsesDragSelect
+beta;UsesFence
+beta;UsesSelection
+public;ViewChangeOptions
+internal;ViewClipByElementTool 
+internal;ViewClipByPlaneTool 
+internal;ViewClipByRangeTool 
+internal;ViewClipByShapeTool 
+internal;ViewClipClearTool 
+internal;ViewClipControlArrow
+internal;ViewClipDecoration 
+internal;ViewClipDecorationProvider 
+internal;ViewClipEventHandler
+internal;class ViewClipModifyTool 
+internal;ViewClipPlanesModifyTool 
+internal;ViewClipShapeModifyTool 
+internal;ViewClipTool 
+internal;ViewFrustum
+internal;ViewHandleArray
+internal;enum ViewHandleType
+internal;class ViewingToolHandle
+public;ViewManager
+public;class ViewManip 
+public;class Viewport 
+public;ViewportAnimator
+public;ViewRect
+public;ViewRedoTool 
+public;class ViewState 
+public;class ViewState2d 
+public;class ViewState3d 
+internal;class ViewStateUndo
+public;ViewStatus
+public;ViewToggleCameraTool 
+public;class ViewTool 
+beta;ViewUndoEvent
+public;ViewUndoTool 
+public;WalkViewTool 
+internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_half_float" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays"
+internal;WheelEventProcessor
+public;WindowAreaTool 
+public;ZoomToOptions
+public;ZoomViewTool 

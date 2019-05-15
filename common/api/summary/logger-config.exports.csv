@@ -1,0 +1,10 @@
+sep=;
+Release Tag;API Item
+beta;BunyanLoggerConfig
+beta;FluentdBunyanLoggerConfig
+beta;FluentdLoggerStream 
+beta;GenericPost
+beta;IFluentdConfig
+beta;PostFluentd 
+beta;SeqConfig
+beta;SeqLoggerConfig

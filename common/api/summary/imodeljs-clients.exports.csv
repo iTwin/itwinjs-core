@@ -1,0 +1,175 @@
+sep=;
+Release Tag;API Item
+beta;AccessToken 
+internal;addSelectFileAccessKey(query: RequestQueryOptions): void
+internal;AggregateResponseError 
+alpha;AllCodesDeletedEvent 
+alpha;AllLocksDeletedEvent 
+internal;ArgumentCheck
+public;AuthenticationError 
+beta;AuthorizationToken 
+beta;AuthorizedClientRequestContext 
+internal;Briefcase 
+internal;BriefcaseAccessMode
+internal;BriefcaseDeletedEvent 
+public;class BriefcaseEvent 
+internal;BriefcaseHandler
+internal;BriefcaseQuery 
+public;ChangeSet 
+public;ChangeSetCreatedEvent 
+public;ChangeSetHandler
+public;ChangeSetPostPushEvent 
+public;ChangeSetPrePushEvent 
+public;ChangeSetQuery 
+internal;ChangeState = "new" | "modified" | "deleted"
+public;ChangesType
+internal;Checkpoint 
+internal;CheckpointHandler
+internal;CheckpointQuery 
+internal;ClassKeyMapInfo
+public;class Client
+public;ClientsLoggerCategory
+alpha;CodeBase 
+alpha;CodeEvent 
+alpha;CodeHandler
+alpha;CodeQuery 
+alpha;CodeSequence 
+alpha;CodeSequenceHandler
+alpha;CodeSequenceType
+alpha;CodeState
+alpha;CodeUpdateOptions
+public;Config
+alpha;ConflictingCodesError 
+alpha;ConflictingLocksError 
+public;ConnectClient 
+internal;ConnectRequestQueryOptions 
+internal;ConnectSettingsClient 
+internal;ConstructorType = new () => any
+internal;DefaultCodeUpdateOptionsProvider
+internal;DefaultLockUpdateOptionsProvider
+internal;DefaultRequestOptionsProvider
+internal;DefaultWsgRequestOptionsProvider 
+internal;class ECInstance
+internal;ECJsonTypeMap
+public;EventHandler 
+public;EventSAS 
+public;EventSubscription 
+public;EventSubscriptionHandler
+internal;FeatureEndedLogEntry 
+internal;FeatureLogEntry
+internal;FeatureLogEntryAttribute
+internal;FeatureLogEntryAttributeJson
+internal;FeatureLogEntryJson 
+internal;FeatureStartedLogEntry 
+internal;FileAccessKey 
+internal;FileHandler
+public;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
+public;GetEventOperationType
+public;getJson(requestContext: ClientRequestContext, url: string): Promise
+public;GlobalEventHandler 
+public;GlobalEventSAS 
+public;GlobalEventSubscription 
+public;GlobalEventSubscriptionHandler
+beta;HardiModelDeleteEvent 
+alpha;HubCode 
+public;HubIModel 
+alpha;HubUserInfo 
+beta;IAngularOidcFrontendClient 
+beta;IAuthorizationClient
+internal;IModelBankClient 
+internal;IModelBankFileSystemContextClient 
+internal;IModelBankHandler 
+internal;IModelBaseHandler 
+public;class IModelClient
+public;IModelCreatedEvent 
+public;IModelDeletedEvent 
+internal;IModelFileSystemContextProps
+public;IModelHandler
+public;IModelHubClient 
+public;IModelHubClientError 
+public;IModelHubError 
+public;class IModelHubEvent 
+public;class IModelHubGlobalEvent 
+public;IModelQuery 
+public;IModelsHandler
+internal;ImsActiveSecureTokenClient 
+internal;ImsDelegationSecureTokenClient 
+internal;ImsFederatedAuthenticationClient 
+internal;ImsTestAuthorizationClient 
+internal;ImsUserCredentials
+beta;IncludePrefix
+internal;InitializationState
+internal;InstanceIdQuery 
+beta;IOidcFrontendClient 
+alpha;LargeThumbnail 
+alpha;Lock 
+alpha;LockBase 
+alpha;LockEvent 
+alpha;LockHandler
+alpha;LockLevel
+alpha;LockQuery 
+alpha;LockType
+alpha;LockUpdateOptions
+internal;LogEntryConverter
+internal;LogPostingResponse
+internal;MultiCode 
+alpha;MultiLock 
+public;NamedVersionCreatedEvent 
+beta;class OidcClient 
+beta;OidcFrontendClientConfiguration
+internal;ParseEvent(response: Response): IModelHubEvent
+internal;ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent
+internal;Permission 
+internal;ProductVersion
+public;ProgressInfo
+public;Project 
+internal;Query
+internal;RbacProject 
+internal;RbacRequestQueryOptions 
+internal;RbacUser 
+internal;RealityData 
+internal;RealityDataRelationship 
+internal;RealityDataServicesClient 
+public;request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise
+alpha;RequestBasicCredentials
+internal;RequestGlobalOptions
+alpha;requestIdHeaderName = "X-Correlation-Id"
+alpha;RequestOptions
+alpha;RequestQueryOptions
+alpha;RequestQueryStringifyOptions
+alpha;RequestTimeoutOptions
+public;Response
+public;ResponseError 
+internal;SeedFile 
+alpha;SettingsAdmin
+alpha;SettingsMapResult
+alpha;SettingsResult
+alpha;SettingsStatus
+alpha;SmallThumbnail 
+beta;SoftiModelDeleteEvent 
+internal;StringIdQuery 
+alpha;class Thumbnail 
+alpha;ThumbnailHandler
+alpha;ThumbnailQuery 
+alpha;ThumbnailSize = "Small" | "Large"
+alpha;TipThumbnail
+beta;class Token
+internal;UlasClient 
+internal;UrlDiscoveryClient 
+internal;UsageLogEntry
+internal;UsageLogEntryJson
+internal;UsageType
+beta;UserInfo
+alpha;UserInfoHandler
+alpha;UserInfoQuery 
+alpha;UserStatistics 
+alpha;UserStatisticsHandler
+alpha;UserStatisticsQuery 
+public;Version 
+public;VersionEvent 
+public;VersionHandler
+public;VersionQuery 
+internal;class WsgClient 
+internal;WsgError 
+internal;class WsgInstance 
+internal;WsgRequestOptions

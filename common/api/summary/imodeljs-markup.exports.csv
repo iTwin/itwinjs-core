@@ -1,0 +1,28 @@
+sep=;
+Release Tag;API Item
+beta;ArrowTool 
+beta;CircleTool 
+beta;CloudTool 
+beta;DistanceTool 
+beta;EditTextTool 
+beta;EllipseTool 
+beta;Handles
+beta;LineTool 
+beta;Markup
+beta;MarkupApp
+beta;MarkupColor
+beta;MarkupData 
+beta;MarkupSelected
+beta;MarkupSvgData
+beta;class MarkupTool 
+beta;class ModifyHandle
+beta;PlaceTextTool 
+beta;PolygonTool 
+beta;RectangleTool 
+beta;class RedlineTool 
+beta;SelectTool 
+beta;SketchTool 
+beta;SymbolTool 
+internal;Title 
+beta;UndoManager
+beta;WidthAndHeight

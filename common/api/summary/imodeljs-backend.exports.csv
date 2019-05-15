@@ -1,0 +1,237 @@
+sep=;
+Release Tag;API Item
+public;AccessMode
+public;AnnotationElement2d 
+beta;AppActivityMonitor
+public;AuthorizedBackendRequestContext 
+beta;AutoPush
+beta;AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void
+beta;AutoPushEventType
+beta;AutoPushParams
+beta;AutoPushState
+public;class AuxCoordSystem 
+public;AuxCoordSystem2d 
+public;AuxCoordSystem3d 
+public;AuxCoordSystemSpatial 
+beta;AzureBlobStorage 
+beta;BackendActivityMonitor 
+public;BackendLoggerCategory
+public;BackendRequestContext 
+public;BisCoreSchema 
+internal;BriefcaseEntry
+public;BriefcaseId
+internal;BriefcaseManager
+public;CachedECSqlStatement
+internal;CachedSqliteStatement
+public;class Callout 
+public;Category 
+public;CategoryOwnsSubCategories 
+public;CategorySelector 
+beta;ChangedElementsDb 
+public;ChangeSetDescriber = (endTxnId: TxnIdString) => string
+internal;ChangeSetToken
+beta;ChangeSummary
+beta;ChangeSummaryExtractContext
+beta;ChangeSummaryExtractOptions
+beta;ChangeSummaryManager
+public;ClassRegistry
+beta;class CloudStorageService
+beta;CloudStorageServiceCredentials
+beta;CloudStorageUploadOptions
+public;CodeSpecs
+beta;ConcurrencyControl
+beta;ConcurrencyControl
+alpha;CrashReportingConfig
+alpha;CrashReportingConfigNameValuePair
+public;class DefinitionElement 
+public;DefinitionModel 
+public;DefinitionPartition 
+public;DetailCallout 
+public;class DetailingSymbol 
+internal;DevTools
+internal;DevToolsOsStats
+internal;DevToolsProcessStats
+internal;DevToolsStats
+internal;DevToolsStatsFormatter
+public;DictionaryModel 
+public;class DisplayStyle 
+public;DisplayStyle2d 
+public;DisplayStyle3d 
+public;DisplayStyleCreationOptions
+public;class Document 
+internal;class DocumentCarrier 
+public;DocumentListModel 
+public;DocumentPartition 
+public;Drawing 
+public;DrawingCategory 
+public;DrawingGraphic 
+public;DrawingGraphicRepresentsElement 
+public;DrawingGraphicRepresentsFunctionalElement 
+public;DrawingModel 
+public;DrawingViewDefinition 
+beta;class DriverBundleElement 
+public;ECDb 
+public;ECDbOpenMode
+public;ECEnumValue
+internal;ECSchemaXmlContext
+public;ECSqlBinder
+public;ECSqlColumnInfo
+public;ECSqlInsertResult
+public;ECSqlStatement 
+public;ECSqlStatementCache
+public;ECSqlValue
+public;ECSqlValueIterator 
+public;Element 
+public;ElementAspect 
+beta;ElementDrivesElement 
+beta;ElementDrivesElementProps 
+public;ElementEncapsulatesElements 
+public;ElementGroupsMembers 
+public;ElementGroupsMembersProps 
+public;ElementMultiAspect 
+public;ElementOwnsChildElements 
+public;ElementRefersToElements 
+public;ElementUniqueAspect 
+public;ElevationCallout 
+public;EmbeddedFileLink 
+public;Entity 
+public;ExclusiveAccessOption
+beta;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
+beta;ExportGraphicsInfo
+beta;ExportGraphicsMesh
+beta;ExportGraphicsProps
+public;class FunctionalBreakdownElement 
+public;class FunctionalComponentElement 
+public;FunctionalComposite 
+public;class FunctionalElement 
+public;FunctionalElementIsOfType 
+public;FunctionalModel 
+public;FunctionalPartition 
+public;FunctionalSchema 
+public;class FunctionalType 
+public;GenericSchema 
+public;class GeometricElement 
+public;class GeometricElement2d 
+public;class GeometricElement3d 
+public;GeometricModel 
+public;class GeometricModel2d 
+public;class GeometricModel3d 
+public;GeometryPart 
+public;Graphic3d 
+public;class GraphicalElement2d 
+public;GraphicalElement2dIsOfType 
+public;class GraphicalElement3d 
+public;class GraphicalModel2d 
+public;class GraphicalType2d 
+public;Group 
+public;class GroupInformationElement 
+public;class GroupInformationModel 
+public;GroupInformationPartition 
+public;GroupModel 
+public;IModelDb 
+public;IModelDb
+internal;TileContentState
+internal;Tiles
+public;IModelHost
+public;IModelHostConfiguration
+alpha;IModelImporter
+public;IModelJsFs
+public;IModelJsFsStats
+internal;IModelJsNative
+internal;class InformationCarrierElement 
+public;class InformationContentElement 
+public;class InformationModel 
+public;class InformationPartitionElement 
+public;class InformationRecordElement 
+public;InformationRecordModel 
+public;InformationRecordPartition 
+public;class InformationReferenceElement 
+beta;InstanceChange
+public;KeepBriefcase
+public;KnownLocations
+public;LightLocation 
+public;LineStyle 
+public;LineStyleDefinition
+public;class LinkElement 
+public;LinkModel 
+public;LinkPartition 
+internal;MetaDataRegistry
+public;Model 
+public;ModelSelector 
+public;OpenParams
+public;OrthographicViewDefinition 
+public;class PhysicalElement 
+public;PhysicalElementAssemblesElements 
+public;PhysicalElementFulfillsFunction 
+public;PhysicalElementIsOfType 
+public;PhysicalModel 
+public;PhysicalObject 
+public;PhysicalPartition 
+public;class PhysicalType 
+public;PlanCallout 
+public;Platform
+internal;class RecipeDefinitionElement 
+public;Relationship 
+public;RelationshipProps 
+public;Relationships
+public;RenderMaterialElement 
+public;RenderMaterialElement
+public;RenderMaterialOwnsRenderMaterials 
+public;RepositoryLink 
+public;RepositoryModel 
+public;class RoleElement 
+public;RoleModel 
+public;Schema
+internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
+internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
+public;Schemas
+public;SectionCallout 
+public;SectionDrawing 
+public;SectionDrawingModel 
+public;Sheet 
+public;SheetBorderTemplate 
+public;SheetModel 
+public;SheetTemplate 
+public;SheetViewDefinition 
+public;SourceAndTarget
+public;SpatialCategory 
+public;class SpatialElement 
+public;SpatialLocation 
+public;class SpatialLocationElement 
+public;SpatialLocationIsOfType 
+public;SpatialLocationModel 
+public;SpatialLocationPartition 
+public;class SpatialLocationType 
+public;class SpatialModel 
+public;SpatialViewDefinition 
+internal;SqliteStatement 
+internal;SqliteStatementCache
+internal;SqliteValue
+internal;SqliteValueType
+internal;StringParam
+public;SubCategory 
+public;Subject 
+public;SubjectOwnsPartitionElements 
+public;SubjectOwnsSubjects 
+public;SyncMode
+internal;TemplateRecipe2d 
+internal;TemplateRecipe3d 
+internal;TemplateViewDefinition2d 
+internal;TemplateViewDefinition3d 
+public;TextAnnotation2d 
+public;TextAnnotation3d 
+public;Texture 
+public;TitleText 
+public;TxnAction
+public;TxnIdString = string
+beta;TxnManager
+public;class TypeDefinitionElement 
+public;UrlLink 
+beta;ValidationError
+public;ViewAttachment 
+public;ViewAttachmentLabel 
+public;class ViewDefinition 
+public;ViewDefinition2d 
+public;class ViewDefinition3d 
+public;VolumeElement 
+public;WebMercatorModel 

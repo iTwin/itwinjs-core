@@ -1,0 +1,18 @@
+sep=;
+Release Tag;API Item
+public;ISelectionProvider
+beta;PersistenceHelper
+public;Presentation
+public;PresentationManager 
+public;PresentationManagerProps
+public;RulesetManager
+public;RulesetVariablesManager
+public;SelectionChangeEvent 
+public;SelectionChangeEventArgs
+public;SelectionChangesListener = (args: SelectionChangeEventArgs, provider: ISelectionProvider) => void
+public;SelectionChangeType
+public;SelectionHandler 
+public;SelectionManager 
+public;SelectionManagerProps
+public;SelectionScopesManager
+public;SelectionScopesManagerProps

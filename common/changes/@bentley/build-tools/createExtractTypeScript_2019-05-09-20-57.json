@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update extract-api script to generate a summary file if in the context of an automated build.",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Caleb.Shafer@bentley.com"
+}

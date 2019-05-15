@@ -1,0 +1,215 @@
+sep=;
+Release Tag;API Item
+internal;class AbstractNewtonIterator
+internal;AnalyticRoots
+public;Angle 
+public;AngleProps =
+public;AngleSweep 
+public;AngleSweepProps = AngleSweep |
+internal;AnnotatedLineString3d
+public;AnnounceCurvePrimitive = (cp: CurvePrimitive) => void
+public;AnnounceNumberNumber = (a0: number, a1: number) => void
+public;AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: CurvePrimitive) => void
+public;AnyCurve = CurvePrimitive | Path | Loop | ParityRegion | UnionRegion | BagOfCurves | CurveCollection
+public;AnyRegion = Loop | ParityRegion | UnionRegion
+public;Arc3d 
+public;AuxChannel
+public;AuxChannelData
+public;AuxChannelDataType
+public;AxisIndex
+public;AxisOrder
+public;AxisScaleSelect
+public;BagOfCurves 
+public;BeJSONFunctions
+public;Bezier1dNd
+internal;class BezierCoffs
+public;BezierCurve3d 
+public;BezierCurve3dH 
+public;class BezierCurveBase 
+internal;BezierPolynomialAlgebra
+public;BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number
+public;Box 
+internal;BoxTopology
+public;BSpline1dNd
+public;class BSpline2dNd 
+public;BSplineCurve3d 
+public;class BSplineCurve3dBase 
+public;BSplineCurve3dH 
+public;BSplineSurface3d 
+public;BSplineSurface3dH 
+public;BSplineSurface3dQuery
+public;BSplineWrapMode
+public;ClipMaskXYZRangePlanes
+public;Clipper
+public;ClipPlane 
+public;ClipPlaneContainment
+public;ClipPrimitive
+public;ClipShape 
+public;ClipStatus
+public;ClipUtilities
+public;ClipVector
+internal;ClusterableArray 
+internal;compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number
+internal;Complex 
+public;Cone 
+alpha;Constant
+public;ConstructCurveBetweenCurves 
+public;ConvexClipPlaneSet 
+internal;ConvexPolygon2d
+public;CoordinateXYZ 
+public;class CurveChain 
+public;CurveChainWithDistanceIndex 
+public;class CurveCollection 
+public;CurveCurve
+public;CurveCurveApproachType
+public;CurveIntervalRole
+public;CurveLocationDetail
+public;CurveLocationDetailArrayPair
+public;CurveLocationDetailPair
+public;class CurvePrimitive 
+public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
+public;CurveSearchStatus
+internal;DeepCompare
+internal;Degree2PowerPolynomial
+internal;Degree3PowerPolynomial
+internal;Degree4PowerPolynomial
+public;FacetFaceData
+public;FrameBuilder
+public;Geometry
+public;class GeometryHandler
+public;class GeometryQuery
+internal;GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean
+public;GrowableBlockedArray
+public;GrowableFloat64Array
+public;GrowableXYArray 
+public;GrowableXYZArray 
+internal;HalfEdge
+internal;HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean
+internal;HalfEdgeGraph
+internal;enum HalfEdgeMask
+internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
+public;HasZ = Readonly
+public;IModelJson
+public;IndexedPolyface 
+public;IndexedPolyfaceVisitor 
+public;class IndexedXYCollection
+public;class IndexedXYZCollection
+public;InverseMatrixState
+public;IStrokeHandler
+public;KnotVector
+public;LinearSweep 
+public;LineSegment3d 
+public;LineString3d 
+public;Loop 
+public;LowAndHighXY = Readonly
+public;LowAndHighXYZ = Readonly
+public;Map4d 
+public;Matrix3d 
+public;Matrix3dProps = number[][] | Matrix3d | number[]
+public;Matrix4d 
+public;Matrix4dProps = Point4dProps[]
+public;MomentData
+internal;Newton1dUnbounded 
+internal;Newton1dUnboundedApproximateDerivative 
+internal;Newton2dUnboundedWithDerivative 
+internal;class NewtonEvaluatorRRtoRRD
+internal;class NewtonEvaluatorRtoR
+internal;class NewtonEvaluatorRtoRD
+internal;NodeFunction = (node: HalfEdge) => any
+internal;NodeToNumberFunction = (node: HalfEdge) => number
+public;NullGeometryHandler 
+public;NumberArray
+public;OptionalGrowableFloat64Array = GrowableFloat64Array | undefined
+internal;Order2Bezier 
+internal;Order3Bezier 
+internal;Order4Bezier 
+internal;Order5Bezier 
+alpha;OrderedRotationAngles
+public;PackedPointGrid
+public;ParityRegion 
+internal;PascalCoefficients
+public;Path 
+public;PathFragment
+public;Plane3dByOriginAndUnitNormal 
+public;Plane3dByOriginAndVectors 
+public;PlaneAltitudeEvaluator
+public;PlaneByOriginAndVectors4d
+public;Point2d 
+public;Point2dArray
+public;Point2dArrayCarrier 
+public;Point3d 
+public;Point3dArray
+public;Point3dArrayCarrier 
+public;Point4d 
+public;Point4dArray
+public;Point4dProps = number[]
+public;PointString3d 
+public;class Polyface 
+public;PolyfaceAuxData
+public;PolyfaceBuilder 
+public;PolyfaceData
+public;PolyfaceQuery
+public;PolyfaceVisitor 
+public;PolygonOps
+internal;PowerPolynomial
+internal;Quadrature
+public;Range1d 
+internal;Range1dArray
+public;Range1dProps =
+public;Range2d 
+public;Range2dProps =
+public;Range3d 
+public;Range3dProps =
+public;class RangeBase
+internal;Ray2d
+public;Ray3d 
+public;RecurseToCurvesGeometryHandler 
+public;class RecursiveCurveProcessor
+public;class RecursiveCurveProcessorWithStack 
+public;RotationalSweep 
+public;RuledSweep 
+alpha;Sample
+public;Segment1d
+public;SmallSystem
+public;SmoothTransformBetweenFrusta
+public;class SolidPrimitive 
+public;Sphere 
+internal;SphereImplicit
+public;StandardViewIndex
+public;StrokeCountMap
+public;StrokeOptions
+public;SweepContour
+internal;TorusImplicit
+public;TorusPipe 
+public;Transform 
+public;TransformProps = number[][] | number[] |
+alpha;TransitionConditionalProperties
+alpha;TransitionSpiral3d 
+internal;Triangulator
+internal;TriDiagonalSystem
+internal;TrigPolynomial
+public;TrigValues
+public;UnionOfConvexClipPlaneSets 
+public;UnionRegion 
+internal;UnivariateBezier 
+public;UVSelect
+public;UVSurface
+public;UVSurfaceIsoParametricDistance
+public;UVSurfaceOps
+public;Vector2d 
+public;Vector3d 
+public;Vector3dArray
+public;WeightStyle
+public;WritableLowAndHighXY
+public;WritableLowAndHighXYZ
+public;WritableXAndY
+public;WritableXYAndZ 
+public;WriteableHasZ
+public;XAndY = Readonly
+public;XY 
+public;XYAndZ = Readonly
+public;XYProps =
+public;XYZ 
+public;XYZProps =
+public;YawPitchRollAngles
+public;YawPitchRollProps

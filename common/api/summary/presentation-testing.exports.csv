@@ -1,0 +1,11 @@
+sep=;
+Release Tag;API Item
+public;ContentBuilder
+public;ContentBuilderResult
+public;HierarchyBuilder
+public;HierarchyNode 
+public;IContentBuilderDataProvider
+public;initialize: (backendProps?: PresentationManagerProps | undefined, frontendProps?: PresentationManagerProps_2 | undefined, frontendApp?: typeof NoRenderApp) => void
+public;MappedNode
+public;NodeMappingFunc = (node: TreeNodeItem) => MappedNode
+public;terminate: (frontendApp?: typeof IModelApp) => void

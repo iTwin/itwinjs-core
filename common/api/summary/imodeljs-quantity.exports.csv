@@ -1,0 +1,23 @@
+sep=;
+Release Tag;API Item
+alpha;BadUnit 
+alpha;DecimalPrecision
+alpha;Format 
+alpha;FormatProps
+alpha;Formatter
+alpha;FormatterSpec
+alpha;FormatTraits
+alpha;FormatType
+alpha;FractionalPrecision
+alpha;Parser
+alpha;Quantity 
+internal;QuantityConstants
+alpha;QuantityError 
+alpha;QuantityProps
+alpha;QuantityStatus
+alpha;ScientificType
+alpha;ShowSignOption
+alpha;UnitConversion
+alpha;UnitConversionSpec
+alpha;UnitProps
+alpha;UnitsProvider
