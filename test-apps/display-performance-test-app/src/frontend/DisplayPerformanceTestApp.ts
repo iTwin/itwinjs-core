@@ -8,7 +8,7 @@ import { Config, HubIModel, OidcFrontendClientConfiguration, Project } from "@be
 import {
   BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
-  SnapshotIModelRpcInterface, ViewDefinitionProps, ViewFlag,
+  SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection,
@@ -23,6 +23,10 @@ import { IModelApi } from "./IModelApi";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
+
+interface Options {
+  [key: string]: any; // Add index signature
+}
 
 // Retrieve default config data from json file
 async function getDefaultConfigs(): Promise<string> {
@@ -82,87 +86,6 @@ class DisplayPerfTestApp {
   }
 }
 
-function setViewFlagOverrides(vf: any, vfo?: ViewFlag.Overrides): ViewFlag.Overrides {
-  if (!vfo) vfo = new ViewFlag.Overrides();
-  if (vf) {
-    if (vf.hasOwnProperty("dimensions"))
-      vfo.setShowDimensions(vf.dimensions);
-    if (vf.hasOwnProperty("patterns"))
-      vfo.setShowPatterns(vf.patterns);
-    if (vf.hasOwnProperty("weights"))
-      vfo.setShowWeights(vf.weights);
-    if (vf.hasOwnProperty("styles"))
-      vfo.setShowStyles(vf.styles);
-    if (vf.hasOwnProperty("transparency"))
-      vfo.setShowTransparency(vf.transparency);
-    if (vf.hasOwnProperty("fill"))
-      vfo.setShowFill(vf.fill);
-    if (vf.hasOwnProperty("textures"))
-      vfo.setShowTextures(vf.textures);
-    if (vf.hasOwnProperty("materials"))
-      vfo.setShowMaterials(vf.materials);
-    if (vf.hasOwnProperty("visibleEdges"))
-      vfo.setShowVisibleEdges(vf.visibleEdges);
-    if (vf.hasOwnProperty("hiddenEdges"))
-      vfo.setShowHiddenEdges(vf.hiddenEdges);
-    if (vf.hasOwnProperty("sourceLights"))
-      vfo.setShowSourceLights(vf.sourceLights);
-    if (vf.hasOwnProperty("cameraLights"))
-      vfo.setShowCameraLights(vf.cameraLights);
-    if (vf.hasOwnProperty("solarLights"))
-      vfo.setShowSolarLight(vf.solarLights);
-    if (vf.hasOwnProperty("shadows"))
-      vfo.setShowShadows(vf.shadows);
-    if (vf.hasOwnProperty("clipVolume"))
-      vfo.setShowClipVolume(vf.clipVolume);
-    if (vf.hasOwnProperty("constructions"))
-      vfo.setShowConstructions(vf.constructions);
-    if (vf.hasOwnProperty("monochrome"))
-      vfo.setMonochrome(vf.monochrome);
-    if (vf.hasOwnProperty("noGeometryMap"))
-      vfo.setIgnoreGeometryMap(vf.noGeometryMap);
-    if (vf.hasOwnProperty("backgroundMap"))
-      vfo.setShowBackgroundMap(vf.backgroundMap);
-    if (vf.hasOwnProperty("hLineMaterialColors"))
-      vfo.setUseHlineMaterialColors(vf.hLineMaterialColors);
-    if (vf.hasOwnProperty("edgeMask"))
-      vfo.setEdgeMask(Number(vf.edgeMask));
-    if (vf.hasOwnProperty("forceSurfaceDiscard"))
-      vfo.setForceSurfaceDiscard(vf.forceSurfaceDiscard);
-
-    if (vf.hasOwnProperty("renderMode")) {
-      const rm: string = vf.renderMode.toString();
-      switch (rm.toLowerCase().trim()) {
-        case "wireframe":
-          vfo.setRenderMode(RenderMode.Wireframe);
-          break;
-        case "hiddenline":
-          vfo.setRenderMode(RenderMode.HiddenLine);
-          break;
-        case "solidfill":
-          vfo.setRenderMode(RenderMode.SolidFill);
-          break;
-        case "smoothshade":
-          vfo.setRenderMode(RenderMode.SmoothShade);
-          break;
-        case "0":
-          vfo.setRenderMode(RenderMode.Wireframe);
-          break;
-        case "3":
-          vfo.setRenderMode(RenderMode.HiddenLine);
-          break;
-        case "4":
-          vfo.setRenderMode(RenderMode.SolidFill);
-          break;
-        case "6":
-          vfo.setRenderMode(RenderMode.SmoothShade);
-          break;
-      }
-    }
-  }
-  return vfo;
-}
-
 function getRenderMode(): string {
   switch (activeViewState.viewState!.displayStyle.viewFlags.renderMode) {
     case 0: return "Wireframe";
@@ -175,78 +98,166 @@ function getRenderMode(): string {
 
 function getRenderOpts(): string {
   let optString = "";
-  if (curRenderOpts.disabledExtensions) curRenderOpts.disabledExtensions.forEach((ext) => {
-    switch (ext) {
-      case "WEBGL_draw_buffers":
-        optString += "-drawBuf";
+  for (const [key, value] of Object.entries(curRenderOpts)) {
+    switch (key) {
+      case "disabledExtensions":
+        if (value) value.forEach((ext: string) => {
+          switch (ext) {
+            case "WEBGL_draw_buffers":
+              optString += "-drawBuf";
+              break;
+            case "OES_element_index_uint":
+              optString += "-unsignedInt";
+              break;
+            case "OES_texture_float":
+              optString += "-texFloat";
+              break;
+            case "OES_texture_half_float":
+              optString += "-texHalfFloat";
+              break;
+            case "WEBGL_depth_texture":
+              optString += "-depthTex";
+              break;
+            case "EXT_color_buffer_float":
+              optString += "-floats";
+              break;
+            case "EXT_shader_texture_lod":
+              optString += "-texLod";
+              break;
+            case "ANGLE_instanced_arrays":
+              optString += "-instArrays";
+              break;
+            default:
+              optString += "-" + ext;
+              break;
+          }
+        });
         break;
-      case "OES_element_index_uint":
-        optString += "-unsignedInt";
+      case "enableOptimizedSurfaceShaders":
+        if (value) optString += "+optSurf";
         break;
-      case "OES_texture_float":
-        optString += "-texFloat";
+      case "cullAgainstActiveVolume":
+        if (value) optString += "+cullActVol";
         break;
-      case "OES_texture_half_float":
-        optString += "-texHalfFloat";
+      case "preserveShaderSourceCode":
+        if (value) optString += "+shadeSrc";
         break;
-      case "WEBGL_depth_texture":
-        optString += "-depthTex";
-        break;
-      case "EXT_color_buffer_float":
-        optString += "-floats";
-        break;
-      case "EXT_shader_texture_lod":
-        optString += "-texLod";
-        break;
-      case "ANGLE_instanced_arrays":
-        optString += "-instArrays";
+      case "displaySolarShadows":
+        if (value) optString += "+solShd";
         break;
       default:
-        optString += "-" + ext;
-        break;
+        if (value) optString += "+" + key;
     }
-  });
-  if (curRenderOpts.enableOptimizedSurfaceShaders) optString += "+optSurf";
+  }
   return optString;
 }
 
 function getTileProps(): string {
   let tilePropsStr = "";
-  if (curTileProps.disableThrottling) tilePropsStr += "+throt";
-  if (curTileProps.elideEmptyChildContentRequests) tilePropsStr += "+elide";
-  if (curTileProps.enableInstancing) tilePropsStr += "+inst";
-  if (curTileProps.maxActiveRequests && curTileProps.maxActiveRequests !== 10) tilePropsStr += "+max" + curTileProps.maxActiveRequests;
-  if (curTileProps.retryInterval) tilePropsStr += "+retry" + curTileProps.retryInterval;
+  for (const [key, value] of Object.entries(curTileProps)) {
+    switch (key) {
+      case "disableThrottling":
+        if (value) tilePropsStr += "+throt";
+        break;
+      case "elideEmptyChildContentRequests":
+        if (value) tilePropsStr += "+elide";
+        break;
+      case "enableInstancing":
+        if (value) tilePropsStr += "+inst";
+        break;
+      case "maxActiveRequests":
+        if (value !== 10) tilePropsStr += "+max" + value;
+        break;
+      case "retryInterval":
+        if (value) tilePropsStr += "+retry" + value;
+        break;
+      default:
+        if (value) tilePropsStr += "+" + key;
+    }
+  }
   return tilePropsStr;
 }
 
 function getViewFlagsString(): string {
-  const vf = activeViewState.viewState!.displayStyle.viewFlags;
   let vfString = "";
-  if (!vf.dimensions) vfString += "-dim";
-  if (!vf.patterns) vfString += "-pat";
-  if (!vf.weights) vfString += "-wt";
-  if (!vf.styles) vfString += "-sty";
-  if (!vf.transparency) vfString += "-trn";
-  if (!vf.fill) vfString += "-fll";
-  if (!vf.textures) vfString += "-txt";
-  if (!vf.materials) vfString += "-mat";
-  if (vf.visibleEdges) vfString += "+vsE";
-  if (vf.hiddenEdges) vfString += "+hdE";
-  if (vf.sourceLights) vfString += "+scL";
-  if (vf.cameraLights) vfString += "+cmL";
-  if (vf.solarLight) vfString += "+slL";
-  if (vf.shadows) vfString += "+shd";
-  if (!vf.clipVolume) vfString += "-clp";
-  if (vf.constructions) vfString += "+con";
-  if (vf.monochrome) vfString += "+mno";
-  if (vf.noGeometryMap) vfString += "+noG";
-  if (vf.backgroundMap) vfString += "+bkg";
-  if (vf.hLineMaterialColors) vfString += "+hln";
-  if (vf.edgeMask === 1) vfString += "+genM";
-  if (vf.edgeMask === 2) vfString += "+useM";
-  if (vf.ambientOcclusion) vfString += "+ao";
-  if (vf.forceSurfaceDiscard) vfString += "+fsd";
+  if (activeViewState.viewState) for (const [key, value] of Object.entries(activeViewState.viewState.displayStyle.viewFlags)) {
+    switch (key) {
+      case "renderMode":
+        break;
+      case "dimensions":
+        if (!value) vfString += "-dim";
+        break;
+      case "patterns":
+        if (!value) vfString += "-pat";
+        break;
+      case "weights":
+        if (!value) vfString += "-wt";
+        break;
+      case "styles":
+        if (!value) vfString += "-sty";
+        break;
+      case "transparency":
+        if (!value) vfString += "-trn";
+        break;
+      case "fill":
+        if (!value) vfString += "-fll";
+        break;
+      case "textures":
+        if (!value) vfString += "-txt";
+        break;
+      case "materials":
+        if (!value) vfString += "-mat";
+        break;
+      case "visibleEdges":
+        if (value) vfString += "+vsE";
+        break;
+      case "hiddenEdges":
+        if (value) vfString += "+hdE";
+        break;
+      case "sourceLights":
+        if (value) vfString += "+scL";
+        break;
+      case "cameraLights":
+        if (value) vfString += "+cmL";
+        break;
+      case "solarLight":
+        if (value) vfString += "+slL";
+        break;
+      case "shadows":
+        if (value) vfString += "+shd";
+        break;
+      case "clipVolume":
+        if (!value) vfString += "-clp";
+        break;
+      case "constructions":
+        if (value) vfString += "+con";
+        break;
+      case "monochrome":
+        if (value) vfString += "+mno";
+        break;
+      case "noGeometryMap":
+        if (value) vfString += "+noG";
+        break;
+      case "backgroundMap":
+        if (value) vfString += "+bkg";
+        break;
+      case "hLineMaterialColors":
+        if (value) vfString += "+hln";
+        break;
+      case "edgeMask":
+        if (value === 1) vfString += "+genM";
+        if (value === 2) vfString += "+useM";
+        break;
+      case "ambientOcclusion":
+        if (value) vfString += "+ao";
+        break;
+      case "forceSurfaceDiscard":
+        if (value) vfString += "+fsd";
+        break;
+      default:
+        if (value) vfString += "+" + key;
+    }
+  }
   return vfString;
 }
 
@@ -373,7 +384,7 @@ class DefaultConfigs {
   public viewName?: string;
   public testType?: string;
   public displayStyle?: string;
-  public viewFlags?: ViewFlag.Overrides;
+  public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
   public renderOptions?: RenderSystem.Options;
   public tileProps?: TileAdmin.Props;
   public aoEnabled = false;
@@ -398,9 +409,9 @@ class DefaultConfigs {
       if (prevConfigs.viewName) this.viewName = prevConfigs.viewName;
       if (prevConfigs.testType) this.testType = prevConfigs.testType;
       if (prevConfigs.displayStyle) this.displayStyle = prevConfigs.displayStyle;
-      if (prevConfigs.renderOptions) this.renderOptions = prevConfigs.renderOptions;
-      if (prevConfigs.tileProps) this.tileProps = prevConfigs.tileProps;
-      if (prevConfigs.viewFlags) this.viewFlags = prevConfigs.viewFlags;
+      this.renderOptions = this.updateData(prevConfigs.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
+      this.tileProps = this.updateData(prevConfigs.tileProps, this.tileProps) as TileAdmin.Props || undefined;
+      this.viewFlags = this.updateData(prevConfigs.viewFlags, this.viewFlags);
     } else if (jsonData.argOutputPath)
       this.outputPath = jsonData.argOutputPath;
     if (jsonData.view) this.view = new ViewSize(jsonData.view.width, jsonData.view.height);
@@ -412,12 +423,12 @@ class DefaultConfigs {
     if (jsonData.viewName) this.viewName = jsonData.viewName;
     if (jsonData.testType) this.testType = jsonData.testType;
     if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
-    if (jsonData.renderOptions) this.renderOptions = jsonData.renderOptions as RenderSystem.Options;
-    if (jsonData.tileProps) this.tileProps = jsonData.tileProps as TileAdmin.Props;
-    if (jsonData.viewFlags) this.viewFlags = setViewFlagOverrides(jsonData.viewFlags, this.viewFlags);
+    this.renderOptions = this.updateData(jsonData.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
+    this.tileProps = this.updateData(jsonData.tileProps, this.tileProps) as TileAdmin.Props || undefined;
+    this.viewFlags = this.updateData(jsonData.viewFlags, this.viewFlags); // as ViewFlags || undefined;
     this.aoEnabled = undefined !== jsonData.viewFlags && !!jsonData.viewFlags.ambientOcclusion;
 
-    debugPrint("view: " + this.view ? (this.view!.width + "X" + this.view!.height) : "undefined");
+    debugPrint("view: " + (this.view !== undefined ? (this.view!.width + "X" + this.view!.height) : "undefined"));
     debugPrint("outputFile: " + this.outputFile);
     debugPrint("outputName: " + this.outputName);
     debugPrint("outputPath: " + this.outputPath);
@@ -431,6 +442,46 @@ class DefaultConfigs {
     debugPrint("tileProps: " + this.tileProps);
     debugPrint("renderOptions: " + this.renderOptions);
     debugPrint("viewFlags: " + this.viewFlags);
+  }
+
+  private getRenderModeCode(value: any): RenderMode | undefined {
+    if (value === undefined)
+      return undefined;
+    let mode;
+    switch (value.toString().toLowerCase().trim()) {
+      case "0":
+      case "wireframe":
+        mode = RenderMode.Wireframe;
+        break;
+      case "3":
+      case "hiddenline":
+        mode = RenderMode.HiddenLine;
+        break;
+      case "4":
+      case "solidfill":
+        mode = RenderMode.SolidFill;
+        break;
+      case "6":
+      case "smoothshade":
+        mode = RenderMode.SmoothShade;
+        break;
+    }
+    return mode;
+  }
+
+  private updateData(prevData: any, newData: any) {
+
+    if (prevData) {
+      if (newData === undefined)
+        newData = {};
+      for (const [key, value] of Object.entries(prevData)) { // Copy by value
+        if (key === "renderMode" && this.getRenderModeCode(value) !== undefined)
+          (newData as Options)[key] = this.getRenderModeCode(value);
+        else
+          (newData as Options)[key] = value;
+      }
+    }
+    return newData;
   }
 
   private createFullFilePath(filePath: string | undefined, fileName: string | undefined): string | undefined {
@@ -577,8 +628,15 @@ async function loadIModel(testConfig: DefaultConfigs) {
   // Set the viewFlags (including the render mode)
   if (undefined !== activeViewState.viewState) {
     activeViewState.viewState.displayStyle.viewFlags.ambientOcclusion = testConfig.aoEnabled;
-    if (testConfig.viewFlags)
-      testConfig.viewFlags.apply(activeViewState.viewState.displayStyle.viewFlags);
+    if (testConfig.viewFlags) {
+      // Use the testConfig.viewFlags data for each property in ViewFlags if it exists; otherwise, keep using the viewState's ViewFlags info
+      for (const [key] of Object.entries(activeViewState.viewState.displayStyle.viewFlags)) {
+        if ((testConfig.viewFlags as Options)[key] !== undefined)
+          (activeViewState.viewState.displayStyle.viewFlags as Options)[key] = (testConfig.viewFlags as Options)[key];
+        else
+          (testConfig.viewFlags as Options)[key] = (activeViewState.viewState.displayStyle.viewFlags as Options)[key];
+      }
+    }
   }
 
   // Load all tiles
@@ -590,9 +648,8 @@ async function closeIModel(isSnapshot: boolean) {
   if (activeViewState.iModelConnection) {
     if (isSnapshot)
       await activeViewState.iModelConnection.closeSnapshot();
-    else {
+    else
       await activeViewState.iModelConnection!.close();
-    }
   }
   debugPrint("end closeIModel");
 }
@@ -602,25 +659,38 @@ function restartIModelApp(testConfig: DefaultConfigs) {
   const newRenderOpts: RenderSystem.Options = testConfig.renderOptions ? testConfig.renderOptions : {};
   const newTileProps: TileAdmin.Props = testConfig.tileProps ? testConfig.tileProps : {};
   if (IModelApp.initialized) {
-    if (curTileProps.disableThrottling !== newTileProps.disableThrottling || curTileProps.elideEmptyChildContentRequests !== newTileProps.elideEmptyChildContentRequests
-      || curTileProps.enableInstancing !== newTileProps.enableInstancing || curTileProps.maxActiveRequests !== newTileProps.maxActiveRequests || curTileProps.retryInterval !== newTileProps.retryInterval
-      || curRenderOpts.enableOptimizedSurfaceShaders !== newRenderOpts.enableOptimizedSurfaceShaders || ((curRenderOpts.disabledExtensions ? curRenderOpts.disabledExtensions.length : 0) !== (newRenderOpts.disabledExtensions ? newRenderOpts.disabledExtensions.length : 0))) {
+    let restart = false; // Determine if anything in renderOpts or tileProps changed that requires the IModelApp to be reinitialized
+    if (Object.keys(curTileProps).length !== Object.keys(newTileProps).length || Object.keys(curRenderOpts).length !== Object.keys(newRenderOpts).length)
+      restart = true;
+    for (const [key, value] of Object.entries(curTileProps)) {
+      if (value !== (newTileProps as Options)[key]) {
+        restart = true;
+        break;
+      }
+    }
+    for (const [key, value] of Object.entries(curRenderOpts)) {
+      if (key === "disabledExtensions") {
+        if ((value ? value.length : 0) !== ((newRenderOpts && newRenderOpts.disabledExtensions) ? newRenderOpts.disabledExtensions.length : 0)) {
+          restart = true;
+          break;
+        }
+        for (let i = 0; i < (value ? value.length : 0); i++) {
+          if (value && newRenderOpts.disabledExtensions && value[i] !== newRenderOpts.disabledExtensions[i]) {
+            restart = true;
+            break;
+          }
+        }
+      } else if (value !== (newRenderOpts as Options)[key]) {
+        restart = true;
+        break;
+      }
+    }
+    if (restart) {
       if (theViewport) {
         theViewport.dispose();
         theViewport = undefined;
       }
       IModelApp.shutdown();
-    } else if (curRenderOpts.disabledExtensions !== newRenderOpts.disabledExtensions) {
-      for (let i = 0; i < (curRenderOpts.disabledExtensions ? curRenderOpts.disabledExtensions.length : 0); i++) {
-        if (curRenderOpts.disabledExtensions && newRenderOpts.disabledExtensions && curRenderOpts.disabledExtensions[i] !== newRenderOpts.disabledExtensions[i]) {
-          if (theViewport) {
-            theViewport.dispose();
-            theViewport = undefined;
-          }
-          IModelApp.shutdown();
-          break;
-        }
-      }
     }
   }
   curRenderOpts = newRenderOpts;
@@ -630,7 +700,6 @@ function restartIModelApp(testConfig: DefaultConfigs) {
       renderSys: testConfig.renderOptions,
       tileAdmin: TileAdmin.create(curTileProps),
     });
-
     (IModelApp.renderSystem as System).techniques.compileShaders();
   }
 }
@@ -739,7 +808,7 @@ async function runTest(testConfig: DefaultConfigs) {
 
   if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels") {
     // Throw away the first n renderFrame times, until it's more consistent
-    for (let i = 0; i < 15; ++i) {
+    for (let i = 0; i < 50; ++i) {
       theViewport!.sync.setRedrawPending();
       theViewport!.renderFrame();
     }
@@ -751,7 +820,7 @@ async function runTest(testConfig: DefaultConfigs) {
     // await resolveAfterXMilSeconds(7000);
 
     const finalFrameTimings: Array<Map<string, number>> = [];
-    const numToRender = 50;
+    const numToRender = 100;
     if (testConfig.testType === "readPixels") {
       const width = testConfig.view!.width;
       const height = testConfig.view!.height;
@@ -789,6 +858,9 @@ async function runTest(testConfig: DefaultConfigs) {
             timingsString += val + ", ";
           });
           debugPrint(timingsString + "]");
+          // Save all of the individual runs in the csv file, not just the average
+          // const rowData = getRowData([t], testConfig);
+          // await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
         }
       }
       const rowData = getRowData(finalFrameTimings, testConfig);

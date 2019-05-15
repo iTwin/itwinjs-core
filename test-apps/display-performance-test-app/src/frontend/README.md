@@ -28,7 +28,7 @@ The default configuration file allows you to specify the following:
 * what render options to use
 * what tile admin properties to use
 
-The types of view flags that can be specified are as follows:
+You can specify any view flag that is part of the ViewFlags class. The types of view flags that can be specified include (but are not limited to):
 * renderMode
 * dimensions
 * patterns
@@ -42,7 +42,7 @@ The types of view flags that can be specified are as follows:
 * hiddenEdges
 * sourceLights
 * cameraLights
-* solarLights
+* solarLight
 * shadows
 * clipVolume
 * constructions
@@ -54,11 +54,24 @@ The types of view flags that can be specified are as follows:
 * ambientOcclusion
 * forceSurfaceDiscard
 
-The types of render options that can be specified are as follows:
+You can specify any render option that is part of the RenderSystem.Options interface. The types of render options that can be specified include (but are not limited to):
 * disabledExtensions - This should contain an array of all the WebGL extensions that you wish to disable. The program will restart the IModelApp every time this value changes, to ensure that the render system is changed appropriately (so it is better to group things that use the same render options). The extensions that may be disabled are found in WebGLExtensionName, and they currently include the following: "WEBGL_draw_buffers", "OES_element_index_uint", "OES_texture_float", "OES_texture_half_float", "WEBGL_depth_texture", "EXT_color_buffer_float", "EXT_shader_texture_lod", and "ANGLE_instanced_arrays".
 * enableOptimizedSurfaceShaders - This should be a boolean value that describes whether or not you wish to enable optimized surface shaders. It defaults to false (i.e. not enabling the optimized shaders).
+* cullAgainstActiveVolume - If true, when a clip volume is applied to the view, geometry will be tested against the clip volume on the CPU and not drawn if it is entirely clipped, improving performance.
+* preserveShaderSourceCode - If true, preserve the shader source code as internal strings, useful for debugging purposes.
+* displaySolarShadows - If true, display solar shadows. (this will only cause shadows to be displayed if shadows are enabled in the view flags)
 
-If any settings are not specified, the program will not change these settings. For example: if no view flags were specified, the program will not specifically alter the view flags. (though the view flags may be altered depending on what settings the chosen view has applied or if a specific display style has been chosen that affects the view flags).
+You can specify any tile property that is part of the TileAdmin.Props interface. The types of tile properties that can be specified include (but are not limited to):
+* maxActiveRequests - The maximum number of simultaneously-active requests. Any requests beyond this maximum are placed into a priority queue. Default value: 10
+* disableThrottling - If true, the TileAdmin will immediately dispatch all requests, bypassing the throttling imposed by maxActiveRequests. Default value: false
+* enableInstancing - If true, tiles may represent repeated geometry as sets of instances. This can reduce tile size and tile generation time, and improve performance. Default value: false
+* retryInterval - If defined, requests for tile content or tile tree properties will be memoized and retried at the specified interval in milliseconds.
+* elideEmptyChildContentRequests - If true, requests for content of a child tile will be elided if the child tile's range can be determined to be empty based on metadata embedded in the parent's content. Default value: false
+* requestTilesWithoutEdges - By default, when requesting tiles for a 3d view for which edge display is turned off, the response will include both surfaces and edges in the tile data. The tile deserialization code will then discard the edge data to save memory. This wastes bandwidth downloading unused data. Setting the following option to `true` will instead produce a response which omits all of the edge data, improving download speed and reducing space used in the browser cache. Default value: false
+
+If any settings are not specified, the program will not change these settings. For example: if no view flags were specified, the program will not specifically alter the view flags (though the view flags may be altered depending on what settings the chosen view has applied or if a specific display style has been chosen that affects the view flags).
+
+Specifying any individual view flag, render option, or tile property will not overwrite another individual setting. For example: if the visibleEdges view flag is set to true for all tests and an individual test sets the hiddenEdges view flag to true, this will not overwrite the previous setting of true for the visibleEdges view flag.
 
 Specifying where the imodels are located:
 If given the option of using a local file path or using the iModelHub, the program will first attempt to access the imodel using the local file path; if that fails, the program will then attempt to use the iModelHub location to access the imodel.
@@ -111,7 +124,7 @@ Below is an example json config file:
             "hiddenEdges": false,
             "sourceLights": false,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,

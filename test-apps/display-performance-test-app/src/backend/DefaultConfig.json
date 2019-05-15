@@ -6,6 +6,10 @@
     "width": 1000,
     "height": 1000
   },
+  "renderOptions": {
+    "displaySolarShadows": true,
+    "cullAgainstActiveVolume": true
+  },
   "tileProps": {
     "enableInstancing": true
   },
@@ -32,7 +36,7 @@
             "hiddenEdges": false,
             "sourceLights": false,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -59,7 +63,7 @@
             "hiddenEdges": false,
             "sourceLights": false,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -86,7 +90,7 @@
             "hiddenEdges": false,
             "sourceLights": false,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -113,7 +117,7 @@
             "hiddenEdges": false,
             "sourceLights": false,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -206,7 +210,7 @@
         "hiddenEdges": false,
         "sourceLights": false,
         "cameraLights": false,
-        "solarLights": false,
+        "solarLight": false,
         "shadows": false,
         "clipVolume": true,
         "constructions": false,
@@ -224,21 +228,21 @@
           "viewName": "V0",
           "viewFlags": {
             "sourceLights": true,
-            "solarLights": false
+            "solarLight": false
           }
         },
         {
           "viewName": "V0",
           "viewFlags": {
             "sourceLights": false,
-            "solarLights": true
+            "solarLight": true
           }
         },
         {
           "viewName": "V0",
           "viewFlags": {
             "sourceLights": true,
-            "solarLights": true
+            "solarLight": true
           }
         },
         {
@@ -248,21 +252,21 @@
           "viewName": "V1",
           "viewFlags": {
             "sourceLights": true,
-            "solarLights": false
+            "solarLight": false
           }
         },
         {
           "viewName": "V1",
           "viewFlags": {
             "sourceLights": false,
-            "solarLights": true
+            "solarLight": true
           }
         },
         {
           "viewName": "V1",
           "viewFlags": {
             "sourceLights": true,
-            "solarLights": true
+            "solarLight": true
           }
         },
         {
@@ -272,21 +276,21 @@
           "viewName": "V2",
           "viewFlags": {
             "sourceLights": true,
-            "solarLights": false
+            "solarLight": false
           }
         },
         {
           "viewName": "V2",
           "viewFlags": {
             "sourceLights": false,
-            "solarLights": true
+            "solarLight": true
           }
         },
         {
           "viewName": "V2",
           "viewFlags": {
             "sourceLights": true,
-            "solarLights": true
+            "solarLight": true
           }
         },
         {
@@ -296,21 +300,21 @@
           "viewName": "V3",
           "viewFlags": {
             "sourceLights": true,
-            "solarLights": false
+            "solarLight": false
           }
         },
         {
           "viewName": "V3",
           "viewFlags": {
             "sourceLights": false,
-            "solarLights": true
+            "solarLight": true
           }
         },
         {
           "viewName": "V3",
           "viewFlags": {
             "sourceLights": true,
-            "solarLights": true
+            "solarLight": true
           }
         },
         {
@@ -320,21 +324,21 @@
           "viewName": "V4",
           "viewFlags": {
             "sourceLights": true,
-            "solarLights": false
+            "solarLight": false
           }
         },
         {
           "viewName": "V4",
           "viewFlags": {
             "sourceLights": false,
-            "solarLights": true
+            "solarLight": true
           }
         },
         {
           "viewName": "V4",
           "viewFlags": {
             "sourceLights": true,
-            "solarLights": true
+            "solarLight": true
           }
         }
       ]
@@ -360,7 +364,7 @@
             "hiddenEdges": false,
             "sourceLights": true,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -388,7 +392,7 @@
             "hiddenEdges": true,
             "sourceLights": true,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -416,7 +420,7 @@
             "hiddenEdges": true,
             "sourceLights": true,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -448,7 +452,7 @@
             "hiddenEdges": false,
             "sourceLights": true,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -476,7 +480,7 @@
             "hiddenEdges": true,
             "sourceLights": true,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -508,7 +512,7 @@
             "hiddenEdges": false,
             "sourceLights": true,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -536,7 +540,7 @@
             "hiddenEdges": true,
             "sourceLights": true,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -568,7 +572,7 @@
             "hiddenEdges": false,
             "sourceLights": true,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -596,7 +600,7 @@
             "hiddenEdges": true,
             "sourceLights": true,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -628,7 +632,7 @@
             "hiddenEdges": false,
             "sourceLights": true,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -656,7 +660,7 @@
             "hiddenEdges": true,
             "sourceLights": true,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -849,7 +853,7 @@
             "hiddenEdges": false,
             "sourceLights": false,
             "cameraLights": false,
-            "solarLights": false,
+            "solarLight": false,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -946,7 +950,7 @@
             "hiddenEdges": false,
             "sourceLights": true,
             "cameraLights": true,
-            "solarLights": true,
+            "solarLight": true,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -974,7 +978,7 @@
             "hiddenEdges": false,
             "sourceLights": true,
             "cameraLights": true,
-            "solarLights": true,
+            "solarLight": true,
             "shadows": false,
             "clipVolume": true,
             "constructions": false,
@@ -984,6 +988,92 @@
             "hLineMaterialColors": false,
             "edgeMask": 0,
             "ambientOcclusion": true
+          }
+        }
+      ]
+    },
+    {
+      "testName": "Shadows",
+      "testType": "both",
+      "tests": [
+        {
+          "iModelName": "04_plant_Larger.bim",
+          "viewName": "V7",
+          "viewFlags": {
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLight": true,
+            "shadows": true
+          }
+        },
+        {
+          "iModelName": "04_plant_Larger.bim",
+          "viewName": "V8",
+          "viewFlags": {
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLight": true,
+            "shadows": true
+          }
+        },
+        {
+          "iModelName": "04_plant_Larger.bim",
+          "viewName": "V11",
+          "viewFlags": {
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLight": true,
+            "shadows": true
+          }
+        },
+        {
+          "iModelName": "TimingTest_01.bim",
+          "viewName": "V1",
+          "viewFlags": {
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLight": true,
+            "shadows": true
+          }
+        },
+        {
+          "iModelName": "04_plant_Larger.bim",
+          "viewName": "V7",
+          "viewFlags": {
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLight": true,
+            "shadows": false
+          }
+        },
+        {
+          "iModelName": "04_plant_Larger.bim",
+          "viewName": "V8",
+          "viewFlags": {
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLight": true,
+            "shadows": false
+          }
+        },
+        {
+          "iModelName": "04_plant_Larger.bim",
+          "viewName": "V11",
+          "viewFlags": {
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLight": true,
+            "shadows": false
+          }
+        },
+        {
+          "iModelName": "TimingTest_01.bim",
+          "viewName": "V1",
+          "viewFlags": {
+            "sourceLights": false,
+            "cameraLights": false,
+            "solarLight": true,
+            "shadows": false
           }
         }
       ]
