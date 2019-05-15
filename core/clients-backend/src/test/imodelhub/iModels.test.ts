@@ -8,7 +8,7 @@ import * as path from "path";
 
 import { Guid, GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, WsgError, IModelQuery, IModelClient, InitializationState,
+  AccessToken, WsgError, IModelQuery, IModelClient, InitializationState, RequestGlobalOptions, RequestTimeoutOptions,
   IModelHubClient, HubIModel, SeedFile, IModelHubError, IModelHubClientError, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
 import { TestConfig } from "../TestConfig";
@@ -177,8 +177,15 @@ describe("iModelHub iModelsHandler", () => {
   const createIModelName = "imodeljs-client iModels Create test";
   const imodelClient: IModelClient = utils.getDefaultClient();
   let requestContext: AuthorizedClientRequestContext;
+  let backupTimeout: RequestTimeoutOptions;
 
   before(async function (this: Mocha.IHookCallbackContext) {
+    backupTimeout = RequestGlobalOptions.timeout;
+    RequestGlobalOptions.timeout = {
+      deadline: 100000,
+      response: 100000,
+    };
+
     this.enableTimeouts(false);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
@@ -200,6 +207,7 @@ describe("iModelHub iModelsHandler", () => {
 
   after(async () => {
     await utils.deleteIModelByName(requestContext, projectId, createIModelName);
+    RequestGlobalOptions.timeout = backupTimeout;
   });
 
   it("should get list of IModels", async () => {
