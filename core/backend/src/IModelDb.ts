@@ -228,10 +228,15 @@ export class IModelDb extends IModel implements PageableECSql {
   public static createSnapshotFromSeed(snapshotFile: string, seedFile: string): IModelDb {
     IModelJsFs.copySync(seedFile, snapshotFile);
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, false);
-    briefcaseEntry.iModelId = Guid.createValue();
+    const isSeedFileMaster: boolean = BriefcaseId.Master === briefcaseEntry.briefcaseId;
+    const isSeedFileSnapshot: boolean = BriefcaseId.Snapshot === briefcaseEntry.briefcaseId;
+    // Replace iModelId if seedFile is a master or snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
+    if ((isSeedFileMaster) || (isSeedFileSnapshot)) {
+      briefcaseEntry.iModelId = Guid.createValue();
+    }
     briefcaseEntry.briefcaseId = BriefcaseId.Snapshot;
     const snapshotDb: IModelDb = IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(OpenMode.ReadWrite)); // WIP: clean up copied file on error?
-    if (BriefcaseId.Master === snapshotDb.nativeDb.getBriefcaseId()) {
+    if (isSeedFileMaster) {
       snapshotDb.setGuid(briefcaseEntry.iModelId);
     } else {
       snapshotDb.setAsMaster(briefcaseEntry.iModelId);
