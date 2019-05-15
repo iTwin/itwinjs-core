@@ -7895,7 +7895,7 @@ export abstract class ViewState extends ElementState {
     static readonly className: string;
     abstract computeFitRange(): Range3d;
     // @internal (undocumented)
-    computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d): {
+    computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio?: boolean): {
         map: Map4d | undefined;
         frustFraction: number;
     };

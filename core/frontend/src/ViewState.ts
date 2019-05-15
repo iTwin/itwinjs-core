@@ -401,7 +401,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d): { map: Map4d | undefined, frustFraction: number } {
+  public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio = true): { map: Map4d | undefined, frustFraction: number } {
     if (viewRot === undefined) viewRot = this.getRotation();
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
@@ -427,7 +427,7 @@ export abstract class ViewState extends ElementState {
       let zBack = eyeToOrigin.z;              // Distance from eye to backplane.
       let zFront = zBack + zDelta;            // Distance from eye to frontplane.
 
-      if (zFront / zBack < Viewport.nearScale24) {
+      if (enforceFrontToBackRatio && zFront / zBack < Viewport.nearScale24) {
         // In this case we are running up against the zBuffer resolution limitation (currently 24 bits).
         // Set back clipping plane at 10 kilometer which gives us a front clipping plane about 3 meters.
         // Decreasing the maximumBackClip (MicroStation uses 1 kilometer) will reduce the minimum front

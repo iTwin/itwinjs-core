@@ -657,7 +657,7 @@ export class ViewFrustum {
       const intersect = new Point3d();
       const frustum = new Frustum();
       let includeHorizon = false;
-      const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta).map as Map4d;
+      const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta, false /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */).map as Map4d;
       const minimumEyeDistance = 10.0;
       const horizonDistance = 10000;
       worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
@@ -784,7 +784,7 @@ export class ViewFrustum {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta);
+    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta, undefined === displayedPlane /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */);
     if (newRootToNpc.map === undefined) { // invalid frustum
       this.invalidFrustum = true;
       return;
