@@ -61,7 +61,7 @@ async function createNamedVersionWithThumbnail(requestContext: AuthorizedClientR
   }
 }
 
-describe("iModelHub VersionHandler", () => {
+describe.skip("iModelHub VersionHandler", () => {
   let imodelId: GuidString;
   let imodelId2: GuidString;
   let iModelClient: IModelClient;
