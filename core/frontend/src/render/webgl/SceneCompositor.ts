@@ -383,6 +383,7 @@ export abstract class SceneCompositor implements IDisposable {
   public readonly target: Target;
 
   public abstract get currentRenderTargetIndex(): number;
+  public abstract set currentRenderTargetIndex(_index: number);
   public abstract dispose(): void;
   public abstract draw(_commands: RenderCommands): void;
   public abstract drawForReadPixels(_commands: RenderCommands, overlays?: GraphicList): void;
@@ -420,6 +421,7 @@ abstract class Compositor extends SceneCompositor {
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
 
   public abstract get currentRenderTargetIndex(): number;
+  public abstract set currentRenderTargetIndex(_index: number);
 
   protected abstract clearOpaque(_needComposite: boolean): void;
   protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
@@ -1078,6 +1080,9 @@ class MRTCompositor extends Compositor {
     assert(false, "MRT is supported");
     return 0;
   }
+  public set currentRenderTargetIndex(_index: number) {
+    assert(false, "MRT is supported");
+  }
 
   public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
@@ -1249,6 +1254,7 @@ class MPCompositor extends Compositor {
   private get _geometry(): MPGeometry { return this._geom as MPGeometry; }
 
   public get currentRenderTargetIndex(): number { return this._currentRenderTargetIndex; }
+  public set currentRenderTargetIndex(index: number) { this._currentRenderTargetIndex = index; }
   public get featureIds(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.accumulation! : this._textures.featureId!; }
   public get depthAndOrder(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.revealage! : this._textures.depthAndOrder!; }
 

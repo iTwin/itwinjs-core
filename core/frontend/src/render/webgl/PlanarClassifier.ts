@@ -52,6 +52,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _featureTexture?: Texture;
   private _hiliteTexture?: Texture;
   private _fbo?: FrameBuffer;
+  private _featureFbo?: FrameBuffer;    // For multi-pass case only.
   private _hiliteFbo?: FrameBuffer;
   private _projectionMatrix = new Matrix4();
   private _graphics: RenderGraphic[] = [];
@@ -217,18 +218,28 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     this._width = requiredWidth;
     this._height = requiredHeight;
+    const useMRT = System.instance.capabilities.supportsDrawBuffers;
 
     if (undefined === this._fbo) {
       const colorTextureHandle = TextureHandle.createForAttachment(this._width, this._height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
       const featureTextureHandle = TextureHandle.createForAttachment(this._width, this._height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
       if (undefined === colorTextureHandle ||
-        undefined === featureTextureHandle ||
-        undefined === (this._fbo = FrameBuffer.create([colorTextureHandle, featureTextureHandle]))) {
+        undefined === featureTextureHandle) {
         assert(false, "Failed to create planar classifier texture");
         return;
       }
       this._colorTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), colorTextureHandle);
       this._featureTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), featureTextureHandle);
+      if (useMRT)
+        this._fbo = FrameBuffer.create([colorTextureHandle, featureTextureHandle]);
+      else {
+        this._fbo = FrameBuffer.create([colorTextureHandle]);
+        this._featureFbo = FrameBuffer.create([featureTextureHandle]);
+      }
+    }
+    if (undefined === this._fbo || (!useMRT && undefined === this._featureFbo)) {
+      assert(false, "unable to create frame buffer objects");
+      return;
     }
 
     const prevState = System.instance.currentRenderState.clone();
@@ -267,11 +278,28 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const renderCommands = new RenderCommands(target, new BranchStack(), batchState);
     renderCommands.addGraphics(this._graphics);
 
-    System.instance.frameBufferStack.execute(this._fbo, true, () => {
-      const clearPickAndColor = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
-      target.techniques.draw(getDrawParams(target, clearPickAndColor!));
-      target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
-    });
+    const system = System.instance;
+    const gl = system.context;
+    if (undefined !== this._featureFbo) {
+      system.frameBufferStack.execute(this._fbo, true, () => {
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(GL.BufferBit.Color);
+        target.compositor.currentRenderTargetIndex = 0;
+        target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
+      });
+      system.frameBufferStack.execute(this._featureFbo!, true, () => {
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(GL.BufferBit.Color);
+        target.compositor.currentRenderTargetIndex = 1;
+        target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
+      });
+    } else {
+      system.frameBufferStack.execute(this._fbo, true, () => {
+        const clearPickAndColor = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
+        target.techniques.draw(getDrawParams(target, clearPickAndColor!));
+        target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
+      });
+    }
     const hiliteCommands = renderCommands.getCommands(RenderPass.Hilite);
     if (false !== (this._anyHilited = 0 !== hiliteCommands.length)) {
       if (undefined === this._hiliteFbo) {
@@ -283,9 +311,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         }
       }
 
-      System.instance.frameBufferStack.execute(this._hiliteFbo, true, () => {
-        System.instance.context.clearColor(0, 0, 0, 0);
-        System.instance.context.clear(GL.BufferBit.Color);
+      system.frameBufferStack.execute(this._hiliteFbo, true, () => {
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(GL.BufferBit.Color);
         target.techniques.execute(target, hiliteCommands, RenderPass.Hilite);
       });
     }
@@ -295,7 +323,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (prevPlan)
       target.changeRenderPlan(prevPlan);
 
-    System.instance.applyRenderState(prevState);
-    System.instance.context.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport
+    system.applyRenderState(prevState);
+    gl.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport
   }
 }
