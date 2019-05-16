@@ -63,9 +63,10 @@ function getExternalModuleVersionsFromPackage(externalModuleVersions, packageCon
 }
 
 // gets a Map with the dependent iModel.js modules as the keys and the required version as the values.
-function getExternalModuleVersions(sourceDir, packageContents, externalList) {
+function getExternalModuleVersions(sourceDir, packageContents, externalList, plugin) {
   const externalModuleVersions = new Object();
-  externalModuleVersions["main"] = packageContents.version;
+  if (!plugin)
+    externalModuleVersions["main"] = packageContents.version;
   getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, undefined, externalList, 0);
   return externalModuleVersions;
 }
@@ -240,7 +241,7 @@ function getConfig(env) {
   // The reason for it is to set the version of the iModelJs modules that the application requires into index.html.
   // It gets that by reading the version of imodeljs-frontend listed in package.json.
   if (env.htmltemplate || env.plugin) {
-    const externalModuleVersions = getExternalModuleVersions(sourceDir, packageContents, webpackLib.externals);
+    const externalModuleVersions = getExternalModuleVersions(sourceDir, packageContents, webpackLib.externals, env.plugin);
 
     if (env.htmltemplate) {
       const HtmlWebpackPlugin = require("html-webpack-plugin");
