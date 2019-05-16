@@ -53,6 +53,7 @@ export * from "./IModelApp";
 export * from "./NoRenderApp";
 export * from "./tile/TileAdmin";
 export * from "./tile/TileTree";
+export * from "./tile/WebMapTileTree";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";
 export * from "./render/MockRender";

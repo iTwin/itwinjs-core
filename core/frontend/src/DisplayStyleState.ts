@@ -25,7 +25,7 @@ import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, TextureImage, AnimationBranchStates } from "./render/System";
-import { BackgroundMapProvider } from "./tile/WebMercatorTileTree";
+import { BackgroundMapProvider } from "./tile/WebMapTileTree";
 import { TileTreeModelState } from "./ModelState";
 import { Plane3dByOriginAndUnitNormal, Vector3d, Point3d } from "@bentley/geometry-core";
 import { ContextRealityModelState } from "./ContextRealityModelState";

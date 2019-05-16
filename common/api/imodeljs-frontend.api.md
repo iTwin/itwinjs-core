@@ -1109,6 +1109,19 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     type: number;
 }
 
+// @internal (undocumented)
+export class BackgroundMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
+    constructor(json: BackgroundMapProps, iModel: IModelConnection);
+    // (undocumented)
+    equalsProps(props: BackgroundMapProps): boolean;
+    // (undocumented)
+    getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
+    // (undocumented)
+    mapType: BackgroundMapType;
+    // (undocumented)
+    providerName: string;
+}
+
 // @alpha
 export interface BasePropertyEditorParams {
     // (undocumented)
@@ -1119,6 +1132,29 @@ export interface BasePropertyEditorParams {
 export interface BasePropertyValue {
     // (undocumented)
     valueFormat: PropertyValueFormat;
+}
+
+// @internal (undocumented)
+export class BaseTiledMapProvider {
+    constructor(iModel: IModelConnection, groundBias: number);
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    getPlane(): Plane3dByOriginAndUnitNormal;
+    // (undocumented)
+    getTilesForView(viewport: ScreenViewport): Tile[];
+    // (undocumented)
+    protected _groundBias: number;
+    // (undocumented)
+    protected _imageryProvider?: ImageryProvider;
+    // (undocumented)
+    protected _iModel: IModelConnection;
+    // (undocumented)
+    protected loadTileTree(): TileTree.LoadStatus;
+    // (undocumented)
+    setTileTree(props: TileTreeProps, loader: TileLoader): void;
+    // (undocumented)
+    protected _tileTree?: TileTree;
 }
 
 // @public (undocumented)
@@ -2900,6 +2936,50 @@ export function imageElementFromImageSource(source: ImageSource): Promise<HTMLIm
 // @public
 export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 
+// @internal (undocumented)
+export abstract class ImageryProvider {
+    constructor(mapType: BackgroundMapType);
+    // (undocumented)
+    abstract constructUrl(row: number, column: number, zoomLevel: number): string;
+    // (undocumented)
+    abstract getCopyrightImage(tileProvider: BaseTiledMapProvider): HTMLImageElement | undefined;
+    // (undocumented)
+    abstract getCopyrightMessage(tileProvider: BaseTiledMapProvider, viewport: ScreenViewport): HTMLElement | undefined;
+    // (undocumented)
+    abstract initialize(): Promise<void>;
+    // (undocumented)
+    loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
+    // (undocumented)
+    mapType: BackgroundMapType;
+    // (undocumented)
+    matchesMissingTile(_tileData: Uint8Array): boolean;
+    // (undocumented)
+    abstract readonly maximumZoomLevel: number;
+    // (undocumented)
+    abstract readonly minimumZoomLevel: number;
+    // (undocumented)
+    protected _requestContext: ClientRequestContext;
+    // (undocumented)
+    abstract readonly tileHeight: number;
+    // (undocumented)
+    abstract readonly tileWidth: number;
+}
+
+// @internal (undocumented)
+export abstract class ImageryProviderEPSG3857 extends ImageryProvider {
+    // (undocumented)
+    getEPSG3857Extent(row: number, column: number, zoomLevel: number): {
+        left: number;
+        right: number;
+        top: number;
+        bottom: number;
+    };
+    // (undocumented)
+    getEPSG3857X(longitude: number): number;
+    // (undocumented)
+    getEPSG3857Y(latitude: number): number;
+}
+
 // @public
 export class IModelApp {
     static readonly accuDraw: AccuDraw;
@@ -4000,6 +4080,13 @@ export enum OutputMessageType {
     // (undocumented)
     Sticky = 2,
     Toast = 0
+}
+
+// @internal (undocumented)
+export class OverlayMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
+    constructor(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection);
+    // (undocumented)
+    getTileTree(_viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
 }
 
 // @internal (undocumented)

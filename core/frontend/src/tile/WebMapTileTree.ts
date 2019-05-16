@@ -35,7 +35,7 @@ import { TiledGraphicsProvider } from "../TiledGraphicsProvider";
 // LinearTransformChildCreator is used when the range of the iModel is small, such as a building, when an approximation will work.
 // GeoTransformChildCreator is used when the range is larger, as in a map. Then you must calculate the iModel coordinates more precisely from the lat/longs of the tile corners.
 interface ChildCreator {
-  getChildren(quadId: QuadId): Promise<WebMercatorTileProps[]>;
+  getChildren(quadId: QuadId): Promise<WebMapTileProps[]>;
   onTilesSelected(): void;
 }
 
@@ -95,12 +95,12 @@ class LinearTransformChildCreator implements ChildCreator {
 
   // Note: although there are only nine unique points, we don't bother with the optimization used in the
   // GeoTransformChildCreator because the calculation for each point is fast.
-  public async getChildren(quadId: QuadId): Promise<WebMercatorTileProps[]> {
+  public async getChildren(quadId: QuadId): Promise<WebMapTileProps[]> {
     const level = quadId.level + 1;
     const column = quadId.column * 2;
     const row = quadId.row * 2;
 
-    const tileProps: WebMercatorTileProps[] = [];
+    const tileProps: WebMapTileProps[] = [];
     for (let i = 0; i < 2; i++) {
       for (let j = 0; j < 2; j++) {
         // get them as LatLong
@@ -110,7 +110,7 @@ class LinearTransformChildCreator implements ChildCreator {
         this.mercatorToDb.multiplyPoint3dArrayInPlace(corners);
 
         const childId: string = level + "_" + (column + i) + "_" + (row + j);
-        tileProps.push(new WebMercatorTileProps(childId, level, corners));
+        tileProps.push(new WebMapTileProps(childId, level, corners));
       }
     }
     return Promise.resolve(tileProps);
@@ -161,7 +161,7 @@ class GeoTransformChildCreator implements ChildCreator {
     this._linearChildCreator = new LinearTransformChildCreator(_iModel, groundBias);
   }
 
-  public async getChildren(parentQuad: QuadId): Promise<WebMercatorTileProps[]> {
+  public async getChildren(parentQuad: QuadId): Promise<WebMapTileProps[]> {
     const parentLevel = parentQuad.level;
     const parentColumn = parentQuad.column;
     const parentRow = parentQuad.row;
@@ -201,7 +201,7 @@ class GeoTransformChildCreator implements ChildCreator {
     const iModelCoords = cached.result;
 
     // get the tileProps now that we have their geoCoords.
-    const tileProps: WebMercatorTileProps[] = [];
+    const tileProps: WebMapTileProps[] = [];
     const level = parentLevel + 1;
     const column = parentColumn * 2;
     const row = parentRow * 2;
@@ -216,7 +216,7 @@ class GeoTransformChildCreator implements ChildCreator {
         }
 
         const childId: string = level + "_" + (column + iCol) + "_" + (row + iRow);
-        tileProps.push(new WebMercatorTileProps(childId, level, corners));
+        tileProps.push(new WebMapTileProps(childId, level, corners));
       }
     }
 
@@ -292,7 +292,7 @@ class QuadId {
   }
 }
 
-class WebMercatorTileTreeProps implements TileTreeProps {
+class WebMapTileTreeProps implements TileTreeProps {
   /** The unique identifier of this TileTree within the iModel */
   public id: string = "";
   /** Metadata describing the tree's root Tile. */
@@ -309,15 +309,15 @@ class WebMercatorTileTreeProps implements TileTreeProps {
     corners[2] = new Point3d(10000000, -10000000, groundBias);
     corners[3] = new Point3d(10000000, 10000000, groundBias);
 
-    this.rootTile = new WebMercatorTileProps("0_0_0", 0, corners);
+    this.rootTile = new WebMapTileProps("0_0_0", 0, corners);
     this.location = Transform.createIdentity();
   }
 }
 
-class WebMercatorTileProps implements TileProps {
+class WebMapTileProps implements TileProps {
   public readonly contentId: string;
   public readonly range: Range3dProps;
-  public readonly contentRange?: Range3dProps;  // not used for WebMercator tiles.
+  public readonly contentRange?: Range3dProps;  // not used for WebMap tiles.
   public readonly maximumSize: number;
   public readonly sizeMultiplier: number = 1.0;
   public readonly isLeaf: boolean = false;
@@ -331,14 +331,14 @@ class WebMercatorTileProps implements TileProps {
   }
 }
 
-class WebMercatorTileLoader extends TileLoader {
+class WebMapTileLoader extends TileLoader {
   private _providerInitializing?: Promise<void>;
   private _providerInitialized: boolean = false;
   private _childTileCreator: ChildCreator;
 
   constructor(private _imageryProvider: ImageryProvider, private _iModel: IModelConnection, groundBias: number, gcsConverterAvailable: boolean) {
     super();
-    const useLinearTransform: boolean = !gcsConverterAvailable || WebMercatorTileLoader.selectLinearChildCreator(_iModel);
+    const useLinearTransform: boolean = !gcsConverterAvailable || WebMapTileLoader.selectLinearChildCreator(_iModel);
     if (useLinearTransform) {
       this._childTileCreator = new LinearTransformChildCreator(_iModel, groundBias);
     } else {
@@ -348,7 +348,7 @@ class WebMercatorTileLoader extends TileLoader {
 
   private static selectLinearChildCreator(_iModel: IModelConnection) {
     const linearRangeSquared: number = _iModel.projectExtents.diagonal().magnitudeSquared();
-    return linearRangeSquared < 1000.0 * 1000.00;  // if the range is greater than a kilometer, use the more exact but slower GCS method of generating the WebMercator tile corners.
+    return linearRangeSquared < 1000.0 * 1000.00;  // if the range is greater than a kilometer, use the more exact but slower GCS method of generating the WebMap tile corners.
   }
 
   public tileRequiresLoading(params: Tile.Params): boolean {
@@ -383,7 +383,7 @@ class WebMercatorTileLoader extends TileLoader {
     const system = IModelApp.renderSystem;
     const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system, isCanceled);
     if (undefined !== texture) {
-      // we put the corners property on WebMercatorTiles
+      // we put the corners property on WebMapTiles
       const corners = (tile as any).corners;
       content.graphic = system.createTile(texture, corners);
     }
@@ -879,8 +879,8 @@ export class BaseTiledMapProvider {
     if (GcsConverterStatus.Pending === this._gcsConverterStatus)
       return this._loadStatus;
 
-    const loader = new WebMercatorTileLoader(this._imageryProvider!, this._iModel, this._groundBias, this._gcsConverterStatus === GcsConverterStatus.Available);
-    const tileTreeProps = new WebMercatorTileTreeProps(this._groundBias);
+    const loader = new WebMapTileLoader(this._imageryProvider!, this._iModel, this._groundBias, this._gcsConverterStatus === GcsConverterStatus.Available);
+    const tileTreeProps = new WebMapTileTreeProps(this._groundBias);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;
   }
@@ -948,7 +948,7 @@ export class BackgroundMapProvider extends BaseTiledMapProvider implements Tiled
       this._imageryProvider = new MapBoxImageryProvider(this.mapType);
     }
     if (this._imageryProvider === undefined)
-      throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
+      throw new BentleyError(IModelStatus.BadModel, "WebMap provider invalid");
   }
 
   public getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined {

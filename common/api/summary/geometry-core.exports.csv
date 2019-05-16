@@ -8,6 +8,7 @@ public;AngleSweep
 public;AngleSweepProps = AngleSweep |
 internal;AnnotatedLineString3d
 public;AnnounceCurvePrimitive = (cp: CurvePrimitive) => void
+public;AnnounceDrapePanel = (linestring: GrowableXYZArray, segmentIndex: number, polyface: Polyface, facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number) => any
 public;AnnounceNumberNumber = (a0: number, a1: number) => void
 public;AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: CurvePrimitive) => void
 public;AnyCurve = CurvePrimitive | Path | Loop | ParityRegion | UnionRegion | BagOfCurves | CurveCollection

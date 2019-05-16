@@ -23,8 +23,10 @@ public;AuxCoordSystem2dState
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
+internal;BackgroundMapProvider 
 alpha;BasePropertyEditorParams
 beta;BasePropertyValue
+internal;BaseTiledMapProvider
 public;BeButton
 public;BeButtonEvent
 public;BeButtonState
@@ -139,6 +141,8 @@ public;imageBufferToBase64EncodedPng(buffer: ImageBuffer): string | undefined
 public;imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string): Promise
+internal;class ImageryProvider
+internal;class ImageryProviderEPSG3857 
 public;IModelApp
 public;IModelAppOptions
 public;IModelConnection 
@@ -193,6 +197,7 @@ public;OrthographicViewState
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
+internal;OverlayMapProvider 
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PanViewTool 
