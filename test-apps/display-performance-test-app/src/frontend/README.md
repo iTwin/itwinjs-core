@@ -21,12 +21,18 @@ The default configuration file allows you to specify the following:
 * what you want the test file(s) created to be named
 * where the imodels you want to use are located (i.e. using a local file path or using the iModelHub)
 * what size you want the view screen to be
-* what type of test you wish to perform: timing, image, both, or readPixels (timing - take timing data from a renderFrame call; image - save an image of what has been rendered; both - take normal timing data from a renderFrame call and save an image; readPixels - take timing data from a readPixels call & save 3 images contining visual representations of the element Ids, type/order, and distance/depth)
+* how many times the scene should be rendered and skipped
+* how many times the scene should be be rendered and timings taken to later be averaged
+* what filename options you wish to ignore (i.e. items to exclude from the image naming format)
+* what type of test you wish to perform: timing, image, both, or readPixels (timing - take timing data from a renderFrame call; image - save an image of what has been rendered; both - take normal timing data from a renderFrame call and save an image; readPixels - take timing data from a readPixels call & save 6 images contining visual representations of the element Ids, type/order, and distance/depth and using each valid ReadPixels Selector option)
 * what models to use for testing
 * what display style to use
 * what view flags to use
 * what render options to use
 * what tile admin properties to use
+
+You can specify filename options that you wish to ignore:
+When you chose to produce images through an 'image' or 'both' test, the program will name them in the following foramt: modelName_viewName_renderMode_viewFlagOpts_renderModeOpts_tilePropsOpts.png (for example, SmallTextTest008_Wireframe_-fll+scL+cmL+slL-clp+con_+solShd_+inst.png). If you chose to do a 'readPixels' test, the program will save the images produced from this in the following format: depth/elemId/type_readPixelsSelectorOpts_modelName_viewName_renderMode_viewFlagOpts_renderModeOpts_tilePropsOpts.png (for example, type_+geom+dist_TimingTest01_V0_HiddenLine_-fll+scL+cmL+slL-clp+con_+solShd_+inst.png). The read pixels selector options, view flag options, render mode options, and tile properties options will all be an abbreviated string representation of the actual property. For example, the render mode option 'enableInstancing' would be shown as '+inst' in the filename. The 'filenameOptsToIgnore' property allows you to specify either an array of strings or a single space delimited string, where each string item is an abbreviated string representation of a read pixels selector option, view flag option, render mode option, or tile properties option. These options will not be included in the image names.
 
 You can specify any view flag that is part of the ViewFlags class. The types of view flags that can be specified include (but are not limited to):
 * renderMode
@@ -91,6 +97,9 @@ Below is an example json config file:
     "width": 1000,
     "height": 1000
   },
+  "numRendersToSkip": 50,
+  "numRendersToTime": 100,
+  "filenameOptsToIgnore": "+inst +solShd +vsE +cullActVol",
   "testSet": [
     {
       "iModelName": "Wraith.ibim",
@@ -201,7 +210,7 @@ Below is an example json config file:
 }
 
 ## Performance file output
-The performance data output is in csv format (and is intended to be saved as a csv file, though you may specify otherwise), and you should be able to open the performance file in Excel as well, for easier viewing.
+The performance data output is in csv format (and is intended to be saved as a csv file, though you may specify otherwise), and you should be able to open the performance file in Excel as well, for easier viewing. The string "End of Tests-----------" will be appended to the end of the csv file once the entire performance test run has been completed.
 
 The performance data file should always contain the following column headers:
 * iModel - the name of the imodel file
@@ -258,7 +267,7 @@ The 'View Flags' column contains a string representation of view flag specificat
 * +genM - generate mask (i.e. edgeMask view flag was set to 1)
 * +useM - use mask (i.e. edgeMask view flag was set to 2)
 
-The 'Disabled Exts' column contains a string representation of the WebGL extensions that have been disabled. This string representation may consist of any or all of the following:
+The 'Render Options' column contains a string representation of the render options that have been set. This string representation may consist of any or all of the following:
 * -drawBuf      - WEBGL_draw_buffers has been disabled, so the fragment shader will not be able to write to several textures
 * -unsignedInt  - OES_element_index_uint has been disabled, so gl.UNSIGNED_INT will not be supported for WebGLRenderingContext.drawElements()
 * -texFloat     - OES_texture_float has been disabled, so floating-point pixel types for textures will not be exposed
@@ -267,8 +276,19 @@ The 'Disabled Exts' column contains a string representation of the WebGL extensi
 * -float        - EXT_color_buffer_float has been disabled, so the ability to render a variety of floating point formats will not be available
 * -texLoad      - EXT_shader_texture_lod has been disabled, so additional texture functions to the OpenGL ES SHading Language which provide the shader writer with explicit control of LOD (Loevel of detail) will not be available
 * -instArrays   - ANGLE_instanced_arrays has been disabled, so the program will not be allowed to draw the same object or groups of similar objects multiple times, even if they share the same vertex data, primitive count, and type
+* +optSurf      - the optimized shaders will be used when in 3d views if the render mode is wireframe or if both the render mode is smooth shade and visible edges are turned off.
+* +cullActVol   - When a clip volume is applied to the view, geometry will be tested against the clip volume on the CPU and not drawn if it is entirely clipped, improving performance
+* +shadeSrc     - This preserves the shader source code as internal strings, useful for debugging purposes
+* +solShd       - Display solar shadows when the shadows view flag is enabled
+
+The 'Tile Props' column contains a string representation of the tile properties that have been set. This string representation may consist of any or all of the following:
+* -throt - The TileAdmin will immediately dispatch all requests, bypassing the throttling imposed by maxActiveRequests
+* +elide - Requests for content of a child tile will be elided if the child tile's range can be determined to be empty based on metadata embedded in the parent's content
+* +inst  - Tiles may represent repeated geometry as sets of instances. This can reduce tile size and tile generation time, and improve performance
+* +max   - The maximum number of simultaneously-active requests. Any requests beyond this maximum are placed into a priority queue. The max number specified will also be added to the end of this string representation
+* +retry - Requests for tile content or tile tree properties will be memoized and retried at the specified interval in milliseconds
 
 The 'ReadPixels Selector' column contains a string representation of the Pixel.Selector that has been chosen for the readPixels call. The column entry will be blank if readPixels was not tested. The string representation may be any of the following:
 * +feature - Pixel.Selector.Feature is used; this reads the feature information for each pixel
-* *geom+dist - Pixel.Selector.GeometryAndDistance is used; this reads the geometry information (i.e. if an element is linear, planar, surface, etc.) and the distance (i.e. depth) information
+* +geom+dist - Pixel.Selector.GeometryAndDistance is used; this reads the geometry information (i.e. if an element is linear, planar, surface, etc.) and the distance (i.e. depth) information
 * +feature+geom+dist - Pixel.Selector.All is used; this reads both the Feature and the GeometryAndDistance information

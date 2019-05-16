@@ -23,6 +23,7 @@ import { IModelApi } from "./IModelApi";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
+let testNum = 1; // Keep track of current test in test set
 
 interface Options {
   [key: string]: any; // Add index signature
@@ -157,7 +158,7 @@ function getTileProps(): string {
   for (const [key, value] of Object.entries(curTileProps)) {
     switch (key) {
       case "disableThrottling":
-        if (value) tilePropsStr += "+throt";
+        if (value) tilePropsStr += "-throt";
         break;
       case "elideEmptyChildContentRequests":
         if (value) tilePropsStr += "+elide";
@@ -303,6 +304,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
   rowData.set("Screen Size", configs.view!.width + "X" + configs.view!.height);
+  rowData.set("Skip & Time Renders", configs.numRendersToSkip + " & " + configs.numRendersToTime);
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
   rowData.set("Render Mode", getRenderMode());
   rowData.set("View Flags", getViewFlagsString() !== "" ? " " + getViewFlagsString() : "");
@@ -342,19 +344,40 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   return rowData;
 }
 
+function removeOptsFromString(input: string, ignore: string[] | string | undefined): string {
+  if (ignore === undefined)
+    return input;
+  let output = input;
+  if (!(ignore instanceof Array))
+    ignore = ignore.split(" ");
+  ignore.forEach((del: string) => {
+    if (del === "+max")
+      output = output.replace(/\+max\d+/, "");
+    else
+      output = output.replace(del, "");
+  });
+  output = output.replace(/__+/, "_");
+  if (output[output.length - 1] === "_")
+    output = output.slice(0, output.length - 1);
+  return output;
+}
+
 function getImageString(configs: DefaultConfigs, prefix = ""): string {
   let output = configs.outputPath ? configs.outputPath : "";
   const lastChar = output[output.length - 1];
   if (lastChar !== "/" && lastChar !== "\\")
     output += "\\";
-  output += prefix;
-  output += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
-  output += configs.viewName ? "_" + configs.viewName : "";
-  output += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
-  output += getRenderMode() !== "" ? "_" + getRenderMode() : "";
-  output += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
-  output += getRenderOpts() !== "" ? "_" + getRenderOpts() : "";
-  output += getTileProps() !== "" ? "_" + getTileProps() : "";
+  let filename = "";
+  filename += prefix;
+  filename += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
+  filename += configs.viewName ? "_" + configs.viewName : "";
+  filename += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
+  filename += getRenderMode() !== "" ? "_" + getRenderMode() : "";
+  filename += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
+  filename += getRenderOpts() !== "" ? "_" + getRenderOpts() : "";
+  filename += getTileProps() !== "" ? "_" + getTileProps() : "";
+  filename = removeOptsFromString(filename, configs.filenameOptsToIgnore);
+  output += filename;
   output += ".png";
   return output;
 }
@@ -376,12 +399,16 @@ class ViewSize {
 
 class DefaultConfigs {
   public view?: ViewSize;
+  public numRendersToTime?: number;
+  public numRendersToSkip?: number;
   public outputName?: string;
   public outputPath?: string;
   public iModelLocation?: string;
   public iModelName?: string;
   public iModelHubProject?: string;
+  public filenameOptsToIgnore?: string[] | string;
   public viewName?: string;
+  public testName?: string;
   public testType?: string;
   public displayStyle?: string;
   public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
@@ -392,6 +419,8 @@ class DefaultConfigs {
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
     if (useDefaults) {
       this.view = new ViewSize(1000, 1000);
+      this.numRendersToTime = 100;
+      this.numRendersToSkip = 50;
       this.outputName = "performanceResults.csv";
       this.outputPath = "D:\\output\\performanceData\\";
       this.iModelName = "Wraith.ibim";
@@ -401,12 +430,16 @@ class DefaultConfigs {
     }
     if (prevConfigs !== undefined) {
       if (prevConfigs.view) this.view = new ViewSize(prevConfigs.view.width, prevConfigs.view.height);
+      if (prevConfigs.numRendersToTime) this.numRendersToTime = prevConfigs.numRendersToTime;
+      if (prevConfigs.numRendersToSkip) this.numRendersToSkip = prevConfigs.numRendersToSkip;
       if (prevConfigs.outputName) this.outputName = prevConfigs.outputName;
       if (prevConfigs.outputPath) this.outputPath = prevConfigs.outputPath;
       if (prevConfigs.iModelLocation) this.iModelLocation = prevConfigs.iModelLocation;
       if (prevConfigs.iModelName) this.iModelName = prevConfigs.iModelName;
       if (prevConfigs.iModelHubProject) this.iModelHubProject = prevConfigs.iModelHubProject;
+      if (prevConfigs.filenameOptsToIgnore) this.filenameOptsToIgnore = prevConfigs.filenameOptsToIgnore;
       if (prevConfigs.viewName) this.viewName = prevConfigs.viewName;
+      if (prevConfigs.testName) this.testName = prevConfigs.testName;
       if (prevConfigs.testType) this.testType = prevConfigs.testType;
       if (prevConfigs.displayStyle) this.displayStyle = prevConfigs.displayStyle;
       this.renderOptions = this.updateData(prevConfigs.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
@@ -415,20 +448,26 @@ class DefaultConfigs {
     } else if (jsonData.argOutputPath)
       this.outputPath = jsonData.argOutputPath;
     if (jsonData.view) this.view = new ViewSize(jsonData.view.width, jsonData.view.height);
+    if (jsonData.numRendersToTime) this.numRendersToTime = jsonData.numRendersToTime;
+    if (jsonData.numRendersToSkip) this.numRendersToSkip = jsonData.numRendersToSkip;
     if (jsonData.outputName) this.outputName = jsonData.outputName;
     if (jsonData.outputPath) this.outputPath = combineFilePaths(jsonData.outputPath, this.outputPath);
     if (jsonData.iModelLocation) this.iModelLocation = combineFilePaths(jsonData.iModelLocation, this.iModelLocation);
     if (jsonData.iModelName) this.iModelName = jsonData.iModelName;
     if (jsonData.iModelHubProject) this.iModelHubProject = jsonData.iModelHubProject;
+    if (jsonData.filenameOptsToIgnore) this.filenameOptsToIgnore = jsonData.filenameOptsToIgnore;
     if (jsonData.viewName) this.viewName = jsonData.viewName;
     if (jsonData.testType) this.testType = jsonData.testType;
     if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
+    this.testName = this.testName ? (this.testName + " - " + (jsonData.testName ? jsonData.testName : testNum++)) : (jsonData.testName ? jsonData.testName : this.testName);
     this.renderOptions = this.updateData(jsonData.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
     this.tileProps = this.updateData(jsonData.tileProps, this.tileProps) as TileAdmin.Props || undefined;
     this.viewFlags = this.updateData(jsonData.viewFlags, this.viewFlags); // as ViewFlags || undefined;
     this.aoEnabled = undefined !== jsonData.viewFlags && !!jsonData.viewFlags.ambientOcclusion;
 
     debugPrint("view: " + (this.view !== undefined ? (this.view!.width + "X" + this.view!.height) : "undefined"));
+    debugPrint("numRendersToTime: " + this.numRendersToTime);
+    debugPrint("numRendersToSkip: " + this.numRendersToSkip);
     debugPrint("outputFile: " + this.outputFile);
     debugPrint("outputName: " + this.outputName);
     debugPrint("outputPath: " + this.outputPath);
@@ -436,7 +475,9 @@ class DefaultConfigs {
     debugPrint("iModelLocation: " + this.iModelLocation);
     debugPrint("iModelName: " + this.iModelName);
     debugPrint("iModelHubProject: " + this.iModelHubProject);
+    debugPrint("filenameOptsToIgnore: " + this.filenameOptsToIgnore);
     debugPrint("viewName: " + this.viewName);
+    debugPrint("testName: " + this.testName);
     debugPrint("testType: " + this.testType);
     debugPrint("displayStyle: " + this.displayStyle);
     debugPrint("tileProps: " + this.tileProps);
@@ -808,7 +849,7 @@ async function runTest(testConfig: DefaultConfigs) {
 
   if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels") {
     // Throw away the first n renderFrame times, until it's more consistent
-    for (let i = 0; i < 50; ++i) {
+    for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
       theViewport!.sync.setRedrawPending();
       theViewport!.renderFrame();
     }
@@ -820,13 +861,13 @@ async function runTest(testConfig: DefaultConfigs) {
     // await resolveAfterXMilSeconds(7000);
 
     const finalFrameTimings: Array<Map<string, number>> = [];
-    const numToRender = 100;
+    testConfig.numRendersToTime = testConfig.numRendersToTime ? testConfig.numRendersToTime : 100;
     if (testConfig.testType === "readPixels") {
       const width = testConfig.view!.width;
       const height = testConfig.view!.height;
       const viewRect = new ViewRect(0, 0, width, height);
       const testReadPix = async (pixSelect: Pixel.Selector, pixSelectStr: string) => {
-        for (let i = 0; i < numToRender; ++i) {
+        for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
           theViewport!.readPixels(viewRect, pixSelect, (_pixels: any) => { return; });
           finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
           finalFrameTimings[i].delete("Scene Time");
@@ -843,14 +884,14 @@ async function runTest(testConfig: DefaultConfigs) {
       await testReadPix(Pixel.Selector.All, "+feature+geom+dist");
     } else {
       const timer = new StopWatch(undefined, true);
-      for (let i = 0; i < numToRender; ++i) {
+      for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
         theViewport!.sync.setRedrawPending();
         theViewport!.renderFrame();
         finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
       }
       timer.stop();
       if (wantConsoleOutput) {
-        debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
+        debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / testConfig.numRendersToTime + "ms per frame");
         debugPrint("Tile Loading Time: " + curTileLoadingTime);
         for (const t of finalFrameTimings) {
           let timingsString = "[";
@@ -900,6 +941,7 @@ async function testModel(configs: DefaultConfigs, modelData: any) {
 
     await runTest(testConfig);
   }
+  testNum = 1; // Reset back to first test in test set
   if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
   if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".TileCache");
 }
@@ -921,8 +963,8 @@ async function main() {
 
   document.getElementById("imodel-viewport")!.style.display = "hidden";
 
+  await DisplayPerfRpcInterface.getClient().finishCsv(jsonData.outputPath, jsonData.outputName);
   DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
-
   IModelApp.shutdown();
 }
 

@@ -5,7 +5,7 @@
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcManager } from "@bentley/imodeljs-common";
-import { addColumnsToCsvFile, addDataToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
+import { addColumnsToCsvFile, addDataToCsvFile, createFilePath, createNewCsvFile, addEndOfTestToCsvFile } from "./CsvWriter";
 import * as fs from "fs";
 import { app } from "electron";
 
@@ -64,6 +64,14 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
     const buf = Buffer.from(png, "base64");
     fs.writeFileSync(fileName, buf);
+  }
+
+  public async finishCsv(outputPath?: string, outputName?: string) {
+    if (outputPath !== undefined && outputName !== undefined) {
+      let outputFile = this.createFullFilePath(outputPath, outputName);
+      outputFile = outputFile ? outputFile : "";
+      addEndOfTestToCsvFile(outputFile);
+    }
   }
 
   public async finishTest() {
