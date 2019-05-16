@@ -1352,7 +1352,7 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     footprint?: string;
     getBlobStringUrl(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<string>;
-    getBlobUrl(requestContext: AuthorizedClientRequestContext): Promise<URL>;
+    getBlobUrl(requestContext: AuthorizedClientRequestContext, writeAccess?: boolean): Promise<URL>;
     getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
     getRootDocumentJson(requestContext: AuthorizedClientRequestContext): Promise<any>;
     getTileContent(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
@@ -1430,7 +1430,7 @@ export class RealityDataServicesClient extends WsgClient {
     createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
     deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<void>;
     deleteRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationshipId: string): Promise<void>;
-    getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<FileAccessKey[]>;
+    getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string, writeAccess?: boolean): Promise<FileAccessKey[]>;
     getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<RealityData>;
     getRealityDataIdFromUrl(url: string): string | undefined;
     getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<RealityData[]>;

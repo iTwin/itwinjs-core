@@ -71,6 +71,22 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(url);
   });
 
+  it("should be able to retrieve the azure blob url  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
+
+    const url: URL = await realityData.getBlobUrl(requestContext);
+
+    chai.assert(url);
+  });
+
+  it("should be able to retrieve the azure blob url (write access) (#integration)", async function (this: Mocha.ITestCallbackContext) {
+    const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
+
+    const url: URL = await realityData.getBlobUrl(requestContext, true);
+
+    chai.assert(url);
+  });
+
   it("should be able to get model data json  (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
