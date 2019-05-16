@@ -314,6 +314,15 @@ export class Transform implements BeJSONFunctions {
       point.z - this._origin.z,
       result);
   }
+  /** Return product of the transform's inverse times a point (point given as x,y,z) */
+  public multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined {
+    return this._matrix.multiplyInverseXYZAsPoint3d(
+      x - this._origin.x,
+      y - this._origin.y,
+      z - this._origin.z,
+      result);
+  }
+
   /**
    * *  for each point:   multiply    transform * point
    * *  if result is given, resize to match source and replace each corresponding pi
@@ -361,6 +370,14 @@ export class Transform implements BeJSONFunctions {
         source[i].z - originZ,
         source[i]);
     return true;
+  }
+  /**
+   * * Compute (if needed) the inverse of the matrix part, thereby ensuring inverse operations can complete.
+   * * Return true if matrix inverse completes.
+   * @param useCached If true, accept prior cached inverse if available.
+   */
+  public computeCachedInverse(useCached: boolean = true): boolean {
+    return this._matrix.computeCachedInverse(useCached);
   }
   /**
    * * If destination has more values than source, remove the extras.

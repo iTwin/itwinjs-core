@@ -90,4 +90,34 @@ export class Segment1d {
    * Return true if the segment limits are (exactly) 0 and 1
    */
   public get isExact01(): boolean { return this.x0 === 0.0 && this.x1 === 1.0; }
+
+  /** On input, `this` is an interval of a line.  On output, the interval has been clipped to positive parts of a linear function
+   * * f0 and f1 are values at parameter values 0 and 1 (which are in general NOT x0 and x1)
+   * * From that determine where the segment crosses function value 0.
+   * * The segment contains some interval in the same parameter space.
+   * * Clip the segment to the positive part of the space.
+   * * Return true (and modify the segment) if any of the segment remains.
+   * * Return false (but without modifying the segment) if the active part is entirely out.
+   */
+  public clipBy01FunctionValuesPositive(f0: number, f1: number): boolean {
+    const df01 = f1 - f0;
+    const fA = f0 + this.x0 * df01;
+    const fB = f0 + this.x1 * df01;
+    const dfAB = fB - fA;
+    if (fA > 0) {
+      if (fB >= 0) return true; // inside at both ends
+      /** There is an inside to outside crossing. The division is safe ... (and value between 0 and 1) */
+      const u = -fA / dfAB;
+      this.x1 = this.x0 + u * (this.x1 - this.x0);
+      return true;
+    } else if (fA < 0) {
+      if (fB < 0) return false;   // outside at both ends.
+      /** There is an outside to inside crossing crossing. The division is safe ... (and value between 0 and 1) */
+      const u = -fA / dfAB;
+      this.x0 = this.x0 + u * (this.x1 - this.x0);
+      return true;
+    }
+    /** fA is on the cut.   fB determines the entire segment. */
+    return fB > 0;
+  }
 }

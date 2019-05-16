@@ -31,6 +31,7 @@ import { BSpline1dNd } from "./BSpline1dNd";
 import { UnivariateBezier } from "../numerics/BezierPolynomials";
 import { Bezier1dNd } from "./Bezier1dNd";
 import { Point4d } from "../geometry4d/Point4d";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 
 /**
  * Base class for BSplineCurve3d and BSplineCurve3dH.
@@ -339,15 +340,17 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   public copyKnots(includeExtraEndKnot: boolean): number[] { return this._bcurve.knots.copyKnots(includeExtraEndKnot); }
 
   /** Create a bspline with uniform knots. */
-  public static createUniformKnots(poles: Point3d[] | Float64Array, order: number): BSplineCurve3d | undefined {
+  public static createUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined {
     const numPoles = poles instanceof Float64Array ? poles.length / 3 : poles.length;
     if (order < 1 || numPoles < order)
       return undefined;
-    const knots = KnotVector.createUniformClamped(poles.length, order - 1, 0.0, 1.0);
+    const knots = KnotVector.createUniformClamped(numPoles, order - 1, 0.0, 1.0);
     const curve = new BSplineCurve3d(numPoles, order, knots);
     if (poles instanceof Float64Array) {
       for (let i = 0; i < 3 * numPoles; i++)
         curve._bcurve.packedData[i] = poles[i];
+    } else if (poles instanceof GrowableXYZArray) {
+      curve._bcurve.packedData = poles.float64Data().slice(0, 3 * numPoles);
     } else {
       let i = 0;
       for (const p of poles) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; }

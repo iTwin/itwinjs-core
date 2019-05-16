@@ -681,7 +681,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
     return undefined;
   }
-/** test for near equality between two `GrowableXYZArray`. */
+  /** test for near equality between two `GrowableXYZArray`. */
   public static isAlmostEqual(dataA: GrowableXYZArray | undefined, dataB: GrowableXYZArray | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
@@ -765,5 +765,34 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
     return range;
   }
-
+  /**
+   * * Triangle for (unchecked!) for three points identified by index
+   * * z direction of frame is 001.
+   * * Transform axes from origin to targetX and targetY
+   * * in local coordinates (u,v,w) the xy interior of the triangle is `u>=0, v>= 0, w>= 0, u+v+w<1`
+   * * Return undefined if transform is invertible (i.e. points are not in a vertical plane.)
+   */
+  public fillLocalXYTriangleFrame(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Transform): Transform | undefined {
+    if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
+      let i0 = originIndex * 3;
+      const data = this._data;
+      const ax = data[i0++];
+      const ay = data[i0++];
+      const az = data[i0++];
+      i0 = targetAIndex * 3;
+      const ux = data[i0++] - ax;
+      const uy = data[i0++] - ay;
+      const uz = data[i0++] - az;
+      i0 = targetBIndex * 3;
+      const vx = data[i0++] - ax;
+      const vy = data[i0++] - ay;
+      const vz = data[i0++] - az;
+      result = Transform.createRowValues(
+        ux, vx, 0, ax,
+        uy, vy, 0, ay,
+        uz, vz, 1, az, result);
+      return result.computeCachedInverse() ? result : undefined;
+    }
+    return undefined;
+  }
 }

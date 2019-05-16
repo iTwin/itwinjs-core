@@ -329,9 +329,16 @@ function writeMeshes(geometry: GeometryQuery[], fileName: string, options?: Stro
     }
     builder.addGeometryQuery(g);
     const polyface = builder.claimPolyface();
+
     if (polyface) {
+      const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0.25, 0.25, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(10)));
+      const polyfaceA = polyface.cloneTransformed(rotationTransform)!;
+      polyfaceA.tryTranslateInPlace(0, 1.5 * (gRange.high.y - gRange.low.y));
+      polyfaceA.tryTransformInPlace(transformForPolyface);
+
       polyface.tryTransformInPlace(transformForPolyface);
       allMesh.push(polyface);
+      allMesh.push(polyfaceA);
     }
     if (g instanceof SolidPrimitive) {
       const isClosedMesh = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface);

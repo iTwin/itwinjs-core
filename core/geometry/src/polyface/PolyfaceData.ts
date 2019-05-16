@@ -44,7 +44,7 @@ export class PolyfaceData {
   public pointIndex: number[];
   /** booleans indicating visibility of corresponding edges */
   public edgeVisible: boolean[];
-/** Coordinates of normal vectors, packed as numbers in a contguous array */
+  /** Coordinates of normal vectors, packed as numbers in a contguous array */
   public normal: GrowableXYZArray | undefined;
   /** indices of normals at facet vertices. */
   public normalIndex: number[] | undefined;
@@ -62,7 +62,7 @@ export class PolyfaceData {
   public face: FacetFaceData[];
   /** Auxilliary data */
   public auxData: PolyfaceAuxData | undefined;
-/** Constructor for facets.  The various params control whether respective arrays are to be allocated. */
+  /** Constructor for facets.  The various params control whether respective arrays are to be allocated. */
   public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false) {
     this.point = new GrowableXYZArray();
     this.pointIndex = []; this.edgeVisible = [];
@@ -71,7 +71,7 @@ export class PolyfaceData {
     if (needParams) { this.param = new GrowableXYArray(); this.paramIndex = []; }
     if (needColors) { this.color = []; this.colorIndex = []; }
   }
-/** Return a depp clone. */
+  /** Return a depp clone. */
   public clone(): PolyfaceData {
     const result = new PolyfaceData();
     result.point = this.point.clone();
@@ -96,7 +96,7 @@ export class PolyfaceData {
       result.auxData = this.auxData.clone();
     return result;
   }
-/** Test for equal indices and nearly equal coordinates */
+  /** Test for equal indices and nearly equal coordinates */
   public isAlmostEqual(other: PolyfaceData): boolean {
     if (!GrowableXYZArray.isAlmostEqual(this.point, other.point))
       return false;
@@ -332,22 +332,17 @@ export class PolyfaceData {
    */
   public tryTransformInPlace(
     transform: Transform): boolean {
-    const inverseTranspose = transform.matrix.inverse();
     this.point.multiplyTransformInPlace(transform);
 
-    if (inverseTranspose) {
-      // apply simple Matrix3d to normals ...
-      if (this.normal) {
-        this.normal.multiplyMatrix3dInPlace(inverseTranspose);
-      }
-    }
+    if (this.normal && !transform.matrix.isIdentity)
+      this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
     return true;
   }
-/**
- * * Search for duplication of coordinates within points, normals, and params.
- * * compress the coordinate arrays.
- * * revise all indexing for the relocated coordinates
- */
+  /**
+   * * Search for duplication of coordinates within points, normals, and params.
+   * * compress the coordinate arrays.
+   * * revise all indexing for the relocated coordinates
+   */
   public compress() {
     const packedData = ClusterableArray.clusterGrowablePoint3dArray(this.point);
     this.point = packedData.growablePackedPoints!;

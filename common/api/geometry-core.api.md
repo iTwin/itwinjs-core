@@ -162,6 +162,11 @@ export class AnnotatedLineString3d {
 // @public
 export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
 
+// Warning: (ae-missing-release-tag) "AnnounceDrapePanel" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// 
+// @public
+export type AnnounceDrapePanel = (linestring: GrowableXYZArray, segmentIndex: number, polyface: Polyface, facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number) => any;
+
 // @public
 export type AnnounceNumberNumber = (a0: number, a1: number) => void;
 
@@ -597,7 +602,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     copyPoints(): any[];
     copyPointsFloat64Array(): Float64Array;
     static create(poleArray: Float64Array | Point3d[], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined;
-    static createUniformKnots(poles: Point3d[] | Float64Array, order: number): BSplineCurve3d | undefined;
+    static createUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
     emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
@@ -1636,6 +1641,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     ensureCapacity(pointCapacity: number): void;
     evaluateUncheckedIndexDotProductXYZ(pointIndex: number, x: number, y: number, z: number): number;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
+    fillLocalXYTriangleFrame(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Transform): Transform | undefined;
     float64Data(): Float64Array;
     readonly float64Length: number;
     front(result?: Point3d): Point3d | undefined;
@@ -3229,12 +3235,14 @@ export class PolyfaceData {
 
 // @public
 export class PolyfaceQuery {
+    static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
     static sumFacetAreas(source: Polyface | PolyfaceVisitor): number;
     static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumTetrahedralVolumes(source: Polyface | PolyfaceVisitor, origin?: Point3d): number;
+    static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
     static visitorToLoop(visitor: PolyfaceVisitor): Loop;
 }
 
@@ -3783,6 +3791,7 @@ export class Sample {
 
 // @public
 export class Segment1d {
+    clipBy01FunctionValuesPositive(f0: number, f1: number): boolean;
     clone(): Segment1d;
     static create(x0?: number, x1?: number, result?: Segment1d): Segment1d;
     fractionToPoint(fraction: number): number;
@@ -4011,6 +4020,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
 export class Transform implements BeJSONFunctions {
     clone(result?: Transform): Transform;
     cloneRigid(axisOrder?: AxisOrder): Transform | undefined;
+    computeCachedInverse(useCached?: boolean): boolean;
     static createFixedPointAndMatrix(fixedPoint: XYAndZ, matrix: Matrix3d, result?: Transform): Transform;
     static createIdentity(result?: Transform): Transform;
     static createMatrixPickupPutdown(matrix: Matrix3d, pointA: Point3d, pointB: Point3d, result?: Transform): Transform;
@@ -4038,6 +4048,7 @@ export class Transform implements BeJSONFunctions {
     multiplyInversePoint3d(point: XYAndZ, result?: Point3d): Point3d | undefined;
     multiplyInversePoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[] | undefined;
     multiplyInversePoint3dArrayInPlace(source: Point3d[]): boolean;
+    multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined;
     multiplyPoint2d(source: XAndY, result?: Point2d): Point2d;
     multiplyPoint2dArray(source: Point2d[], result?: Point2d[]): Point2d[];
     multiplyPoint3d(point: XYAndZ, result?: Point3d): Point3d;

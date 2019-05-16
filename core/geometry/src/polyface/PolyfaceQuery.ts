@@ -17,6 +17,11 @@ import { LineString3d } from "../curve/LineString3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { MomentData } from "../geometry4d/MomentData";
 import { IndexedEdgeMatcher, SortableEdgeCluster } from "./IndexedEdgeMatcher";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Transform } from "../geometry3d/Transform";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { PolyfaceBuilder } from "./PolyfaceBuilder";
+import { Geometry } from "../Geometry";
 
 /** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each mtehod.
  * @public
@@ -119,4 +124,90 @@ export class PolyfaceQuery {
     edges.sortAndcollectClusters(undefined, badClusters, undefined, badClusters);
     return badClusters.length === 0;
   }
+  /** Find segments (within the linestring) which project to facets.
+   * * Announce each pair of linestring segment and on-facet segment through a callback.
+   * * Facets are ASSUMED to be convex and planar.
+   */
+  public static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface,
+    announce: AnnounceDrapePanel): any {
+    const visitor = polyface.createVisitor(0);
+    const numLinestringPoints = linestringPoints.length;
+    const segmentPoint0 = Point3d.create();
+    const segmentPoint1 = Point3d.create();
+    const localSegmentPoint0 = Point3d.create();
+    const localSegmentPoint1 = Point3d.create();
+    const clipFractions = Segment1d.create(0, 1);
+    const localFrame = Transform.createIdentity();
+    let frame;
+    for (visitor.reset(); visitor.moveToNextFacet();) {
+      // For each triangle within the facet ...
+      for (let k1 = 1; k1 + 1 < visitor.point.length; k1++) {
+        frame = visitor.point.fillLocalXYTriangleFrame(0, k1, k1 + 1, localFrame);
+        if (frame) {
+          // For each stroke of the linestring ...
+          for (let i1 = 1; i1 < numLinestringPoints; i1++) {
+            linestringPoints.getPoint3dAtCheckedPointIndex(i1 - 1, segmentPoint0);
+            linestringPoints.getPoint3dAtCheckedPointIndex(i1, segmentPoint1);
+            frame.multiplyInversePoint3d(segmentPoint0, localSegmentPoint0);
+            frame.multiplyInversePoint3d(segmentPoint1, localSegmentPoint1);
+            clipFractions.set(0, 1);
+            /** (x,y,1-x-y) are barycentric coordinates in the triangle !!! */
+            if (clipFractions.clipBy01FunctionValuesPositive(localSegmentPoint0.x, localSegmentPoint1.x)
+              && clipFractions.clipBy01FunctionValuesPositive(localSegmentPoint0.y, localSegmentPoint1.y)
+              && clipFractions.clipBy01FunctionValuesPositive(
+                1 - localSegmentPoint0.x - localSegmentPoint0.y,
+                1 - localSegmentPoint1.x - localSegmentPoint1.y)) {
+              /* project the local segment point to the plane. */
+              const localClippedPointA = localSegmentPoint0.interpolate(clipFractions.x0, localSegmentPoint1);
+              const localClippedPointB = localSegmentPoint0.interpolate(clipFractions.x1, localSegmentPoint1);
+              const worldClippedPointA = localFrame.multiplyPoint3d(localClippedPointA)!;
+              const worldClippedPointB = localFrame.multiplyPoint3d(localClippedPointB)!;
+              const planePointA = localFrame.multiplyXYZ(localClippedPointA.x, localClippedPointA.y, 0.0)!;
+              const planePointB = localFrame.multiplyXYZ(localClippedPointB.x, localClippedPointB.y, 0.0)!;
+              const splitParameter = Geometry.inverseInterpolate01(localSegmentPoint0.z, localSegmentPoint1.z);
+              // emit 1 or 2 panels, oriented so panel normal is always to the left of the line.
+              if (splitParameter !== undefined && splitParameter > clipFractions.x0 && splitParameter < clipFractions.x1) {
+                const piercePointX = segmentPoint0.interpolate(splitParameter, segmentPoint1);
+                const piercePointY = piercePointX.clone();   // so points are distinct for the two triangle announcements.
+                announce(linestringPoints, i1 - 1, polyface, visitor.currentReadIndex(), [worldClippedPointA, piercePointX, planePointA], 2, 1);
+                announce(linestringPoints, i1 - 1, polyface, visitor.currentReadIndex(), [worldClippedPointB, piercePointY, planePointB], 1, 2);
+              } else if (localSegmentPoint0.z > 0) {  // segment is entirely above
+                announce(linestringPoints, i1 - 1, polyface, visitor.currentReadIndex(), [worldClippedPointA, worldClippedPointB, planePointB, planePointA], 3, 2);
+              } else // segment is entirely under
+                announce(linestringPoints, i1 - 1, polyface, visitor.currentReadIndex(), [worldClippedPointB, worldClippedPointA, planePointA, planePointB], 2, 3);
+            }
+          }
+        }
+      }
+    }
+  }
+  /** Find segments (within the linestring) which project to facets.
+   * * Assumble each segment pair as a facet in a new polyface
+   * * Facets are ASSUMED to be convex and planar.
+   */
+  public static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
+    const builder = PolyfaceBuilder.create();
+    this.announceSweepLinestringToConvexPolyfaceXY(linestringPoints, polyface,
+      (_linestring: GrowableXYZArray, _segmentIndex: number,
+        _polyface: Polyface, _facetIndex: number, points: Point3d[]) => {
+        if (points.length === 4)
+          builder.addQuadFacet(points);
+        else if (points.length === 3)
+          builder.addTriangleFacet(points);
+
+      });
+    return builder.claimPolyface(true);
+  }
+
 }
+/** Announce the points on a drape panel.
+ * * The first two points in the array are always along the draped line segment.
+ * * The last two are always on the facet.
+ * * If there are 4 points, those two pairs are distinct, i.e. both segment points are to the same side of the facet.
+ * * If there are 3 points, those two pairs share an on-facet point.
+ * * The panel is ordered so the outward normal is to the right of the draped segment.
+ * @param indexAOnFacet index (in points) of the point that is the first facet point for moving forward along the linestring
+ * @param indexBOnFacet index (in points) of the point that is the second facet point for moving forward along the linestring
+ */
+export type AnnounceDrapePanel = (linestring: GrowableXYZArray, segmentIndex: number,
+  polyface: Polyface, facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number) => any;

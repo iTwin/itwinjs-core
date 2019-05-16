@@ -15,6 +15,10 @@ import { PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
+
 /* tslint:disable:no-console no-trailing-whitespace */
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {
@@ -64,6 +68,50 @@ describe("PolyfaceClip", () => {
     ck.testCoordinate(ax * ay, insideArea);
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ConvexClipPlaneSet");
     expect(ck.getNumErrors()).equals(0);
+  });
+
+  /** Test PolyfaceBuilder.addPolygon variants with reverse normals. */
+  it("addPolygon", () => {
+    const ck = new Checker();
+    const points0 = [Point3d.create(0, 0), Point3d.create(1, 0), Point3d.create(0, 2)];
+    const points1 = [Point3d.create(0, 0, 1), Point3d.create(1, 0, 1), Point3d.create(0, 2, 1), Point3d.create(0, 0, 1)]; // with duplicate !
+
+    const growable0 = new GrowableXYZArray();
+    growable0.pushFrom(points0);
+    const growable1 = new GrowableXYZArray();
+    growable1.pushFrom(points1);
+
+    const singleFacetArea = PolygonOps.areaNormalGo(growable0)!.magnitude();
+    const builderG = PolyfaceBuilder.create();
+
+    builderG.addPolygonGrowableXYZArray(growable0);
+    // exercise reverse-order block of addPolygonGrowableXYZArray
+    builderG.toggleReversedFacetFlag();
+    builderG.addPolygonGrowableXYZArray(growable1);
+
+    const polyfaceG = builderG.claimPolyface(true);
+    const totalAreaG = PolyfaceQuery.sumFacetAreas(polyfaceG);
+
+    const builderP = PolyfaceBuilder.create();
+
+    builderP.addPolygon(points0);
+    // exercise reverse-order block of addPolygonGrowableXYZArray
+    builderP.toggleReversedFacetFlag();
+    builderP.addPolygon(points1);
+
+    const polyfaceP = builderP.claimPolyface(true);
+    const totalAreaP = PolyfaceQuery.sumFacetAreas(polyfaceG);
+
+    ck.testCoordinate(totalAreaG, totalAreaP);
+    ck.testCoordinate(2 * singleFacetArea, totalAreaP);
+
+    ck.testCoordinate(2 * singleFacetArea, totalAreaG);
+    const allGeometry: GeometryQuery[] = [];
+    GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceG, 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceP, 5, 0, 0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "addPolygon");
+    expect(ck.getNumErrors()).equals(0);
 
   });
+
 });
