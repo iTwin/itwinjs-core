@@ -324,8 +324,9 @@ beta;ValidationTextboxProps
 internal;VersionInfo
 public;ViewportContentControl 
 beta;ViewSelector 
+beta;ViewSelectorChangedEvent 
+beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorProps
-beta;ViewSelectorState
 public;ViewUtilities
 internal;VisibilityHandler 
 internal;VisibilityHandlerProps

@@ -675,7 +675,7 @@ export namespace Tile {
       this.now = now;
       this.purgeOlderThan = purgeOlderThan;
       this.graphics.setViewFlagOverrides(root.viewFlagOverrides);
-      this.viewFrustum = (undefined !== context.backgroundMap) ? ViewFrustum.createFromViewportAndPlane(context.viewport, context.backgroundMap.getPlane()) : context.viewport.viewFrustum;
+      this.viewFrustum = context.viewFrustum;
       if (this.viewFrustum !== undefined)
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
 

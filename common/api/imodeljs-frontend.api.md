@@ -1807,7 +1807,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     analysisStyle: AnalysisStyle | undefined;
     backgroundColor: ColorDef;
     // @internal (undocumented)
-    readonly backgroundMap: BackgroundMapState;
+    readonly backgroundMap: BackgroundMapProvider;
     // @internal (undocumented)
     readonly backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined;
     // @internal (undocumented)
@@ -2935,6 +2935,8 @@ export class IModelApp {
     static startup(opts?: IModelAppOptions): void;
     // @internal (undocumented)
     static readonly tentativePoint: TentativePoint;
+    // @internal (undocumented)
+    static readonly terrainProvider: TerrainProvider | undefined;
     // @alpha
     static readonly tileAdmin: TileAdmin;
     static readonly toolAdmin: ToolAdmin;
@@ -2949,6 +2951,8 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: IAuthorizationClient;
+    // @internal (undocumented)
+    backgroundMapProvider?: TiledGraphicsProvider.Provider;
     i18n?: I18N | I18NOptions;
     imodelClient?: IModelClient;
     // @internal (undocumented)
@@ -2963,6 +2967,8 @@ export interface IModelAppOptions {
     settings?: SettingsAdmin;
     // @internal (undocumented)
     tentativePoint?: TentativePoint;
+    // @internal (undocumented)
+    terrainProvider?: TerrainProvider;
     // @alpha
     tileAdmin?: TileAdmin;
     toolAdmin?: ToolAdmin;
@@ -4975,7 +4981,7 @@ export class SceneContext extends RenderContext {
     // (undocumented)
     readonly backgroundGraphics: RenderGraphic[];
     // (undocumented)
-    backgroundMap?: BackgroundMapState;
+    extendedFrustumPlane?: Plane3dByOriginAndUnitNormal;
     // (undocumented)
     getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
@@ -5000,6 +5006,8 @@ export class SceneContext extends RenderContext {
     setPlanarClassifier(id: Id64String, planarClassifier: RenderPlanarClassifier): void;
     // (undocumented)
     solarShadowMap?: RenderSolarShadowMap;
+    // (undocumented)
+    tiledGraphicsProviderType: TiledGraphicsProvider.Type | undefined;
     // (undocumented)
     readonly viewFrustum: ViewFrustum | undefined;
 }
@@ -5999,6 +6007,16 @@ export class TentativePoint {
     viewport?: ScreenViewport;
 }
 
+// Warning: (ae-missing-release-tag) "TerrainProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// 
+// @public (undocumented)
+export abstract class TerrainProvider implements TiledGraphicsProvider.Provider {
+    // (undocumented)
+    abstract getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
+    // (undocumented)
+    onInitialized(): void;
+}
+
 // @internal
 export interface TextureImage {
     format: ImageSourceFormat | undefined;
@@ -6333,6 +6351,37 @@ export namespace TileAdmin {
         constructor(vp?: Viewport);
         // (undocumented)
         clone(out?: ViewportSet): ViewportSet;
+    }
+}
+
+// Warning: (ae-missing-release-tag) "TiledGraphicsProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// 
+// @public (undocumented)
+export namespace TiledGraphicsProvider {
+    // @alpha
+    export interface Provider {
+        // (undocumented)
+        getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
+    }
+    // (undocumented)
+    export type ProviderSet = Set<TiledGraphicsProvider.Provider>;
+    // (undocumented)
+    export interface Tree {
+        // (undocumented)
+        plane?: Plane3dByOriginAndUnitNormal;
+        // Warning: (ae-incompatible-release-tags) The symbol "tileTree" is marked as @public, but its signature references "TileTree" which is marked as @internal
+        // 
+        // (undocumented)
+        tileTree: TileTree;
+    }
+    // @alpha
+    export enum Type {
+        // (undocumented)
+        BackgroundMap = 0,
+        // (undocumented)
+        Geometry = 1,
+        // (undocumented)
+        Overlay = 2
     }
 }
 
@@ -7632,6 +7681,8 @@ export abstract class Viewport implements IDisposable {
     addDecorations(_decorations: Decorations): void;
     // @internal
     addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
+    // @alpha
+    addTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider): void;
     readonly alwaysDrawn: Id64Set | undefined;
     // @internal (undocumented)
     readonly analysisStyle: AnalysisStyle | undefined;
@@ -7699,6 +7750,8 @@ export abstract class Viewport implements IDisposable {
     getSubCategories(categoryId: Id64String): Id64Set | undefined;
     getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
+    // @alpha
+    getTiledGraphicsProviders(type: TiledGraphicsProvider.Type): TiledGraphicsProvider.ProviderSet | undefined;
     getWorldFrustum(box?: Frustum): Frustum;
     hilite: Hilite.Settings;
     readonly iModel: IModelConnection;
@@ -7770,6 +7823,8 @@ export abstract class Viewport implements IDisposable {
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     // @internal (undocumented)
     removeAnimator(): void;
+    // @alpha
+    removeTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider): void;
     // @internal (undocumented)
     renderFrame(): boolean;
     readonly rotation: Matrix3d;
@@ -7906,6 +7961,8 @@ export abstract class ViewState extends ElementState {
     // @internal (undocumented)
     createClassification(context: SceneContext): void;
     static createFromProps(_props: ViewStateProps, _iModel: IModelConnection): ViewState | undefined;
+    // @internal (undocumented)
+    createProviderGraphics(context: SceneContext): void;
     // @internal (undocumented)
     createScene(context: SceneContext): void;
     // @internal (undocumented)

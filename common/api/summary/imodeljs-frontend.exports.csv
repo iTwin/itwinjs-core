@@ -10,6 +10,7 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
+internal;ActiveClipStatus
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;AnimationBranchState
@@ -44,6 +45,7 @@ beta;ChangeFlag
 beta;ChangeFlags
 alpha;CheckBoxIconsEditorParams 
 beta;enum ClassifierType
+internal;ClipEventType
 internal;enum ClipOrientation
 beta;enum ClippingType
 beta;ClipResult
@@ -238,6 +240,9 @@ internal;class RenderTarget
 public;RotateViewTool 
 public;RotationMode
 internal;RoundOff
+internal;SavedClipCache
+internal;SavedClipEntry
+internal;SavedClipProps
 internal;SavedState
 internal;SceneContext 
 public;ScreenViewport 
@@ -295,6 +300,7 @@ internal;SyncFlags
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
+public;class TerrainProvider 
 internal;TextureImage
 internal;ThreeAxes
 internal;Tile 
@@ -302,6 +308,9 @@ internal;Tile
 alpha;class TileAdmin
 alpha;TileAdmin
 internal;ViewportSet 
+public;TiledGraphicsProvider
+alpha;Provider
+alpha;Type
 internal;class TileLoader
 internal;TileTree 
 internal;TileTree
@@ -336,6 +345,7 @@ internal;ViewClipDecorationProvider
 internal;ViewClipEventHandler
 internal;class ViewClipModifyTool 
 internal;ViewClipPlanesModifyTool 
+internal;ViewClipSettingsProvider
 internal;ViewClipShapeModifyTool 
 internal;ViewClipTool 
 internal;ViewFrustum

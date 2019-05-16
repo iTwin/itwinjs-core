@@ -30,6 +30,7 @@ import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport, ViewFrustum } from "./Viewport";
 import { SpatialClassification } from "./SpatialClassification";
+import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
  * @public
@@ -338,8 +339,30 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public createBackgroundMap(context: SceneContext): void {
-    if (undefined !== this.displayStyle.backgroundMapPlane)
-      this.displayStyle.backgroundMap.addToScene(context);
+    const backgroundMapProvider = this.displayStyle.backgroundMap;
+    if (undefined !== backgroundMapProvider)
+      this.createGraphicsFromProvider(context, backgroundMapProvider, TiledGraphicsProvider.Type.BackgroundMap);
+  }
+  /** @internal */
+  private createGraphicsFromProvider(context: SceneContext, provider: TiledGraphicsProvider.Provider, type: TiledGraphicsProvider.Type) {
+    const tree = provider.getTileTree(context.viewport);
+    if (tree !== undefined) {
+      context.tiledGraphicsProviderType = type;
+      context.extendedFrustumPlane = tree.plane;
+      tree.tileTree.drawScene(context);
+      context.extendedFrustumPlane = undefined;
+      context.tiledGraphicsProviderType = undefined;
+    }
+  }
+  /** @internal */
+  public createProviderGraphics(context: SceneContext): void {
+    for (let type = TiledGraphicsProvider.Type.Geometry; type <= TiledGraphicsProvider.Type.Overlay; type++) {
+      const providers = context.viewport.getTiledGraphicsProviders(type);
+      if (providers !== undefined) {
+        for (const provider of providers)
+          this.createGraphicsFromProvider(context, provider, type);
+      }
+    }
   }
 
   /** @internal */

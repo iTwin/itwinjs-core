@@ -26,6 +26,7 @@ import { ViewManager } from "./ViewManager";
 import { WebGLRenderCompatibilityInfo } from "./RenderCompatibility";
 import { TileAdmin } from "./tile/TileAdmin";
 import { EntityState } from "./EntityState";
+import { TerrainProvider } from "./TerrainProvider";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
@@ -41,7 +42,7 @@ import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-
+import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
 declare var BUILD_SEMVER: string;
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
@@ -84,6 +85,10 @@ export interface IModelAppOptions {
   quantityFormatter?: QuantityFormatter;
   /** @internal */
   renderSys?: RenderSystem | RenderSystem.Options;
+  /** @internal */
+  backgroundMapProvider?: TiledGraphicsProvider.Provider;
+  /** @internal */
+  terrainProvider?: TerrainProvider;
 }
 
 /**
@@ -111,6 +116,7 @@ export class IModelApp {
   private static _tentativePoint: TentativePoint;
   private static _tileAdmin: TileAdmin;
   private static _toolAdmin: ToolAdmin;
+  private static _terrainProvider?: TerrainProvider;
   private static _viewManager: ViewManager;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
@@ -160,6 +166,8 @@ export class IModelApp {
   public static get iModelClient(): IModelClient { return this._imodelClient; }
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
+  /** @internal */
+  public static get terrainProvider() { return this._terrainProvider; }
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -268,6 +276,7 @@ export class IModelApp {
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
+    this._terrainProvider = opts.terrainProvider;       // TBD... (opts.terrainProvider !== undefined) ? opts.terrainProvider : new WorldTerrainProvider();
 
     this.renderSystem.onInitialized();
     this.viewManager.onInitialized();
@@ -276,6 +285,7 @@ export class IModelApp {
     this.accuSnap.onInitialized();
     this.locateManager.onInitialized();
     this.tentativePoint.onInitialized();
+    if (this._terrainProvider) this._terrainProvider.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */

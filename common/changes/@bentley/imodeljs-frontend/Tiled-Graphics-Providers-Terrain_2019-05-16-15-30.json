@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Change to the way the background map is specified, to allow overlays.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Barry.Bentley@bentley.com"
+}

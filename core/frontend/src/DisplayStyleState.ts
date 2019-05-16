@@ -25,7 +25,7 @@ import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, TextureImage, AnimationBranchStates } from "./render/System";
-import { BackgroundMapState } from "./tile/WebMercatorTileTree";
+import { BackgroundMapProvider } from "./tile/WebMercatorTileTree";
 import { TileTreeModelState } from "./ModelState";
 import { Plane3dByOriginAndUnitNormal, Vector3d, Point3d } from "@bentley/geometry-core";
 import { ContextRealityModelState } from "./ContextRealityModelState";
@@ -43,7 +43,7 @@ import { calculateSolarDirection } from "./SolarCalculate";
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
   public static get className() { return "DisplayStyle"; }
-  private _backgroundMap: BackgroundMapState;
+  private _backgroundMap: BackgroundMapProvider;
   private _contextRealityModels: ContextRealityModelState[];
   private _analysisStyle?: AnalysisStyle;
   private _scheduleScript?: RenderScheduleState.Script;
@@ -60,7 +60,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const styles = this.jsonProperties.styles;
     const backgroundMap = undefined !== styles ? styles.backgroundMap : undefined;
     const mapProps = undefined !== backgroundMap ? backgroundMap : {};
-    this._backgroundMap = new BackgroundMapState(mapProps, iModel);
+    this._backgroundMap = new BackgroundMapProvider(mapProps, iModel);
     this._contextRealityModels = [];
 
     if (styles) {
@@ -81,7 +81,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public setBackgroundMap(mapProps: BackgroundMapProps): void {
     if (!this.backgroundMap.equalsProps(mapProps)) {
-      this._backgroundMap = new BackgroundMapState(mapProps, this.iModel);
+      this._backgroundMap = new BackgroundMapProvider(mapProps, this.iModel);
       this.settings.backgroundMap = mapProps;
     }
   }

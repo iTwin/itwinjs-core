@@ -30,6 +30,7 @@ import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo } from "./ViewState";
 import { ToolSettings } from "./tools/Tool";
+import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
 
 /** An object which customizes the appearance of Features within a [[Viewport]].
  * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
@@ -1155,6 +1156,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
  * @see [[ViewManager]]
  * @public
  */
+
 export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
    * @note This event is invoked *very* frequently. To avoid negatively impacting performance, consider using one of the more specific Viewport events;
@@ -1273,7 +1275,7 @@ export abstract class Viewport implements IDisposable {
   private _alwaysDrawn?: Id64Set;
   private _alwaysDrawnExclusive: boolean = false;
   private _featureOverrideProvider?: FeatureOverrideProvider;
-
+  private _tiledGraphicsProviders?: Map<TiledGraphicsProvider.Type, TiledGraphicsProvider.ProviderSet>;
   /** @internal */
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
 
@@ -1675,6 +1677,32 @@ export abstract class Viewport implements IDisposable {
    */
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
+  }
+  /** Add a TiledGraphicsProvider
+   * @alpha
+   */
+  public addTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider) {
+    if (undefined === this._tiledGraphicsProviders)
+      this._tiledGraphicsProviders = new Map<TiledGraphicsProvider.Type, TiledGraphicsProvider.ProviderSet>();
+
+    if (undefined === this._tiledGraphicsProviders.get(type))
+      this._tiledGraphicsProviders.set(type, new Set<TiledGraphicsProvider.Provider>());
+
+    this._tiledGraphicsProviders!.get(type)!.add(provider);
+  }
+
+  /** Remove a TiledGraphicsProvider
+   * @alpha
+   */
+  public removeTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider) {
+    if (undefined !== this._tiledGraphicsProviders && undefined !== this._tiledGraphicsProviders.get(type))
+      this._tiledGraphicsProviders.get(type)!.delete(provider);
+  }
+  /** Get the tiled graphics providers for given type
+   * @alpha
+   */
+  public getTiledGraphicsProviders(type: TiledGraphicsProvider.Type): TiledGraphicsProvider.ProviderSet | undefined {
+    return this._tiledGraphicsProviders ? this._tiledGraphicsProviders.get(type) : undefined;
   }
 
   /** @internal */
@@ -2412,6 +2440,7 @@ export abstract class Viewport implements IDisposable {
         view.createClassification(context);
         view.createScene(context);
         view.createBackgroundMap(context);
+        view.createProviderGraphics(context);
         view.createSolarShadowMap(context);
         context.requestMissingTiles();
         target.changeScene(context.graphics);

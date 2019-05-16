@@ -86,7 +86,7 @@ public;GrowableXYZArray
 internal;HalfEdge
 internal;HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean
 internal;HalfEdgeGraph
-internal;enum HalfEdgeMask
+internal;HalfEdgeMask
 internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
 public;HasZ = Readonly
 public;IModelJson
@@ -147,6 +147,7 @@ public;PointString3d
 public;class Polyface 
 public;PolyfaceAuxData
 public;PolyfaceBuilder 
+public;PolyfaceClip
 public;PolyfaceData
 public;PolyfaceQuery
 public;PolyfaceVisitor 
