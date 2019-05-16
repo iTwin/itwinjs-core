@@ -180,6 +180,14 @@ export class UiFramework {
     }
   }
 
+  public static getFrontStageKey(): number {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.frontstageKey : 0;
+  }
+
+  public static setFrontStageKey(frontstageKey: number): void {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetFronstageKey, frontstageKey);
+  }
+
   /** @beta */
   public static getAvailableSelectionScopes(): PresentationSelectionScope[] {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.availableSelectionScopes : [{ id: "element", label: "Element" } as PresentationSelectionScope];

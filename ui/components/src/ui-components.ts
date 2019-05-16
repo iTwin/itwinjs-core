@@ -68,6 +68,9 @@ export * from "./ui-components/timeline/PlayerButton";
 export * from "./ui-components/timeline/Scrubber";
 export * from "./ui-components/timeline/Timeline";
 export * from "./ui-components/timeline/TimelineComponent";
+export * from "./ui-components/timeline/DayPicker";
+export * from "./ui-components/timeline/SolarTimeline";
+export * from "./ui-components/timeline/BaseSolarDataProvider";
 
 export * from "./ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./ui-components/properties/renderers/label/PrimitivePropertyLabelRenderer";

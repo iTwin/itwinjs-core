@@ -10,7 +10,8 @@ import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
   ElectronRpcConfiguration, BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, SnapMode, AccuSnap, OidcClientWrapper, ViewClipByPlaneTool } from "@bentley/imodeljs-frontend";
+
+import { IModelApp, IModelConnection, SnapMode, AccuSnap, OidcClientWrapper, ViewClipByPlaneTool, RenderSystem, IModelAppOptions } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -142,11 +143,11 @@ export class SampleAppIModelApp {
   public static store: Store<RootState>;
   public static rootReducer: any;
 
-  public static startup() {
-    IModelApp.startup({
-      notifications: new AppNotificationManager(),
-      accuSnap: new SampleAppAccuSnap(),
-    });
+  public static startup(opts?: IModelAppOptions): void {
+    opts = opts ? opts : {};
+    opts.accuSnap = new SampleAppAccuSnap();
+    opts.notifications = new AppNotificationManager();
+    IModelApp.startup(opts);
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
     // this is the rootReducer for the sample application.
@@ -220,6 +221,8 @@ export class SampleAppIModelApp {
   public static async closeCurrentIModel() {
     const currentIModelConnection = this.getIModelConnection();
     if (currentIModelConnection) {
+      SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
+
       if (SampleAppIModelApp.isIModelLocal)
         await currentIModelConnection.closeSnapshot();
       else
@@ -228,10 +231,11 @@ export class SampleAppIModelApp {
   }
 
   public static async openViews(iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) {
-    // store the IModelConnection in the sample app store
-    SampleAppIModelApp.setIModelConnection(iModelConnection, true);
 
     SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
+
+    // store the IModelConnection in the sample app store - this may trigger redux connected components
+    SampleAppIModelApp.setIModelConnection(iModelConnection, true);
 
     // we create a FrontStage that contains the views that we want.
     const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
@@ -257,9 +261,10 @@ export class SampleAppIModelApp {
       const iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
       SampleAppIModelApp.setIsIModelLocal(false, true);
 
+      SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
+
       // store the IModelConnection in the sample app store
       SampleAppIModelApp.setIModelConnection(iModelConnection, true);
-      SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
     }
 
     await SampleAppIModelApp.showFrontstage("IModelIndex");
@@ -438,7 +443,13 @@ async function main() {
   await retrieveConfiguration(); // (does a fetch)
   console.log("Configuration", JSON.stringify(testAppConfiguration)); // tslint:disable-line:no-console
 
-  SampleAppIModelApp.startup();
+  // Set up render option to displaySolarShadows.
+  const renderSystemOptions: RenderSystem.Options = {
+    displaySolarShadows: true,
+  };
+
+  // Start the app.
+  SampleAppIModelApp.startup({ renderSys: renderSystemOptions });
 
   // wait for both our i18n namespaces to be read.
   SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises

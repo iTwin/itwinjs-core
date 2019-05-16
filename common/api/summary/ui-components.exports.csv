@@ -8,6 +8,7 @@ public;ArrayPropertyValueRenderer
 beta;AsyncErrorMessage
 beta;AsyncValueProcessingResult
 public;class BasePointTypeConverter 
+alpha;BaseSolarDataProvider 
 alpha;BaseTimelineDataProvider 
 beta;BasicPropertyEditor 
 beta;BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent
@@ -67,6 +68,7 @@ beta;DataController
 beta;class DataControllerBase 
 internal;DataRowItem 
 public;DateTimeTypeConverter 
+alpha;DayPicker 
 public;DelayLoadedTreeNodeItem 
 public;DoublePropertyValueRenderer 
 beta;DragDropArguments
@@ -148,9 +150,8 @@ public;PageOptions
 alpha;PlaybackSettings
 alpha;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
 internal;PlayButton 
-internal;PlayButtonProps 
-internal;PlayButtonProps 
 internal;PlayerButton 
+internal;PlayerButtonProps 
 public;Point2dTypeConverter 
 public;Point3dTypeConverter 
 public;PrimitivePropertyLabelRenderer 
@@ -207,6 +208,9 @@ public;SimplePropertyDataProvider
 beta;SimpleTableDataProvider 
 public;SimpleTreeDataProvider 
 public;SimpleTreeDataProviderHierarchy = Map
+alpha;SolarDataProvider
+alpha;SolarPlaybackProgressHandler = (time: Date) => void
+alpha;SolarTimeline 
 public;SortComparer
 public;StandardRotationChangeEvent 
 public;StandardRotationChangeEventArgs

@@ -37,7 +37,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
 
   private _calculateChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, isHorizontal: boolean, hsv: HSVColor, container: HTMLDivElement): HSVColor | undefined => {
     e.preventDefault();
-    const { width: containerWidth, height: containerHeight } = container.getBoundingClientRect();
+    const { width: containerWidth, height: containerHeight, top: containerTop, left: containerLeft } = container.getBoundingClientRect();
 
     let x = 0;
     if ("pageX" in e) {
@@ -65,8 +65,8 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
     if (undefined === y)
       return undefined;
 
-    const left = x - (container.getBoundingClientRect().left + window.pageXOffset);
-    const top = y - (container.getBoundingClientRect().top + window.pageYOffset);
+    const left = x - (containerLeft + window.pageXOffset);
+    const top = y - (containerTop + window.pageYOffset);
     const newColor = this.props.hsv.clone();
 
     if (!isHorizontal) {
@@ -113,6 +113,8 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
   }
 
   private _onChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget)
+      return;
     if (this._container && this.props.onHueChange) {
       const change = this._calculateChange(e, this.props.isHorizontal ? this.props.isHorizontal : false, this.props.hsv, this._container);
       change && typeof this.props.onHueChange === "function" && this.props.onHueChange(change);
@@ -120,6 +122,8 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
   }
 
   private _onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget)
+      return;
     this._onChange(e);
     // istanbul ignore else
     if (this._container)

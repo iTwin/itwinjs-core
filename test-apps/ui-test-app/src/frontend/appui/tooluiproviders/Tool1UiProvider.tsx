@@ -6,7 +6,7 @@ import * as React from "react";
 
 import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { HSVColor, ColorDef } from "@bentley/imodeljs-common";
+import { HSVColor, ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import { ColorSwatch, HueSlider, AlphaSlider, SaturationPicker, ColorPickerButton, WeightPickerButton } from "@bentley/ui-components";
 import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 
@@ -32,10 +32,8 @@ interface State {
 class Tool1Settings extends React.Component<{}, State> {
   constructor(props: any) {
     super(props);
-    const hsv = new HSVColor();
-    hsv.h = 30;
-    hsv.s = 30;
-    hsv.v = 30;
+
+    const hsv = (new ColorDef(ColorByName.grey)).toHSV();
     const alpha = .5;
     const userColor = hsv.toColorDef();
     userColor.setAlpha(alpha * 255);

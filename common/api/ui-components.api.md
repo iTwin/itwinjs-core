@@ -5,6 +5,7 @@
 ```ts
 
 import { BeEvent } from '@bentley/bentleyjs-core';
+import { Cartographic } from '@bentley/imodeljs-common';
 import { CheckBoxInfo } from '@bentley/ui-core';
 import { CheckBoxState } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
@@ -129,6 +130,47 @@ export abstract class BasePointTypeConverter extends TypeConverter {
 }
 
 // @alpha
+export class BaseSolarDataProvider implements SolarDataProvider {
+    constructor(viewport?: ScreenViewport, longitude?: number, latitude?: number);
+    // (undocumented)
+    animationFraction: number;
+    // (undocumented)
+    protected _cartographicCenter: Cartographic;
+    // (undocumented)
+    day: Date;
+    // (undocumented)
+    readonly dayStartMs: number;
+    // (undocumented)
+    getCartographicCenter(iModel: IModelConnection): Cartographic;
+    // (undocumented)
+    latitude: number;
+    // (undocumented)
+    longitude: number;
+    // (undocumented)
+    onTimeChanged: (_time: Date) => void;
+    // (undocumented)
+    shadowColor: ColorDef;
+    // (undocumented)
+    protected _shadowColor: ColorDef;
+    // (undocumented)
+    readonly shouldShowTimeline: boolean;
+    // (undocumented)
+    readonly sunrise: Date;
+    // (undocumented)
+    readonly sunset: Date;
+    // (undocumented)
+    supportsTimelineAnimation: boolean;
+    // (undocumented)
+    timeOfDay: Date;
+    // (undocumented)
+    viewId: string;
+    // (undocumented)
+    viewport: ScreenViewport | undefined;
+    // (undocumented)
+    protected _viewport: ScreenViewport | undefined;
+}
+
+// @alpha
 export class BaseTimelineDataProvider implements TimelineDataProvider {
     constructor(viewport?: ScreenViewport);
     // (undocumented)
@@ -165,6 +207,8 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     supportsTimelineAnimation: boolean;
     // (undocumented)
     updateSettings(settings: PlaybackSettings): void;
+    // (undocumented)
+    viewId: string;
     // (undocumented)
     viewport: ScreenViewport | undefined;
     // (undocumented)
@@ -824,6 +868,37 @@ export class DateTimeTypeConverter extends ShortDateTypeConverter {
     protected getTimeFormat(): TimeFormat;
 }
 
+// @alpha
+export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
+    constructor(props: DayPickerProps);
+    // (undocumented)
+    readonly days: (Date | null)[];
+    // (undocumented)
+    static isSameDay(a: Date, b: Date): boolean;
+    // (undocumented)
+    longDayName(dayOfWeek: number): any;
+    // (undocumented)
+    longMonthName(month: number): any;
+    // (undocumented)
+    nextMonth: () => void;
+    // (undocumented)
+    onDayChange: (day: Date) => () => void;
+    // (undocumented)
+    previousMonth: () => void;
+    // (undocumented)
+    render(): JSX.Element;
+    // (undocumented)
+    renderDay: (day: Date, index: number) => JSX.Element;
+    // (undocumented)
+    renderDayHeader(dayOfWeek: number): JSX.Element;
+    // (undocumented)
+    renderWeek: (days: any, index: number) => JSX.Element;
+    // (undocumented)
+    shortDayName(dayOfWeek: number): any;
+    // (undocumented)
+    readonly weeks: (Date | null)[][];
+}
+
 // @public
 export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
     // (undocumented)
@@ -1474,36 +1549,30 @@ export interface PlaybackSettings {
 export type PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void;
 
 // @internal
-export class PlayButton extends React.Component<PlayButtonProps, PlayButtonState> {
-    constructor(props: PlayButtonProps, context?: any);
+export class PlayButton extends React.Component<PlayerButtonProps, PlayButtonState> {
+    constructor(props: PlayerButtonProps, context?: any);
     // (undocumented)
-    componentWillReceiveProps(nextProps: Readonly<PlayButtonProps>): void;
+    componentWillReceiveProps(nextProps: Readonly<PlayerButtonProps>): void;
     // (undocumented)
     render(): JSX.Element;
-}
-
-// @internal
-export interface PlayButtonProps extends CommonProps {
-    // (undocumented)
-    icon?: string;
-    // (undocumented)
-    onClick?: () => void;
-}
-
-// @internal
-export interface PlayButtonProps extends CommonProps {
-    // (undocumented)
-    isPlaying: boolean;
-    // (undocumented)
-    onPause?: () => void;
-    // (undocumented)
-    onPlay?: () => void;
 }
 
 // @internal
 export class PlayerButton extends React.PureComponent<any> {
     // (undocumented)
     render(): JSX.Element;
+}
+
+// @internal
+export interface PlayerButtonProps extends CommonProps {
+    // (undocumented)
+    isPlaying: boolean;
+    // (undocumented)
+    onPause?: () => void;
+    // (undocumented)
+    onPlay?: () => void;
+    // (undocumented)
+    tooltip?: string;
 }
 
 // @public
@@ -2072,6 +2141,35 @@ export class SimpleTreeDataProvider implements ITreeDataProvider {
 // @public
 export type SimpleTreeDataProviderHierarchy = Map<string | undefined, TreeNodeItem[]>;
 
+// @alpha
+export interface SolarDataProvider {
+    day: Date;
+    readonly dayStartMs: number;
+    onTimeChanged?: SolarPlaybackProgressHandler;
+    shadowColor: ColorDef;
+    // (undocumented)
+    readonly shouldShowTimeline: boolean;
+    readonly sunrise: Date;
+    readonly sunset: Date;
+    supportsTimelineAnimation: boolean;
+    timeOfDay: Date;
+    // (undocumented)
+    viewId: string;
+    viewport?: ScreenViewport;
+}
+
+// @alpha
+export type SolarPlaybackProgressHandler = (time: Date) => void;
+
+// @alpha
+export class SolarTimeline extends React.PureComponent<SolarTimelineComponentProps, SolarTimelineComponentState> {
+    constructor(props: SolarTimelineComponentProps);
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
 // @public
 export interface SortComparer {
     // (undocumented)
@@ -2393,6 +2491,7 @@ export interface TimelineDataProvider {
     start?: Date;
     supportsTimelineAnimation: boolean;
     updateSettings(settings: PlaybackSettings): void;
+    viewId: string;
     viewport?: ScreenViewport;
 }
 

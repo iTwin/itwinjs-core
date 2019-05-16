@@ -12,10 +12,11 @@ import { PresentationSelectionScope } from "./UiFramework";
  *  Since these are also used as sync ids they should be in lowercase.
  * @beta
  */
-export  enum SessionStateActionId {
+export enum SessionStateActionId {
   SetNumItemsSelected = "sessionstate:set-num-items-selected",
   SetAvailableSelectionScopes = "sessionstate:set-available-selection-scopes",
   SetSelectionScope = "sessionstate:set-selection-scope",
+  SetFronstageKey = "sessionstate:set-frontstage-key",
 }
 
 /** The portion of state managed by the SessionStateReducer.
@@ -25,6 +26,7 @@ export interface SessionState {
   numItemsSelected: number;
   availableSelectionScopes: PresentationSelectionScope[];
   activeSelectionScope: string;
+  frontstageKey: number;
 }
 
 const defaultSelectionScope = { id: "element", label: "Element" } as PresentationSelectionScope;
@@ -37,6 +39,8 @@ const initialState: SessionState = {
   availableSelectionScopes: [defaultSelectionScope],
   /** initialize to active selection scope to "Element", this will be overwritten when iModelConnection is established */
   activeSelectionScope: defaultSelectionScope.id,
+  /** initialize frontstageKey to empty string (TESTING try to resolve issue were stage open matches existing stage and not all expected processing is done when stage is activated) */
+  frontstageKey: 0,
 };
 
 /** An object with a function that creates each SessionStateReducer that can be handled by our reducer.
@@ -46,6 +50,7 @@ export const SessionStateActions = {  // tslint:disable-line:variable-name
   setNumItemsSelected: (numSelected: number) => createAction(SessionStateActionId.SetNumItemsSelected, numSelected),
   setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => createAction(SessionStateActionId.SetAvailableSelectionScopes, availableSelectionScopes),
   setSelectionScope: (activeSelectionScope: string) => createAction(SessionStateActionId.SetSelectionScope, activeSelectionScope),
+  setFrontstageKey: (frontstageKey: number) => createAction(SessionStateActionId.SetFronstageKey, frontstageKey),
 };
 
 /** Union of SessionState Redux actions
@@ -80,6 +85,13 @@ export function SessionStateReducer(state: SessionState = initialState, _action:
         return { ...state, activeSelectionScope: _action.payload };
       else
         return { ...state, activeSelectionScope: defaultSelectionScope.id };
+    }
+    case SessionStateActionId.SetFronstageKey: {
+      // istanbul ignore else
+      if (undefined !== _action.payload)
+        return { ...state, frontstageKey: _action.payload };
+      else
+        return { ...state, frontstageKey: Date.now() };
     }
   }
 

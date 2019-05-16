@@ -80,7 +80,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     this.clearGraphics();
   }
   public set(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, models: ModelSelectorState, categories: CategorySelectorState) {
-    const minimumHorizonDirection = -.1;
+    const minimumHorizonDirection = -.01;
     this._settings = settings.clone();
     if (direction.z > minimumHorizonDirection) {
       this._status = Status.BelowHorizon;

@@ -2,6 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Timeline */
+
 import * as React from "react";
 import classnames from "classnames";
 import { PlayerButton, PlayButton } from "./PlayerButton";
@@ -14,7 +16,6 @@ import { ContextMenu, ContextMenuItem } from "./ContextMenu";
 import { UiComponents } from "../UiComponents";
 import "./TimelineComponent.scss";
 
-/** @alpha */
 interface TimelineComponentProps {
   startDate?: Date; // start date
   endDate?: Date;   // end date
@@ -26,10 +27,9 @@ interface TimelineComponentProps {
   onChange?: (duration: number) => void; // callback with current value (as a fraction)
   onPlayPause?: (playing: boolean) => void; // callback triggered when play/pause button is pressed
   onJump?: (forward: boolean) => void; // callback triggered when backward/forward buttons are pressed
-  onSettingsChange?: (arg: PlaybackSettings) => void; // callback triggered when settings is changed
+  onSettingsChange?: (arg: PlaybackSettings) => void; // callback triggered when a setting is changed
 }
 
-/** @alpha */
 interface TimelineComponentState {
   isSettingsOpen: boolean; // settings popup is opened or closed
   isPlaying: boolean; // timeline is currently playing or paused

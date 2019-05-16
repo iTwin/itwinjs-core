@@ -227,12 +227,15 @@ export class SyncUiEventDispatcher {
 
   public static clearConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
+
+    if (SyncUiEventDispatcher._unregisterListenerFunc)
+      SyncUiEventDispatcher._unregisterListenerFunc();
   }
 
   public static initializeConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
     iModelConnection.selectionSet.onChanged.addListener(SyncUiEventDispatcher.selectionChangedHandler);
-
+    UiFramework.setFrontStageKey(Date.now());
     if (SyncUiEventDispatcher._unregisterListenerFunc)
       SyncUiEventDispatcher._unregisterListenerFunc();
 

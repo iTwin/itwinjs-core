@@ -8,9 +8,11 @@ import * as _ from 'lodash';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
+import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CheckBoxInfo } from '@bentley/ui-core';
+import { ColorDef } from '@bentley/imodeljs-common';
 import { CommonProps } from '@bentley/ui-core';
 import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
@@ -1231,7 +1233,7 @@ export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement>
 export const FrameworkReducer: (state: import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./UiFramework").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>>) => import("./utils/redux-ts").CombinedReducerState<{
+}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./UiFramework").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetFronstageKey, number>>) => import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2528,6 +2530,8 @@ export interface SessionState {
     // (undocumented)
     availableSelectionScopes: PresentationSelectionScope[];
     // (undocumented)
+    frontstageKey: number;
+    // (undocumented)
     numItemsSelected: number;
 }
 
@@ -2535,6 +2539,8 @@ export interface SessionState {
 export enum SessionStateActionId {
     // (undocumented)
     SetAvailableSelectionScopes = "sessionstate:set-available-selection-scopes",
+    // (undocumented)
+    SetFronstageKey = "sessionstate:set-frontstage-key",
     // (undocumented)
     SetNumItemsSelected = "sessionstate:set-num-items-selected",
     // (undocumented)
@@ -2546,6 +2552,7 @@ export const SessionStateActions: {
     setNumItemsSelected: (numSelected: number) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetNumItemsSelected, number>;
     setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
     setSelectionScope: (activeSelectionScope: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetSelectionScope, string>;
+    setFrontstageKey: (frontstageKey: number) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetFronstageKey, number>;
 };
 
 // @beta
@@ -2645,6 +2652,19 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
 
 // @public
 export const SnapModeField: any;
+
+// @alpha
+export class SolarTimelineDataProvider extends BaseSolarDataProvider {
+    constructor(viewState: ViewState, viewport?: ScreenViewport, longitude?: number, latitude?: number);
+    // (undocumented)
+    onTimeChanged: (time: Date) => void;
+    // (undocumented)
+    shadowColor: ColorDef;
+    // (undocumented)
+    readonly shouldShowTimeline: boolean;
+    // (undocumented)
+    protected _viewState: ViewState;
+}
 
 // @public
 export enum SpecialKey {
@@ -3268,6 +3288,8 @@ export class UiFramework {
     static getAvailableSelectionScopes(): PresentationSelectionScope[];
     // @beta (undocumented)
     static getColorTheme(): string;
+    // (undocumented)
+    static getFrontStageKey(): number;
     // @beta (undocumented)
     static getIsUiVisible(): boolean;
     // @beta (undocumented)
@@ -3289,6 +3311,8 @@ export class UiFramework {
     static setActiveSelectionScope(selectionScopeId: string): void;
     // @beta (undocumented)
     static setColorTheme(theme: string): void;
+    // (undocumented)
+    static setFrontStageKey(frontstageKey: number): void;
     // @beta (undocumented)
     static setIsUiVisible(visible: boolean): void;
     // @beta (undocumented)

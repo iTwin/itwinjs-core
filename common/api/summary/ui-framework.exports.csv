@@ -253,6 +253,7 @@ public;SignIn
 public;SignInProps 
 public;SignOutModalFrontstage 
 public;SnapModeField: any
+alpha;SolarTimelineDataProvider 
 public;SpecialKey
 internal;StackedWidget 
 internal;StackedWidgetProps 

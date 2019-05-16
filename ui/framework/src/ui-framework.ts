@@ -106,6 +106,7 @@ export * from "./ui-framework/toolbar/PopupButton";
 
 export * from "./ui-framework/timeline/ScheduleAnimationProvider";
 export * from "./ui-framework/timeline/AnalysisAnimationProvider";
+export * from "./ui-framework/timeline/SolarTimelineDataProvider";
 
 export * from "./ui-framework/backstage/Backstage";
 export * from "./ui-framework/backstage/BackstageItem";

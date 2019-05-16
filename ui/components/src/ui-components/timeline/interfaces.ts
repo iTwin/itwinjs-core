@@ -5,6 +5,7 @@
 /** @module Timeline */
 
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ColorDef } from "@bentley/imodeljs-common";
 
 /**
  * A range of time which can be used to focus in on activities scheduled around a milestone.
@@ -106,6 +107,8 @@ export type PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) =
 export interface TimelineDataProvider {
   /** uniqueId of provider */
   id: string;
+  /** view id when viewport is initially assigned */
+  viewId: string;
   /** returns true if the provider has timeline animation data available */
   supportsTimelineAnimation: boolean;
   /** Starting date for entire timeline */
@@ -136,5 +139,39 @@ export interface TimelineDataProvider {
   onAnimationFractionChanged?: AnimationFractionChangeHandler;
   /** viewport to show animation */
   viewport?: ScreenViewport;
+}
 
+/**
+ * An interface used to notify Handlers of Playback progress.
+ * Contains the settings to be used.
+ * @alpha
+ */
+export type SolarPlaybackProgressHandler = (time: Date) => void;
+
+/** Data Provider interface for getting and setting solar position
+ * @alpha
+ */
+export interface SolarDataProvider {
+  // View Id used to determine sunrise and sunset
+  viewId: string;
+  /** returns true if the provider has timeline animation data available */
+  supportsTimelineAnimation: boolean;
+  // set to true is timeline should be shown - return false if view is not set to display shadow.
+  readonly shouldShowTimeline: boolean;
+  /** Starting date for entire timeline */
+  day: Date;
+  /** Starting time for day in milliseconds */
+  readonly dayStartMs: number;
+  /** Time of day for sun */
+  timeOfDay: Date;
+  /** Called during playback to update animation */
+  onTimeChanged?: SolarPlaybackProgressHandler;
+  /** viewport to show animation */
+  viewport?: ScreenViewport;
+  /** Time of Sunrise to nearest minute */
+  readonly sunrise: Date;
+  /** time of Sunrise to nearest minute */
+  readonly sunset: Date;
+  /** shadow color */
+  shadowColor: ColorDef;
 }
