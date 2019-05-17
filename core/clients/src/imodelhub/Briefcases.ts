@@ -109,7 +109,8 @@ export class BriefcaseQuery extends Query {
     return this;
   }
 
-  /** Used by handler to get the id that is queried.
+  /**
+   * Used by handler to get the id that is queried.
    * @returns Value that was set with byId method.
    * @internal
    */
@@ -117,11 +118,21 @@ export class BriefcaseQuery extends Query {
     return this._byId;
   }
 
-  /** Query will additionally select [[Briefcase]] file download URL. This is needed to use the Briefcase object with [[BriefcaseHandler.download]].
+  /**
+   * Query will additionally select [[Briefcase]] file download URL. This is needed to use the Briefcase object with [[BriefcaseHandler.download]].
    * @returns This query.
    */
   public selectDownloadUrl(): this {
     addSelectFileAccessKey(this._query);
+    return this;
+  }
+
+  /**
+   * Query will select [[Briefcase]]s owned by this user.
+   * @returns This query.
+   */
+  public ownedByMe(): this {
+    this.addFilter("UserOwned+eq+'@me'");
     return this;
   }
 }

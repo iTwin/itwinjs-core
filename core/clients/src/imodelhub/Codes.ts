@@ -276,16 +276,6 @@ export class CodeQuery extends Query {
   }
 
   /**
-   * Select only top entries from the query. This is applied after [[Query.skip]] parameter.
-   * @param n Number of top entries to select.
-   * @returns This query.
-   */
-  public top(n: number) {
-    this._isMultiCodeQuery = false;
-    return super.top(n);
-  }
-
-  /**
    * Query unavailable [Code]($common)s. It will include all Codes owned by other [[Briefcase]]s.
    * @param briefcaseId Id of the Briefcase.
    * @returns This query.

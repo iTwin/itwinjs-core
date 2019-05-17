@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated code to use new ownedByMe option when quering briefcases",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Andrius.Zonys@bentley.com"
+}

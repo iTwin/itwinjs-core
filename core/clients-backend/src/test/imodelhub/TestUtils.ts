@@ -9,7 +9,7 @@ import { Base64 } from "js-base64";
 import { GuidString, Guid, Id64, Id64String, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import {
   ECJsonTypeMap, AccessToken, UserInfo, Project, ProgressInfo,
-  IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, ChangeSet, Version,
+  IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, BriefcaseQuery, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery, Config, IModelBaseHandler,
   IModelBankClient, IModelBankFileSystemContextClient, AuthorizedClientRequestContext,
@@ -262,12 +262,12 @@ export async function getBriefcases(requestContext: AuthorizedClientRequestConte
   }
 
   const client = getDefaultClient();
-  let briefcases = await client.briefcases.get(requestContext, imodelId);
+  let briefcases = await client.briefcases.get(requestContext, imodelId, new BriefcaseQuery().ownedByMe());
   if (briefcases.length < count) {
     for (let i = 0; i < count - briefcases.length; ++i) {
       await client.briefcases.create(requestContext, imodelId);
     }
-    briefcases = await client.briefcases.get(requestContext, imodelId);
+    briefcases = await client.briefcases.get(requestContext, imodelId, new BriefcaseQuery().ownedByMe());
   }
   return briefcases;
 }
@@ -330,8 +330,10 @@ export function mockGetChangeSet(imodelId: GuidString, getDownloadUrl: boolean, 
       value.index = `${i++}`;
     }
   });
+  if (!query)
+    query = "";
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId.toString(), "ChangeSet",
-    getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` : query);
+    getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` + query : query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<ChangeSet>(changeSets);
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }

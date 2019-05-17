@@ -5,7 +5,7 @@
 import {
   AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, IModelHubClient,
   HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType, Version,
-  AuthorizedClientRequestContext, ImsUserCredentials, VersionQuery,
+  AuthorizedClientRequestContext, ImsUserCredentials, VersionQuery, BriefcaseQuery,
 } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, GuidString, PerfLogger, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb, BackendRequestContext } from "../../imodeljs-backend";
@@ -344,7 +344,7 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const iModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
 
-    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId);
+    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > acquireThreshold) {
       Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
 

@@ -90,9 +90,9 @@ describe("iModelHubClient UserStatisticsHandler", () => {
       }
       // user 2
       if (user2BriefcasesCount > 0) {
-        const briefcases = await utils.getBriefcases(requestContexts[1], imodelId, user1BriefcasesCount + user2BriefcasesCount);
-        await utils.createChangeSets(requestContexts[1], imodelId, briefcases[user1BriefcasesCount], user1PushedChangesetsCount, user2PushedChangesetsCount);
-        await utils.createLocks(requestContexts[1], imodelId, briefcases[user1BriefcasesCount], user2OwnedLocksCount);
+        const briefcases = await utils.getBriefcases(requestContexts[1], imodelId, user2BriefcasesCount);
+        await utils.createChangeSets(requestContexts[1], imodelId, briefcases[0], user1PushedChangesetsCount, user2PushedChangesetsCount);
+        await utils.createLocks(requestContexts[1], imodelId, briefcases[0], user2OwnedLocksCount);
       }
     }
   });

@@ -137,11 +137,12 @@ export class BriefcaseHandler {
 export class BriefcaseQuery extends Query {
     byId(id: number): this;
     getId(): number | undefined;
+    ownedByMe(): this;
     selectDownloadUrl(): this;
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "ChangeSet" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
-// 
+//
 // @public
 export class ChangeSet extends WsgInstance {
     briefcaseId?: number;
@@ -197,7 +198,7 @@ export class ChangeSetPrePushEvent extends IModelHubEvent {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "ChangeSetQuery" is marked as @public, but its signature references "StringIdQuery" which is marked as @internal
-// 
+//
 // @public
 export class ChangeSetQuery extends StringIdQuery {
     afterVersion(versionId: GuidString): this;
@@ -286,7 +287,7 @@ export enum ClientsLoggerCategory {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "CodeBase" is marked as @alpha, but its signature references "WsgInstance" which is marked as @internal
-// 
+//
 // @alpha
 export class CodeBase extends WsgInstance {
     briefcaseId?: number;
@@ -318,7 +319,7 @@ export class CodeHandler {
     }
 
 // Warning: (ae-incompatible-release-tags) The symbol "CodeQuery" is marked as @alpha, but its signature references "Query" which is marked as @internal
-// 
+//
 // @alpha
 export class CodeQuery extends Query {
     byBriefcaseId(briefcaseId: number): this;
@@ -327,12 +328,11 @@ export class CodeQuery extends Query {
     byCodeSpecId(codeSpecId: Id64String): this;
     // @internal
     readonly isMultiCodeQuery: boolean;
-    top(n: number): this;
     unavailableCodes(briefcaseId: number): this;
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "CodeSequence" is marked as @alpha, but its signature references "WsgInstance" which is marked as @internal
-// 
+//
 // @alpha
 export class CodeSequence extends WsgInstance {
     codeScope?: string;
@@ -408,7 +408,7 @@ export class ConflictingLocksError extends IModelHubError {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "ConnectClient" is marked as @public, but its signature references "WsgClient" which is marked as @internal
-// 
+//
 // @public
 export class ConnectClient extends WsgClient {
     constructor();
@@ -428,7 +428,7 @@ export class ConnectClient extends WsgClient {
     // (undocumented)
     static readonly searchKey: string;
     // Warning: (ae-incompatible-release-tags) The symbol "setupOptionDefaults" is marked as @public, but its signature references "RequestOptions" which is marked as @alpha
-    // 
+    //
     // (undocumented)
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }
@@ -532,7 +532,7 @@ export class EventSAS extends BaseEventSAS {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "EventSubscription" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
-// 
+//
 // @public
 export class EventSubscription extends WsgInstance {
     eventTypes?: EventType[];
@@ -551,33 +551,33 @@ export class EventSubscriptionHandler {
 }
 
 // @public
-export type EventType = 
+export type EventType =
 /** Sent when one or more [[Lock]]s are updated. See [[LockEvent]].
  * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
-"LockEvent" | 
+"LockEvent" |
 /** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. See [[AllLocksDeletedEvent]].
  * @alpha Hide Lock API while focused on readonly viewing scenarios
  */
-"AllLocksDeletedEvent" | 
+"AllLocksDeletedEvent" |
 /** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetPostPushEvent]]. */
-"ChangeSetPostPushEvent" | 
+"ChangeSetPostPushEvent" |
 /** Sent when a [[ChangeSet]] push has started. See [[ChangeSetPrePushEvent]]. */
-"ChangeSetPrePushEvent" | 
+"ChangeSetPrePushEvent" |
 /** Sent when one or more [Code]($common)s are updated. See [[CodeEvent]].
  * @alpha Hide Code API while focused on readonly viewing scenarios
  */
-"CodeEvent" | 
+"CodeEvent" |
 /** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]].
  * @alpha Hide Code API while focused on readonly viewing scenarios
  */
-"AllCodesDeletedEvent" | 
+"AllCodesDeletedEvent" |
 /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]].
  * @internal
  */
-"BriefcaseDeletedEvent" | 
+"BriefcaseDeletedEvent" |
 /** Sent when an iModel is deleted. See [[iModelDeletedEvent]]. */
-"iModelDeletedEvent" | 
+"iModelDeletedEvent" |
 /** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
 "VersionEvent";
 
@@ -685,7 +685,7 @@ export class GlobalEventSAS extends BaseEventSAS {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "GlobalEventSubscription" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
-// 
+//
 // @public
 export class GlobalEventSubscription extends WsgInstance {
     // (undocumented)
@@ -707,21 +707,21 @@ export class GlobalEventSubscriptionHandler {
 }
 
 // @public
-export type GlobalEventType = 
+export type GlobalEventType =
 /** Sent when an iModel is put into the archive. See [[SoftiModelDeleteEvent]].
  * @beta Rename to SoftIModelDeleteEvent
  */
-"SoftiModelDeleteEvent" | 
+"SoftiModelDeleteEvent" |
 /** Sent when an archived iModel is completely deleted from the storage. See [[HardiModelDeleteEvent]].
  * @beta Rename to HardIModelDeleteEvent
  */
-"HardiModelDeleteEvent" | 
+"HardiModelDeleteEvent" |
 /** Sent when an iModel is created. See [[IModelCreatedEvent]].
  * @beta Rename to IModelCreatedEvent
  */
-"iModelCreatedEvent" | 
+"iModelCreatedEvent" |
 /** Sent when a [[ChangeSet]] is pushed. See [[ChangeSetCreatedEvent]]. */
-"ChangeSetCreatedEvent" | 
+"ChangeSetCreatedEvent" |
 /** Sent when a named [[Version]] is created. See [[NamedVersionCreatedEvent]]. */
 "NamedVersionCreatedEvent";
 
@@ -735,7 +735,7 @@ export class HubCode extends CodeBase {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "HubIModel" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
-// 
+//
 // @public
 export class HubIModel extends WsgInstance {
     createdDate?: string;
@@ -749,7 +749,7 @@ export class HubIModel extends WsgInstance {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "HubUserInfo" is marked as @alpha, but its signature references "WsgInstance" which is marked as @internal
-// 
+//
 // @alpha
 export class HubUserInfo extends WsgInstance {
     email?: string;
@@ -846,7 +846,7 @@ export abstract class IModelClient {
     readonly events: EventHandler;
     readonly globalEvents: GlobalEventHandler;
     // Warning: (ae-incompatible-release-tags) The symbol "_handler" is marked as @public, but its signature references "IModelBaseHandler" which is marked as @internal
-    // 
+    //
     // (undocumented)
     protected _handler: IModelBaseHandler;
     readonly iModel: IModelHandler;
@@ -931,7 +931,7 @@ export class IModelHubClientError extends IModelHubError {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "IModelHubError" is marked as @public, but its signature references "WsgError" which is marked as @internal
-// 
+//
 // @public
 export class IModelHubError extends WsgError {
     // @internal
@@ -965,7 +965,7 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "IModelQuery" is marked as @public, but its signature references "InstanceIdQuery" which is marked as @internal
-// 
+//
 // @public
 export class IModelQuery extends InstanceIdQuery {
     byName(name: string): this;
@@ -1087,7 +1087,7 @@ export class Lock extends LockBase {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "LockBase" is marked as @alpha, but its signature references "WsgInstance" which is marked as @internal
-// 
+//
 // @alpha
 export class LockBase extends WsgInstance {
     briefcaseId?: number;
@@ -1125,7 +1125,7 @@ export enum LockLevel {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "LockQuery" is marked as @alpha, but its signature references "Query" which is marked as @internal
-// 
+//
 // @alpha
 export class LockQuery extends Query {
     byBriefcaseId(briefcaseId: number): this;
@@ -1137,7 +1137,6 @@ export class LockQuery extends Query {
     byReleasedWithChangeSetIndex(changeSetIndex: number): this;
     // @internal
     readonly isMultiLockQuery: boolean;
-    top(n: number): this;
     unavailableLocks(briefcaseId: number, lastChangeSetIndex: string): this;
 }
 
@@ -1258,7 +1257,7 @@ export interface ProgressInfo {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "Project" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
-// 
+//
 // @public
 export class Project extends WsgInstance {
     // (undocumented)
@@ -1445,7 +1444,7 @@ export class RealityDataServicesClient extends WsgClient {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "request" is marked as @public, but its signature references "RequestOptions" which is marked as @alpha
-// 
+//
 // @public
 export function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response>;
 
@@ -1661,7 +1660,7 @@ export class StringIdQuery extends Query {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "Thumbnail" is marked as @alpha, but its signature references "WsgInstance" which is marked as @internal
-// 
+//
 // @alpha
 export abstract class Thumbnail extends WsgInstance {
     // (undocumented)
@@ -1677,7 +1676,7 @@ export class ThumbnailHandler {
     }
 
 // Warning: (ae-incompatible-release-tags) The symbol "ThumbnailQuery" is marked as @alpha, but its signature references "InstanceIdQuery" which is marked as @internal
-// 
+//
 // @alpha
 export class ThumbnailQuery extends InstanceIdQuery {
     byVersionId(versionId: GuidString): this;
@@ -1795,21 +1794,21 @@ export enum UsageType {
 // @beta
 export class UserInfo {
     constructor(
-    id: string, 
+    id: string,
     email?: {
         id: string;
         isVerified?: boolean | undefined;
-    } | undefined, 
+    } | undefined,
     profile?: {
         firstName: string;
         lastName: string;
         name?: string | undefined;
         preferredUserName?: string | undefined;
-    } | undefined, 
+    } | undefined,
     organization?: {
         id: string;
         name: string;
-    } | undefined, 
+    } | undefined,
     featureTracking?: {
         ultimateSite: string;
         usageCountryIso: string;
@@ -1846,7 +1845,7 @@ export class UserInfoHandler {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "UserInfoQuery" is marked as @alpha, but its signature references "Query" which is marked as @internal
-// 
+//
 // @alpha
 export class UserInfoQuery extends Query {
     byId(id: string): this;
@@ -1875,7 +1874,7 @@ export class UserStatisticsHandler {
     }
 
 // Warning: (ae-incompatible-release-tags) The symbol "UserStatisticsQuery" is marked as @alpha, but its signature references "Query" which is marked as @internal
-// 
+//
 // @alpha
 export class UserStatisticsQuery extends Query {
     // @internal
@@ -1896,7 +1895,7 @@ export class UserStatisticsQuery extends Query {
     }
 
 // Warning: (ae-incompatible-release-tags) The symbol "Version" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
-// 
+//
 // @public
 export class Version extends WsgInstance {
     changeSetId?: string;
@@ -1932,7 +1931,7 @@ export class VersionHandler {
 }
 
 // Warning: (ae-incompatible-release-tags) The symbol "VersionQuery" is marked as @public, but its signature references "InstanceIdQuery" which is marked as @internal
-// 
+//
 // @public
 export class VersionQuery extends InstanceIdQuery {
     byChangeSet(changesetId: string): this;

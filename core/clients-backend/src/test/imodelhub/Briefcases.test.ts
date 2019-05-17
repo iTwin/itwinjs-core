@@ -61,7 +61,7 @@ describe("iModelHub BriefcaseHandler", () => {
     imodelId = await utils.getIModelId(requestContext, imodelName);
     iModelClient = utils.getDefaultClient();
     if (!TestConfig.enableMocks) {
-      const briefcases = await iModelClient.briefcases.get(requestContext, imodelId);
+      const briefcases = await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().ownedByMe());
       let briefcasesCount = briefcases.length;
       if (briefcasesCount > 19) {
         // Ensure that tests can still acquire briefcases

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added query option to get owned briefcases",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Andrius.Zonys@bentley.com"
+}

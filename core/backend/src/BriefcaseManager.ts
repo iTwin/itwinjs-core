@@ -897,7 +897,7 @@ export class BriefcaseManager {
   private static async getOrAcquireBriefcase(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<HubBriefcase> {
     requestContext.enter();
 
-    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, (new BriefcaseQuery()).selectDownloadUrl());
+    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, (new BriefcaseQuery().ownedByMe()).selectDownloadUrl());
     requestContext.enter();
 
     const someBriefcase = briefcases.length > 0 ? briefcases[0] : await BriefcaseManager.acquireBriefcase(requestContext, iModelId);

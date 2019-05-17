@@ -309,16 +309,6 @@ export class LockQuery extends Query {
   }
 
   /**
-   * Select only top entries from the query. This is applied after [[Query.skip]] parameter.
-   * @param n Number of top entries to select.
-   * @returns This query.
-   */
-  public top(n: number) {
-    this._isMultiLockQuery = false;
-    return super.top(n);
-  }
-
-  /**
    * Query unavailable [[Lock]]s. It will include all Locks owned by other [[Briefcase]]s and locks that were released with a newer [[ChangeSet]].
    * @param briefcaseId Id of the Briefcase.
    * @param lastChangeSetIndex Index of the last ChangeSet that user has pulled.
