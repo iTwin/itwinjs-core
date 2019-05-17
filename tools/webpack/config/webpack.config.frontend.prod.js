@@ -59,7 +59,6 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
             loader: require.resolve('css-loader'),
             options: {
               importLoaders: 1,
-              minimize: true,
               sourceMap: true,
             },
           },

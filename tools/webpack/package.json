@@ -39,7 +39,7 @@
     "chalk": "^2.4.1",
     "cli-highlight": "^2.0.0",
     "concurrently": "^3.6.1",
-    "css-loader": "^0.28.11",
+    "css-loader": "^2.1.1",
     "dotenv": "^6.0.0",
     "enzyme": "^3.4.0",
     "enzyme-adapter-react-16": "1.12.1",

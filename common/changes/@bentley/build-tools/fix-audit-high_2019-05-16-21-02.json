@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update to css-loader 2.1.1",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "shaun.sewall@bentley.com"
+}

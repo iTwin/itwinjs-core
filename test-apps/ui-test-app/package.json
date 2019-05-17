@@ -99,7 +99,7 @@
     "@types/react-redux": "^7.0.1",
     "@types/semver": "^5.5.0",
     "autoprefixer": "^8.6.5",
-    "css-loader": "^0.28.11",
+    "css-loader": "^2.1.1",
     "electron": "^4.1.0",
     "electron-chromedriver": "^2.0.0",
     "file-loader": "^1.1.11",
