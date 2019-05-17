@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix spelling error and rename frontstageKey to iModelId since token was used to inform ui when imodel changed.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}

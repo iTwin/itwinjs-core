@@ -115,6 +115,7 @@ export class UiFramework {
     UiFramework._iModelServices = undefined;
   }
 
+  /** @beta */
   public static get frameworkStateKey(): string {
     return UiFramework._frameworkStateKeyInStore;
   }
@@ -211,12 +212,12 @@ export class UiFramework {
     }
   }
 
-  public static getFrontStageKey(): number {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.frontstageKey : 0;
+  public static getActiveIModelId(): string {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelId : "";
   }
 
-  public static setFrontStageKey(frontstageKey: number): void {
-    UiFramework.dispatchActionToStore(SessionStateActionId.SetFronstageKey, frontstageKey);
+  public static setActiveIModelId(iModelId: string): void {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetActiveIModelId, iModelId);
   }
 
   /** @beta */

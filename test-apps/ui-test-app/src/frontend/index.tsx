@@ -237,7 +237,7 @@ export class SampleAppIModelApp {
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     SampleAppIModelApp.setIModelConnection(iModelConnection, true);
 
-    // we create a FrontStage that contains the views that we want.
+    // we create a Frontstage that contains the views that we want.
     const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => { // tslint:disable-line:no-floating-promises

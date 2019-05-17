@@ -76,14 +76,27 @@ export class SyncUiEvent extends UiEvent<SyncUiEventArgs> { }
 export class SyncUiEventDispatcher {
   private static _syncEventTimerId: number | undefined;
   private static _eventIds: Set<string>;
-  private static _eventIdAdded: boolean = false;
+  private static _eventIdAdded = false;
   private static _syncUiEvent: SyncUiEvent;
-  private static _timeoutPeriod: number = 200;
+  private static _timeoutPeriod = 200;
+  private static _secondaryTimeoutPeriod = SyncUiEventDispatcher._timeoutPeriod / 2;
   private static _unregisterListenerFunc?: () => void;
 
   /** @internal - used for testing only */
+  /* istanbul ignore next */
   public static setTimeoutPeriod(period: number): void {
     SyncUiEventDispatcher._timeoutPeriod = period;
+    SyncUiEventDispatcher._secondaryTimeoutPeriod = Math.floor(SyncUiEventDispatcher._timeoutPeriod / 2);
+    if (SyncUiEventDispatcher._secondaryTimeoutPeriod < 1)
+      SyncUiEventDispatcher._secondaryTimeoutPeriod = 1;
+    if (SyncUiEventDispatcher._syncEventTimerId) {
+      window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
+      SyncUiEventDispatcher._syncEventTimerId = undefined;
+    }
+    if (SyncUiEventDispatcher._eventIds)
+      SyncUiEventDispatcher._eventIds.clear();
+
+    SyncUiEventDispatcher._eventIdAdded = false;
   }
 
   /** Return set of event ids that will be sent to listeners/. */
@@ -111,9 +124,19 @@ export class SyncUiEventDispatcher {
 
   /** Save eventId in Set for processing. */
   public static dispatchSyncUiEvent(eventId: string): void {
+    if (0 === SyncUiEventDispatcher._timeoutPeriod) {
+      // tslint:disable-next-line:no-console
+      // console.log(`[dispatchSyncUiEvent] not processed because _timeoutPeriod=0`);
+      return;
+    }
+    // tslint:disable-next-line:no-console
+    // console.log(`[dispatchSyncUiEvent] Adding eventId=${eventId}`);
+
     SyncUiEventDispatcher.syncEventIds.add(eventId.toLowerCase());
     if (!SyncUiEventDispatcher._syncEventTimerId) {  // if there is not a timer active, create one
       SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod);
+      // tslint:disable-next-line:no-console
+      // console.log(`[dispatchSyncUiEvent] - Timer set to watch for additional ids`);
     } else {
       SyncUiEventDispatcher._eventIdAdded = true;
     }
@@ -121,9 +144,19 @@ export class SyncUiEventDispatcher {
 
   /** Save multiple eventIds in Set for processing. */
   public static dispatchSyncUiEvents(eventIds: string[]): void {
+    if (0 === SyncUiEventDispatcher._timeoutPeriod) {
+      // tslint:disable-next-line:no-console
+      // console.log(`[dispatchSyncUiEvent] not processed because _timeoutPeriod=0`);
+      return;
+    }
+
     eventIds.forEach((id) => SyncUiEventDispatcher.syncEventIds.add(id.toLowerCase()));
+    // tslint:disable-next-line:no-console
+    // console.log(`[dispatchSyncUiEvents] Adding eventIds=${[...eventIds]}`);
     if (!SyncUiEventDispatcher._syncEventTimerId) {  // if there is not a timer active, create one
       SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod);
+      // tslint:disable-next-line:no-console
+      // console.log(`[dispatchSyncUiEvent] - Timer set to watch for additional ids`);
     } else {
       SyncUiEventDispatcher._eventIdAdded = true;
     }
@@ -131,25 +164,41 @@ export class SyncUiEventDispatcher {
 
   /** Trigger registered event processing when timer has expired and no addition eventId are added. */
   private static checkForAdditionalIds() {
+    // tslint:disable-next-line:no-console
+    // console.log(`.... checkForAdditionalIds _eventIdAdded=${SyncUiEventDispatcher._eventIdAdded} _syncEventTimerId={SyncUiEventDispatcher._syncEventTimerId}`);
     /* istanbul ignore else */
-    if (!SyncUiEventDispatcher._eventIdAdded && SyncUiEventDispatcher._syncEventTimerId) {
-      if (SyncUiEventDispatcher._syncEventTimerId) window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
-      SyncUiEventDispatcher._syncEventTimerId = undefined;
+    if (!SyncUiEventDispatcher._eventIdAdded) {
+      if (SyncUiEventDispatcher._syncEventTimerId) {
+        window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
+        SyncUiEventDispatcher._syncEventTimerId = undefined;
+        // tslint:disable-next-line:no-console
+        console.log("..... clearing out timerId");
+      } else {
+        // tslint:disable-next-line:no-console
+        // console.log("ERROR: SyncUiEventDispatcher.checkForAdditionalIds - expected _syncEventTimerId to be defined");
+      }
       SyncUiEventDispatcher._eventIdAdded = false;
       if (SyncUiEventDispatcher.syncEventIds.size > 0) {
         const eventIds = new Set<string>();
         SyncUiEventDispatcher.syncEventIds.forEach((value) => eventIds.add(value));
-        SyncUiEventDispatcher.syncEventIds.clear();
+        SyncUiEventDispatcher._eventIds.clear();
+        // tslint:disable-next-line:no-console
+        // console.log(`Firing onSyncUiEvent eventIds=${[...eventIds]}`);
         SyncUiEventDispatcher.onSyncUiEvent.emit({ eventIds });
       }
       return;
     }
 
     /* istanbul ignore else */
-    if (SyncUiEventDispatcher._syncEventTimerId) window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
+    if (SyncUiEventDispatcher._syncEventTimerId) {
+      window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
+      SyncUiEventDispatcher._syncEventTimerId = undefined;
+    }
     SyncUiEventDispatcher._eventIdAdded = false;
     // if events have been added before the initial timer expired wait half that time to see if events are still being added.
-    SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod / 2);
+    SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._secondaryTimeoutPeriod);
+    // tslint:disable-next-line:no-console
+    // console.log(`[checkForAdditionalIds]Waiting (${SyncUiEventDispatcher._secondaryTimeoutPeriod}ms) to call SyncUiEventDispatcher.checkForAdditionalIds`);
   }
 
   /** Checks to see if an eventId of interest is contained in the set of eventIds */
@@ -225,17 +274,21 @@ export class SyncUiEventDispatcher {
     SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SelectionSetChanged);
   }
 
+  /** This should be called by IModelApp when the active IModelConnection is closed. */
   public static clearConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
 
     if (SyncUiEventDispatcher._unregisterListenerFunc)
       SyncUiEventDispatcher._unregisterListenerFunc();
+
+    UiFramework.setActiveIModelId("");
   }
 
+  /** This should be called by IModelApp when the active IModelConnection is established. */
   public static initializeConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
     iModelConnection.selectionSet.onChanged.addListener(SyncUiEventDispatcher.selectionChangedHandler);
-    UiFramework.setFrontStageKey(Date.now());
+    (iModelConnection.iModelToken && iModelConnection.iModelToken.iModelId) ? UiFramework.setActiveIModelId(iModelConnection.iModelToken.iModelId) : "";
     if (SyncUiEventDispatcher._unregisterListenerFunc)
       SyncUiEventDispatcher._unregisterListenerFunc();
 

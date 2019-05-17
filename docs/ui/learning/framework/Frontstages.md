@@ -107,7 +107,7 @@ The `applicationData` prop specifies JSON data attached to the Zone and ZoneDef.
 ## Setting a Frontstage active
 
 ```TSX
-    // Create a FrontStage.
+    // Create a Frontstage.
     const frontstageProvider = new SampleFrontstage();
 
     // Add the provider to FrontstageManager

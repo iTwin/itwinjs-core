@@ -19,6 +19,7 @@ import { UiCore } from "@bentley/ui-core";
 import { Store, createStore, combineReducers } from "redux";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
+import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
 import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
 
 // tslint:disable: completed-docs
@@ -104,6 +105,7 @@ export class TestUtils {
       TestUtils._uiFrameworkInitialized = true;
     }
     ToolUiManager.clearCachedProperties();
+    SyncUiEventDispatcher.setTimeoutPeriod(0); // disables non-immediate event processing.
   }
 
   public static terminateUiFramework() {

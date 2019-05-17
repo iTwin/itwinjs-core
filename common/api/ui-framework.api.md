@@ -1236,7 +1236,7 @@ export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement>
 export const FrameworkReducer: (state: import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./UiFramework").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetFronstageKey, number>>) => import("./utils/redux-ts").CombinedReducerState<{
+}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./UiFramework").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>>) => import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2533,7 +2533,7 @@ export interface SessionState {
     // (undocumented)
     availableSelectionScopes: PresentationSelectionScope[];
     // (undocumented)
-    frontstageKey: number;
+    iModelId: string;
     // (undocumented)
     numItemsSelected: number;
 }
@@ -2541,9 +2541,9 @@ export interface SessionState {
 // @beta
 export enum SessionStateActionId {
     // (undocumented)
-    SetAvailableSelectionScopes = "sessionstate:set-available-selection-scopes",
+    SetActiveIModelId = "sessionstate:set-active-imodelid",
     // (undocumented)
-    SetFronstageKey = "sessionstate:set-frontstage-key",
+    SetAvailableSelectionScopes = "sessionstate:set-available-selection-scopes",
     // (undocumented)
     SetNumItemsSelected = "sessionstate:set-num-items-selected",
     // (undocumented)
@@ -2555,7 +2555,7 @@ export const SessionStateActions: {
     setNumItemsSelected: (numSelected: number) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetNumItemsSelected, number>;
     setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
     setSelectionScope: (activeSelectionScope: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetSelectionScope, string>;
-    setFrontstageKey: (frontstageKey: number) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetFronstageKey, number>;
+    setActiveIModelId: (iModelId: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
 };
 
 // @beta
@@ -2933,14 +2933,12 @@ export interface SyncUiEventArgs {
 
 // @public
 export class SyncUiEventDispatcher {
-    // (undocumented)
     static clearConnectionEvents(iModelConnection: IModelConnection): void;
     static dispatchImmediateSyncUiEvent(eventId: string): void;
     static dispatchSyncUiEvent(eventId: string): void;
     static dispatchSyncUiEvents(eventIds: string[]): void;
     static hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]): boolean;
     static initialize(): void;
-    // (undocumented)
     static initializeConnectionEvents(iModelConnection: IModelConnection): void;
     static readonly onSyncUiEvent: SyncUiEvent;
     // @internal
@@ -3281,18 +3279,18 @@ export class UiFramework {
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
     // @beta
     static readonly frameworkState: FrameworkState | undefined;
-    // (undocumented)
+    // @beta (undocumented)
     static readonly frameworkStateKey: string;
     // (undocumented)
     static getAccudrawSnapMode(): SnapMode;
+    // (undocumented)
+    static getActiveIModelId(): string;
     // (undocumented)
     static getActiveSelectionScope(): string;
     // @beta (undocumented)
     static getAvailableSelectionScopes(): PresentationSelectionScope[];
     // @beta (undocumented)
     static getColorTheme(): string;
-    // (undocumented)
-    static getFrontStageKey(): number;
     // @beta (undocumented)
     static getIsUiVisible(): boolean;
     // @beta (undocumented)
@@ -3315,11 +3313,11 @@ export class UiFramework {
     // (undocumented)
     static setAccudrawSnapMode(snapMode: SnapMode): void;
     // (undocumented)
+    static setActiveIModelId(iModelId: string): void;
+    // (undocumented)
     static setActiveSelectionScope(selectionScopeId: string): void;
     // @beta (undocumented)
     static setColorTheme(theme: string): void;
-    // (undocumented)
-    static setFrontStageKey(frontstageKey: number): void;
     // @beta (undocumented)
     static setIsUiVisible(visible: boolean): void;
     // @beta (undocumented)
