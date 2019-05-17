@@ -90,3 +90,5 @@ Debugging display-test-app can be accomplished using the following procedures, d
   * If defined, shader source code will be preserved as internal strings, useful for debugging purposes.
 * SVT_OMIT_EDGES
   * If defined, when requesting tiles if edge display is off then the response will not include edges in the binary tile data.
+* SVT_USE_PROJECT_EXTENTS
+  * If defined, the range of a spatial tile tree will be based on the project extents rather than upon the model's range.

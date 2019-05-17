@@ -86,13 +86,21 @@ export class IModelHostConfiguration {
    */
   public tileCacheCredentials?: CloudStorageServiceCredentials;
 
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status. */
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status.
+   * @internal
+   */
   public tileTreeRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status. */
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status.
+   * @internal
+   */
   public tileContentRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
-  /** The default time, in milliseconds, used for [[tileTreeRequestTimeout]] and [[tileContentRequestTimeout]]. To change this, override one or both of those properties. */
+  /** The default time, in milliseconds, used for [[tileTreeRequestTimeout]] and [[tileContentRequestTimeout]]. To change this, override one or both of those properties.
+   * @internal
+   */
   public static defaultTileRequestTimeout = 20 * 1000;
-  /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
+  /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries.
+   * @internal
+   */
   public useTileContentThreadPool = false;
 
   /** Crash-reporting configuration
@@ -278,8 +286,9 @@ export class IModelHost {
     if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
     if (!IModelHost.applicationVersion) IModelHost.applicationVersion = this.getApplicationVersion(); // Default to version of this package
 
-    if (undefined !== this._platform)
+    if (undefined !== this._platform) {
       this._platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
+    }
 
     IModelHost.onAfterStartup.raiseEvent();
   }

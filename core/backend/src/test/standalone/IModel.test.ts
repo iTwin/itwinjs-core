@@ -679,7 +679,7 @@ describe("iModel", () => {
     const requestContext2 = new ClientRequestContext("invalidTileRequests");
     await using(new DisableNativeAssertions(), async (_r) => {
       let error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "0x12345"));
-      expectIModelError(IModelStatus.MissingId, error);
+      expectIModelError(IModelStatus.InvalidId, error);
 
       error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "NotAValidId"));
       expectIModelError(IModelStatus.InvalidId, error);
@@ -688,7 +688,7 @@ describe("iModel", () => {
       expectIModelError(IModelStatus.InvalidId, error);
 
       error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x12345", "0/0/0/0/1"));
-      expectIModelError(IModelStatus.MissingId, error);
+      expectIModelError(IModelStatus.InvalidId, error);
 
       error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "V/W/X/Y/Z"));
       expectIModelError(IModelStatus.InvalidId, error);

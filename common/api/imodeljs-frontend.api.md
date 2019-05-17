@@ -6332,29 +6332,28 @@ export namespace Tile {
         // (undocumented)
         Ready = 3
     }
-    export class Params {
-        constructor(root: TileTree, contentId: string, range: ElementAlignedBox3d, maximumSize: number, isLeaf?: boolean | undefined, parent?: Tile | undefined, contentRange?: Range3d | undefined, transformToRoot?: Transform | undefined, sizeMultiplier?: number | undefined);
+    export interface Params {
         // (undocumented)
         readonly contentId: string;
         // (undocumented)
-        readonly contentRange?: Range3d | undefined;
+        readonly contentRange?: ElementAlignedBox3d;
         // (undocumented)
-        static fromJSON(props: TileProps, root: TileTree, parent?: Tile): Params;
-        // (undocumented)
-        readonly isLeaf?: boolean | undefined;
+        readonly isLeaf?: boolean;
         // (undocumented)
         readonly maximumSize: number;
         // (undocumented)
-        readonly parent?: Tile | undefined;
+        readonly parent?: Tile;
         // (undocumented)
         readonly range: ElementAlignedBox3d;
         // (undocumented)
         readonly root: TileTree;
         // (undocumented)
-        readonly sizeMultiplier?: number | undefined;
+        readonly sizeMultiplier?: number;
         // (undocumented)
-        readonly transformToRoot?: Transform | undefined;
+        readonly transformToRoot?: Transform;
     }
+    // (undocumented)
+    export function paramsFromJSON(props: TileProps, root: TileTree, parent?: Tile): Params;
     export const enum SelectParent {
         // (undocumented)
         No = 0,
@@ -6383,6 +6382,8 @@ export abstract class TileAdmin {
     abstract readonly enableInstancing: boolean;
     // @internal
     abstract forgetViewport(vp: Viewport): void;
+    // @internal
+    abstract getMaximumMajorTileFormatVersion(formatVersion?: number): number;
     abstract getNumRequestsForViewport(vp: Viewport): number;
     // @internal
     abstract getViewportSet(vp: Viewport, vps?: TileAdmin.ViewportSet): TileAdmin.ViewportSet;
@@ -6409,6 +6410,8 @@ export abstract class TileAdmin {
     abstract requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
     abstract resetStatistics(): void;
     abstract readonly statistics: TileAdmin.Statistics;
+    // @internal (undocumented)
+    abstract readonly useProjectExtents: boolean;
 }
 
 // @alpha (undocumented)
@@ -6419,8 +6422,12 @@ export namespace TileAdmin {
         enableInstancing?: boolean;
         maxActiveRequests?: number;
         // @internal
+        maximumMajorTileFormatVersion?: number;
+        // @internal
         requestTilesWithoutEdges?: boolean;
         retryInterval?: number;
+        // @internal
+        useProjectExtents?: boolean;
     }
     export interface Statistics {
         numActiveRequests: number;
@@ -6515,6 +6522,8 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
+    readonly contentRange?: ElementAlignedBox3d;
+    // (undocumented)
     createDrawArgs(context: SceneContext): Tile.DrawArgs;
     // (undocumented)
     debugForcedDepth?: number;
@@ -6571,12 +6580,11 @@ export namespace TileTree {
         // (undocumented)
         NotLoaded = 0
     }
-    export class Params {
-        constructor(id: string, rootTile: TileProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, location: Transform, modelId: Id64String, maxTilesToSkip?: number | undefined, yAxisUp?: boolean | undefined, isBackgroundMap?: boolean | undefined, clipVector?: ClipVector | undefined);
+    export interface Params {
         // (undocumented)
-        readonly clipVector?: ClipVector | undefined;
+        readonly clipVector?: ClipVector;
         // (undocumented)
-        static fromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, modelId: Id64String): Params;
+        readonly contentRange?: ElementAlignedBox3d;
         // (undocumented)
         readonly id: string;
         // (undocumented)
@@ -6584,20 +6592,21 @@ export namespace TileTree {
         // (undocumented)
         readonly is3d: boolean;
         // (undocumented)
-        readonly isBackgroundMap?: boolean | undefined;
+        readonly isBackgroundMap?: boolean;
         // (undocumented)
         readonly loader: TileLoader;
         // (undocumented)
         readonly location: Transform;
         // (undocumented)
-        readonly maxTilesToSkip?: number | undefined;
+        readonly maxTilesToSkip?: number;
         // (undocumented)
         readonly modelId: Id64String;
         // (undocumented)
         readonly rootTile: TileProps;
         // (undocumented)
-        readonly yAxisUp?: boolean | undefined;
+        readonly yAxisUp?: boolean;
     }
+    export function paramsFromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, modelId: Id64String): Params;
 }
 
 // @alpha

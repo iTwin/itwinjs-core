@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { TileRequest } from "./TileRequest";
-import { Tile } from "./TileTree";
 import { Dictionary, SortedArray, PriorityQueue, assert } from "@bentley/bentleyjs-core";
 import { RpcOperation, IModelTileRpcInterface, TileTreeProps } from "@bentley/imodeljs-common";
-import { Viewport } from "../Viewport";
-import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { IModelTileIO } from "./IModelTileIO";
+import { Tile } from "./TileTree";
+import { TileRequest } from "./TileRequest";
+import { Viewport } from "../Viewport";
 
 /** Provides functionality associated with [[Tile]]s, mostly in the area of scheduling requests for tile content.
  * The TileAdmin tracks [[Viewport]]s which have requested tile content, maintaining a priority queue of pending requests and
@@ -43,8 +44,20 @@ export abstract class TileAdmin {
   public abstract get enableInstancing(): boolean;
   /** @internal */
   public abstract get elideEmptyChildContentRequests(): boolean;
+
   /** @internal */
   public abstract get requestTilesWithoutEdges(): boolean;
+  /** @internal */
+  public abstract get useProjectExtents(): boolean;
+
+  /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
+   * return the maximum *major* format version to be used to request tile content from the backend.
+   * @see [[TileAdmin.Props.maximumMajorTileFormatVersion]]
+   * @see [[IModelTileIO.CurrentVersion]]
+   * @see [TileTreeProps.formatVersion]($common)
+   * @internal
+   */
+  public abstract getMaximumMajorTileFormatVersion(formatVersion?: number): number;
 
   /** Returns the union of the input set and the input viewport.
    * @internal
@@ -164,6 +177,17 @@ export namespace TileAdmin {
      */
     elideEmptyChildContentRequests?: boolean;
 
+    /** If defined, specifies the maximum MAJOR tile format version to request. For example, if IModelTileIO.CurrentVersion.Major = 3, and maximumMajorTileFormatVersion = 2,
+     * requests for tile content will obtain tile content in some version 2.x of the format, never of some version 3.x.
+     * Note that the actual maximum major version is also dependent on the backend which fulfills the requests - if the backend only knows how to produce tiles of format version 1.5, for example,
+     * requests for tiles in format version 2.1 will still return content in format version 1.5.
+     * This can be used to feature-gate newer tile formats on a per-user basis.
+     *
+     * Default value: undefined
+     * @internal
+     */
+    maximumMajorTileFormatVersion?: number;
+
     /** By default, when requesting tiles for a 3d view for which edge display is turned off, the response will include both surfaces and edges in the tile data.
      * The tile deserialization code will then discard the edge data to save memory. This wastes bandwidth downloading unused data.
      *
@@ -175,6 +199,16 @@ export namespace TileAdmin {
      * @internal
      */
     requestTilesWithoutEdges?: boolean;
+
+    /** By default, the range of a spatial tile tree is based on the range of the model. If that range is small relative to the project extents, the "low-resolution" tiles
+     * will be much higher-resolution than is appropriate to draw when the view is fit to the project extents, This can cause poor display performance due to too much tiny geometry.
+     * Setting this option to `true` will instead base the range of the tree on the project extents.
+     *
+     * Default value: false
+     *
+     * @internal
+     */
+    useProjectExtents?: boolean;
   }
 
   /** A set of [[Viewport]]s.
@@ -309,8 +343,10 @@ class Admin extends TileAdmin {
   private readonly _throttle: boolean;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
+  private readonly _maxMajorVersion: number;
   private readonly _elideEmptyChildContentRequests: boolean;
   private readonly _requestTilesWithoutEdges: boolean;
+  private readonly _useProjectExtents: boolean;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
   private _swapActiveRequests = new Set<TileRequest>();
@@ -355,8 +391,11 @@ class Admin extends TileAdmin {
     this._maxActiveRequests = undefined !== options.maxActiveRequests ? options.maxActiveRequests : 10;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 0;
     this._enableInstancing = !!options.enableInstancing;
+    this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : IModelTileIO.CurrentVersion.Major;
+
     this._elideEmptyChildContentRequests = !!options.elideEmptyChildContentRequests;
     this._requestTilesWithoutEdges = !!options.requestTilesWithoutEdges;
+    this._useProjectExtents = !!options.useProjectExtents;
 
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
   }
@@ -364,6 +403,25 @@ class Admin extends TileAdmin {
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   public get elideEmptyChildContentRequests() { return this._elideEmptyChildContentRequests; }
   public get requestTilesWithoutEdges() { return this._requestTilesWithoutEdges; }
+  public get useProjectExtents() { return this._useProjectExtents; }
+
+  public getMaximumMajorTileFormatVersion(formatVersion?: number): number {
+    // The input is from the backend, telling us precisely the maximum major+minor version it can produce.
+    // Ensure front-end does not request tiles of a newer major version than backend can supply or it can read; and also limit major version
+    // to that optionally configured by the app.
+    let majorVersion = this._maxMajorVersion;
+    if (undefined !== formatVersion)
+      majorVersion = Math.min((formatVersion >>> 0x10), majorVersion);
+
+    // Version number less than 1 is invalid - ignore
+    majorVersion = Math.max(majorVersion, 1);
+
+    // Version number greater than current known version ignored
+    majorVersion = Math.min(majorVersion, IModelTileIO.CurrentVersion.Major);
+
+    // Version numbers are integers - round down
+    return Math.max(Math.floor(majorVersion), 1);
+  }
 
   public get maxActiveRequests() { return this._maxActiveRequests; }
   public set maxActiveRequests(max: number) {

@@ -3,13 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { TileIO, IModelTileIO, IModelTile, TileTree, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
+import { TileIO, IModelTileIO, IModelTile, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import * as path from "path";
-import { MockRender, RenderGraphic, IModelApp, IModelConnection, GeometricModelState, TileAdmin } from "@bentley/imodeljs-frontend";
+import { MockRender, RenderGraphic, IModelApp, IModelConnection, GeometricModelState, TileAdmin, TileTree } from "@bentley/imodeljs-frontend";
 import { WebGLTestContext } from "../WebGLTestContext";
 import { TileTestCase, TileTestData } from "./TileIO.data";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
@@ -553,7 +553,7 @@ describe("mirukuru TileTree", () => {
     expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
 
     const loader = new IModelTile.Loader(imodel, treeProps.formatVersion, BatchType.Primary, true, true);
-    const tree = new TileTree(TileTree.Params.fromJSON(treeProps, imodel, true, loader, "0x1c"));
+    const tree = new TileTree(TileTree.paramsFromJSON(treeProps, imodel, true, loader, "0x1c"));
 
     const response: TileRequest.Response = await loader.requestTileContent(tree.rootTile);
     expect(response).not.to.be.undefined;
@@ -577,27 +577,41 @@ describe("mirukuru TileTree", () => {
   });
 
   it("should have expected metadata for root tile", async () => {
-    const tree = await getTileTree(imodel, "0x1c")!;
-    expect(tree).not.to.be.undefined;
-    const response = await tree.loader.requestTileContent(tree.rootTile);
-    expect(response).instanceof(Uint8Array);
+    const test = async (tree: TileTree, expectedVersion: number, expectedRootContentId: string) => {
+      expect(tree).not.to.be.undefined;
+      expect(tree.rootTile.contentId).to.equal(expectedRootContentId);
+      const response = await tree.loader.requestTileContent(tree.rootTile);
+      expect(response).instanceof(Uint8Array);
 
-    // The model contains a single rectangular element.
-    const stream = new TileIO.StreamBuffer((response as Uint8Array).buffer);
-    const header = new IModelTileIO.Header(stream);
-    expect(header.isValid).to.be.true;
-    expect(header.format).to.equal(TileIO.Format.IModel);
-    expect(header.version).to.equal(IModelTileIO.CurrentVersion.Combined);
-    expect(header.versionMajor).to.equal(IModelTileIO.CurrentVersion.Major);
-    expect(header.versionMinor).to.equal(IModelTileIO.CurrentVersion.Minor);
-    expect(header.flags).to.equal(IModelTileIO.Flags.None);
-    expect(header.numElementsIncluded).to.equal(1);
-    expect(header.numElementsExcluded).to.equal(0);
+      // The model contains a single rectangular element.
+      const stream = new TileIO.StreamBuffer((response as Uint8Array).buffer);
+      const header = new IModelTileIO.Header(stream);
+      expect(header.isValid).to.be.true;
+      expect(header.format).to.equal(TileIO.Format.IModel);
+      expect(header.version).to.equal(expectedVersion);
+      expect(header.versionMajor).to.equal(expectedVersion >> 0x10);
+      expect(header.versionMinor).to.equal(expectedVersion & 0xffff);
+      expect(header.flags).to.equal(IModelTileIO.Flags.None);
+      expect(header.numElementsIncluded).to.equal(1);
+      expect(header.numElementsExcluded).to.equal(0);
 
-    const projExt = imodel.projectExtents;
-    expect(projExt.xLength()).to.equal(header.contentRange.xLength());
-    expect(projExt.yLength()).to.equal(header.contentRange.yLength());
-    expect(header.contentRange.zLength()).to.equal(0); // project extents are chubbed up; content range is tight.
+      const projExt = imodel.projectExtents;
+      expect(projExt.xLength()).to.equal(header.contentRange.xLength());
+      expect(projExt.yLength()).to.equal(header.contentRange.yLength());
+      expect(header.contentRange.zLength()).to.equal(0); // project extents are chubbed up; content range is tight.
+    };
+
+    // Test current version of tile tree by asking model to load it
+    const modelTree = await getTileTree(imodel, "0x1c");
+    await test(modelTree, IModelTileIO.CurrentVersion.Combined, "-0-0-0-0-0-1");
+
+    // Test directly loading a tile tree of version 3.0
+    const v3Props = await imodel.tiles.getTileTreeProps("0x1c");
+    expect(v3Props).not.to.be.undefined;
+    const loader = new IModelTile.Loader(imodel, v3Props.formatVersion, BatchType.Primary, false, false);
+    v3Props.rootTile.contentId = loader.rootContentId;
+    const v3Tree = new TileTree(TileTree.paramsFromJSON(v3Props, imodel, true, loader, "0x1c"));
+    await test(v3Tree, 0x00030000, "_3_0_0_0_0_0_1");
   });
 
   it("should retry tile requests on server timeout error", async () => {
@@ -646,138 +660,177 @@ describe("TileAdmin", () => {
       IModelApp.shutdown();
   });
 
-  class App extends MockRender.App {
-    public static async start(requestTilesWithoutEdges: boolean): Promise<IModelConnection> {
+  class TileAdminApp extends MockRender.App {
+    public static async start(props: TileAdmin.Props): Promise<IModelConnection> {
       super.startup({
-        tileAdmin: TileAdmin.create({ requestTilesWithoutEdges }),
+        tileAdmin: TileAdmin.create(props),
       });
 
       theIModel = await IModelConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
       return theIModel;
     }
 
-    public static async restart(requestTilesWithoutEdges: boolean): Promise<IModelConnection> {
+    public static async restart(props: TileAdmin.Props): Promise<IModelConnection> {
+      await this.stop();
+      return this.start(props);
+    }
+
+    public static async stop() {
       if (undefined !== theIModel) {
         await theIModel.closeSnapshot();
         theIModel = undefined;
       }
 
       IModelApp.shutdown();
-      return this.start(requestTilesWithoutEdges);
-    }
-
-    private static async testPrimaryTree(imodel: IModelConnection, expectedTreeIdStr: string, animationId?: Id64String) {
-      // Test without edges
-      const requestWithoutEdges = IModelApp.tileAdmin.requestTilesWithoutEdges;
-      let expectedTreeIdStrNoEdges = expectedTreeIdStr;
-      if (requestWithoutEdges) {
-        // "0xabc" => E:0_0xabc"
-        // "A:0x123_0xabc" => "A:0x123_E:0_0xabc"
-        const lastIndex = expectedTreeIdStr.lastIndexOf("0x");
-        expectedTreeIdStrNoEdges = expectedTreeIdStr.substring(0, lastIndex) + "E:0_" + expectedTreeIdStr.substring(lastIndex);
-      }
-
-      const treeId: IModelTile.TreeId = { type: BatchType.Primary, edgesRequired: false, animationId };
-      let actualTreeIdStr = IModelTile.treeIdToString("0x1c", treeId);
-      expect(actualTreeIdStr).to.equal(expectedTreeIdStrNoEdges);
-
-      const treePropsNoEdges = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
-      expect(treePropsNoEdges.id).to.equal(actualTreeIdStr);
-
-      const treeNoEdges = await getTileTree(imodel, "0x1c", false, animationId);
-      expect(treeNoEdges.id).to.equal(actualTreeIdStr);
-
-      const treeNoEdges2 = await getTileTree(imodel, "0x1c", false, animationId);
-      expect(treeNoEdges2).to.equal(treeNoEdges);
-
-      expect(await this.rootTileHasEdges(treeNoEdges, imodel)).to.equal(!requestWithoutEdges);
-
-      // Test with edges
-      treeId.edgesRequired = true;
-      actualTreeIdStr = IModelTile.treeIdToString("0x1c", treeId);
-      expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
-
-      const treeProps = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
-      expect(treeProps.id).to.equal(actualTreeIdStr);
-
-      const tree = await getTileTree(imodel, "0x1c", true, animationId);
-      expect(tree.id).to.equal(actualTreeIdStr);
-      expect(tree).not.to.equal(treeNoEdges);
-
-      const tree2 = await getTileTree(imodel, "0x1c", true, animationId);
-      expect(tree2).to.equal(tree);
-
-      expect(await this.rootTileHasEdges(tree, imodel)).to.be.true;
-
-      // Request without edges again - does not reload
-      const treeNoEdges3 = await getTileTree(imodel, "0x1c", false, animationId);
-      expect(treeNoEdges3).to.equal(tree);
-    }
-
-    private static async testClassifierTree(imodel: IModelConnection, expectedTreeIdStr: string, treeId: IModelTile.ClassifierTreeId) {
-      const actualTreeIdStr = IModelTile.treeIdToString("0x1c", treeId);
-      expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
-
-      const treeProps = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
-      // ###TODO Ray backend and frontend disagree as to how to format expansion value (backend adds trailing zeroes, uses "%f").
-      // expect(treeProps.id).to.equal(actualTreeIdStr);
-      expect(treeProps).not.to.be.undefined;
-
-      await imodel.models.load("0x1c");
-      const model = imodel.models.getLoaded("0x1c") as GeometricModelState;
-      expect(model).not.to.be.undefined;
-
-      await waitUntil(() => {
-        return TileTree.LoadStatus.Loaded === model.loadClassifierTileTree(treeId.type, treeId.expansion);
-      });
-
-      const tree = model.classifierTileTree;
-      expect(tree).not.to.be.undefined;
-
-      // ###TODO Ray backend and frontend disagree as to how to format expansion value (backend adds trailing zeroes, uses "%f").
-      // expect(tree!.id).to.equal(actualTreeIdStr);
-
-      // ###TODO Ray backend should never generate edges for classifiers...
-      // expect(await this.rootTileHasEdges(tree, imodel).to.be.false;
-    }
-
-    private static async rootTileHasEdges(tree: TileTree, imodel: IModelConnection): Promise<boolean> {
-      const response = await tree.loader.requestTileContent(tree.rootTile) as Uint8Array;
-      expect(response).not.to.be.undefined;
-      expect(response).instanceof(Uint8Array);
-
-      const stream = new TileIO.StreamBuffer(response.buffer);
-      const reader = IModelTileIO.Reader.create(stream, imodel, "0x1c", true, IModelApp.renderSystem)!;
-      expect(reader).not.to.be.undefined;
-
-      const meshes = (reader as any)._meshes;
-      expect(meshes).not.to.be.undefined;
-      for (const key of Object.keys(meshes)) {
-        const mesh = meshes[key];
-        for (const primitive of mesh.primitives)
-          if (undefined !== primitive.edges)
-            return true;
-      }
-
-      return false;
-    }
-
-    public static async test(imodel: IModelConnection) {
-      await this.testPrimaryTree(imodel, "0x1c");
-      await this.testPrimaryTree(imodel, "A:0x123_0x1c", "0x123");
-      // ###TODO Ray? Frontend and backend disagree as to how to format the expansion value (backend adds trailing zeroes).
-      await this.testClassifierTree(imodel, "CP:12.5_0x1c", { type: BatchType.PlanarClassifier, expansion: 12.5 });
-      await this.testClassifierTree(imodel, "C:0_0x1c", { type: BatchType.VolumeClassifier, expansion: 0.0 });
     }
   }
 
   it("should omit or load edges based on configuration and view flags", async () => {
+    class App extends TileAdminApp {
+      private static async testPrimaryTree(imodel: IModelConnection, expectedTreeIdStr: string, animationId?: Id64String) {
+        // Test without edges
+        const requestWithoutEdges = IModelApp.tileAdmin.requestTilesWithoutEdges;
+        let expectedTreeIdStrNoEdges = expectedTreeIdStr;
+        if (requestWithoutEdges) {
+          // "0xabc" => E:0_0xabc"
+          // "A:0x123_0xabc" => "A:0x123_E:0_0xabc"
+          const lastIndex = expectedTreeIdStr.lastIndexOf("0x");
+          expectedTreeIdStrNoEdges = expectedTreeIdStr.substring(0, lastIndex) + "E:0_" + expectedTreeIdStr.substring(lastIndex);
+        }
+
+        const treeId: IModelTile.TreeId = { type: BatchType.Primary, edgesRequired: false, animationId };
+        let actualTreeIdStr = IModelTile.treeIdToString("0x1c", treeId);
+        expect(actualTreeIdStr).to.equal(expectedTreeIdStrNoEdges);
+
+        const treePropsNoEdges = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
+        expect(treePropsNoEdges.id).to.equal(actualTreeIdStr);
+
+        const treeNoEdges = await getTileTree(imodel, "0x1c", false, animationId);
+        expect(treeNoEdges.id).to.equal(actualTreeIdStr);
+
+        const treeNoEdges2 = await getTileTree(imodel, "0x1c", false, animationId);
+        expect(treeNoEdges2).to.equal(treeNoEdges);
+
+        expect(await this.rootTileHasEdges(treeNoEdges, imodel)).to.equal(!requestWithoutEdges);
+
+        // Test with edges
+        treeId.edgesRequired = true;
+        actualTreeIdStr = IModelTile.treeIdToString("0x1c", treeId);
+        expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
+
+        const treeProps = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
+        expect(treeProps.id).to.equal(actualTreeIdStr);
+
+        const tree = await getTileTree(imodel, "0x1c", true, animationId);
+        expect(tree.id).to.equal(actualTreeIdStr);
+        expect(tree).not.to.equal(treeNoEdges);
+
+        const tree2 = await getTileTree(imodel, "0x1c", true, animationId);
+        expect(tree2).to.equal(tree);
+
+        expect(await this.rootTileHasEdges(tree, imodel)).to.be.true;
+
+        // Request without edges again - does not reload
+        const treeNoEdges3 = await getTileTree(imodel, "0x1c", false, animationId);
+        expect(treeNoEdges3).to.equal(tree);
+      }
+
+      private static async testClassifierTree(imodel: IModelConnection, expectedTreeIdStr: string, treeId: IModelTile.ClassifierTreeId) {
+        const actualTreeIdStr = IModelTile.treeIdToString("0x1c", treeId);
+        expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
+
+        const treeProps = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
+        expect(treeProps).not.to.be.undefined;
+        expect(treeProps.id).to.equal(actualTreeIdStr);
+
+        await imodel.models.load("0x1c");
+        const model = imodel.models.getLoaded("0x1c") as GeometricModelState;
+        expect(model).not.to.be.undefined;
+
+        await waitUntil(() => {
+          return TileTree.LoadStatus.Loaded === model.loadClassifierTileTree(treeId.type, treeId.expansion);
+        });
+
+        const tree = model.classifierTileTree;
+        expect(tree).not.to.be.undefined;
+
+        expect(tree!.id).to.equal(actualTreeIdStr);
+
+        expect(await this.rootTileHasEdges(tree!, imodel)).to.be.false;
+      }
+
+      private static async rootTileHasEdges(tree: TileTree, imodel: IModelConnection): Promise<boolean> {
+        const response = await tree.loader.requestTileContent(tree.rootTile) as Uint8Array;
+        expect(response).not.to.be.undefined;
+        expect(response).instanceof(Uint8Array);
+
+        const stream = new TileIO.StreamBuffer(response.buffer);
+        const reader = IModelTileIO.Reader.create(stream, imodel, "0x1c", true, IModelApp.renderSystem)!;
+        expect(reader).not.to.be.undefined;
+
+        const meshes = (reader as any)._meshes;
+        expect(meshes).not.to.be.undefined;
+        for (const key of Object.keys(meshes)) {
+          const mesh = meshes[key];
+          for (const primitive of mesh.primitives)
+            if (undefined !== primitive.edges)
+              return true;
+        }
+
+        return false;
+      }
+
+      public static async test(imodel: IModelConnection) {
+        await this.testPrimaryTree(imodel, "4_0-0x1c");
+
+      // ###TODO Ray? ModelState.loadTileTree() has never bothered to store/compare current animation ID against requested animation ID...
+        // Our test iModel lacks any such styles so test will fail.
+        // await this.testPrimaryTree(imodel, "A:0x123_0x1c", "0x123");
+
+        await this.testClassifierTree(imodel, "4_1-C:0.000000_0x1c", { type: BatchType.VolumeClassifier, expansion: 0.0 });
+        await this.testClassifierTree(imodel, "4_0-CP:12.123457_0x1c", { type: BatchType.PlanarClassifier, expansion: 12.1234567 });
+      }
+    }
+
     // First, test with the "omit edges" feature disabled
-    let imodel = await App.start(false);
-    await App.test(imodel);
+    let myImodel = await App.start({ requestTilesWithoutEdges: false });
+    await App.test(myImodel);
 
     // Now test with "omit edges" feature enabled
-    imodel = await App.restart(true);
-    await App.test(imodel);
+    myImodel = await App.restart({ requestTilesWithoutEdges: true });
+    await App.test(myImodel);
+    await App.stop();
+  });
+
+  it("should honor maximum major tile format version", async () => {
+    class App extends TileAdminApp {
+      public static async testMajorVersion(maximumMajorTileFormatVersion: number | undefined, expectedMajorVersion: number): Promise<void> {
+        const imodel = await App.start({ maximumMajorTileFormatVersion });
+        const treeId = maximumMajorTileFormatVersion === undefined || maximumMajorTileFormatVersion >= 4 ? "4_0-0x1c" : "0x1c";
+        const tree = await imodel.tiles.getTileTreeProps(treeId);
+
+        expect(tree).not.to.be.undefined;
+        expect(tree!.id).to.equal(treeId);
+        expect(tree!.formatVersion).not.to.be.undefined;
+
+        const majorVersion = (tree!.formatVersion!) >>> 0x10;
+        expect(majorVersion).to.equal(expectedMajorVersion);
+
+        // Old root content Id supplied strictly for very old front-ends - newer front-ends compute root content Id based on major version + flags
+        expect(tree!.rootTile.contentId).to.equal("0/0/0/0/1");
+
+        await App.stop();
+      }
+    }
+
+    // Versions prior to 3 use old (un-versioned) Id format
+    await App.testMajorVersion(3, 3);
+    // Because of above, requesting a max version < 4 produces version 3
+    await App.testMajorVersion(1, 3);
+    // Request a specifc major version > 3
+    await App.testMajorVersion(4, 4);
+    // Request whatever the current major version is.
+    // If the below test fails, we probably bumped current major version in native code and did not do so in typescript.
+    await App.testMajorVersion(undefined, IModelTileIO.CurrentVersion.Major);
   });
 });
