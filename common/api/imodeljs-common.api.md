@@ -4881,6 +4881,7 @@ export interface TileProps {
 
 // @internal (undocumented)
 export interface TileTreeProps {
+    contentRange?: Range3dProps;
     formatVersion?: number;
     id: string;
     isBackgroundMap?: boolean;

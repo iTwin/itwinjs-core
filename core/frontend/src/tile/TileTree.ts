@@ -238,7 +238,15 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public get maximumSize(): number { return this._maximumSize * this.sizeMultiplier; }
   public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && !this.hasChildren; }
   public get hasChildren(): boolean { return !this.isLeaf; }
-  public get contentRange(): ElementAlignedBox3d { return undefined !== this._contentRange ? this._contentRange : this.range; }
+  public get contentRange(): ElementAlignedBox3d {
+    if (undefined !== this._contentRange)
+      return this._contentRange;
+    else if (undefined === this.parent && undefined !== this.root.contentRange)
+      return this.root.contentRange;
+    else
+      return this.range;
+  }
+
   public get isLeaf(): boolean { return this._isLeaf; }
   public get isDisplayable(): boolean { return this.maximumSize > 0; }
   public get isParentDisplayable(): boolean { return undefined !== this.parent && this.parent.isDisplayable; }
@@ -513,7 +521,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
           // If this tile is undisplayable, update its content range based on children's content ranges.
           const parentRange = this.hasContentRange ? undefined : new Range3d();
           for (const prop of props) {
-            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this));
+            const child = new Tile(Tile.paramsFromJSON(prop, this.root, this));
 
             // stick the corners on the Tile (used only by WebMercator Tiles)
             if ((prop as any).corners)
@@ -718,23 +726,33 @@ export namespace Tile {
    * Parameters used to construct a Tile.
    * @internal
    */
-  export class Params {
-    public constructor(
-      public readonly root: TileTree,
-      public readonly contentId: string,
-      public readonly range: ElementAlignedBox3d,
-      public readonly maximumSize: number,
-      public readonly isLeaf?: boolean,
-      public readonly parent?: Tile,
-      public readonly contentRange?: ElementAlignedBox3d,
-      public readonly transformToRoot?: Transform,
-      public readonly sizeMultiplier?: number) { }
+  export interface Params {
+    readonly root: TileTree;
+    readonly contentId: string;
+    readonly range: ElementAlignedBox3d;
+    readonly maximumSize: number;
+    readonly isLeaf?: boolean;
+    readonly parent?: Tile;
+    readonly contentRange?: ElementAlignedBox3d;
+    readonly transformToRoot?: Transform;
+    readonly sizeMultiplier?: number;
+  }
 
-    public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
-      const contentRange = undefined !== props.contentRange ? Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
-      const transformToRoot = undefined !== props.transformToRoot ? Transform.fromJSON(props.transformToRoot) : undefined;
-      return new Params(root, props.contentId, Range3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, transformToRoot, props.sizeMultiplier);
-    }
+  /** @internal */
+  export function paramsFromJSON(props: TileProps, root: TileTree, parent?: Tile): Params {
+    const contentRange = undefined !== props.contentRange ? Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
+    const transformToRoot = undefined !== props.transformToRoot ? Transform.fromJSON(props.transformToRoot) : undefined;
+    return {
+      root,
+      contentId: props.contentId,
+      range: Range3d.fromJSON(props.range),
+      maximumSize: props.maximumSize,
+      isLeaf: props.isLeaf,
+      parent,
+      contentRange,
+      transformToRoot,
+      sizeMultiplier: props.sizeMultiplier,
+    };
   }
 
   /**
@@ -779,6 +797,8 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   protected _rootTile: Tile;
   public readonly loader: TileLoader;
   public readonly yAxisUp: boolean;
+  // If defined, tight range around the contents of the entire tile tree. This is always no more than the root tile's range, and often much smaller.
+  public readonly contentRange?: ElementAlignedBox3d;
 
   public constructor(props: TileTree.Params) {
     this.iModel = props.iModel;
@@ -793,9 +813,10 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
 
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
     this.loader = props.loader;
-    this._rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
+    this._rootTile = new Tile(Tile.paramsFromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
     this.viewFlagOverrides = this.loader.viewFlagOverrides;
     this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;
+    this.contentRange = props.contentRange;
   }
 
   public get rootTile(): Tile { return this._rootTile; }
@@ -968,23 +989,39 @@ export namespace TileTree {
    * Parameters used to construct a TileTree
    * @internal
    */
-  export class Params {
-    public constructor(
-      public readonly id: string,
-      public readonly rootTile: TileProps,
-      public readonly iModel: IModelConnection,
-      public readonly is3d: boolean,
-      public readonly loader: TileLoader,
-      public readonly location: Transform,
-      public readonly modelId: Id64String,
-      public readonly maxTilesToSkip?: number,
-      public readonly yAxisUp?: boolean,
-      public readonly isBackgroundMap?: boolean,
-      public readonly clipVector?: ClipVector) { }
+  export interface Params {
+    readonly id: string;
+    readonly rootTile: TileProps;
+    readonly iModel: IModelConnection;
+    readonly is3d: boolean;
+    readonly loader: TileLoader;
+    readonly location: Transform;
+    readonly modelId: Id64String;
+    readonly maxTilesToSkip?: number;
+    readonly yAxisUp?: boolean;
+    readonly isBackgroundMap?: boolean;
+    readonly clipVector?: ClipVector;
+    readonly contentRange?: ElementAlignedBox3d;
+  }
 
-    public static fromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, modelId: Id64String) {
-      return new Params(props.id, props.rootTile, iModel, is3d, loader, Transform.fromJSON(props.location), modelId, props.maxTilesToSkip, props.yAxisUp, props.isBackgroundMap);
-    }
+  /** Create TileTree.Params from JSON and context.
+   * @internal
+   */
+  export function paramsFromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, modelId: Id64String): Params {
+    const contentRange = undefined !== props.contentRange ? Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
+    return {
+      id: props.id,
+      rootTile: props.rootTile,
+      iModel,
+      is3d,
+      loader,
+      location: Transform.fromJSON(props.location),
+      modelId,
+      maxTilesToSkip: props.maxTilesToSkip,
+      yAxisUp: props.yAxisUp,
+      isBackgroundMap: props.isBackgroundMap,
+      contentRange,
+    };
   }
 
   /** @internal */
@@ -1007,7 +1044,7 @@ export class TileTreeState {
 
   constructor(private _iModel: IModelConnection, private _is3d: boolean, private _modelId: Id64String) { }
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    const tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, this._is3d, loader, this._modelId));
+    const tileTree = new TileTree(TileTree.paramsFromJSON(props, this._iModel, this._is3d, loader, this._modelId));
     if (tileTree.rootTile.contentRange.isNull) {
       // No elements within model's range - don't create a TileTree for this model.
       assert(tileTree.rootTile.isLeaf);

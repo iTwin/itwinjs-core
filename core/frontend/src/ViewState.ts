@@ -1504,7 +1504,6 @@ export class SpatialViewState extends ViewState3d {
         assert(contentRange.intersectsRange(this.iModel.projectExtents));
 
         range.extendRange(contentRange);
-
       }
     });
 

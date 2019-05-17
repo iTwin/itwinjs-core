@@ -10,9 +10,9 @@ import { TransformProps, Range3dProps } from "@bentley/geometry-core";
 export interface TileProps {
   /** The unique identifier of the tile's content */
   contentId: string;
-  /** The volume in which all of the tile's contents reside */
+  /** The volume of space represented by this tile. */
   range: Range3dProps;
-  /** Optional  volume within the tile's range which more tightly encloses the tile geometry */
+  /** Optional volume within the tile's range which more tightly encloses the tile geometry */
   contentRange?: Range3dProps;
   /** The maximum size in pixels at which the tile should be drawn on the screen. Excludes the optional sizeMultiplier which is applied separately. 0.0 indicates this tile is not displayable. */
   maximumSize: number;
@@ -40,4 +40,6 @@ export interface TileTreeProps {
   isBackgroundMap?: boolean;
   /** Optionally specifies the maximum tile format version supported. */
   formatVersion?: number;
+  /** Optional volume within which content of all tiles' contents are guaranteed to be contained - never larger than `rootTile.range` and sometimes much smaller. */
+  contentRange?: Range3dProps;
 }

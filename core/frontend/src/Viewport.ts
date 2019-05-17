@@ -2596,11 +2596,15 @@ export class ScreenViewport extends Viewport {
   /** Create a new ScreenViewport that shows a View of an iModel into an HTMLDivElement. This method will create a new HTMLCanvasElement as a child of the supplied parentDiv.
    * It also creates two new child HTMLDivElements: one of class "overlay-decorators" for HTML overlay decorators, and one of class
    * "overlay-tooltip" for ToolTips. All the new child HTMLElements are the same size as the parentDiv.
-   * @param parentDiv The HTMLDivElement to contain the ScreenViewport.
+   * @param parentDiv The HTMLDivElement to contain the ScreenViewport. The element must have non-zero width and height.
    * @param view The ViewState for the ScreenViewport.
    * @note After creating a new ScreenViewport, you must call [[ViewManager.addViewport]] for it to become "live". You must also ensure you dispose of it properly.
+   * @throws Error if `parentDiv` has zero width or height.
    */
   public static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport {
+    if (0 === parentDiv.clientWidth || 0 === parentDiv.clientHeight)
+      throw new Error("viewport cannot be created from a div with zero width or height");
+
     const canvas = document.createElement("canvas");
     const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
     vp.changeView(view);

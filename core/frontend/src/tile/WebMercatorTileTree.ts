@@ -778,7 +778,7 @@ export class BackgroundMapState {
   private _gcsConverterStatus: GcsConverterStatus = GcsConverterStatus.Uninitialized;
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader, ""));
+    this._tileTree = new TileTree(TileTree.paramsFromJSON(props, this._iModel, true, loader, ""));
     this._loadStatus = TileTree.LoadStatus.Loaded;
   }
   public getPlane(): Plane3dByOriginAndUnitNormal {

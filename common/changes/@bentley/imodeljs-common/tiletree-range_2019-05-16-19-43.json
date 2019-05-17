@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Introduced tile format v4.0",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Paul.Connelly@bentley.com"
+}

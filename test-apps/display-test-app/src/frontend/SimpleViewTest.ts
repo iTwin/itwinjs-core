@@ -130,6 +130,9 @@ async function main() {
   if (configuration.omitEdges)
     DisplayTestApp.tileAdminProps.requestTilesWithoutEdges = true;
 
+  if (configuration.useProjectExtents)
+    DisplayTestApp.tileAdminProps.useProjectExtents = true;
+
   DisplayTestApp.startup({ renderSys: renderSystemOptions });
   if (configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);

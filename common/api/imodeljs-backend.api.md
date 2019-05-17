@@ -1794,8 +1794,11 @@ export class IModelHost {
     static startup(configuration?: IModelHostConfiguration): void;
     // @internal (undocumented)
     static tileCacheService: CloudStorageService;
+    // @internal
     static readonly tileContentRequestTimeout: number;
+    // @internal
     static readonly tileTreeRequestTimeout: number;
+    // @internal
     static readonly useTileContentThreadPool: boolean;
     static readonly usingExternalTileCache: boolean;
     }
@@ -1806,13 +1809,17 @@ export class IModelHostConfiguration {
     briefcaseCacheDir: string;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
+    // @internal
     static defaultTileRequestTimeout: number;
     imodelClient?: IModelClient;
     nativePlatform?: any;
     // @beta
     tileCacheCredentials?: CloudStorageServiceCredentials;
+    // @internal
     tileContentRequestTimeout: number;
+    // @internal
     tileTreeRequestTimeout: number;
+    // @internal
     useTileContentThreadPool: boolean;
 }
 
@@ -2110,9 +2117,7 @@ export namespace IModelJsNative {
         // (undocumented)
         logTxnError(fatal: boolean): void;
         // (undocumented)
-        openIModel(accessToken: string, appVersion: string, projectId: GuidString, dbName: string, mode: OpenMode): DbResult;
-        // (undocumented)
-        openIModelFile(dbName: string, mode: OpenMode): DbResult;
+        openIModel(dbName: string, mode: OpenMode): DbResult;
         // (undocumented)
         pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | Uint8Array>;
         // (undocumented)
