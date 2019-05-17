@@ -47,13 +47,13 @@ export enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
-/** @public */
+/** @internal */
 export enum CompassMode {
   Polar = 0,
   Rectangular = 1,
 }
 
-/** @public */
+/** @internal */
 export enum RotationMode {
   Top = 1,
   Front = 2,
@@ -167,6 +167,7 @@ export class SavedState {
   public ignoreFlags: AccuDrawFlags = 0;
 }
 
+/** @internal */
 class SavedCoords {
   public nSaveValues = 0;
   public readonly savedValues: number[] = [];
@@ -199,14 +200,16 @@ export class ThreeAxes {
 }
 
 /** Accudraw is an aide for entering coordinate data.
- * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)
- * @public
+ * @internal
  */
 export class AccuDraw {
   /** @internal */
   public currentState = CurrentState.NotEnabled; // Compass state
+  /** @internal */
   public compassMode = CompassMode.Rectangular; // Compass mode
+  /** @internal */
   public rotationMode = RotationMode.View; // Compass rotation
+  /** @internal */
   public currentView?: ScreenViewport; // will be nullptr if view not yet defined
   /** @internal */
   public readonly published = new AccudrawData(); // Staging area for hints
@@ -332,14 +335,14 @@ export class AccuDraw {
       this.currentState = CurrentState.Deactivated;
   }
 
-  /** @public */
+  /** @internal */
   public setCompassMode(mode: CompassMode): void {
     if (mode === this.compassMode) return;
     this.compassMode = mode;
     this.onCompassModeChange();
   }
 
-  /** @public */
+  /** @internal */
   public setRotationMode(mode: RotationMode): void {
     if (mode === this.rotationMode) return;
     this.rotationMode = mode;
@@ -3156,11 +3159,13 @@ export class AccuDraw {
 }
 
 /** AccuDrawHintBuilder is a Tool helper class that facilitates AccuDraw interaction.
+ * Accudraw is an aide for entering coordinate data.
  * The tool does not directly change the current AccuDraw state; the tool's job is merely
  * to supply "hints" to AccuDraw regarding its preferred AccuDraw configuration for the
  * current tool state. User settings such as "Context Sensitivity" and "Floating Origin"
  * affect how/which hints get applied.
- * @internal
+ * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)*
+ * @beta
  */
 export class AccuDrawHintBuilder {
   private _flagOrigin = false;
@@ -3195,6 +3200,11 @@ export class AccuDrawHintBuilder {
   public setModeRectangular() { this._flagModeRectangular = true; this._flagModePolar = false; }
   public setDistance(distance: number) { this._distance = distance; this._flagDistance = true; }
   public setAngle(angle: number) { this._angle = angle; this._flagAngle = true; }
+
+  /* Enable AccuDraw for the current tool without sending any hints */
+  public static activate() { IModelApp.accuDraw.activate; }
+  /* Disable AccuDraw for the current tool */
+  public static deactivate() { IModelApp.accuDraw.deactivate; }
 
   /**
    * Calls AccuDraw.setContext using the current builder state.

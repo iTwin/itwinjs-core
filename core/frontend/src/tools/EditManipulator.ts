@@ -16,7 +16,7 @@ import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry, Ray3d, Pla
 
 /** A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
  * Interactive modification is handled by installing an InputCollector tool.
- * @public
+ * @alpha
  */
 export namespace EditManipulator {
   export enum EventType { Synch, Cancel, Accept }

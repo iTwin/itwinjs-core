@@ -184,113 +184,112 @@ import { XYAndZ } from '@bentley/geometry-core';
 import { XYZ } from '@bentley/geometry-core';
 import { XYZProps } from '@bentley/geometry-core';
 
-// @public
+// @internal
 export class AccuDraw {
-    // @internal (undocumented)
+    // (undocumented)
     accountForAuxRotationPlane(rot: ThreeAxes, plane: RotationMode): void;
-    // @internal (undocumented)
+    // (undocumented)
     protected _acsPickId?: string;
-    // @internal (undocumented)
+    // (undocumented)
     activate(): void;
-    // @internal (undocumented)
+    // (undocumented)
     adjustPoint(pointActive: Point3d, vp: ScreenViewport, fromSnap: boolean): boolean;
     // (undocumented)
     alwaysShowCompass: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     angleLock(): void;
-    // @internal (undocumented)
+    // (undocumented)
     protected _animationFrames: number;
     // (undocumented)
     autoFocusFields: boolean;
     // (undocumented)
     autoPointPlacement: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     readonly axes: ThreeAxes;
     // (undocumented)
     axisIndexing: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     readonly baseAxes: ThreeAxes;
-    // @internal (undocumented)
+    // (undocumented)
     changeBaseRotationMode(mode: RotationMode): void;
-    // @internal (undocumented)
+    // (undocumented)
     changeCompassMode(animate?: boolean): void;
-    // @internal (undocumented)
+    // (undocumented)
     clearTentative(): boolean;
     // (undocumented)
     compassMode: CompassMode;
-    // @internal (undocumented)
+    // (undocumented)
     protected _compassSizeInches: number;
     // (undocumented)
     contextSensitive: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     currentState: CurrentState;
     // (undocumented)
     currentView?: ScreenViewport;
-    // @internal (undocumented)
+    // (undocumented)
     deactivate(): void;
-    // @internal (undocumented)
+    // (undocumented)
     decorate(context: DecorateContext): void;
-    // @internal (undocumented)
+    // (undocumented)
     readonly delta: Vector3d;
-    // @internal (undocumented)
+    // (undocumented)
     disableForSession(): void;
     // (undocumented)
     distanceIndexing: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     distanceLock(synchText: boolean, saveInHistory: boolean): void;
-    // @internal (undocumented)
+    // (undocumented)
     doAutoPoint(index: ItemField, mode: CompassMode): void;
-    // @internal (undocumented)
+    // (undocumented)
     doLockAngle(isSnapped: boolean): void;
     // (undocumented)
     dontMoveFocus: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     downgradeInactiveState(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     enableForSession(): void;
-    // @internal (undocumented)
+    // (undocumented)
     protected readonly _fillColor: ColorDef;
-    // @internal (undocumented)
+    // (undocumented)
     protected readonly _fillColorNoFocus: ColorDef;
-    // @internal (undocumented)
+    // (undocumented)
     fixPointPolar(vp: Viewport): void;
-    // @internal (undocumented)
+    // (undocumented)
     fixPointRectangular(vp: Viewport): void;
-    // @internal (undocumented)
+    // (undocumented)
     readonly flags: Flags;
     // (undocumented)
     floatingOrigin: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     protected readonly _frameColor: ColorDef;
-    // @internal (undocumented)
+    // (undocumented)
     protected readonly _frameColorNoFocus: ColorDef;
-    // @internal (undocumented)
+    // (undocumented)
     static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: Matrix3d): Matrix3d | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     getFieldLock(index: ItemField): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     getKeyinStatus(index: ItemField): KeyinStatus;
-    // @internal (undocumented)
+    // (undocumented)
     getRotation(rMatrix?: Matrix3d): Matrix3d;
-    // @internal (undocumented)
+    // (undocumented)
     static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: Matrix3d): Matrix3d;
-    // @internal (undocumented)
+    // (undocumented)
     getValueByIndex(index: ItemField): number;
-    // @internal
     grabInputFocus(): void;
-    // @internal (undocumented)
+    // (undocumented)
     hardConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     readonly hasInputFocus: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     protected readonly _indexColor: ColorDef;
-    // @internal (undocumented)
+    // (undocumented)
     indexed: LockedStates;
-    // @internal (undocumented)
+    // (undocumented)
     protected _indexToleranceInches: number;
     // (undocumented)
     readonly isActive: boolean;
@@ -300,121 +299,120 @@ export class AccuDraw {
     readonly isEnabled: boolean;
     // (undocumented)
     readonly isInactive: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     isZLocked(vp: Viewport): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     readonly lastAxes: ThreeAxes;
-    // @internal (undocumented)
+    // (undocumented)
     locked: LockedStates;
-    // @internal (undocumented)
+    // (undocumented)
     newFocus: ItemField;
-    // @internal (undocumented)
+    // (undocumented)
     onBeginDynamics(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     onCompassModeChange(): void;
-    // @internal (undocumented)
+    // (undocumented)
     onEndDynamics(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     onFieldLockChange(_index: ItemField): void;
-    // @internal (undocumented)
+    // (undocumented)
     onFieldValueChange(_index: ItemField): void;
-    // @internal (undocumented)
+    // (undocumented)
     onInitialized(): void;
-    // @internal (undocumented)
+    // (undocumented)
     onInputCollectorExit(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     onInputCollectorInstall(): boolean;
-    // @internal
     onMotion(_ev: BeButtonEvent): void;
-    // @internal (undocumented)
+    // (undocumented)
     onPostButtonEvent(ev: BeButtonEvent): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     onPreButtonEvent(ev: BeButtonEvent): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     onPrimitiveToolInstall(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     onRotationModeChange(): void;
-    // @internal (undocumented)
+    // (undocumented)
     onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void;
-    // @internal (undocumented)
+    // (undocumented)
     onSnap(snap: SnapDetail): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     onTentative(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     onViewToolExit(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     onViewToolInstall(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     readonly origin: Point3d;
-    // @internal (undocumented)
+    // (undocumented)
     readonly planePt: Point3d;
-    // @internal (undocumented)
+    // (undocumented)
     readonly point: Point3d;
-    // @internal (undocumented)
+    // (undocumented)
     processFieldInput(index: ItemField, input: string, synchText: boolean): void;
-    // @internal (undocumented)
+    // (undocumented)
     processHints(): void;
-    // @internal (undocumented)
+    // (undocumented)
     readonly published: AccudrawData;
-    // @internal (undocumented)
+    // (undocumented)
     refreshDecorationsAndDynamics(): void;
-    // @internal (undocumented)
+    // (undocumented)
     restoreState(stateBuffer: SavedState): void;
     // (undocumented)
     rotationMode: RotationMode;
-    // @internal (undocumented)
+    // (undocumented)
     saveCoordinate(index: ItemField, value: number): void;
-    // @internal (undocumented)
+    // (undocumented)
     readonly savedStateInputCollector: SavedState;
-    // @internal (undocumented)
+    // (undocumented)
     readonly savedStateViewTool: SavedState;
-    // @internal (undocumented)
+    // (undocumented)
     saveState(stateBuffer: SavedState): void;
-    // @internal (undocumented)
+    // (undocumented)
     sendDataPoint(pt: Point3d, vp: ScreenViewport): void;
     // (undocumented)
     setCompassMode(mode: CompassMode): void;
-    // @internal (undocumented)
+    // (undocumented)
     setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: Matrix3d | Vector3d, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus;
-    // @internal (undocumented)
+    // (undocumented)
     setContextRotation(rMatrix: Matrix3d, locked: boolean, animate: boolean): void;
-    // @internal (undocumented)
+    // (undocumented)
     setFieldLock(index: ItemField, locked: boolean): void;
-    // @internal (undocumented)
+    // (undocumented)
     setFocusItem(_index: ItemField): void;
-    // @internal (undocumented)
+    // (undocumented)
     setKeyinStatus(index: ItemField, status: KeyinStatus): void;
-    // @internal (undocumented)
+    // (undocumented)
     setLastPoint(pt: Point3d): void;
-    // @internal (undocumented)
+    // (undocumented)
     protected setNewFocus(index: ItemField): void;
     // (undocumented)
     setRotationMode(mode: RotationMode): void;
-    // @internal (undocumented)
+    // (undocumented)
     setValueByIndex(index: ItemField, value: number): void;
     // (undocumented)
     smartKeyin: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
     // (undocumented)
     stickyZLock: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     testDecorationHit(id: string): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     unlockAllFields(): void;
-    // @internal (undocumented)
+    // (undocumented)
     static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews?: boolean): void;
-    // @internal (undocumented)
+    // (undocumented)
     updateFieldLock(index: ItemField, locked: boolean): void;
-    // @internal (undocumented)
+    // (undocumented)
     updateRotation(animate?: boolean, newRotationIn?: Matrix3d): void;
-    // @internal (undocumented)
+    // (undocumented)
     upgradeToActiveState(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     readonly vector: Vector3d;
-    // @internal (undocumented)
+    // (undocumented)
     protected readonly _xColor: ColorDef;
-    // @internal (undocumented)
+    // (undocumented)
     protected readonly _yColor: ColorDef;
     }
 
@@ -486,8 +484,12 @@ export enum AccuDrawFlags {
     UpdateRotation = 8388608
 }
 
-// @internal
+// @beta
 export class AccuDrawHintBuilder {
+    // (undocumented)
+    static activate(): void;
+    // (undocumented)
+    static deactivate(): void;
     // (undocumented)
     enableSmartRotation: boolean;
     sendHints(activate?: boolean): boolean;
@@ -525,7 +527,7 @@ export class AccuDrawHintBuilder {
     setXAxis2(xAxis: Vector3d): void;
 }
 
-// @internal
+// @alpha
 export class AccuDrawShortcuts {
     // (undocumented)
     static alignView(): void;
@@ -537,16 +539,26 @@ export class AccuDrawShortcuts {
     static defineACSByPoints(): void;
     // (undocumented)
     static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldAcceptInput" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
+    // 
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldLockToggle" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
+    // 
     // (undocumented)
     static itemFieldLockToggle(index: ItemField): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNavigate" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
+    // 
     // (undocumented)
     static itemFieldNavigate(index: ItemField, str: string, forward: boolean): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNewInput" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
+    // 
     // (undocumented)
     static itemFieldNewInput(index: ItemField): void;
     // (undocumented)
     static itemFieldUnlockAll(): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "itemRotationModeChange" is marked as @alpha, but its signature references "RotationMode" which is marked as @internal
+    // 
     // (undocumented)
     static itemRotationModeChange(rotation: RotationMode): void;
     // (undocumented)
@@ -565,6 +577,7 @@ export class AccuDrawShortcuts {
     static lockZ(): void;
     // (undocumented)
     static processPendingHints(): void;
+    // @internal
     static processShortcutKey(keyEvent: KeyboardEvent): boolean;
     // (undocumented)
     static requestInputFocus(): void;
@@ -584,6 +597,8 @@ export class AccuDrawShortcuts {
     static rotateToElement(updateCurrentACS: boolean): void;
     // (undocumented)
     static setOrigin(explicitOrigin?: Point3d): void;
+    // Warning: (ae-incompatible-release-tags) The symbol "setStandardRotation" is marked as @alpha, but its signature references "RotationMode" which is marked as @internal
+    // 
     // (undocumented)
     static setStandardRotation(rotation: RotationMode): void;
     // (undocumented)
@@ -765,7 +780,7 @@ export enum ACSType {
     Spherical = 3
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export enum ActiveClipStatus {
     // (undocumented)
     Modified = 3,
@@ -1430,7 +1445,7 @@ export const enum ClassifierType {
     Volume = 0
 }
 
-// @internal
+// @alpha
 export enum ClipEventType {
     // (undocumented)
     Activate = 4,
@@ -1444,8 +1459,8 @@ export enum ClipEventType {
     NewPlane = 1
 }
 
-// @internal
-export const enum ClipOrientation {
+// @alpha
+export enum ClipOrientation {
     // (undocumented)
     Back = 4,
     // (undocumented)
@@ -1511,7 +1526,7 @@ export interface ColorEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.ColorData;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export enum CompassMode {
     // (undocumented)
     Polar = 0,
@@ -1898,7 +1913,7 @@ export class DynamicsContext extends RenderContext {
     changeDynamics(): void;
     }
 
-// @public
+// @alpha
 export namespace EditManipulator {
     // (undocumented)
     export enum EventType {
@@ -2982,6 +2997,7 @@ export abstract class ImageryProviderEPSG3857 extends ImageryProvider {
 
 // @public
 export class IModelApp {
+    // Warning: (ae-incompatible-release-tags) The symbol "accuDraw" is marked as @public, but its signature references "AccuDraw" which is marked as @internal
     static readonly accuDraw: AccuDraw;
     static readonly accuSnap: AccuSnap;
     static readonly applicationId: string;
@@ -3026,6 +3042,7 @@ export class IModelApp {
 
 // @public
 export interface IModelAppOptions {
+    // Warning: (ae-incompatible-release-tags) The symbol "accuDraw" is marked as @public, but its signature references "AccuDraw" which is marked as @internal
     accuDraw?: AccuDraw;
     accuSnap?: AccuSnap;
     applicationId?: string;
@@ -3377,7 +3394,7 @@ export class LookViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @public (undocumented)
+// @alpha (undocumented)
 export enum ManipulatorToolEvent {
     // (undocumented)
     Start = 1,
@@ -3469,7 +3486,7 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 // @public (undocumented)
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedSegments: {
@@ -3546,7 +3563,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     protected updateTotals(): Promise<void>;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export class MeasureLocationTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedLocations: MeasureMarker[];
@@ -4984,7 +5001,7 @@ export class RotateViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export enum RotationMode {
     // (undocumented)
     ACS = 5,
@@ -6723,6 +6740,7 @@ export class ToolAdmin {
     readonly idleTool: IdleTool;
     // (undocumented)
     readonly isLocateCircleOn: boolean;
+    // @alpha
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
     // (undocumented)
     markupView?: ScreenViewport;
@@ -6981,7 +6999,7 @@ export interface ViewChangeOptions {
     saveInUndo?: boolean;
 }
 
-// @internal
+// @alpha
 export class ViewClipByElementTool extends ViewClipTool {
     constructor(clipEventHandler?: ViewClipEventHandler, _alwaysUseRange?: boolean);
     // (undocumented)
@@ -7000,7 +7018,7 @@ export class ViewClipByElementTool extends ViewClipTool {
     static toolId: string;
 }
 
-// @internal
+// @alpha
 export class ViewClipByPlaneTool extends ViewClipTool {
     constructor(clipEventHandler?: ViewClipEventHandler, _clearExistingPlanes?: boolean);
     // (undocumented)
@@ -7021,7 +7039,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
     static toolId: string;
 }
 
-// @internal
+// @alpha
 export class ViewClipByRangeTool extends ViewClipTool {
     // (undocumented)
     protected _corner?: Point3d;
@@ -7045,7 +7063,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
     static toolId: string;
 }
 
-// @internal
+// @alpha
 export class ViewClipByShapeTool extends ViewClipTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
@@ -7085,7 +7103,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
     protected _zLow?: number;
 }
 
-// @internal
+// @alpha
 export class ViewClipClearTool extends ViewClipTool {
     // (undocumented)
     protected doClipClear(viewport: Viewport): boolean;
@@ -7101,7 +7119,7 @@ export class ViewClipClearTool extends ViewClipTool {
     static toolId: string;
 }
 
-// @internal
+// @alpha
 export class ViewClipControlArrow {
     constructor(origin: Point3d, direction: Vector3d, sizeInches: number, fill?: ColorDef, outline?: ColorDef, name?: string);
     // (undocumented)
@@ -7118,7 +7136,7 @@ export class ViewClipControlArrow {
     sizeInches: number;
 }
 
-// @internal
+// @alpha
 export class ViewClipDecoration extends EditManipulator.HandleProvider {
     constructor(_clipView: Viewport, _clipEventHandler?: ViewClipEventHandler | undefined);
     // (undocumented)
@@ -7199,7 +7217,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     protected updateDecorationListener(_add: boolean): void;
 }
 
-// @internal
+// @alpha
 export class ViewClipDecorationProvider implements ViewClipEventHandler {
     // (undocumented)
     static clear(): void;
@@ -7239,7 +7257,7 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
     toggleDecoration(vp: Viewport): void;
 }
 
-// @internal
+// @alpha
 export interface ViewClipEventHandler {
     // (undocumented)
     clearOnDeselect(): boolean;
@@ -7259,7 +7277,7 @@ export interface ViewClipEventHandler {
     selectOnCreate(): boolean;
 }
 
-// @internal
+// @alpha
 export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     constructor(manipulator: EditManipulator.HandleProvider, clip: ClipVector, vp: Viewport, hitId: string, ids: string[], controls: ViewClipControlArrow[]);
     // (undocumented)
@@ -7298,7 +7316,7 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     protected _viewRange: Range3d;
 }
 
-// @internal
+// @alpha
 export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
     // (undocumented)
     protected drawViewClip(context: DecorateContext): void;
@@ -7306,7 +7324,7 @@ export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
     protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean;
 }
 
-// @internal
+// @alpha
 export class ViewClipSettingsProvider {
     constructor(_clipEventHandler?: ViewClipEventHandler | undefined);
     // (undocumented)
@@ -7317,9 +7335,9 @@ export class ViewClipSettingsProvider {
     appSpecific: boolean;
     // (undocumented)
     areSavedClipPlanes(iModel: IModelConnection, ids: GuidString[], shared: boolean[]): Promise<boolean>;
-    // (undocumented)
+    // @internal (undocumented)
     clearActiveClipId(viewport: Viewport): void;
-    // (undocumented)
+    // @internal (undocumented)
     clearActiveClipIdAllViews(): void;
     // (undocumented)
     protected _clipEventHandler?: ViewClipEventHandler | undefined;
@@ -7337,6 +7355,8 @@ export class ViewClipSettingsProvider {
     getActiveClipStatus(viewport: Viewport): ActiveClipStatus;
     // (undocumented)
     protected getAllSettings(iModel: IModelConnection, shared: boolean): Promise<SettingsMapResult>;
+    // Warning: (ae-incompatible-release-tags) The symbol "getCachedSetting" is marked as @alpha, but its signature references "SavedClipCache" which is marked as @internal
+    // 
     // (undocumented)
     protected getCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SavedClipCache>;
     // (undocumented)
@@ -7349,12 +7369,16 @@ export class ViewClipSettingsProvider {
     protected getRequestContext(): Promise<AuthorizedFrontendRequestContext>;
     // (undocumented)
     protected getSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult>;
+    // Warning: (ae-incompatible-release-tags) The symbol "getSettings" is marked as @alpha, but its signature references "SavedClipEntry" which is marked as @internal
+    // 
     // (undocumented)
     getSettings(settings: SavedClipEntry[], iModel: IModelConnection, shared?: boolean): Promise<SettingsStatus>;
-    // (undocumented)
+    // @internal (undocumented)
     modifiedActiveClip(viewport: Viewport): boolean;
     // (undocumented)
     namespace: string;
+    // Warning: (ae-incompatible-release-tags) The symbol "newCachedSetting" is marked as @alpha, but its signature references "SavedClipProps" which is marked as @internal
+    // 
     // (undocumented)
     protected newCachedSetting(iModel: IModelConnection, shared: boolean, newId: GuidString, settings: SavedClipProps): Promise<SettingsStatus>;
     // (undocumented)
@@ -7369,21 +7393,25 @@ export class ViewClipSettingsProvider {
     replaceClip(iModel: IModelConnection, shared: boolean, existingId: GuidString, clip: ClipVector): Promise<SettingsStatus>;
     // (undocumented)
     saveActiveClip(viewport: Viewport, shared: boolean, name?: string): Promise<GuidString | undefined>;
+    // Warning: (ae-incompatible-release-tags) The symbol "saveSetting" is marked as @alpha, but its signature references "SavedClipProps" which is marked as @internal
+    // 
     // (undocumented)
     protected saveSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsResult>;
-    // (undocumented)
+    // @internal (undocumented)
     setActiveClipId(viewport: Viewport, existingId: GuidString): void;
     // (undocumented)
     protected shareCachedSetting(iModel: IModelConnection, existingId: GuidString, newShared: boolean): Promise<SettingsStatus>;
     // (undocumented)
     shareClip(iModel: IModelConnection, existingId: GuidString, newShare: boolean): Promise<SettingsStatus>;
+    // Warning: (ae-incompatible-release-tags) The symbol "updateCachedSetting" is marked as @alpha, but its signature references "SavedClipProps" which is marked as @internal
+    // 
     // (undocumented)
     protected updateCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsStatus>;
     // (undocumented)
     protected validateActiveClipId(viewport: Viewport): void;
 }
 
-// @internal
+// @alpha
 export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     // (undocumented)
     protected drawViewClip(context: DecorateContext): void;
@@ -7391,7 +7419,7 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean;
 }
 
-// @internal
+// @alpha
 export class ViewClipTool extends PrimitiveTool {
     constructor(_clipEventHandler?: ViewClipEventHandler | undefined);
     // (undocumented)

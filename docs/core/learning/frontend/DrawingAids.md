@@ -1,7 +1,7 @@
 # Drawing Aids
 
 Drawing Aids include:
-  * [AccuDraw]($frontend)
+  * [AccuDrawHintBuilder]($frontend)
   * [AccuSnap]($frontend)
   * [ElementLocateManager]($frontend)
   * [TentativePoint]($frontend)

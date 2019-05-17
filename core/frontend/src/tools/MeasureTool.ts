@@ -19,7 +19,7 @@ import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 
-/** @internal */
+/** @alpha */
 class MeasureLabel implements CanvasDecoration {
   public worldLocation = new Point3d();
   public position = new Point3d();
@@ -62,7 +62,7 @@ class MeasureLabel implements CanvasDecoration {
   }
 }
 
-/** @internal */
+/** @alpha */
 class MeasureMarker extends Marker {
   public isSelected: boolean = false;
   constructor(label: string, title: string, worldLocation: XYAndZ, size: XAndY) {
@@ -87,7 +87,7 @@ class MeasureMarker extends Marker {
   }
 }
 
-/** @internal */
+/** @alpha */
 export class MeasureDistanceTool extends PrimitiveTool {
   public static toolId = "Measure.Distance";
   protected readonly _locationData = new Array<{ point: Point3d, refAxes: Matrix3d }>();
@@ -502,7 +502,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
   }
 }
 
-/** @internal */
+/** @alpha */
 export class MeasureLocationTool extends PrimitiveTool {
   public static toolId = "Measure.Location";
   protected readonly _acceptedLocations: MeasureMarker[] = [];

@@ -27,8 +27,8 @@ import { IModelConnection } from "../IModelConnection";
 import { AuthorizedFrontendRequestContext } from "../imodeljs-frontend";
 import { SettingsResult, SettingsStatus, SettingsMapResult } from "@bentley/imodeljs-clients";
 
-/** @internal The orientation to use to define the view clip volume */
-export const enum ClipOrientation { // tslint:disable-line:no-const-enum
+/** @alpha The orientation to use to define the view clip volume */
+export enum ClipOrientation {
   Top,
   Front,
   Left,
@@ -39,7 +39,7 @@ export const enum ClipOrientation { // tslint:disable-line:no-const-enum
   Face,
 }
 
-/** @internal An object that can react to a view's clip being changed by tools or modify handles. */
+/** @alpha An object that can react to a view's clip being changed by tools or modify handles. */
 export interface ViewClipEventHandler {
   selectOnCreate(): boolean; // Add newly created clip geometry to selection set and show modify controls.
   clearOnDeselect(): boolean; // Stop displaying clip geometry when clip is removed from the selection set.
@@ -51,7 +51,7 @@ export interface ViewClipEventHandler {
   onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean; // Called when user right clicks on clip geometry or clip modify handle. Return true if event handled.
 }
 
-/** @internal A tool to define a clip volume for a view */
+/** @alpha A tool to define a clip volume for a view */
 export class ViewClipTool extends PrimitiveTool {
   constructor(protected _clipEventHandler?: ViewClipEventHandler) { super(); }
 
@@ -345,7 +345,7 @@ export class ViewClipTool extends PrimitiveTool {
   }
 }
 
-/** @internal A tool to remove a clip volume for a view */
+/** @alpha A tool to remove a clip volume for a view */
 export class ViewClipClearTool extends ViewClipTool {
   public static toolId = "ViewClip.Clear";
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && ViewClipTool.hasClip(vp)); }
@@ -374,7 +374,7 @@ export class ViewClipClearTool extends ViewClipTool {
   }
 }
 
-/** @internal A tool to define a clip volume for a view by specifying a plane */
+/** @alpha A tool to define a clip volume for a view by specifying a plane */
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
   private _orientationValue = new ToolSettingsValue(ClipOrientation.Face);
@@ -418,7 +418,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
   }
 }
 
-/** @internal A tool to define a clip volume for a view by specifying a shape */
+/** @alpha A tool to define a clip volume for a view by specifying a shape */
 export class ViewClipByShapeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByShape";
   private _orientationValue = new ToolSettingsValue(ClipOrientation.Top);
@@ -442,7 +442,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
         return false;
       this._points.length = 0;
       this._matrix = undefined;
-      IModelApp.accuDraw.deactivate();
+      AccuDrawHintBuilder.deactivate();
       this.setupAndPromptForNextAction();
       return true;
     }
@@ -598,7 +598,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
   }
 }
 
-/** @internal A tool to define a clip volume for a view by specifying range corners */
+/** @alpha A tool to define a clip volume for a view by specifying range corners */
 export class ViewClipByRangeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByRange";
   protected _corner?: Point3d;
@@ -684,7 +684,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
   }
 }
 
-/** @internal A tool to define a clip volume for a view by element(s) */
+/** @alpha A tool to define a clip volume for a view by element(s) */
 export class ViewClipByElementTool extends ViewClipTool {
   public static toolId = "ViewClip.ByElement";
   constructor(clipEventHandler?: ViewClipEventHandler, protected _alwaysUseRange: boolean = false) { super(clipEventHandler); }
@@ -752,7 +752,7 @@ export class ViewClipByElementTool extends ViewClipTool {
   }
 }
 
-/** @internal Interactive tool base class to modify a view's clip */
+/** @alpha Interactive tool base class to modify a view's clip */
 export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
   protected _anchorIndex: number;
   protected _ids: string[];
@@ -776,7 +776,7 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
   protected init(): void {
     this.receivedDownEvent = true;
     this.initLocateElements(false, false, undefined, CoordinateLockOverrides.All); // Disable locate/snap/locks for control modification; overrides state inherited from suspended primitive...
-    IModelApp.accuDraw.deactivate();
+    AccuDrawHintBuilder.deactivate();
   }
 
   protected abstract updateViewClip(ev: BeButtonEvent, isAccept: boolean): boolean;
@@ -849,7 +849,7 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
   }
 }
 
-/** @internal Interactive tool to modify a view's clip defined by a ClipShape */
+/** @alpha Interactive tool to modify a view's clip defined by a ClipShape */
 export class ViewClipShapeModifyTool extends ViewClipModifyTool {
   protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean {
     const clipShape = ViewClipTool.isSingleClipShape(this._clip);
@@ -921,7 +921,7 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
   }
 }
 
-/** @internal Interactive tool to modify a view's clip defined by a ConvexClipPlaneSet */
+/** @alpha Interactive tool to modify a view's clip defined by a ConvexClipPlaneSet */
 export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
   protected updateViewClip(ev: BeButtonEvent, _isAccept: boolean): boolean {
     const offset = this.getOffsetValue(ev);
@@ -958,7 +958,7 @@ export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
   }
 }
 
-/** @internal Modify handle data to modify a view's clip */
+/** @alpha Modify handle data to modify a view's clip */
 export class ViewClipControlArrow {
   public origin: Point3d;
   public direction: Vector3d;
@@ -977,7 +977,7 @@ export class ViewClipControlArrow {
   }
 }
 
-/** @internal Controls to modify a view's clip */
+/** @alpha Controls to modify a view's clip */
 export class ViewClipDecoration extends EditManipulator.HandleProvider {
   private static _decorator?: ViewClipDecoration;
   protected _clip?: ClipVector;
@@ -1481,7 +1481,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   }
 }
 
-/** @internal */
+/** @alpha */
 export enum ActiveClipStatus { None, Unsaved, Saved, Modified }
 
 /** @internal */
@@ -1493,7 +1493,7 @@ export interface SavedClipCache { clip?: ClipVector; name?: string; shared: bool
 /** @internal */
 export interface SavedClipEntry { id: GuidString; name?: string; shared: boolean; }
 
-/** @internal Support for saving clip information as user or project settings */
+/** @alpha Support for saving clip information as user or project settings */
 export class ViewClipSettingsProvider {
   private _activeClips = new Map<number, GuidString>(); // Map of viewportId to saved clip id...
   private _cachedClips = new Map<GuidString, SavedClipCache>(); // Map of clip id to clip data + status
@@ -1854,10 +1854,10 @@ export class ViewClipSettingsProvider {
   }
 }
 
-/** @internal Event types for ViewClipDecorationProvider.onActiveClipChanged */
+/** @alpha Event types for ViewClipDecorationProvider.onActiveClipChanged */
 export enum ClipEventType { New, NewPlane, Modify, Clear, Activate }
 
-/** @internal An implementation of ViewClipEventHandler that responds to new clips by presenting clip modification handles */
+/** @alpha An implementation of ViewClipEventHandler that responds to new clips by presenting clip modification handles */
 export class ViewClipDecorationProvider implements ViewClipEventHandler {
   private static _provider?: ViewClipDecorationProvider;
   protected _settings?: ViewClipSettingsProvider;

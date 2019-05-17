@@ -1,16 +1,16 @@
 sep=;
 Release Tag;API Item
-public;AccuDraw
+internal;AccuDraw
 internal;AccudrawData
 internal;AccuDrawFlags
-internal;AccuDrawHintBuilder
-internal;AccuDrawShortcuts
+beta;AccuDrawHintBuilder
+alpha;AccuDrawShortcuts
 internal;class AccuDrawTool
 public;AccuSnap 
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
-internal;ActiveClipStatus
+alpha;ActiveClipStatus
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;AnimationBranchState
@@ -47,14 +47,14 @@ beta;ChangeFlag
 beta;ChangeFlags
 alpha;CheckBoxIconsEditorParams 
 beta;enum ClassifierType
-internal;ClipEventType
-internal;enum ClipOrientation
+alpha;ClipEventType
+alpha;ClipOrientation
 beta;enum ClippingType
 beta;ClipResult
 internal;Clips
 public;Cluster
 alpha;ColorEditorParams 
-public;CompassMode
+internal;CompassMode
 internal;ContextMode
 internal;ContextRealityModelState 
 alpha;ConversionData 
@@ -77,7 +77,7 @@ public;class DisplayStyleState
 public;DrawingModelState 
 public;DrawingViewState 
 public;DynamicsContext 
-public;EditManipulator
+alpha;EditManipulator
 beta;EditorPosition
 beta;ElementAgenda
 public;ElementLocateManager
@@ -165,7 +165,7 @@ public;LocateOptions
 public;LocateResponse
 internal;LockedStates
 public;LookViewTool 
-public;ManipulatorToolEvent
+alpha;ManipulatorToolEvent
 public;MarginPercent
 public;Marker 
 public;MarkerFillStyle = string | CanvasGradient | CanvasPattern
@@ -173,8 +173,8 @@ public;MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | I
 public;class MarkerSet
 public;MarkerTextAlign = "left" | "right" | "center" | "start" | "end"
 public;MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom"
-internal;MeasureDistanceTool 
-internal;MeasureLocationTool 
+alpha;MeasureDistanceTool 
+alpha;MeasureLocationTool 
 public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
@@ -243,7 +243,7 @@ public;RenderSystem
 beta;Options
 internal;class RenderTarget 
 public;RotateViewTool 
-public;RotationMode
+internal;RotationMode
 internal;RoundOff
 internal;SavedClipCache
 internal;SavedClipEntry
@@ -339,20 +339,20 @@ beta;UsesDragSelect
 beta;UsesFence
 beta;UsesSelection
 public;ViewChangeOptions
-internal;ViewClipByElementTool 
-internal;ViewClipByPlaneTool 
-internal;ViewClipByRangeTool 
-internal;ViewClipByShapeTool 
-internal;ViewClipClearTool 
-internal;ViewClipControlArrow
-internal;ViewClipDecoration 
-internal;ViewClipDecorationProvider 
-internal;ViewClipEventHandler
-internal;class ViewClipModifyTool 
-internal;ViewClipPlanesModifyTool 
-internal;ViewClipSettingsProvider
-internal;ViewClipShapeModifyTool 
-internal;ViewClipTool 
+alpha;ViewClipByElementTool 
+alpha;ViewClipByPlaneTool 
+alpha;ViewClipByRangeTool 
+alpha;ViewClipByShapeTool 
+alpha;ViewClipClearTool 
+alpha;ViewClipControlArrow
+alpha;ViewClipDecoration 
+alpha;ViewClipDecorationProvider 
+alpha;ViewClipEventHandler
+alpha;class ViewClipModifyTool 
+alpha;ViewClipPlanesModifyTool 
+alpha;ViewClipSettingsProvider
+alpha;ViewClipShapeModifyTool 
+alpha;ViewClipTool 
 internal;ViewFrustum
 internal;ViewHandleArray
 internal;enum ViewHandleType

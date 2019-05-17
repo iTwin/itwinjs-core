@@ -18,9 +18,9 @@ import { IModelApp } from "../IModelApp";
 function normalizedDifference(point1: Point3d, point2: Point3d, out: Vector3d): number { return point2.vectorTo(point1).normalizeWithLength(out).mag; }
 function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): number { return vec1.crossProduct(vec2, out).normalizeWithLength(out).mag; }
 /**
- * A shortcut may require no user input  (immediate) or it may install a viewing tool.Tool implementors should not use
- * this class to setup AccuDraw, instead use AccuDraw.setContext to provide hints.
- * @internal
+ * A shortcut may require no user input (immediate) or it may install a tool to collect the needed input. AccuDrawShortcuts are how users control AccuDraw.
+ * A tool implementor should not use this class to setup AccuDraw, instead use AccuDrawHintBuilder to provide hints.
+ * @alpha
  */
 export class AccuDrawShortcuts {
   public static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean {

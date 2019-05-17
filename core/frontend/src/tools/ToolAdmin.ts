@@ -25,7 +25,7 @@ import { ViewTool } from "./ViewTool";
 /** @public */
 export enum StartOrResume { Start = 1, Resume = 2 }
 
-/** @public */
+/** @alpha */
 export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
@@ -680,6 +680,7 @@ export class ToolAdmin {
   /**
    * Event raised by tools that support edit manipulators like the SelectTool.
    * @param tool The current tool
+   * @alpha
    */
   public readonly manipulatorToolEvent = new BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>();
 
