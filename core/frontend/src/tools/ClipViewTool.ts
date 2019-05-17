@@ -1482,7 +1482,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 }
 
 /** @internal */
-export enum ActiveClipStatus { None, New, Modified, Saved }
+export enum ActiveClipStatus { None, Unsaved, Saved, Modified }
 
 /** @internal */
 export interface SavedClipProps { clip: ClipVector; name?: string; }
@@ -1534,25 +1534,18 @@ export class ViewClipSettingsProvider {
     return IModelApp.settings.deleteUserSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
   }
 
-  protected async getCachedSetting(iModel: IModelConnection, existingId: GuidString): Promise<SavedClipCache> {
+  protected async getCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SavedClipCache> {
     const existing = this._cachedClips.get(existingId);
-    if (undefined !== existing)
+    if (undefined !== existing && shared === existing.shared)
       return existing;
-    const cacheEntry: SavedClipCache = { shared: false, modified: false };
+    const cacheEntry: SavedClipCache = (undefined === existing ? { shared, modified: false } : existing);
     this._cachedClips.set(existingId, cacheEntry); // Insert invalid entry to avoid repeated failures...
     try {
-      const resultUser = await this.getSetting(iModel, false, existingId);
-      if (SettingsStatus.Success === resultUser.status) {
-        cacheEntry.clip = ClipVector.fromJSON(resultUser.setting.clip);
-        cacheEntry.name = resultUser.setting.name;
-        cacheEntry.shared = false;
-        return cacheEntry;
-      }
-      const resultProj = await this.getSetting(iModel, true, existingId);
-      if (SettingsStatus.Success === resultProj.status) {
-        cacheEntry.clip = ClipVector.fromJSON(resultProj.setting.clip);
-        cacheEntry.name = resultProj.setting.name;
-        cacheEntry.shared = true;
+      const result = await this.getSetting(iModel, shared, existingId);
+      if (SettingsStatus.Success === result.status) {
+        cacheEntry.clip = ClipVector.fromJSON(result.setting.clip);
+        cacheEntry.name = result.setting.name;
+        cacheEntry.shared = shared;
         return cacheEntry;
       }
       return cacheEntry;
@@ -1572,8 +1565,8 @@ export class ViewClipSettingsProvider {
     }
   }
 
-  protected async updateCachedSetting(iModel: IModelConnection, existingId: GuidString, settings: SavedClipProps): Promise<SettingsStatus> {
-    const existing = await this.getCachedSetting(iModel, existingId);
+  protected async updateCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsStatus> {
+    const existing = await this.getCachedSetting(iModel, shared, existingId);
     if (undefined === existing.clip)
       return SettingsStatus.SettingNotFound;
     try {
@@ -1588,12 +1581,9 @@ export class ViewClipSettingsProvider {
     }
   }
 
-  protected async deleteCachedSetting(iModel: IModelConnection, existingId: GuidString): Promise<SettingsStatus> {
-    const existing = await this.getCachedSetting(iModel, existingId);
-    if (undefined === existing.clip)
-      return SettingsStatus.SettingNotFound;
+  protected async deleteCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsStatus> {
     try {
-      const result = await this.deleteSetting(iModel, existing.shared, existingId);
+      const result = await this.deleteSetting(iModel, shared, existingId);
       if (SettingsStatus.Success === result.status)
         this._cachedClips.delete(existingId);
       return result.status;
@@ -1602,8 +1592,8 @@ export class ViewClipSettingsProvider {
     }
   }
 
-  protected async renameCachedSetting(iModel: IModelConnection, existingId: GuidString, name: string): Promise<SettingsStatus> {
-    const existing = await this.getCachedSetting(iModel, existingId);
+  protected async renameCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, name: string): Promise<SettingsStatus> {
+    const existing = await this.getCachedSetting(iModel, shared, existingId);
     if (undefined === existing.clip)
       return SettingsStatus.SettingNotFound;
     else if (name === existing.name)
@@ -1618,16 +1608,16 @@ export class ViewClipSettingsProvider {
     }
   }
 
-  protected async shareCachedSetting(iModel: IModelConnection, existingId: GuidString, share: boolean): Promise<SettingsStatus> {
-    const existing = await this.getCachedSetting(iModel, existingId);
+  protected async shareCachedSetting(iModel: IModelConnection, existingId: GuidString, newShared: boolean): Promise<SettingsStatus> {
+    const existing = await this.getCachedSetting(iModel, !newShared, existingId);
     if (undefined === existing.clip)
       return SettingsStatus.SettingNotFound;
-    else if (existing.shared === share)
+    else if (existing.shared === newShared)
       return SettingsStatus.Success;
     try {
-      const status = await this.newCachedSetting(iModel, share, existingId, { clip: existing.clip, name: existing.name });
+      const status = await this.newCachedSetting(iModel, newShared, existingId, { clip: existing.clip, name: existing.name });
       if (SettingsStatus.Success === status)
-        await this.deleteSetting(iModel, !share, existingId);
+        await this.deleteSetting(iModel, !newShared, existingId);
       return status;
     } catch (error) {
       return SettingsStatus.AuthorizationError;
@@ -1637,11 +1627,15 @@ export class ViewClipSettingsProvider {
   protected validateActiveClipId(viewport: Viewport): void {
     const activeId = this.getActiveClipId(viewport);
     if (undefined !== activeId) {
-      const active = this._cachedClips.get(activeId);
       const current = viewport.view.getViewClip();
+      const active = this._cachedClips.get(activeId);
       if (undefined === current || undefined === active || undefined === active.clip || !ViewClipTool.areClipsEqual(current, active.clip))
-        this.clearActiveClipId(viewport);
+        return this.clearActiveClipId(viewport);
     }
+    this.purgeActiveClipIdCache();
+  }
+
+  protected purgeActiveClipIdCache(): void {
     if (this._cachedClips.size <= this._activeClips.size)
       return;
     const usedCache = new Map<GuidString, SavedClipCache>(); // Purge cache entries not currently being referenced by a view...
@@ -1649,7 +1643,6 @@ export class ViewClipSettingsProvider {
     this._cachedClips = usedCache;
   }
 
-  /** @internal */
   public getActiveClipId(viewport: Viewport): GuidString | undefined {
     return this._activeClips.get(viewport.viewportId);
   }
@@ -1657,11 +1650,13 @@ export class ViewClipSettingsProvider {
   /** @internal */
   public setActiveClipId(viewport: Viewport, existingId: GuidString): void {
     this._activeClips.set(viewport.viewportId, existingId);
+    this.purgeActiveClipIdCache();
   }
 
   /** @internal */
   public clearActiveClipId(viewport: Viewport): void {
     this._activeClips.delete(viewport.viewportId);
+    this.purgeActiveClipIdCache();
   }
 
   /** @internal */
@@ -1728,6 +1723,13 @@ export class ViewClipSettingsProvider {
     return userStatus;
   }
 
+  public async getClip(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<ClipVector | undefined> {
+    const existing = await this.getCachedSetting(iModel, shared, existingId);
+    if (undefined === existing.clip || !existing.clip.isValid)
+      return undefined;
+    return existing.clip;
+  }
+
   public async newClip(iModel: IModelConnection, shared: boolean, clip: ClipVector, name?: string): Promise<GuidString | undefined> {
     const newId = Guid.createValue();
     if (SettingsStatus.Success === await this.newCachedSetting(iModel, shared, newId, { clip, name }))
@@ -1735,47 +1737,67 @@ export class ViewClipSettingsProvider {
     return undefined;
   }
 
-  public async copyClip(iModel: IModelConnection, shared: boolean, existingId: GuidString, name?: string): Promise<GuidString | undefined> {
-    const existing = await this.getCachedSetting(iModel, existingId);
-    if (undefined === existing.clip || !existing.clip.isValid)
+  public async copyClip(iModel: IModelConnection, shared: boolean, existingId: GuidString, copyShared: boolean, name?: string): Promise<GuidString | undefined> {
+    const existingClip = await this.getClip(iModel, shared, existingId);
+    if (undefined === existingClip)
       return undefined;
-    return this.newClip(iModel, shared, existing.clip, name);
+    return this.newClip(iModel, copyShared, existingClip, name);
   }
 
-  public async replaceClip(iModel: IModelConnection, existingId: GuidString, clip: ClipVector): Promise<SettingsStatus> {
-    return this.updateCachedSetting(iModel, existingId, { clip }); // NOTE: Current name will be preserved when passing undefined...
+  public async replaceClip(iModel: IModelConnection, shared: boolean, existingId: GuidString, clip: ClipVector): Promise<SettingsStatus> {
+    return this.updateCachedSetting(iModel, shared, existingId, { clip }); // NOTE: Current name will be preserved when passing undefined...
   }
 
-  public async deleteClip(iModel: IModelConnection, existingId: GuidString): Promise<SettingsStatus> {
-    return this.deleteCachedSetting(iModel, existingId);
+  public async deleteClip(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsStatus> {
+    return this.deleteCachedSetting(iModel, shared, existingId);
   }
 
-  public async renameClip(iModel: IModelConnection, existingId: GuidString, name: string): Promise<SettingsStatus> {
-    return this.renameCachedSetting(iModel, existingId, name);
+  public async renameClip(iModel: IModelConnection, shared: boolean, existingId: GuidString, name: string): Promise<SettingsStatus> {
+    return this.renameCachedSetting(iModel, shared, existingId, name);
   }
 
-  public async shareClip(iModel: IModelConnection, existingId: GuidString, share: boolean): Promise<SettingsStatus> {
-    return this.shareCachedSetting(iModel, existingId, share);
+  public async shareClip(iModel: IModelConnection, existingId: GuidString, newShare: boolean): Promise<SettingsStatus> {
+    return this.shareCachedSetting(iModel, existingId, newShare);
   }
 
-  public async saveActiveClip(viewport: Viewport, shared: boolean): Promise<GuidString | undefined> {
+  public async saveActiveClip(viewport: Viewport, shared: boolean, name?: string): Promise<GuidString | undefined> {
     const clip = viewport.view.getViewClip();
     if (undefined === clip)
       return undefined;
-    const newId = await this.newClip(viewport.iModel, shared, clip);
-    if (undefined !== newId)
-      this.setActiveClipId(viewport, newId);
-    return newId;
+    const activeId = this.getActiveClipId(viewport);
+    if (undefined === activeId) {
+      const newId = await this.newClip(viewport.iModel, shared, clip, name);
+      if (undefined !== newId)
+        this.setActiveClipId(viewport, newId);
+      return newId;
+    } else {
+      const active = this._cachedClips.get(activeId);
+      if (undefined === active || !active.modified)
+        return activeId;
+      if (active.shared !== shared)
+        return undefined;
+      const status = await this.replaceClip(viewport.iModel, active.shared, activeId, clip);
+      return (SettingsStatus.Success === status ? activeId : undefined);
+    }
   }
 
-  public async activateSavedClip(viewport: Viewport, id: GuidString, interactive: boolean = true): Promise<SettingsStatus> {
+  public async activateSavedClip(viewport: Viewport, id: GuidString, shared: boolean, interactive: boolean = true): Promise<SettingsStatus> {
     const activeId = this.getActiveClipId(viewport);
     if (id === activeId)
       return SettingsStatus.Success; // Already active...
-    const existing = await this.getCachedSetting(viewport.iModel, id);
-    if (undefined === existing.clip || !existing.clip.isValid)
-      return SettingsStatus.SettingNotFound;
-    if (!ViewClipTool.setViewClip(viewport, existing.clip))
+    let existingClip = await this.getClip(viewport.iModel, shared, id);
+    if (undefined === existingClip) {
+      // NOTE: For non-interactive call to apply a saved view, shared flag should be based on saved view's setting...
+      //       A shared saved view should never reference a user's saved clip.
+      //       A user's saved view can reference a saved clip (or a user's saved clip that was later changed to shared).
+      //       The saved view is not required to store the shared flag for the save clip.
+      if (interactive || shared)
+        return SettingsStatus.SettingNotFound;
+      existingClip = await this.getClip(viewport.iModel, true, id);
+      if (undefined === existingClip)
+        return SettingsStatus.SettingNotFound;
+    }
+    if (!ViewClipTool.setViewClip(viewport, existingClip))
       return SettingsStatus.UnknownError;
     this.setActiveClipId(viewport, id);
     if (undefined !== this._clipEventHandler)
@@ -1783,15 +1805,15 @@ export class ViewClipSettingsProvider {
     return SettingsStatus.Success;
   }
 
-  public async activateSavedClipPlanes(viewport: Viewport, ids: GuidString[], interactive: boolean = true): Promise<SettingsStatus> {
-    if (ids.length < 2)
+  public async activateSavedClipPlanes(viewport: Viewport, ids: GuidString[], shared: boolean[]): Promise<SettingsStatus> {
+    if (ids.length < 2 || ids.length !== shared.length)
       return SettingsStatus.UnknownError;
     const planeSet = ConvexClipPlaneSet.createEmpty();
-    for (const id of ids) {
-      const existing = await this.getCachedSetting(viewport.iModel, id);
-      if (undefined === existing.clip || !existing.clip.isValid)
+    for (let iPlane = 0; iPlane < ids.length; iPlane++) {
+      const existingClip = await this.getClip(viewport.iModel, shared[iPlane], ids[iPlane]);
+      if (undefined === existingClip)
         return SettingsStatus.SettingNotFound;
-      const plane = ViewClipTool.isSingleClipPlane(existing.clip);
+      const plane = ViewClipTool.isSingleClipPlane(existingClip);
       if (undefined === plane)
         return SettingsStatus.UnknownError;
       planeSet.addPlaneToConvexSet(plane);
@@ -1800,16 +1822,18 @@ export class ViewClipSettingsProvider {
       return SettingsStatus.UnknownError;
     this.clearActiveClipId(viewport);
     if (undefined !== this._clipEventHandler)
-      this._clipEventHandler.onActivateClip(viewport, interactive);
+      this._clipEventHandler.onActivateClip(viewport, true);
     return SettingsStatus.Success;
   }
 
-  public async areSavedClipPlanes(iModel: IModelConnection, ids: GuidString[]): Promise<boolean> {
-    for (const id of ids) {
-      const existing = await this.getCachedSetting(iModel, id);
-      if (undefined === existing.clip || !existing.clip.isValid)
+  public async areSavedClipPlanes(iModel: IModelConnection, ids: GuidString[], shared: boolean[]): Promise<boolean> {
+    if (ids.length !== shared.length)
+      return false;
+    for (let iPlane = 0; iPlane < ids.length; iPlane++) {
+      const existingClip = await this.getClip(iModel, shared[iPlane], ids[iPlane]);
+      if (undefined === existingClip)
         return false;
-      const plane = ViewClipTool.isSingleClipPlane(existing.clip);
+      const plane = ViewClipTool.isSingleClipPlane(existingClip);
       if (undefined === plane)
         return false;
     }
@@ -1822,10 +1846,10 @@ export class ViewClipSettingsProvider {
       return ActiveClipStatus.None;
     const activeId = this.getActiveClipId(viewport);
     if (undefined === activeId)
-      return ActiveClipStatus.New;
+      return ActiveClipStatus.Unsaved;
     const active = this._cachedClips.get(activeId);
     if (undefined === active)
-      return ActiveClipStatus.New;
+      return ActiveClipStatus.Unsaved;
     return (active.modified ? ActiveClipStatus.Modified : ActiveClipStatus.Saved);
   }
 }
@@ -1848,6 +1872,9 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
    * For ClipShapes (undefined === clipPlaneSet): Orient View (doClipPlaneOrientView) and input fields to set world zLow/zHigh (doClipShapeSetZExtents provided isClipShapeAlignedWithWorldUp returns true)
    */
   public readonly onActiveClipRightClick = new BeEvent<(hit: HitDetail, ev: BeButtonEvent, provider: ViewClipDecorationProvider) => void>();
+
+  /** Call to check if named clip settings have been enabled. Can use before calling settings.getActiveClipId to avoid creating settings */
+  public get hasSettings(): boolean { return (undefined !== this._settings); }
 
   /** Call to allow saving the active clip as a setting or to set the active clip from a previously saved setting */
   public get settings(): ViewClipSettingsProvider { if (undefined === this._settings) this._settings = new ViewClipSettingsProvider(this); return this._settings; }

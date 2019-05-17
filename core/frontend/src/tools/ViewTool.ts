@@ -290,8 +290,8 @@ export abstract class ViewManip extends ViewTool {
   public async onMouseWheel(inputEv: BeWheelEvent): Promise<EventHandled> {
     const ev = inputEv.clone();
 
-    // If the rotate is active, the mouse wheel should work as if the cursor is at the target center
-    if ((this.handleMask & ViewHandleType.Rotate)) {
+    // If rotate is active, the mouse wheel should about the target center when it's displayed...
+    if ((this.handleMask & ViewHandleType.Rotate) && (this.targetCenterLocked || this.inHandleModify)) {
       ev.point = this.targetCenterWorld;
       ev.coordsFrom = CoordSource.Precision; // don't want raw point used...
     }
