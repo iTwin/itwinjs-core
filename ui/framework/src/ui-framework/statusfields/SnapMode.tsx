@@ -36,13 +36,13 @@ interface SnapModeFieldEntry {
 class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
   private _className: string;
   private _snapModeFieldArray: SnapModeFieldEntry[] = [
-    { label: UiFramework.i18n.translate("UiFramework:snapModeField.keypoint"), value: SnapMode.NearestKeypoint as number, iconName: "snaps" },
-    { label: UiFramework.i18n.translate("UiFramework:snapModeField.intersection"), value: SnapMode.Intersection as number, iconName: "snaps-intersection" },
-    { label: UiFramework.i18n.translate("UiFramework:snapModeField.center"), value: SnapMode.Center as number, iconName: "snaps-center" },
-    { label: UiFramework.i18n.translate("UiFramework:snapModeField.nearest"), value: SnapMode.Nearest as number, iconName: "snaps-nearest" },
-    { label: UiFramework.i18n.translate("UiFramework:snapModeField.origin"), value: SnapMode.Origin as number, iconName: "snaps-origin" },
-    { label: UiFramework.i18n.translate("UiFramework:snapModeField.midpoint"), value: SnapMode.MidPoint as number, iconName: "snaps-midpoint" },
-    { label: UiFramework.i18n.translate("UiFramework:snapModeField.bisector"), value: SnapMode.Bisector as number, iconName: "snaps-bisector" },
+    { label: UiFramework.translate("snapModeField.keypoint"), value: SnapMode.NearestKeypoint as number, iconName: "snaps" },
+    { label: UiFramework.translate("snapModeField.intersection"), value: SnapMode.Intersection as number, iconName: "snaps-intersection" },
+    { label: UiFramework.translate("snapModeField.center"), value: SnapMode.Center as number, iconName: "snaps-center" },
+    { label: UiFramework.translate("snapModeField.nearest"), value: SnapMode.Nearest as number, iconName: "snaps-nearest" },
+    { label: UiFramework.translate("snapModeField.origin"), value: SnapMode.Origin as number, iconName: "snaps-origin" },
+    { label: UiFramework.translate("snapModeField.midpoint"), value: SnapMode.MidPoint as number, iconName: "snaps-midpoint" },
+    { label: UiFramework.translate("snapModeField.bisector"), value: SnapMode.Bisector as number, iconName: "snaps-bisector" },
   ];
   private _target = React.createRef<HTMLDivElement>();
   private _indicator = React.createRef<HTMLDivElement>();
@@ -85,7 +85,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
             isInFooterMode={this.props.isInFooterMode}
             onClick={this._handleSnapModeIndicatorClick}
           >
-            {this.props.isInFooterMode ? UiFramework.i18n.translate("UiFramework:snapModeField.snapMode") : undefined}
+            {this.props.isInFooterMode ? UiFramework.translate("snapModeField.snapMode") : undefined}
           </NZ_SnapMode>
         </div>
         <FooterPopup
@@ -96,7 +96,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
           target={this._target}
         >
           <SnapModePanel
-            title={UiFramework.i18n.translate("UiFramework:snapModeField.snapMode")}
+            title={UiFramework.translate("snapModeField.snapMode")}
           >
             {this.getSnapEntries()}
           </SnapModePanel>

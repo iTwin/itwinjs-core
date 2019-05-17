@@ -74,7 +74,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
       valueFormat: PropertyValueFormat.Primitive,
     };
     const property: PropertyDescription = {
-      displayLabel: UiComponents.i18n.translate("UiComponents:general.label"),
+      displayLabel: UiComponents.translate("general.label"),
       typename: node.payload && node.payload.typename ? node.payload.typename : "string",
       name: "node_label",
     };

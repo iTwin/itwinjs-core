@@ -3,3 +3,4 @@ Release Tag;API Item
 public;I18N
 public;I18NNamespace
 internal;I18NOptions
+internal;TranslationOptions 

@@ -6,9 +6,12 @@
 
 import * as React from "react";
 
+import { UiError } from "@bentley/ui-core";
+
 import { ContentControl } from "./ContentControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for content displayed in a content view
  * @public
@@ -31,10 +34,6 @@ export interface ContentGroupProps {
   /** A collection of [[ContentProps]], one for each content view */
   contents: ContentProps[];
 }
-
-// -----------------------------------------------------------------------------
-// ContentGroup class
-// -----------------------------------------------------------------------------
 
 /** ContentGroup class. ContentGroups define content displayed in content views that are laid out using a [[ContentLayout]].
  * @public
@@ -83,7 +82,7 @@ export class ContentGroup {
 
       if (contentControl) {
         if (contentControl.getType() !== ConfigurableUiControlType.Content && contentControl.getType() !== ConfigurableUiControlType.Viewport) {
-          throw Error("ContentGroup.getContentControl error: '" + usedClassId + "' is NOT a ContentControl or ViewportContentControl");
+          throw new UiError(UiFramework.loggerCategory(this), `getContentControl error: '${usedClassId}' is NOT a ContentControl or ViewportContentControl`);
         }
         contentControl.initialize();
         this._contentControls.set(id, contentControl);
@@ -169,7 +168,7 @@ export class ContentGroupManager {
     if (groupProps.id)
       this.addGroup(groupProps.id, group);
     else
-      throw Error();
+      throw new UiError(UiFramework.loggerCategory(this), `loadGroup: ContentGroupProps should contain an id`);
   }
 
   public static findGroup(groupId: string): ContentGroup | undefined {

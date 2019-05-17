@@ -22,7 +22,7 @@ import {
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
   ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher,
 } from "@bentley/ui-framework";
-import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
 import { AppBackstage } from "./appui/AppBackstage";
@@ -442,6 +442,10 @@ async function main() {
   // retrieve, set, and output the global configuration variable
   await retrieveConfiguration(); // (does a fetch)
   console.log("Configuration", JSON.stringify(testAppConfiguration)); // tslint:disable-line:no-console
+
+  // initialize logging
+  Logger.initializeToConsole();
+  Logger.setLevelDefault(LogLevel.Warning);
 
   // Set up render option to displaySolarShadows.
   const renderSystemOptions: RenderSystem.Options = {

@@ -5,7 +5,10 @@
 /** @module ClientServices */
 
 import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Logger } from "@bentley/bentleyjs-core";
+
 import { ProjectServices, ProjectScope, ProjectInfo, ProjectReadStatus } from "./ProjectServices";
+import { UiFramework } from "../UiFramework";
 
 class ProjectInfoImpl implements ProjectInfo {
   public readStatus: ProjectReadStatus;
@@ -27,7 +30,7 @@ export class DefaultProjectServices implements ProjectServices {
   }
 
   private createProjectInfo(thisProject: Project): ProjectInfo {
-    // console.log("Working on project", thisProject.name); // tslint:disable-line:no-console
+    Logger.logTrace(UiFramework.loggerCategory(this), `Working on project '${thisProject.name}'`);
     const thisProjectInfo: ProjectInfo = new ProjectInfoImpl(thisProject.name ? thisProject.name : "", thisProject.number ? thisProject.number : "", thisProject.wsgId);
     return thisProjectInfo;
   }

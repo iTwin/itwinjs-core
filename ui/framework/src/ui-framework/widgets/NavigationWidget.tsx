@@ -7,21 +7,20 @@
 import * as React from "react";
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { CommonProps, UiError } from "@bentley/ui-core";
 import { ViewportComponentEvents, ViewClassFullNameChangedEventArgs } from "@bentley/ui-components";
+import { Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
 
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
-
 import { NavigationAidControl, NavigationAidActivatedEventArgs } from "../navigationaids/NavigationAidControl";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-
-import { Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { ContentControlActivatedEventArgs } from "../content/ContentControl";
-import { CommonProps } from "@bentley/ui-core";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { UiFramework } from "../UiFramework";
 
 /** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  * @public
@@ -55,7 +54,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     if (!this._navigationAidControl && this._navigationAidId) {
       this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel }) as NavigationAidControl;
       if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
-        throw Error("NavigationWidgetDef.renderCornerItem error: navigationAidId '" + this._navigationAidId + "' is registered to a control that is NOT a NavigationAid");
+        throw new UiError(UiFramework.loggerCategory(this), `renderCornerItem: navigationAidId '${this._navigationAidId}' is registered to a control that is NOT a NavigationAid`);
       }
       this._navigationAidControl.initialize();
     }

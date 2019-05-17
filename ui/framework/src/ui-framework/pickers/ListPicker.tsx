@@ -307,18 +307,18 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
     if (this.props.enableAllFunc) {
       let allEnabled = true;
       items.map((item: ListItem) => { allEnabled = allEnabled && item.enabled; });
-      newItems.push({ key: ListPicker.Key_All, name: UiFramework.i18n.translate("UiFramework:pickerButtons.all"), enabled: allEnabled, type: ListItemType.Item });
+      newItems.push({ key: ListPicker.Key_All, name: UiFramework.translate("pickerButtons.all"), enabled: allEnabled, type: ListItemType.Item });
     }
     if (this.props.disableAllFunc) {
       let allDisabled = false;
       items.map((item: ListItem) => { allDisabled = allDisabled || item.enabled; });
-      newItems.push({ key: ListPicker.Key_None, name: UiFramework.i18n.translate("UiFramework:pickerButtons.none"), enabled: !allDisabled, type: ListItemType.Item });
+      newItems.push({ key: ListPicker.Key_None, name: UiFramework.translate("pickerButtons.none"), enabled: !allDisabled, type: ListItemType.Item });
     }
     if (this.props.invertFunc) {
-      newItems.push({ key: ListPicker.Key_Invert, name: UiFramework.i18n.translate("UiFramework:pickerButtons.invert"), enabled: false, type: ListItemType.Item });
+      newItems.push({ key: ListPicker.Key_Invert, name: UiFramework.translate("pickerButtons.invert"), enabled: false, type: ListItemType.Item });
     }
     if (this.props.enableAllFunc || this.props.disableAllFunc || this.props.invertFunc) {
-      newItems.push({ key: ListPicker.Key_Separator, name: UiFramework.i18n.translate("UiFramework:pickerButtons.separator"), enabled: false, type: ListItemType.Separator });
+      newItems.push({ key: ListPicker.Key_Separator, name: UiFramework.translate("pickerButtons.separator"), enabled: false, type: ListItemType.Separator });
     }
 
     // Push items

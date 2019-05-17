@@ -154,14 +154,14 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
     return (
       <div>
         <div className="toolSettingsRow">
-          {UiFramework.i18n.translate("UiFramework:tools.AnalysisAnimation.ToolSettings.duration")}
+          {UiFramework.translate("tools.AnalysisAnimation.ToolSettings.duration")}
           <input type="number" min="1" max="30" step="1" value={(this.state.animationDuration / 1000).toString()}
             className="toolSettings-animationDuration" id="animationDuration" onChange={this._handleDurationChange} />
-          {UiFramework.i18n.translate("UiFramework:tools.AnalysisAnimation.ToolSettings.seconds")}
+          {UiFramework.translate("tools.AnalysisAnimation.ToolSettings.seconds")}
         </div>
         <div className="toolSettingsRow">
           <input id="animationLoop" type="checkbox" checked={this.state.isLooping} onChange={this._handleLoopChange} />
-          {UiFramework.i18n.translate("UiFramework:tools.AnalysisAnimation.ToolSettings.loop")}
+          {UiFramework.translate("tools.AnalysisAnimation.ToolSettings.loop")}
         </div>
         <div className="toolSettingsRow toolSettings-stretch">
           <input type="range" min="0" max={this.state.animationDuration.toString()} value={this.state.elapsedTime.toString()}
@@ -174,21 +174,21 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
               <>
                 <Item
                   isActive={this.state.isAnimating && !this.state.isAnimationPaused}
-                  title={UiFramework.i18n.translate("UiFramework:tools.AnalysisAnimation.ToolSettings.play")}
+                  title={UiFramework.translate("tools.AnalysisAnimation.ToolSettings.play")}
                   key="animationPlay"
                   onClick={this._startAnimation}
                   icon={<Icon iconSpec="icon-media-controls-circular-play" />}
                 />
                 <Item
                   isActive={this.state.isAnimationPaused}
-                  title={UiFramework.i18n.translate("UiFramework:tools.AnalysisAnimation.ToolSettings.pause")}
+                  title={UiFramework.translate("tools.AnalysisAnimation.ToolSettings.pause")}
                   key="animationPause"
                   onClick={this._pauseAnimation}
                   icon={<Icon iconSpec="icon-media-controls-circular-pause" />}
                 />
                 <Item
                   isActive={!this.state.isAnimating}
-                  title={UiFramework.i18n.translate("UiFramework:tools.AnalysisAnimation.ToolSettings.stop")}
+                  title={UiFramework.translate("tools.AnalysisAnimation.ToolSettings.stop")}
                   key="animationStop"
                   onClick={this._stopAnimation}
                   icon={<Icon iconSpec="icon-media-controls-circular-stop" />}

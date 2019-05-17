@@ -17,6 +17,8 @@ export class I18N {
     registerNamespace(name: string): I18NNamespace;
     translate(key: string | string[], options?: i18next.TranslationOptions): any;
     translateKeys(line: string): string;
+    // @internal
+    translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): any;
     // @internal (undocumented)
     unregisterNamespace(name: string): void;
     // @internal
@@ -36,6 +38,10 @@ export class I18NNamespace {
 export interface I18NOptions {
     // (undocumented)
     urlTemplate?: string;
+}
+
+// @internal (undocumented)
+export interface TranslationOptions extends i18next.TranslationOptions {
 }
 
 

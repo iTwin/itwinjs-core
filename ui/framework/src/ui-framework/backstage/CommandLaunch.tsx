@@ -6,13 +6,15 @@
 
 import * as React from "react";
 
+import { Logger } from "@bentley/bentleyjs-core";
+import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { Backstage } from "./Backstage";
 import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
 import { CommandHandler } from "../shared/ItemProps";
-
-import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for a [[CommandLaunchBackstageItem]] component
  * @public
@@ -58,7 +60,9 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
     if (this._componentUnmounting)
       return;
 
-    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds))
+    /* istanbul ignore else */
+    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds)) {
+      /* istanbul ignore else */
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);
         /* istanbul ignore else */
@@ -66,6 +70,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
         if (!PropsHelper.isShallowEqual(newState, this.state))
           this.setState((_prevState) => newState);
       }
+    }
   }
 
   public execute = (): void => {
@@ -76,7 +81,8 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
         this.props.execute(this.props.getCommandArgs());
       else
         this.props.execute(this.props.parameters);
-    }
+    } else
+      Logger.logError(UiFramework.loggerCategory(this), `'${this.props.commandId}' has no execute() function`);
   }
 
   public componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) {

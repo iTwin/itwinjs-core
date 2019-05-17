@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageItem renders correctly when active 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={true}
+  isDisabled={false}
+  key="Test1"
+  onClick={[Function]}
+  subtitle=""
+>
+  tests.label
+</BackstageItem>
+`;
+
+exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageItem renders correctly when inactive 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={false}
+  isDisabled={false}
+  key="Test1"
+  onClick={[Function]}
+  subtitle=""
+>
+  tests.label
+</BackstageItem>
+`;

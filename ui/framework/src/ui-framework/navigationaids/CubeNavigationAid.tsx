@@ -216,12 +216,12 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       ViewportComponentEvents.setCubeMatrix(rotMatrix, Face.None);
 
     const labels: { [key: string]: string } = {
-      [Face.Right]: UiFramework.i18n.translate("UiFramework:cube.right"),
-      [Face.Left]: UiFramework.i18n.translate("UiFramework:cube.left"),
-      [Face.Back]: UiFramework.i18n.translate("UiFramework:cube.back"),
-      [Face.Front]: UiFramework.i18n.translate("UiFramework:cube.front"),
-      [Face.Top]: UiFramework.i18n.translate("UiFramework:cube.top"),
-      [Face.Bottom]: UiFramework.i18n.translate("UiFramework:cube.bottom"),
+      [Face.Right]: UiFramework.translate("cube.right"),
+      [Face.Left]: UiFramework.translate("cube.left"),
+      [Face.Back]: UiFramework.translate("cube.back"),
+      [Face.Front]: UiFramework.translate("cube.front"),
+      [Face.Top]: UiFramework.translate("cube.top"),
+      [Face.Bottom]: UiFramework.translate("cube.bottom"),
     };
 
     const faces: { [key: string]: React.ReactNode } = {};

@@ -60,7 +60,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   constructor(props: ToolSettingsZoneProps) {
     super(props);
 
-    this._toolSettingsLabel = UiFramework.i18n.translate("UiFramework:general.toolSettings");
+    this._toolSettingsLabel = UiFramework.translate("general.toolSettings");
   }
 
   public componentDidMount(): void {
@@ -136,7 +136,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     return (
       <ToolSettings
         buttons={[
-          <TitleBarButton key="0" onClick={this._processClick} title={UiFramework.i18n.translate("UiFramework:general.minimize")}>
+          <TitleBarButton key="0" onClick={this._processClick} title={UiFramework.translate("general.minimize")}>
             <i className={"icon icon-chevron-up"} />
           </TitleBarButton>,
         ]}

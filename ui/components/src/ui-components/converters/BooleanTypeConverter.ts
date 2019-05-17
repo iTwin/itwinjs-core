@@ -18,9 +18,9 @@ let sl10nFalse: string = "";
 export class BooleanTypeConverter extends TypeConverter {
   private getLocalizedTrueFalse() {
     if (!sl10nTrue)
-      sl10nTrue = UiComponents.i18n.translate("UiComponents:general.true");
+      sl10nTrue = UiComponents.translate("general.true");
     if (!sl10nFalse)
-      sl10nFalse = UiComponents.i18n.translate("UiComponents:general.false");
+      sl10nFalse = UiComponents.translate("general.false");
   }
 
   public convertToString(value?: Primitives.Boolean) {

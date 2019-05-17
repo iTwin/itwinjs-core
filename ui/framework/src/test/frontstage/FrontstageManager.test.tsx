@@ -2,13 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import TestUtils from "../TestUtils";
 import { expect } from "chai";
+import sinon = require("sinon");
+
+import { Logger } from "@bentley/bentleyjs-core";
+
 import {
   FrontstageManager,
   WidgetState,
 } from "../../ui-framework";
 import { TestFrontstage } from "./FrontstageTestUtils";
+import TestUtils from "../TestUtils";
 
 describe("FrontstageManager", () => {
 
@@ -33,8 +37,11 @@ describe("FrontstageManager", () => {
     }
   });
 
-  it("setActiveFrontstage should throw Error on invalid id", () => {
-    expect(FrontstageManager.setActiveFrontstage("xyz")).to.be.rejectedWith(Error);
+  it("setActiveFrontstage should log Error on invalid id", async () => {
+    const spyMethod = sinon.spy(Logger, "logError");
+    await FrontstageManager.setActiveFrontstage("xyz");
+    spyMethod.calledOnce.should.true;
+    (Logger.logError as any).restore();
   });
 
   it("setWidgetState should find and set widget state", async () => {

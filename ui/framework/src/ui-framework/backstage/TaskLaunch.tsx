@@ -6,13 +6,15 @@
 
 import * as React from "react";
 
+import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { Logger } from "@bentley/bentleyjs-core";
+
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { Backstage } from "./Backstage";
 import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
 import { WorkflowManager, TaskActivatedEventArgs } from "../workflow/Workflow";
-
-import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for a [[TaskLaunchBackstageItem]] component
  * @public
@@ -41,9 +43,9 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
       this._stateSyncIds = props.stateSyncIds.map((value) => value.toLowerCase());
 
     const state = getBackstageItemStateFromProps(props);
-    if (this.props.isActive === undefined) {
+    /* istanbul ignore else */
+    if (this.props.isActive === undefined)
       state.isActive = WorkflowManager.activeTaskId === this.props.taskId && WorkflowManager.activeWorkflowId === this.props.workflowId;
-    }
     this.state = state;
   }
 
@@ -61,15 +63,20 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    /* istanbul ignore next */
     if (this._componentUnmounting)
       return;
 
-    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds))
+    /* istanbul ignore else */
+    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds)) {
+      /* istanbul ignore else */
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);
+        /* istanbul ignore else */
         if (!PropsHelper.isShallowEqual(newState, this.state))
           this.setState((_prevState) => newState);
       }
+    }
   }
 
   public get id(): string {
@@ -82,10 +89,12 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
     const workflow = WorkflowManager.findWorkflow(this.props.workflowId);
     if (workflow) {
       const task = workflow.getTask(this.props.taskId);
-      if (task) {
+      if (task)
         WorkflowManager.setActiveWorkflowAndTask(workflow, task); // tslint:disable-line:no-floating-promises
-      }
-    }
+      else
+        Logger.logError(UiFramework.loggerCategory(this), `Task with id '${this.props.taskId}' not found`);
+    } else
+      Logger.logError(UiFramework.loggerCategory(this), `Workflow with id '${this.props.workflowId}' not found`);
   }
 
   public componentDidUpdate(_prevProps: TaskLaunchBackstageItemProps) {
@@ -97,6 +106,7 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
 
   private _handleTaskActivatedEvent = (args: TaskActivatedEventArgs) => {
     const isActive = args.taskId === this.props.taskId && args.workflowId === this.props.workflowId;
+    /* istanbul ignore else */
     if (isActive !== this.state.isActive)
       this.setState({ isActive });
   }

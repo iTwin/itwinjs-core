@@ -75,7 +75,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
   /** @internal */
   public readonly state: Readonly<PropertyRendererState> = {
-    displayValue: UiComponents.i18n.translate("UiComponents:general.loading"),
+    displayValue: UiComponents.translate("general.loading"),
   };
 
   constructor(props: PropertyRendererProps) {

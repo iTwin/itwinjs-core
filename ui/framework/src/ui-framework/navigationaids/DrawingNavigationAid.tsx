@@ -189,7 +189,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     const halfExtents = extents.scale(.5);
     const offset = rotateMinimapWithView || is3D ? Vector3d.createZero() : rotation.multiplyTransposeVector(halfExtents).minus(halfExtents);
 
-    const unrotateLabel = UiFramework.i18n.translate("UiFramework:drawing.unrotate");
+    const unrotateLabel = UiFramework.translate("drawing.unrotate");
     const e = sz.scale(1 / dz);
     const halfMapExtents = e.scale(.5);
     const mapOffset = rotateMinimapWithView || is3D ? rotation.multiplyTransposeVector(halfMapExtents) : halfMapExtents;
@@ -214,7 +214,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
           {!is3D &&
             <div className={classnames("toggle-rotate-style", "icon", "icon-rotate-left", { checked: rotateMinimapWithView })} data-testid="toggle-rotate-style"
               style={mode === MapMode.Closed && !isAnimating ? { bottom: 2, left: 2 } : {}}
-              title={UiFramework.i18n.translate("UiFramework:drawing.rotateStyle")}
+              title={UiFramework.translate("drawing.rotateStyle")}
               onClick={this._toggleRotationMode} />}
           {!rot.isIdentity &&
             <div className="unrotate-button" data-testid="drawing-unrotate-button" style={mode === MapMode.Closed && !isAnimating ? { top: 2 } : {}} onClick={this._handleUnrotate}>{unrotateLabel}</div>}

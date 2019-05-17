@@ -59,6 +59,7 @@ class AppBackstageComponent extends React.Component<AppBackstageProps> {
           commandId="SampleApp:backstage.testFrontstage6" execute={() => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage())} />
         <SeparatorBackstageItem />
         <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" labelKey="SampleApp:backstage.viewIModel" descriptionKey="SampleApp:backstage.iModelStage" iconSpec="icon-placeholder" />
+        <FrontstageLaunchBackstageItem frontstageId="xyz" label="bad frontstage launch" iconSpec="icon-placeholder" />
       </Backstage>
     );
   }

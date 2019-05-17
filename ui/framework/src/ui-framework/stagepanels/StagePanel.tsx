@@ -7,9 +7,12 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
+import { UiError } from "@bentley/ui-core";
+
 import { StagePanelState as StagePanelState, StagePanelDef } from "./StagePanelDef";
 import { WidgetDef, WidgetType } from "../widgets/WidgetDef";
 import { WidgetProps } from "../widgets/Widget";
+import { UiFramework } from "../UiFramework";
 
 import "./StagePanel.scss";
 
@@ -110,7 +113,7 @@ export class StagePanel extends React.Component<StagePanelProps> {
         const widgetDef = panelDef.widgetDefs[0];
         content = (widgetDef.isVisible) ? widgetDef.reactElement : null;
       } else {
-        throw Error("StagePanels currently only support one rectangular Widget");
+        throw new UiError(UiFramework.loggerCategory(this), "StagePanels currently only support one rectangular Widget");
       }
 
       classes = classnames("uifw-stagepanel",

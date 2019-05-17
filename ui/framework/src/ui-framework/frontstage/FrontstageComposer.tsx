@@ -18,6 +18,8 @@ import {
 
 import { WidgetDef, WidgetState } from "../widgets/WidgetDef";
 import { CommonProps } from "@bentley/ui-core";
+import { Logger } from "@bentley/bentleyjs-core";
+import { UiFramework } from "../UiFramework";
 
 /** Interface defining callbacks for widget changes
  * @public
@@ -208,7 +210,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         };
         content = React.cloneElement(this._frontstageDef.frontstageProvider.frontstage, { runtimeProps: frontstageRuntimeProps });
       } else {
-        throw Error("FrontstageDef has no FrontstageProvider.");
+        Logger.logError(UiFramework.loggerCategory(this), "FrontstageDef has no FrontstageProvider");
+        content = null;
       }
     }
 
@@ -325,8 +328,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   public getZoneDef(zoneId: number): ZoneDef | undefined {
-    if (!this._frontstageDef)
-      throw new Error();
+    if (!this._frontstageDef) {
+      Logger.logError(UiFramework.loggerCategory(this), "getZoneDef: There is no active frontstage");
+      return undefined;
+    }
 
     const zoneDef = this._frontstageDef.getZoneDef(zoneId);
 

@@ -877,8 +877,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       return (
         <p className="components-tree-errormessage">
           {this.props.nodeHighlightingProps ?
-            UiComponents.i18n.translate("UiComponents:tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
-            UiComponents.i18n.translate("UiComponents:general.noData")}
+            UiComponents.translate("tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
+            UiComponents.translate("general.noData")}
         </p>
       );
     }

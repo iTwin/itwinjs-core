@@ -208,9 +208,9 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
         this.props.path.setCurrentNode(undefined);
     }
     const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(childNodes, this.props.columns || [
-      { key: "icon", label: UiComponents.i18n.translate("UiComponents:breadcrumb.icon"), icon: true },
-      { key: "label", label: UiComponents.i18n.translate("UiComponents:breadcrumb.name") },
-      { key: "description", label: UiComponents.i18n.translate("UiComponents:breadcrumb.description") },
+      { key: "icon", label: UiComponents.translate("breadcrumb.icon"), icon: true },
+      { key: "label", label: UiComponents.translate("breadcrumb.name") },
+      { key: "description", label: UiComponents.translate("breadcrumb.description") },
     ], this.props.path.getDataProvider());
     // istanbul ignore else hard to control whether mounted or not
     if (this._mounted)

@@ -6,9 +6,13 @@
 
 import * as React from "react";
 import classnames from "classnames";
+
+import { Logger } from "@bentley/bentleyjs-core";
 import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
 import { CommonProps, LoadingBar } from "@bentley/ui-core";
+
 import "./TileLoadingIndicator.scss";
+import { UiFramework } from "../UiFramework";
 
 let onViewOpen: (vp: ScreenViewport) => void;
 let onRenderUpdate: () => void;
@@ -49,8 +53,8 @@ export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileL
 
     if (pctComplete === 100 && !finished) {
       finished = true;
-      console.log(`Tiles Finished Loading`); // tslint:disable-line
-      console.log(`Tiles Load Report (tiles finished / tiles requested):  ${ready} / ${total}`); // tslint:disable-line
+      Logger.logTrace(UiFramework.loggerCategory(this), `Tiles Finished Loading`);
+      Logger.logTrace(UiFramework.loggerCategory(this), `Tiles Load Report (tiles finished / tiles requested):  ${ready} / ${total}`);
     }
 
     if (pctComplete !== 100 && finished)

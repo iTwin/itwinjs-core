@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders correctly when active 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={true}
+  isDisabled={false}
+  key="ExampleWorkflow:Task1"
+  onClick={[Function]}
+>
+  tests.label
+</BackstageItem>
+`;
+
+exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders correctly when inactive 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={false}
+  isDisabled={false}
+  key="ExampleWorkflow:Task1"
+  onClick={[Function]}
+>
+  tests.label
+</BackstageItem>
+`;

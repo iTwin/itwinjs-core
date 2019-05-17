@@ -129,8 +129,8 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   /** @internal */
   public render(): React.ReactNode {
     const name = (this.state.sheetData.length > 0) ? this.state.sheetData[this.state.index].name : "";
-    const sheet = UiFramework.i18n.translate("UiFramework:general.sheet");
-    const ofStr = UiFramework.i18n.translate("UiFramework:general.of");
+    const sheet = UiFramework.translate("general.sheet");
+    const ofStr = UiFramework.translate("general.of");
 
     let content: React.ReactNode;
     if (this.state.sheetData.length > 0) {

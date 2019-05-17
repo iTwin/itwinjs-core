@@ -2,11 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Base */
+/** @module Utilities */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 
-/** IModelJs UI Event class, which is a subclass of BeEvent with argument type safety.
+/** IModel.js UI Event class, which is a subclass of BeEvent with argument type safety.
  * @public
  */
 export class UiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {

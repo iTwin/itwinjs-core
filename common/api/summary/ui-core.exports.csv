@@ -54,6 +54,7 @@ public;ExpansionToggleProps
 beta;Face
 beta;FillCentered: React.FunctionComponent
 beta;FlexWrapContainer: React.FunctionComponent
+internal;getClassName: (obj: any) => string
 internal;getDisplayName: (component: React.ComponentType
 internal;getUserColor(email: string): string
 beta;GlobalContextMenu 
@@ -156,6 +157,7 @@ public;TreeNodePlaceholderProps
 public;TreeNodeProps 
 public;TreeProps 
 public;UiCore
+public;UiError 
 public;UiEvent
 beta;UiSettings
 beta;UiSettingsResult

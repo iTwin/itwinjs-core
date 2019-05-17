@@ -9,7 +9,7 @@ import {
   HubUserInfo, ChangeSet, UserInfoQuery, IModelQuery,
   ChangeSetQuery, VersionQuery, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
-import { OpenMode, GuidString } from "@bentley/bentleyjs-core";
+import { OpenMode, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 // import GatewayProxyApi from "./gatewayProxy";
@@ -17,6 +17,7 @@ import { IModelVersion } from "@bentley/imodeljs-common";
 
 import { ProjectInfo } from "./ProjectServices";
 import { IModelInfo, IModelServices, VersionInfo, ChangeSetInfo, IModelUserInfo } from "./IModelServices";
+import { UiFramework } from "../UiFramework";
 
 class IModelInfoImpl implements IModelInfo {
   constructor(public name: string, public description: string, public wsgId: string, public createdDate: Date, public projectInfo: ProjectInfo, public status: string = "", public thumbnail: string | undefined) {
@@ -165,7 +166,7 @@ export class DefaultIModelServices implements IModelServices {
 
   private createIModelInfo(thisIModel: HubIModel, thisProjectInfo: ProjectInfo): IModelInfo {
     const createDate: Date = new Date(thisIModel.createdDate!);
-    console.log("Working on iModel", thisIModel.name); // tslint:disable-line:no-console
+    Logger.logTrace(UiFramework.loggerCategory(this), `Working on iModel '${thisIModel.name}'`);
     const thisIModelInfo: IModelInfo = new IModelInfoImpl(thisIModel.name!, thisIModel.description!, thisIModel.wsgId, createDate, thisProjectInfo, "", thisIModel.thumbnail);
     return thisIModelInfo;
   }

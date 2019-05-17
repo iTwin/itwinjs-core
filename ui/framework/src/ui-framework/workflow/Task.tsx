@@ -24,8 +24,6 @@ export interface TaskPropsList {
   tasks: TaskProps[];
 }
 
-// -----------------------------------------------------------------------------
-
 /** Task class.
  * A Task is a specific piece of work to accomplish.
  * A Task refers to a Frontstage to activate.

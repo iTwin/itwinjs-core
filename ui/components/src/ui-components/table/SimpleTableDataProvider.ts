@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Table */
 
-import { SortDirection } from "@bentley/ui-core";
+import { SortDirection, getClassName } from "@bentley/ui-core";
 import { MutableTableDataProvider, ColumnDescription, RowItem, TableDataChangeEvent } from "./TableDataProvider";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { Primitives, PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 /**
  * A Table Data Provider using an array of items.
  * @beta
@@ -64,7 +65,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     if (0 <= realRowIndex && realRowIndex < this._items.length)
       return this._items[realRowIndex];
 
-    throw new Error("Invalid row index");
+    throw new BentleyError(BentleyStatus.ERROR, `${getClassName(this)}.getRow: Invalid row index`);
   }
 
   private getRowIndexFromFilteredRowIndex(filteredRowIndex: number): number {

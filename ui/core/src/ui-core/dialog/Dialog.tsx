@@ -292,27 +292,27 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
         switch (button.type) {
           case DialogButtonType.OK:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.ok");
+            buttonText = UiCore.translate("dialog.ok");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
             break;
           case DialogButtonType.Retry:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.retry");
+            buttonText = UiCore.translate("dialog.retry");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
             break;
           case DialogButtonType.Yes:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.yes");
+            buttonText = UiCore.translate("dialog.yes");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
             break;
           case DialogButtonType.No:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.no");
+            buttonText = UiCore.translate("dialog.no");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
             break;
           case DialogButtonType.Cancel:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.cancel");
+            buttonText = UiCore.translate("dialog.cancel");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
             break;
           case DialogButtonType.Close:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.close");
+            buttonText = UiCore.translate("dialog.close");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
             break;
         }

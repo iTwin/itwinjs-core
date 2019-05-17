@@ -1,6 +1,6 @@
 sep=;
 Release Tag;API Item
-internal;ActiveMatchInfo
+beta;ActiveMatchInfo
 beta;AlphaSlider 
 beta;AlphaSliderProps 
 alpha;AnimationFractionChangeHandler = (animationFraction: number) => void
@@ -96,9 +96,9 @@ public;FilteringInputProps
 public;FloatTypeConverter 
 public;hasChildren: (node: TreeNodeItem) => boolean
 public;HexadecimalTypeConverter 
-internal;HighlightableTreeNodeProps
-internal;HighlightableTreeProps
-internal;HighlightingEngine
+beta;HighlightableTreeNodeProps
+beta;HighlightableTreeProps
+beta;HighlightingEngine
 public;HorizontalAlignment = "left" | "center" | "right" | "justify"
 beta;HueSlider 
 beta;HueSliderProps 

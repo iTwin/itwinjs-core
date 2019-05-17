@@ -46,6 +46,7 @@ import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { TentativePoint } from '@bentley/imodeljs-frontend';
 import { TimeFormat } from '@bentley/ui-core';
+import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
@@ -53,7 +54,7 @@ import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 
-// @internal (undocumented)
+// @beta
 export interface ActiveMatchInfo {
     // (undocumented)
     matchIndex: number;
@@ -1150,7 +1151,7 @@ export class HexadecimalTypeConverter extends TypeConverter {
     sortCompare(a: Primitives.Hexadecimal, b: Primitives.Hexadecimal): number;
 }
 
-// @internal (undocumented)
+// @beta
 export interface HighlightableTreeNodeProps {
     // (undocumented)
     activeMatchIndex?: number;
@@ -1158,7 +1159,7 @@ export interface HighlightableTreeNodeProps {
     searchText: string;
 }
 
-// @internal (undocumented)
+// @beta
 export interface HighlightableTreeProps {
     // (undocumented)
     activeMatch?: ActiveMatchInfo;
@@ -1166,7 +1167,7 @@ export interface HighlightableTreeProps {
     searchText: string;
 }
 
-// @internal (undocumented)
+// @beta
 export class HighlightingEngine {
     constructor(props: HighlightableTreeProps);
     // (undocumented)
@@ -2730,12 +2731,16 @@ export interface TypeEditor {
 
 // @public
 export class UiComponents {
-    // (undocumented)
     static readonly i18n: I18N;
-    // (undocumented)
+    static readonly i18nNamespace: string;
     static initialize(i18n: I18N): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
+    static loggerCategory(obj: any): string;
+    // @internal (undocumented)
+    static readonly packageName: string;
     static terminate(): void;
+    // @internal
+    static translate(key: string | string[], options?: TranslationOptions): string;
 }
 
 // @public

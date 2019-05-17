@@ -5,7 +5,7 @@
 @import "@bentley/ui-core/lib/ui-core/_scrollbar";
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 
-$nz-scrollbar-width: 10px;
+$nz-scrollbar-width: 12px;
 $nz-scrollbar-padding: 2px;
 
 @mixin nz-scrollbar($color: $buic-background-scrollbar, $width: $nz-scrollbar-width, $padding: $nz-scrollbar-padding) {

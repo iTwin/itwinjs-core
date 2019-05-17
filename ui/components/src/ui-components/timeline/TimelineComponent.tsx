@@ -63,9 +63,9 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
       repeat: this.props.repeat ? true : false,
     };
 
-    this._expandLabel = UiComponents.i18n.translate("UiComponents:timeline.expand");
-    this._minimizeLabel = UiComponents.i18n.translate("UiComponents:timeline.minimize");
-    this._repeatLabel = UiComponents.i18n.translate("UiComponents:timeline.repeat");
+    this._expandLabel = UiComponents.translate("timeline.expand");
+    this._minimizeLabel = UiComponents.translate("timeline.minimize");
+    this._repeatLabel = UiComponents.translate("timeline.repeat");
   }
 
   public componentWillUnmount() {

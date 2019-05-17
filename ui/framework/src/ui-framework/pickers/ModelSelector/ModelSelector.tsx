@@ -131,7 +131,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       id: Groups.Models,
       ruleset: this._modelRuleset!,
       dataProvider: new ModelSelectorDataProvider(this.props.iModelConnection, this._modelRuleset!.id),
-      label: UiFramework.i18n.translate("UiFramework:categoriesModels.models"),
+      label: UiFramework.translate("categoriesModels.models"),
       items: [],
       setEnabled: this._onModelsChecked,
     };
@@ -196,7 +196,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       id: Groups.Categories,
       ruleset: this._categoryRuleset!,
       dataProvider: new ModelSelectorDataProvider(this.props.iModelConnection, this._categoryRuleset!.id),
-      label: UiFramework.i18n.translate("UiFramework:categoriesModels.categories"),
+      label: UiFramework.translate("categoriesModels.categories"),
       items: [],
       setEnabled: this._onCategoriesChecked,
     };

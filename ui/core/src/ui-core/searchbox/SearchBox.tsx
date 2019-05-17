@@ -71,7 +71,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
           onKeyDown={this._handleKeyDown}
           onPaste={this._trackChange}
           onCut={this._trackChange}
-          placeholder={this.props.placeholder ? this.props.placeholder : UiCore.i18n.translate("UiCore:searchbox.search")}
+          placeholder={this.props.placeholder ? this.props.placeholder : UiCore.translate("searchbox.search")}
         ></input>
         <div className="core-searchbox-button" onClick={this._handleIconClick}>
           <span className={iconClassName} />

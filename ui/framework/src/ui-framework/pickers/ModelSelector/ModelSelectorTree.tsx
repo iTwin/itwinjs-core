@@ -296,12 +296,12 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
         }
         <div className="option-group">
           <span className="icon icon-search" onClick={this._onToggleSearchBox} />
-          <span className="options icon icon-more-2" title={UiFramework.i18n.translate("UiFramework:categoriesModels.options")}
+          <span className="options icon icon-more-2" title={UiFramework.translate("categoriesModels.options")}
             onClick={this._onShowOptions.bind(this)} ref={(element) => { this._optionsElement = element; }}></span>
           <GlobalContextMenu opened={this.state.isOptionsOpened} x={this._getOptionsX()} y={this._getOptionsY()}>
-            <ContextMenuItem key={0} icon="icon-visibility" onClick={this._onSetEnableAll.bind(this, true)}>{UiFramework.i18n.translate("UiFramework:pickerButtons.showAll")}</ContextMenuItem>
-            <ContextMenuItem key={1} icon="icon-visibility-hide-2" onClick={this._onSetEnableAll.bind(this, false)}>{UiFramework.i18n.translate("UiFramework:pickerButtons.hideAll")}</ContextMenuItem>
-            <ContextMenuItem key={2} icon="icon-visibility-invert" onClick={this._onInvertAll.bind(this)} >{UiFramework.i18n.translate("UiFramework:pickerButtons.invert")}</ContextMenuItem>
+            <ContextMenuItem key={0} icon="icon-visibility" onClick={this._onSetEnableAll.bind(this, true)}>{UiFramework.translate("pickerButtons.showAll")}</ContextMenuItem>
+            <ContextMenuItem key={1} icon="icon-visibility-hide-2" onClick={this._onSetEnableAll.bind(this, false)}>{UiFramework.translate("pickerButtons.hideAll")}</ContextMenuItem>
+            <ContextMenuItem key={2} icon="icon-visibility-invert" onClick={this._onInvertAll.bind(this)} >{UiFramework.translate("pickerButtons.invert")}</ContextMenuItem>
           </GlobalContextMenu>
         </div>
       </div>

@@ -25,7 +25,7 @@ export class BreadcrumbTreeUtils {
           },
           {
             name: "icon",
-            displayLabel: UiComponents.i18n.translate("UiComponents:breadcrumb.icon"),
+            displayLabel: UiComponents.translate("breadcrumb.icon"),
             typename: "icon",
           }),
     };
@@ -42,7 +42,7 @@ export class BreadcrumbTreeUtils {
         },
         {
           name: "label",
-          displayLabel: UiComponents.i18n.translate("UiComponents:breadcrumb.name"),
+          displayLabel: UiComponents.translate("breadcrumb.name"),
           typename: "text",
         }),
     };
@@ -59,7 +59,7 @@ export class BreadcrumbTreeUtils {
         },
         {
           name: "description",
-          displayLabel: UiComponents.i18n.translate("UiComponents:breadcrumb.description"),
+          displayLabel: UiComponents.translate("breadcrumb.description"),
           typename: "text",
         }),
     };

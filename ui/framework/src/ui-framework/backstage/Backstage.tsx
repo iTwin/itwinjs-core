@@ -6,13 +6,12 @@
 
 import * as React from "react";
 
-import { SignOutModalFrontstage } from "../oidc/SignOut";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-
-import { UiEvent, CommonProps, getUserColor } from "@bentley/ui-core";
-import { Backstage as NZ_Backstage, UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
+import { UiEvent, CommonProps } from "@bentley/ui-core";
+import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
 import { AccessToken } from "@bentley/imodeljs-clients";
+
 import { CommandItemDef } from "../shared/CommandItemDef";
+import { UserProfileBackstageItem } from "./UserProfile";
 
 /** [[BackstageEvent]] arguments.
  * @public
@@ -46,6 +45,7 @@ export interface BackstageProps extends CommonProps {
   isVisible?: boolean;
   showOverlay?: boolean;
   onClose?: () => void;
+  header?: React.ReactNode;
 }
 
 /** State for the [[Backstage]] React component.
@@ -123,49 +123,26 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
   private _onClose = () => {
     Backstage.hide();
+
+    /* istanbul ignore else */
     if (this.props.onClose)
       this.props.onClose();
-  }
-
-  private _onSignOut = () => {
-    Backstage.hide();
-    FrontstageManager.openModalFrontstage(new SignOutModalFrontstage(this.props.accessToken));
-  }
-
-  private _getUserInfo(): React.ReactNode | undefined {
-    if (this.props.accessToken) {
-      const userInfo = this.props.accessToken.getUserInfo();
-      if (userInfo) {
-        return (
-          <NZ_UserProfile
-            color={getUserColor(userInfo.email!.id)}
-            initials={this._getInitials(userInfo.profile!.firstName, userInfo.profile!.lastName)}
-            onClick={this._onSignOut}
-          >
-            {this._getFullName(userInfo.profile!.firstName, userInfo.profile!.lastName)}
-          </NZ_UserProfile>
-        );
-      }
-    }
-
-    return undefined;
-  }
-
-  private _getInitials(firstName: string, lastName: string): string {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`;
-  }
-
-  private _getFullName(firstName: string, lastName: string): string {
-    return `${firstName} ${lastName}`;
   }
 
   public render(): React.ReactNode {
     Backstage.isBackstageVisible = this.state.isVisible;
 
+    let header: React.ReactNode = null;
+
+    if (this.props.header)
+      header = this.props.header;
+    else if (this.props.accessToken !== undefined)
+      header = <UserProfileBackstageItem accessToken={this.props.accessToken} />;
+
     return (
       <NZ_Backstage
         className={this.props.className}
-        header={this._getUserInfo()}
+        header={header}
         isOpen={this.state.isVisible}
         onClose={this._onClose}
         showOverlay={this.props.showOverlay}

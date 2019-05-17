@@ -9,25 +9,35 @@ import * as React from "react";
 import { BeInspireTreeNode } from "./component/BeInspireTree";
 import "./HighlightingEngine.scss";
 
-/** @internal */
+/** Active match info for highlightable [[Tree]]
+ * @beta
+ */
 export interface ActiveMatchInfo {
   nodeId: string;
   matchIndex: number;
 }
 
-/** @internal */
+/** Properties for the [[HighlightingEngine]]
+ * @beta
+ */
 export interface HighlightableTreeProps {
   searchText: string;
   activeMatch?: ActiveMatchInfo;
 }
 
-/** @internal */
+/** Properties for a highlightable [[TreeNode]]
+ * @beta
+ */
 export interface HighlightableTreeNodeProps {
   searchText: string;
   activeMatchIndex?: number;
 }
 
-/** @internal */
+// cSpell:ignore activehighlight
+
+/** Tree highlighting engine
+ * @beta
+ */
 export class HighlightingEngine {
   private _searchText: string;
   private _activeMatch?: ActiveMatchInfo;

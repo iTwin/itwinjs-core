@@ -4,22 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
+import { Store } from "redux";
+
 import { OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { OidcClientWrapper, SnapMode, IModelApp } from "@bentley/imodeljs-frontend";
+import { UiEvent, UiError, getClassName } from "@bentley/ui-core";
+import { Presentation } from "@bentley/presentation-frontend";
+
 import { ProjectServices } from "./clientservices/ProjectServices";
 import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
 import { IModelServices } from "./clientservices/IModelServices";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
-import { Store } from "redux";
-import { OidcClientWrapper, SnapMode, IModelApp } from "@bentley/imodeljs-frontend";
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { FrameworkState } from "./FrameworkState";
 import { ConfigurableUiActionId } from "./configurableui/state";
 import { SessionStateActionId } from "./SessionState";
-import { UiEvent } from "@bentley/ui-core";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
-import { Presentation } from "@bentley/presentation-frontend";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 
 /** UiVisibility Event Args interface.
@@ -87,7 +89,7 @@ export class UiFramework {
     if (frameworkStateKey)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
 
-    const frameworkNamespace = UiFramework._i18n.registerNamespace("UiFramework");
+    const frameworkNamespace = UiFramework._i18n.registerNamespace(UiFramework.i18nNamespace);
     const readFinishedPromise = frameworkNamespace.readFinished;
 
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
@@ -101,12 +103,13 @@ export class UiFramework {
     return readFinishedPromise;
   }
 
+  /** Unregisters the UiFramework internationalization service namespace */
   public static terminate() {
     UiFramework._store = undefined;
     UiFramework._frameworkStateKeyInStore = "frameworkState";
 
     if (UiFramework._i18n)
-      UiFramework._i18n.unregisterNamespace("UiFramework");
+      UiFramework._i18n.unregisterNamespace(UiFramework.i18nNamespace);
     UiFramework._i18n = undefined;
     UiFramework._projectServices = undefined;
     UiFramework._iModelServices = undefined;
@@ -116,35 +119,63 @@ export class UiFramework {
     return UiFramework._frameworkStateKeyInStore;
   }
 
-  /** @beta */
+  /** The UiFramework state maintained by Redux
+   * @beta
+   */
   public static get frameworkState(): FrameworkState | undefined {
     // tslint:disable-next-line:no-string-literal
     return UiFramework.store.getState()[UiFramework.frameworkStateKey];
   }
 
+  /** The Redux store */
   public static get store(): Store<any> {
     if (!UiFramework._store)
-      throw new Error(UiFramework._complaint);
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
     return UiFramework._store;
   }
 
+  /** The internationalization service created by the IModelApp. */
   public static get i18n(): I18N {
     if (!UiFramework._i18n)
-      throw new Error(UiFramework._complaint);
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
     return UiFramework._i18n;
+  }
+
+  /** The internationalization service namespace. */
+  public static get i18nNamespace(): string {
+    return "UiFramework";
+  }
+
+  /** Calls i18n.translateWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
+   *  @internal
+   */
+  public static translate(key: string | string[], options?: TranslationOptions): string {
+    return UiFramework.i18n.translateWithNamespace(UiFramework.i18nNamespace, key, options);
+  }
+
+  /** @internal */
+  public static get packageName(): string {
+    return "ui-framework";
+  }
+
+  /** @internal */
+  public static loggerCategory(obj: any): string {
+    const className = getClassName(obj);
+    const category = UiFramework.packageName + (className ? `.${className}` : "");
+    return category;
   }
 
   /** @internal */
   public static get projectServices(): ProjectServices {
     if (!UiFramework._projectServices)
-      throw new Error(UiFramework._complaint);
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
     return UiFramework._projectServices!;
   }
 
   /** @internal */
   public static get iModelServices(): IModelServices {
     if (!UiFramework._iModelServices)
-      throw new Error(UiFramework._complaint);
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
     return UiFramework._iModelServices!;
   }
 

@@ -7,7 +7,7 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import { Orientation, UiEvent, CommonProps } from "@bentley/ui-core";
+import { Orientation, UiEvent, CommonProps, UiError } from "@bentley/ui-core";
 
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentGroup } from "./ContentGroup";
@@ -662,7 +662,7 @@ export class ContentLayoutManager {
     if (layoutProps.id)
       ContentLayoutManager.addLayout(layoutProps.id, layout);
     else
-      throw Error("ContentLayoutProps should contain an 'id'");
+      throw new UiError(UiFramework.loggerCategory(this), `loadLayout: ContentLayoutProps should contain an 'id'`);
   }
 
   public static findLayout(layoutId: string): ContentLayoutDef | undefined {

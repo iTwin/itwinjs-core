@@ -24,6 +24,20 @@ describe("UiFramework", () => {
     expect(() => UiFramework.i18n).to.throw(Error);
   });
 
+  it("i18nNamespace should return UiFramework", () => {
+    expect(UiFramework.i18nNamespace).to.eq("UiFramework");
+  });
+
+  it("packageName should return ui-framework", () => {
+    expect(UiFramework.packageName).to.eq("ui-framework");
+  });
+
+  it("translate should return the key (in test environment)", async () => {
+    await TestUtils.initializeUiFramework(true);
+    expect(UiFramework.translate("test1.test2")).to.eq("test1.test2");
+    TestUtils.terminateUiFramework();
+  });
+
   it("projectServices should throw Error without initialize", () => {
     expect(() => UiFramework.projectServices).to.throw(Error);
   });

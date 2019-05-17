@@ -291,7 +291,7 @@ export class MessageManager {
    * @return the response from the user.
    */
   public static async openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
-    const title = UiFramework.i18n.translate("UiFramework:general.alert");
+    const title = UiFramework.translate("general.alert");
 
     return new Promise((onFulfilled: (result: MessageBoxValue) => void, onRejected: (reason: any) => void) => {
       const messageBoxCallbacks = new MessageBoxCallbacks(onFulfilled, onRejected);
@@ -301,7 +301,7 @@ export class MessageManager {
   }
 
   private static showAlertMessageBox(messageDetails: NotifyMessageDetails): void {
-    const title = UiFramework.i18n.translate("UiFramework:general.alert");
+    const title = UiFramework.translate("general.alert");
     const iconType = this.getIconType(messageDetails);
     const content = (
       <>

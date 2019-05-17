@@ -4,10 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
+import { UiError } from "@bentley/ui-core";
+
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { ToolUiProvider } from "./ToolUiProvider";
 import { ToolUiManager } from "./ToolUiManager";
+import { UiFramework } from "../../UiFramework";
 
 /** Provides information about a tool with a given id, including the ToolUiProvider.
  * @public
@@ -32,7 +35,7 @@ export class ToolInformation {
       // istanbul ignore else
       if (provider) {
         if (provider.getType() !== ConfigurableUiControlType.ToolUiProvider) {
-          throw Error("ToolInformation.toolUiProvider error: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
+          throw new UiError(UiFramework.loggerCategory(this), "toolUiProvider: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
         }
 
         provider.initialize();

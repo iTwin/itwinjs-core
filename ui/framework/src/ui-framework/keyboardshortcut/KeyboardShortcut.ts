@@ -4,10 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module KeyboardShortcut */
 
+import { UiError } from "@bentley/ui-core";
+
 import { ItemProps } from "../shared/ItemProps";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
+import { UiFramework } from "../UiFramework";
 
 /** Enumeration for Function Keys
  * @public
@@ -113,7 +116,7 @@ export class KeyboardShortcut extends ItemDefBase {
         this._shortcuts.registerKey(shortcut.keyMapKey, shortcut);
       });
     } else {
-      throw Error("KeyboardShortcut: Either 'item' or 'shortcuts' must be specified for '" + props.key + "' key.");
+      throw new UiError(UiFramework.loggerCategory(this), `Either 'item' or 'shortcuts' must be specified for '${props.key}' key.`);
     }
 
     if (props.isAltKeyRequired !== undefined)

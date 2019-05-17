@@ -14,6 +14,10 @@ export interface I18NOptions {
   urlTemplate?: string;
 }
 
+/** @internal */
+// tslint:disable-next-line: no-empty-interface
+export interface TranslationOptions extends i18next.TranslationOptions { }
+
 /** Supplies Internationalization services.
  * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
  * @public
@@ -90,6 +94,26 @@ export class I18N {
    * @public
    */
   public translate(key: string | string[], options?: i18next.TranslationOptions): any { return this._i18next.t(key, options); }
+
+  /** Similar to 'translate()' but the namespace is a separate param and the key does not include the namespace.
+   * @param namespace - the namespace that identifies the particular localization file that contains the property.
+   * @param key - the key that matches a property in the JSON localization file.
+   *
+   * @internal
+   */
+  public translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): any {
+    let fullKey: string | string[] = "";
+
+    if (typeof key === "string") {
+      fullKey = `${namespace}:${key}`;
+    } else {
+      fullKey = key.map((subKey: string) => {
+        return `${namespace}:${subKey}`;
+      });
+    }
+
+    return this.translate(fullKey, options);
+  }
 
   /** @internal */
   public loadNamespace(name: string, i18nCallback: any) { this._i18next!.loadNamespaces(name, i18nCallback); }

@@ -13,6 +13,8 @@ import { Backstage } from "./Backstage";
 import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
 
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { Logger } from "@bentley/bentleyjs-core";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for a [[FrontstageLaunchBackstageItem]] component
  * @public
@@ -39,9 +41,9 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
       this._stateSyncIds = props.stateSyncIds.map((value) => value.toLowerCase());
 
     const state = getBackstageItemStateFromProps(props);
-    if (this.props.isActive === undefined) {
+    /* istanbul ignore else */
+    if (this.props.isActive === undefined)
       state.isActive = FrontstageManager.activeFrontstageId === this.props.frontstageId;
-    }
     this.state = state;
   }
 
@@ -65,7 +67,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
       return;
 
     /* istanbul ignore else */
-    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds))
+    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds)) {
       /* istanbul ignore else */
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);
@@ -73,15 +75,17 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
         if (!PropsHelper.isShallowEqual(newState, this.state))
           this.setState((_prevState) => newState);
       }
+    }
   }
 
   public execute = (): void => {
     Backstage.hide();
 
     const frontstageDef = FrontstageManager.findFrontstageDef(this.props.frontstageId);
-    /* istanbul ignore else */
     if (frontstageDef)
       FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+    else
+      Logger.logError(UiFramework.loggerCategory(this), `Frontstage with id '${this.props.frontstageId}' not found`);
   }
 
   public componentDidUpdate(_prevProps: FrontstageLaunchBackstageItemProps) {
@@ -93,6 +97,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
 
   private _handleFrontstageActivatedEvent = (args: FrontstageActivatedEventArgs) => {
     const isActive = args.activatedFrontstageDef.id === this.props.frontstageId;
+    /* istanbul ignore else */
     if (isActive !== this.state.isActive)
       this.setState({ isActive });
   }

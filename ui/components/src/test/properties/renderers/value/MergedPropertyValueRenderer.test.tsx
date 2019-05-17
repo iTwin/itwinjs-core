@@ -21,7 +21,7 @@ describe("MergedPropertyValueRenderer", () => {
       property.isMerged = true;
       const element = renderer.render(property);
       const elementMount = mount(<div>{element}</div>);
-      expect(elementMount.text()).to.be.eq(UiComponents.i18n.translate("UiComponents:property.varies"));
+      expect(elementMount.text()).to.be.eq(UiComponents.translate("property.varies"));
     });
   });
 

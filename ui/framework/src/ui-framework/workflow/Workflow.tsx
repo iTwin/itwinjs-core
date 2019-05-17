@@ -27,7 +27,6 @@ export interface WorkflowPropsList {
   defaultWorkflowId: string;
   workflows: WorkflowProps[];
 }
-// -----------------------------------------------------------------------------
 
 /** Workflow class.
  * A Workflow is a defined sequence of tasks used to accomplish a goal.
@@ -165,8 +164,6 @@ export interface TaskActivatedEventArgs {
  */
 export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> { }
 
-// -----------------------------------------------------------------------------
-
 /** Workflow Manager class.
  * @public
  */
@@ -247,7 +244,6 @@ export class WorkflowManager {
 
   /** Gets the active Workflow id */
   public static get activeWorkflowId(): string {
-    // istanbul ignore else
     if (this._activeWorkflow !== undefined)
       return this._activeWorkflow.id;
     return "";
@@ -255,7 +251,6 @@ export class WorkflowManager {
 
   /** Gets the active Task */
   public static get activeTask(): Task | undefined {
-    // istanbul ignore else
     if (this._activeWorkflow !== undefined)
       return this._activeWorkflow.activeTask;
     return undefined;
@@ -263,7 +258,6 @@ export class WorkflowManager {
 
   /** Gets the active Task id */
   public static get activeTaskId(): string {
-    // istanbul ignore else
     if (this._activeWorkflow !== undefined) {
       // istanbul ignore else
       if (this._activeWorkflow.activeTask)
@@ -283,9 +277,8 @@ export class WorkflowManager {
     for (const key of this._workflows.keys()) {
       const workflow = this._workflows.get(key);
       // istanbul ignore else
-      if (workflow) {
+      if (workflow)
         sortedWorkflows.push(workflow);
-      }
     }
 
     sortedWorkflows.sort((a: Workflow, b: Workflow) => {

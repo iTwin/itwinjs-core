@@ -127,7 +127,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
   }
 
   public render() {
-    const label = UiFramework.i18n.translate("UiFramework:iModelIndex.enteriModel");
+    const label = UiFramework.translate("iModelIndex.enteriModel");
     return (
       <div className="viewstab-container">
         <ViewsList

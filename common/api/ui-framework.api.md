@@ -66,6 +66,7 @@ import { TargetType } from '@bentley/ui-ninezone';
 import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
+import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
 import { UiEvent } from '@bentley/ui-core';
@@ -290,6 +291,8 @@ export interface BackstageItemState {
 export interface BackstageProps extends CommonProps {
     // (undocumented)
     accessToken?: AccessToken;
+    // (undocumented)
+    header?: React_2.ReactNode;
     // (undocumented)
     isVisible?: boolean;
     // (undocumented)
@@ -2643,7 +2646,7 @@ export interface SignInProps extends CommonProps {
 
 // @public
 export class SignOutModalFrontstage implements ModalFrontstageInfo {
-    constructor(accessToken?: AccessToken);
+    constructor(accessToken: AccessToken, onSignOut?: () => void);
     // (undocumented)
     readonly content: React_2.ReactNode;
     // (undocumented)
@@ -3276,7 +3279,7 @@ export class TsRow {
 export class UiFramework {
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
-    // @beta (undocumented)
+    // @beta
     static readonly frameworkState: FrameworkState | undefined;
     // (undocumented)
     static readonly frameworkStateKey: string;
@@ -3294,15 +3297,19 @@ export class UiFramework {
     static getIsUiVisible(): boolean;
     // @beta (undocumented)
     static getWidgetOpacity(): number;
-    // (undocumented)
     static readonly i18n: I18N;
+    static readonly i18nNamespace: string;
     // @internal (undocumented)
     static readonly iModelServices: IModelServices;
     static initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string): Promise<any>;
     // @internal
     static initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any>;
+    // @internal (undocumented)
+    static loggerCategory(obj: any): string;
     // @beta
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;
+    // @internal (undocumented)
+    static readonly packageName: string;
     // @internal (undocumented)
     static readonly projectServices: ProjectServices;
     // (undocumented)
@@ -3317,10 +3324,10 @@ export class UiFramework {
     static setIsUiVisible(visible: boolean): void;
     // @beta (undocumented)
     static setWidgetOpacity(opacity: number): void;
-    // (undocumented)
     static readonly store: Store<any>;
-    // (undocumented)
     static terminate(): void;
+    // @internal
+    static translate(key: string | string[], options?: TranslationOptions): string;
 }
 
 // @alpha

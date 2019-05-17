@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Backstage <CommandLaunchBackstageItem /> CommandLaunchBackstageItem renders correctly 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={false}
+  isDisabled={false}
+  key="my-command-id"
+  onClick={[Function]}
+>
+  tests.label
+</BackstageItem>
+`;

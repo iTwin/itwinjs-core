@@ -136,6 +136,33 @@ describe("Workflow & WorkflowManager", () => {
           WorkflowManager.setActiveWorkflowAndTask(workflow, task1); // tslint:disable-line:no-floating-promises
           expect(workflow.isActive).to.be.true;
           expect(task1.isActive).to.be.true;
+          expect(WorkflowManager.activeWorkflow).to.eq(workflow);
+          expect(WorkflowManager.activeTask).to.eq(task1);
+        }
+      }
+    });
+
+    it("Workflow & Task getters & setters should return correct values", () => {
+      WorkflowManager.setActiveWorkflow(undefined);
+      expect(WorkflowManager.activeWorkflow).to.be.undefined;
+      expect(WorkflowManager.activeWorkflowId.length).to.eq(0);
+      expect(WorkflowManager.activeTask).to.be.undefined;
+      expect(WorkflowManager.activeTaskId.length).to.eq(0);
+
+      const workflow = WorkflowManager.findWorkflow("ExampleWorkflow");
+      expect(workflow).to.not.be.undefined;
+
+      if (workflow) {
+        WorkflowManager.setActiveWorkflow(workflow);
+        expect(WorkflowManager.activeWorkflow).to.eq(workflow);
+
+        const taskId = "Task1";
+        const task1 = workflow.getTask(taskId);
+        expect(task1).to.not.be.undefined;
+
+        if (task1) {
+          workflow.setActiveTask(task1);
+          expect(WorkflowManager.activeTaskId).to.eq(taskId);
         }
       }
     });

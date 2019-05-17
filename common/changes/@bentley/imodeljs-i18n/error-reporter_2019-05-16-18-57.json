@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added UI Logger & UiError usage & improved i18n calls",
+      "packageName": "@bentley/imodeljs-i18n",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-i18n",
+  "email": "dan.east@bentley.com"
+}

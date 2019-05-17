@@ -5,10 +5,14 @@
 ```ts
 
 import { BeEvent } from '@bentley/bentleyjs-core';
+import { BentleyError } from '@bentley/bentleyjs-core';
+import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
+import { LogFunction } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
 import * as ReactNumericInput from 'react-numeric-input';
+import { TranslationOptions } from '@bentley/imodeljs-i18n';
 
 // @internal
 export class AnnularSector {
@@ -555,6 +559,9 @@ export const FillCentered: React.FunctionComponent<CommonDivProps>;
 
 // @beta
 export const FlexWrapContainer: React.FunctionComponent<CommonDivProps>;
+
+// @internal
+export const getClassName: (obj: any) => string;
 
 // @internal
 export const getDisplayName: (component: React.ComponentType<any>) => string;
@@ -1399,12 +1406,21 @@ export interface TreeProps extends CommonProps {
 
 // @public
 export class UiCore {
-    // (undocumented)
     static readonly i18n: I18N;
-    // (undocumented)
+    static readonly i18nNamespace: string;
     static initialize(i18n: I18N): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
+    static loggerCategory(obj: any): string;
+    // @internal (undocumented)
+    static readonly packageName: string;
     static terminate(): void;
+    // @internal
+    static translate(key: string | string[], options?: TranslationOptions): string;
+}
+
+// @public
+export class UiError extends BentleyError {
+    constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
 }
 
 // @public

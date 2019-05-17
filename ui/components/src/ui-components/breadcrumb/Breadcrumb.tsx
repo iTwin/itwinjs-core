@@ -401,7 +401,7 @@ export class InputSwitchComponent extends React.PureComponent<InputSwitchProps> 
       case BreadcrumbMode.Input:
         return <BreadcrumbInput tree={tree} node={node} onNodeChange={onNodeChange} onCancel={onInputCancel} parentsOnly={this.props.parentsOnly} delimiter={delimiter} width={width} pathString={this.props.pathString} />;
       default:
-        return <div data-testid="components-breadcrumb-error-unknown-mode">{UiComponents.i18n.translate("UiComponents:breadcrumb.errorUnknownMode")}</div>;
+        return <div data-testid="components-breadcrumb-error-unknown-mode">{UiComponents.translate("breadcrumb.errorUnknownMode")}</div>;
     }
   }
 }
@@ -502,7 +502,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
           })}
         </ContextMenu>
         <MessageBox opened={this.state.messageBoxOpened} modal={false} onClose={this._handleMessageBoxClose} severity={MessageSeverity.Warning} buttonCluster={[{ type: DialogButtonType.OK, onClick: this._handleMessageBoxClose }]}>
-          {UiComponents.i18n.translate("UiComponents:breadcrumb.invalidBreadcrumbPath")}
+          {UiComponents.translate("breadcrumb.invalidBreadcrumbPath")}
         </MessageBox>
       </div>
     );

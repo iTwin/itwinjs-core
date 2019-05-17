@@ -131,7 +131,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
         {this.props.items.map((item, index) => {
           const visible = this.state.hiddenColumns.indexOf(item.id) === -1;
           const sel = () => this._toggleItem(item);
-          const label = item.label || UiComponents.i18n.translate("UiComponents:showhide:noLabel");
+          const label = item.label || UiComponents.translate("showhide.noLabel");
           const id = "show-hide-menu-input-" + index;
           return (
             <ContextMenuItem key={index}
@@ -142,11 +142,11 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
           );
         })}
         <ContextMenuDivider />
-        <ContextMenuItem onSelect={this._showAll}><span data-testid="show-hide-showall">{UiComponents.i18n.translate("UiComponents:showhide:showAll")}</span></ContextMenuItem>
-        <ContextMenuItem onSelect={this._showDialog}><span data-testid="show-hide-list">{UiComponents.i18n.translate("UiComponents:showhide:list")}</span></ContextMenuItem>
+        <ContextMenuItem onSelect={this._showAll}><span data-testid="show-hide-showall">{UiComponents.translate("showhide.showAll")}</span></ContextMenuItem>
+        <ContextMenuItem onSelect={this._showDialog}><span data-testid="show-hide-list">{UiComponents.translate("showhide.list")}</span></ContextMenuItem>
         <ShowHideDialog
           items={items}
-          title={UiComponents.i18n.translate("UiComponents:showhide:title")}
+          title={UiComponents.translate("showhide.title")}
           opened={this.state.dialogOpened}
           onClose={this._closeDialog}
           initialHidden={this.state.hiddenColumns}

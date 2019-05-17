@@ -17,7 +17,7 @@ import { StringGetter } from "../shared/ItemProps";
 
 import { Direction } from "@bentley/ui-ninezone";
 import { ItemList } from "../shared/ItemMap";
-import { UiEvent } from "@bentley/ui-core";
+import { UiEvent, UiError } from "@bentley/ui-core";
 
 /** Widget state enum.
  * @public
@@ -255,7 +255,7 @@ export class WidgetDef {
       // istanbul ignore else
       if (this._widgetControl) {
         if (this._widgetControl.getType() !== type) {
-          throw Error("WidgetDef.widgetControl error: '" + usedClassId + "' is NOT a " + type + "; it is a " + this._widgetControl.getType());
+          throw new UiError(UiFramework.loggerCategory(this), "getWidgetControl: '" + usedClassId + "' is NOT a " + type + "; it is a " + this._widgetControl.getType());
         }
 
         this._widgetControl.widgetDef = this;

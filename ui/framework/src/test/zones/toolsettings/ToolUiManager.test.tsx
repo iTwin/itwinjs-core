@@ -11,6 +11,8 @@ import {
   SuppressLabelEditorParams, ToolSettingsPropertySyncItem,
 } from "@bentley/imodeljs-frontend";
 
+// cSpell:Ignore USELENGTH
+
 describe("ToolUiManager", () => {
   const testToolId = "ToolUiManager-TestTool";
   const testToolLabel = "TestTool";
@@ -77,6 +79,18 @@ describe("ToolUiManager", () => {
     expect(ToolUiManager.toolSettingsProperties).to.be.empty;
     expect(ToolUiManager.activeToolLabel).to.be.empty;
     expect(ToolUiManager.activeToolDescription).to.be.empty;
+  });
+
+  it("should handle no tool settings", () => {
+    const toolSettingsProperties: ToolSettingsPropertyRecord[] = [];
+    const result = ToolUiManager.cacheToolSettingsProperties(toolSettingsProperties);
+    expect(result).to.be.false;
+  });
+
+  it("should support setting active tool label", () => {
+    const label = "Test Label";
+    ToolUiManager.activeToolLabel = label;
+    expect(ToolUiManager.activeToolLabel).to.eq(label);
   });
 
   it("handleSyncToolSettingsPropertiesEvent", () => {

@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
 
 import { UiFramework } from "../UiFramework";
@@ -62,7 +62,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     this.state = {
       items: new Array<ListItem>(),
       selectedViewId: null,
-      title: UiFramework.i18n.translate("UiFramework:savedViews.views"),
+      title: UiFramework.translate("savedViews.views"),
       initialized: false,
     };
   }
@@ -74,7 +74,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
   private setStateContainers(views3d: ListItem[], views2d: ListItem[], sheets: ListItem[], unknown?: ListItem[]) {
     const views3dContainer: ListItem = {
       key: "views3dContainer",
-      name: UiFramework.i18n.translate("UiFramework:savedViews.spatialViews"),
+      name: UiFramework.translate("savedViews.spatialViews"),
       enabled: false,
       type: ListItemType.Container,
       children: views3d,
@@ -82,7 +82,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     const views2dContainer: ListItem = {
       key: "views2dContainer",
-      name: UiFramework.i18n.translate("UiFramework:savedViews.drawings"),
+      name: UiFramework.translate("savedViews.drawings"),
       enabled: false,
       type: ListItemType.Container,
       children: views2d,
@@ -90,7 +90,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     const sheetContainer: ListItem = {
       key: "sheetContainer",
-      name: UiFramework.i18n.translate("UiFramework:savedViews.sheets"),
+      name: UiFramework.translate("savedViews.sheets"),
       enabled: false,
       type: ListItemType.Container,
       children: sheets,
@@ -102,7 +102,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       // This should never show, but just in case we missed a type of view state
       const unknownContainer: ListItem = {
         key: "unknownContainer",
-        name: UiFramework.i18n.translate("UiFramework:savedViews.others"),
+        name: UiFramework.translate("savedViews.others"),
         enabled: false,
         type: ListItemType.Container,
         children: unknown,
@@ -115,7 +115,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     this.setState({
       items: containers,
       selectedViewId: null,
-      title: UiFramework.i18n.translate("UiFramework:savedViews.views"),
+      title: UiFramework.translate("savedViews.views"),
       initialized: true,
     });
   }
@@ -186,8 +186,10 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
   // enable/disable the models
   private _setEnabled = async (item: ListItem, _enabled: boolean) => {
     const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (!activeContentControl || !activeContentControl.supportsViewSelectorChange)
+    if (!activeContentControl || !activeContentControl.supportsViewSelectorChange) {
+      Logger.logError(UiFramework.loggerCategory(this), `No active ContentControl for ViewSelector change`);
       return;
+    }
 
     // Enable the item temporarily to let user see that their click was registered
     // while we query for view state and change the current view which may take a bit
