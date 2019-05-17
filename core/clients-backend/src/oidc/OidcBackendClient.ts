@@ -73,8 +73,8 @@ export abstract class OidcBackendClient extends OidcClient {
   }
 
   protected createToken(tokenSet: TokenSet, userInfo?: UserInfo): AccessToken {
-    const startsAt: Date = new Date(tokenSet.expires_at - tokenSet.expires_in);
-    const expiresAt: Date = new Date(tokenSet.expires_at);
+    const startsAt: Date = new Date((tokenSet.expires_at - tokenSet.expires_in) * 1000);
+    const expiresAt: Date = new Date(tokenSet.expires_at * 1000);
     return AccessToken.fromJsonWebTokenString(tokenSet.access_token, startsAt, expiresAt, userInfo);
   }
 

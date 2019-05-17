@@ -319,8 +319,8 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       return;
     }
 
-    const startsAt: Date = new Date(user.expires_at - user.expires_in!);
-    const expiresAt: Date = new Date(user.expires_at);
+    const startsAt: Date = new Date((user.expires_at - user.expires_in!) * 1000);
+    const expiresAt: Date = new Date(user.expires_at * 1000);
     const userInfo = UserInfo.fromJson(user.profile);
     this._accessToken = AccessToken.fromJsonWebTokenString(user.access_token, startsAt, expiresAt, userInfo);
   }

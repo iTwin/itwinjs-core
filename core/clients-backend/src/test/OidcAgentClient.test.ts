@@ -55,7 +55,17 @@ describe("OidcAgentClient (#integration)", () => {
 
   it("should get valid OIDC tokens for agent applications", async () => {
     const agentClient = new OidcAgentClient(agentConfiguration);
+    const now = Date.now();
     const jwt: AccessToken = await agentClient.getToken(requestContext);
+
+    const expiresAt = jwt.getExpiresAt();
+    chai.assert.isDefined(expiresAt);
+    chai.assert.isAbove(expiresAt!.getTime(), now);
+
+    const startsAt = jwt.getStartsAt();
+    chai.assert.isDefined(startsAt);
+    chai.assert.isAtLeast(startsAt!.getTime(), expiresAt!.getTime() - 1 * 60 * 60 * 1000); // Starts atleast 1 hour before expiry
+
     await validator.validateConnectAccess(jwt);
     await validator.validateIModelHubAccess(jwt);
   });
