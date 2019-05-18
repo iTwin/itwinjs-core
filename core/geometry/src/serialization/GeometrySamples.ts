@@ -54,6 +54,7 @@ import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
 import { KnotVector, BSplineWrapMode } from "../bspline/KnotVector";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
 
 /* tslint:disable:no-console */
 /**
@@ -1617,9 +1618,9 @@ export class Sample {
     geometry.push(LineSegment3d.createXYZXYZ(x0, y1, z0, x0, y1, z1));
     return geometry;
   }
-/** Assorted transition spirals
- * * (All combinations of bearing radius bearing radius length subsests.)
- */
+  /** Assorted transition spirals
+   * * (All combinations of bearing radius bearing radius length subsests.)
+   */
   public static createSimpleTransitionSpirals(): TransitionSpiral3d[] {
     // 5 spirals exercise the intricate "4 out of 5" input ruls for spirals . ..
     const r1 = 1000.0;
@@ -2020,5 +2021,42 @@ export class Sample {
       }
     }
     return loops;
+  }
+  private static appendGeometry(source: GeometryQuery[], dest: GeometryQuery[]) {
+    for (const g of source) dest.push(g);
+  }
+  /** Create a simple example of each GeometryQuery type .... */
+  public static createAllGeometryQueryTypes(): GeometryQuery[] {
+    const result: GeometryQuery[] = [];
+    const pointA = Point3d.create(0, 0, 0);
+    const pointB = Point3d.create(1, 0, 0);
+    const pointC = Point3d.create(1, 1, 0);
+    const pointD = Point3d.create(0, 1, 0);
+    const pointABC = [pointA, pointB, pointC];
+    const pointABCD = [pointA, pointB, pointC, pointD];
+    const pointABCDA = [pointA, pointB, pointC, pointD, pointA];
+    result.push(LineSegment3d.create(pointA, pointB));
+    result.push(CoordinateXYZ.create(pointA));
+    result.push(Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC)!);
+    result.push(PointString3d.create(pointA, pointB));
+    result.push(TransitionSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 100), AngleSweep.createStartEndDegrees(0, 5), Segment1d.create(0, 0.5), Transform.createIdentity()));
+    result.push(LineString3d.create(pointABCD));
+    result.push(BezierCurve3d.create(pointABC)!);
+    result.push(BezierCurve3dH.create(pointABC)!);
+
+    result.push(BSplineCurve3d.createUniformKnots(pointABC, 3)!);
+    result.push(BSplineCurve3dH.createUniformKnots(pointABC, 3)!);
+
+    result.push(Loop.create(LineString3d.create(pointABCDA)));
+    result.push(Path.create(LineString3d.create(pointABCD)));
+    result.push(this.createConeBsplineSurface(pointA, pointC, 1, 2, 4)!);
+    result.push(this.createXYGridBsplineSurface(8, 4, 4, 3)!);
+    this.appendGeometry(this.createClosedSolidSampler(true), result);
+    result.push(this.createTriangularUnitGridPolyface(pointA, Vector3d.unitX(), Vector3d.unitY(), 4, 5));
+    this.appendGeometry(this.createSimpleParityRegions(), result);
+    this.appendGeometry(this.createSimpleUnions(), result);
+    this.appendGeometry(this.createBagOfCurves(), result);
+
+    return result;
   }
 }

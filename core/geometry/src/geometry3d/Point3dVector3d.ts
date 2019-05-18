@@ -256,13 +256,16 @@ export class Point3d extends XYZ {
   /** Copy contents from another Point3d, Point2d, Vector2d, or Vector3d */
   public static createFrom(data: XYAndZ | XAndY | Float64Array, result?: Point3d): Point3d {
     if (data instanceof Float64Array) {
-      if (data.length >= 3)
-        return Point3d.create(data[0], data[1], data[2], result);
-      if (data.length >= 2)
-        return Point3d.create(data[0], data[1], 0, result);
-      if (data.length >= 1)
-        return Point3d.create(data[0], 0, 0, result);
-      return Point3d.create(0, 0, 0, result);
+      let x = 0;
+      let y = 0;
+      let z = 0;
+      if (data.length > 0)
+        x = data[0];
+      if (data.length > 1)
+        y = data[1];
+      if (data.length > 2)
+        z = data[2];
+      return Point3d.create(x, y, z, result);
     }
     return Point3d.create(data.x, data.y, XYZ.hasZ(data) ? data.z : 0, result);
   }
@@ -544,13 +547,16 @@ export class Vector3d extends XYZ {
   /** Copy contents from another Point3d, Point2d, Vector2d, or Vector3d */
   public static createFrom(data: XYAndZ | XAndY | Float64Array, result?: Vector3d): Vector3d {
     if (data instanceof Float64Array) {
-      if (data.length >= 3)
-        return Vector3d.create(data[0], data[1], data[2]);
-      if (data.length >= 2)
-        return Vector3d.create(data[0], data[1], 0);
-      if (data.length >= 1)
-        return Vector3d.create(data[0], 0, 0);
-      return Vector3d.create(0, 0, 0);
+      let x = 0;
+      let y = 0;
+      let z = 0;
+      if (data.length > 0)
+        x = data[0];
+      if (data.length > 1)
+        y = data[1];
+      if (data.length > 2)
+        z = data[2];
+      return Vector3d.create(x, y, z, result);
     }
     return Vector3d.create(data.x, data.y, XYZ.hasZ(data) ? data.z : 0.0, result);
   }
@@ -578,11 +584,7 @@ export class Vector3d extends XYZ {
    * @param result optional result vector
    */
   public static createStartEndXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: Vector3d): Vector3d {
-    if (result) {
-      result.set(x1 - x0, y1 - y0, z1 - z0);
-      return result;
-    }
-    return new Vector3d(x1 - x0, y1 - y0, z1 - z0);
+    return this.create(x1 - x0, y1 - y0, z1 - z0, result);
   }
   /**
    * Return a vector which is the input vector rotated around the axis vector.
@@ -590,22 +592,23 @@ export class Vector3d extends XYZ {
    * @param axis axis of rotation
    * @param angle angle of rotation.  If undefined, 90 degrees is implied
    * @param result optional result vector
+   * @returns undefined if axis has no length.
    */
   public static createRotateVectorAroundVector(vector: Vector3d, axis: Vector3d, angle?: Angle): Vector3d | undefined {
     // Rodriguez formula, https://en.wikipedia.org/wiki/Rodrigues'_rotation_formula
     const unitAxis = axis.normalize();
     if (unitAxis) {
       const xProduct = unitAxis.crossProduct(vector);
+      let c, s;
       if (angle) {
-        const c = angle.cos();
-        const s = angle.sin();
-        return Vector3d.createAdd3Scaled(vector, c, xProduct, s, unitAxis, unitAxis.dotProduct(vector) * (1.0 - c));
+        c = angle.cos();
+        s = angle.sin();
       } else {
-        // implied c = 0, s = 1 . . .
-        return vector.plusScaled(unitAxis, unitAxis.dotProduct(vector));
+        c = 0.0;
+        s = 1.0;
       }
+      return Vector3d.createAdd3Scaled(vector, c, xProduct, s, unitAxis, unitAxis.dotProduct(vector) * (1.0 - c));
     }
-    // unchanged vector if axis is null
     return undefined;
   }
   /**
@@ -843,10 +846,10 @@ export class Vector3d extends XYZ {
    * @param length desired length of vector
    * @param result optional preallocated result
    */
-  public scaleToLength(length: number, result?: Vector3d): Vector3d {
+  public scaleToLength(length: number, result?: Vector3d): Vector3d | undefined {
     const mag = Geometry.correctSmallMetricDistance(this.magnitude());
     if (mag === 0)
-      return new Vector3d();
+      return undefined;
     return this.scale(length / mag, result);
   }
   /** Compute the cross product of this vector with `vectorB`.   Immediately pass it to `normalize`.

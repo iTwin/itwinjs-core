@@ -108,7 +108,7 @@ export class GrowableFloat64Array {
       this._inUse++;
     } else {
       // Make new array (double size), copy values, then push toPush
-      const newData = new Float64Array(this._inUse * 2);
+      const newData = new Float64Array(4 + this._inUse * 2);
       for (let i = 0; i < this._inUse; i++) {
         newData[i] = this._data[i];
       }

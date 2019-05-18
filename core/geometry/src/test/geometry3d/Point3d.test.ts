@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, XYZ } from "../../geometry3d/Point3dVector3d";
+import { Point3d, XYZ, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import * as bsiChecker from "../Checker";
@@ -153,4 +153,29 @@ describe("Point3d", () => {
     ck.checkpoint("Point3d.Diffs");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("createFrom", () => {
+    const ck = new bsiChecker.Checker();
+    const pointA = Point3d.createFrom({ x: 1, y: 2 });
+    const pointB = Point3d.createFrom({ x: 1, y: 2, z: 3 });
+    const pointA1 = Point3d.createFrom(new Float64Array([1, 2]));
+    const pointB1 = Point3d.createFrom(new Float64Array([1, 2, 3]));
+    ck.testPoint3d(pointA, pointA1);
+    ck.testPoint3d(pointB, pointB1);
+    const pointC = Point3d.createFrom(new Float64Array([1]));
+    ck.testPoint3d(pointC, Point3d.create(1, 0, 0));
+    const vectorA = Vector3d.createFrom({ x: 1, y: 2 });
+    const vectorB = Vector3d.createFrom({ x: 1, y: 2, z: 3 });
+    const vectorA1 = Vector3d.createFrom(new Float64Array([1, 2]));
+    const vectorB1 = Vector3d.createFrom(new Float64Array([1, 2, 3]));
+    ck.testVector3d(vectorA, vectorA1);
+    ck.testVector3d(vectorB, vectorB1);
+    const vectorC = Vector3d.createFrom(new Float64Array([1]));
+    ck.testVector3d(vectorC, Vector3d.create(1, 0, 0));
+
+    ck.testExactNumber(0, Point3d.createFrom(new Float64Array([])).maxAbs ());
+    ck.testExactNumber(0, Vector3d.createFrom(new Float64Array([])).maxAbs ());
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

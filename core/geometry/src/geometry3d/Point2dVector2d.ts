@@ -474,10 +474,10 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return result;
   }
   /** return a vector parallel to this but with specified length */
-  public scaleToLength(length: number, result?: Vector2d): Vector2d {
+  public scaleToLength(length: number, result?: Vector2d): Vector2d | undefined {
     const mag = Geometry.correctSmallMetricDistance(this.magnitude());
     if (mag === 0)
-      return new Vector2d();
+      return undefined;
     return this.scale(length / mag, result);
   }
   /** return the dot product of this with vectorB */

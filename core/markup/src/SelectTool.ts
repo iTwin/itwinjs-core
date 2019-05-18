@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module MarkupTools */
 
-import { Point2d, Point3d, Transform, XAndY } from "@bentley/geometry-core";
+import { Point2d, Point3d, Transform, XAndY, Vector2d } from "@bentley/geometry-core";
 import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource } from "@bentley/imodeljs-frontend";
 import { ArrayXY, Box, Circle, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
@@ -93,9 +93,12 @@ class StretchHandle extends ModifyHandle {
     const evPt = MarkupApp.convertVpToVb(ev.viewPoint); // get cursor location in viewbox coords
     const diff = this.startPos.vectorTo(this.vbToStartTrn.multiplyPoint2d(evPt)); // movement of cursor from start, in viewbox coords
     const diag = this.startPos.vectorTo(this.opposite).normalize()!; // vector from opposite corner to this handle
-    const diagVec = diag.scaleToLength(diff.dotProduct(diag)); // projected distance along diagonal
+    let diagVec = diag.scaleToLength(diff.dotProduct(diag)); // projected distance along diagonal
+    if (diagVec === undefined)
+      diagVec = Vector2d.createZero();
 
     // if the shift key is down, don't preserve aspect ratio
+
     const adjusted = ev.isShiftKey ? { x: diff.x, y: diff.y } : { x: diagVec.x, y: diagVec.y };
     let { x, y, h, w } = this.startBox;
     if (this.posNpc.x === 0) {

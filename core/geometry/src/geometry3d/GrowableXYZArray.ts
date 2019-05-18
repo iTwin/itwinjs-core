@@ -96,16 +96,26 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     result._xyzInUse = this.length;
     return result;
   }
-  /** Copy point coordinates from data to a growable array.
+  /** Create an array from various point data formats.
+   * Valid inputs are:
+   * * Point2d
+   * * point3d
+   * * An array of 2 doubles
+   * * An array of 3 doubles
+   * * A GrowableXYZArray
+   * * Any json object satisfying Point3d.isXYAndZ
+   * * Any json object satisfying Point3d.isXAndY
+   * * A FLoat64Array of doubles, interpretted as xyzxyz
+   * * An array of any of the above
    * @param data source points.
    * @param result optional pre-allocated GrowableXYZArray to clear and fill.
    */
-  public static create(data: XYAndZ[], result?: GrowableXYZArray): GrowableXYZArray {
+  public static create(data: any, result?: GrowableXYZArray): GrowableXYZArray {
     if (result)
       result.clear();
     else
       result = new GrowableXYZArray(data.length);
-    for (const p of data) result.push(p);
+    result.pushFrom(data);
     return result;
   }
 
@@ -127,6 +137,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    * * A GrowableXYZArray
    * * Any json object satisfying Point3d.isXYAndZ
    * * Any json object satisfying Point3d.isXAndY
+   * * A FLoat64Array of doubles, interpretted as xyzxyz
    * * An array of any of the above
    * @returns the number of points added.
    */
@@ -137,7 +148,11 @@ export class GrowableXYZArray extends IndexedXYZCollection {
       this.pushFromGrowableXYZArray(p);
     else if (p instanceof Point2d)
       this.pushXYZ(p.x, p.y, 0.0);
-    else if (Geometry.isNumberArray(p, 3))
+    else if (Geometry.isNumberArray(p, 4)) {
+      const n = p.length;
+      for (let i = 0; i + 2 < n; i += 3)
+        this.pushXYZ(p[i], p[i + 1], p[i + 2]);
+    } else if (Geometry.isNumberArray(p, 3))
       this.pushXYZ(p[0], p[1], p[2]);
     else if (Geometry.isNumberArray(p, 2))
       this.pushXYZ(p[0], p[1], 0.0);
@@ -149,8 +164,12 @@ export class GrowableXYZArray extends IndexedXYZCollection {
       this.pushXYZ(p.x, p.y, p.z);
     else if (Point3d.isXAndY(p))
       this.pushXYZ(p.x, p.y, 0.0);
+    else if (p instanceof Float64Array) {
+      const n = p.length;
+      for (let i = 0; i + 2 < n; i += 3)
+        this.pushXYZ(p[i], p[i + 1], p[i + 2]);
+    }
   }
-
   /**
    * Replicate numWrap xyz values from the front of the array as new values at the end.
    * @param numWrap number of xyz values to replicate
@@ -168,7 +187,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   public pushXYZ(x: number, y: number, z: number) {
     const index = this._xyzInUse * 3;
     if (index >= this._data.length)
-      this.ensureCapacity(this.length * 2);
+      this.ensureCapacity(this.length === 0 ? 4 : this.length * 2);
     this._data[index] = x;
     this._data[index + 1] = y;
     this._data[index + 2] = z;

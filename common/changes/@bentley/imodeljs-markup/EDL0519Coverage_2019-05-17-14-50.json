@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "point/vector coverage.",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "Earlin.Lutz@bentley.com"
+}

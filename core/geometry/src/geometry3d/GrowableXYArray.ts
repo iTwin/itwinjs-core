@@ -89,12 +89,12 @@ export class GrowableXYArray extends IndexedXYCollection {
     newPoints._xyInUse = this.length;
     return newPoints;
   }
-/** Create an array poplulated from
- * * An array of Point2d
- * * An array of Point3d (hidden as XAndY)
- * * An array of objects with keyed values, et `{x:1, y:1}`
- * * A `GrowableXYZArray`
- */
+  /** Create an array poplulated from
+   * * An array of Point2d
+   * * An array of Point3d (hidden as XAndY)
+   * * An array of objects with keyed values, et `{x:1, y:1}`
+   * * A `GrowableXYZArray`
+   */
   public static create(data: XAndY[] | GrowableXYZArray): GrowableXYArray {
     const newPoints = new GrowableXYArray(data.length);
     if (data instanceof GrowableXYZArray) {
@@ -140,11 +140,11 @@ export class GrowableXYArray extends IndexedXYCollection {
       }
     }
   }
-/** push a point given by x,y coordinates */
+  /** push a point given by x,y coordinates */
   public pushXY(x: number, y: number) {
     const index = this._xyInUse * 2;
     if (index >= this._data.length)
-      this.ensureCapacity(this.length * 2);
+      this.ensureCapacity(this.length === 0 ? 4 : this.length * 2);
     this._data[index] = x;
     this._data[index + 1] = y;
     this._xyInUse++;
@@ -553,7 +553,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     }
     return undefined;
   }
-/** Test for nearly equal arrays. */
+  /** Test for nearly equal arrays. */
   public static isAlmostEqual(dataA: GrowableXYArray | undefined, dataB: GrowableXYArray | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)

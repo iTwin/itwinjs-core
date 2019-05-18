@@ -1631,7 +1631,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     clone(result?: GrowableXYZArray): GrowableXYZArray;
     compareLexicalBlock(ia: number, ib: number): number;
     component(pointIndex: number, componentIndex: number): number;
-    static create(data: XYAndZ[], result?: GrowableXYZArray): GrowableXYZArray;
+    static create(data: any, result?: GrowableXYZArray): GrowableXYZArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     distance(i: number, j: number): number | undefined;
@@ -3696,6 +3696,7 @@ export class Sample {
     static appendSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number): void;
     static appendSplits(points: Point3d[], target: Point3d, numSplit: number, includeTarget: boolean): void;
     static convertPointsToSegments(points: Point3d[], forceClosure?: boolean): LineSegment3d[];
+    static createAllGeometryQueryTypes(): GeometryQuery[];
     static createArcs(radiusRatio?: number, sweep?: AngleSweep): Arc3d[];
     static createBagOfCurves(): BagOfCurves[];
     static createBidirectionalSawtooth(origin: Point3d, dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhaseOutbound: number, dyFinal: number, dxLowReturn: number, riseXReturn: number, riseYReturn: number, dxHighReturn: number): Point3d[];
@@ -4315,7 +4316,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     rotateXY(angle: Angle, result?: Vector2d): Vector2d;
     safeDivideOrNull(denominator: number, result?: Vector2d): Vector2d | undefined;
     scale(scale: number, result?: Vector2d): Vector2d;
-    scaleToLength(length: number, result?: Vector2d): Vector2d;
+    scaleToLength(length: number, result?: Vector2d): Vector2d | undefined;
     unitPerpendicularXY(result?: Vector2d): Vector2d;
     static unitX(scale?: number): Vector2d;
     static unitY(scale?: number): Vector2d;
@@ -4381,7 +4382,7 @@ export class Vector3d extends XYZ {
     rotateXY(angle: Angle, result?: Vector3d): Vector3d;
     safeDivideOrNull(denominator: number, result?: Vector3d): Vector3d | undefined;
     scale(scale: number, result?: Vector3d): Vector3d;
-    scaleToLength(length: number, result?: Vector3d): Vector3d;
+    scaleToLength(length: number, result?: Vector3d): Vector3d | undefined;
     setStartEnd(point0: XYAndZ, point1: XYAndZ): void;
     signedAngleTo(vector1: Vector3d, vectorW: Vector3d): Angle;
     signedRadiansTo(vector1: Vector3d, vectorW: Vector3d): number;

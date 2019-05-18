@@ -17,6 +17,7 @@ import { Angle } from "../../geometry3d/Angle";
 import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
 import { Geometry } from "../../Geometry";
 import { Range2d } from "../../geometry3d/Range";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 
 /* tslint:disable: no-console */
 
@@ -458,6 +459,18 @@ describe("GrowableXYArray", () => {
     const n1 = data.length;
     data.compressAdjcentDuplicates(0.0001);
     ck.testExactNumber(n0, data.length, "compressed array big length", n1);
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("LoadFromArray", () => {
+    const ck = new Checker();
+    const n = 5;
+    const pointA = GrowableXYZArray.create(Sample.createGrowableArrayCirclePoints(1.0, n, false));
+    const pointB = GrowableXYZArray.create(pointA.float64Data());
+    const dataC = [];
+    for (const x of pointA.float64Data()) dataC.push(x);
+    const pointC = GrowableXYZArray.create(dataC);
+    ck.testTrue(GrowableXYZArray.isAlmostEqual(pointA, pointB));
+    ck.testTrue(GrowableXYZArray.isAlmostEqual(pointA, pointC));
     expect(ck.getNumErrors()).equals(0);
   });
 

@@ -9,6 +9,7 @@ import { Angle } from "../../geometry3d/Angle";
 import * as bsiChecker from "../Checker";
 // import { Sample } from "../serialization/GeometrySamples";
 import { expect } from "chai";
+import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
 /* tslint:disable:no-console */
 describe("Point2d", () => {
   it("zeros", () => {
@@ -228,6 +229,88 @@ describe("Point2d", () => {
     const gTangent = pointD.fractionOfProjectionToLine(pointA, pointB);
     ck.testCoordinate(fTangent, gTangent, "proejct to 2d line");
     ck.checkpoint("Point2d.Misc");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("MiscA", () => {
+    const ck = new bsiChecker.Checker();
+    const a = Vector2d.create(5, 3);
+    const b = Point2d.create(1, 2);
+    const ja = a.toJSONXY();
+    ck.testExactNumber(a.x, (ja as any).x);
+    ck.testExactNumber(a.y, (ja as any).y);
+
+    const a1 = a.clone();
+    ck.testTrue(a1.isAlmostEqualXY(a.x, a.y));
+    a.setFrom();
+    b.setFrom();
+    ck.testExactNumber(0, a.maxAbs());
+    ck.testExactNumber(0, b.maxAbs());
+
+    b.setFromJSON({ x: a.x, y: a.y });
+
+    ck.testTrue(a.isAlmostEqual(b));
+    b.setFromJSON();
+    ck.testExactNumber(0, b.maxAbs());
+    a.freeze();
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("MiscB", () => {
+    const ck = new bsiChecker.Checker();
+    const a = Vector2d.create(5, 3);
+    const b = Vector2d.create(0, 0);
+    ck.testFalse(a.isParallelTo(b));
+    ck.testFalse(b.isParallelTo(a));
+
+    a.set(3, 4);
+    b.set(-3, -4);
+    const c = Vector2d.create(-2, -9);
+    ck.testTrue(a.isParallelTo(b, true));
+    ck.testFalse(a.isParallelTo(b, false));
+    ck.testFalse(a.isParallelTo(c));
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("MiscC", () => {
+    const ck = new bsiChecker.Checker();
+    const a = Point2d.create(5, 2);
+    const u = Vector2d.create(5, 3);
+    const v = Vector2d.create(3, 1);
+    const b = a.plus(u);
+    ck.testCoordinate(u.dotProduct(v), v.dotProductStartEnd(a, b));
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("MiscC", () => {
+    const ck = new bsiChecker.Checker();
+    const u = Vector2d.create(5, 3);
+    const v0 = Vector2d.create(0, 0);
+    ck.testExactNumber(0, u.fractionOfProjectionToVector(v0));
+    ck.testUndefined(u.safeDivideOrNull(0));
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("Point2dArrayCarrier", () => {
+    const ck = new bsiChecker.Checker();
+    const pointA = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
+    const carrierA = new Point2dArrayCarrier(pointA);
+    for (let i = 0; i < carrierA.length; i++) {
+      ck.testUndefined(carrierA.getPoint2dAtCheckedPointIndex(10 + i));
+      ck.testUndefined(carrierA.getVector2dAtCheckedVectorIndex(10 + i));
+      ck.testUndefined(carrierA.vectorIndexIndex(i, 10 + i));
+      ck.testUndefined(carrierA.vectorIndexIndex(10 + i, i));
+    }
+    ck.testUndefined(carrierA.vectorXAndYIndex({ x: 1, y: 2 }, -3));
+    ck.testUndefined(carrierA.crossProductXAndYIndexIndex({ x: 1, y: 2 }, 20, 0));
+    ck.testUndefined(carrierA.crossProductXAndYIndexIndex({ x: 1, y: 2 }, 0, 20));
+    ck.testUndefined(carrierA.crossProductIndexIndexIndex(0, 1, 20));
+    ck.testUndefined(carrierA.crossProductIndexIndexIndex(10, 1, 0));
+    ck.testUndefined(carrierA.crossProductIndexIndexIndex(0, 21, 2));
+
     expect(ck.getNumErrors()).equals(0);
   });
 
