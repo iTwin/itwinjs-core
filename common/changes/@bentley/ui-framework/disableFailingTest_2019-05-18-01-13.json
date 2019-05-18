@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Disable SyncUi test that occasionally fails on CI job.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}

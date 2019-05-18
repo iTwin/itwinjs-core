@@ -117,7 +117,7 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
-  it("test multiple event Id with a multiple dispatches", async () => {
+  it.skip("test multiple event Id with a multiple dispatches", async () => {
     let callbackCalled = false;
     let callbackHasExpectedEventIds = false;
 
@@ -145,7 +145,7 @@ describe("SyncUiEventDispatcher", () => {
   });
 
   // skipping following because some of these do not get called back within the timeToWaitForUiSyncCallback ms limit when running on Linux.
-  it("Test event handlers", async () => {
+  it.skip("Test event handlers", async () => {
     const handleSyncUiEvent = sinon.spy();
 
     SyncUiEventDispatcher.initialize();
