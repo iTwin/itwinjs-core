@@ -3,7 +3,7 @@
 exports[`RulesetTesting generates correct content for 'Items' ruleset. ClassName: 'ECDbMeta:PropertyCategoryDef' 1`] = `
 Array [
   PropertyRecord {
-    "description": "ECSchema-0-H",
+    "description": "MyProp",
     "isReadonly": true,
     "property": Object {
       "displayLabel": "Schema",
@@ -11,7 +11,7 @@ Array [
       "typename": "navigation",
     },
     "value": Object {
-      "displayValue": "ECSchema-0-H",
+      "displayValue": "MyProp",
       "value": 17,
       "valueFormat": 0,
     },

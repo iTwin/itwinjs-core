@@ -963,25 +963,199 @@
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
-        "propertyNames": {
-          "description": "Names of properties which should be used as instance label. The\nfirst property that has a value is used as the actual label.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
         "ruleType": {
           "description": "Used for serializing to JSON.",
           "enum": [
             "InstanceLabelOverride"
           ],
           "type": "string"
+        },
+        "values": {
+          "description": "Specifications for the label value. The first non-empty value\nis used as the actual label.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideCompositeValueSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverridePropertyValueSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideClassNameSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideClassLabelSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideBriefcaseIdSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideLocalIdSpecification"
+              }
+            ]
+          },
+          "type": "array"
         }
       },
       "required": [
         "class",
-        "propertyNames",
-        "ruleType"
+        "ruleType",
+        "values"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideBriefcaseIdSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that returns ECInstance's briefcase ID in base36 format.",
+      "properties": {
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "BriefcaseId"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideClassLabelSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that uses ECClass display label as the label content.",
+      "properties": {
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "ClassLabel"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideClassNameSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that uses ECClass name as the label content.",
+      "properties": {
+        "full": {
+          "description": "Should full (`{schemaName}.{className}`) class name be used",
+          "type": "boolean"
+        },
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "ClassName"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideCompositeValueSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that allows creating a label value composited using\nmultiple other specifications.",
+      "properties": {
+        "parts": {
+          "description": "Parts of the value.\n\nIf any of the parts with `isRequired` flag evaluate to an empty string, the\nresult of this specification is also an empty string.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "isRequired": {
+                "type": "boolean"
+              },
+              "spec": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideCompositeValueSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverridePropertyValueSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideClassNameSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideClassLabelSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideBriefcaseIdSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideLocalIdSpecification"
+                  }
+                ],
+                "description": "Specification to define how the label for `InstanceLabelOverride` should be created."
+              }
+            },
+            "required": [
+              "spec"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "separator": {
+          "description": "Separator to use when joining the parts. Defaults to a space character.",
+          "type": "string"
+        },
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "Composite"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "parts",
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideLocalIdSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that returns ECInstance's local ID in base36 format.",
+      "properties": {
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "LocalId"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverridePropertyValueSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that uses property value as the label content.",
+      "properties": {
+        "propertyName": {
+          "description": "Name of the property whose value should be used.",
+          "type": "string"
+        },
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "Property"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "propertyName",
+        "specType"
       ],
       "type": "object"
     },

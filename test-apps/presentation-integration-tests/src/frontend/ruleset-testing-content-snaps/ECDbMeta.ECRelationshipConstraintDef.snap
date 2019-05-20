@@ -42,7 +42,7 @@ Array [
     },
   },
   PropertyRecord {
-    "description": "ECClass-0-S",
+    "description": "Ñót spêçìfíêd",
     "isReadonly": true,
     "property": Object {
       "displayLabel": "RelationshipClass",
@@ -50,7 +50,7 @@ Array [
       "typename": "navigation",
     },
     "value": Object {
-      "displayValue": "ECClass-0-S",
+      "displayValue": "Ñót spêçìfíêd",
       "value": 28,
       "valueFormat": 0,
     },
