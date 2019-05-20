@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WorkflowTask */
 
+import { Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
 
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
 import { Task, TaskManager } from "./Task";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for a [[Workflow]].
  * @public
@@ -181,7 +183,7 @@ export class WorkflowManager {
    * @param workflowPropsList  the list of Workflows to load
    */
   public static loadWorkflows(workflowPropsList: WorkflowPropsList) {
-    this._defaultWorkflowId = workflowPropsList.defaultWorkflowId;
+    this.setDefaultWorkflowId(workflowPropsList.defaultWorkflowId);
     WorkflowManager.loadWorkflowDefs(workflowPropsList.workflows);
   }
 
@@ -269,6 +271,29 @@ export class WorkflowManager {
   /** Gets the Id of the default Workflow */
   public static get defaultWorkflowId(): string {
     return this._defaultWorkflowId;
+  }
+
+  /** Sets the Id of the default Workflow */
+  public static setDefaultWorkflowId(id: string): void {
+    this._defaultWorkflowId = id;
+  }
+
+  /** Removes a Workflow
+   * @param workflow  The Workflow to remove
+   */
+  public static removeWorkflow(workflow: Workflow): boolean {
+    const id = workflow.id;
+    let result = false;
+
+    if (this._workflows.get(id)) {
+      this._workflows.delete(id);
+      result = true;
+    } else {
+      Logger.logError(UiFramework.loggerCategory(this), `removeWorkflow: Workflow with id '${id}' not found`);
+      result = false;
+    }
+
+    return result;
   }
 
   public static getSortedWorkflows(): Workflow[] {

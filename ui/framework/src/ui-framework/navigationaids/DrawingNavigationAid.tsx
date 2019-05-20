@@ -39,24 +39,38 @@ export enum MapMode {
   Closed = "map-closed",
 }
 
-// used only in testing
-/** @internal */
+/** Properties for the [[DrawingNavigationAid]] component
+ * @alpha
+ */
 export interface DrawingNavigationAidProps extends CommonProps {
   iModelConnection: IModelConnection;
+
+  // used only in testing
+
+  /** @internal */
   animationTime?: number;
+  /** @internal */
   openSize?: Vector3d;
+  /** @internal */
   closeSize?: Vector3d;
+  /** @internal */
   initialMapMode?: MapMode;
+  /** @internal */
   onAnimationEnd?: () => void;
+  /** @internal */
   contentControlOverride?: ContentControl | undefined;
+  /** @internal */
   initialRotateMinimapWithView?: boolean;
+  /** @internal */
   initialView?: ViewState;
+  /** @internal */
   viewManagerOverride?: ViewManager;
+  /** @internal */
   screenViewportOverride?: typeof ScreenViewport;
 }
 
 /** @internal */
-export interface DrawingNavigationAidState {
+interface DrawingNavigationAidState {
   startOrigin: Point3d;
   origin: Point3d;
   extents: Vector3d;

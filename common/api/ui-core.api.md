@@ -869,7 +869,7 @@ export enum MessageSeverity {
 // @beta
 export const MutedText: React.FunctionComponent<TextProps>;
 
-// @public
+// @beta
 export interface NodeCheckboxProps {
     isDisabled?: boolean;
     onClick?: (newState: CheckBoxState) => void;
@@ -877,12 +877,10 @@ export interface NodeCheckboxProps {
     tooltip?: string;
 }
 
-// @public
+// @beta
 export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode;
 
-// Warning: (ae-incompatible-release-tags) The symbol "NodeCheckboxRenderProps" is marked as @public, but its signature references "CheckboxProps" which is marked as @beta
-// 
-// @public
+// @beta
 export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange"> & {
     onChange: (checked: boolean) => void;
 };
@@ -1354,6 +1352,7 @@ export interface TreeNodePlaceholderProps extends CommonProps {
 
 // @public
 export interface TreeNodeProps extends CommonProps {
+    // @beta
     checkboxProps?: NodeCheckboxProps;
     // (undocumented)
     children?: React.ReactNode;
@@ -1626,6 +1625,10 @@ export interface WithTimeoutProps {
     timeout: number;
 }
 
+
+// Warnings were encountered during analysis:
+// 
+// src/ui-core/tree/Node.tsx:71:5 - (ae-incompatible-release-tags) The symbol "renderCheckbox" is marked as @public, but its signature references "NodeCheckboxRenderer" which is marked as @beta
 
 // (No @packageDocumentation comment for this package)
 

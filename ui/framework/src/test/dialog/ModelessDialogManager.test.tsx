@@ -7,6 +7,8 @@ import { mount } from "enzyme";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
+import { Logger } from "@bentley/bentleyjs-core";
+
 import TestUtils from "../TestUtils";
 import { ModelessDialogManager, DialogChangedEventArgs, ModelessDialogRenderer, ModelessDialog } from "../../ui-framework";
 
@@ -54,6 +56,13 @@ describe("ModelessDialogManager", () => {
     ModelessDialogManager.closeDialog(dialogId);
     expect(spyMethod.calledThrice).to.be.true;
     expect(ModelessDialogManager.dialogCount).to.eq(0);
+  });
+
+  it("closeDialog should log error if passed a bad id", () => {
+    const logSpyMethod = sinon.spy(Logger, "logError");
+    ModelessDialogManager.closeDialog("bad");
+    logSpyMethod.calledOnce.should.true;
+    (Logger.logError as any).restore();
   });
 
   it("ModelessDialogRenderer component", () => {
@@ -194,6 +203,11 @@ describe("ModelessDialogManager", () => {
     expect(wrapper.find(ModelessDialog).length).to.eq(2);
 
     expect(ModelessDialogManager.activeDialog).to.eq(reactNode2);
+
+    // Click the 2nd dialog - should stay forward
+    wrapper.find(ModelessDialog).at(1).find(".core-dialog-container").simulate("pointerDown");
+    expect(ModelessDialogManager.activeDialog).to.eq(reactNode2);
+    wrapper.update();
 
     // Click the 1st dialog to bring it forward
     wrapper.find(ModelessDialog).at(0).find(".core-dialog-container").simulate("pointerDown");

@@ -20,6 +20,9 @@ export interface SignInProps extends CommonProps {
   onRegister?: () => void;
   /** Handler for the Offline link */
   onOffline?: () => void;
+
+  /** @internal */
+  onStartSignIn?: () => void;
 }
 
 /**
@@ -34,6 +37,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
   }
 
   public componentDidMount() {
+    // istanbul ignore next
     if (OidcClientWrapper.oidcClient)
       OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
@@ -44,12 +48,19 @@ export class SignIn extends React.PureComponent<SignInProps> {
   }
 
   public componentWillUnmount() {
+    // istanbul ignore next
     if (OidcClientWrapper.oidcClient)
       OidcClientWrapper.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 
   private _onStartSignin = async () => {
-    OidcClientWrapper.oidcClient.signIn(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
+    // istanbul ignore next
+    if (OidcClientWrapper.oidcClient)
+      OidcClientWrapper.oidcClient.signIn(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
+
+    // istanbul ignore else
+    if (this.props.onStartSignIn)
+      this.props.onStartSignIn();
   }
 
   public render() {

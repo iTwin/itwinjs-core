@@ -74,8 +74,8 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
   public get content(): React.ReactNode {
     const initials = this._getInitials();
     const fullName = this._getFullName();
-    const email = (this._userInfo && this._userInfo.email) ? this._userInfo.email.id : "";
-    const organization = (this._userInfo && this._userInfo.organization) ? this._userInfo.organization.name : "";
+    const email = (this._userInfo && this._userInfo.email && typeof this._userInfo.email.id === "string") ? this._userInfo.email.id : /* istanbul ignore next */ "";
+    const organization = (this._userInfo && this._userInfo.organization) ? this._userInfo.organization.name : /* istanbul ignore next */ "";
     const color = getUserColor(email);
     return (
       <div className="user-profile">

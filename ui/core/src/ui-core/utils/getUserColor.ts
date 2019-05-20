@@ -22,6 +22,9 @@ const COLORS = [
  * @internal
  */
 export function getUserColor(email: string): string {
+  if (typeof email !== "string")  // Test for invalid data
+    return COLORS[0];
+
   const cleanString = email.trim().toLowerCase();
 
   let hash = 0;

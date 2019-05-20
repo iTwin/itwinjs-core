@@ -52,7 +52,7 @@ export class UiComponents {
   }
 
   /** Calls i18n.translateWithNamespace with the "UiComponents" namespace. Do NOT include the namespace in the key.
-   *  @internal
+   * @internal
    */
   public static translate(key: string | string[], options?: TranslationOptions): string {
     return UiComponents.i18n.translateWithNamespace(UiComponents.i18nNamespace, key, options);

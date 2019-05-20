@@ -9,6 +9,7 @@ import { mount, shallow } from "enzyme";
 
 import { ConfigurableUiContent } from "../../ui-framework";
 import TestUtils from "../TestUtils";
+import { render } from "react-testing-library";
 
 describe("ConfigurableUiContent", () => {
   before(async () => {
@@ -32,15 +33,14 @@ describe("ConfigurableUiContent", () => {
   });
 
   it("key presses should be handled", () => {
-    const wrapper = mount(
+    const component = render(
       <Provider store={TestUtils.store} >
         <ConfigurableUiContent />
       </Provider>);
 
-    wrapper.simulate("keyDown", { key: "a" });
-    wrapper.simulate("keyDown", { key: "Escape" });
-
-    wrapper.unmount();
+    const divContainer = component.getByTestId("uifw-configurableui-wrapper");
+    divContainer.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "a" }));
+    divContainer.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
   });
 
   it("mouse moves should be handled", () => {

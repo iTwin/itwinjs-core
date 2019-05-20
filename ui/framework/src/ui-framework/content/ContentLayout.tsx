@@ -682,6 +682,7 @@ export class ContentLayoutManager {
   }
 
   public static refreshActiveLayout() {
+    // istanbul ignore else
     if (this._activeLayout && this._activeGroup) {
       FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._activeLayout, contentGroup: this._activeGroup });
       this._activeGroup.refreshContentNodes();

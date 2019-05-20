@@ -58,28 +58,34 @@ export type ConfigurableUiActionsUnion = ActionsUnion<typeof ConfigurableUiActio
  * @public
  */
 export function ConfigurableUiReducer(state: ConfigurableUiState = initialState, _action: ConfigurableUiActionsUnion): ConfigurableUiState {
+  let outState = state;
+
   switch (_action.type) {
     case ConfigurableUiActionId.SetSnapMode: {
+      // istanbul ignore else
       if (undefined !== _action.payload)
-        return { ...state, snapMode: _action.payload };
+        outState = { ...state, snapMode: _action.payload };
       break;
     }
     case ConfigurableUiActionId.SetToolPrompt: {
+      // istanbul ignore else
       if (undefined !== _action.payload)
-        return { ...state, toolPrompt: _action.payload };
+        outState = { ...state, toolPrompt: _action.payload };
       break;
     }
     case ConfigurableUiActionId.SetTheme: {
+      // istanbul ignore else
       if (undefined !== _action.payload)
-        return { ...state, theme: _action.payload };
+        outState = { ...state, theme: _action.payload };
       break;
     }
     case ConfigurableUiActionId.SetWidgetOpacity: {
+      // istanbul ignore else
       if (undefined !== _action.payload)
-        return { ...state, widgetOpacity: _action.payload };
+        outState = { ...state, widgetOpacity: _action.payload };
       break;
     }
   }
 
-  return state;
+  return outState;
 }

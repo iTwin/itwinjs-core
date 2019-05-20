@@ -3,8 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import sinon = require("sinon");
+
+import { Logger } from "@bentley/bentleyjs-core";
+
 import TestUtils from "../TestUtils";
-import { WorkflowManager, WorkflowPropsList, ConfigurableUiManager, TaskPropsList, Workflow } from "../../ui-framework";
+import { WorkflowManager, WorkflowPropsList, ConfigurableUiManager, TaskPropsList, Workflow, WorkflowProps } from "../../ui-framework";
 
 describe("Workflow & WorkflowManager", () => {
 
@@ -175,6 +179,37 @@ describe("Workflow & WorkflowManager", () => {
       expect(sorted[2].id).eq("ExampleWorkflow3");
     });
 
-  });
+    it("loadWorkflow", () => {
+      const workflowProps: WorkflowProps = {
+        id: "OneWorkflow",
+        iconSpec: "icon-placeholder",
+        labelKey: "SampleApp:Test.my-label",
+        defaultTaskId: "task1",
+        tasks: ["Task1", "Task2"],
+      };
 
+      WorkflowManager.loadWorkflow(workflowProps);
+      const workflow = WorkflowManager.findWorkflow("OneWorkflow");
+      expect(workflow).to.not.be.undefined;
+
+      if (workflow)
+        expect(WorkflowManager.removeWorkflow(workflow)).to.eq(true);
+    });
+
+    it("removeWorkflow with unregistered workflow logs error & returns false", () => {
+      const workflowProps: WorkflowProps = {
+        id: "OneWorkflow",
+        iconSpec: "icon-placeholder",
+        labelKey: "SampleApp:Test.my-label",
+        defaultTaskId: "task1",
+        tasks: ["Task1", "Task2"],
+      };
+
+      const spyMethod = sinon.spy(Logger, "logError");
+      const workflow = new Workflow(workflowProps);
+      expect(WorkflowManager.removeWorkflow(workflow)).to.eq(false);
+      spyMethod.calledOnce.should.true;
+    });
+
+  });
 });

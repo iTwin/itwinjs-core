@@ -13,6 +13,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 
 import TestUtils from "../TestUtils";
 import { ModelSelectorWidget, ModelSelectorWidgetControl, WidgetProps, WidgetDef, ConfigurableUiControlType } from "../../ui-framework";
+import { ModelSelectorDataProvider } from "../../ui-framework/pickers/ModelSelector/ModelSelectorDefinitions";
 
 describe("ModelSelector", () => {
 
@@ -103,6 +104,24 @@ describe("ModelSelector", () => {
       const widgetDef: WidgetDef = new WidgetDef(widgetProps);
       const widgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.Widget);
       expect(widgetControl).to.not.be.undefined;
+    });
+  });
+
+  describe("ModelSelectorDataProvider", () => {
+    it("API should return correct values", async () => {
+      const rulesetId = "Models";
+      const dataProvider = new ModelSelectorDataProvider(imodel, rulesetId);
+      expect(dataProvider.rulesetId).to.eq(rulesetId);
+      expect(dataProvider.imodel).to.eq(imodel);
+
+      // const paths =
+      await dataProvider.getFilteredNodePaths("");
+      // console.log("Paths: " + paths); // tslint:disable-line: no-console
+      // console.log("======="); // tslint:disable-line: no-console
+
+      // const nodes =
+      await dataProvider.getNodes();
+      // console.log("Nodes: " + nodes); // tslint:disable-line: no-console
     });
   });
 

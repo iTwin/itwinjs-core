@@ -34,13 +34,26 @@ export class UserProfileBackstageItem extends React.PureComponent<UserProfileBac
 
     // istanbul ignore else
     if (userInfo) {
+      let emailId = "";
+      if (userInfo.email && userInfo.email.id) {
+        if (typeof userInfo.email.id === "string")
+          emailId = userInfo.email.id;
+        else {
+          const ids = userInfo.email.id as string[];
+          if (ids.length)
+            emailId = ids[0];
+        }
+      }
+      const firstName = userInfo.profile ? userInfo.profile.firstName : "";
+      const lastName = userInfo.profile ? userInfo.profile.lastName : "";
+
       content = (
         <NZ_UserProfile
-          color={getUserColor(userInfo.email!.id)}
-          initials={this._getInitials(userInfo.profile!.firstName, userInfo.profile!.lastName)}
+          color={getUserColor(emailId)}
+          initials={this._getInitials(firstName, lastName)}
           onClick={this._onOpenSignOut}
         >
-          {this._getFullName(userInfo.profile!.firstName, userInfo.profile!.lastName)}
+          {this._getFullName(firstName, lastName)}
         </NZ_UserProfile>
       );
     }

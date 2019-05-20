@@ -80,9 +80,9 @@ public;CoreTools
 public;createAction
 public;createAction
 internal;CubeHover
-public;CubeNavigationAid 
-public;CubeNavigationAidControl 
-internal;CubeNavigationAidProps 
+alpha;CubeNavigationAid 
+alpha;CubeNavigationAidControl 
+alpha;CubeNavigationAidProps 
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
@@ -102,8 +102,7 @@ beta;DragDropLayerRendererComponent
 beta;DragDropLayerRendererProps 
 alpha;DrawingNavigationAid 
 alpha;DrawingNavigationAidControl 
-internal;DrawingNavigationAidProps 
-internal;DrawingNavigationAidState
+alpha;DrawingNavigationAidProps 
 internal;DrawingNavigationCanvas 
 internal;DrawingNavigationCanvasProps
 internal;EachWidgetProps
@@ -277,6 +276,7 @@ internal;StatusBarZone
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
 public;StringGetter = () => string
+public;SupportsViewSelectorChange
 public;SyncToolSettingsPropertiesEvent 
 public;SyncToolSettingsPropertiesEventArgs
 public;SyncUiEvent 

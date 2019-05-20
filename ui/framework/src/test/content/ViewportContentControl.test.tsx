@@ -29,6 +29,7 @@ import { ViewportComponentEvents } from "@bentley/ui-components";
 import sinon = require("sinon");
 import { NavigationWidget } from "../../ui-framework/widgets/NavigationWidget";
 import { mount } from "enzyme";
+import { SupportsViewSelectorChange } from "../../ui-framework/content/ContentControl";
 
 describe("ViewportContentControl", () => {
 
@@ -114,7 +115,8 @@ describe("ViewportContentControl", () => {
         expect(contentControl.viewport).to.not.be.undefined;
         expect(contentControl.getType()).to.eq(ConfigurableUiControlType.Viewport);
 
-        expect(contentControl.supportsViewSelectorChange).to.be.true;
+        const supportsContentControl = contentControl as unknown as SupportsViewSelectorChange;
+        expect(supportsContentControl.supportsViewSelectorChange).to.be.true;
       }
     }
   });

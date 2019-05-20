@@ -51,7 +51,7 @@ export class UiCore {
   }
 
   /** Calls i18n.translateWithNamespace with the "UiCore" namespace. Do NOT include the namespace in the key.
-   *  @internal
+   * @internal
    */
   public static translate(key: string | string[], options?: TranslationOptions): string {
     return UiCore.i18n.translateWithNamespace(UiCore.i18nNamespace, key, options);

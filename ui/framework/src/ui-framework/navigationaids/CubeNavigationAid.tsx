@@ -21,7 +21,7 @@ import { ContentViewManager } from "../content/ContentViewManager";
 import { ContentControl } from "../content/ContentControl";
 
 /** NavigationAid that displays an interactive rotation cube that synchronizes with the rotation of the iModel Viewport
- * @public
+ * @alpha
  */
 export class CubeNavigationAidControl extends NavigationAidControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -94,12 +94,19 @@ export enum CubeHover {
   Active,
 }
 
-// used only in testing
-/** @internal */
+/** Properties for the [[CubeNavigationAid]] component
+ * @alpha
+ */
 export interface CubeNavigationAidProps extends CommonProps {
   iModelConnection: IModelConnection;
+
+  // used only in testing
+
+  /** @internal */
   onAnimationEnd?: () => void;
+  /** @internal */
   animationTime?: number;
+  /** @internal */
   contentControlOverride?: ContentControl | undefined;
 }
 
@@ -114,7 +121,7 @@ interface CubeNavigationAidState {
 }
 
 /** Cube Navigation Aid Component
- * @public
+ * @alpha
  */
 export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, CubeNavigationAidState> {
   private _start: Vector2d = Vector2d.createZero();

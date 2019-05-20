@@ -82,13 +82,14 @@ export class AppNotificationManager extends NotificationManager {
    * @return true if the message was ended successfully, false if the activityMessage could not be ended.
    */
   public endActivityMessage(reason: ActivityMessageEndReason): boolean {
-    switch (reason) {
-      case (ActivityMessageEndReason.Completed):
-        return MessageManager.endActivityMessage(true);
-      case (ActivityMessageEndReason.Cancelled):
-        return MessageManager.endActivityMessage(false);
-    }
-    return false;
+    let result = false;
+
+    if (ActivityMessageEndReason.Completed === reason)
+      result = MessageManager.endActivityMessage(true);
+    else if (ActivityMessageEndReason.Cancelled === reason)
+      result = MessageManager.endActivityMessage(false);
+
+    return result;
   }
 
   /** Hides the Pointer message. */

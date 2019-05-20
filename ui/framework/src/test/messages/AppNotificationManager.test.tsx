@@ -9,7 +9,7 @@ import { mount } from "enzyme";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
 import { AppNotificationManager, MessageManager, ElementTooltip, ModalDialogManager } from "../../ui-framework";
-import { NotifyMessageDetails, OutputMessagePriority, MessageBoxType, MessageBoxIconType, ActivityMessageDetails, ActivityMessageEndReason } from "@bentley/imodeljs-frontend";
+import { NotifyMessageDetails, OutputMessagePriority, MessageBoxType, MessageBoxIconType, ActivityMessageDetails, ActivityMessageEndReason, OutputMessageType, OutputMessageAlert } from "@bentley/imodeljs-frontend";
 
 describe("AppNotificationManager", () => {
 
@@ -42,6 +42,13 @@ describe("AppNotificationManager", () => {
   it("outputMessage", () => {
     const spyMethod = sinon.spy(MessageManager, "addMessage");
     const details = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.");
+    notifications.outputMessage(details);
+    expect(spyMethod.calledOnce).to.be.true;
+  });
+
+  it("outputMessage with Alert & Balloon", () => {
+    const spyMethod = sinon.spy(MessageManager, "addMessage");
+    const details = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.", "A detailed message.", OutputMessageType.Alert, OutputMessageAlert.Balloon);
     notifications.outputMessage(details);
     expect(spyMethod.calledOnce).to.be.true;
   });

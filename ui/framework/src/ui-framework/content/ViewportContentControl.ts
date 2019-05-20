@@ -8,14 +8,14 @@ import { ScreenViewport, IModelApp, IModelConnection, ViewState } from "@bentley
 import { Id64String } from "@bentley/bentleyjs-core";
 
 import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { ContentControl } from "./ContentControl";
+import { ContentControl, SupportsViewSelectorChange } from "./ContentControl";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentViewManager } from "./ContentViewManager";
 
 /** The base class for Frontstage Viewport content controls.
  * @public
  */
-export class ViewportContentControl extends ContentControl {
+export class ViewportContentControl extends ContentControl implements SupportsViewSelectorChange {
   private _viewport: ScreenViewport | undefined;
   private _isReady: Promise<void>;
   private _viewportReadyCallback?: () => void;

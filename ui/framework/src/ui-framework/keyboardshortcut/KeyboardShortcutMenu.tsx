@@ -81,9 +81,11 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
   private getShortcutMenuItems(shortcuts?: KeyboardShortcut[]): React.ReactNode[] {
     const items: React.ReactNode[] = [];
 
+    // istanbul ignore else
     if (shortcuts) {
       shortcuts.forEach((shortcut: KeyboardShortcut, index: number) => {
         const item = this.getShortcutMenuItem(shortcut, index);
+        // istanbul ignore else
         if (item)
           items.push(item);
       });

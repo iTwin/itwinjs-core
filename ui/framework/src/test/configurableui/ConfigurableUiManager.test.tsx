@@ -23,6 +23,7 @@ import {
   FrontstageProvider,
   FrontstageProps,
   CoreTools,
+  WorkflowProps,
 } from "../../ui-framework";
 
 describe("ConfigurableUiManager", () => {
@@ -185,6 +186,23 @@ describe("ConfigurableUiManager", () => {
 
     ConfigurableUiManager.loadWorkflows(workflowPropsList);
     expect(WorkflowManager.findWorkflow("ExampleWorkflow")).to.not.be.undefined;
+  });
+
+  it("loadWorkflow", () => {
+    const workflowProps: WorkflowProps = {
+      id: "OneWorkflow",
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:Test.my-label",
+      defaultTaskId: "task1",
+      tasks: ["Task1", "Task2"],
+    };
+
+    ConfigurableUiManager.loadWorkflow(workflowProps);
+    const workflow = WorkflowManager.findWorkflow("OneWorkflow");
+    expect(workflow).to.not.be.undefined;
+
+    if (workflow)
+      expect(WorkflowManager.removeWorkflow(workflow)).to.eq(true);
   });
 
 });

@@ -576,8 +576,6 @@ export interface ConfigurableUiElement {
 // @public
 export class ConfigurableUiManager {
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
-    // (undocumented)
-    static clearRegisteredControls(): void;
     static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUiElement | undefined;
     static findFrontstageDef(id?: string): FrontstageDef | undefined;
     static initialize(): void;
@@ -617,9 +615,7 @@ export class ContentControl extends ConfigurableUiControl {
     readonly navigationAidControl: string;
     onActivated(): void;
     onDeactivated(): void;
-    processViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): Promise<void>;
     reactElement: React_2.ReactNode;
-    readonly supportsViewSelectorChange: boolean;
     readonly viewport: ScreenViewport | undefined;
 }
 
@@ -822,9 +818,7 @@ export enum CubeHover {
     None = 0
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "CubeNavigationAid" is marked as @public, but its signature references "CubeNavigationAidProps" which is marked as @internal
-// 
-// @public
+// @alpha
 export class CubeNavigationAid extends React_2.Component<CubeNavigationAidProps, CubeNavigationAidState> {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -836,22 +830,22 @@ export class CubeNavigationAid extends React_2.Component<CubeNavigationAidProps,
     readonly state: Readonly<CubeNavigationAidState>;
 }
 
-// @public
+// @alpha
 export class CubeNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
 }
 
-// @internal (undocumented)
+// @alpha
 export interface CubeNavigationAidProps extends CommonProps {
-    // (undocumented)
+    // @internal (undocumented)
     animationTime?: number;
-    // (undocumented)
+    // @internal (undocumented)
     contentControlOverride?: ContentControl | undefined;
     // (undocumented)
     iModelConnection: IModelConnection;
-    // (undocumented)
+    // @internal (undocumented)
     onAnimationEnd?: () => void;
 }
 
@@ -1014,9 +1008,6 @@ export interface DragDropLayerRendererProps extends CommonProps {
     };
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "DrawingNavigationAid" is marked as @alpha, but its signature references "DrawingNavigationAidProps" which is marked as @internal
-// Warning: (ae-incompatible-release-tags) The symbol "DrawingNavigationAid" is marked as @alpha, but its signature references "DrawingNavigationAidState" which is marked as @internal
-// 
 // @alpha
 export class DrawingNavigationAid extends React_2.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
     constructor(props: DrawingNavigationAidProps);
@@ -1043,74 +1034,30 @@ export class DrawingNavigationAidControl extends NavigationAidControl {
     getSize(): string | undefined;
 }
 
-// @internal (undocumented)
+// @alpha
 export interface DrawingNavigationAidProps extends CommonProps {
-    // (undocumented)
+    // @internal (undocumented)
     animationTime?: number;
-    // (undocumented)
+    // @internal (undocumented)
     closeSize?: Vector3d;
-    // (undocumented)
+    // @internal (undocumented)
     contentControlOverride?: ContentControl | undefined;
     // (undocumented)
     iModelConnection: IModelConnection;
-    // (undocumented)
+    // @internal (undocumented)
     initialMapMode?: MapMode;
-    // (undocumented)
+    // @internal (undocumented)
     initialRotateMinimapWithView?: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     initialView?: ViewState;
-    // (undocumented)
+    // @internal (undocumented)
     onAnimationEnd?: () => void;
-    // (undocumented)
+    // @internal (undocumented)
     openSize?: Vector3d;
-    // (undocumented)
+    // @internal (undocumented)
     screenViewportOverride?: typeof ScreenViewport;
-    // (undocumented)
+    // @internal (undocumented)
     viewManagerOverride?: ViewManager;
-}
-
-// @internal (undocumented)
-export interface DrawingNavigationAidState {
-    // (undocumented)
-    animation: number;
-    // (undocumented)
-    drawingZoom: number;
-    // (undocumented)
-    extents: Vector3d;
-    // (undocumented)
-    isMoving: boolean;
-    // (undocumented)
-    isPanning: boolean;
-    // (undocumented)
-    mapExtents: Vector3d;
-    // (undocumented)
-    mapOrigin: Point3d;
-    // (undocumented)
-    mode: MapMode;
-    // (undocumented)
-    mouseStart: Point2d;
-    // (undocumented)
-    origin: Point3d;
-    // (undocumented)
-    panningDirection: Vector3d;
-    // (undocumented)
-    rotateMinimapWithView: boolean;
-    // (undocumented)
-    rotation: Matrix3d;
-    // (undocumented)
-    startDrawingZoom: number;
-    // (undocumented)
-    startMapExtents: Vector3d;
-    // (undocumented)
-    startMapOrigin: Point3d;
-    // (undocumented)
-    startOrigin: Point3d;
-    // (undocumented)
-    startRotation: Matrix3d;
-    // (undocumented)
-    view: ViewState | undefined;
-    // (undocumented)
-    viewId: string;
 }
 
 // @internal (undocumented)
@@ -2642,6 +2589,8 @@ export interface SignInProps extends CommonProps {
     onOffline?: () => void;
     onRegister?: () => void;
     onSignedIn: () => void;
+    // @internal (undocumented)
+    onStartSignIn?: () => void;
 }
 
 // @public
@@ -2908,6 +2857,12 @@ export interface StatusFieldProps extends CommonProps {
 
 // @public
 export type StringGetter = () => string;
+
+// @public
+export interface SupportsViewSelectorChange {
+    processViewSelectorChange(iModel: IModelConnection, viewDefinitionId: Id64String, viewState: ViewState, name: string): Promise<void>;
+    supportsViewSelectorChange: boolean;
+}
 
 // @public
 export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> {
@@ -3395,7 +3350,7 @@ export interface VersionInfo {
 }
 
 // @public
-export class ViewportContentControl extends ContentControl {
+export class ViewportContentControl extends ContentControl implements SupportsViewSelectorChange {
     constructor(info: ConfigurableCreateInfo, options: any);
     getReactElementForViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): React.ReactNode;
     getType(): ConfigurableUiControlType;
@@ -3748,8 +3703,10 @@ export class WorkflowManager {
     static loadWorkflows(workflowPropsList: WorkflowPropsList): void;
     static readonly onTaskActivatedEvent: TaskActivatedEvent;
     static readonly onWorkflowActivatedEvent: WorkflowActivatedEvent;
+    static removeWorkflow(workflow: Workflow): boolean;
     static setActiveWorkflow(workflow: Workflow | undefined): void;
     static setActiveWorkflowAndTask(workflow: Workflow, task: Task): Promise<void>;
+    static setDefaultWorkflowId(id: string): void;
     }
 
 // @public

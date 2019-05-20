@@ -97,9 +97,9 @@ beta;MessageContainerProps
 beta;MessagedComponentProps
 beta;MessageSeverity
 beta;MutedText: React.FunctionComponent
-public;NodeCheckboxProps
-public;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
-public;NodeCheckboxRenderProps = Omit
+beta;NodeCheckboxProps
+beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
+beta;NodeCheckboxRenderProps = Omit
 alpha;NumericInput 
 alpha;NumericInputProps 
 public;Omit

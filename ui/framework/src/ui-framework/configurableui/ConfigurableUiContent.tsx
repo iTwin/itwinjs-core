@@ -60,7 +60,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
 
   public render(): JSX.Element | undefined {
     return (
-      <div id="uifw-configurableui-wrapper" className={this.props.className} style={this.props.style}
+      <div id="uifw-configurableui-wrapper" className={this.props.className} style={this.props.style} data-testid="uifw-configurableui-wrapper"
         onMouseMove={this._handleMouseMove}
       >
         {this.props.appBackstage}

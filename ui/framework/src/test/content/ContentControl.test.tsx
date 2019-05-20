@@ -86,7 +86,6 @@ describe("ContentControl", () => {
           expect(contentControl.isViewport).to.be.false;
           expect(contentControl.viewport).to.be.undefined;
           expect(contentControl.navigationAidControl.length).to.eq(0);
-          expect(contentControl.supportsViewSelectorChange).to.be.false;
         }
       }
     }

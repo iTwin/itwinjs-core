@@ -25,6 +25,16 @@ export interface ContentControlActivatedEventArgs {
  */
 export class ContentControlActivatedEvent extends UiEvent<ContentControlActivatedEventArgs> { }
 
+/** Interface to be implemented when the ContentControl supports ViewSelector changes
+ * @public
+ */
+export interface SupportsViewSelectorChange {
+  /** Returns true if this control supports reacting to ViewSelector changes. */
+  supportsViewSelectorChange: boolean;
+  /** Process a ViewSelector change. */
+  processViewSelectorChange(iModel: IModelConnection, viewDefinitionId: Id64String, viewState: ViewState, name: string): Promise<void>;
+}
+
 /** The base class for Frontstage content controls.
  * @public
  */
@@ -64,10 +74,5 @@ export class ContentControl extends ConfigurableUiControl {
   public get navigationAidControl(): string {
     return "";
   }
-
-  /** Returns true if this control supports reacting to ViewSelector changes. */
-  public get supportsViewSelectorChange(): boolean { return false; }
-  /** Process a ViewSelector change. */
-  public async processViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): Promise<void> { return; }
 
 }

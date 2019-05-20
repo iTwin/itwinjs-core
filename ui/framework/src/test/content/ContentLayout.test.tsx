@@ -14,8 +14,10 @@ import {
   ContentViewManager,
   ContentLayoutProps,
   ContentLayoutManager,
+  FrontstageManager,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
+import sinon = require("sinon");
 
 describe("ContentLayout", () => {
 
@@ -32,7 +34,7 @@ describe("ContentLayout", () => {
   });
 
   const myContentGroup: ContentGroup = new ContentGroup({
-    contents: [{ id: "myContent", classId: TestContentControl }],
+    contents: [{ id: "myContent", classId: TestContentControl, applicationData: { name: "Test" } }],
   });
 
   const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
@@ -194,6 +196,24 @@ describe("ContentLayout", () => {
       priority: 100,
     };
     expect(() => ContentLayoutManager.loadLayout(layoutProps)).to.throw(Error);
+  });
+
+  it("ContentLayoutManager.setActiveLayout & refreshActiveLayout should emit onContentLayoutActivatedEvent", () => {
+    const spyMethod = sinon.spy();
+    const layoutProps: ContentLayoutProps = {
+      descriptionKey: "UiFramework:tests.singleContent",
+      priority: 100,
+    };
+    const contentLayout = new ContentLayoutDef(layoutProps);
+    const remove = FrontstageManager.onContentLayoutActivatedEvent.addListener(spyMethod);
+
+    ContentLayoutManager.setActiveLayout(contentLayout, myContentGroup);
+    spyMethod.calledOnce.should.true;
+
+    ContentLayoutManager.refreshActiveLayout();
+    spyMethod.calledTwice.should.true;
+
+    remove();
   });
 
   const threeRightStackedLayoutDef: ContentLayoutDef = new ContentLayoutDef(

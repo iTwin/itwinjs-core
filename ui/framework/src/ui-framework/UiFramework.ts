@@ -148,7 +148,7 @@ export class UiFramework {
   }
 
   /** Calls i18n.translateWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
-   *  @internal
+   * @internal
    */
   public static translate(key: string | string[], options?: TranslationOptions): string {
     return UiFramework.i18n.translateWithNamespace(UiFramework.i18nNamespace, key, options);
@@ -193,11 +193,11 @@ export class UiFramework {
   }
 
   public static getAccudrawSnapMode(): SnapMode {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.snapMode : SnapMode.NearestKeypoint;
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.snapMode : /* istanbul ignore next */ SnapMode.NearestKeypoint;
   }
 
   public static getActiveSelectionScope(): string {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.activeSelectionScope : "element";
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.activeSelectionScope : /* istanbul ignore next */ "element";
   }
 
   public static setActiveSelectionScope(selectionScopeId: string): void {
@@ -213,7 +213,7 @@ export class UiFramework {
   }
 
   public static getActiveIModelId(): string {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelId : "";
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelId : /* istanbul ignore next */  "";
   }
 
   public static setActiveIModelId(iModelId: string): void {
@@ -222,7 +222,10 @@ export class UiFramework {
 
   /** @beta */
   public static getAvailableSelectionScopes(): PresentationSelectionScope[] {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.availableSelectionScopes : [{ id: "element", label: "Element" } as PresentationSelectionScope];
+    return UiFramework.frameworkState ?
+      UiFramework.frameworkState.sessionState.availableSelectionScopes :
+      /* istanbul ignore next */
+      [{ id: "element", label: "Element" } as PresentationSelectionScope];
   }
 
   /** @beta */
@@ -245,7 +248,7 @@ export class UiFramework {
 
   /** @beta */
   public static getColorTheme(): string {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : COLOR_THEME_DEFAULT;
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : /* istanbul ignore next */ COLOR_THEME_DEFAULT;
   }
 
   /** @beta */
@@ -255,6 +258,6 @@ export class UiFramework {
 
   /** @beta */
   public static getWidgetOpacity(): number {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : WIDGET_OPACITY_DEFAULT;
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : /* istanbul ignore next */ WIDGET_OPACITY_DEFAULT;
   }
 }

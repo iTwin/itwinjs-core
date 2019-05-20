@@ -14,6 +14,7 @@ import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ListPicker, ListItem, ListItemType } from "./ListPicker";
 import { ContentViewManager } from "../content/ContentViewManager";
+import { SupportsViewSelectorChange } from "../content/ContentControl";
 
 /** [[ViewSelectorChangedEvent]] Args interface.
  * @beta
@@ -185,7 +186,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
   // enable/disable the models
   private _setEnabled = async (item: ListItem, _enabled: boolean) => {
-    const activeContentControl = ContentViewManager.getActiveContentControl();
+    const activeContentControl = ContentViewManager.getActiveContentControl() as unknown as SupportsViewSelectorChange;
     if (!activeContentControl || !activeContentControl.supportsViewSelectorChange) {
       Logger.logError(UiFramework.loggerCategory(this), `No active ContentControl for ViewSelector change`);
       return;

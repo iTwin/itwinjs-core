@@ -14,8 +14,8 @@ beta;BackstageProps
 beta;BackstageSeparator 
 beta;BackTarget 
 beta;BackTargetProps 
-internal;Cell 
-internal;CellProps
+alpha;Cell 
+alpha;CellProps
 alpha;Chevron 
 alpha;ChevronProps 
 alpha;Columns 
@@ -143,10 +143,10 @@ alpha;Panel
 alpha;PanelProps 
 alpha;PanelsProvider 
 alpha;PanelsProviderProps
-internal;Point 
+alpha;Point 
 beta;PointProps
 beta;ProgressProps 
-internal;Rectangle 
+alpha;Rectangle 
 beta;RectangleProps
 alpha;ResizeDirection
 alpha;ResizeDirectionHelpers
@@ -169,7 +169,7 @@ alpha;ShrinkRightStrategy
 alpha;class ShrinkStrategy 
 alpha;ShrinkTopStrategy 
 alpha;class ShrinkVerticalStrategy 
-internal;Size 
+alpha;Size 
 beta;SizeProps
 beta;Snap 
 beta;SnapMode 

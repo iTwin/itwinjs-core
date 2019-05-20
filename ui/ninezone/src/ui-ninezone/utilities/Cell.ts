@@ -5,7 +5,7 @@
 /** @module Utilities */
 
 /** Describes [[Cell]].
- * @internal
+ * @alpha
  */
 export interface CellProps {
   /** Cell column. */
@@ -15,7 +15,7 @@ export interface CellProps {
 }
 
 /** Provides methods to work with [[CellProps]].
- * @internal
+ * @alpha
  */
 export class Cell implements CellProps {
   /** Creates cell from [[CellProps]]. */

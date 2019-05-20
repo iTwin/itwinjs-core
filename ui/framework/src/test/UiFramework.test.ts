@@ -38,6 +38,11 @@ describe("UiFramework", () => {
     TestUtils.terminateUiFramework();
   });
 
+  it("loggerCategory should correctly handle null or undefined object", () => {
+    expect(UiFramework.loggerCategory(null)).to.eq(UiFramework.packageName);
+    expect(UiFramework.loggerCategory(undefined)).to.eq(UiFramework.packageName);
+  });
+
   it("projectServices should throw Error without initialize", () => {
     expect(() => UiFramework.projectServices).to.throw(Error);
   });
@@ -94,6 +99,14 @@ describe("UiFramework", () => {
     const testValue = 0.50;
     UiFramework.setWidgetOpacity(testValue);
     expect(UiFramework.getWidgetOpacity()).to.eq(testValue);
+    TestUtils.terminateUiFramework();
+  });
+
+  it("ActiveIModelId", async () => {
+    await TestUtils.initializeUiFramework();
+    const testValue = "Test";
+    UiFramework.setActiveIModelId(testValue);
+    expect(UiFramework.getActiveIModelId()).to.eq(testValue);
     TestUtils.terminateUiFramework();
   });
 });
