@@ -1674,22 +1674,20 @@ export namespace IModelDb {
         reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
       } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
         const res = ret.result as IModelJsNative.TileContent;
+        const iModelGuid = this._iModel.getGuid();
+
         const tileSizeThreshold = IModelHost.logTileSizeThreshold;
-        if (undefined !== tileSizeThreshold) {
-          const tileSize = res.content.length;
-          if (tileSize > tileSizeThreshold) {
-            const iModelGuid = this._iModel.getGuid();
-            Logger.logWarning(loggerCategory, "Tile size (in bytes) larger than specified threshold", () => ({ tileSize, tileSizeThreshold, treeId, tileId, iModelGuid }));
-          }
+        const tileSize = res.content.length;
+        if (tileSize > tileSizeThreshold) {
+          Logger.logWarning(loggerCategory, "Tile size (in bytes) larger than specified threshold", () => ({ tileSize, tileSizeThreshold, treeId, tileId, iModelGuid }));
         }
+
         const loadTimeThreshold = IModelHost.logTileLoadTimeThreshold;
-        if (undefined !== loadTimeThreshold) {
-          const loadTime = res.elapsedSeconds;
-          if (loadTime > loadTimeThreshold) {
-            const iModelGuid = this._iModel.getGuid();
-            Logger.logWarning(loggerCategory, "Tile load time (in seconds) greater than specified threshold", () => ({ loadTime, loadTimeThreshold, treeId, tileId, iModelGuid }));
-          }
+        const loadTime = res.elapsedSeconds;
+        if (loadTime > loadTimeThreshold) {
+          Logger.logWarning(loggerCategory, "Tile load time (in seconds) greater than specified threshold", () => ({ loadTime, loadTimeThreshold, treeId, tileId, iModelGuid }));
         }
+
         resolve(res.content);
       } else { // if the type is a number, it's the TileContentState enum
         // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
