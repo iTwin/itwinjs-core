@@ -480,7 +480,6 @@ interface WidgetContentRendererProps {
 }
 
 interface WidgetContentRendererState {
-  isLoaded: boolean;
   widgetKey: number;
 }
 
@@ -491,7 +490,6 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     super(props);
 
     this.state = {
-      isLoaded: props.widget.state !== WidgetState.Unloaded,
       widgetKey: 0,
     };
   }
@@ -526,7 +524,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   public render() {
-    if (!this.state.isLoaded)
+    if (this.props.widget.state === WidgetState.Unloaded)
       return null;
     return ReactDOM.createPortal(
       <React.Fragment
@@ -540,6 +538,6 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
     if (this.props.widget !== args.widgetDef)
       return;
-    this.setState(() => ({ isLoaded: true }));
+    this.forceUpdate();
   }
 }
