@@ -29,6 +29,8 @@ export class InstanceBuffers implements IDisposable {
   private readonly _modelMatrix = Transform.createIdentity();
   // Holds the instance transforms for computing range. Set to undefined after range computed (immediately after construction)
   private _transforms?: Float32Array;
+  // Holds the range computed from the above transforms
+  private _range?: Range3d;
 
   private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, transformsData: Float32Array, symbology?: BufferHandle, featureIds?: BufferHandle, featuresInfo?: FeaturesInfo) {
     this.shared = shared;
@@ -91,14 +93,14 @@ export class InstanceBuffers implements IDisposable {
   }
 
   public computeRange(reprRange: Range3d, out?: Range3d): Range3d {
-    if (undefined === out)
-      out = new Range3d();
+    if (undefined !== this._range)
+      return this._range.clone(out);
 
-    out.setNull();
+    this._range = new Range3d();
     const tfs = this._transforms;
     if (undefined === tfs) {
       assert(false);
-      return out;
+      return this._range.clone(out);
     }
 
     this._transforms = undefined;
@@ -120,13 +122,13 @@ export class InstanceBuffers implements IDisposable {
 
       reprRange.clone(r);
       tf.multiplyRange(r, r);
-      out.extendRange(r);
+      this._range.extendRange(r);
     }
 
     const rtcTransform = Transform.createTranslation(this._rtcCenter);
-    rtcTransform.multiplyRange(out, out);
+    rtcTransform.multiplyRange(this._range, this._range);
 
-    return out;
+    return this._range.clone(out);
   }
 }
 
