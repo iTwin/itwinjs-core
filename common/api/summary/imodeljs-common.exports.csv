@@ -86,6 +86,7 @@ beta;EntityMetaDataProps
 public;EntityProps
 alpha;EntityQueryParams
 public;EnvironmentProps
+public;ExternalSourceAspectProps 
 beta;Feature
 internal;FeatureGates
 internal;FeatureIndex

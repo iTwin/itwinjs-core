@@ -207,6 +207,27 @@ export interface ElementAspectProps extends EntityProps {
   element: RelatedElementProps;
 }
 
+/** Properties of an [ExternalSourceAspect]($backend) that stores synchronization information for an element originating from an external source.
+ * @public
+ */
+export interface ExternalSourceAspectProps extends ElementAspectProps {
+  /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source. */
+  scope: RelatedElementProps;
+  /** The identifier of the object in the source repository. */
+  identifier: string;
+  /** The kind of object within the source repository. */
+  kind: string;
+  /** An optional value that is typically a version number or a psuedo version number like last modified time.
+   * It will be used by the synchronization process to detect that a source object is unchanged so that computing a cryptographic hash can be avoided.
+   * If present, this value must be guaranteed to change when any of the source object's content changes.
+   */
+  version?: string;
+  /** The cryptographic hash (any algorithm) of the source object's content. It must be guaranteed to change when the source object's content changes. */
+  checksum: string;
+  /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
+  jsonProperties?: any;
+}
+
 /** Properties of a [LineStyle]($backend)
  * @beta
  */

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add TypeScript wrapper for BisCore:ExternalSourceAspect",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "shaun.sewall@bentley.com"
+}

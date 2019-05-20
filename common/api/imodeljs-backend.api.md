@@ -53,6 +53,7 @@ import { ElementProps } from '@bentley/imodeljs-common';
 import { EntityMetaData } from '@bentley/imodeljs-common';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
+import { ExternalSourceAspectProps } from '@bentley/imodeljs-common';
 import { FilePropertyProps } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { FontProps } from '@bentley/imodeljs-common';
@@ -1357,6 +1358,24 @@ export interface ExportGraphicsProps {
     elementIdArray: Id64Array;
     maxEdgeLength?: number;
     onGraphics: ExportGraphicsFunction;
+}
+
+// @public
+export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
+    // @internal
+    constructor(props: ExternalSourceAspectProps, iModel: IModelDb);
+    checksum: string;
+    // @internal (undocumented)
+    static readonly className: string;
+    identifier: string;
+    jsonProperties: {
+        [key: string]: any;
+    };
+    kind: string;
+    scope: RelatedElement;
+    // @internal (undocumented)
+    toJSON(): ExternalSourceAspectProps;
+    version?: string;
 }
 
 // @public

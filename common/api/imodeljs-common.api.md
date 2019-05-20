@@ -1487,6 +1487,16 @@ export interface EnvironmentProps {
     sky?: SkyBoxProps;
 }
 
+// @public
+export interface ExternalSourceAspectProps extends ElementAspectProps {
+    checksum: string;
+    identifier: string;
+    jsonProperties?: any;
+    kind: string;
+    scope: RelatedElementProps;
+    version?: string;
+}
+
 // @beta
 export class Feature {
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @beta, but its signature references "GeometryClass" which is marked as @alpha

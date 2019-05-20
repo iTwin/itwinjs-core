@@ -100,6 +100,7 @@ beta;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 beta;ExportGraphicsInfo
 beta;ExportGraphicsMesh
 beta;ExportGraphicsProps
+public;ExternalSourceAspect 
 public;class FunctionalBreakdownElement 
 public;class FunctionalComponentElement 
 public;FunctionalComposite 
