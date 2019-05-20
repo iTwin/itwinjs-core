@@ -10,8 +10,10 @@
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-markup/file.json --tsIndexFile=./imodeljs-markup.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-markup",
     "lint": "tslint --project . 1>&2",
-    "test": "",
-    "cover": ""
+    "test": "npm run webpackTests && node ./node_modules/@bentley/certa/bin/certa.js -r chrome",
+    "cover": "npm test -- --cover",
+    "debug:tests": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome --debug",
+    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
   "iModelJs": {
     "buildModule": {
@@ -60,15 +62,20 @@
     "@bentley/imodeljs-i18n": "0.192.0-dev.9",
     "@bentley/build-tools": "0.192.0-dev.9",
     "@bentley/webpack-tools": "0.192.0-dev.9",
+    "@bentley/certa": "0.192.0-dev.9",
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
+    "source-map-loader": "^0.2.3",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.2.2",
-    "typedoc": "^0.14.2"
+    "typedoc": "^0.14.2",
+    "webpack": "^4.20.2"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

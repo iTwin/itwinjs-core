@@ -24,6 +24,19 @@
       "internalConsoleOptions": "openOnSessionStart"
     },
     {
+      "name": "Markup Tests",
+      "type": "chrome",
+      "request": "attach",
+      "preLaunchTask": "start-debugging-markup-tests",
+      "port": 9223, // NB: This must match ports.frontendDebugging in core/markup/certa.json
+      "sourceMaps": true,
+      "timeout": 20000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "webRoot": "${workspaceFolder}",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Run Backend Tests (Integration)",
