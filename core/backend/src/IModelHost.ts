@@ -92,6 +92,15 @@ export class IModelHostConfiguration {
    */
   public useTileContentThreadPool = false;
 
+  /** If defined, the backend will log when a tile is loaded and its time to load in seconds is above this threshold.
+   * @internal
+   */
+  public logTileLoadTimeThreshold?: number;
+  /** If defined, the backend will log when a tile is loaded with a size in bytes above this threshold.
+   * @internal
+   */
+  public logTileSizeThreshold?: number;
+
   /** Crash-reporting configuration
    * @alpha
    */
@@ -314,6 +323,11 @@ export class IModelHost {
    * @internal
    */
   public static get useTileContentThreadPool(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useTileContentThreadPool; }
+
+  /** If defined, the backend will log when a tile is loaded and its time to load in seconds is above this threshold. */
+  public static get logTileLoadTimeThreshold(): number | undefined { return undefined === IModelHost.configuration ? undefined : IModelHost.configuration.logTileLoadTimeThreshold; }
+  /** If defined, the backend will log when a tile is loaded with a size in bytes above this threshold. */
+  public static get logTileSizeThreshold(): number | undefined { return undefined === IModelHost.configuration ? undefined : IModelHost.configuration.logTileSizeThreshold; }
 
   /** Whether external tile caching is active. */
   public static get usingExternalTileCache(): boolean { return (undefined !== IModelHost.configuration && IModelHost.configuration.tileCacheCredentials) ? true : false; }
