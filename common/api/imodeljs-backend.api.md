@@ -1785,8 +1785,8 @@ export class IModelHost {
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @internal (undocumented)
     static loadNative(region: number, dir?: string): void;
-    static readonly logTileLoadTimeThreshold: number | undefined;
-    static readonly logTileSizeThreshold: number | undefined;
+    static readonly logTileLoadTimeThreshold: number;
+    static readonly logTileSizeThreshold: number;
     static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @internal (undocumented)
@@ -1812,12 +1812,16 @@ export class IModelHostConfiguration {
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
     // @internal
+    static defaultLogTileLoadTimeThreshold: number;
+    // @internal
+    static defaultLogTileSizeThreshold: number;
+    // @internal
     static defaultTileRequestTimeout: number;
     imodelClient?: IModelClient;
     // @internal
-    logTileLoadTimeThreshold?: number;
+    logTileLoadTimeThreshold: number;
     // @internal
-    logTileSizeThreshold?: number;
+    logTileSizeThreshold: number;
     nativePlatform?: any;
     // @beta
     tileCacheCredentials?: CloudStorageServiceCredentials;
