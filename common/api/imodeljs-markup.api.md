@@ -198,21 +198,21 @@ export class Markup {
 
 // @beta
 export class MarkupApp {
-    // (undocumented)
+    // @internal (undocumented)
     static readonly boxedTextClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly containerClass: string;
     // (undocumented)
     static convertVpToVb(pt: XAndY): Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly cornerId: string;
     // (undocumented)
     protected static createMarkup(view: ScreenViewport, markupData?: MarkupSvgData): Markup;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly decorationsClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly dropShadowId: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly dynamicsClass: string;
     // (undocumented)
     static getVpToScreenMtx(): Matrix;
@@ -224,13 +224,13 @@ export class MarkupApp {
     protected static lockViewportSize(view: ScreenViewport, markupData?: MarkupSvgData): void;
     static markup?: Markup;
     static markupNamespace: I18NNamespace;
-    // (undocumented)
+    // @internal (undocumented)
     static markupPrefix: string;
     // (undocumented)
     static markupSelectToolId: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly markupSvgClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly moveHandleClass: string;
     static props: {
         handles: {
@@ -347,21 +347,23 @@ export class MarkupApp {
     protected static readMarkup(): Promise<MarkupData>;
     // @internal
     protected static readMarkupSvg(): string | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly rotateHandleClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly rotateLineClass: string;
     // (undocumented)
     static screenToVbMtx: Matrix;
     static start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void>;
     static stop(): Promise<MarkupData>;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly stretchHandleClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly textClass: string;
+    // @internal (undocumented)
     static readonly textEditorClass: string;
+    // @internal (undocumented)
     static readonly textOutlineClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly vertexHandleClass: string;
 }
 

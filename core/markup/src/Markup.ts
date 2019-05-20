@@ -289,29 +289,44 @@ export class MarkupApp {
     return { rect: { width: canvas.width, height: canvas.height }, svg, image: !result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat) };
   }
 
+  /** @internal */
   public static markupPrefix = "markup-";
+  /** @internal */
   public static get dropShadowId() { return this.markupPrefix + "dropShadow"; } // this is referenced in the markup Svg to apply the drop-shadow filter to all markup elements.
+  /** @internal */
   public static get cornerId() { return this.markupPrefix + "photoCorner"; }
+  /** @internal */
   public static get containerClass() { return this.markupPrefix + "container"; }
+  /** @internal */
   public static get dynamicsClass() { return this.markupPrefix + "dynamics"; }
+  /** @internal */
   public static get decorationsClass() { return this.markupPrefix + "decorations"; }
+  /** @internal */
   public static get markupSvgClass() { return this.markupPrefix + "svg"; }
+  /** @internal */
   public static get boxedTextClass() { return this.markupPrefix + "boxedText"; }
+  /** @internal */
   public static get textClass() { return this.markupPrefix + "text"; }
+  /** @internal */
   public static get stretchHandleClass() { return this.markupPrefix + "stretchHandle"; }
+  /** @internal */
   public static get rotateLineClass() { return this.markupPrefix + "rotateLine"; }
+  /** @internal */
   public static get rotateHandleClass() { return this.markupPrefix + "rotateHandle"; }
+  /** @internal */
   public static get vertexHandleClass() { return this.markupPrefix + "vertexHandle"; }
+  /** @internal */
   public static get moveHandleClass() { return this.markupPrefix + "moveHandle"; }
-  /** class for box drawn around text being placed/edited */
+  /** @internal */
   public static get textOutlineClass() { return this.markupPrefix + "textOutline"; }
-  /** class for HTMLTextAreaElement created to edit text */
+  /** @internal */
   public static get textEditorClass() { return this.markupPrefix + "textEditor"; }
 
 }
 
 const removeSvgNamespace = (svg: Svg) => { svg.node.removeAttribute("xmlns:svgjs"); return svg; };
 const newSvgElement = (name: string) => adopt(create(name));
+
 /**
  * The current markup being created/edited. Holds the SVG elements, plus the active [[MarkupTool]].
  * When starting a Markup, a new Div is added as a child of the ScreenViewport's vpDiv.
