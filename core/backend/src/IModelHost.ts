@@ -92,6 +92,24 @@ export class IModelHostConfiguration {
    */
   public useTileContentThreadPool = false;
 
+  /** The default time, in seconds, used for [[logTileLoadTimeThreshold]]. To change this, override that property.
+   * @internal
+   */
+  public static defaultLogTileLoadTimeThreshold = 40;
+  /** The backend will log when a tile took longer to load than this threshold in seconds.
+   * @internal
+   */
+  public logTileLoadTimeThreshold: number = IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
+
+  /** The default size, in bytes, used for [[logTileSizeThreshold]]. To change this, override that property.
+   * @internal
+   */
+  public static defaultLogTileSizeThreshold = 20 * 1000000;
+  /** The backend will log when a tile is loaded with a size in bytes above this threshold.
+   * @internal
+   */
+  public logTileSizeThreshold: number = IModelHostConfiguration.defaultLogTileSizeThreshold;
+
   /** Crash-reporting configuration
    * @alpha
    */
@@ -314,6 +332,11 @@ export class IModelHost {
    * @internal
    */
   public static get useTileContentThreadPool(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useTileContentThreadPool; }
+
+  /** The backend will log when a tile took longer to load than this threshold in seconds. */
+  public static get logTileLoadTimeThreshold(): number { return undefined !== IModelHost.configuration ? IModelHost.configuration.logTileLoadTimeThreshold : IModelHostConfiguration.defaultLogTileLoadTimeThreshold; }
+  /** The backend will log when a tile is loaded with a size in bytes above this threshold. */
+  public static get logTileSizeThreshold(): number { return undefined !== IModelHost.configuration ? IModelHost.configuration.logTileSizeThreshold : IModelHostConfiguration.defaultLogTileSizeThreshold; }
 
   /** Whether external tile caching is active. */
   public static get usingExternalTileCache(): boolean { return (undefined !== IModelHost.configuration && IModelHost.configuration.tileCacheCredentials) ? true : false; }

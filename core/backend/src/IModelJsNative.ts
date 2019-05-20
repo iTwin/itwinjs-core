@@ -66,6 +66,11 @@ export declare namespace IModelJsNative {
     result?: ResultType;
   }
 
+  export interface TileContent {
+    content: Uint8Array;
+    elapsedSeconds: number;
+  }
+
   export class BriefcaseManagerResourcesRequest {
     public reset(): void;
     public isEmpty(): boolean;
@@ -140,7 +145,7 @@ export declare namespace IModelJsNative {
     public getSchema(name: string): ErrorStatusOrResult<IModelStatus, string>;
     public getSchemaItem(schemaName: string, itemName: string): ErrorStatusOrResult<IModelStatus, string>;
     public getTileContent(treeId: string, tileId: string, callback: (result: ErrorStatusOrResult<IModelStatus, Uint8Array>) => void): void;
-    public pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | Uint8Array>;
+    public pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | TileContent>;
     public getTileTree(id: string, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
     public getTxnDescription(txnId: TxnIdString): string;
     public getUndoString(): string;
