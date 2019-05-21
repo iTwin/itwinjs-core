@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "0.192.0-dev.10",
+  "version": "0.192.0-dev.11",
   "description": "iModel.js components common to frontend and backend",
   "license": "MIT",
   "main": "lib/imodeljs-common.js",
@@ -52,20 +52,20 @@
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^0.192.0-dev.10",
-    "@bentley/geometry-core": "^0.192.0-dev.10",
-    "@bentley/imodeljs-clients": "^0.192.0-dev.10"
+    "@bentley/bentleyjs-core": "^0.192.0-dev.11",
+    "@bentley/geometry-core": "^0.192.0-dev.11",
+    "@bentley/imodeljs-clients": "^0.192.0-dev.11"
   },
   "//devDependencies": [
     "NOTE: Must include modules mentioned in peerDependencies since those are not auto-installed",
     "NOTE: Must include modules used by the scripts section of package.json"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.192.0-dev.10",
-    "@bentley/build-tools": "0.192.0-dev.10",
-    "@bentley/geometry-core": "0.192.0-dev.10",
-    "@bentley/imodeljs-clients": "0.192.0-dev.10",
-    "@bentley/webpack-tools": "0.192.0-dev.10",
+    "@bentley/bentleyjs-core": "0.192.0-dev.11",
+    "@bentley/build-tools": "0.192.0-dev.11",
+    "@bentley/geometry-core": "0.192.0-dev.11",
+    "@bentley/imodeljs-clients": "0.192.0-dev.11",
+    "@bentley/webpack-tools": "0.192.0-dev.11",
     "@types/semver": "^5.5.0",
     "@types/url-search-params": "^0.10.2",
     "rimraf": "^2.6.2",
