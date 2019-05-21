@@ -194,12 +194,18 @@ export class ElementAgenda {
   /** Add elements to this ElementAgenda. */
   public add(arg: Id64Arg) {
     const groupStart = this.length;
-    Id64.toIdSet(arg).forEach((id) => { if (!this.has(id)) this.elements.push(id); });
+    Id64.forEach(arg, (id) => {
+      if (!this.has(id))
+        this.elements.push(id);
+    });
+
     if (groupStart === this.length)
       return false;
+
     this.groupMarks.push({ start: groupStart, source: ModifyElementSource.Unknown });
     if (HilitedState.No !== this.hilitedState)
       this.setEntriesHiliteState(this.hiliteOnAdd, groupStart, this.length);
+
     return true;
   }
 
@@ -269,8 +275,7 @@ export class ElementAgenda {
     if (0 === this.length)
       return false;
 
-    const elSet = Id64.toIdSet(arg);
-    if (elSet.size === 0)
+    if (0 === Id64.sizeOf(arg))
       return false;
 
     const needClearHilite = (HilitedState.No !== this.hilitedState);
@@ -278,7 +283,7 @@ export class ElementAgenda {
     if (needClearHilite)
       this.clearHilite(); // Avoid making multiple draws to unhilite entries as they are removed...
 
-    elSet.forEach((elId) => this.removeOne(elId)); // NOTE: Removes group associated with this element, not just a single entry...
+    Id64.forEach(arg, (elId) => this.removeOne(elId)); // NOTE: Removes group associated with this element, not just a single entry...
 
     if (needClearHilite)
       this.hilite();
@@ -291,13 +296,12 @@ export class ElementAgenda {
     if (0 === this.length)
       return this.add(arg);
 
-    const elSet = Id64.toIdSet(arg);
-    if (elSet.size === 0)
+    if (0 === Id64.sizeOf(arg))
       return false;
 
     const adds: string[] = [];
     const removes: string[] = [];
-    elSet.forEach((id) => { if (this.has(id)) removes.push(id); else adds.push(id); });
+    Id64.forEach(arg, (id) => { if (this.has(id)) removes.push(id); else adds.push(id); });
     if (adds.length === 0 && removes.length === 0)
       return false;
 

@@ -764,19 +764,21 @@ abstract class Compositor extends SceneCompositor {
   }
 
   private findFlashedClassifier(cmdsByIndex: DrawCommands): number {
-    if (!Id64.isValid(this.target.flashedElemId))
+    if (!Id64.isValid(this.target.flashedId))
       return -1; // nothing flashed
+
     for (let i = 1; i < cmdsByIndex.length; i += 3) {
       const command = cmdsByIndex[i];
       if (command.isPrimitiveCommand) {
         if (command instanceof BatchPrimitiveCommand) {
           const batch = command as BatchPrimitiveCommand;
-          if (batch.computeIsFlashed(this.target.flashedElemId)) {
+          if (batch.computeIsFlashed(this.target.flashedId)) {
             return (i - 1) / 3;
           }
         }
       }
     }
+
     return -1; // couldn't find it
   }
 
@@ -788,6 +790,7 @@ abstract class Compositor extends SceneCompositor {
       this.target.techniques.executeForIndexedClassifier(this.target, cmdsByIndex, RenderPass.Classification, index);
       this.target.popBranch();
     });
+
     // Process the stencil for the pick data.
     this.renderIndexedClassifierForReadPixels(cmdsByIndex, index, this._classifyPickDataRenderState, needComposite);
   }
@@ -795,9 +798,8 @@ abstract class Compositor extends SceneCompositor {
   private renderClassification(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean) {
     const cmds = commands.getCommands(RenderPass.Classification);
     const cmdsByIndex = commands.getCommands(RenderPass.ClassificationByIndex);
-    if (0 === cmds.length || 0 === cmdsByIndex.length) {
+    if (0 === cmds.length || 0 === cmdsByIndex.length)
       return;
-    }
 
     if (this._debugStencil > 0) {
       System.instance.frameBufferStack.execute(this.getBackgroundFbo(needComposite), true, () => {
@@ -811,6 +813,7 @@ abstract class Compositor extends SceneCompositor {
           this.target.popBranch();
         }
       });
+
       return;
     }
 
@@ -829,9 +832,9 @@ abstract class Compositor extends SceneCompositor {
     if (renderForReadPixels) {
       // We need to render the classifier stencil volumes one at a time, so first count them then render them in a loop.
       const numClassifiers = cmdsByIndex.length / 3;
-      for (let i = 0; i < numClassifiers; ++i) {
+      for (let i = 0; i < numClassifiers; ++i)
         this.renderIndexedClassifier(cmdsByIndex, i, needComposite);
-      }
+
       return;
     }
 
@@ -847,6 +850,7 @@ abstract class Compositor extends SceneCompositor {
         this.target.techniques.execute(this.target, cmdsH, RenderPass.Hilite);
         this.target.popBranch();
       });
+
       // Process the stencil volumes, blending into the current color buffer.
       fbStack.execute(fboCopy!, true, () => {
         this.target.pushState(this.target.decorationState);
@@ -868,6 +872,7 @@ abstract class Compositor extends SceneCompositor {
         this.target.techniques.executeForIndexedClassifier(this.target, cmdsByIndex, RenderPass.Classification, flashedClassifier);
         this.target.popBranch();
       });
+
       // Process the stencil.
       fbStack.execute(fboCopy!, true, () => {
         this.target.pushState(this.target.decorationState);
@@ -914,6 +919,7 @@ abstract class Compositor extends SceneCompositor {
       // Draw the normal hilite geometry.
       this.drawPass(commands, RenderPass.Hilite);
     });
+
     // Process planar classifiers
     const planarClassifierCmds = commands.getCommands(RenderPass.HilitePlanarClassification);
     if (0 !== planarClassifierCmds.length) {

@@ -6,17 +6,17 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import * as moq from "typemoq";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
-  createRandomECInstanceKey, createRandomSelectionScope, createRandomId,
+  createRandomECInstanceKey, createRandomSelectionScope, createRandomId, createRandomTransientId,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { waitForPendingAsyncs } from "../_helpers/PendingAsyncsHelper";
-import { Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { IModelConnection, SelectionSet, IModelApp, SelectEventType, ElementLocateManager, HitDetail } from "@bentley/imodeljs-frontend";
+import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { IModelConnection, SelectionSet, IModelApp, SelectionSetEventType, ElementLocateManager, HitDetail } from "@bentley/imodeljs-frontend";
 import { KeySet, InstanceKey, SelectionScope } from "@bentley/presentation-common";
 import { SelectionManager } from "../../presentation-frontend";
 import { SelectionScopesManager } from "../../selection/SelectionScopesManager";
-import { ToolSelectionSyncHandler } from "../../selection/SelectionManager";
+import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../selection/SelectionManager";
 
 const generateSelection = (): InstanceKey[] => {
   return [
@@ -480,6 +480,18 @@ describe("SelectionManager", () => {
       let syncer: ToolSelectionSyncHandler;
       const locateManagerMock = moq.Mock.ofType<ElementLocateManager>();
 
+      const matchKeyset = (keys: KeySet) => sinon.match((value: KeySet) => {
+        return (value instanceof KeySet)
+          && value.size === keys.size
+          && value.hasAll(keys);
+      });
+
+      const equalId64Arg = (lhs: Id64Arg, rhs: Id64Arg) => {
+        if (Id64.sizeOf(lhs) !== Id64.sizeOf(rhs))
+          return false;
+        return Id64.iterate(lhs, (lhsId) => Id64.has(rhs, lhsId));
+      };
+
       beforeEach(() => {
         // core globals...
         (IModelApp as any)._locateManager = locateManagerMock.object;
@@ -542,74 +554,200 @@ describe("SelectionManager", () => {
 
       describe("changing logical selection", () => {
 
-        let toolElementId: Id64String;
-        let key: InstanceKey;
+        let transientElementId: Id64String;
+        let transientElementKey: InstanceKey;
+        let persistentElementId: Id64String;
+        let scopedKey: InstanceKey;
+        const logicalSelectionChangesListener = sinon.stub();
 
         beforeEach(() => {
           const scope: SelectionScope = {
             id: "test scope",
             label: "Test",
           };
-          toolElementId = createRandomId();
-          key = createRandomECInstanceKey();
+          transientElementId = createRandomTransientId();
+          transientElementKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: transientElementId };
+          persistentElementId = createRandomId();
+          scopedKey = createRandomECInstanceKey();
+
+          logicalSelectionChangesListener.reset();
+          selectionManager.selectionChange.addListener(logicalSelectionChangesListener);
 
           scopesMock.setup((x) => x.activeScope).returns(() => scope);
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), scope.id))
-            .returns(async () => new KeySet([key]));
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAnyString()))
+            .returns(async () => new KeySet());
+          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.is((v) => equalId64Arg(v, [persistentElementId])), moq.It.isAnyString()))
+            .returns(async () => new KeySet([scopedKey]));
 
           const locateHitMock = moq.Mock.ofType<HitDetail>();
-          locateHitMock.setup((x) => x.sourceId).returns(() => toolElementId);
+          locateHitMock.setup((x) => x.sourceId).returns(() => persistentElementId);
           locateManagerMock.setup((x) => x.currHit).returns(() => locateHitMock.object);
+
+          // hacks to avoid instantiating the whole core..
+          (IModelApp as any)._viewManager = {
+            onSelectionSetChanged: sinon.stub(),
+          };
         });
 
         it("ignores events with different imodel", async () => {
           const spy = sinon.spy(selectionManager, "addToSelectionWithScope");
           const imodelMock2 = moq.Mock.ofType<IModelConnection>();
-          ss.onChanged.raiseEvent(imodelMock2.object, SelectEventType.Add, [createRandomId()]);
+          ss.onChanged.raiseEvent(imodelMock2.object, SelectionSetEventType.Add, [createRandomId()]);
           await waitForPendingAsyncs(syncer);
           expect(spy).to.not.be.called;
         });
 
-        it("ignores transient elements", async () => {
-          const spy = sinon.spy(selectionManager, "addToSelectionWithScope");
-          const transientId = Id64.fromLocalAndBriefcaseIds(123, 0xffffff);
-          const persistentId = createRandomId();
-          ss.add([transientId, persistentId]);
-          await waitForPendingAsyncs(syncer);
-          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, [persistentId], "element", 0);
-        });
+        it("adds persistent elements to logical selection when tool selection changes", async () => {
+          const spy = sinon.spy(selectionManager, "addToSelection");
 
-        it("adds elements to logical selection when tool selection changes", async () => {
-          ss.add(toolElementId);
+          ss.add(persistentElementId);
           await waitForPendingAsyncs(syncer);
+          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, matchKeyset(new KeySet([scopedKey])), 0);
+          expect(logicalSelectionChangesListener).to.be.calledOnce;
+
           const selection = selectionManager.getSelection(imodelMock.object);
           expect(selection.size).to.eq(1);
-          expect(selection.has(key)).to.be.true;
+          expect(selection.has(scopedKey)).to.be.true;
         });
 
-        it("replaces elements in logical selection when tool selection changes", async () => {
+        it("adds transient elements to logical selection when tool selection changes", async () => {
+          const spy = sinon.spy(selectionManager, "addToSelection");
+
+          ss.add(transientElementId);
+          await waitForPendingAsyncs(syncer);
+          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, matchKeyset(new KeySet([transientElementKey])), 0);
+          expect(logicalSelectionChangesListener).to.be.calledOnce;
+
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(1);
+          expect(selection.has(transientElementKey)).to.be.true;
+        });
+
+        it("adds mixed elements to logical selection when tool selection changes", async () => {
+          const spy = sinon.spy(selectionManager, "addToSelection");
+
+          ss.add([transientElementId, persistentElementId]);
+          await waitForPendingAsyncs(syncer);
+          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, matchKeyset(new KeySet([scopedKey, transientElementKey])), 0);
+          expect(logicalSelectionChangesListener).to.be.calledOnce;
+
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(2);
+          expect(selection.has(scopedKey)).to.be.true;
+          expect(selection.has(transientElementKey)).to.be.true;
+        });
+
+        it("replaces persistent elements in logical selection when tool selection changes", async () => {
           selectionManager.addToSelection("", imodelMock.object, [createRandomECInstanceKey()]);
-          ss.replace(toolElementId);
+          logicalSelectionChangesListener.reset();
+
+          const spy = sinon.spy(selectionManager, "replaceSelection");
+
+          ss.replace(persistentElementId);
           await waitForPendingAsyncs(syncer);
+          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, matchKeyset(new KeySet([scopedKey])), 0);
+          expect(logicalSelectionChangesListener).to.be.calledOnce;
+
           const selection = selectionManager.getSelection(imodelMock.object);
           expect(selection.size).to.eq(1);
-          expect(selection.has(key)).to.be.true;
+          expect(selection.has(scopedKey)).to.be.true;
         });
 
-        it("removes elements from logical selection when tool selection changes", async () => {
-          ss.add(toolElementId, false);
-          selectionManager.addToSelection("", imodelMock.object, [key]);
-          ss.remove(toolElementId);
+        it("replaces transient elements in logical selection when tool selection changes", async () => {
+          selectionManager.addToSelection("", imodelMock.object, [createRandomECInstanceKey()]);
+          logicalSelectionChangesListener.reset();
+
+          const spy = sinon.spy(selectionManager, "replaceSelection");
+
+          ss.replace(transientElementId);
           await waitForPendingAsyncs(syncer);
+          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, matchKeyset(new KeySet([transientElementKey])), 0);
+          expect(logicalSelectionChangesListener).to.be.calledOnce;
+
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(1);
+          expect(selection.has(transientElementKey)).to.be.true;
+        });
+
+        it("replaces mixed elements in logical selection when tool selection changes", async () => {
+          selectionManager.addToSelection("", imodelMock.object, [createRandomECInstanceKey()]);
+          logicalSelectionChangesListener.reset();
+
+          const spy = sinon.spy(selectionManager, "replaceSelection");
+
+          ss.replace([persistentElementId, transientElementId]);
+          await waitForPendingAsyncs(syncer);
+          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, matchKeyset(new KeySet([scopedKey, transientElementKey])), 0);
+          expect(logicalSelectionChangesListener).to.be.calledOnce;
+
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(2);
+          expect(selection.has(scopedKey)).to.be.true;
+          expect(selection.has(transientElementKey)).to.be.true;
+        });
+
+        it("removes persistent elements from logical selection when tool selection changes", async () => {
+          (ss as any)._add([persistentElementId, transientElementId], false);
+          selectionManager.addToSelection("", imodelMock.object, [scopedKey, transientElementKey]);
+          logicalSelectionChangesListener.reset();
+
+          const spy = sinon.spy(selectionManager, "removeFromSelection");
+
+          ss.remove(persistentElementId);
+          await waitForPendingAsyncs(syncer);
+          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, matchKeyset(new KeySet([scopedKey])), 0);
+          expect(logicalSelectionChangesListener).to.be.calledOnce;
+
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(1);
+          expect(selection.has(transientElementKey)).to.be.true;
+        });
+
+        it("removes transient elements from logical selection when tool selection changes", async () => {
+          (ss as any)._add([persistentElementId, transientElementId], false);
+          selectionManager.addToSelection("", imodelMock.object, [scopedKey, transientElementKey]);
+          logicalSelectionChangesListener.reset();
+
+          const spy = sinon.spy(selectionManager, "removeFromSelection");
+
+          ss.remove(transientElementId);
+          await waitForPendingAsyncs(syncer);
+          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, matchKeyset(new KeySet([transientElementKey])), 0);
+          expect(logicalSelectionChangesListener).to.be.calledOnce;
+
+          const selection = selectionManager.getSelection(imodelMock.object);
+          expect(selection.size).to.eq(1);
+          expect(selection.has(scopedKey)).to.be.true;
+        });
+
+        it("removes mixed elements from logical selection when tool selection changes", async () => {
+          (ss as any)._add([persistentElementId, transientElementId], false);
+          selectionManager.addToSelection("", imodelMock.object, [scopedKey, transientElementKey]);
+          logicalSelectionChangesListener.reset();
+
+          const spy = sinon.spy(selectionManager, "removeFromSelection");
+
+          ss.remove([persistentElementId, transientElementId]);
+          await waitForPendingAsyncs(syncer);
+          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, matchKeyset(new KeySet([scopedKey, transientElementKey])), 0);
+          expect(logicalSelectionChangesListener).to.be.calledOnce;
+
           const selection = selectionManager.getSelection(imodelMock.object);
           expect(selection.size).to.eq(0);
         });
 
         it("clears elements from logical selection when tool selection is cleared", async () => {
-          ss.add(createRandomId(), false);
-          selectionManager.addToSelection("", imodelMock.object, [key]);
+          (ss as any)._add(createRandomId(), false);
+          selectionManager.addToSelection("", imodelMock.object, [scopedKey, transientElementKey]);
+          logicalSelectionChangesListener.reset();
+
+          const spy = sinon.spy(selectionManager, "clearSelection");
+
           ss.emptyAll();
           await waitForPendingAsyncs(syncer);
+          expect(spy).to.be.calledOnceWith("Tool", imodelMock.object, 0);
+          expect(logicalSelectionChangesListener).to.be.calledOnce;
+
           const selection = selectionManager.getSelection(imodelMock.object);
           expect(selection.size).to.eq(0);
         });

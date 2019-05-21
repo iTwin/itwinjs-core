@@ -7,6 +7,7 @@
 import { ClipPlaneContainment, ClipUtilities, ClipVector, Transform, Vector3d, Point3d, Matrix4d, Point2d, Range3d, XAndY } from "@bentley/geometry-core";
 import { assert, BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates, PlanarClassifierMap, RenderSolarShadowMap } from "../System";
+import { HiliteSet } from "../../SelectionSet";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -212,6 +213,25 @@ export const enum PrimitiveVisibility {
 }
 
 /** @internal */
+export interface Hilites {
+  readonly elements: Id64.Uint32Set;
+  readonly subcategories: Id64.Uint32Set;
+  readonly models: Id64.Uint32Set;
+  readonly isEmpty: boolean;
+}
+
+class EmptyHiliteSet {
+  public readonly elements: Id64.Uint32Set;
+  public readonly subcategories: Id64.Uint32Set;
+  public readonly models: Id64.Uint32Set;
+  public readonly isEmpty = true;
+
+  public constructor() {
+    this.elements = this.subcategories = this.models = new Id64.Uint32Set();
+  }
+}
+
+/** @internal */
 export abstract class Target extends RenderTarget {
   protected _decorations?: Decorations;
   private _stack = new BranchStack();
@@ -222,9 +242,10 @@ export abstract class Target extends RenderTarget {
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
-  private _hilite = new Id64.Uint32Set();
+  private _hilites: Hilites = new EmptyHiliteSet();
   private _hiliteUpdateTime = BeTimePoint.now();
-  private _flashedElemId = Id64.invalid;
+  private _flashed: Id64.Uint32Pair = { lower: 0, upper: 0 };
+  private _flashedId = Id64.invalid;
   private _flashedUpdateTime = BeTimePoint.now();
   private _flashIntensity: number = 0;
   private _transparencyThreshold: number = 0;
@@ -295,10 +316,11 @@ export abstract class Target extends RenderTarget {
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
   public get techniques(): Techniques { return System.instance.techniques!; }
 
-  public get hilite(): Id64.Uint32Set { return this._hilite; }
+  public get hilites(): Hilites { return this._hilites; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
 
-  public get flashedElemId(): Id64String { return this._flashedElemId; }
+  public get flashed(): Id64.Uint32Pair | undefined { return Id64.isValid(this._flashedId) ? this._flashed : undefined; }
+  public get flashedId(): Id64String { return this._flashedId; }
   public get flashedUpdateTime(): BeTimePoint { return this._flashedUpdateTime; }
   public get flashIntensity(): number { return this._flashIntensity; }
 
@@ -531,16 +553,14 @@ export abstract class Target extends RenderTarget {
     this._stack.setSymbologyOverrides(ovr);
     this._overridesUpdateTime = BeTimePoint.now();
   }
-  public setHiliteSet(hilite: Set<string>): void {
-    this._hilite.clear();
-    for (const id of hilite)
-      this._hilite.addId(id);
-
+  public setHiliteSet(hilite: HiliteSet): void {
+    this._hilites = hilite;
     this._hiliteUpdateTime = BeTimePoint.now();
   }
   public setFlashed(id: Id64String, intensity: number) {
-    if (id !== this._flashedElemId) {
-      this._flashedElemId = id;
+    if (id !== this._flashedId) {
+      this._flashedId = id;
+      this._flashed = Id64.getUint32Pair(id);
       this._flashedUpdateTime = BeTimePoint.now();
     }
 

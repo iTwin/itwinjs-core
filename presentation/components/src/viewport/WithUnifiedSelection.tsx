@@ -7,12 +7,13 @@
 import * as React from "react";
 import { Id64String, IDisposable, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { SelectionInfo, DefaultContentDisplayTypes, KeySet, Ruleset, RegisteredRuleset, ContentFlags } from "@bentley/presentation-common";
+import { SelectionInfo, DefaultContentDisplayTypes, KeySet, Ruleset, RegisteredRuleset, ContentFlags, Key } from "@bentley/presentation-common";
 import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { ViewportProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
 import { ContentDataProvider } from "../common/ContentDataProvider";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/selection/SelectionManager"; /* tslint:disable-line:no-direct-imports */
 
 // tslint:disable-next-line: no-var-requires
 const DEFAULT_RULESET: Ruleset = require("./HiliteRules.json");
@@ -122,7 +123,11 @@ export class ViewportSelectionHandler implements IDisposable {
       `Viewport_${counter++}`, imodel, rulesetId, this.onUnifiedSelectionChanged);
     this._selectionHandler.manager.setSyncWithIModelToolSelection(imodel, true);
 
-    // handles querying for elements which should be selected in the viewport
+    // stop imodel from syncing tool selection with hilited list - we want
+    // to override that behavior
+    imodel.hilited.wantSyncWithSelectionSet = false;
+
+    // handles querying for elements which should be hilited in the viewport
     this._selectedElementsProvider = new SelectedElementsProvider(imodel, rulesetId);
   }
 
@@ -155,6 +160,7 @@ export class ViewportSelectionHandler implements IDisposable {
     this._selectionHandler.manager.setSyncWithIModelToolSelection(this._imodel, false);
     this._selectionHandler.manager.setSyncWithIModelToolSelection(value, true);
     this._imodel = value;
+    this._imodel.hilited.wantSyncWithSelectionSet = false;
     this._selectionHandler.imodel = value;
     this._selectedElementsProvider.imodel = value;
   }
@@ -185,7 +191,7 @@ export class ViewportSelectionHandler implements IDisposable {
     this._isInSelectedElementsRequest = true;
     const ids = await this._selectedElementsProvider.getElementIds(new KeySet(selection), selectionInfo);
     try {
-      imodel.hilited.elements.clear(); // don't call clear on HilitedSet to avoid event firing
+      imodel.hilited.clear();
       imodel.hilited.setHilite(ids, true);
     } finally {
       this._isInSelectedElementsRequest = false;
@@ -230,15 +236,27 @@ class SelectedElementsProvider extends ContentDataProvider {
       contentFlags: ContentFlags.KeysOnly,
     };
   }
-  public async getElementIds(keys: KeySet, info: SelectionInfo): Promise<Id64String[]> {
+  public async getElementIds(selectionKeys: KeySet, info: SelectionInfo): Promise<Id64String[]> {
+    // need to create a new set without transients
+    const transientIds = new Array<Id64String>();
+    const keys = new KeySet();
+    keys.add(selectionKeys, (key: Key) => {
+      if (Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME) {
+        transientIds.push(key.id);
+        return false;
+      }
+      return true;
+    });
+
     this.keys = keys;
     this.selectionInfo = info;
 
     const content = await this.getContent();
     if (!content)
-      return [];
+      return transientIds;
 
-    const ids = new Array<Id64String>();
+    // note: not making a copy here since we're throwing away `transientIds` anyway
+    const ids = transientIds;
     content.contentSet.forEach((r) => r.primaryKeys.forEach((pk) => ids.push(pk.id)));
     return ids;
   }

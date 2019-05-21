@@ -12,7 +12,7 @@ import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
-  createRandomId,
+  createRandomId, createRandomTransientId,
   createRandomECInstanceKey,
   createRandomECInstanceNodeKey,
   createRandomDescriptor,
@@ -22,7 +22,7 @@ import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helper
 import { waitForAllAsyncs } from "@bentley/presentation-frontend/lib/test/_helpers/PendingAsyncsHelper";
 import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementProps, Code } from "@bentley/imodeljs-common";
-import { IModelConnection, ViewState3d, NoRenderApp, HilitedSet, IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ViewState3d, NoRenderApp, HiliteSet, IModelApp } from "@bentley/imodeljs-frontend";
 import {
   KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item,
   RegisteredRuleset, DescriptorOverrides, ContentFlags, Ruleset,
@@ -31,6 +31,7 @@ import {
   Presentation, PresentationManager, RulesetManager,
   SelectionManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/presentation-frontend";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/selection/SelectionManager";
 import { ViewportComponent } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
 import { viewWithUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
@@ -60,10 +61,10 @@ describe("Viewport withUnifiedSelection", () => {
     const viewsMock = moq.Mock.ofInstance<IModelConnection.Views>(new IModelConnection.Views(imodelMock.object));
     viewsMock.setup(async (views) => views.load(moq.It.isAny())).returns(async () => moq.Mock.ofType<ViewState3d>().object);
     imodelMock.reset();
-    let hiliteSet: HilitedSet | undefined;
+    let hiliteSet: HiliteSet | undefined;
     imodelMock.setup((imodel) => imodel.hilited).returns((imodel) => {
       if (!hiliteSet)
-        hiliteSet = new HilitedSet(imodel);
+        hiliteSet = new HiliteSet(imodel, false);
       return hiliteSet;
     });
     imodelMock.setup((imodel) => imodel.views).returns(() => viewsMock.object);
@@ -333,7 +334,9 @@ describe("ViewportSelectionHandler", () => {
 
     it("replaces viewport selection with content of current unified selection", async () => {
       // the handler asks selection manager for overall selection
-      const keys = new KeySet([createRandomECInstanceKey(), createRandomECInstanceNodeKey()]);
+      const persistentKeys = [createRandomECInstanceKey(), createRandomECInstanceNodeKey()];
+      const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
+      const keys = new KeySet([...persistentKeys, transientKey]);
       selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => keys);
 
       // then it asks for content for that selection
@@ -343,10 +346,9 @@ describe("ViewportSelectionHandler", () => {
         hiddenFieldNames: [],
       };
       const expectedContent = new Content(createRandomDescriptor(), [
-        new Item([createRandomECInstanceKey(), createRandomECInstanceKey()], "", "", undefined, {}, {}, []),
         new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, []),
       ]);
-      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, moq.isKeySet(keys)))
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, moq.isKeySet(new KeySet(persistentKeys))))
         .returns(async () => expectedContent);
 
       // trigger the selection change
@@ -365,16 +367,17 @@ describe("ViewportSelectionHandler", () => {
 
       // verify viewport selection was changed with expected ids
       const ids = [
+        transientKey.id,
         expectedContent.contentSet[0].primaryKeys[0].id,
-        expectedContent.contentSet[0].primaryKeys[1].id,
-        expectedContent.contentSet[1].primaryKeys[0].id,
       ];
       expect(setHiliteSpy).to.be.calledWith(ids);
     });
 
-    it("replaces viewport selection with empty list when there's no content for unified selection", async () => {
+    it("replaces viewport selection with only transient ids when there's no content for unified selection", async () => {
       // the handler asks selection manager for overall selection
-      const keys = new KeySet();
+      const persistentKeys = [createRandomECInstanceKey(), createRandomECInstanceNodeKey()];
+      const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
+      const keys = new KeySet([...persistentKeys, transientKey]);
       selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => keys);
 
       // then it asks for content descriptor + content for that selection - return undefined
@@ -384,7 +387,7 @@ describe("ViewportSelectionHandler", () => {
         level: 0,
       };
       presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
-        DefaultContentDisplayTypes.Viewport, moq.isKeySet(keys), selectionInfo)).returns(async () => undefined);
+        DefaultContentDisplayTypes.Viewport, moq.isKeySet(new KeySet(persistentKeys)), selectionInfo)).returns(async () => undefined);
 
       // trigger the selection change
       const selectionChangeArgs: SelectionChangeEventArgs = {
@@ -401,7 +404,7 @@ describe("ViewportSelectionHandler", () => {
       await waitForAllAsyncs([handler]);
 
       // verify viewport selection was changed with expected ids
-      expect(setHiliteSpy).to.be.calledWith([]);
+      expect(setHiliteSpy).to.be.calledWith([transientKey.id]);
     });
 
     it("ignores viewport selection changes while reacting to unified selection changes", async () => {
@@ -505,7 +508,7 @@ const mockIModel = (mock: moq.IMock<IModelConnection>) => {
   const imodelElementsMock = moq.Mock.ofType<IModelConnection.Elements>();
   imodelElementsMock.setup(async (x) => x.getProps(moq.It.isAny())).returns(async (ids: Id64Arg) => createElementProps(ids));
 
-  const hiliteSet = new HilitedSet(mock.object);
+  const hiliteSet = new HiliteSet(mock.object, false);
   mock.reset();
   mock.setup((imodel) => imodel.hilited).returns(() => hiliteSet);
   mock.setup((imodel) => imodel.elements).returns(() => imodelElementsMock.object);

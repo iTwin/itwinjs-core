@@ -602,13 +602,20 @@ export class Item {
 // @public
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
 
+// @public (undocumented)
+export namespace Key {
+    export function isEntityProps(key: Key): key is EntityProps;
+    export function isInstanceKey(key: Key): key is InstanceKey;
+    export function isNodeKey(key: Key): key is NodeKey;
+}
+
 // @public
 export type Keys = ReadonlyArray<Key> | Readonly<KeySet>;
 
 // @public
 export class KeySet {
     constructor(source?: Keys);
-    add(value: Keys | Key): KeySet;
+    add(value: Keys | Key, pred?: (key: Key) => boolean): KeySet;
     clear(): KeySet;
     delete(value: Keys | Key): KeySet;
     // @internal

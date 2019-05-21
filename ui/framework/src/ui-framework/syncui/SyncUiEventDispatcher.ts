@@ -13,7 +13,7 @@ import { WorkflowManager } from "../workflow/Workflow";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { SessionStateActionId } from "../SessionState";
 import { UiFramework, PresentationSelectionScope } from "../UiFramework";
-import { IModelConnection, SelectEventType, IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IModelApp, SelectedViewportChangedArgs, SelectionSetEvent } from "@bentley/imodeljs-frontend";
 import { Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { SelectionScope, getInstancesCount } from "@bentley/presentation-common";
 
@@ -252,7 +252,7 @@ export class SyncUiEventDispatcher {
     }
   }
 
-  private static selectionChangedHandler(_iModelConnection: IModelConnection, _evType: SelectEventType, _ids?: Set<string>) {
+  private static selectionChangedHandler(_ev: SelectionSetEvent) {
     SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SelectionSetChanged);
   }
 

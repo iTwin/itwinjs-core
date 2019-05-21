@@ -17,7 +17,7 @@ import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { ModelState } from "./ModelState";
-import { HilitedSet, SelectionSet } from "./SelectionSet";
+import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SubCategoriesCache } from "./SubCategoriesCache";
@@ -39,8 +39,10 @@ export class IModelConnection extends IModel {
   public readonly codeSpecs: IModelConnection.CodeSpecs;
   /** The [[ViewState]]s in this IModelConnection. */
   public readonly views: IModelConnection.Views;
-  /** The set of currently hilited elements for this IModelConnection. */
-  public readonly hilited: HilitedSet;
+  /** The set of currently hilited elements for this IModelConnection.
+   * @alpha
+   */
+  public readonly hilited: HiliteSet;
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
   /** The set of Tiles for this IModelConnection.
@@ -141,8 +143,8 @@ export class IModelConnection extends IModel {
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
     this.views = new IModelConnection.Views(this);
-    this.hilited = new HilitedSet(this);
     this.selectionSet = new SelectionSet(this);
+    this.hilited = new HiliteSet(this);
     this.tiles = new IModelConnection.Tiles(this);
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
@@ -592,10 +594,10 @@ export namespace IModelConnection {
     /** load a set of Models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
     public async load(modelIds: Id64Arg): Promise<void> {
       const notLoaded = new Set<string>();
-      for (const id of Id64.toIdSet(modelIds)) {
+      Id64.forEach(modelIds, (id) => {
         if (undefined === this.getLoaded(id))
           notLoaded.add(id);
-      }
+      });
 
       if (notLoaded.size === 0)
         return; // all requested models are already loaded

@@ -49,17 +49,16 @@ export namespace SpatialClassification {
 
   /** @internal */
   export async function loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise<void> {
-    const modelIds = Id64.toIdSet(modelIdArg);
-    const classifiersToLoad = [];
-    for (const modelId of modelIds) {
+    const classifiersToLoad = new Set<string>();
+    Id64.forEach(modelIdArg, (modelId) => {
       const model = iModel.models.getLoaded(modelId) as GeometricModelState;
       if (undefined !== model) {
         const props = getClassifierProps(model);
-        if (undefined !== props) {
-          classifiersToLoad.push(props.modelId);
-        }
+        if (undefined !== props)
+          classifiersToLoad.add(props.modelId);
       }
-    }
+    });
+
     return loadClassifiers(classifiersToLoad, iModel);
   }
   /** @internal */

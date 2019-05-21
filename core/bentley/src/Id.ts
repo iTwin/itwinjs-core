@@ -372,6 +372,16 @@ export namespace Id64 {
       return arg.size;
   }
 
+  /** Returns true if the [[Id64Arg]] contains the specified Id. */
+  export function has(arg: Id64Arg, id: Id64String): boolean {
+    if (typeof arg === "string")
+      return arg === id;
+    else if (Array.isArray(arg))
+      return -1 !== arg.indexOf(id);
+    else
+      return arg.has(id);
+  }
+
   /** The string representation of an invalid Id. */
   export const invalid = "0";
 
@@ -477,13 +487,24 @@ export namespace Id64 {
      */
     public constructor(ids?: Id64Arg) {
       if (undefined !== ids)
-        Id64.forEach(ids, (id) => this.addId(id));
+        this.addIds(ids);
     }
 
     /** Remove all contents of this set. */
-    public clear(): void { this._map.clear(); }
+    public clear(): void {
+      this._map.clear();
+    }
+
     /** Add an Id to the set. */
-    public addId(id: Id64String): void { this.add(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+    public addId(id: Id64String): void {
+      this.add(Id64.getLowerUint32(id), Id64.getUpperUint32(id));
+    }
+
+    /** Add any number of Ids to the set. */
+    public addIds(ids: Id64Arg): void {
+      Id64.forEach(ids, (id) => this.addId(id));
+    }
+
     /** Returns true if the set contains the specified Id. */
     public hasId(id: Id64String): boolean { return this.has(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
 
@@ -498,6 +519,23 @@ export namespace Id64 {
       set.add(low);
     }
 
+    /** Remove an Id from the set. */
+    public deleteId(id: Id64String): void {
+      this.delete(Id64.getLowerUint32(id), Id64.getUpperUint32(id));
+    }
+
+    /** Remove any number of Ids from the set. */
+    public deleteIds(ids: Id64Arg): void {
+      Id64.forEach(ids, (id) => this.deleteId(id));
+    }
+
+    /** Remove an Id from the set. */
+    public delete(low: number, high: number): void {
+      const set = this._map.get(high);
+      if (undefined !== set)
+        set.delete(low);
+    }
+
     /** Returns true if the set contains the specified Id. */
     public has(low: number, high: number): boolean {
       const set = this._map.get(high);
@@ -506,6 +544,7 @@ export namespace Id64 {
 
     /** Returns true if the set contains no Ids. */
     public get isEmpty(): boolean { return 0 === this._map.size; }
+
     /** Returns the number of Ids contained in the set. */
     public get size(): number {
       let size = 0;

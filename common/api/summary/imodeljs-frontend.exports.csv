@@ -123,8 +123,9 @@ public;GraphicList = RenderGraphic[]
 public;GraphicType
 public;GridOrientationType
 internal;GroupMark
-public;HilitedSet
 internal;HilitedState
+internal;Hilites
+alpha;HiliteSet
 public;HitDetail
 public;HitDetailType
 public;HitGeomType
@@ -253,13 +254,17 @@ internal;SceneContext
 public;ScreenViewport 
 public;ScrollViewTool 
 public;SectionDrawingModelState 
+public;SelectAddEvent
 public;SelectedViewportChangedArgs
-public;SelectEventType
 public;SelectionMethod
 public;SelectionMode
 public;SelectionProcessing
 public;SelectionSet
+public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
+public;SelectionSetEventType
 public;SelectionTool 
+public;SelectRemoveEvent
+public;SelectReplaceEvent
 internal;SheetBorder
 public;SheetModelState 
 public;SheetViewState 

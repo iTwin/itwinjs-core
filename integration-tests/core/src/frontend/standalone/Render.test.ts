@@ -6,16 +6,17 @@ import { expect } from "chai";
 import * as path from "path";
 import { WebGLTestContext } from "../WebGLTestContext";
 import { testViewports, comparePixelData, Color } from "../TestViewport";
-import { RenderMode, ColorDef, RgbColor } from "@bentley/imodeljs-common";
+import { RenderMode, ColorDef, Hilite, RgbColor } from "@bentley/imodeljs-common";
 import { RenderMemory, Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
   DepthRangeNpc,
   IModelConnection,
-  SpatialViewState,
-  ViewRect,
-  FeatureSymbology,
   FeatureOverrideProvider,
+  FeatureSymbology,
+  OffScreenViewport,
+  SpatialViewState,
   Viewport,
+  ViewRect,
 } from "@bentley/imodeljs-frontend";
 
 // Mirukuru contains a single view, looking at a single design model containing a single white rectangle (element ID 41 (0x29), subcategory ID = 24 (0x18)).
@@ -286,6 +287,59 @@ describe("Render mirukuru", () => {
             expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImage()
           }
         }
+      }
+    });
+  });
+
+  it("should render hilite", async () => {
+    const rect = new ViewRect(0, 0, 200, 150);
+    await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
+      const vf = vp.view.viewFlags;
+      vf.visibleEdges = vf.hiddenEdges = vf.sourceLights = vf.cameraLights = vf.solarLight = false;
+      vp.hilite = new Hilite.Settings(ColorDef.red.clone(), 1.0, 0.0, Hilite.Silhouette.Thin);
+
+      await vp.waitForAllTilesToRender();
+
+      const hilites = imodel.hilited;
+      const tests = [
+        { id: "0x29", otherId: "0x30", set: hilites.elements },
+        { id: "0x18", otherId: "0x19", set: hilites.subcategories },
+        { id: "0x1c", otherId: "0x1d", set: hilites.models },
+      ];
+
+      // OffScreenViewports are not managed by ViewManager so not notified when hilite set changes.
+      const update = (vp instanceof OffScreenViewport) ? (() => (vp as any)._selectionSetDirty = true) : (() => undefined);
+
+      const white = Color.from(0xffffffff);
+      const black = Color.from(0xff000000);
+      const hilite = Color.from(0xff0000ff);
+      for (const test of tests) {
+        // Hilite some other entity
+        test.set.addId(test.otherId);
+        update();
+        await vp.drawFrame();
+        let colors = vp.readUniqueColors();
+        expect(colors.length).to.equal(2);
+        expect(colors.contains(white)).to.be.true;
+        expect(colors.contains(black)).to.be.true;
+
+        // Also hilite this entity
+        test.set.addId(test.id);
+        update();
+        await vp.drawFrame();
+        colors = vp.readUniqueColors();
+        expect(colors.length).to.equal(2);
+        expect(colors.contains(hilite)).to.be.true;
+        expect(colors.contains(black)).to.be.true;
+
+        // hilite nothing
+        hilites.clear();
+        update();
+        await vp.drawFrame();
+        colors = vp.readUniqueColors();
+        expect(colors.length).to.equal(2);
+        expect(colors.contains(white)).to.be.true;
+        expect(colors.contains(black)).to.be.true;
       }
     });
   });

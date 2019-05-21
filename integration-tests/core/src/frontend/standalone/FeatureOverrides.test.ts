@@ -5,7 +5,7 @@
 
 import { expect, assert } from "chai";
 import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
-import { IModelApp, ScreenViewport, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { HiliteSet, IModelApp, ScreenViewport, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { PackedFeatureTable } from "@bentley/imodeljs-frontend/lib/rendering";
 import * as path from "path";
 import { GeometryClass, FeatureTable, Feature } from "@bentley/imodeljs-common";
@@ -52,7 +52,7 @@ describe("FeatureOverrides tests", () => {
     const vpView = spatialView.clone();
     vp = ScreenViewport.create(viewDiv!, vpView);
 
-    vp.target.setHiliteSet(new Set<string>());
+    vp.target.setHiliteSet(new HiliteSet(imodel));
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
@@ -64,7 +64,7 @@ describe("FeatureOverrides tests", () => {
 
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
-    const hls = new Set<string>(); hls.add("0x1");
+    const hls = new HiliteSet(imodel); hls.setHilite("0x1", true);
     vp.target.setHiliteSet(hls);
     ovr.update(table);
     expect(ovr.anyHilited).to.be.true;
@@ -77,7 +77,7 @@ describe("FeatureOverrides tests", () => {
     const vpView = spatialView.clone();
     vp = ScreenViewport.create(viewDiv!, vpView);
 
-    vp.target.setHiliteSet(new Set<string>());
+    vp.target.setHiliteSet(new HiliteSet(imodel));
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
@@ -90,7 +90,7 @@ describe("FeatureOverrides tests", () => {
 
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
-    const hls = new Set<string>(); hls.add("0x1");
+    const hls = new HiliteSet(imodel); hls.setHilite("0x1", true);
     vp.target.setHiliteSet(hls);
     ovr.update(table);
     expect(ovr.anyHilited).to.be.true;

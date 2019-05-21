@@ -82,6 +82,7 @@ public;InstanceLabelOverrideValueSpecificationType
 public;InstanceNodesOfSpecificClassesSpecification 
 public;Item
 public;Key = Readonly
+public;Key
 public;Keys = ReadonlyArray
 public;KeySet
 public;KindOfQuantityInfo

@@ -1276,6 +1276,8 @@ export abstract class Viewport implements IDisposable {
   private _alwaysDrawnExclusive: boolean = false;
   private _featureOverrideProvider?: FeatureOverrideProvider;
   private _tiledGraphicsProviders?: Map<TiledGraphicsProvider.Type, TiledGraphicsProvider.ProviderSet>;
+  private _hilite = new Hilite.Settings();
+
   /** @internal */
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
 
@@ -1311,8 +1313,13 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public readonly sync = new SyncFlags();
+
   /** The settings that control how elements are hilited in this Viewport. */
-  public hilite = new Hilite.Settings();
+  public get hilite(): Hilite.Settings { return this._hilite; }
+  public set hilite(hilite: Hilite.Settings) {
+    this._hilite = hilite;
+    this._selectionSetDirty = true;
+  }
 
   /** Determine whether the Grid display is currently enabled in this Viewport.
    * @return true if the grid display is on.
@@ -2391,17 +2398,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     if (this._selectionSetDirty) {
-      if ((0 === view.iModel.hilited.size && 0 === view.iModel.selectionSet.size) || (view.iModel.hilited.size > 0 && 0 === view.iModel.selectionSet.size)) {
-        target.setHiliteSet(view.iModel.hilited.elements); // only hilited has elements to send (or empty)
-      } else if (0 === view.iModel.hilited.size && view.iModel.selectionSet.size > 0) {
-        target.setHiliteSet(view.iModel.selectionSet.elements); // only selectionSet has elements to send
-      } else { // combine both sets (they both have elements to send)
-        const allHilites = new Set<string>();
-        view.iModel.hilited.elements.forEach((val) => allHilites.add(val));
-        view.iModel.selectionSet.elements.forEach((val) => allHilites.add(val));
-        target.setHiliteSet(allHilites);
-      }
-
+      target.setHiliteSet(view.iModel.hilited);
       this._selectionSetDirty = false;
       isRedrawNeeded = true;
     }

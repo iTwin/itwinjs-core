@@ -1947,7 +1947,7 @@ export namespace EditManipulator {
         // (undocumented)
         protected onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled>;
         // (undocumented)
-        onSelectionChanged(iModel: IModelConnection, _eventType: SelectEventType, _ids?: Set<string>): void;
+        onSelectionChanged(ev: SelectionSetEvent): void;
         // (undocumented)
         protected onTouchTap(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled>;
         // (undocumented)
@@ -2728,24 +2728,41 @@ export interface GroupMark {
     start: number;
 }
 
-// @public
-export class HilitedSet {
-    constructor(iModel: IModelConnection);
-    clearAll(): void;
-    readonly elements: Set<string>;
-    has(id: string): boolean;
-    // (undocumented)
-    iModel: IModelConnection;
-    isHilited(id: Id64String): boolean;
-    setHilite(arg: Id64Arg, onOff: boolean): void;
-    readonly size: number;
-}
-
 // @internal (undocumented)
 export enum HilitedState {
     No = 2,
     Unknown = 0,
     Yes = 1
+}
+
+// @internal (undocumented)
+export interface Hilites {
+    // (undocumented)
+    readonly elements: Id64.Uint32Set;
+    // (undocumented)
+    readonly isEmpty: boolean;
+    // (undocumented)
+    readonly models: Id64.Uint32Set;
+    // (undocumented)
+    readonly subcategories: Id64.Uint32Set;
+}
+
+// @alpha
+export class HiliteSet {
+    constructor(iModel: IModelConnection, syncWithSelectionSet?: boolean);
+    clear(): void;
+    // (undocumented)
+    readonly elements: Id64.Uint32Set;
+    // (undocumented)
+    iModel: IModelConnection;
+    // (undocumented)
+    readonly isEmpty: boolean;
+    // (undocumented)
+    readonly models: Id64.Uint32Set;
+    setHilite(arg: Id64Arg, onOff: boolean): void;
+    // (undocumented)
+    readonly subcategories: Id64.Uint32Set;
+    wantSyncWithSelectionSet: boolean;
 }
 
 // @public
@@ -3099,7 +3116,8 @@ export class IModelConnection extends IModel {
     // @internal
     getContextRealityModelTileTree(url: string): TileTreeState;
     getToolTipMessage(id: string): Promise<string[]>;
-    readonly hilited: HilitedSet;
+    // @alpha
+    readonly hilited: HiliteSet;
     // @alpha
     readonly isClosed: boolean;
     // @alpha
@@ -4139,6 +4157,8 @@ export class PackedFeatureTable {
     // (undocumented)
     getPackedFeature(featureIndex: number): PackedFeature;
     // (undocumented)
+    getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair;
+    // (undocumented)
     readonly isClassifier: boolean;
     // (undocumented)
     readonly isPlanarClassifier: boolean;
@@ -4983,7 +5003,7 @@ export abstract class RenderTarget implements IDisposable {
     // (undocumented)
     setFlashed(_elementId: Id64String, _intensity: number): void;
     // (undocumented)
-    setHiliteSet(_hilited: Set<string>): void;
+    setHiliteSet(_hilited: HiliteSet): void;
     // (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
     // (undocumented)
@@ -5179,23 +5199,19 @@ export class SectionDrawingModelState extends DrawingModelState {
 }
 
 // @public
+export interface SelectAddEvent {
+    added: Id64Arg;
+    set: SelectionSet;
+    // (undocumented)
+    type: SelectionSetEventType.Add;
+}
+
+// @public
 export interface SelectedViewportChangedArgs {
     // (undocumented)
     current?: ScreenViewport;
     // (undocumented)
     previous?: ScreenViewport;
-}
-
-// @public
-export enum SelectEventType {
-    // (undocumented)
-    Add = 0,
-    // (undocumented)
-    Clear = 3,
-    // (undocumented)
-    Remove = 1,
-    // (undocumented)
-    Replace = 2
 }
 
 // @public
@@ -5223,7 +5239,7 @@ export enum SelectionProcessing {
 // @public
 export class SelectionSet {
     constructor(iModel: IModelConnection);
-    add(elem: Id64Arg, sendEvent?: boolean): boolean;
+    add(elem: Id64Arg): boolean;
     addAndRemove(adds: Id64Arg, removes: Id64Arg): boolean;
     readonly elements: Set<string>;
     emptyAll(): void;
@@ -5233,10 +5249,21 @@ export class SelectionSet {
     invert(elem: Id64Arg): boolean;
     readonly isActive: boolean;
     isSelected(elemId?: Id64String): boolean;
-    readonly onChanged: BeEvent<(iModel: IModelConnection, evType: SelectEventType, ids?: Set<string> | undefined) => void>;
-    remove(elem: Id64Arg, sendEvent?: boolean): boolean;
+    readonly onChanged: BeEvent<(ev: SelectionSetEvent) => void>;
+    remove(elem: Id64Arg): boolean;
     replace(elem: Id64Arg): void;
     readonly size: number;
+}
+
+// @public
+export type SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent;
+
+// @public
+export enum SelectionSetEventType {
+    Add = 0,
+    Clear = 3,
+    Remove = 1,
+    Replace = 2
 }
 
 // @public
@@ -5325,6 +5352,22 @@ export class SelectionTool extends PrimitiveTool {
     protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean;
     // (undocumented)
     protected wantToolSettings(): boolean;
+}
+
+// @public
+export interface SelectRemoveEvent {
+    removed: Id64Arg;
+    set: SelectionSet;
+    type: SelectionSetEventType.Remove | SelectionSetEventType.Clear;
+}
+
+// @public
+export interface SelectReplaceEvent {
+    added: Id64Arg;
+    removed: Id64Arg;
+    set: SelectionSet;
+    // (undocumented)
+    type: SelectionSetEventType.Replace;
 }
 
 // @internal
@@ -5940,7 +5983,9 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     protected _fbo?: FrameBuffer;
     // (undocumented)
-    readonly flashedElemId: Id64String;
+    readonly flashed: Id64.Uint32Pair | undefined;
+    // (undocumented)
+    readonly flashedId: Id64String;
     // (undocumented)
     readonly flashedUpdateTime: BeTimePoint;
     // (undocumented)
@@ -5964,9 +6009,9 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     readonly hiddenEdgeOverrides: EdgeOverrides | undefined;
     // (undocumented)
-    readonly hilite: Id64.Uint32Set;
-    // (undocumented)
     hiliteColor: FloatRgba;
+    // (undocumented)
+    readonly hilites: Hilites;
     // (undocumented)
     hiliteSettings: Hilite.Settings;
     // (undocumented)
@@ -6046,7 +6091,7 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
-    setHiliteSet(hilite: Set<string>): void;
+    setHiliteSet(hilite: HiliteSet): void;
     // (undocumented)
     readonly shaderLights: ShaderLights | undefined;
     // (undocumented)
