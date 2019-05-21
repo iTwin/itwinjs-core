@@ -21,6 +21,15 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   const firstChangeSetId = changeSets[0].wsgId;
   const secondChangeSetId = changeSets[1].wsgId;
 
+  // open imodel from local cache with first revision
+  const startTime2 = new Date().getTime();
+  const imodeldb2: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.first());
+  const endTime2 = new Date().getTime();
+  assert.exists(imodeldb2);
+  const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
+  imodeldb2.close(requestContext).catch();
+  fs.appendFileSync(csvPath, "Open, From Cache First CS," + elapsedTime2 + "\n");
+
   // open imodel first time from imodel-hub with first revision
   const startTime = new Date().getTime();
   const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.asOfChangeSet(firstChangeSetId));
@@ -40,15 +49,6 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   assert.strictEqual<string>(imodeldb1.briefcase.currentChangeSetId, secondChangeSetId);
   imodeldb1.close(requestContext).catch();
   fs.appendFileSync(csvPath, "Open, From Cache second cs," + elapsedTime1 + "\n");
-
-  // open imodel from local cache with first revision
-  const startTime2 = new Date().getTime();
-  const imodeldb2: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.first());
-  const endTime2 = new Date().getTime();
-  assert.exists(imodeldb2);
-  const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
-  imodeldb2.close(requestContext).catch();
-  fs.appendFileSync(csvPath, "Open, From Cache First CS," + elapsedTime2 + "\n");
 
   // open imodel from local cache with latest revision
   const startTime3 = new Date().getTime();
