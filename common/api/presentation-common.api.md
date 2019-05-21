@@ -501,8 +501,75 @@ export namespace InstanceKey {
 // @public
 export interface InstanceLabelOverride extends RuleBase {
     class: SingleSchemaClassSpecification;
-    propertyNames: string[];
     ruleType: RuleTypes.InstanceLabelOverride;
+    values: InstanceLabelOverrideValueSpecification[];
+}
+
+// @public
+export interface InstanceLabelOverrideBriefcaseIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
+    // (undocumented)
+    specType: InstanceLabelOverrideValueSpecificationType.BriefcaseId;
+}
+
+// @public
+export interface InstanceLabelOverrideClassLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
+    // (undocumented)
+    specType: InstanceLabelOverrideValueSpecificationType.ClassLabel;
+}
+
+// @public
+export interface InstanceLabelOverrideClassNameSpecification extends InstanceLabelOverrideValueSpecificationBase {
+    full?: boolean;
+    // (undocumented)
+    specType: InstanceLabelOverrideValueSpecificationType.ClassName;
+}
+
+// @public
+export interface InstanceLabelOverrideCompositeValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
+    parts: Array<{
+        spec: InstanceLabelOverrideValueSpecification;
+        isRequired?: boolean;
+    }>;
+    separator?: string;
+    // (undocumented)
+    specType: InstanceLabelOverrideValueSpecificationType.Composite;
+}
+
+// @public
+export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
+    // (undocumented)
+    specType: InstanceLabelOverrideValueSpecificationType.LocalId;
+}
+
+// @public
+export interface InstanceLabelOverridePropertyValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
+    propertyName: string;
+    // (undocumented)
+    specType: InstanceLabelOverrideValueSpecificationType.Property;
+}
+
+// @public
+export type InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification;
+
+// @public
+export interface InstanceLabelOverrideValueSpecificationBase {
+    specType: InstanceLabelOverrideValueSpecificationType;
+}
+
+// @public
+export enum InstanceLabelOverrideValueSpecificationType {
+    // (undocumented)
+    BriefcaseId = "BriefcaseId",
+    // (undocumented)
+    ClassLabel = "ClassLabel",
+    // (undocumented)
+    ClassName = "ClassName",
+    // (undocumented)
+    Composite = "Composite",
+    // (undocumented)
+    LocalId = "LocalId",
+    // (undocumented)
+    Property = "Property"
 }
 
 // @public
