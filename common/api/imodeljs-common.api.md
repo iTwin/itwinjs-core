@@ -1146,8 +1146,6 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
     // (undocumented)
     setLogLevel(_iModelToken: IModelToken, _loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined>;
     // (undocumented)
-    signal(_iModelToken: IModelToken, _signalType: number): Promise<boolean>;
-    // (undocumented)
     stats(_iModelToken: IModelToken, _options: DevToolsStatsOptions): Promise<any>;
     static types: () => (typeof IModelToken | typeof IModelNotFoundResponse)[];
     static version: string;

@@ -5,11 +5,10 @@
 /** @module Tools */
 
 import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { ModifyElementSource } from "./PrimitiveTool";
 import { IModelConnection } from "../IModelConnection";
 
 /** The requested source for the elements to modify.
- * @beta Do we really want to propagate the *Elem* abbreviation?
+ * @internal Do we really want to propagate the *Elem* abbreviation?
  */
 export enum ElemSource {
   /** Populate ElementAgenda from a locate */
@@ -21,7 +20,7 @@ export enum ElemSource {
 }
 
 /** The method that will be used to update the tool's ElementAgenda.
- * @beta Do we really want to propagate the *Elem* abbreviation?
+ * @internal Do we really want to propagate the *Elem* abbreviation?
  */
 export enum ElemMethod {
   /** Entries will be added to ElementAgenda */
@@ -31,7 +30,7 @@ export enum ElemMethod {
 }
 
 /** Should the active fence be used, required, or ignored as a possible ElemSource.
- * @beta
+ * @internal
  */
 export enum UsesFence {
   /** Active Fence is allowed as ElemSource */
@@ -43,7 +42,7 @@ export enum UsesFence {
 }
 
 /** Should the active selection set be used, required, or ignored as a possible ElemSource.
- * @beta
+ * @internal
  */
 export enum UsesSelection {
   /** Active Selection Set is allowed as ElemSource */
@@ -55,7 +54,7 @@ export enum UsesSelection {
 }
 
 /** Should ElemSource::Pick allow a drag select to identify elements.
- * @beta
+ * @internal
  */
 export enum UsesDragSelect {
   /** Drag selection using shape inside/overlap */
@@ -67,7 +66,7 @@ export enum UsesDragSelect {
 }
 
 /** Helps determine the action ModifyAgenda will take on the agenda elements after calling doFenceClip.
- * @beta
+ * @internal
  */
 export enum ClipResult {
   /** Tool does not support fence clip */
@@ -79,7 +78,7 @@ export enum ClipResult {
 }
 
 /** ElemSource specific failures.
- * @beta
+ * @internal
  */
 export enum ErrorNums {
   /** No fence is currently active */
@@ -94,7 +93,7 @@ export enum ErrorNums {
   NotSupportedElmType,
 }
 
-/** @beta */
+/** @internal */
 export enum HilitedState {
   /**  this agenda is in an indeterminate state wrt hilite */
   Unknown = 0,
@@ -104,13 +103,29 @@ export enum HilitedState {
   No = 2,
 }
 
-/** @beta */
+/** @internal */
+export enum ModifyElementSource {
+  /** The source for the element is unknown - not caused by a modification command. */
+  Unknown = 0,
+  /** The element is selected by the user. */
+  Selected = 1,
+  /** The element is processed because it is in the selection set. */
+  SelectionSet = 2,
+  /** The element is processed because it is passes the fence criteria. */
+  Fence = 3,
+  /** The element is processed because it belongs to the group of the selected element (for _FilterAgendaEntries only) */
+  Group = 4,
+  /** The element is selected by the user by drag selection or multi-selection using ctrl. */
+  DragSelect = 5,
+}
+
+/** @internal */
 export interface GroupMark {
   start: number;
   source: ModifyElementSource;
 }
 
-/** @beta */
+/** @internal */
 export class ElementAgenda {
   public readonly elements: string[] = [];
   public readonly groupMarks: GroupMark[] = [];
@@ -179,12 +194,18 @@ export class ElementAgenda {
   /** Add elements to this ElementAgenda. */
   public add(arg: Id64Arg) {
     const groupStart = this.length;
-    Id64.toIdSet(arg).forEach((id) => { if (!this.has(id)) this.elements.push(id); });
+    Id64.forEach(arg, (id) => {
+      if (!this.has(id))
+        this.elements.push(id);
+    });
+
     if (groupStart === this.length)
       return false;
+
     this.groupMarks.push({ start: groupStart, source: ModifyElementSource.Unknown });
     if (HilitedState.No !== this.hilitedState)
       this.setEntriesHiliteState(this.hiliteOnAdd, groupStart, this.length);
+
     return true;
   }
 
@@ -254,8 +275,7 @@ export class ElementAgenda {
     if (0 === this.length)
       return false;
 
-    const elSet = Id64.toIdSet(arg);
-    if (elSet.size === 0)
+    if (0 === Id64.sizeOf(arg))
       return false;
 
     const needClearHilite = (HilitedState.No !== this.hilitedState);
@@ -263,7 +283,7 @@ export class ElementAgenda {
     if (needClearHilite)
       this.clearHilite(); // Avoid making multiple draws to unhilite entries as they are removed...
 
-    elSet.forEach((elId) => this.removeOne(elId)); // NOTE: Removes group associated with this element, not just a single entry...
+    Id64.forEach(arg, (elId) => this.removeOne(elId)); // NOTE: Removes group associated with this element, not just a single entry...
 
     if (needClearHilite)
       this.hilite();
@@ -276,13 +296,12 @@ export class ElementAgenda {
     if (0 === this.length)
       return this.add(arg);
 
-    const elSet = Id64.toIdSet(arg);
-    if (elSet.size === 0)
+    if (0 === Id64.sizeOf(arg))
       return false;
 
     const adds: string[] = [];
     const removes: string[] = [];
-    elSet.forEach((id) => { if (this.has(id)) removes.push(id); else adds.push(id); });
+    Id64.forEach(arg, (id) => { if (this.has(id)) removes.push(id); else adds.push(id); });
     if (adds.length === 0 && removes.length === 0)
       return false;
 

@@ -9,7 +9,7 @@ import { DecorateContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { ManipulatorToolEvent } from "./ToolAdmin";
 import { IModelConnection } from "../IModelConnection";
-import { SelectEventType } from "../SelectionSet";
+import { SelectionSetEvent } from "../SelectionSet";
 import { HitDetail } from "../HitDetail";
 import { Viewport } from "../Viewport";
 import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry, Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
@@ -86,7 +86,10 @@ export namespace EditManipulator {
       }
     }
 
-    public onSelectionChanged(iModel: IModelConnection, _eventType: SelectEventType, _ids?: Set<string>): void { if (this.iModel === iModel) this.onManipulatorEvent(EventType.Synch); }
+    public onSelectionChanged(ev: SelectionSetEvent): void {
+      if (this.iModel === ev.set.iModel)
+        this.onManipulatorEvent(EventType.Synch);
+    }
 
     protected updateDecorationListener(add: boolean): void {
       if (this._removeDecorationListener) {

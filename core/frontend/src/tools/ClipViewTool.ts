@@ -1125,7 +1125,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     for (let i: number = 0; i < this._clipPlanes.planes.length; i++) {
       const plane = this._clipPlanes.planes[i].getPlane3d();
       if (iLoop < loopData.length) {
-        if (loopData[iLoop].direction.isParallelTo(plane.getNormalRef(), false) && plane.isPointInPlane(loopData[iLoop].origin)) {
+        if (Math.abs(loopData[iLoop].direction.dotProduct(plane.getNormalRef())) > 0.9999 && plane.isPointInPlane(loopData[iLoop].origin)) {
           const outwardNormal = loopData[iLoop].direction.negate();
           this._controls[i] = new ViewClipControlArrow(loopData[iLoop].origin, outwardNormal, 0.75);
           iLoop++;

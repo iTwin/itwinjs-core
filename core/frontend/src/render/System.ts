@@ -15,6 +15,7 @@ import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { HiliteSet } from "../SelectionSet";
 import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
 import { ViewFrustum, Viewport, ViewRect } from "../Viewport";
 import { FeatureSymbology } from "./FeatureSymbology";
@@ -668,6 +669,15 @@ export class PackedFeatureTable {
   }
 
   /** @internal */
+  public getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair {
+    const index = 3 * featureIndex;
+    let subCatIndex = this._data[index + 2];
+    subCatIndex = (subCatIndex & 0x00ffffff) >>> 0;
+    subCatIndex = subCatIndex * 2 + this._subCategoriesOffset;
+    return { lower: this._data[subCatIndex], upper: this._data[subCatIndex + 1] };
+  }
+
+  /** @internal */
   public getAnimationNodeId(featureIndex: number): number {
     return undefined !== this._animationNodeIds ? this._animationNodeIds[featureIndex] : 0;
   }
@@ -768,7 +778,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract changeRenderPlan(plan: RenderPlan): void;
   public abstract drawFrame(sceneMilSecElapsed?: number): void;
   public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
-  public setHiliteSet(_hilited: Set<string>): void { }
+  public setHiliteSet(_hilited: HiliteSet): void { }
   public setFlashed(_elementId: Id64String, _intensity: number): void { }
   public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
   public onResized(): void { }

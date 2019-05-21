@@ -87,12 +87,6 @@ export class DevToolsStatsFormatter {
  */
 export class DevTools {
 
-  /** Process a signal at the addon and return false if it wasn't processed */
-  public static signal(signalType: number): boolean {
-    Logger.logError(loggerCategory, `About to process signal`, () => ({ signalType }));
-    return IModelHost.platform.NativeDevTools.signal(signalType);
-  }
-
   /** Receives a ping and returns true */
   public static ping(): boolean {
     Logger.logInfo(loggerCategory, "Received ping at backend");

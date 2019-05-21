@@ -6,7 +6,7 @@
 
 import { BentleyError, LogFunction, GetMetaDataFunction, Logger, BentleyStatus } from "@bentley/bentleyjs-core";
 
-/** IModel.js UI Error class, which is a subclass of BentleyError. Errors are logged.
+/** iModel.js UI UiError class is a subclass of BentleyError. Errors are logged.
  * @public
  */
 export class UiError extends BentleyError {

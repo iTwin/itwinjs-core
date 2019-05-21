@@ -11,12 +11,12 @@ import { Select, SelectProps } from "./Select";
 import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 
 /** Properties for [[LabeledSelect]] components
- * @beta
+ * @public
  */
 export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, MessagedComponentProps { }
 
 /** Dropdown wrapper that allows for additional styling and labelling
- * @beta
+ * @public
  */
 export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
   public render(): JSX.Element {

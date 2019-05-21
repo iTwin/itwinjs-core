@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { Id64, GuidString, Guid } from "@bentley/bentleyjs-core";
+import { Id64, GuidString, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { InstanceId, InstanceKey } from "./EC";
 import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
 import { EntityProps } from "@bentley/imodeljs-common";
@@ -15,6 +15,24 @@ import { PresentationError, PresentationStatus } from "./Error";
  * @public
  */
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
+
+/** @public */
+export namespace Key {
+  /** Check if the supplied key is a `NodeKey` */
+  export function isNodeKey(key: Key): key is NodeKey {
+    return (key as any).type;
+  }
+
+  /** Check if the supplied key is an `InstanceKey` */
+  export function isInstanceKey(key: Key): key is InstanceKey {
+    return (key as any).className && (key as any).id;
+  }
+
+  /** Check if the supplied key is an `EntityProps` */
+  export function isEntityProps(key: Key): key is EntityProps {
+    return (key as any).classFullName && (key as any).id;
+  }
+}
 
 /**
  * A type for multiple keys that identify something in iModel.js application
@@ -114,18 +132,6 @@ export class KeySet {
     return Array.isArray(keys);
   }
 
-  private isNodeKey(key: Key): key is NodeKey {
-    return (key as any).type;
-  }
-
-  private isInstanceKey(key: Key): key is InstanceKey {
-    return (key as any).className && (key as any).id;
-  }
-
-  private isEntityProps(key: Key): key is EntityProps {
-    return (key as any).classFullName && (key as any).id;
-  }
-
   /**
    * Clear this KeySet.
    * @returns itself
@@ -140,17 +146,20 @@ export class KeySet {
     return this;
   }
 
-  private addKeySet(keyset: Readonly<KeySet>): void {
-    for (const key of (keyset as any)._nodeKeys)
-      this._nodeKeys.add(key);
+  private addKeySet(keyset: Readonly<KeySet>, pred?: (key: Key) => boolean): void {
+    for (const key of (keyset as any)._nodeKeys) {
+      if (!pred || pred(NodeKey.fromJSON(JSON.parse(key))))
+        this._nodeKeys.add(key);
+    }
     for (const entry of (keyset as any)._instanceKeys) {
       let set = this._instanceKeys.get(entry["0"]);
       if (!set) {
         set = new Set();
         this._instanceKeys.set(entry["0"], set);
       }
-      entry["1"].forEach((key: string) => {
-        set!.add(key);
+      entry["1"].forEach((id: Id64String) => {
+        if (!pred || pred({ className: entry[0], id }))
+          set!.add(id);
       });
     }
   }
@@ -165,24 +174,24 @@ export class KeySet {
   /**
    * Add a key or keys to this KeySet.
    * @param value A key or keys to add.
+   * @param pred An optional predicate function that indicates whether a key should be added
    * @returns itself
    */
-  public add(value: Keys | Key): KeySet {
+  public add(value: Keys | Key, pred?: (key: Key) => boolean): KeySet {
     if (!value)
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     const sizeBefore = this.size;
     if (this.isKeySet(value)) {
-      this.addKeySet(value);
+      this.addKeySet(value, pred);
     } else if (this.isKeysArray(value)) {
-      for (const key of value)
-        this.add(key);
-    } else if (this.isEntityProps(value)) {
+      value.forEach((key) => (!pred || pred(key)) ? this.add(key) : undefined);
+    } else if (Key.isEntityProps(value)) {
       this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) } as InstanceKey);
-    } else if (this.isInstanceKey(value)) {
+    } else if (Key.isInstanceKey(value)) {
       if (!this._instanceKeys.has(value.className))
         this._instanceKeys.set(value.className, new Set());
       this._instanceKeys.get(value.className)!.add(value.id);
-    } else if (this.isNodeKey(value)) {
+    } else if (Key.isNodeKey(value)) {
       this._nodeKeys.add(JSON.stringify(value));
     } else {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
@@ -219,13 +228,13 @@ export class KeySet {
     } else if (this.isKeysArray(value)) {
       for (const key of value)
         this.delete(key);
-    } else if (this.isEntityProps(value)) {
+    } else if (Key.isEntityProps(value)) {
       this.delete({ className: value.classFullName, id: value.id! } as InstanceKey);
-    } else if (this.isInstanceKey(value)) {
+    } else if (Key.isInstanceKey(value)) {
       const set = this._instanceKeys.get(value.className);
       if (set)
         set.delete(value.id);
-    } else if (this.isNodeKey(value)) {
+    } else if (Key.isNodeKey(value)) {
       this._nodeKeys.delete(JSON.stringify(value));
     } else {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
@@ -242,13 +251,13 @@ export class KeySet {
   public has(value: Key): boolean {
     if (!value)
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
-    if (this.isEntityProps(value))
+    if (Key.isEntityProps(value))
       return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
-    if (this.isInstanceKey(value)) {
+    if (Key.isInstanceKey(value)) {
       const set = this._instanceKeys.get(value.className);
       return !!(set && set.has(value.id));
     }
-    if (this.isNodeKey(value))
+    if (Key.isNodeKey(value))
       return this._nodeKeys.has(JSON.stringify(value));
     throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
   }

@@ -35,15 +35,12 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
   public static getClient(): DevToolsRpcInterface { return RpcManager.getClientForInterface(DevToolsRpcInterface); }
 
   /** The semantic version of the interface. */
-  public static version = "0.2.0";
+  public static version = "0.3.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ==========================================================================================*/
-  // Sends a signal and returns true if the signal was processed
-  public async signal(_iModelToken: IModelToken, _signalType: number): Promise<boolean> { return this.forward(arguments); }
-
   // Sends a ping and returns true if the backend received the ping
   public async ping(_iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
 

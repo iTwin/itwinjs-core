@@ -50,7 +50,7 @@ beta;enum ClassifierType
 alpha;ClipEventType
 alpha;ClipOrientation
 beta;enum ClippingType
-beta;ClipResult
+internal;ClipResult
 internal;Clips
 public;Cluster
 alpha;ColorEditorParams 
@@ -79,19 +79,19 @@ public;DrawingViewState
 public;DynamicsContext 
 alpha;EditManipulator
 beta;EditorPosition
-beta;ElementAgenda
+internal;ElementAgenda
 public;ElementLocateManager
 public;ElementPicker
 public;ElementState 
-beta;ElemMethod
-beta;ElemSource
+internal;ElemMethod
+internal;ElemSource
 internal;EmphasizeElements 
 internal;EmphasizeElementsProps
 public;EntityState 
 beta;EnumerationChoice
 beta;EnumerationChoicesInfo
 public;Environment 
-beta;ErrorNums
+internal;ErrorNums
 public;EventController
 public;EventHandled
 public;ExtentLimits
@@ -122,9 +122,10 @@ public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
 public;GraphicType
 public;GridOrientationType
-beta;GroupMark
-public;HilitedSet
-beta;HilitedState
+internal;GroupMark
+internal;HilitedState
+internal;Hilites
+alpha;HiliteSet
 public;HitDetail
 public;HitDetailType
 public;HitGeomType
@@ -181,7 +182,7 @@ public;MessageBoxValue
 internal;MockRender
 public;ModelSelectorState 
 public;ModelState 
-public;ModifyElementSource
+internal;ModifyElementSource
 alpha;MultilineTextEditorParams 
 internal;NoRenderApp
 public;NotificationManager
@@ -253,13 +254,17 @@ internal;SceneContext
 public;ScreenViewport 
 public;ScrollViewTool 
 public;SectionDrawingModelState 
+public;SelectAddEvent
 public;SelectedViewportChangedArgs
-public;SelectEventType
 public;SelectionMethod
 public;SelectionMode
 public;SelectionProcessing
 public;SelectionSet
+public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
+public;SelectionSetEventType
 public;SelectionTool 
+public;SelectRemoveEvent
+public;SelectReplaceEvent
 internal;SheetBorder
 public;SheetModelState 
 public;SheetViewState 
@@ -337,9 +342,9 @@ public;ToolType = typeof Tool
 internal;TouchCursor 
 alpha;TwoWayViewportSync
 alpha;Unit 
-beta;UsesDragSelect
-beta;UsesFence
-beta;UsesSelection
+internal;UsesDragSelect
+internal;UsesFence
+internal;UsesSelection
 public;ViewChangeOptions
 alpha;ViewClipByElementTool 
 alpha;ViewClipByPlaneTool 

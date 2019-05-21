@@ -12,7 +12,7 @@ import { Dialog, DialogButtonDef } from "../dialog/Dialog";
 import { CommonProps } from "../utils/Props";
 
 /** Message Severity enum.
- * @beta
+ * @public
  */
 export enum MessageSeverity {
   None = 0,
@@ -24,7 +24,7 @@ export enum MessageSeverity {
 }
 
 /** Properties for the [[MessageBox]] component
- * @beta
+ * @public
  */
 export interface MessageBoxProps extends CommonProps {
   /** Severity of MessageBox */
@@ -62,7 +62,7 @@ export interface MessageBoxProps extends CommonProps {
 }
 
 /** Message Box React component.
- * @beta
+ * @public
  */
 export class MessageBox extends React.PureComponent<MessageBoxProps> {
   public static defaultProps: Partial<MessageBoxProps> = {
@@ -93,14 +93,14 @@ export class MessageBox extends React.PureComponent<MessageBoxProps> {
 }
 
 /** Properties for the [[MessageContainer]] component
- * @beta
+ * @public
  */
 export interface MessageContainerProps extends CommonProps {
   severity: MessageSeverity;
 }
 
 /** Message Container React component.
- * @beta
+ * @public
  */
 export class MessageContainer extends React.PureComponent<MessageContainerProps> {
   public static getIconClassName(severity: MessageSeverity, hollow?: boolean): string {

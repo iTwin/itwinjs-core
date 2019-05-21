@@ -183,6 +183,9 @@ describe("Ids", () => {
       expect(uint32Set.size).to.equal(Id64.sizeOf(arg));
       Id64.forEach(arg, (id) => {
         expect(uint32Set.hasId(id)).to.be.true;
+
+        // While we're here, test Id64.has()
+        expect(Id64.has(arg, id)).to.be.true;
       });
     };
 

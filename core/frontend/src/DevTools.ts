@@ -36,11 +36,6 @@ export class DevTools {
   private constructor(private readonly _iModelToken: IModelToken) {
   }
 
-  /** Process a signal at the backend (addon) and return false if it wasn't processed */
-  public async signal(signalType: number): Promise<boolean> {
-    return DevToolsRpcInterface.getClient().signal(this._iModelToken, signalType);
-  }
-
   /** Measures the round trip times for one or more pings to the backend
    * @param count Number of pings to send to the backend
    * @return Result of ping test.

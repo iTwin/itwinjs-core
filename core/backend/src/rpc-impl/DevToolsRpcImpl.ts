@@ -14,11 +14,6 @@ export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterfac
 
   public static register() { RpcManager.registerImpl(DevToolsRpcInterface, DevToolsRpcImpl); }
 
-  // Returns true if the signal was processed
-  public async signal(_iModelToken: IModelToken, signalType: number): Promise<boolean> {
-    return DevTools.signal(signalType);
-  }
-
   // Returns true if the backend received the ping
   public async ping(_iModelToken: IModelToken): Promise<boolean> {
     return DevTools.ping();

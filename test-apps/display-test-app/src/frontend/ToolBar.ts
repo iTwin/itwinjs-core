@@ -65,6 +65,7 @@ export type CreateToolBarDropDown = (parent: HTMLElement) => Promise<ToolBarDrop
 export interface ToolBarDropDownProps {
   className: string;
   createDropDown: CreateToolBarDropDown;
+  tooltip?: string;
 }
 
 class DropDown {
@@ -82,6 +83,9 @@ class DropDown {
     image.addEventListener("click", () => {
       toolBar.toggle(index); // tslint:disable-line:no-floating-promises
     });
+
+    if (undefined !== props.tooltip)
+      this._element.title = props.tooltip;
 
     this._element.appendChild(image);
     toolBar.element.appendChild(this._element);

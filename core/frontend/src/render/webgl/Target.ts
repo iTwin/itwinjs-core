@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { ClipUtilities, ClipVector, Transform, Vector3d, Point3d, Matrix4d, Point2d, Range3d, XAndY } from "@bentley/geometry-core";
+import { ClipPlaneContainment, ClipUtilities, ClipVector, Transform, Vector3d, Point3d, Matrix4d, Point2d, Range3d, XAndY } from "@bentley/geometry-core";
 import { assert, BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates, PlanarClassifierMap, RenderSolarShadowMap } from "../System";
+import { HiliteSet } from "../../SelectionSet";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -212,6 +213,25 @@ export const enum PrimitiveVisibility {
 }
 
 /** @internal */
+export interface Hilites {
+  readonly elements: Id64.Uint32Set;
+  readonly subcategories: Id64.Uint32Set;
+  readonly models: Id64.Uint32Set;
+  readonly isEmpty: boolean;
+}
+
+class EmptyHiliteSet {
+  public readonly elements: Id64.Uint32Set;
+  public readonly subcategories: Id64.Uint32Set;
+  public readonly models: Id64.Uint32Set;
+  public readonly isEmpty = true;
+
+  public constructor() {
+    this.elements = this.subcategories = this.models = new Id64.Uint32Set();
+  }
+}
+
+/** @internal */
 export abstract class Target extends RenderTarget {
   protected _decorations?: Decorations;
   private _stack = new BranchStack();
@@ -222,9 +242,10 @@ export abstract class Target extends RenderTarget {
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
-  private _hilite = new Id64.Uint32Set();
+  private _hilites: Hilites = new EmptyHiliteSet();
   private _hiliteUpdateTime = BeTimePoint.now();
-  private _flashedElemId = Id64.invalid;
+  private _flashed: Id64.Uint32Pair = { lower: 0, upper: 0 };
+  private _flashedId = Id64.invalid;
   private _flashedUpdateTime = BeTimePoint.now();
   private _flashIntensity: number = 0;
   private _transparencyThreshold: number = 0;
@@ -295,10 +316,11 @@ export abstract class Target extends RenderTarget {
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
   public get techniques(): Techniques { return System.instance.techniques!; }
 
-  public get hilite(): Id64.Uint32Set { return this._hilite; }
+  public get hilites(): Hilites { return this._hilites; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
 
-  public get flashedElemId(): Id64String { return this._flashedElemId; }
+  public get flashed(): Id64.Uint32Pair | undefined { return Id64.isValid(this._flashedId) ? this._flashed : undefined; }
+  public get flashedId(): Id64String { return this._flashedId; }
   public get flashedUpdateTime(): BeTimePoint { return this._flashedUpdateTime; }
   public get flashIntensity(): number { return this._flashIntensity; }
 
@@ -419,6 +441,24 @@ export abstract class Target extends RenderTarget {
     }
   }
 
+  private _scratchRangeCorners: Point3d[] = [
+    new Point3d(), new Point3d(), new Point3d(), new Point3d(),
+    new Point3d(), new Point3d(), new Point3d(), new Point3d(),
+  ];
+
+  private _getRangeCorners(r: Range3d): Point3d[] {
+    const p = this._scratchRangeCorners;
+    p[0].setFromPoint3d(r.low);
+    p[1].set(r.high.x, r.low.y, r.low.z),
+    p[2].set(r.low.x, r.high.y, r.low.z),
+    p[3].set(r.high.x, r.high.y, r.low.z),
+    p[4].set(r.low.x, r.low.y, r.high.z),
+    p[5].set(r.high.x, r.low.y, r.high.z),
+    p[6].set(r.low.x, r.high.y, r.high.z),
+    p[7].setFromPoint3d(r.high);
+    return p;
+  }
+
   /** @internal */
   public isRangeOutsideActiveVolume(range: Range3d): boolean {
     if (undefined === this._activeClipVolume || !this._stack.top.showClipVolume || !this.clips.isValid)
@@ -426,10 +466,16 @@ export abstract class Target extends RenderTarget {
 
     range = this.currentTransform.multiplyRange(range, range);
 
-    // ###TODO: Avoid allocation of Range3d inside called function...
-    // ###TODO: Use some not-yet-existent API which will return as soon as it determines ANY intersection (we don't care about the actual intersection range).
-    const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(this._activeClipVolume.clipVector, range);
-    return clippedRange.isNull;
+    const testIntersection = false;
+    if (testIntersection) {
+      // ###TODO: Avoid allocation of Range3d inside called function...
+      // ###TODO: Use some not-yet-existent API which will return as soon as it determines ANY intersection (we don't care about the actual intersection range).
+      const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(this._activeClipVolume.clipVector, range);
+      return clippedRange.isNull;
+    } else {
+      // Do the cheap, imprecise check. The above is far too slow and allocates way too many objects, especially for clips produced from non-convex shapes.
+      return ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(this._getRangeCorners(range));
+    }
   }
 
   private readonly _scratchRange = new Range3d();
@@ -507,16 +553,14 @@ export abstract class Target extends RenderTarget {
     this._stack.setSymbologyOverrides(ovr);
     this._overridesUpdateTime = BeTimePoint.now();
   }
-  public setHiliteSet(hilite: Set<string>): void {
-    this._hilite.clear();
-    for (const id of hilite)
-      this._hilite.addId(id);
-
+  public setHiliteSet(hilite: HiliteSet): void {
+    this._hilites = hilite;
     this._hiliteUpdateTime = BeTimePoint.now();
   }
   public setFlashed(id: Id64String, intensity: number) {
-    if (id !== this._flashedElemId) {
-      this._flashedElemId = id;
+    if (id !== this._flashedId) {
+      this._flashedId = id;
+      this._flashed = Id64.getUint32Pair(id);
       this._flashedUpdateTime = BeTimePoint.now();
     }
 
@@ -1001,6 +1045,11 @@ export abstract class Target extends RenderTarget {
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
+
+    // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
+    if (undefined !== this._activeClipVolume && this._stack.top.showClipVolume && this.clips.isValid)
+      if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
+        return undefined;
 
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
     this._renderCommands.clear();

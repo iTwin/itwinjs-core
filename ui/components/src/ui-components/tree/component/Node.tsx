@@ -22,7 +22,7 @@ import { ImageRenderer } from "../../common/ImageRenderer";
 
 /**
  * Properties for Checkbox in [[TreeNode]]
- * @beta
+ * @public
  */
 export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
   onClick: (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => void;
@@ -30,7 +30,7 @@ export interface NodeCheckboxProps extends Omit<CheckboxProps, "onClick"> {
 
 /**
  * Properties for [[TreeNode]] React component
- * @beta
+ * @public
  */
 export interface TreeNodeProps extends CommonProps {
   node: BeInspireTreeNode<TreeNodeItem>;
@@ -69,7 +69,7 @@ export interface TreeNodeProps extends CommonProps {
 
 /**
  * Default component for rendering a node for the [Tree]($components)
- * @beta
+ * @public
  */
 export class TreeNode extends React.Component<TreeNodeProps> {
 

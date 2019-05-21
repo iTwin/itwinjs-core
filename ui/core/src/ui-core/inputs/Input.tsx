@@ -9,12 +9,12 @@ import * as classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[Input]] component
- * @beta
+ * @public
  */
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps { }
 
 /** Basic text input
- * @beta
+ * @public
  */
 export class Input extends React.PureComponent<InputProps> {
   public render(): JSX.Element {

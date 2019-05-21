@@ -11,12 +11,12 @@ import { Input, InputProps } from "./Input";
 import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 
 /** Properties for [[LabeledInput]] components
- * @beta
+ * @public
  */
 export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps { }
 
 /** Text input wrapper that provides additional styling and labeling
- * @beta
+ * @public
  */
 export class LabeledInput extends React.PureComponent<LabeledInputProps> {
   public render(): JSX.Element {

@@ -45,6 +45,8 @@ export abstract class IdPicker extends ToolBarDropDown {
       { name: "Invert", value: "Inverse" },
       { name: "Isolate Selected", value: "Isolate" },
       { name: "Hide Selected", value: "Hide" },
+      { name: "Hilite Enabled", value: "Hilite" },
+      { name: "Un-hilite Enabled", value: "Dehilite" },
     ];
   }
 
@@ -124,6 +126,10 @@ export abstract class IdPicker extends ToolBarDropDown {
       case "Inverse":
         this.invertAll();
         return;
+      case "Hilite":
+      case "Dehilite":
+        this.hiliteEnabled("Hilite" === which);
+        return;
       case "":
         return;
     }
@@ -173,6 +179,8 @@ export abstract class IdPicker extends ToolBarDropDown {
         boxById.get(id)!.checked = enabled;
     });
   }
+
+  protected abstract hiliteEnabled(hiliteOn: boolean): void;
 }
 
 function getCategoryName(row: any): string {
@@ -240,6 +248,23 @@ export class CategoryPicker extends IdPicker {
     else
       super.show(which);
   }
+
+  protected hiliteEnabled(hiliteOn: boolean): void {
+    const catIds = this._enabledIds;
+    const cache = this._vp.iModel.subcategories;
+    const set = this._vp.iModel.hilited.subcategories;
+    for (const catId of catIds) {
+      const subcatIds = cache.getSubCategories(catId);
+      if (undefined !== subcatIds) {
+        for (const subcatId of subcatIds) {
+          if (hiliteOn)
+            set.addId(subcatId);
+          else
+            set.deleteId(subcatId);
+        }
+      }
+    }
+  }
 }
 
 export class ModelPicker extends IdPicker {
@@ -249,6 +274,17 @@ export class ModelPicker extends IdPicker {
   protected get _enabledIds() { return (this._vp.view as SpatialViewState).modelSelector.models; }
   protected get _showIn2d() { return false; }
   protected changeDisplay(ids: Id64Arg, enabled: boolean) { this._vp.changeModelDisplay(ids, enabled); }
+
+  protected hiliteEnabled(hiliteOn: boolean): void {
+    const modelIds = this._enabledIds;
+    const hilites = this._vp.iModel.hilited;
+    for (const modelId of modelIds) {
+      if (hiliteOn)
+        hilites.models.addId(modelId);
+      else
+        hilites.models.deleteId(modelId);
+    }
+  }
 
   protected async _populate(): Promise<void> {
     const view = this._vp.view as SpatialViewState;

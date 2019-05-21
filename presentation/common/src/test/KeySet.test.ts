@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import {
   createRandomECInstanceNodeKey,
   createRandomECInstanceKey, createRandomECInstanceId,
@@ -249,6 +250,17 @@ describe("KeySet", () => {
       expect(set.guid).to.not.eq(guidBefore);
     });
 
+    it("doesn't add node keys if predicate returns false", () => {
+      const set = new KeySet();
+      const guidBefore = set.guid;
+      const key = createRandomECInstanceNodeKey();
+      const pred = sinon.fake(() => false);
+      set.add([key], pred);
+      expect(pred).to.be.calledOnceWith(key);
+      expect(set.size).to.eq(0);
+      expect(set.guid).to.eq(guidBefore);
+    });
+
     it("doesn't add the same node keys", () => {
       const keys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
       const set = new KeySet(keys);
@@ -292,6 +304,17 @@ describe("KeySet", () => {
       expect(set.has(keys[0])).to.be.true;
       expect(set.has(keys[1])).to.be.true;
       expect(set.guid).to.not.eq(guidBefore);
+    });
+
+    it("doesn't add instance keys if predicate returns false", () => {
+      const set = new KeySet();
+      const guidBefore = set.guid;
+      const key = createRandomECInstanceKey();
+      const pred = sinon.fake(() => false);
+      set.add([key], pred);
+      expect(pred).to.be.calledOnceWith(key);
+      expect(set.size).to.eq(0);
+      expect(set.guid).to.eq(guidBefore);
     });
 
     it("doesn't add the same instance keys", () => {
@@ -339,6 +362,17 @@ describe("KeySet", () => {
       expect(set.guid).to.not.eq(guidBefore);
     });
 
+    it("doesn't add entity props if predicate returns false", () => {
+      const set = new KeySet();
+      const guidBefore = set.guid;
+      const key = createRandomEntityProps();
+      const pred = sinon.fake(() => false);
+      set.add([key], pred);
+      expect(pred).to.be.calledOnceWith(key);
+      expect(set.size).to.eq(0);
+      expect(set.guid).to.eq(guidBefore);
+    });
+
     it("doesn't add the same entity props", () => {
       const props = [createRandomEntityProps(), createRandomEntityProps()];
       const set = new KeySet(props);
@@ -373,6 +407,21 @@ describe("KeySet", () => {
       expect(set.has(nodeKey1)).to.be.true;
       expect(set.has(nodeKey2)).to.be.true;
       expect(set.guid).to.not.eq(guidBefore);
+    });
+
+    it("doesn't add keys from a keyset if predicate returns false", () => {
+      const set = new KeySet();
+      const guidBefore = set.guid;
+      const instanceKey = createRandomECInstanceKey();
+      const nodeKey = createRandomECInstanceNodeKey();
+      const keyset = (new KeySet()).add([instanceKey]).add(nodeKey);
+      const pred = sinon.fake(() => false);
+      set.add(keyset, pred);
+      expect(pred).to.be.calledTwice;
+      expect(pred).to.be.calledWith(instanceKey);
+      expect(pred).to.be.calledWith(nodeKey);
+      expect(set.size).to.eq(0);
+      expect(set.guid).to.eq(guidBefore);
     });
 
     it("doesn't add the same keys from a keyset", () => {

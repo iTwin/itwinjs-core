@@ -478,6 +478,7 @@ export namespace Id64 {
     export function getLowerUint32(id: Id64String): number;
     export function getUint32Pair(id: Id64String): Uint32Pair;
     export function getUpperUint32(id: Id64String): number;
+    export function has(arg: Id64Arg, id: Id64String): boolean;
     export function isId64(id: string): boolean;
     export function isInvalid(id: Id64String): boolean;
     export function isTransient(id: Id64String): boolean;
@@ -510,7 +511,11 @@ export namespace Id64 {
         constructor(ids?: Id64Arg);
         add(low: number, high: number): void;
         addId(id: Id64String): void;
+        addIds(ids: Id64Arg): void;
         clear(): void;
+        delete(low: number, high: number): void;
+        deleteId(id: Id64String): void;
+        deleteIds(ids: Id64Arg): void;
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;

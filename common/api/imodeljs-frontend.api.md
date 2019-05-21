@@ -1486,7 +1486,7 @@ export const enum ClippingType {
     Planes = 2
 }
 
-// @beta
+// @internal
 export enum ClipResult {
     NewElements = 1,
     NotSupported = 0,
@@ -1817,7 +1817,6 @@ export class DevTools {
     static connectToBackendInstance(iModelToken: IModelToken): DevTools;
     ping(count: number): Promise<PingTestResult>;
     setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
-    signal(signalType: number): Promise<boolean>;
     stats(options?: DevToolsStatsOptions): Promise<any>;
     // (undocumented)
     versions(): Promise<any>;
@@ -1948,7 +1947,7 @@ export namespace EditManipulator {
         // (undocumented)
         protected onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled>;
         // (undocumented)
-        onSelectionChanged(iModel: IModelConnection, _eventType: SelectEventType, _ids?: Set<string>): void;
+        onSelectionChanged(ev: SelectionSetEvent): void;
         // (undocumented)
         protected onTouchTap(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled>;
         // (undocumented)
@@ -2011,7 +2010,7 @@ export interface EditorPosition {
     rowPriority: number;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -2114,13 +2113,13 @@ export class ElementState extends EntityState implements ElementProps {
     readonly userLabel?: string;
 }
 
-// @beta
+// @internal
 export enum ElemMethod {
     Add = 0,
     Invert = 1
 }
 
-// @beta
+// @internal
 export enum ElemSource {
     Fence = 1,
     Pick = 0,
@@ -2133,6 +2132,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     static clear(vp: Viewport, inactiveOnly?: boolean): void;
     clearAlwaysDrawnElements(vp: Viewport): boolean;
     clearEmphasizedElements(vp: Viewport): boolean;
+    clearEmphasizedIsolatedElements(vp: Viewport, setToAlwaysDrawn: boolean): boolean;
     clearHiddenElements(vp: Viewport): boolean;
     clearIsolatedElements(vp: Viewport): boolean;
     clearNeverDrawnElements(vp: Viewport): boolean;
@@ -2140,9 +2140,8 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     // (undocumented)
     protected createAppearanceFromKey(key: number): FeatureSymbology.Appearance;
     createDefaultAppearance(): FeatureSymbology.Appearance;
-    // (undocumented)
-    protected createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
-    readonly defaultAppearance: FeatureSymbology.Appearance | undefined;
+    createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
+    defaultAppearance: FeatureSymbology.Appearance | undefined;
     emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean): boolean;
     emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean, clearSelection?: boolean): boolean;
     // (undocumented)
@@ -2150,6 +2149,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     static get(vp: Viewport): EmphasizeElements | undefined;
     getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined;
     getEmphasizedElements(vp: Viewport): Id64Set | undefined;
+    getEmphasizedIsolatedElements(): Id64Set | undefined;
     getHiddenElements(vp: Viewport): Id64Set | undefined;
     getIsolatedElements(vp: Viewport): Id64Set | undefined;
     getNeverDrawnElements(vp: Viewport): Id64Set | undefined;
@@ -2168,12 +2168,16 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
     // (undocumented)
     toJSON(vp: Viewport): EmphasizeElementsProps;
+    // (undocumented)
+    protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
 }
 
 // @internal (undocumented)
 export interface EmphasizeElementsProps {
     // (undocumented)
     alwaysDrawn?: Id64Set;
+    // (undocumented)
+    alwaysDrawnExclusiveEmphasized?: Id64Set;
     // (undocumented)
     appearanceOverride?: AppearanceOverrideProps[];
     // (undocumented)
@@ -2232,7 +2236,7 @@ export class Environment implements EnvironmentProps {
     toJSON(): EnvironmentProps;
 }
 
-// @beta
+// @internal
 export enum ErrorNums {
     NoFence = 0,
     NoFenceElems = 1,
@@ -2716,7 +2720,7 @@ export enum GridOrientationType {
     WorldYZ = 2
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export interface GroupMark {
     // (undocumented)
     source: ModifyElementSource;
@@ -2724,24 +2728,41 @@ export interface GroupMark {
     start: number;
 }
 
-// @public
-export class HilitedSet {
-    constructor(iModel: IModelConnection);
-    clearAll(): void;
-    readonly elements: Set<string>;
-    has(id: string): boolean;
-    // (undocumented)
-    iModel: IModelConnection;
-    isHilited(id: Id64String): boolean;
-    setHilite(arg: Id64Arg, onOff: boolean): void;
-    readonly size: number;
-}
-
-// @beta (undocumented)
+// @internal (undocumented)
 export enum HilitedState {
     No = 2,
     Unknown = 0,
     Yes = 1
+}
+
+// @internal (undocumented)
+export interface Hilites {
+    // (undocumented)
+    readonly elements: Id64.Uint32Set;
+    // (undocumented)
+    readonly isEmpty: boolean;
+    // (undocumented)
+    readonly models: Id64.Uint32Set;
+    // (undocumented)
+    readonly subcategories: Id64.Uint32Set;
+}
+
+// @alpha
+export class HiliteSet {
+    constructor(iModel: IModelConnection, syncWithSelectionSet?: boolean);
+    clear(): void;
+    // (undocumented)
+    readonly elements: Id64.Uint32Set;
+    // (undocumented)
+    iModel: IModelConnection;
+    // (undocumented)
+    readonly isEmpty: boolean;
+    // (undocumented)
+    readonly models: Id64.Uint32Set;
+    setHilite(arg: Id64Arg, onOff: boolean): void;
+    // (undocumented)
+    readonly subcategories: Id64.Uint32Set;
+    wantSyncWithSelectionSet: boolean;
 }
 
 // @public
@@ -3095,7 +3116,8 @@ export class IModelConnection extends IModel {
     // @internal
     getContextRealityModelTileTree(url: string): TileTreeState;
     getToolTipMessage(id: string): Promise<string[]>;
-    readonly hilited: HilitedSet;
+    // @alpha
+    readonly hilited: HiliteSet;
     // @alpha
     readonly isClosed: boolean;
     // @alpha
@@ -3832,7 +3854,7 @@ export class ModelState extends EntityState implements ModelProps {
     toJSON(): ModelProps;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export enum ModifyElementSource {
     DragSelect = 5,
     Fence = 3,
@@ -4134,6 +4156,8 @@ export class PackedFeatureTable {
     getFeature(featureIndex: number): Feature;
     // (undocumented)
     getPackedFeature(featureIndex: number): PackedFeature;
+    // (undocumented)
+    getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair;
     // (undocumented)
     readonly isClassifier: boolean;
     // (undocumented)
@@ -4979,7 +5003,7 @@ export abstract class RenderTarget implements IDisposable {
     // (undocumented)
     setFlashed(_elementId: Id64String, _intensity: number): void;
     // (undocumented)
-    setHiliteSet(_hilited: Set<string>): void;
+    setHiliteSet(_hilited: HiliteSet): void;
     // (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
     // (undocumented)
@@ -5175,23 +5199,19 @@ export class SectionDrawingModelState extends DrawingModelState {
 }
 
 // @public
+export interface SelectAddEvent {
+    added: Id64Arg;
+    set: SelectionSet;
+    // (undocumented)
+    type: SelectionSetEventType.Add;
+}
+
+// @public
 export interface SelectedViewportChangedArgs {
     // (undocumented)
     current?: ScreenViewport;
     // (undocumented)
     previous?: ScreenViewport;
-}
-
-// @public
-export enum SelectEventType {
-    // (undocumented)
-    Add = 0,
-    // (undocumented)
-    Clear = 3,
-    // (undocumented)
-    Remove = 1,
-    // (undocumented)
-    Replace = 2
 }
 
 // @public
@@ -5219,7 +5239,7 @@ export enum SelectionProcessing {
 // @public
 export class SelectionSet {
     constructor(iModel: IModelConnection);
-    add(elem: Id64Arg, sendEvent?: boolean): boolean;
+    add(elem: Id64Arg): boolean;
     addAndRemove(adds: Id64Arg, removes: Id64Arg): boolean;
     readonly elements: Set<string>;
     emptyAll(): void;
@@ -5229,10 +5249,21 @@ export class SelectionSet {
     invert(elem: Id64Arg): boolean;
     readonly isActive: boolean;
     isSelected(elemId?: Id64String): boolean;
-    readonly onChanged: BeEvent<(iModel: IModelConnection, evType: SelectEventType, ids?: Set<string> | undefined) => void>;
-    remove(elem: Id64Arg, sendEvent?: boolean): boolean;
+    readonly onChanged: BeEvent<(ev: SelectionSetEvent) => void>;
+    remove(elem: Id64Arg): boolean;
     replace(elem: Id64Arg): void;
     readonly size: number;
+}
+
+// @public
+export type SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent;
+
+// @public
+export enum SelectionSetEventType {
+    Add = 0,
+    Clear = 3,
+    Remove = 1,
+    Replace = 2
 }
 
 // @public
@@ -5321,6 +5352,22 @@ export class SelectionTool extends PrimitiveTool {
     protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean;
     // (undocumented)
     protected wantToolSettings(): boolean;
+}
+
+// @public
+export interface SelectRemoveEvent {
+    removed: Id64Arg;
+    set: SelectionSet;
+    type: SelectionSetEventType.Remove | SelectionSetEventType.Clear;
+}
+
+// @public
+export interface SelectReplaceEvent {
+    added: Id64Arg;
+    removed: Id64Arg;
+    set: SelectionSet;
+    // (undocumented)
+    type: SelectionSetEventType.Replace;
 }
 
 // @internal
@@ -5936,7 +5983,9 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     protected _fbo?: FrameBuffer;
     // (undocumented)
-    readonly flashedElemId: Id64String;
+    readonly flashed: Id64.Uint32Pair | undefined;
+    // (undocumented)
+    readonly flashedId: Id64String;
     // (undocumented)
     readonly flashedUpdateTime: BeTimePoint;
     // (undocumented)
@@ -5960,9 +6009,9 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     readonly hiddenEdgeOverrides: EdgeOverrides | undefined;
     // (undocumented)
-    readonly hilite: Id64.Uint32Set;
-    // (undocumented)
     hiliteColor: FloatRgba;
+    // (undocumented)
+    readonly hilites: Hilites;
     // (undocumented)
     hiliteSettings: Hilite.Settings;
     // (undocumented)
@@ -6042,7 +6091,7 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
-    setHiliteSet(hilite: Set<string>): void;
+    setHiliteSet(hilite: HiliteSet): void;
     // (undocumented)
     readonly shaderLights: ShaderLights | undefined;
     // (undocumented)
@@ -6985,21 +7034,21 @@ export class Unit implements UnitProps {
     unitFamily: string;
 }
 
-// @beta
+// @internal
 export enum UsesDragSelect {
     Box = 0,
     Line = 1,
     None = 2
 }
 
-// @beta
+// @internal
 export enum UsesFence {
     Check = 0,
     None = 2,
     Required = 1
 }
 
-// @beta
+// @internal
 export enum UsesSelection {
     Check = 0,
     None = 2,

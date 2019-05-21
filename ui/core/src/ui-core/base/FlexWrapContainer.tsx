@@ -9,7 +9,7 @@ import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
 /** Flex Wrap Container React functional component
- * @beta
+ * @public
  */
 // tslint:disable-next-line:variable-name
 export const FlexWrapContainer: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {

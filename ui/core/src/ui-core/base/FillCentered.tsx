@@ -9,7 +9,7 @@ import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
 /** Full height & width and centered React functional component
- * @beta
+ * @public
  */
 // tslint:disable-next-line:variable-name
 export const FillCentered: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
