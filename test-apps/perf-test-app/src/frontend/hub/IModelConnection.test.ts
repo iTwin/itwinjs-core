@@ -38,8 +38,8 @@ describe("IModelConnection (#integration)", () => {
     testProjectId = await TestUtility.getTestProjectId("Bridge866");
     testIModelId = await TestUtility.getTestIModelId(testProjectId, "Building");
 
-    iModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
-    await iModel.close();
+    // iModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    // await iModel.close();
   });
 
   after(async () => {
@@ -52,16 +52,6 @@ describe("IModelConnection (#integration)", () => {
     const projectId = await TestUtility.getTestProjectId("Bridge866");
     const iModelId = await TestUtility.getTestIModelId(projectId, "Building");
 
-    // time to open an imodel with latest revision
-    const startTime1 = new Date().getTime();
-    const noVersionsIModel = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
-    const endTime1 = new Date().getTime();
-    assert.isNotNull(noVersionsIModel);
-    assert.exists(noVersionsIModel);
-    const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-    await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with latest revision", elapsedTime1);
-    await noVersionsIModel.close();
-
     // time to open an imodel with first revision
     const startTime = new Date().getTime();
     const noVersionsIModel2 = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
@@ -71,6 +61,16 @@ describe("IModelConnection (#integration)", () => {
     const elapsedTime = (endTime - startTime) / 1000.0;
     await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with first revision", elapsedTime);
     await noVersionsIModel2.close();
+
+    // time to open an imodel with latest revision
+    const startTime1 = new Date().getTime();
+    const noVersionsIModel = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    const endTime1 = new Date().getTime();
+    assert.isNotNull(noVersionsIModel);
+    assert.exists(noVersionsIModel);
+    const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
+    await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with latest revision", elapsedTime1);
+    await noVersionsIModel.close();
   });
 
   it("Execute a ECSQL Query", async () => {
