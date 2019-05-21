@@ -1486,7 +1486,7 @@ export const enum ClippingType {
     Planes = 2
 }
 
-// @beta
+// @internal
 export enum ClipResult {
     NewElements = 1,
     NotSupported = 0,
@@ -2011,7 +2011,7 @@ export interface EditorPosition {
     rowPriority: number;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -2114,13 +2114,13 @@ export class ElementState extends EntityState implements ElementProps {
     readonly userLabel?: string;
 }
 
-// @beta
+// @internal
 export enum ElemMethod {
     Add = 0,
     Invert = 1
 }
 
-// @beta
+// @internal
 export enum ElemSource {
     Fence = 1,
     Pick = 0,
@@ -2133,6 +2133,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     static clear(vp: Viewport, inactiveOnly?: boolean): void;
     clearAlwaysDrawnElements(vp: Viewport): boolean;
     clearEmphasizedElements(vp: Viewport): boolean;
+    clearEmphasizedIsolatedElements(vp: Viewport, setToAlwaysDrawn: boolean): boolean;
     clearHiddenElements(vp: Viewport): boolean;
     clearIsolatedElements(vp: Viewport): boolean;
     clearNeverDrawnElements(vp: Viewport): boolean;
@@ -2140,9 +2141,8 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     // (undocumented)
     protected createAppearanceFromKey(key: number): FeatureSymbology.Appearance;
     createDefaultAppearance(): FeatureSymbology.Appearance;
-    // (undocumented)
-    protected createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
-    readonly defaultAppearance: FeatureSymbology.Appearance | undefined;
+    createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
+    defaultAppearance: FeatureSymbology.Appearance | undefined;
     emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean): boolean;
     emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean, clearSelection?: boolean): boolean;
     // (undocumented)
@@ -2150,6 +2150,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     static get(vp: Viewport): EmphasizeElements | undefined;
     getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined;
     getEmphasizedElements(vp: Viewport): Id64Set | undefined;
+    getEmphasizedIsolatedElements(): Id64Set | undefined;
     getHiddenElements(vp: Viewport): Id64Set | undefined;
     getIsolatedElements(vp: Viewport): Id64Set | undefined;
     getNeverDrawnElements(vp: Viewport): Id64Set | undefined;
@@ -2168,12 +2169,16 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
     // (undocumented)
     toJSON(vp: Viewport): EmphasizeElementsProps;
+    // (undocumented)
+    protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
 }
 
 // @internal (undocumented)
 export interface EmphasizeElementsProps {
     // (undocumented)
     alwaysDrawn?: Id64Set;
+    // (undocumented)
+    alwaysDrawnExclusiveEmphasized?: Id64Set;
     // (undocumented)
     appearanceOverride?: AppearanceOverrideProps[];
     // (undocumented)
@@ -2232,7 +2237,7 @@ export class Environment implements EnvironmentProps {
     toJSON(): EnvironmentProps;
 }
 
-// @beta
+// @internal
 export enum ErrorNums {
     NoFence = 0,
     NoFenceElems = 1,
@@ -2716,7 +2721,7 @@ export enum GridOrientationType {
     WorldYZ = 2
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export interface GroupMark {
     // (undocumented)
     source: ModifyElementSource;
@@ -2737,7 +2742,7 @@ export class HilitedSet {
     readonly size: number;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export enum HilitedState {
     No = 2,
     Unknown = 0,
@@ -6985,21 +6990,21 @@ export class Unit implements UnitProps {
     unitFamily: string;
 }
 
-// @beta
+// @internal
 export enum UsesDragSelect {
     Box = 0,
     Line = 1,
     None = 2
 }
 
-// @beta
+// @internal
 export enum UsesFence {
     Check = 0,
     None = 2,
     Required = 1
 }
 
-// @beta
+// @internal
 export enum UsesSelection {
     Check = 0,
     None = 2,

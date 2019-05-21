@@ -50,7 +50,7 @@ beta;enum ClassifierType
 alpha;ClipEventType
 alpha;ClipOrientation
 beta;enum ClippingType
-beta;ClipResult
+internal;ClipResult
 internal;Clips
 public;Cluster
 alpha;ColorEditorParams 
@@ -79,19 +79,19 @@ public;DrawingViewState
 public;DynamicsContext 
 alpha;EditManipulator
 beta;EditorPosition
-beta;ElementAgenda
+internal;ElementAgenda
 public;ElementLocateManager
 public;ElementPicker
 public;ElementState 
-beta;ElemMethod
-beta;ElemSource
+internal;ElemMethod
+internal;ElemSource
 internal;EmphasizeElements 
 internal;EmphasizeElementsProps
 public;EntityState 
 beta;EnumerationChoice
 beta;EnumerationChoicesInfo
 public;Environment 
-beta;ErrorNums
+internal;ErrorNums
 public;EventController
 public;EventHandled
 public;ExtentLimits
@@ -122,9 +122,9 @@ public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
 public;GraphicType
 public;GridOrientationType
-beta;GroupMark
+internal;GroupMark
 public;HilitedSet
-beta;HilitedState
+internal;HilitedState
 public;HitDetail
 public;HitDetailType
 public;HitGeomType
@@ -337,9 +337,9 @@ public;ToolType = typeof Tool
 internal;TouchCursor 
 alpha;TwoWayViewportSync
 alpha;Unit 
-beta;UsesDragSelect
-beta;UsesFence
-beta;UsesSelection
+internal;UsesDragSelect
+internal;UsesFence
+internal;UsesSelection
 public;ViewChangeOptions
 alpha;ViewClipByElementTool 
 alpha;ViewClipByPlaneTool 

@@ -9,7 +9,7 @@ import { ModifyElementSource } from "./PrimitiveTool";
 import { IModelConnection } from "../IModelConnection";
 
 /** The requested source for the elements to modify.
- * @beta Do we really want to propagate the *Elem* abbreviation?
+ * @internal Do we really want to propagate the *Elem* abbreviation?
  */
 export enum ElemSource {
   /** Populate ElementAgenda from a locate */
@@ -21,7 +21,7 @@ export enum ElemSource {
 }
 
 /** The method that will be used to update the tool's ElementAgenda.
- * @beta Do we really want to propagate the *Elem* abbreviation?
+ * @internal Do we really want to propagate the *Elem* abbreviation?
  */
 export enum ElemMethod {
   /** Entries will be added to ElementAgenda */
@@ -31,7 +31,7 @@ export enum ElemMethod {
 }
 
 /** Should the active fence be used, required, or ignored as a possible ElemSource.
- * @beta
+ * @internal
  */
 export enum UsesFence {
   /** Active Fence is allowed as ElemSource */
@@ -43,7 +43,7 @@ export enum UsesFence {
 }
 
 /** Should the active selection set be used, required, or ignored as a possible ElemSource.
- * @beta
+ * @internal
  */
 export enum UsesSelection {
   /** Active Selection Set is allowed as ElemSource */
@@ -55,7 +55,7 @@ export enum UsesSelection {
 }
 
 /** Should ElemSource::Pick allow a drag select to identify elements.
- * @beta
+ * @internal
  */
 export enum UsesDragSelect {
   /** Drag selection using shape inside/overlap */
@@ -67,7 +67,7 @@ export enum UsesDragSelect {
 }
 
 /** Helps determine the action ModifyAgenda will take on the agenda elements after calling doFenceClip.
- * @beta
+ * @internal
  */
 export enum ClipResult {
   /** Tool does not support fence clip */
@@ -79,7 +79,7 @@ export enum ClipResult {
 }
 
 /** ElemSource specific failures.
- * @beta
+ * @internal
  */
 export enum ErrorNums {
   /** No fence is currently active */
@@ -94,7 +94,7 @@ export enum ErrorNums {
   NotSupportedElmType,
 }
 
-/** @beta */
+/** @internal */
 export enum HilitedState {
   /**  this agenda is in an indeterminate state wrt hilite */
   Unknown = 0,
@@ -104,13 +104,13 @@ export enum HilitedState {
   No = 2,
 }
 
-/** @beta */
+/** @internal */
 export interface GroupMark {
   start: number;
   source: ModifyElementSource;
 }
 
-/** @beta */
+/** @internal */
 export class ElementAgenda {
   public readonly elements: string[] = [];
   public readonly groupMarks: GroupMark[] = [];
