@@ -7,16 +7,16 @@ Array [
     "extendedData": Object {
       "key": Object {
         "pathFromRoot": Array [
-          "b3e0c34df5d2f53530937e854d182426",
-          "563853e2205bd49acd15f3c34c90148f",
+          "3da8ffb01a263e88441398a167bf117c",
+          "2033788ebe3f7658c6897097d06760fe",
         ],
         "type": "child",
       },
     },
     "icon": "child image id",
-    "id": "563853e2205bd49acd15f3c34c90148f/b3e0c34df5d2f53530937e854d182426",
+    "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
     "label": "child label",
-    "parentId": "b3e0c34df5d2f53530937e854d182426",
+    "parentId": "3da8ffb01a263e88441398a167bf117c",
   },
 ]
 `;
@@ -28,16 +28,16 @@ Array [
     "extendedData": Object {
       "key": Object {
         "pathFromRoot": Array [
-          "b3e0c34df5d2f53530937e854d182426",
-          "563853e2205bd49acd15f3c34c90148f",
+          "3da8ffb01a263e88441398a167bf117c",
+          "2033788ebe3f7658c6897097d06760fe",
         ],
         "type": "child",
       },
     },
     "icon": "child image id",
-    "id": "563853e2205bd49acd15f3c34c90148f/b3e0c34df5d2f53530937e854d182426",
+    "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
     "label": "child label",
-    "parentId": "b3e0c34df5d2f53530937e854d182426",
+    "parentId": "3da8ffb01a263e88441398a167bf117c",
   },
 ]
 `;
@@ -50,14 +50,14 @@ Array [
     "extendedData": Object {
       "key": Object {
         "pathFromRoot": Array [
-          "b3e0c34df5d2f53530937e854d182426",
+          "3da8ffb01a263e88441398a167bf117c",
         ],
         "type": "root",
       },
     },
     "hasChildren": true,
     "icon": "root image id",
-    "id": "b3e0c34df5d2f53530937e854d182426",
+    "id": "3da8ffb01a263e88441398a167bf117c",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": "root label",
@@ -81,14 +81,14 @@ Array [
     "extendedData": Object {
       "key": Object {
         "pathFromRoot": Array [
-          "b3e0c34df5d2f53530937e854d182426",
+          "3da8ffb01a263e88441398a167bf117c",
         ],
         "type": "root",
       },
     },
     "hasChildren": true,
     "icon": "root image id",
-    "id": "b3e0c34df5d2f53530937e854d182426",
+    "id": "3da8ffb01a263e88441398a167bf117c",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": "root label",

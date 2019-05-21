@@ -61,7 +61,7 @@ Array [
     },
   },
   PropertyRecord {
-    "description": "ECSchema-0-1",
+    "description": "Core Custom Attributes",
     "isReadonly": true,
     "property": Object {
       "displayLabel": "Schema",
@@ -69,7 +69,7 @@ Array [
       "typename": "navigation",
     },
     "value": Object {
-      "displayValue": "ECSchema-0-1",
+      "displayValue": "Core Custom Attributes",
       "value": 1,
       "valueFormat": 0,
     },

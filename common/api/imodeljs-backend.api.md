@@ -1809,6 +1809,8 @@ export class IModelHost {
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @internal (undocumented)
     static loadNative(region: number, dir?: string): void;
+    static readonly logTileLoadTimeThreshold: number;
+    static readonly logTileSizeThreshold: number;
     static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @internal (undocumented)
@@ -1835,8 +1837,16 @@ export class IModelHostConfiguration {
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
     // @internal
+    static defaultLogTileLoadTimeThreshold: number;
+    // @internal
+    static defaultLogTileSizeThreshold: number;
+    // @internal
     static defaultTileRequestTimeout: number;
     imodelClient?: IModelClient;
+    // @internal
+    logTileLoadTimeThreshold: number;
+    // @internal
+    logTileSizeThreshold: number;
     nativePlatform?: any;
     // @beta
     tileCacheCredentials?: CloudStorageServiceCredentials;
@@ -2138,7 +2148,7 @@ export namespace IModelJsNative {
         // (undocumented)
         openIModel(dbName: string, mode: OpenMode): DbResult;
         // (undocumented)
-        pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | Uint8Array>;
+        pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | TileContent>;
         // (undocumented)
         queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
         // (undocumented)
@@ -2562,6 +2572,13 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export function storeObjectInVault(obj: any, id: string): void;
+    // (undocumented)
+    export interface TileContent {
+        // (undocumented)
+        content: Uint8Array;
+        // (undocumented)
+        elapsedSeconds: number;
+    }
 }
 
 // @internal @deprecated

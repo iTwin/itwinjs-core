@@ -90,7 +90,13 @@ export { SubCondition } from "./rules/hierarchy/SubCondition";
 export { CustomizationRule } from "./rules/customization/CustomizationRule";
 export { CheckBoxRule } from "./rules/customization/CheckBoxRule";
 export { ImageIdOverride } from "./rules/customization/ImageIdOverride";
-export { InstanceLabelOverride } from "./rules/customization/InstanceLabelOverride";
+export {
+  InstanceLabelOverride, InstanceLabelOverrideValueSpecificationType, InstanceLabelOverrideValueSpecificationBase,
+  InstanceLabelOverrideValueSpecification, InstanceLabelOverridePropertyValueSpecification,
+  InstanceLabelOverrideBriefcaseIdSpecification, InstanceLabelOverrideClassLabelSpecification,
+  InstanceLabelOverrideClassNameSpecification, InstanceLabelOverrideLocalIdSpecification,
+  InstanceLabelOverrideCompositeValueSpecification,
+} from "./rules/customization/InstanceLabelOverride";
 export { LabelOverride } from "./rules/customization/LabelOverride";
 export { SortingRule, PropertySortingRule, DisabledSortingRule, SortingRuleBase } from "./rules/customization/SortingRule";
 export { StyleOverride } from "./rules/customization/StyleOverride";

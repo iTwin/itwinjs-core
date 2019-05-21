@@ -59,6 +59,8 @@ export function initializeBackend() {
 
   const hostConfig = new IModelHostConfiguration();
   hostConfig.useTileContentThreadPool = true;
+  hostConfig.logTileLoadTimeThreshold = 3;
+  hostConfig.logTileSizeThreshold = 500000;
   if (MobileRpcConfiguration.isMobileBackend) {
     // Does not seem SVTConfiguraiton is used anymore.
   } else {
