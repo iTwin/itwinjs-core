@@ -326,8 +326,10 @@ public;ToolAdmin
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings
+beta;ToolSettingsPropertyItem
 beta;ToolSettingsPropertyRecord 
-beta;ToolSettingsPropertySyncItem
+beta;ToolSettingsPropertySyncItem 
+internal;ToolSettingsState
 beta;ToolSettingsValue 
 internal;ToolState
 public;ToolTipOptions

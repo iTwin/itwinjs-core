@@ -1113,6 +1113,19 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
     };
 }
 
+// @beta
+export class SessionUiSettings implements UiSettings {
+    constructor(w?: Window);
+    // (undocumented)
+    deleteSetting: (settingNamespace: string, settingName: string) => UiSettingsResult;
+    // (undocumented)
+    getSetting: (settingNamespace: string, settingName: string) => UiSettingsResult;
+    // (undocumented)
+    saveSetting: (settingNamespace: string, settingName: string, setting: any) => UiSettingsResult;
+    // (undocumented)
+    w: Window;
+}
+
 // @internal
 export const shallowDiffers: (a: {
     [key: string]: any;

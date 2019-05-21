@@ -68,6 +68,7 @@ export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./ui-core/tree/Pl
 
 export * from "./ui-core/uisettings/UiSettings";
 export * from "./ui-core/uisettings/LocalUiSettings";
+export * from "./ui-core/uisettings/SessionUiSettings";
 
 export * from "./ui-core/utils/Props";
 export * from "./ui-core/utils/Timer";

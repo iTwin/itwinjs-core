@@ -384,14 +384,19 @@ export class ViewClipByPlaneTool extends ViewClipTool {
   public set orientation(option: ClipOrientation) { this._orientationValue.value = option; }
 
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+    IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
     toolSettings.push(new ToolSettingsPropertyRecord(this._orientationValue.clone() as PrimitiveValue, ViewClipTool._getEnumAsOrientationDescription(), { rowPriority: 0, columnIndex: 2 }));
     return toolSettings;
   }
 
   public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
-    if (updatedValue.propertyName === ViewClipTool._orientationName)
-      return this._orientationValue.update(updatedValue.value);
+    if (updatedValue.propertyName === ViewClipTool._orientationName) {
+      if (this._orientationValue.update(updatedValue.value)) {
+        IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
+        return true;
+      }
+    }
     return false;
   }
 
@@ -431,6 +436,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
   public set orientation(option: ClipOrientation) { this._orientationValue.value = option; }
 
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+    IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
     toolSettings.push(new ToolSettingsPropertyRecord(this._orientationValue.clone() as PrimitiveValue, ViewClipTool._getEnumAsOrientationDescription(), { rowPriority: 0, columnIndex: 2 }));
     return toolSettings;
@@ -444,6 +450,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
       this._matrix = undefined;
       AccuDrawHintBuilder.deactivate();
       this.setupAndPromptForNextAction();
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
       return true;
     }
     return false;

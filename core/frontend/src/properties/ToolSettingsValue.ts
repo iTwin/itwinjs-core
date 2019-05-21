@@ -59,18 +59,28 @@ export interface EditorPosition {
   columnSpan?: number;
 }
 
-/** Class used to identify a specific ToolSettings property value.
+/** Class used to identify a specific ToolSettings property value. This is the minimal amount of info necessary to specify which property a value is associated with. This is used to both
+ * display property in UI, save and retrieve the state of the property, and to allow the UI to inform the Tool code about property changes.
  * @beta
  */
-export class ToolSettingsPropertySyncItem {
+export class ToolSettingsPropertyItem {
   public value: ToolSettingsValue;
   public propertyName: string;
+
+  public constructor(value: ToolSettingsValue, propertyName: string) {
+    this.value = value;
+    this.propertyName = propertyName;
+  }
+}
+/** Class used to identify a specific ToolSettings property value that can be enabled/disabled in UI.
+ * @beta
+ */
+export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem {
   /** used to pass enable state to Ui from Tool so property record can be updated */
   public isDisabled?: boolean;
 
   public constructor(value: ToolSettingsValue, propertyName: string, isDisabled?: boolean) {
-    this.value = value;
-    this.propertyName = propertyName;
+    super(value, propertyName);
     this.isDisabled = isDisabled;
   }
 }

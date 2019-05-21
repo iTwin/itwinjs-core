@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add ability to save/restore toolsetting properties during a session.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "bill.steinbock@bentley.com"
+}

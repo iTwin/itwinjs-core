@@ -11,7 +11,7 @@ import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { LocateOptions } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
+import { ToolSettingsPropertySyncItem, ToolSettingsPropertyItem, ToolSettingsValue } from "../properties/ToolSettingsValue";
 import { CanvasDecoration } from "../render/System";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
@@ -29,6 +29,62 @@ export enum StartOrResume { Start = 1, Resume = 2 }
 export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
+
+/** Class that assists in maintaining the state of tool settings properties for the current session
+ *  @internal
+ */
+export class ToolSettingsState {
+
+  /** Initialize single tool settings value
+   * @internal
+   */
+  public initializeToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void {
+    if (item) {
+      const key = `${toolId}:${item.propertyName}`;
+      const savedValue = window.sessionStorage.getItem(key);
+      if (savedValue) {
+        const readValue = JSON.parse(savedValue) as ToolSettingsValue;
+        // set the primitive value to the saved value - note: tool settings only support primitive values.
+        item.value.value = readValue.value;
+        if (readValue.hasDisplayValue)
+          item.value.displayValue = readValue.displayValue;
+      }
+    }
+  }
+
+  /** Initialize an array of tool settings values
+   *  @internal
+   */
+  public initializeToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void {
+    if (tsProps && tsProps.length) {
+      tsProps.forEach((item: ToolSettingsPropertyItem) => {
+        this.initializeToolSettingProperty(toolId, item);
+      });
+    }
+  }
+
+  /** Save single tool settings value
+   * @internal
+   */
+  public saveToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void {
+    if (item) {
+      const key = `${toolId}:${item.propertyName}`;
+      const objectAsString = JSON.stringify(item.value);
+      window.sessionStorage.setItem(key, objectAsString);
+    }
+  }
+
+  /** Save an array of tool settings values
+   * @internal
+   */
+  public saveToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void {
+    if (tsProps && tsProps.length) {
+      tsProps.forEach((item: ToolSettingsPropertyItem) => {
+        this.saveToolSettingProperty(toolId, item);
+      });
+    }
+  }
+}
 
 /** @internal */
 export class ToolState {
@@ -262,6 +318,8 @@ export class ToolAdmin {
   public readonly currentInputState = new CurrentInputState();
   /** @internal */
   public readonly toolState = new ToolState();
+  /** @internal */
+  public readonly toolSettingsState = new ToolSettingsState();
   private _canvasDecoration?: CanvasDecoration;
   private _suspendedByViewTool?: SuspendedToolState;
   private _suspendedByInputCollector?: SuspendedToolState;

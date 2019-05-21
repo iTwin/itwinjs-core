@@ -119,6 +119,7 @@ beta;SearchBox
 beta;SearchBoxProps 
 beta;Select 
 beta;SelectProps 
+beta;SessionUiSettings 
 internal;shallowDiffers: (a:
 beta;SmallText: React.FunctionComponent
 public;SortDirection

@@ -561,8 +561,11 @@ export class SelectionTool extends PrimitiveTool {
       this.selectionMode = SelectionMode.Replace;
       this.initSelectTool();
     }
-    const syncMode: ToolSettingsPropertySyncItem = { value: this._selectionModeValue.clone(), propertyName: SelectionTool._modesName };
-    this.syncToolSettingsProperties([syncMode]);
+    if (this.wantToolSettings) {
+      const syncMode: ToolSettingsPropertySyncItem = { value: this._selectionModeValue.clone(), propertyName: SelectionTool._modesName };
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, syncMode);
+      this.syncToolSettingsProperties([syncMode]);
+    }
   }
 
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed
@@ -571,6 +574,18 @@ export class SelectionTool extends PrimitiveTool {
   public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
     if (!this.wantToolSettings())
       return undefined;
+
+    // load latest values from session
+    IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperties(this.toolId, [
+      { propertyName: SelectionTool._methodsName, value: this._selectionMethodValue },
+      { propertyName: SelectionTool._modesName, value: this._selectionModeValue },
+    ]);
+
+    // Make sure a mode of SelectionMode.Remove is valid
+    if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
+      this.selectionMode = SelectionMode.Replace;
+    }
+
     const toolSettings = new Array<ToolSettingsPropertyRecord>();
     // generate 3 columns - label will be placed in column 0 and button group editors in columns 1 and 2.
     toolSettings.push(new ToolSettingsPropertyRecord(this._selectionMethodValue.clone() as PrimitiveValue, SelectionTool._getMethodsDescription(), { rowPriority: 0, columnIndex: 1 }));
@@ -587,6 +602,8 @@ export class SelectionTool extends PrimitiveTool {
       const saveWantManipulators = this.wantEditManipulators();
       if (this._selectionMethodValue.update(updatedValue.value)) {
         const currWantManipulators = this.wantEditManipulators();
+        if (this.wantToolSettings)
+          IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._methodsName, value: this._selectionMethodValue });
         if (saveWantManipulators !== currWantManipulators)
           IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, currWantManipulators ? ManipulatorToolEvent.Start : ManipulatorToolEvent.Stop);
         changed = true;
@@ -594,6 +611,8 @@ export class SelectionTool extends PrimitiveTool {
     }
     if (updatedValue.propertyName === SelectionTool._modesName) {
       if (this._selectionModeValue.update(updatedValue.value)) {
+        if (this.wantToolSettings)
+          IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
         changed = true;
       }
     }

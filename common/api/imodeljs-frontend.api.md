@@ -6796,6 +6796,8 @@ export class ToolAdmin {
     // @internal (undocumented)
     toolSettingsChangeHandler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined;
     // @internal (undocumented)
+    readonly toolSettingsState: ToolSettingsState;
+    // @internal (undocumented)
     readonly toolState: ToolState;
     // @internal (undocumented)
     updateDynamics(ev?: BeButtonEvent, useLastData?: boolean, adjustPoint?: boolean): void;
@@ -6848,6 +6850,15 @@ export class ToolSettings {
 }
 
 // @beta
+export class ToolSettingsPropertyItem {
+    constructor(value: ToolSettingsValue, propertyName: string);
+    // (undocumented)
+    propertyName: string;
+    // (undocumented)
+    value: ToolSettingsValue;
+}
+
+// @beta
 export class ToolSettingsPropertyRecord extends PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly?: boolean);
     // (undocumented)
@@ -6857,13 +6868,17 @@ export class ToolSettingsPropertyRecord extends PropertyRecord {
 }
 
 // @beta
-export class ToolSettingsPropertySyncItem {
+export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem {
     constructor(value: ToolSettingsValue, propertyName: string, isDisabled?: boolean);
     isDisabled?: boolean;
-    // (undocumented)
-    propertyName: string;
-    // (undocumented)
-    value: ToolSettingsValue;
+}
+
+// @internal
+export class ToolSettingsState {
+    initializeToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void;
+    initializeToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void;
+    saveToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void;
+    saveToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void;
 }
 
 // @beta

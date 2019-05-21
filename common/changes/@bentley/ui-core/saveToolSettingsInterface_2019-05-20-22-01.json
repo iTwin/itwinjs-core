@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add ability to save property only for current session.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "bill.steinbock@bentley.com"
+}
