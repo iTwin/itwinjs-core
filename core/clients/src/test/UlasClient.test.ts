@@ -60,12 +60,14 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isAtLeast(resp.time, 0);
   });
 
-  it("Post usage log - hostName and hostUserName special cases (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post usage log - hostName special cases (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5");
-    for (const host of [{ name: "::1", user: os.userInfo().username }, { name: "127.0.0.1", user: os.userInfo().username }, { name: "localhost", user: os.userInfo().username },
-    { name: os.hostname(), user: "BENTLEY\\\\me" }, { name: os.hostname(), user: "BENTLEY/me" }, { name: os.hostname(), user: "Administrator" },
-    { name: os.hostname(), user: "system" }, { name: os.hostname(), user: "" }, { name: os.hostname() }]) {
-      const entry: UsageLogEntry = new UsageLogEntry(host.name, UsageType.Beta);
+    for (const hostName of [
+      "::1",
+      "127.0.0.1",
+      "localhost",
+    ]) {
+      const entry: UsageLogEntry = new UsageLogEntry(hostName, UsageType.Beta);
 
       const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
       assert(resp);
@@ -199,12 +201,14 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isAtLeast(resp.time, 0);
   });
 
-  it("Post feature log - hostName and hostUserName special cases (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post feature log - hostName special cases (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5.99");
-    for (const host of [{ name: "::1", user: os.userInfo().username }, { name: "127.0.0.1", user: os.userInfo().username }, { name: "localhost", user: os.userInfo().username },
-    { name: os.hostname(), user: "BENTLEY\\\\me" }, { name: os.hostname(), user: "BENTLEY/me" }, { name: os.hostname(), user: "Administrator" },
-    { name: os.hostname(), user: "system" }]) {
-      const entry = new FeatureLogEntry(Guid.createValue(), host.name, UsageType.Beta);
+    for (const hostName of [
+      "::1",
+      "127.0.0.1",
+      "localhost",
+    ]) {
+      const entry = new FeatureLogEntry(Guid.createValue(), hostName, UsageType.Beta);
       entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
       const resp: LogPostingResponse = await client.logFeature(requestContext, entry);
       assert(resp);
