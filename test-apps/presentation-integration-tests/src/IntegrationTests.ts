@@ -55,13 +55,14 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 }
 
-export const initialize = () => {
+export const initialize = (backendTimeout: number = 0) => {
   // init logging (enable on demand while debugging)
   Logger.initializeToConsole();
   Logger.setLevel(LoggingNamespaces.ECObjects_ECExpressions, LogLevel.None);
   Logger.setLevel(LoggingNamespaces.ECPresentation, LogLevel.None);
 
   const backendInitProps: PresentationBackendProps = {
+    requestTimeout: backendTimeout,
     rulesetDirectories: ["lib/assets/rulesets"],
     localeDirectories: ["lib/assets/locales"],
     activeLocale: "en-PSEUDO",

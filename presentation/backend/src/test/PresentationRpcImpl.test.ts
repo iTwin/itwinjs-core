@@ -42,11 +42,11 @@ describe("PresentationRpcImpl", () => {
   it("uses default requestWaitTime from the Presentation implementation if it is not overriden", () => {
     Presentation.initialize();
     const impl = new PresentationRpcImpl();
-    expect(impl.requestTimeout).to.equal(500);
+    expect(impl.requestTimeout).to.equal(90000);
   });
 
   it("uses custom requestTimeout from the Presentation implementation if it is passed through Presentation.initialize", () => {
-    const randomRequestTimeout = faker.random.number({ min: 0, max: 50000 });
+    const randomRequestTimeout = faker.random.number({ min: 0, max: 90000 });
     Presentation.initialize({ requestTimeout: randomRequestTimeout });
     const impl = new PresentationRpcImpl();
     expect(impl.requestTimeout).to.not.throw;
@@ -69,6 +69,7 @@ describe("PresentationRpcImpl", () => {
       presentationManagerMock.setup((x) => x.vars(moq.It.isAnyString())).returns(() => variablesMock.object);
       presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsMock.object);
       Presentation.initialize({
+        requestTimeout: 10,
         clientManagerFactory: () => presentationManagerMock.object,
       });
       testData = {
@@ -257,7 +258,7 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result!.count).to.eq(getChildNodesCountResult);
       });
 
-      it("should return result with `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
+      it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const getChildNodeResult: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
         const getChildNodesCountResult = 999;
         const parentNodeKey = createRandomECInstanceNodeKey();
@@ -278,6 +279,33 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.be.undefined;
         expect(actualResult.statusCode).to.equal(PresentationStatus.BackendTimeout);
       });
+
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
+        const getChildNodeResult: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
+        const getChildNodesCountResult = 999;
+        const parentNodeKey = createRandomECInstanceNodeKey();
+        const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+
+        presentationManagerMock.setup((x) => x.getNodesAndCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+          .returns(async () => {
+            await new Promise((resolve) => setTimeout(resolve, impl.requestTimeout));
+            return ({ nodes: getChildNodeResult, count: getChildNodesCountResult });
+          })
+          .verifiable();
+        const actualResult = await impl.getNodesAndCount(testData.imodelToken, { ...defaultRpcParams, ...options }, NodeKey.toJSON(parentNodeKey));
+
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result!.nodes).to.deep.eq(getChildNodeResult.map(Node.toJSON));
+        expect(actualResult.result!.count).to.eq(getChildNodesCountResult);
+      });
     });
 
     describe("getNodes", () => {
@@ -295,8 +323,26 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(result.map(Node.toJSON));
       });
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
+        const result: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
+        const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+        presentationManagerMock.setup((x) => x.getNodes(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.getNodes(testData.imodelToken, { ...defaultRpcParams, ...options });
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(result.map(Node.toJSON));
+      });
 
-      it("should return result `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
+      it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const result: Node[] = [createRandomECInstanceNode(), createRandomECInstanceNode(), createRandomECInstanceNode()];
         const options: Paged<Omit<HierarchyRequestOptions<IModelToken>, "imodel">> = {
           rulesetId: testData.rulesetId,
@@ -360,6 +406,25 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.eq(result);
       });
 
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
+        const result = 999;
+        const parentNodeKey = createRandomECInstanceNodeKey();
+        const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
+          .returns(() => Promise.resolve(result))
+          .verifiable();
+        const actualResult = await impl.getNodesCount(testData.imodelToken, { ...defaultRpcParams, ...options }, NodeKey.toJSON(parentNodeKey));
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.eq(result);
+      });
+
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const result = 999;
         const parentNodeKey = createRandomECInstanceNodeKey();
@@ -394,6 +459,24 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
       });
 
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
+        const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
+        const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        presentationManagerMock.setup((x) => x.getFilteredNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, "filter"))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.getFilteredNodePaths(testData.imodelToken, { ...defaultRpcParams, ...options }, "filter");
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
+      });
+
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
         const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
@@ -416,6 +499,25 @@ describe("PresentationRpcImpl", () => {
     describe("getNodePaths", () => {
 
       it("calls manager", async () => {
+        const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
+        const keyArray: InstanceKey[][] = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
+        const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        presentationManagerMock.setup((x) => x.getNodePaths(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, keyArray, 1))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.getNodePaths(testData.imodelToken, { ...defaultRpcParams, ...options }, keyArray.map((a) => a.map(InstanceKey.toJSON)), 1);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
+      });
+
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
         const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
         const keyArray: InstanceKey[][] = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
         const options: Omit<HierarchyRequestOptions<IModelToken>, "imodel"> = {
@@ -480,6 +582,25 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.be.undefined;
       });
 
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
+        const keys = new KeySet();
+        const options: Omit<ContentRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        presentationManagerMock.setup((x) => x.getContentDescriptor(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, testData.displayType, moq.isKeySet(keys), undefined))
+          .returns(async () => undefined)
+          .verifiable();
+        const actualResult = await impl.getContentDescriptor(testData.imodelToken, { ...defaultRpcParams, ...options },
+          testData.displayType, keys.toJSON(), undefined);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.be.undefined;
+      });
+
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const keys = new KeySet();
         const descriptor = createRandomDescriptor();
@@ -504,6 +625,29 @@ describe("PresentationRpcImpl", () => {
     describe("getContentAndContentSize", () => {
 
       it("calls manager", async () => {
+        const contentSize = 789;
+        const keys = new KeySet();
+        const content = createRandomContent();
+        const options: Paged<Omit<ContentRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+        presentationManagerMock.setup(async (x) => x.getContentAndSize(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, content.descriptor, moq.isKeySet(keys)))
+          .returns(async () => ({ content, size: contentSize }))
+          .verifiable();
+        const actualResult = await impl.getContentAndSize(testData.imodelToken, { ...defaultRpcParams, ...options },
+          content.descriptor.toJSON(), keys.toJSON());
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result!.content).to.deep.eq(content.toJSON());
+        expect(actualResult.result!.size).to.deep.eq(contentSize);
+      });
+
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
         const contentSize = 789;
         const keys = new KeySet();
         const content = createRandomContent();
@@ -585,6 +729,28 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.deep.eq(result);
       });
 
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
+        const keys = new KeySet();
+        const result = 789;
+        const descriptor = createRandomDescriptor();
+        const options: Omit<ContentRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        presentationManagerMock
+          .setup(async (x) => x.getContentSetSize(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, moq.isKeySet(keys)))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.getContentSetSize(testData.imodelToken, { ...defaultRpcParams, ...options },
+          descriptor.toJSON(), keys.toJSON());
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(result);
+      });
+
       it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const keys = new KeySet();
         const result = 789;
@@ -610,6 +776,27 @@ describe("PresentationRpcImpl", () => {
     describe("getContent", () => {
 
       it("calls manager", async () => {
+        const keys = new KeySet();
+        const content = createRandomContent();
+        const options: Paged<Omit<ContentRequestOptions<IModelToken>, "imodel">> = {
+          rulesetId: testData.rulesetId,
+          paging: testData.pageOptions,
+        };
+        presentationManagerMock.setup(async (x) => x.getContent(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, content.descriptor, moq.isKeySet(keys)))
+          .returns(async () => content)
+          .verifiable();
+        const actualResult = await impl.getContent(testData.imodelToken, { ...defaultRpcParams, ...options },
+          content.descriptor.toJSON(), keys.toJSON());
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(content.toJSON());
+      });
+
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
         const keys = new KeySet();
         const content = createRandomContent();
         const options: Paged<Omit<ContentRequestOptions<IModelToken>, "imodel">> = {
@@ -687,7 +874,30 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.deep.eq(distinctValues);
       });
 
-      it("should return `PresentationStatus.BackendTimeout` without any result if manager call takes more than requestTimeout", async () => {
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
+        const distinctValues = [faker.random.word(), faker.random.word()];
+        const keys = new KeySet();
+        const descriptor = createRandomDescriptor();
+        const fieldName = faker.random.word();
+        const maximumValueCount = faker.random.number();
+        const options: Omit<ContentRequestOptions<IModelToken>, "imodel"> = {
+          rulesetId: testData.rulesetId,
+        };
+        presentationManagerMock.setup((x) => x.getDistinctValues(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, descriptor, moq.isKeySet(keys), fieldName, maximumValueCount))
+          .returns(async () => distinctValues)
+          .verifiable();
+        const actualResult = await impl.getDistinctValues(testData.imodelToken, { ...defaultRpcParams, ...options }, descriptor.toJSON(),
+          keys.toJSON(), fieldName, maximumValueCount);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(distinctValues);
+      });
+
+      it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const distinctValues = [faker.random.word(), faker.random.word()];
         const keys = new KeySet();
         const descriptor = createRandomDescriptor();
@@ -756,7 +966,25 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.deep.eq(result);
       });
 
-      it("should return `PresentationStatus.BackendTimeout` without any result if manager call takes more than requestTimeout", async () => {
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
+        const options: SelectionScopeRequestOptions<IModelToken> = {
+          imodel: testData.imodelToken,
+        };
+        const result = [createRandomSelectionScope()];
+        presentationManagerMock.setup(async (x) => x.getSelectionScopes(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.getSelectionScopes(testData.imodelToken, { ...defaultRpcParams, ...options });
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(result);
+      });
+
+      it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const options: SelectionScopeRequestOptions<IModelToken> = {
           imodel: testData.imodelToken,
         };
@@ -792,7 +1020,27 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.deep.eq(result.toJSON());
       });
 
-      it("should return `PresentationStatus.BackendTimeout` without any result if manager call takes more than requestTimeout", async () => {
+      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
+        Presentation.terminate();
+        Presentation.initialize({
+          requestTimeout: 0,
+          clientManagerFactory: () => presentationManagerMock.object,
+        });
+        const options: SelectionScopeRequestOptions<IModelToken> = {
+          imodel: testData.imodelToken,
+        };
+        const scope = createRandomSelectionScope();
+        const ids = [createRandomId()];
+        const result = new KeySet();
+        presentationManagerMock.setup(async (x) => x.computeSelection(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, ids, scope.id))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.computeSelection(testData.imodelToken, { ...defaultRpcParams, ...options }, ids, scope.id);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(result.toJSON());
+      });
+
+      it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
         const options: SelectionScopeRequestOptions<IModelToken> = {
           imodel: testData.imodelToken,
         };

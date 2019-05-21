@@ -14,7 +14,7 @@ import { PresentationRpcImpl } from "./PresentationRpcImpl";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 import { TemporaryStorage } from "./TemporaryStorage";
 
-const defaultResultWaitTime: number = 500;
+const defaultRequestTimeout: number = 90000;
 
 /**
  * Properties that can be used to configure [[Presentation]] API
@@ -89,7 +89,9 @@ export class Presentation {
     }
     this._initProps = props || {};
     this._shutdownListener = IModelHost.onBeforeShutdown.addListener(Presentation.terminate);
-    this._requestTimeout = (props && props.requestTimeout) ? props.requestTimeout : defaultResultWaitTime;
+    this._requestTimeout = (props && props.requestTimeout !== undefined)
+      ? props.requestTimeout
+      : defaultRequestTimeout;
     this._clientsStorage = new TemporaryStorage<ClientStoreItem>({
       factory: this.createClientManager,
       cleanupHandler: this.disposeClientManager,
@@ -147,7 +149,7 @@ export class Presentation {
    * Get the time in milliseconds that backend should respond in .
    */
   public static getRequestTimeout(): number {
-    if (!this._requestTimeout)
+    if (this._requestTimeout === undefined)
       throw new PresentationError(PresentationStatus.NotInitialized, "Presentation must be first initialized by calling Presentation.initialize");
     return this._requestTimeout;
   }

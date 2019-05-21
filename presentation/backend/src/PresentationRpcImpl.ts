@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
-import { ClientRequestContext, Id64String, BeDuration } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import {
@@ -125,17 +125,19 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     } catch (e) {
       return this.errorResponse((e as PresentationError).errorNumber, (e as PresentationError).message);
     }
-    let timeout = false;
-    const waitPromise = BeDuration.wait(this.requestTimeout).then(() => { timeout = true; });
-    const result = await Promise.race([request(requestContext, options), waitPromise]);
-    if (timeout) {
-      return {
-        statusCode: PresentationStatus.BackendTimeout,
-        result: undefined,
-      };
-    }
-    requestContext.enter();
-    return this.successResponse(result as TResult);
+    if (this.requestTimeout === 0)
+      return this.successResponse(await request(requestContext, options));
+    let timeout: NodeJS.Timeout;
+    const timingOut = new Promise((_resolve, reject) => {
+      timeout = setTimeout(() => {
+        reject("Timed out");
+      }, this.requestTimeout);
+    });
+    const result = await Promise.race([request(requestContext, options), timingOut])
+      .then((value) => this.successResponse(value as TResult))
+      .catch(() => this.errorResponse(PresentationStatus.BackendTimeout))
+      .finally(() => clearTimeout(timeout));
+    return result;
   }
 
   public async getNodesAndCount(token: IModelToken, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKeyJSON) {

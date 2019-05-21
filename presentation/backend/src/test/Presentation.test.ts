@@ -55,13 +55,18 @@ describe("Presentation", () => {
 
         it("creates a requestTimeout property with default value", () => {
           Presentation.initialize();
-          expect(Presentation.getRequestTimeout()).to.equal(500);
+          expect(Presentation.getRequestTimeout()).to.equal(90000);
         });
 
         it("should use value from initialize method parameters", () => {
-          const randomRequestTimeout = faker.random.number({ min: 0, max: 50000 });
+          const randomRequestTimeout = faker.random.number({ min: 1, max: 90000 });
           Presentation.initialize({ requestTimeout: randomRequestTimeout });
           expect(Presentation.getRequestTimeout()).to.equal(randomRequestTimeout);
+        });
+
+        it("should use 0 as requestTimeout if value passed to initialize method is 0", () => {
+          Presentation.initialize({ requestTimeout: 0 });
+          expect(Presentation.getRequestTimeout()).to.equal(0);
         });
       });
 
