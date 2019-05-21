@@ -21,6 +21,8 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, EventHandled, InputSource, CoordinateLockOverrides } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
 
+// cSpell:ignore buttongroup
+
 /** The method for choosing elements with the [[SelectionTool]]
  * @public
  */
