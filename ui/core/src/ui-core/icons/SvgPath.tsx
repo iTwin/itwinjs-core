@@ -10,7 +10,7 @@ import { CommonProps } from "../utils/Props";
 import "./SvgSprite.scss";
 
 /** Properties of [[SvgPath]] component.
- * @beta
+ * @public
  */
 export interface SvgPathProps extends CommonProps {
   /** Svg graphics paths */
@@ -22,7 +22,7 @@ export interface SvgPathProps extends CommonProps {
 }
 
 /** Svg element wrapper with specified Svg paths.
- * @beta
+ * @public
  */
 export class SvgPath extends React.PureComponent<SvgPathProps> {
   public render() {

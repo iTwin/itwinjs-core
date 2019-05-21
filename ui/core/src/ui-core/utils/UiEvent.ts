@@ -6,7 +6,7 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 
-/** IModel.js UI Event class, which is a subclass of BeEvent with argument type safety.
+/** iModel.js UI UiEvent class is a subclass of BeEvent with argument type safety.
  * @public
  */
 export class UiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {

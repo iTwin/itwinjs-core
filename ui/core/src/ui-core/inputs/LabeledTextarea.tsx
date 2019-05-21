@@ -11,12 +11,12 @@ import { Textarea, TextareaProps } from "./Textarea";
 import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 
 /** Properties for [[LabeledTextarea]] component
- * @beta
+ * @public
  */
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps { }
 
 /** Textarea wrapper that allows for additional styling and labelling
- * @beta
+ * @public
  */
 export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
   public render(): JSX.Element {

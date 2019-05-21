@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for [[Select]] component
- * @beta
+ * @public
  */
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
   /** options for select dropdown.
@@ -33,7 +33,7 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 }
 
 /** Basic select component
- * @beta
+ * @public
  */
 export class Select extends React.PureComponent<SelectProps> {
   public render(): JSX.Element {

@@ -9,7 +9,7 @@ import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
 /** Centered React functional component
- * @beta
+ * @public
  */
 // tslint:disable-next-line:variable-name
 export const Centered: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {

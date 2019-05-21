@@ -11,7 +11,7 @@ import { Omit } from "../../utils/typeUtils";
 import { CommonProps } from "../../utils/Props";
 
 /** Properties for [[Checkbox]] React component
- * @beta
+ * @public
  */
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">, CommonProps {
   /** Text that will be shown next to the checkbox. */
@@ -29,7 +29,7 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
 }
 
 /** A React component that renders a simple checkbox with label
- * @beta
+ * @public
  */
 // tslint:disable-next-line:variable-name
 export const Checkbox: React.FunctionComponent<CheckboxProps> = (props) => {

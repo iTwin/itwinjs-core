@@ -24,7 +24,7 @@ import { ElementTooltip } from "../feedback/ElementTooltip";
 import { PointerMessage } from "./Pointer";
 
 /**
- * The AppNotificationManager class is a subclass of NotificationManager, which is in @bentley/imodeljs-frontend.
+ * The AppNotificationManager class is a subclass of NotificationManager in @bentley/imodeljs-frontend.
  * This implementation uses the iModel.js UI library to display alerts, messages, prompts and tooltips.
  * @public
  */

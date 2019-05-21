@@ -50,7 +50,7 @@ export class Annulus {
     outer: Circle;
 }
 
-// @beta
+// @public
 export const BodyText: React.FunctionComponent<TextProps>;
 
 // @alpha (undocumented)
@@ -90,10 +90,10 @@ export enum ButtonType {
     Primary = "primary"
 }
 
-// @beta
+// @public
 export const Centered: React.FunctionComponent<CommonDivProps>;
 
-// @beta
+// @public
 export const Checkbox: React.FunctionComponent<CheckboxProps>;
 
 // @public
@@ -108,7 +108,7 @@ export interface CheckBoxInfo {
     tooltip?: string;
 }
 
-// @beta
+// @public
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">, CommonProps {
     inputClassName?: string;
     inputStyle?: React.CSSProperties;
@@ -175,7 +175,7 @@ export interface CommonProps extends ClassNameProps {
     style?: React.CSSProperties;
 }
 
-// @beta
+// @public
 export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMenuState> {
     constructor(props: ContextMenuProps);
     // @internal (undocumented)
@@ -200,7 +200,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     readonly state: Readonly<ContextMenuState>;
 }
 
-// @beta
+// @public
 export enum ContextMenuDirection {
     // (undocumented)
     Bottom = "bottom",
@@ -224,13 +224,13 @@ export enum ContextMenuDirection {
     TopRight = "top right"
 }
 
-// @beta
+// @public
 export class ContextMenuDivider extends React.PureComponent<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, ContextMenuItemState> {
     constructor(props: ContextMenuItemProps);
     // (undocumented)
@@ -247,7 +247,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
     readonly state: Readonly<ContextMenuItemState>;
     }
 
-// @beta
+// @public
 export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
     disabled?: boolean;
     icon?: string | React.ReactNode;
@@ -263,7 +263,7 @@ export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivEle
     parentMenu?: ContextMenu;
 }
 
-// @beta
+// @public
 export interface ContextMenuProps extends CommonProps {
     autoflip?: boolean;
     direction?: ContextMenuDirection;
@@ -281,7 +281,7 @@ export interface ContextMenuProps extends CommonProps {
     selectedIndex?: number;
 }
 
-// @beta
+// @public
 export class ContextSubMenu extends React.Component<ContextSubMenuProps, ContextSubMenuState> {
     constructor(props: ContextSubMenuProps);
     // (undocumented)
@@ -302,7 +302,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     readonly state: Readonly<ContextSubMenuState>;
     }
 
-// @beta
+// @public
 export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label">, CommonProps {
     label: string | JSX.Element;
     // @internal (undocumented)
@@ -351,7 +351,7 @@ export enum DateFormat {
     Short = 1
 }
 
-// @beta
+// @public
 export class Dialog extends React.Component<DialogProps, DialogState> {
     constructor(props: DialogProps);
     // (undocumented)
@@ -366,7 +366,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     readonly state: Readonly<DialogState>;
 }
 
-// @beta
+// @public
 export enum DialogAlignment {
     // (undocumented)
     Bottom = "bottom",
@@ -388,7 +388,7 @@ export enum DialogAlignment {
     TopRight = "top-right"
 }
 
-// @beta
+// @public
 export interface DialogButtonDef {
     buttonStyle?: DialogButtonStyle;
     className?: string;
@@ -398,7 +398,7 @@ export interface DialogButtonDef {
     type: DialogButtonType;
 }
 
-// @beta
+// @public
 export enum DialogButtonStyle {
     // (undocumented)
     Blue = "uicore-buttons-blue",
@@ -410,7 +410,7 @@ export enum DialogButtonStyle {
     Primary = "uicore-buttons-primary"
 }
 
-// @beta
+// @public
 export enum DialogButtonType {
     // (undocumented)
     Cancel = "cancel",
@@ -428,7 +428,7 @@ export enum DialogButtonType {
     Yes = "yes"
 }
 
-// @beta
+// @public
 export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title">, CommonProps {
     alignment?: DialogAlignment;
     backgroundStyle?: React.CSSProperties;
@@ -554,10 +554,10 @@ export enum Face {
     Top = "top"
 }
 
-// @beta
+// @public
 export const FillCentered: React.FunctionComponent<CommonDivProps>;
 
-// @beta
+// @public
 export const FlexWrapContainer: React.FunctionComponent<CommonDivProps>;
 
 // @internal
@@ -569,7 +569,7 @@ export const getDisplayName: (component: React.ComponentType<any>) => string;
 // @internal
 export function getUserColor(email: string): string;
 
-// @beta
+// @public
 export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps> {
     constructor(props: GlobalContextMenuProps);
     // (undocumented)
@@ -578,7 +578,7 @@ export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProp
     render(): React.ReactNode;
 }
 
-// @beta
+// @public
 export interface GlobalContextMenuProps extends ContextMenuProps {
     contextMenuComponent?: React.ComponentType<ContextMenuProps>;
     identifier?: string;
@@ -586,7 +586,7 @@ export interface GlobalContextMenuProps extends ContextMenuProps {
     y: number | string;
 }
 
-// @beta
+// @public
 export class GlobalDialog extends React.Component<GlobalDialogProps> {
     constructor(props: GlobalDialogProps);
     // (undocumented)
@@ -595,13 +595,13 @@ export class GlobalDialog extends React.Component<GlobalDialogProps> {
     render(): React.ReactNode;
 }
 
-// @beta
+// @public
 export interface GlobalDialogProps extends DialogProps {
     // (undocumented)
     identifier?: string;
 }
 
-// @beta
+// @public
 export const Headline: React.FunctionComponent<TextProps>;
 
 // @public
@@ -648,13 +648,13 @@ export interface ImageCheckBoxProps extends CommonProps {
     tooltip?: string;
 }
 
-// @beta
+// @public
 export class Input extends React.PureComponent<InputProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
 }
 
@@ -671,7 +671,7 @@ export enum InputStatus {
 // @internal
 export function isPromiseLike(obj: unknown): obj is PromiseLike<unknown>;
 
-// @beta
+// @public
 export interface LabeledComponentProps {
     inputClassName?: string;
     inputStyle?: React.CSSProperties;
@@ -681,40 +681,40 @@ export interface LabeledComponentProps {
     status?: InputStatus;
 }
 
-// @beta
+// @public
 export class LabeledInput extends React.PureComponent<LabeledInputProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps {
 }
 
-// @beta
+// @public
 export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, MessagedComponentProps {
 }
 
-// @beta
+// @public
 export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
 }
 
-// @beta
+// @public
 export const LeadingText: React.FunctionComponent<TextProps>;
 
-// @beta
+// @public
 export const LeadingText2: React.FunctionComponent<TextProps>;
 
 // @internal
@@ -804,7 +804,7 @@ export class LocalUiSettings implements UiSettings {
     w: Window;
 }
 
-// @beta
+// @public
 export class MessageBox extends React.PureComponent<MessageBoxProps> {
     // (undocumented)
     static defaultProps: Partial<MessageBoxProps>;
@@ -812,7 +812,7 @@ export class MessageBox extends React.PureComponent<MessageBoxProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface MessageBoxProps extends CommonProps {
     buttonCluster: DialogButtonDef[];
     contentClassName?: string;
@@ -829,7 +829,7 @@ export interface MessageBoxProps extends CommonProps {
     width?: string | number;
 }
 
-// @beta
+// @public
 export class MessageContainer extends React.PureComponent<MessageContainerProps> {
     // (undocumented)
     static getIconClassName(severity: MessageSeverity, hollow?: boolean): string;
@@ -837,20 +837,20 @@ export class MessageContainer extends React.PureComponent<MessageContainerProps>
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface MessageContainerProps extends CommonProps {
     // (undocumented)
     severity: MessageSeverity;
 }
 
-// @beta
+// @public
 export interface MessagedComponentProps {
     message?: string;
     messageClassName?: string;
     messageStyle?: React.CSSProperties;
 }
 
-// @beta
+// @public
 export enum MessageSeverity {
     // (undocumented)
     Error = 4,
@@ -866,7 +866,7 @@ export enum MessageSeverity {
     Warning = 3
 }
 
-// @beta
+// @public
 export const MutedText: React.FunctionComponent<TextProps>;
 
 // @beta
@@ -1063,20 +1063,20 @@ export interface RadialMenuProps extends CommonProps {
     top?: number | string;
 }
 
-// @beta
+// @public
 export class Radio extends React.PureComponent<RadioProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
 }
 
-// @beta
+// @public
 export const ScrollView: React.FunctionComponent<CommonDivProps>;
 
-// @beta
+// @public
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     constructor(props: SearchBoxProps);
     // (undocumented)
@@ -1089,7 +1089,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     readonly state: Readonly<SearchBoxState>;
     }
 
-// @beta
+// @public
 export interface SearchBoxProps extends CommonProps {
     initialValue?: string;
     onClear?: () => void;
@@ -1100,13 +1100,13 @@ export interface SearchBoxProps extends CommonProps {
     valueChangedDelay?: number;
 }
 
-// @beta
+// @public
 export class Select extends React.PureComponent<SelectProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
     options: string[] | {
         [key: string]: string;
@@ -1133,7 +1133,7 @@ export const shallowDiffers: (a: {
     [key: string]: any;
 } | undefined) => boolean;
 
-// @beta
+// @public
 export const SmallText: React.FunctionComponent<TextProps>;
 
 // @public
@@ -1208,37 +1208,37 @@ export interface StyledTextProps extends TextProps {
     mainClassName: string;
 }
 
-// @beta
+// @public
 export const Subheading: React.FunctionComponent<TextProps>;
 
-// @beta
+// @public
 export const Subheading2: React.FunctionComponent<TextProps>;
 
-// @beta
+// @public
 export class SvgPath extends React.PureComponent<SvgPathProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface SvgPathProps extends CommonProps {
     paths: string[];
     viewBoxHeight: number;
     viewBoxWidth: number;
 }
 
-// @beta
+// @public
 export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
 
-// @beta
+// @public
 export class Textarea extends React.PureComponent<TextareaProps> {
     // (undocumented)
     static defaultProps: Partial<TextareaProps>;
@@ -1246,12 +1246,12 @@ export class Textarea extends React.PureComponent<TextareaProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
     rows?: number;
 }
 
-// @beta
+// @public
 export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement>, CommonProps {
 }
 
@@ -1283,13 +1283,13 @@ export class Timer {
     stop(): void;
     }
 
-// @beta
+// @public
 export const Title: React.FunctionComponent<TextProps>;
 
-// @beta
+// @public
 export const Title2: React.FunctionComponent<TextProps>;
 
-// @beta
+// @public
 export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
     constructor(props: ToggleProps);
     // (undocumented)
@@ -1300,13 +1300,13 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
     render(): JSX.Element;
     }
 
-// @beta
+// @public
 export enum ToggleButtonType {
     Blue = 1,
     Primary = 0
 }
 
-// @beta
+// @public
 export interface ToggleProps extends CommonProps {
     buttonType?: ToggleButtonType;
     disabled?: boolean;

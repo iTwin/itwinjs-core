@@ -16,7 +16,7 @@ import { CommonProps } from "../utils/Props";
 const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
 
 /** Enum to specify where a [[ContextMenu]] should anchor to its parent element
- * @beta
+ * @public
  */
 export enum ContextMenuDirection {
   None = "",
@@ -26,7 +26,7 @@ export enum ContextMenuDirection {
 }
 
 /** Properties for the [[ContextMenu]] component
- * @beta
+ * @public
  */
 export interface ContextMenuProps extends CommonProps {
   /** Whether ContextMenu is currently opened. */
@@ -64,7 +64,7 @@ interface ContextMenuState {
 /**
  * A context menu populated with [[ContextMenuItem]] components.
  * Can be nested using [[ContextSubMenu]] component.
- * @beta
+ * @public
  */
 export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMenuState> {
   private _rootElement: HTMLElement | null = null;
@@ -358,7 +358,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 }
 
 /** Properties for the [[GlobalContextMenu]] component
- * @beta
+ * @public
  */
 export interface GlobalContextMenuProps extends ContextMenuProps {
   /** Unique identifier, to distinguish from other GlobalContextMenu components. Needed only if multiple GlobalContextMenus are used simultaneously. */
@@ -372,7 +372,7 @@ export interface GlobalContextMenuProps extends ContextMenuProps {
 }
 
 /** GlobalContextMenu React component used to display a [[ContextMenu]] at the cursor
- * @beta
+ * @public
  */
 export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps> {
   private _container: HTMLDivElement;
@@ -417,7 +417,7 @@ export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProp
 }
 
 /** Properties for the [[ContextMenuItem]] component
- * @beta
+ * @public
  */
 export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
   onSelect?: (event: any) => any;
@@ -442,7 +442,7 @@ interface ContextMenuItemState {
 
 /**
  * Menu Item class for use within a [[ContextMenu]] component.
- * @beta
+ * @public
  */
 export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, ContextMenuItemState> {
   private _root: HTMLElement | null = null;
@@ -536,7 +536,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
 
 /**
  * Menu Divider for [[ContextMenu]]. Inserts a line between items, used for list item grouping.
- * @beta
+ * @public
  */
 export class ContextMenuDivider extends React.PureComponent<CommonProps> {
   public render(): JSX.Element {
@@ -549,7 +549,7 @@ export class ContextMenuDivider extends React.PureComponent<CommonProps> {
 }
 
 /** Properties for the [[ContextSubMenu]] component
- * @beta
+ * @public
  */
 export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label">, CommonProps {
   /** Text/jsx to display in the list item */
@@ -567,7 +567,7 @@ interface ContextSubMenuState {
 
 /**
  * Submenu wrapper class for use within a [[ContextMenu]] component.
- * @beta
+ * @public
  */
 export class ContextSubMenu extends React.Component<ContextSubMenuProps, ContextSubMenuState> {
   private _menuElement: ContextMenu | null = null;

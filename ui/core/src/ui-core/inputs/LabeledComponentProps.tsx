@@ -9,7 +9,7 @@ import * as React from "react";
 import { InputStatus } from "./InputStatus";
 
 /** Properties for labeled components
- * @beta
+ * @public
  */
 export interface LabeledComponentProps {
   /** Text that will be shown next to or above the input. */
@@ -27,7 +27,7 @@ export interface LabeledComponentProps {
 }
 
 /** Properties for components with messages
- * @beta
+ * @public
  */
 export interface MessagedComponentProps {
   /** Optional text shown below the input. */

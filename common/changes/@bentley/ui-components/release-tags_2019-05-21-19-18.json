@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated UI package release tags for 1.0 release.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}
