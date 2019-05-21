@@ -5,7 +5,6 @@
 /** @module Tools */
 
 import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { ModifyElementSource } from "./PrimitiveTool";
 import { IModelConnection } from "../IModelConnection";
 
 /** The requested source for the elements to modify.
@@ -102,6 +101,22 @@ export enum HilitedState {
   Yes = 1,
   /**  all of the entries in this agenda were un-hilited by a call to ElementAgenda.clearHilite */
   No = 2,
+}
+
+/** @internal */
+export enum ModifyElementSource {
+  /** The source for the element is unknown - not caused by a modification command. */
+  Unknown = 0,
+  /** The element is selected by the user. */
+  Selected = 1,
+  /** The element is processed because it is in the selection set. */
+  SelectionSet = 2,
+  /** The element is processed because it is passes the fence criteria. */
+  Fence = 3,
+  /** The element is processed because it belongs to the group of the selected element (for _FilterAgendaEntries only) */
+  Group = 4,
+  /** The element is selected by the user by drag selection or multi-selection using ctrl. */
+  DragSelect = 5,
 }
 
 /** @internal */

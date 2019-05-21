@@ -3836,7 +3836,7 @@ export class ModelState extends EntityState implements ModelProps {
     toJSON(): ModelProps;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export enum ModifyElementSource {
     DragSelect = 5,
     Fence = 3,
