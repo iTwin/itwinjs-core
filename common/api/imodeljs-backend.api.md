@@ -750,7 +750,6 @@ export abstract class DetailingSymbol extends GraphicalElement2d {
 export class DevTools {
     static ping(): boolean;
     static setLogLevel(inLoggerCategory: string, newLevel: LogLevel): LogLevel | undefined;
-    static signal(signalType: number): boolean;
     static stats(): DevToolsStats;
     static versions(): {
         application: string;

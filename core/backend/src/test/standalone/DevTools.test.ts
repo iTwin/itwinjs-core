@@ -89,38 +89,3 @@ describe("DevTools", () => {
     assert.isDefined(versions.iModelJs);
   });
 });
-
-describe.skip("DevTools is able to signal the backend", () => {
-
-  before(async () => {
-    IModelTestUtils.setupLogging();
-  });
-
-  it("None", () => {
-    DevTools.signal(0);
-  });
-
-  it("Abort", () => {
-    DevTools.signal(1);
-  });
-
-  it("RaiseSigSev", () => {
-    DevTools.signal(2);
-  });
-
-  it("DereferenceNull", () => {
-    DevTools.signal(3);
-  });
-
-  it("DivideByZero", () => {
-    DevTools.signal(4);
-  });
-
-  it("StackOverflow", () => {
-    DevTools.signal(5);
-  });
-
-  it("ThreadDeadlock", () => {
-    DevTools.signal(6);
-  });
-});

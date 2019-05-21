@@ -1817,7 +1817,6 @@ export class DevTools {
     static connectToBackendInstance(iModelToken: IModelToken): DevTools;
     ping(count: number): Promise<PingTestResult>;
     setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
-    signal(signalType: number): Promise<boolean>;
     stats(options?: DevToolsStatsOptions): Promise<any>;
     // (undocumented)
     versions(): Promise<any>;
