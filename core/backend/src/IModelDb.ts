@@ -1681,9 +1681,24 @@ export namespace IModelDb {
       const ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
       if (undefined !== ret.error) {
         reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
-      } else if (ret.result instanceof Uint8Array) {
-        resolve(ret.result);
-      } else {
+      } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
+        const res = ret.result as IModelJsNative.TileContent;
+        const iModelGuid = this._iModel.getGuid();
+
+        const tileSizeThreshold = IModelHost.logTileSizeThreshold;
+        const tileSize = res.content.length;
+        if (tileSize > tileSizeThreshold) {
+          Logger.logWarning(loggerCategory, "Tile size (in bytes) larger than specified threshold", () => ({ tileSize, tileSizeThreshold, treeId, tileId, iModelGuid }));
+        }
+
+        const loadTimeThreshold = IModelHost.logTileLoadTimeThreshold;
+        const loadTime = res.elapsedSeconds;
+        if (loadTime > loadTimeThreshold) {
+          Logger.logWarning(loggerCategory, "Tile load time (in seconds) greater than specified threshold", () => ({ loadTime, loadTimeThreshold, treeId, tileId, iModelGuid }));
+        }
+
+        resolve(res.content);
+      } else { // if the type is a number, it's the TileContentState enum
         // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
         setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId, requestContext), 10);
       }

@@ -315,7 +315,7 @@ Array [
     },
   },
   PropertyRecord {
-    "description": "ECClass-0-1",
+    "description": "Ñót spêçìfíêd",
     "isReadonly": true,
     "property": Object {
       "displayLabel": "Class",
@@ -323,7 +323,7 @@ Array [
       "typename": "navigation",
     },
     "value": Object {
-      "displayValue": "ECClass-0-1",
+      "displayValue": "Ñót spêçìfíêd",
       "value": 1,
       "valueFormat": 0,
     },

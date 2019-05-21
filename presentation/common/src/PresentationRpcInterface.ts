@@ -90,7 +90,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static types = () => [];
 
   /** The semantic version of the interface. */
-  public static version = "0.4.0";
+  public static version = "0.5.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.

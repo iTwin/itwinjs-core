@@ -25,8 +25,111 @@ export interface InstanceLabelOverride extends RuleBase {
   class: SingleSchemaClassSpecification;
 
   /**
-   * Names of properties which should be used as instance label. The
-   * first property that has a value is used as the actual label.
+   * Specifications for the label value. The first non-empty value
+   * is used as the actual label.
    */
-  propertyNames: string[];
+  values: InstanceLabelOverrideValueSpecification[];
 }
+
+/**
+ * Types of possible [[InstanceLabelOverride]] label value.
+ * @public
+ */
+export enum InstanceLabelOverrideValueSpecificationType {
+  Composite = "Composite",
+  Property = "Property",
+  ClassName = "ClassName",
+  ClassLabel = "ClassLabel",
+  BriefcaseId = "BriefcaseId",
+  LocalId = "LocalId",
+}
+
+/**
+ * Base interface for all [[InstanceLabelOverrideValueSpecification]] implementations.
+ * @public
+ */
+export interface InstanceLabelOverrideValueSpecificationBase {
+  /** Type of the specification */
+  specType: InstanceLabelOverrideValueSpecificationType;
+}
+
+/**
+ * Specification that allows creating a label value composited using
+ * multiple other specifications.
+ *
+ * @public
+ */
+export interface InstanceLabelOverrideCompositeValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
+  specType: InstanceLabelOverrideValueSpecificationType.Composite;
+
+  /**
+   * Parts of the value.
+   *
+   * If any of the parts with `isRequired` flag evaluate to an empty string, the
+   * result of this specification is also an empty string.
+   */
+  parts: Array<{ spec: InstanceLabelOverrideValueSpecification; isRequired?: boolean }>;
+
+  /** Separator to use when joining the parts. Defaults to a space character. */
+  separator?: string;
+}
+
+/**
+ * Specification that uses property value as the label content.
+ * @public
+ */
+export interface InstanceLabelOverridePropertyValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
+  specType: InstanceLabelOverrideValueSpecificationType.Property;
+
+  /**
+   * Name of the property whose value should be used.
+   *
+   * @note A property with this name must exist on the
+   * parent `InstanceLabelOverride.class`.
+   */
+  propertyName: string;
+}
+
+/**
+ * Specification that uses ECClass name as the label content.
+ * @public
+ */
+export interface InstanceLabelOverrideClassNameSpecification extends InstanceLabelOverrideValueSpecificationBase {
+  specType: InstanceLabelOverrideValueSpecificationType.ClassName;
+
+  /** Should full (`{schemaName}.{className}`) class name be used */
+  full?: boolean;
+}
+
+/**
+ * Specification that uses ECClass display label as the label content.
+ * @public
+ */
+export interface InstanceLabelOverrideClassLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
+  specType: InstanceLabelOverrideValueSpecificationType.ClassLabel;
+}
+
+/**
+ * Specification that returns ECInstance's briefcase ID in base36 format.
+ * @public
+ */
+export interface InstanceLabelOverrideBriefcaseIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
+  specType: InstanceLabelOverrideValueSpecificationType.BriefcaseId;
+}
+
+/**
+ * Specification that returns ECInstance's local ID in base36 format.
+ * @public
+ */
+export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
+  specType: InstanceLabelOverrideValueSpecificationType.LocalId;
+}
+
+/**
+ * Specification to define how the label for [[InstanceLabelOverride]] should be created.
+ * @public
+ */
+export type InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification
+  | InstanceLabelOverridePropertyValueSpecification
+  | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification
+  | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification;

@@ -15,252 +15,252 @@ Array [
                       Object {
                         "children": Array [
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
+                            "icon": "ECInstanceImage://Generic:PhysicalObject",
                             "label": "Physical Object-0-38",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
+                            "icon": "ECInstanceImage://Generic:PhysicalObject",
                             "label": "Physical Object-0-39",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1K",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1L",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1M",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1N",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1O",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1P",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1Q",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1R",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1S",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1T",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1U",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1V",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1W",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1X",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1Y",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-1Z",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2A",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2B",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2C",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2D",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2E",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2F",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2G",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2H",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2I",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2J",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2K",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2L",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2M",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2N",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2O",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2P",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2Q",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2R",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2S",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2T",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2U",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2V",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2W",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2X",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2Y",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-2Z",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-20",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-21",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-22",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-23",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-24",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-25",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-26",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-27",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-28",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-29",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-30",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-31",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-32",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-33",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-34",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-35",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-36",
                           },
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
-                            "label": "TestClass",
+                            "icon": "ECInstanceImage://PCJ_TestSchema:TestClass",
+                            "label": "TestClass-0-37",
                           },
                         ],
                         "description": "The Spatial Category used to categorize the 3D Geometric Element",
@@ -270,24 +270,24 @@ Array [
                       },
                     ],
                     "hasChildren": true,
-                    "icon": "ECLiteralImage://ELEMENT",
+                    "icon": "ECInstanceImage://BisCore:PhysicalPartition",
                     "label": "Properties_60InstancesWithUrl2",
                   },
                 ],
                 "hasChildren": true,
-                "icon": "ECLiteralImage://ELEMENT",
+                "icon": "ECInstanceImage://BisCore:Subject",
                 "label": "Properties_60InstancesWithUrl2",
               },
               Object {
-                "icon": "ECLiteralImage://ELEMENT",
+                "icon": "ECInstanceImage://BisCore:DocumentPartition",
                 "label": "Converted Drawings",
               },
               Object {
-                "icon": "ECLiteralImage://ELEMENT",
+                "icon": "ECInstanceImage://BisCore:GroupInformationPartition",
                 "label": "Converted Groups",
               },
               Object {
-                "icon": "ECLiteralImage://ELEMENT",
+                "icon": "ECInstanceImage://BisCore:DocumentPartition",
                 "label": "Converted Sheets",
               },
               Object {
@@ -295,19 +295,19 @@ Array [
                   Object {
                     "children": Array [
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:DisplayStyle3d",
                         "label": "Default - View 2",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:DisplayStyle3d",
                         "label": "Default - View 3",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:DisplayStyle3d",
                         "label": "Default - View 4",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:DisplayStyle3d",
                         "label": "Illustration",
                       },
                     ],
@@ -318,19 +318,19 @@ Array [
                   Object {
                     "children": Array [
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:CategorySelector",
                         "label": "Default - View 1",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:CategorySelector",
                         "label": "Default - View 2",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:CategorySelector",
                         "label": "Default - View 3",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:CategorySelector",
                         "label": "Default - View 4",
                       },
                     ],
@@ -343,12 +343,12 @@ Array [
                       Object {
                         "children": Array [
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
+                            "icon": "ECInstanceImage://BisCore:SubCategory",
                             "label": "Uncategorized",
                           },
                         ],
                         "hasChildren": true,
-                        "icon": "ECLiteralImage://CATEGORY",
+                        "icon": "ECInstanceImage://BisCore:DrawingCategory",
                         "label": "Uncategorized",
                       },
                     ],
@@ -359,19 +359,19 @@ Array [
                   Object {
                     "children": Array [
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:ModelSelector",
                         "label": "Default - View 1",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:ModelSelector",
                         "label": "Default - View 2",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:ModelSelector",
                         "label": "Default - View 3",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:ModelSelector",
                         "label": "Default - View 4",
                       },
                     ],
@@ -382,19 +382,19 @@ Array [
                   Object {
                     "children": Array [
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:AuxCoordSystemSpatial",
                         "label": "Default - View 1",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:AuxCoordSystemSpatial",
                         "label": "Default - View 2",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:AuxCoordSystemSpatial",
                         "label": "Default - View 3",
                       },
                       Object {
-                        "icon": "ECLiteralImage://ELEMENT",
+                        "icon": "ECInstanceImage://BisCore:AuxCoordSystemSpatial",
                         "label": "Default - View 4",
                       },
                     ],
@@ -408,12 +408,12 @@ Array [
                       Object {
                         "children": Array [
                           Object {
-                            "icon": "ECLiteralImage://ELEMENT",
+                            "icon": "ECInstanceImage://BisCore:SubCategory",
                             "label": "Uncategorized",
                           },
                         ],
                         "hasChildren": true,
-                        "icon": "ECLiteralImage://CATEGORY",
+                        "icon": "ECInstanceImage://BisCore:SpatialCategory",
                         "label": "Uncategorized",
                       },
                     ],
@@ -424,19 +424,19 @@ Array [
                   Object {
                     "children": Array [
                       Object {
-                        "icon": "ECLiteralImage://VIEWDEF_3D",
+                        "icon": "ECInstanceImage://BisCore:SpatialViewDefinition",
                         "label": "Default - View 1",
                       },
                       Object {
-                        "icon": "ECLiteralImage://VIEWDEF_3D",
+                        "icon": "ECInstanceImage://BisCore:SpatialViewDefinition",
                         "label": "Default - View 2",
                       },
                       Object {
-                        "icon": "ECLiteralImage://VIEWDEF_3D",
+                        "icon": "ECInstanceImage://BisCore:SpatialViewDefinition",
                         "label": "Default - View 3",
                       },
                       Object {
-                        "icon": "ECLiteralImage://VIEWDEF_3D",
+                        "icon": "ECInstanceImage://BisCore:SpatialViewDefinition",
                         "label": "Default - View 4",
                       },
                     ],
@@ -447,12 +447,12 @@ Array [
                   },
                 ],
                 "hasChildren": true,
-                "icon": "ECLiteralImage://ELEMENT",
+                "icon": "ECInstanceImage://BisCore:DefinitionPartition",
                 "label": "Definition Model For DgnV8Bridge:D:\\\\Temp\\\\Properties_60InstancesWithUrl2.dgn, Default",
               },
             ],
             "hasChildren": true,
-            "icon": "ECLiteralImage://ELEMENT",
+            "icon": "ECInstanceImage://BisCore:Subject",
             "label": "DgnV8Bridge:D:\\\\Temp\\\\Properties_60InstancesWithUrl2.dgn, Default",
           },
           Object {
@@ -460,31 +460,31 @@ Array [
               Object {
                 "children": Array [
                   Object {
-                    "icon": "ECLiteralImage://ELEMENT",
+                    "icon": "ECInstanceImage://BisCore:LineStyle",
                     "label": "lc1",
                   },
                   Object {
-                    "icon": "ECLiteralImage://ELEMENT",
+                    "icon": "ECInstanceImage://BisCore:LineStyle",
                     "label": "lc2",
                   },
                   Object {
-                    "icon": "ECLiteralImage://ELEMENT",
+                    "icon": "ECInstanceImage://BisCore:LineStyle",
                     "label": "lc3",
                   },
                   Object {
-                    "icon": "ECLiteralImage://ELEMENT",
+                    "icon": "ECInstanceImage://BisCore:LineStyle",
                     "label": "lc4",
                   },
                   Object {
-                    "icon": "ECLiteralImage://ELEMENT",
+                    "icon": "ECInstanceImage://BisCore:LineStyle",
                     "label": "lc5",
                   },
                   Object {
-                    "icon": "ECLiteralImage://ELEMENT",
+                    "icon": "ECInstanceImage://BisCore:LineStyle",
                     "label": "lc6",
                   },
                   Object {
-                    "icon": "ECLiteralImage://ELEMENT",
+                    "icon": "ECInstanceImage://BisCore:LineStyle",
                     "label": "lc7",
                   },
                 ],
@@ -494,16 +494,16 @@ Array [
               },
             ],
             "hasChildren": true,
-            "icon": "ECLiteralImage://ELEMENT",
+            "icon": "ECInstanceImage://BisCore:DefinitionPartition",
             "label": "BisCore.DictionaryModel",
           },
           Object {
-            "icon": "ECLiteralImage://ELEMENT",
+            "icon": "ECInstanceImage://BisCore:LinkPartition",
             "label": "BisCore.RealityDataSources",
           },
         ],
         "hasChildren": true,
-        "icon": "ECLiteralImage://ELEMENT",
+        "icon": "ECInstanceImage://BisCore:Subject",
         "label": "DgnV8Bridge",
       },
     ],

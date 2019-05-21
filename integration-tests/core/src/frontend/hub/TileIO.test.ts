@@ -783,7 +783,7 @@ describe("TileAdmin", () => {
       public static async test(imodel: IModelConnection) {
         await this.testPrimaryTree(imodel, "4_0-0x1c");
 
-      // ###TODO Ray? ModelState.loadTileTree() has never bothered to store/compare current animation ID against requested animation ID...
+        // ###TODO: The tree Id is validated on back-end and rejected if the animation source Id does not identify an existing DisplayStyle with an attached schedule script.
         // Our test iModel lacks any such styles so test will fail.
         // await this.testPrimaryTree(imodel, "A:0x123_0x1c", "0x123");
 
