@@ -400,7 +400,7 @@ export class ViewAttributes {
   private addEnvironmentEditor() {
     const nestedMenu = createNestedMenu({
       id: this._nextId,
-      label: "Edit Environment",
+      label: "Environment",
       parent: this._element,
       // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
       expand: ViewAttributes._expandEnvironmentEditor,

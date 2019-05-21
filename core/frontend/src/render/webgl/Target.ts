@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { ClipUtilities, ClipVector, Transform, Vector3d, Point3d, Matrix4d, Point2d, Range3d, XAndY } from "@bentley/geometry-core";
+import { ClipPlaneContainment, ClipUtilities, ClipVector, Transform, Vector3d, Point3d, Matrix4d, Point2d, Range3d, XAndY } from "@bentley/geometry-core";
 import { assert, BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates, PlanarClassifierMap, RenderSolarShadowMap } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
@@ -419,6 +419,24 @@ export abstract class Target extends RenderTarget {
     }
   }
 
+  private _scratchRangeCorners: Point3d[] = [
+    new Point3d(), new Point3d(), new Point3d(), new Point3d(),
+    new Point3d(), new Point3d(), new Point3d(), new Point3d(),
+  ];
+
+  private _getRangeCorners(r: Range3d): Point3d[] {
+    const p = this._scratchRangeCorners;
+    p[0].setFromPoint3d(r.low);
+    p[1].set(r.high.x, r.low.y, r.low.z),
+    p[2].set(r.low.x, r.high.y, r.low.z),
+    p[3].set(r.high.x, r.high.y, r.low.z),
+    p[4].set(r.low.x, r.low.y, r.high.z),
+    p[5].set(r.high.x, r.low.y, r.high.z),
+    p[6].set(r.low.x, r.high.y, r.high.z),
+    p[7].setFromPoint3d(r.high);
+    return p;
+  }
+
   /** @internal */
   public isRangeOutsideActiveVolume(range: Range3d): boolean {
     if (undefined === this._activeClipVolume || !this._stack.top.showClipVolume || !this.clips.isValid)
@@ -426,10 +444,16 @@ export abstract class Target extends RenderTarget {
 
     range = this.currentTransform.multiplyRange(range, range);
 
-    // ###TODO: Avoid allocation of Range3d inside called function...
-    // ###TODO: Use some not-yet-existent API which will return as soon as it determines ANY intersection (we don't care about the actual intersection range).
-    const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(this._activeClipVolume.clipVector, range);
-    return clippedRange.isNull;
+    const testIntersection = false;
+    if (testIntersection) {
+      // ###TODO: Avoid allocation of Range3d inside called function...
+      // ###TODO: Use some not-yet-existent API which will return as soon as it determines ANY intersection (we don't care about the actual intersection range).
+      const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(this._activeClipVolume.clipVector, range);
+      return clippedRange.isNull;
+    } else {
+      // Do the cheap, imprecise check. The above is far too slow and allocates way too many objects, especially for clips produced from non-convex shapes.
+      return ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(this._getRangeCorners(range));
+    }
   }
 
   private readonly _scratchRange = new Range3d();
@@ -1001,6 +1025,11 @@ export abstract class Target extends RenderTarget {
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._101, bottomScale, Npc._111);
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._011, topScale, Npc._001);
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
+
+    // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
+    if (undefined !== this._activeClipVolume && this._stack.top.showClipVolume && this.clips.isValid)
+      if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
+        return undefined;
 
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
     this._renderCommands.clear();

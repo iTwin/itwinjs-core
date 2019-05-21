@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
-import { imageBufferToPngDataUrl, IModelApp, IModelConnection, PluginAdmin, ScreenViewport, Viewport, ViewState, ViewClipDecorationProvider } from "@bentley/imodeljs-frontend";
+import { imageBufferToPngDataUrl, IModelApp, IModelConnection, PluginAdmin, ScreenViewport, Viewport, ViewState } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AnimationPanel } from "./AnimationPanel";
 import { CategoryPicker, ModelPicker } from "./IdPicker";
@@ -19,6 +19,7 @@ import { TileLoadIndicator } from "./TileLoadIndicator";
 import { createImageButton, createToolButton, ToolBar, ToolBarDropDown } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
+import { SectionsPanel } from "./SectionTools";
 
 // ###TODO: I think the picker populates correctly, but I have no way to test - and if no reality models are available,
 // the button doesn't disappear until you click on it. Revisit when Alain has something useful for us.
@@ -51,27 +52,6 @@ class DebugTools extends ToolBarDropDown {
     this._element.style.display = "flex";
     this._element.style.cssFloat = "left";
     this._element.style.width = "440px";
-
-    const wantClipTools = true;
-    if (wantClipTools) {
-      this._element.appendChild(createToolButton({
-        className: "bim-icon-viewtop",
-        click: () => IModelApp.tools.run("ViewClip.ByPlane", ViewClipDecorationProvider.create()),
-        tooltip: "View Clip Create",
-      }));
-
-      this._element.appendChild(createToolButton({
-        className: "bim-icon-viewisoleft",
-        click: () => ViewClipDecorationProvider.create().toggleDecoration(IModelApp.viewManager.selectedView!),
-        tooltip: "Toggle View Clip Handles",
-      }));
-
-      this._element.appendChild(createToolButton({
-        className: "bim-icon-cancel",
-        click: () => IModelApp.tools.run("ViewClip.Clear", ViewClipDecorationProvider.create()),
-        tooltip: "View Clip Clear",
-      }));
-    }
 
     this._element.appendChild(createImageButton({
       src: "Warning_sign.svg",
@@ -190,11 +170,13 @@ export class Viewer {
 
     this.toolBar.addDropDown({
       className: "bim-icon-properties",
+      tooltip: "Debug info",
       createDropDown: async (container: HTMLElement) => Promise.resolve(new DebugPanel(this.viewport, container)),
     });
 
     this.toolBar.addItem(createToolButton({
       className: "bim-icon-briefcases",
+      tooltip: "Open iModel from disk",
       click: () => { this.selectIModel(); }, // tslint:disable-line:no-floating-promises
     }));
 
@@ -204,6 +186,7 @@ export class Viewer {
 
     this.toolBar.addDropDown({
       className: "bim-icon-model",
+      tooltip: "Models",
       createDropDown: async (container: HTMLElement) => {
         const picker = new ModelPicker(this.viewport, container);
         await picker.populate();
@@ -214,6 +197,7 @@ export class Viewer {
     if (wantRealityModels) {
       this.toolBar.addDropDown({
         className: "bim-icon-model",
+        tooltip: "Reality models",
         createDropDown: async (container: HTMLElement) => {
           const picker = new RealityModelPicker(this.viewport, container);
           await picker.populate();
@@ -224,6 +208,7 @@ export class Viewer {
 
     this.toolBar.addDropDown({
       className: "bim-icon-categories",
+      tooltip: "Categories",
       createDropDown: async (container: HTMLElement) => {
         const picker = new CategoryPicker(this.viewport, container);
         await picker.populate();
@@ -234,6 +219,7 @@ export class Viewer {
     this.toolBar.addItem(createImageButton({
       src: "zoom.svg",
       click: () => IModelApp.tools.run("Select"),
+      tooltip: "Element selection",
     }));
 
     this.toolBar.addDropDown({
@@ -248,16 +234,19 @@ export class Viewer {
     this.toolBar.addItem(createImageButton({
       src: "fit-to-view.svg",
       click: () => IModelApp.tools.run("View.Fit", this.viewport, true),
+      tooltip: "Fit view",
     }));
 
     this.toolBar.addItem(createImageButton({
       src: "window-area.svg",
       click: () => IModelApp.tools.run("View.WindowArea", this.viewport),
+      tooltip: "Window area",
     }));
 
     const walk = createImageButton({
       src: "walk.svg",
       click: () => IModelApp.tools.run("View.Walk", this.viewport),
+      tooltip: "Walk",
     });
     this._3dOnly.push(walk);
     this.toolBar.addItem(walk);
@@ -265,21 +254,25 @@ export class Viewer {
     this.toolBar.addItem(createImageButton({
       src: "rotate-left.svg",
       click: () => IModelApp.tools.run("View.Rotate", this.viewport),
+      tooltip: "Rotate",
     }));
 
     this.toolBar.addDropDown({
       className: "bim-icon-gyroscope",
       createDropDown: async (container: HTMLElement) => Promise.resolve(new StandardRotations(container, this.viewport)),
+      tooltip: "Standard rotations",
     });
 
     this.toolBar.addItem(createToolButton({
       className: "bim-icon-undo",
       click: () => IModelApp.tools.run("View.Undo", this.viewport),
+      tooltip: "View redo",
     }));
 
     this.toolBar.addItem(createToolButton({
       className: "bim-icon-redo",
       click: () => IModelApp.tools.run("View.Redo", this.viewport),
+      tooltip: "View undo",
     }));
 
     this.toolBar.addItem(createToolButton({
@@ -291,16 +284,25 @@ export class Viewer {
     this.toolBar.addDropDown({
       className: "bim-icon-animation",
       createDropDown: async (container: HTMLElement) => new AnimationPanel(this.viewport, container),
+      tooltip: "Animation / solar time",
     });
 
     this.toolBar.addDropDown({
       className: "bim-icon-isolate",
       createDropDown: async (container: HTMLElement) => new FeatureOverridesPanel(this.viewport, container),
+      tooltip: "Override feature symbology",
+    });
+
+    this.toolBar.addDropDown({
+      className: "bim-icon-viewtop",
+      tooltip: "Sectioning tools",
+      createDropDown: async (container: HTMLElement) => new SectionsPanel(this.viewport, container),
     });
 
     this.toolBar.addDropDown({
       className: "bim-icon-appicon",
       createDropDown: async (container: HTMLElement) => new DebugTools(container),
+      tooltip: "Debug tools",
     });
 
     const fileSelector = document.getElementById("browserFileSelector") as HTMLInputElement;
