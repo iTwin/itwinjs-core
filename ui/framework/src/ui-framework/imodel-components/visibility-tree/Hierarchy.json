@@ -235,31 +235,6 @@
     },
     {
       "ruleType": "Content",
-      "condition": "ContentDisplayType = \"SubjectModelsRequest\"",
-      "specifications": [
-        {
-          "specType": "ContentRelatedInstances",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementOwnsChildElements"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Subject",
-              "PhysicalPartition"
-            ]
-          },
-          "isRecursive": true,
-          "instanceFilter": "this.IsOfClass(\"PhysicalPartition\", \"BisCore\") ANDALSO this.HasRelatedInstance(\"BisCore:ModelModelsElement\", \"Backward\", \"BisCore:GeometricModel3d\")"
-        }
-      ]
-    },
-    {
-      "ruleType": "Content",
       "condition": "ContentDisplayType = \"AssemblyElementsRequest\"",
       "specifications": [
         {

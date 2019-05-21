@@ -265,13 +265,14 @@ export class VisibilityHandler implements IDisposable {
 
   private _props: VisibilityHandlerProps;
   private _onVisibilityChange: () => void;
-  private _subjectModelIdsCache = new Map<Id64String, Id64String[]>();
+  private _subjectModelIdsCache: SubjectModelIdsCache;
   private _elementDisplayCache = new Map<Id64String, VisibilityStatus | Promise<VisibilityStatus>>();
   private _elementCategoryAndModelLoader: ElementCategoryAndModelRequestor;
 
   constructor(props: VisibilityHandlerProps) {
     this._props = props;
     this._onVisibilityChange = props.onVisibilityChange;
+    this._subjectModelIdsCache = new SubjectModelIdsCache(this._props.viewport.iModel);
     this._elementCategoryAndModelLoader = new ElementCategoryAndModelRequestor(this._props.viewport.iModel);
     this._props.viewport.onViewedCategoriesPerModelChanged.addListener(this.onViewChanged);
     this._props.viewport.onViewedCategoriesChanged.addListener(this.onViewChanged);
@@ -481,16 +482,81 @@ export class VisibilityHandler implements IDisposable {
   }
 
   private async getSubjectModelIds(subjectId: Id64String): Promise<Id64String[]> {
-    if (!this._subjectModelIdsCache.has(subjectId)) {
-      const modelIdsProvider = new SubjectModelIdsProvider(this._props.viewport.iModel, subjectId);
-      this._subjectModelIdsCache.set(subjectId, await modelIdsProvider.getModelIds());
-    }
-    return this._subjectModelIdsCache.get(subjectId)!;
+    return this._subjectModelIdsCache.getSubjectModelIds(subjectId);
   }
 
   private async getAssemblyElementIds(assemblyId: Id64String): Promise<Id64String[]> {
     const provider = new AssemblyElementIdsProvider(this._props.viewport.iModel, assemblyId);
     return provider.getElementIds();
+  }
+}
+
+class SubjectModelIdsCache {
+  private _imodel: IModelConnection;
+  private _subjectsHierarchy: Map<Id64String, Id64String[]> | undefined;
+  private _subjectModels: Map<Id64String, Id64String[]> | undefined;
+  private _init: Promise<void> | undefined;
+
+  constructor(imodel: IModelConnection) {
+    this._imodel = imodel;
+  }
+
+  private async initSubjectsHierarchy() {
+    if (this._subjectsHierarchy)
+      return;
+
+    this._subjectsHierarchy = new Map();
+    const ecsql = `SELECT ECInstanceId, Parent.Id FROM bis.Subject`;
+    const result = this._imodel.query(ecsql, undefined, { size: 1000 });
+    for await (const row of result) {
+      let list = this._subjectsHierarchy.get(row[1]);
+      if (!list) {
+        list = [];
+        this._subjectsHierarchy.set(row[1], list);
+      }
+      list.push(row[0]);
+    }
+  }
+
+  private async initSubjectModels() {
+    if (this._subjectModels)
+      return;
+
+    this._subjectModels = new Map();
+    const ecsql = `SELECT p.ECInstanceId, p.Parent.Id FROM bis.InformationPartitionElement p JOIN bis.Model m ON m.ModeledElement.Id = p.ECInstanceId`;
+    const result = this._imodel.query(ecsql, undefined, { size: 1000 });
+    for await (const row of result) {
+      let list = this._subjectModels.get(row[1]);
+      if (!list) {
+        list = [];
+        this._subjectModels.set(row[1], list);
+      }
+      list.push(row[0]);
+    }
+  }
+
+  private async initCache() {
+    if (!this._init) {
+      this._init = Promise.all([this.initSubjectModels(), this.initSubjectsHierarchy()]).then(() => { });
+    }
+    return this._init;
+  }
+
+  private appendSubjectModelsRecursively(modelIds: Id64String[], subjectId: Id64String) {
+    const subjectModelIds = this._subjectModels!.get(subjectId);
+    if (subjectModelIds)
+      modelIds.push(...subjectModelIds);
+
+    const childSubjectIds = this._subjectsHierarchy!.get(subjectId);
+    if (childSubjectIds)
+      childSubjectIds.forEach((cs) => this.appendSubjectModelsRecursively(modelIds, cs));
+  }
+
+  public async getSubjectModelIds(subjectId: Id64String): Promise<Id64String[]> {
+    await this.initCache();
+    const modelIds = new Array<Id64String>();
+    this.appendSubjectModelsRecursively(modelIds, subjectId);
+    return modelIds;
   }
 }
 
@@ -510,15 +576,6 @@ class RulesetDrivenRecursiveIdsProvider extends ContentDataProvider {
   protected async getChildrenIds() {
     const content = await this.getContent();
     return content ? content.contentSet.map((item) => item.primaryKeys[0].id) : [];
-  }
-}
-
-class SubjectModelIdsProvider extends RulesetDrivenRecursiveIdsProvider {
-  constructor(imodel: IModelConnection, subjectId: Id64String) {
-    super(imodel, "SubjectModelsRequest", { className: "BisCore:Subject", id: subjectId });
-  }
-  public async getModelIds() {
-    return this.getChildrenIds();
   }
 }
 
@@ -581,11 +638,16 @@ interface CategoryAndModelId {
 class ElementCategoryAndModelRequestor extends DelayedRequestor<Id64String, CategoryAndModelId> {
   protected createResultIterator(elementIds: Id64String[]): AsyncIterableIterator<{ id: Id64String, modelId: Id64String, categoryId: Id64String }> {
     const q = `
-      SELECT e.ECInstanceId id, e.Model.Id modelId, printf('0x%x', COALESCE(ge3d.Category.Id, ge2d.Category.Id)) categoryId
-      FROM [bis].Element e
-      LEFT JOIN [bis].[GeometricElement3d] ge3d ON ge3d.ECInstanceId = e.ECInstanceId
-      LEFT JOIN [bis].[GeometricElement2d] ge2d ON ge2d.ECInstanceId = e.ECInstanceId
-      WHERE e.ECInstanceId IN (${new Array(elementIds.length).fill("?").join(",")})`;
+      SELECT * FROM (
+        SELECT e.ECInstanceId id, e.Model.Id modelId, printf('0x%x', ge3d.Category.Id) categoryId
+        FROM [bis].Element e
+        JOIN [bis].[GeometricElement3d] ge3d ON ge3d.ECInstanceId = e.ECInstanceId
+        UNION ALL
+        SELECT e.ECInstanceId id, e.Model.Id modelId, printf('0x%x', ge2d.Category.Id) categoryId
+        FROM [bis].Element e
+        JOIN [bis].[GeometricElement2d] ge2d ON ge2d.ECInstanceId = e.ECInstanceId
+      )
+      WHERE id IN (${new Array(elementIds.length).fill("?").join(",")})`;
     return this._imodel.query(q, elementIds);
   }
   public getCategoryAndModelId = async (elementId: Id64String) => this.getResult(elementId);
