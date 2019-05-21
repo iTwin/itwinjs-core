@@ -65,8 +65,7 @@ export const initialize = (backendTimeout: number = 0) => {
     requestTimeout: backendTimeout,
     rulesetDirectories: ["lib/assets/rulesets"],
     localeDirectories: ["lib/assets/locales"],
-    activeLocale: "en-PSEUDO",
-    requestTimeout: 10000,
+    activeLocale: "en-PSEUDO"
   };
   const frontendInitProps: PresentationFrontendProps = {
     activeLocale: "en-PSEUDO",
