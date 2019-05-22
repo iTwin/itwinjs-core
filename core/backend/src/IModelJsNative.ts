@@ -172,6 +172,7 @@ export declare namespace IModelJsNative {
     public queryNextAvailableFileProperty(props: string): number;
     public queryNextTxnId(txnId: TxnIdString): TxnIdString;
     public queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
+    public queryProjectGuid(): GuidString;
     public readFontMap(): string;
     public reinstateTxn(): IModelStatus;
     public removePendingChangeSet(changeSetId: string): DbResult;
@@ -180,6 +181,7 @@ export declare namespace IModelJsNative {
     public reverseTxns(numOperations: number): IModelStatus;
     public saveChanges(description?: string): DbResult;
     public saveFileProperty(props: string, strValue: string | undefined, blobVal: Uint8Array | undefined): number;
+    public saveProjectGuid(guid: GuidString): DbResult;
     public setAsMaster(guid?: GuidString): DbResult;
     public setBriefcaseId(idValue: number): DbResult;
     public setBriefcaseManagerOptimisticConcurrencyControlPolicy(conflictPolicy: BriefcaseManagerOnConflictPolicy): RepositoryStatus;

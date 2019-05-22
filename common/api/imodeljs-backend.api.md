@@ -2161,6 +2161,8 @@ export namespace IModelJsNative {
         // (undocumented)
         queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
         // (undocumented)
+        queryProjectGuid(): GuidString;
+        // (undocumented)
         readFontMap(): string;
         // (undocumented)
         reinstateTxn(): IModelStatus;
@@ -2176,6 +2178,8 @@ export namespace IModelJsNative {
         saveChanges(description?: string): DbResult;
         // (undocumented)
         saveFileProperty(props: string, strValue: string | undefined, blobVal: Uint8Array | undefined): number;
+        // (undocumented)
+        saveProjectGuid(guid: GuidString): DbResult;
         // (undocumented)
         setAsMaster(guid?: GuidString): DbResult;
         // (undocumented)
