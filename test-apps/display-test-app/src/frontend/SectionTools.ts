@@ -12,6 +12,14 @@ import { ToolBarDropDown } from "./ToolBar";
 import { createComboBox } from "./ComboBox";
 import { createButton } from "./Button";
 
+function setFocusToHome(): void {
+  const element = document.activeElement as HTMLElement;
+  if (element && element !== document.body) {
+    element.blur();
+    document.body.focus();
+  }
+}
+
 export class SectionsPanel extends ToolBarDropDown {
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
@@ -43,7 +51,7 @@ export class SectionsPanel extends ToolBarDropDown {
     div.style.textAlign = "center";
     createButton({
       value: "Define",
-      handler: () => IModelApp.tools.run(this._toolName, ViewClipDecorationProvider.create()),
+      handler: () => { IModelApp.tools.run(this._toolName, ViewClipDecorationProvider.create()); setFocusToHome(); },
       parent: div,
       inline: true,
       tooltip: "Define clip",

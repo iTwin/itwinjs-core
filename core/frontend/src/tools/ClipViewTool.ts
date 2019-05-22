@@ -481,8 +481,10 @@ export class ViewClipByShapeTool extends ViewClipTool {
 
     const hints = new AccuDrawHintBuilder();
     hints.setOrigin(this._points[this._points.length - 1]);
-    hints.setRotation(this._matrix!.inverse()!);
-    hints.setModeRectangular();
+    if (1 === this._points.length) {
+      hints.setRotation(this._matrix!.inverse()!);
+      hints.setModeRectangular();
+    }
     hints.setLockZ = true;
     hints.sendHints();
   }
