@@ -319,6 +319,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "fast-sass-loader",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "internal", "tools" ]
     },
