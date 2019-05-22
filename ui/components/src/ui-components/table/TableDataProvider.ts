@@ -68,11 +68,13 @@ export interface RowItem {
    */
   key: string;
   cells: CellItem[];
-
-  extendedData?: any;
-
   isDisabled?: boolean;
   colorOverrides?: ItemColorOverrides;
+  /**
+   * A key-value pairs data structure that can be used by data provider
+   * to store some custom data for this node item.
+   */
+  extendedData?: { [key: string]: any };
 }
 
 /** An interface table data change listeners

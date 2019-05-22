@@ -146,6 +146,7 @@ describe("FilteredTreeDataProvider", () => {
       const key = createRandomECInstanceNodeKey();
       const treeNode = createRandomTreeNodeItem(key);
 
+      parentProviderMock.setup((x) => x.getNodeKey(treeNode)).returns(() => key);
       const result = provider.getNodeKey(treeNode);
       expect(result).to.deep.equal(key);
     });

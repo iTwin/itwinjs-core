@@ -1902,8 +1902,9 @@ export interface RowItem {
     cells: CellItem[];
     // (undocumented)
     colorOverrides?: ItemColorOverrides;
-    // (undocumented)
-    extendedData?: any;
+    extendedData?: {
+        [key: string]: any;
+    };
     // (undocumented)
     isDisabled?: boolean;
     key: string;
@@ -2629,8 +2630,9 @@ export interface TreeNodeItem {
     checkBoxState?: CheckBoxState;
     // (undocumented)
     description?: string;
-    // (undocumented)
-    extendedData?: any;
+    extendedData?: {
+        [key: string]: any;
+    };
     // (undocumented)
     icon?: string;
     // (undocumented)

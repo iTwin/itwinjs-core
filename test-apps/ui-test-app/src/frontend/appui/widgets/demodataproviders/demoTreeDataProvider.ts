@@ -238,9 +238,9 @@ export const treeDragSourceBeginCallback = (args: DragSourceArguments<DemoTreeDr
     const { id, label, description, icon, hasChildren, parentId, extendedData } = args.dataObject;
     args.dataObject = {
       id, label, description, icon, hasChildren, parentId,
-      type: extendedData.type,
+      type: extendedData!.type,
       dataProvider: demoMutableTreeDataProvider,
-      children: extendedData.children,
+      children: extendedData!.children,
     } as DemoTreeDragDropType;
   }
   return args;

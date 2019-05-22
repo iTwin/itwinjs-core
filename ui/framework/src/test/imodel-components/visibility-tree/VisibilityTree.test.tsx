@@ -52,7 +52,7 @@ describe("VisibilityTree", () => {
         rulesetId: "",
         onTreeNodeChanged: new BeEvent<TreeDataChangesListener>(),
         getFilteredNodePaths: async () => [],
-        getNodeKey: (n: TreeNodeItem) => n.extendedData.key,
+        getNodeKey: (node: TreeNodeItem) => (node as any).__key,
         getNodesCount: async () => 0,
         getNodes: async () => [],
       };
@@ -70,8 +70,7 @@ describe("VisibilityTree", () => {
 
     const setupDataProvider = (nodes: TreeNodeItem[]) => {
       dataProvider.getNodesCount = async () => nodes.length;
-      dataProvider.getNodes = async () => nodes.map((n) => ({ extendedData: { key: createKey("element", n.id) }, ...n }));
-      dataProvider.getNodeKey = (node: TreeNodeItem) => node.extendedData.key;
+      dataProvider.getNodes = async () => nodes.map((n) => ({ __key: createKey("element", n.id), ...n }));
     };
 
     const setupDataProviderForEachNodeType = () => {
@@ -84,28 +83,28 @@ describe("VisibilityTree", () => {
     };
 
     const createSubjectNode = () => ({
+      __key: createKey("subject", "subject_id"),
       id: "subject",
       label: "subject",
-      extendedData: { key: createKey("subject", "subject_id") },
     });
 
     const createModelNode = () => ({
+      __key: createKey("model", "model_id"),
       id: "model",
       label: "model",
-      extendedData: { key: createKey("model", "model_id") },
     });
 
     const createCategoryNode = () => ({
+      __key: createKey("category", "category_id"),
       id: "category",
       parentId: "model",
       label: "category",
-      extendedData: { key: createKey("category", "category_id") },
     });
 
     const createElementNode = () => ({
+      __key: createKey("element", "element_id"),
       id: "element",
       label: "element",
-      extendedData: { key: createKey("element", "element_id") },
     });
 
     const createKey = (type: "subject" | "model" | "category" | "element", id: Id64String): ECInstanceNodeKey => {
@@ -350,7 +349,7 @@ describe("VisibilityTree", () => {
 
           it("return false when all models are not displayed", async () => {
             const node = createSubjectNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
 
             mockSubjectModelIds({
               imodelMock,
@@ -374,7 +373,7 @@ describe("VisibilityTree", () => {
 
           it("return true when at least one model is displayed", async () => {
             const node = createSubjectNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
 
             mockSubjectModelIds({
               imodelMock,
@@ -402,7 +401,7 @@ describe("VisibilityTree", () => {
 
           it("return true when displayed", async () => {
             const node = createModelNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
@@ -418,7 +417,7 @@ describe("VisibilityTree", () => {
 
           it("returns false when not displayed", async () => {
             const node = createModelNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
@@ -438,7 +437,7 @@ describe("VisibilityTree", () => {
 
           it("return disabled when model not displayed", async () => {
             const parentModelNode = createModelNode();
-            const parentModelKey = parentModelNode.extendedData.key.instanceKey;
+            const parentModelKey = parentModelNode.__key.instanceKey;
             const categoryNode = createCategoryNode();
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
@@ -457,9 +456,9 @@ describe("VisibilityTree", () => {
 
           it("return true when model displayed, category not displayed but per-model override says it's displayed", async () => {
             const parentModelNode = createModelNode();
-            const parentModelKey = parentModelNode.extendedData.key.instanceKey;
+            const parentModelKey = parentModelNode.__key.instanceKey;
             const categoryNode = createCategoryNode();
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => false);
@@ -481,9 +480,9 @@ describe("VisibilityTree", () => {
 
           it("return true when model displayed, category displayed and there're no per-model overrides", async () => {
             const parentModelNode = createModelNode();
-            const parentModelKey = parentModelNode.extendedData.key.instanceKey;
+            const parentModelKey = parentModelNode.__key.instanceKey;
             const categoryNode = createCategoryNode();
-            const key = categoryNode.extendedData.key.instanceKey;
+            const key = categoryNode.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.viewsCategory(key.id)).returns(() => true);
@@ -502,9 +501,9 @@ describe("VisibilityTree", () => {
 
           it("return false when model displayed, category displayed but per-model override says it's not displayed", async () => {
             const parentModelNode = createModelNode();
-            const parentModelKey = parentModelNode.extendedData.key.instanceKey;
+            const parentModelKey = parentModelNode.__key.instanceKey;
             const categoryNode = createCategoryNode();
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => true);
@@ -526,9 +525,9 @@ describe("VisibilityTree", () => {
 
           it("return false when model displayed, category not displayed and there're no per-model overrides", async () => {
             const parentModelNode = createModelNode();
-            const parentModelKey = parentModelNode.extendedData.key.instanceKey;
+            const parentModelKey = parentModelNode.__key.instanceKey;
             const categoryNode = createCategoryNode();
-            const key = categoryNode.extendedData.key.instanceKey;
+            const key = categoryNode.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.viewsCategory(key.id)).returns(() => false);
@@ -547,7 +546,7 @@ describe("VisibilityTree", () => {
 
           it("return false when category node is root", async () => {
             const categoryNode = { ...createCategoryNode(), parentId: undefined };
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => false);
@@ -564,7 +563,7 @@ describe("VisibilityTree", () => {
 
           it("return false when category has no parent model and category is not displayed", async () => {
             const categoryNode = createCategoryNode();
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => false);
@@ -581,17 +580,15 @@ describe("VisibilityTree", () => {
 
           it("return false when category's parent node is not an instance node and category is not displayed", async () => {
             const categoryParentNode = {
+              __key: {
+                type: "custom",
+                pathFromRoot: [],
+              },
               id: "parent",
               label: "parent",
-              extendedData: {
-                key: {
-                  type: "custom",
-                  pathFromRoot: [],
-                },
-              },
             };
             const categoryNode = createCategoryNode();
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => false);
@@ -612,7 +609,7 @@ describe("VisibilityTree", () => {
 
           it("returns disabled when model not displayed", async () => {
             const node = createElementNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
 
             mockElementCategoryAndModelIds({
               imodelMock,
@@ -633,7 +630,7 @@ describe("VisibilityTree", () => {
 
           it("returns false when model displayed, category displayed, but element is in never displayed list", async () => {
             const node = createElementNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
 
             mockElementCategoryAndModelIds({
               imodelMock,
@@ -658,7 +655,7 @@ describe("VisibilityTree", () => {
 
           it("returns true when model displayed and element is in always displayed list", async () => {
             const node = createElementNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
 
             mockElementCategoryAndModelIds({
               imodelMock,
@@ -683,7 +680,7 @@ describe("VisibilityTree", () => {
 
           it("returns true when model displayed, category displayed and element is in neither 'never' nor 'always' displayed", async () => {
             const node = createElementNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
 
             mockElementCategoryAndModelIds({
               imodelMock,
@@ -707,7 +704,7 @@ describe("VisibilityTree", () => {
 
           it("returns false when model displayed, category not displayed and element is in neither 'never' nor 'always' displayed", async () => {
             const node = createElementNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
 
             mockElementCategoryAndModelIds({
               imodelMock,
@@ -814,7 +811,7 @@ describe("VisibilityTree", () => {
 
           it("makes model visible", async () => {
             const node = createModelNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<SpatialViewState>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
@@ -830,7 +827,7 @@ describe("VisibilityTree", () => {
 
           it("makes model hidden", async () => {
             const node = createModelNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<SpatialViewState>();
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
@@ -850,9 +847,9 @@ describe("VisibilityTree", () => {
 
           it("makes category visible through per-model override when it's not visible through category selector", async () => {
             const parentModelNode = createModelNode();
-            const parentModelKey = parentModelNode.extendedData.key.instanceKey;
+            const parentModelKey = parentModelNode.__key.instanceKey;
             const categoryNode = createCategoryNode();
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => false);
@@ -871,9 +868,9 @@ describe("VisibilityTree", () => {
 
           it("makes category hidden through override when it's visible through category selector", async () => {
             const parentModelNode = createModelNode();
-            const parentModelKey = parentModelNode.extendedData.key.instanceKey;
+            const parentModelKey = parentModelNode.__key.instanceKey;
             const categoryNode = createCategoryNode();
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => true);
@@ -892,9 +889,9 @@ describe("VisibilityTree", () => {
 
           it("removes category override when making visible and it's visible through category selector", async () => {
             const parentModelNode = createModelNode();
-            const parentModelKey = parentModelNode.extendedData.key.instanceKey;
+            const parentModelKey = parentModelNode.__key.instanceKey;
             const categoryNode = createCategoryNode();
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => true);
@@ -913,9 +910,9 @@ describe("VisibilityTree", () => {
 
           it("removes category override when making hidden and it's hidden through category selector", async () => {
             const parentModelNode = createModelNode();
-            const parentModelKey = parentModelNode.extendedData.key.instanceKey;
+            const parentModelKey = parentModelNode.__key.instanceKey;
             const categoryNode = createCategoryNode();
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => false);
@@ -934,7 +931,7 @@ describe("VisibilityTree", () => {
 
           it("makes category visible in selector when category has no parent model", async () => {
             const categoryNode = createCategoryNode();
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const vpMock = mockViewport();
             vpMock.setup((x) => x.changeCategoryDisplay([categoryKey.id], true)).verifiable();
@@ -949,7 +946,7 @@ describe("VisibilityTree", () => {
 
           it("makes category hidden in selector when category has no parent model", async () => {
             const categoryNode = createCategoryNode();
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const vpMock = mockViewport();
             vpMock.setup((x) => x.changeCategoryDisplay([categoryKey.id], false)).verifiable();
@@ -964,17 +961,15 @@ describe("VisibilityTree", () => {
 
           it("makes category hidden in selector when category's parent node is not an instance node", async () => {
             const categoryParentNode = {
+              __key: {
+                type: "custom",
+                pathFromRoot: [],
+              },
               id: "parent",
               label: "parent",
-              extendedData: {
-                key: {
-                  type: "custom",
-                  pathFromRoot: [],
-                },
-              },
             };
             const categoryNode = createCategoryNode();
-            const categoryKey = categoryNode.extendedData.key.instanceKey;
+            const categoryKey = categoryNode.__key.instanceKey;
 
             const vpMock = mockViewport();
             vpMock.setup((x) => x.changeCategoryDisplay([categoryKey.id], false)).verifiable();
@@ -993,7 +988,7 @@ describe("VisibilityTree", () => {
 
           it("makes element visible by only removing from never displayed list when element's category is displayed", async () => {
             const node = createElementNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
             const assemblyChildrenIds = ["0x1", "0x2"];
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
@@ -1024,7 +1019,7 @@ describe("VisibilityTree", () => {
 
           it("makes element visible by removing from never displayed list and adding to always displayed list when category is not displayed", async () => {
             const node = createElementNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
             const assemblyChildrenIds = ["0x1", "0x2"];
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
@@ -1059,7 +1054,7 @@ describe("VisibilityTree", () => {
 
           it("makes element hidden by only removing from always displayed list when element's category is not displayed", async () => {
             const node = createElementNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
             const assemblyChildrenIds = ["0x1", "0x2"];
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
@@ -1090,7 +1085,7 @@ describe("VisibilityTree", () => {
 
           it("makes element hidden by removing from always displayed list and adding to never displayed list when category is displayed", async () => {
             const node = createElementNode();
-            const key = node.extendedData.key.instanceKey;
+            const key = node.__key.instanceKey;
             const assemblyChildrenIds = ["0x1", "0x2"];
 
             const viewStateMock = moq.Mock.ofType<ViewState3d>();
