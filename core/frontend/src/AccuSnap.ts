@@ -14,7 +14,7 @@ import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, Hit
 import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Decorator } from "./ViewManager";
-import { SnapRequestProps, DecorationGeometryProps, ColorDef } from "@bentley/imodeljs-common";
+import { SnapRequestProps, DecorationGeometryProps } from "@bentley/imodeljs-common";
 import { CanvasDecoration } from "./rendering";
 
 /** Virtual cursor for using AccuSnap with touch input.
@@ -25,20 +25,14 @@ export class TouchCursor implements CanvasDecoration {
   protected _offsetPosition = new Point3d();
   protected _size: number;
   protected _yOffset: number;
-  protected _outlineColor: string;
-  protected _fillColor: string;
+  protected _isSelected = false;
   protected _isDragging = false;
   protected _inTouchTap = false;
 
   protected constructor(vp: ScreenViewport) {
     this._size = vp.pixelsFromInches(0.3);
     this._yOffset = this._size * 1.75;
-    this._outlineColor = (ColorDef.black === vp.getContrastToBackgroundColor() ? "black" : "white");
-    this._fillColor = this.getFillColor(false);
   }
-
-  protected getFillColor(isSelected: boolean): string { return isSelected ? "rgba(35,187,252,.5)" : "rgba(128,128,128,.25)"; }
-  protected isSelected(pt: XAndY): boolean { return this.position.distance(Point3d.create(pt.x, pt.y)) < this._size; }
 
   protected setPosition(vp: Viewport, worldLocation: Point3d): boolean {
     const pt4 = vp.worldToView4d(worldLocation);
@@ -60,28 +54,15 @@ export class TouchCursor implements CanvasDecoration {
     return true;
   }
 
-  public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "rgba(0,0,0,.5)";
-    ctx.fillStyle = "white";
-    ctx.strokeRect(-2, -(this._yOffset + 2), 5, 5);
-    ctx.fillRect(-1, -(this._yOffset + 1), 3, 3);
-
+  protected drawHandle(ctx: CanvasRenderingContext2D, filled: boolean): void {
     ctx.beginPath();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = this._outlineColor;
-    ctx.fillStyle = this._fillColor;
-    ctx.shadowColor = this._outlineColor;
-    ctx.shadowBlur = 15;
     ctx.moveTo(-this._size, 0);
     ctx.bezierCurveTo(-this._size, -this._size * 0.85, -this._size * 0.6, -this._yOffset * 0.6, 0, -this._yOffset * 0.8);
     ctx.bezierCurveTo(this._size * 0.6, -this._yOffset * 0.6, this._size, -this._size * 0.85, this._size, 0);
     ctx.arc(0, 0, this._size, 0, Math.PI);
-    ctx.fill();
+    if (filled) ctx.fill();
     ctx.stroke();
 
-    ctx.shadowColor = "black";
-    ctx.shadowBlur = 5;
     ctx.beginPath();
     ctx.arc(0, 0, this._size * 0.75, 0, 2 * Math.PI);
     ctx.stroke();
@@ -94,6 +75,27 @@ export class TouchCursor implements CanvasDecoration {
     ctx.stroke();
   }
 
+  public drawDecoration(ctx: CanvasRenderingContext2D): void {
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(0,0,0,.75)";
+    ctx.fillStyle = "white";
+    ctx.strokeRect(-2, -(this._yOffset + 2), 5, 5);
+    ctx.fillRect(-1, -(this._yOffset + 1), 3, 3);
+
+    ctx.lineWidth = 3.5;
+    ctx.lineCap = "round";
+    ctx.fillStyle = this._isSelected ? "rgba(35,187,252,.25)" : "rgba(255,215,0,.25)";
+    ctx.shadowColor = "black";
+    ctx.shadowBlur = 10;
+    this.drawHandle(ctx, true);
+
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = this._isSelected ? "rgba(35,187,252,.75)" : "rgba(255,215,0,.75)";
+    ctx.shadowBlur = 0;
+    this.drawHandle(ctx, false);
+  }
+
+  protected isSelected(pt: XAndY): boolean { return this.position.distance(Point3d.create(pt.x, pt.y)) < this._size; }
   public isButtonHandled(ev: BeButtonEvent): boolean { return (BeButton.Data === ev.button && InputSource.Touch === ev.inputSource && !this._inTouchTap); }
 
   public doTouchMove(ev: BeTouchEvent): boolean {
@@ -113,14 +115,13 @@ export class TouchCursor implements CanvasDecoration {
   }
 
   public doTouchStart(ev: BeTouchEvent): void {
-    this._fillColor = this.getFillColor(ev.isSingleTouch && this.isSelected(ev.viewPoint));
+    this._isSelected = ev.isSingleTouch && this.isSelected(ev.viewPoint);
     if (undefined !== ev.viewport)
       ev.viewport.invalidateDecorations();
   }
 
   public doTouchEnd(ev: BeTouchEvent): void {
-    this._isDragging = false;
-    this._fillColor = this.getFillColor(false);
+    this._isSelected = this._isDragging = false;
     if (undefined !== ev.viewport)
       ev.viewport.invalidateDecorations();
   }

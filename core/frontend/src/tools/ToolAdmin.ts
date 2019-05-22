@@ -795,6 +795,9 @@ export class ToolAdmin {
 
         if (undefined !== touchEv && numTouches > 0 && numTaps > 0) {
           touchEv.tapCount = numTaps;
+          const overlayHit = this.pickCanvasDecoration(touchEv);
+          if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(touchEv))
+            return;
           if (await IModelApp.accuSnap.onTouchTap(touchEv))
             return;
           if ((undefined !== tool && EventHandled.Yes === await tool.onTouchTap(touchEv)) || EventHandled.Yes === await this.idleTool.onTouchTap(touchEv))

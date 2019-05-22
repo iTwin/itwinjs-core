@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Improve touch cursor visibility. Fix tap on canvas decoration when touch cursor is active.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

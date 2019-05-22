@@ -6990,9 +6990,7 @@ export class TouchCursor implements CanvasDecoration {
     // (undocumented)
     drawDecoration(ctx: CanvasRenderingContext2D): void;
     // (undocumented)
-    protected _fillColor: string;
-    // (undocumented)
-    protected getFillColor(isSelected: boolean): string;
+    protected drawHandle(ctx: CanvasRenderingContext2D, filled: boolean): void;
     // (undocumented)
     protected _inTouchTap: boolean;
     // (undocumented)
@@ -7002,9 +7000,9 @@ export class TouchCursor implements CanvasDecoration {
     // (undocumented)
     protected isSelected(pt: XAndY): boolean;
     // (undocumented)
-    protected _offsetPosition: Point3d;
+    protected _isSelected: boolean;
     // (undocumented)
-    protected _outlineColor: string;
+    protected _offsetPosition: Point3d;
     // (undocumented)
     position: Point3d;
     // (undocumented)
