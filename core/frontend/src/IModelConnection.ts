@@ -410,7 +410,10 @@ export class IModelConnection extends IModel {
     } while (pageNo >= 0);
   }
 
-  /** Query for a set of element ids that satisfy the supplied query params  */
+  /** Query for a set of element ids that satisfy the supplied query params
+   * @param params The query parameters. The `limit` and `offset` members should be used to page results.
+   * @throws [IModelError]($common) If the generated statement is invalid or would return too many rows.
+   */
   public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return IModelReadRpcInterface.getClient().queryEntityIds(this.iModelToken, params); }
 
   /** Update the project extents of this iModel.
@@ -617,7 +620,10 @@ export namespace IModelConnection {
       return IModelReadRpcInterface.getClient().queryModelRanges(this._iModel.iModelToken, Id64.toIdSet(modelIds));
     }
 
-    /** Query for a set of ModelProps of the specified ModelQueryParams. */
+    /** Query for a set of ModelProps of the specified ModelQueryParams.
+     * @param queryParams The query parameters. The `limit` and `offset` members should be used to page results.
+     * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
+     */
     public async queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
       const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
       params.from = queryParams.from || ModelState.classFullName; // use "BisCore:Model" as default class name
@@ -631,6 +637,17 @@ export namespace IModelConnection {
         params.where += "IsTemplate=FALSE ";
       }
       return IModelReadRpcInterface.getClient().queryModelProps(this._iModel.iModelToken, params);
+    }
+
+    /** Asynchronously stream ModelProps using the specified ModelQueryParams.
+     * @alpha This method will replace IModelConnection.Models.queryProps as soon as auto-paging support is added
+     */
+    public async * query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps> {
+      // NOTE: this implementation has the desired API signature, but its implementation must be improved to actually page results
+      const modelPropsArray: ModelProps[] = await this.queryProps(queryParams);
+      for (const modelProps of modelPropsArray) {
+        yield modelProps;
+      }
     }
 
     /** Code to run when the IModelConnection has closed. */
@@ -657,7 +674,10 @@ export namespace IModelConnection {
       return IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
     }
 
-    /** Get an array  of [[ElementProps]] that satisfy a query */
+    /** Get an array  of [[ElementProps]] that satisfy a query
+     * @param params The query parameters. The `limit` and `offset` members should be used to page results.
+     * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
+     */
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
       return IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
     }
@@ -720,7 +740,8 @@ export namespace IModelConnection {
     constructor(private _iModel: IModelConnection) { }
 
     /** Query for an array of ViewDefinitionProps
-     * @param queryParams Query parameters specifying the views to return
+     * @param queryParams Query parameters specifying the views to return. The `limit` and `offset` members should be used to page results.
+     * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
     public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
       const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy
@@ -743,7 +764,8 @@ export namespace IModelConnection {
      * ```ts
      * [[include:IModelConnection.Views.getViewList]]
      * ```
-     * @param queryParams The parameters for the views to find.
+     * @param queryParams The parameters for the views to find. The `limit` and `offset` members should be used to page results.
+     * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
     public async getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]> {
       const views: ViewSpec[] = [];

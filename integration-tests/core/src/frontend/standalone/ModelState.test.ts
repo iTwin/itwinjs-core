@@ -2,11 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect, assert } from "chai";
-import * as path from "path";
-import { MockRender, ModelSelectorState, IModelConnection, DrawingModelState, SheetModelState, SpatialModelState, GeometricModelState } from "@bentley/imodeljs-frontend";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Code, ModelSelectorProps } from "@bentley/imodeljs-common";
+import { Code, IModel, ModelSelectorProps } from "@bentley/imodeljs-common";
+import { DrawingModelState, GeometricModelState, IModelConnection, MockRender, ModelSelectorState, SheetModelState, SpatialModelState } from "@bentley/imodeljs-frontend";
+import { assert, expect } from "chai";
+import * as path from "path";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
 
@@ -77,6 +77,40 @@ describe("ModelState", () => {
 
     const modelProps = await imodel.models.queryProps({ from: SpatialModelState.classFullName });
     assert.isAtLeast(modelProps.length, 2);
+    // check modelProps[0] against expected values
+    assert.equal(modelProps[0].classFullName, "BisCore:PhysicalModel");
+    assert.equal(modelProps[0].id, "0x11");
+    assert.equal(modelProps[0].modeledElement.id, "0x11");
+    assert.equal(modelProps[0].modeledElement.relClassName, "BisCore:ModelModelsElement");
+    assert.equal(modelProps[0].name, "DefaultModel");
+    assert.equal(modelProps[0].parentModel, IModel.repositoryModelId);
+    assert.equal(modelProps[0].jsonProperties.formatter.fmtFlags.angMode, 1);
+    assert.isNotTrue(modelProps[0].isPrivate);
+    assert.isNotTrue(modelProps[0].isTemplate);
+    // check modelProps[1] against expected values
+    assert.equal(modelProps[1].classFullName, "BisCore:PhysicalModel");
+    assert.equal(modelProps[1].id, "0x1c");
+    assert.equal(modelProps[1].modeledElement.id, "0x1c");
+    assert.equal(modelProps[1].modeledElement.relClassName, "BisCore:ModelModelsElement");
+    assert.equal(modelProps[1].name, "Physical");
+    assert.equal(modelProps[1].parentModel, IModel.repositoryModelId);
+    assert.equal(modelProps[1].jsonProperties.formatter.fmtFlags.angMode, 1);
+    assert.isNotTrue(modelProps[1].isPrivate);
+    assert.isNotTrue(modelProps[1].isTemplate);
+
+    let propsCount = 0;
+    for await (const props of imodel.models.query({ from: "BisCore:DictionaryModel", wantPrivate: true, wantTemplate: true, limit: 1 })) {
+      propsCount++;
+      assert.equal(props.classFullName, "BisCore:DictionaryModel");
+      assert.equal(props.id, "0x10");
+      assert.equal(props.modeledElement.id, "0x10");
+      assert.equal(props.modeledElement.relClassName, "BisCore:ModelModelsElement");
+      assert.equal(props.name, "BisCore.DictionaryModel");
+      assert.equal(props.parentModel, IModel.repositoryModelId);
+      assert.isTrue(props.isPrivate);
+      assert.isNotTrue(props.isTemplate);
+    }
+    assert.equal(propsCount, 1);
 
     await imodel2.models.load(["0x28", "0x1c"]);
     assert.equal(imodel2.models.loaded.size, 2);

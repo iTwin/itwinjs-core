@@ -3174,6 +3174,8 @@ export namespace IModelConnection {
         load(modelIds: Id64Arg): Promise<void>;
         loaded: Map<string, ModelState>;
         onIModelConnectionClose(): void;
+        // @alpha
+        query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps>;
         queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]>;
         queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]>;
         readonly repositoryModelId: string;
