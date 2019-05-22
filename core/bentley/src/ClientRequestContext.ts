@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
-import { Guid } from "./Id";
+import { Guid, GuidString } from "./Id";
 
 /** Provides generic context for a server application to get details of a particular
  * request that originated at the client. This context is used to pass information for various
@@ -18,7 +18,7 @@ import { Guid } from "./Id";
 export class ClientRequestContext {
 
   /** Used for logging to correlate all service requests that originated from this client request */
-  public readonly activityId: string;
+  public readonly activityId: GuidString;
 
   /** Used for logging and usage tracking to identify the application that created this client request */
   public readonly applicationId: string;
@@ -26,11 +26,11 @@ export class ClientRequestContext {
   /** Used for logging and usage tracking to identify the application version that created this client request */
   public readonly applicationVersion: string;
 
-  /** Used for logging to to identify the session that created this client request */
-  public readonly sessionId: string;
+  /** Used for logging to identify the session that created this client request */
+  public readonly sessionId: GuidString;
 
   /** Create a new ClientRequestContext */
-  public constructor(activityId: string = Guid.createValue(), applicationId: string = "", applicationVersion: string = "", sessionId: string = "") {
+  public constructor(activityId: GuidString = Guid.createValue(), applicationId: string = "", applicationVersion: string = "", sessionId: GuidString = Guid.empty) {
     this.activityId = activityId;
     this.applicationId = applicationId;
     this.applicationVersion = applicationVersion;

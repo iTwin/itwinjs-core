@@ -5,7 +5,7 @@
 /** @module Utils */
 
 import { AccessToken } from "./Token";
-import { Guid, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { Guid, ClientRequestContext, GuidString } from "@bentley/bentleyjs-core";
 
 /** Provides generic context for a server application to get details of a particular request that originated at the client.
  * This context includes an [[AccessToken]] that carries authorization information. For services that do not require authorization
@@ -19,7 +19,7 @@ export class AuthorizedClientRequestContext extends ClientRequestContext {
   public accessToken: AccessToken;
 
   /** Constructor */
-  public constructor(accessToken: AccessToken, activityId: string = Guid.createValue(), applicationId: string = "", applicationVersion: string = "", sessionId: string = "") {
+  public constructor(accessToken: AccessToken, activityId: GuidString = Guid.createValue(), applicationId: string = "", applicationVersion: string = "", sessionId: GuidString = Guid.empty) {
     super(activityId, applicationId, applicationVersion, sessionId);
     this.accessToken = accessToken;
   }
