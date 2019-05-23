@@ -591,8 +591,9 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       result = BezierCurve3d.createOrder(order);
     const bezier = result as BezierCurve3d;
     bezier.loadSpanPoles(this._bcurve.packedData, spanIndex);
-    bezier.saturateInPlace(this._bcurve.knots, spanIndex);
-    return result;
+    if (bezier.saturateInPlace(this._bcurve.knots, spanIndex))
+      return result;
+    return undefined;
   }
   /**
    * Return a CurvePrimitive (which is a BezierCurve3dH) for a specified span of this curve.
@@ -608,8 +609,9 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       result = BezierCurve3dH.createOrder(order);
     const bezier = result as BezierCurve3dH;
     bezier.loadSpan3dPolesWithWeight(this._bcurve.packedData, spanIndex, 1.0);
-    bezier.saturateInPlace(this._bcurve.knots, spanIndex);
-    return bezier;
+    if (bezier.saturateInPlace(this._bcurve.knots, spanIndex))
+      return bezier;
+    return undefined;
   }
 
   /**
