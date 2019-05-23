@@ -1765,6 +1765,7 @@ export interface PropertyGridProps extends CommonProps {
     isPropertyEditingEnabled?: boolean;
     isPropertyHoverEnabled?: boolean;
     isPropertySelectionEnabled?: boolean;
+    isPropertySelectionOnRightClickEnabled?: boolean;
     onPropertyContextMenu?: (args: PropertyGridContextMenuArgs) => void;
     // @beta
     onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
@@ -1971,6 +1972,7 @@ export interface SharedRendererProps {
     onClick?: (property: PropertyRecord, key?: string) => void;
     onColumnRatioChanged?: (ratio: number) => void;
     onContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
+    onRightClick?: (property: PropertyRecord, key?: string) => void;
     orientation: Orientation;
     propertyRecord: PropertyRecord;
     uniqueKey?: string;

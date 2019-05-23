@@ -191,4 +191,17 @@ describe("PropertyView", () => {
     expect(callback).to.be.calledOnceWith(propertyRecord);
   });
 
+  it("calls onRightClick callback on property right click", () => {
+    const callback = sinon.spy();
+    const propertyRenderer = mount(
+      <PropertyView
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        onRightClick={callback}
+        labelElement={"label"}
+      />);
+    propertyRenderer.find(".components-property-record--horizontal").first().simulate("contextMenu");
+    expect(callback).to.be.calledOnceWith(propertyRecord);
+  });
+
 });
