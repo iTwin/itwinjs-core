@@ -250,6 +250,7 @@ export class IModelTestUtils {
   public static startBackend() {
     IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
     const config = new IModelHostConfiguration();
+    config.concurrentQueryManagerConfig.concurrent = 2; // for test restrict this to two threads. Making closing connection faster
     config.useTileContentThreadPool = true;
     IModelHost.startup(config);
   }

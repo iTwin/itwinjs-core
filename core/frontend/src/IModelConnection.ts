@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { assert, BeEvent, BentleyStatus, DbResult, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, BentleyStatus, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range3dProps, XYAndZ } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, ImageSourceFormat, IModel, IModelError,
-  IModelNotFoundResponse, IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface, kPagingDefaultOptions,
-  ModelProps, ModelQueryParams, PageOptions, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
-  SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
+  IModelNotFoundResponse, IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface,
+  ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
+  SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, QueryResponse, QueryPriority, QueryQuota, QueryLimit, QueryResponseStatus,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { GeoServices } from "./GeoServices";
@@ -335,8 +335,10 @@ export class IModelConnection extends IModel {
    * @throws [IModelError]($common) If the statement is invalid
    */
   public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
-    Logger.logTrace(loggerCategory, "IModelConnection.queryRowCount", () => ({ ...this.iModelToken, ecsql, bindings }));
-    return IModelReadRpcInterface.getClient().queryRowCount(this.iModelToken, ecsql, bindings);
+    for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
+      return row.nRows;
+    }
+    throw new IModelError(QueryResponseStatus.Error, "Fail to compute row count");
   }
 
   /** Execute a query against this ECDb
@@ -358,9 +360,9 @@ export class IModelConnection extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If the statement is invalid
    */
-  public async queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
-    Logger.logTrace(loggerCategory, "IModelConnection.queryPage", () => ({ ...this.iModelToken, ecsql, options, bindings }));
-    return IModelReadRpcInterface.getClient().queryPage(this.iModelToken, ecsql, bindings, options);
+  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
+    Logger.logTrace(loggerCategory, "IModelConnection.queryRows", () => ({ ...this.iModelToken, ecsql, bindings, limit, quota, priority }));
+    return IModelReadRpcInterface.getClient().queryRows(this.iModelToken, ecsql, bindings, limit, quota, priority);
   }
 
   /** Execute a pageable query.
@@ -382,32 +384,28 @@ export class IModelConnection extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If the statement is invalid
    */
-  public async * query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any> {
-    if (!options) {
-      options = kPagingDefaultOptions;
-    }
-
-    let pageNo = options.start || kPagingDefaultOptions.start!;
-    const pageSize = options.size || kPagingDefaultOptions.size!;
-
-    // verify if correct options was provided.
-    if (pageNo < 0)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
-
-    if (pageSize < 0)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
-
+  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
+    let result: QueryResponse;
+    let offset: number = 0;
+    let rowsToGet = limitRows ? limitRows : -1;
     do {
-      const page = await this.queryPage(ecsql, bindings, { start: pageNo, size: pageSize });
-      if (page.length > 0) {
-        for (const row of page) {
-          yield row;
-        }
-        pageNo = pageNo + 1;
-      } else {
-        pageNo = -1;
+      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
+      while (result.status === QueryResponseStatus.Timeout) {
+        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
       }
-    } while (pageNo >= 0);
+
+      if (result.status === QueryResponseStatus.Error)
+        throw new IModelError(QueryResponseStatus.Error, "Fail to execute ECSQL");
+
+      if (rowsToGet > 0) {
+        rowsToGet -= result.rows.length;
+      }
+      offset += result.rows.length;
+
+      for (const row of result.rows)
+        yield row;
+
+    } while (result.status !== QueryResponseStatus.Done);
   }
 
   /** Query for a set of element ids that satisfy the supplied query params  */

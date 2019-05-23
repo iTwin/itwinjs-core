@@ -507,7 +507,7 @@ class SubjectModelIdsCache {
 
     this._subjectsHierarchy = new Map();
     const ecsql = `SELECT ECInstanceId, Parent.Id FROM bis.Subject`;
-    const result = this._imodel.query(ecsql, undefined, { size: 1000 });
+    const result = this._imodel.query(ecsql, undefined, 1000);
     for await (const row of result) {
       let list = this._subjectsHierarchy.get(row[1]);
       if (!list) {
@@ -524,7 +524,7 @@ class SubjectModelIdsCache {
 
     this._subjectModels = new Map();
     const ecsql = `SELECT p.ECInstanceId, p.Parent.Id FROM bis.InformationPartitionElement p JOIN bis.Model m ON m.ModeledElement.Id = p.ECInstanceId`;
-    const result = this._imodel.query(ecsql, undefined, { size: 1000 });
+    const result = this._imodel.query(ecsql, undefined, 1000);
     for await (const row of result) {
       let list = this._subjectModels.get(row[1]);
       if (!list) {

@@ -7,7 +7,7 @@ import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { InstanceKey, KeySet, Ruleset, RegisteredRuleset, PageOptions, DefaultContentDisplayTypes, Content } from "@bentley/presentation-common";
 import { ContentBuilder as PresentationContentBuilder, ContentDataProvider } from "@bentley/presentation-components";
-import { using, Id64String } from "@bentley/bentleyjs-core";
+import { using } from "@bentley/bentleyjs-core";
 
 /**
  * Interface for a data provider, which is used by ContentBuilder.
@@ -100,12 +100,16 @@ export class ContentBuilder {
   }
 
   private async getECClassNames(): Promise<Array<{ schemaName: string, className: string }>> {
-    return this._iModel.queryPage(`
+    const rows = [];
+    for await (const row of this._iModel.query(`
       SELECT s.Name schemaName, c.Name className FROM meta.ECClassDef c
       INNER JOIN meta.ECSchemaDef s ON c.Schema.id = s.ECInstanceId
       WHERE c.Modifier <> 1 AND c.Type = 0
       ORDER BY s.Name, c.Name
-    `);
+    `)) {
+      rows.push(row);
+    }
+    return rows;
   }
 
   private async createContentForClasses(rulesetOrId: Ruleset | string, limitInstances: boolean, displayType: string) {
@@ -115,9 +119,12 @@ export class ContentBuilder {
 
     for (const nameEntry of classNameEntries) {
       // try {
-      const instanceIds = await this._iModel.queryPage(`
-          SELECT ECInstanceId FROM ONLY "${nameEntry.schemaName}"."${nameEntry.className}"
-          ORDER BY ECInstanceId`, undefined, { size: limitInstances ? 1 : 4000 }) as Array<{ id: Id64String }>;
+      const instanceIds = [];
+      for await (const row of this._iModel.query(`
+      SELECT ECInstanceId FROM ONLY "${nameEntry.schemaName}"."${nameEntry.className}"
+      ORDER BY ECInstanceId`, undefined, limitInstances ? 1 : 4000)) {
+        instanceIds.push(row);
+      }
 
       if (!instanceIds.length)
         continue;

@@ -9,8 +9,8 @@ import { Range3dProps, Range3d } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
   ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, ImageSourceFormat, IModel,
-  IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelToken, ModelProps, PageOptions, RpcInterface, RpcManager,
-  SnapRequestProps, SnapResponseProps, ViewStateProps,
+  IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelToken, ModelProps, RpcInterface, RpcManager,
+  SnapRequestProps, SnapResponseProps, ViewStateProps, QueryLimit, QueryQuota, QueryResponse, QueryPriority,
 } from "@bentley/imodeljs-common";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { SpatialCategory } from "../Category";
@@ -18,7 +18,6 @@ import { IModelDb, OpenParams } from "../IModelDb";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { DictionaryModel } from "../Model";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
-import { QueryPageMemoizer } from "./QueryPageMemoizer";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -40,16 +39,9 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return Promise.resolve(true);
   }
 
-  public async queryPage(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
-    const requestContext = ClientRequestContext.current;
-    return QueryPageMemoizer.perform({ requestContext, iModelToken, ecsql, bindings, options });
-  }
-
-  public async queryRowCount(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object): Promise<number> {
+  public async queryRows(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const rowCount: number = await iModelDb.queryRowCount(ecsql, bindings);
-    Logger.logTrace(loggerCategory, "IModelDbRemoting.getRowCount", () => ({ ecsql, count: rowCount }));
-    return rowCount;
+    return iModelDb.queryRows(ecsql, bindings, limit, quota, priority);
   }
 
   public async queryModelRanges(iModelToken: IModelToken, modelIds: Id64Set): Promise<Range3dProps[]> {
