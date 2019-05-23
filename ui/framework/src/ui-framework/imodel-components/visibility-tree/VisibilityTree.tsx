@@ -428,8 +428,14 @@ export class VisibilityHandler implements IDisposable {
       const ovr = (on === isDisplayedInSelector) ? PerModelCategoryVisibility.Override.None
         : on ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide;
       this._props.viewport.perModelCategoryVisibility.setOverride(parentModelId, categoryId, ovr);
+      if (ovr === PerModelCategoryVisibility.Override.None && on) {
+        // we took off the override which means the category is displayed in selector, but
+        // doesn't mean all its subcategories are displayed - this call ensures that
+        this._props.viewport.changeCategoryDisplay([categoryId], true, true);
+      }
+      return;
     }
-    this._props.viewport.changeCategoryDisplay([categoryId], on);
+    this._props.viewport.changeCategoryDisplay([categoryId], on, on ? true : false);
   }
 
   private async areElementCategoryAndModelDisplayed(elementId: Id64String): Promise<boolean> {

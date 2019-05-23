@@ -855,14 +855,14 @@ describe("VisibilityTree", () => {
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => false);
 
             const perModelCategoryVisibilityMock = moq.Mock.ofType<PerModelCategoryVisibility.Overrides>();
-            perModelCategoryVisibilityMock.setup((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.Show)).verifiable();
 
             const vpMock = mockViewport({ viewState: viewStateMock.object, perModelCategoryVisibility: perModelCategoryVisibilityMock.object });
             const getLoadedNode = () => parentModelNode;
 
             await using(createHandler({ viewport: vpMock.object, getLoadedNode }), async (handler) => {
               await handler.changeVisibility(categoryNode, true);
-              perModelCategoryVisibilityMock.verifyAll();
+              perModelCategoryVisibilityMock.verify((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.Show), moq.Times.once());
+              vpMock.verify((x) => x.changeCategoryDisplay(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
             });
           });
 
@@ -876,18 +876,18 @@ describe("VisibilityTree", () => {
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => true);
 
             const perModelCategoryVisibilityMock = moq.Mock.ofType<PerModelCategoryVisibility.Overrides>();
-            perModelCategoryVisibilityMock.setup((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.Hide)).verifiable();
 
             const vpMock = mockViewport({ viewState: viewStateMock.object, perModelCategoryVisibility: perModelCategoryVisibilityMock.object });
             const getLoadedNode = () => parentModelNode;
 
             await using(createHandler({ viewport: vpMock.object, getLoadedNode }), async (handler) => {
               await handler.changeVisibility(categoryNode, false);
-              perModelCategoryVisibilityMock.verifyAll();
+              perModelCategoryVisibilityMock.verify((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.Hide), moq.Times.once());
+              vpMock.verify((x) => x.changeCategoryDisplay(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
             });
           });
 
-          it("removes category override when making visible and it's visible through category selector", async () => {
+          it("removes category override and enables all sub-categories when making visible and it's visible through category selector", async () => {
             const parentModelNode = createModelNode();
             const parentModelKey = parentModelNode.__key.instanceKey;
             const categoryNode = createCategoryNode();
@@ -897,14 +897,14 @@ describe("VisibilityTree", () => {
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => true);
 
             const perModelCategoryVisibilityMock = moq.Mock.ofType<PerModelCategoryVisibility.Overrides>();
-            perModelCategoryVisibilityMock.setup((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.None)).verifiable();
 
             const vpMock = mockViewport({ viewState: viewStateMock.object, perModelCategoryVisibility: perModelCategoryVisibilityMock.object });
             const getLoadedNode = () => parentModelNode;
 
             await using(createHandler({ viewport: vpMock.object, getLoadedNode }), async (handler) => {
               await handler.changeVisibility(categoryNode, true);
-              perModelCategoryVisibilityMock.verifyAll();
+              perModelCategoryVisibilityMock.verify((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.None), moq.Times.once());
+              vpMock.verify((x) => x.changeCategoryDisplay([categoryKey.id], true, true), moq.Times.once());
             });
           });
 
@@ -918,29 +918,27 @@ describe("VisibilityTree", () => {
             viewStateMock.setup((x) => x.viewsCategory(categoryKey.id)).returns(() => false);
 
             const perModelCategoryVisibilityMock = moq.Mock.ofType<PerModelCategoryVisibility.Overrides>();
-            perModelCategoryVisibilityMock.setup((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.None)).verifiable();
 
             const vpMock = mockViewport({ viewState: viewStateMock.object, perModelCategoryVisibility: perModelCategoryVisibilityMock.object });
             const getLoadedNode = () => parentModelNode;
 
             await using(createHandler({ viewport: vpMock.object, getLoadedNode }), async (handler) => {
               await handler.changeVisibility(categoryNode, false);
-              perModelCategoryVisibilityMock.verifyAll();
+              perModelCategoryVisibilityMock.verify((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.None), moq.Times.once());
+              vpMock.verify((x) => x.changeCategoryDisplay(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
             });
           });
 
-          it("makes category visible in selector when category has no parent model", async () => {
+          it("makes category visible in selector and enables all sub-categories when category has no parent model", async () => {
             const categoryNode = createCategoryNode();
             const categoryKey = categoryNode.__key.instanceKey;
 
             const vpMock = mockViewport();
-            vpMock.setup((x) => x.changeCategoryDisplay([categoryKey.id], true)).verifiable();
-
             const getLoadedNode = () => undefined;
 
             await using(createHandler({ viewport: vpMock.object, getLoadedNode }), async (handler) => {
               await handler.changeVisibility(categoryNode, true);
-              vpMock.verifyAll();
+              vpMock.verify((x) => x.changeCategoryDisplay([categoryKey.id], true, true), moq.Times.once());
             });
           });
 
@@ -949,13 +947,11 @@ describe("VisibilityTree", () => {
             const categoryKey = categoryNode.__key.instanceKey;
 
             const vpMock = mockViewport();
-            vpMock.setup((x) => x.changeCategoryDisplay([categoryKey.id], false)).verifiable();
-
             const getLoadedNode = () => undefined;
 
             await using(createHandler({ viewport: vpMock.object, getLoadedNode }), async (handler) => {
               await handler.changeVisibility(categoryNode, false);
-              vpMock.verifyAll();
+              vpMock.verify((x) => x.changeCategoryDisplay([categoryKey.id], false, false), moq.Times.once());
             });
           });
 
@@ -972,13 +968,11 @@ describe("VisibilityTree", () => {
             const categoryKey = categoryNode.__key.instanceKey;
 
             const vpMock = mockViewport();
-            vpMock.setup((x) => x.changeCategoryDisplay([categoryKey.id], false)).verifiable();
-
             const getLoadedNode = () => categoryParentNode;
 
             await using(createHandler({ viewport: vpMock.object, getLoadedNode }), async (handler) => {
               await handler.changeVisibility(categoryNode, false);
-              vpMock.verifyAll();
+              vpMock.verify((x) => x.changeCategoryDisplay([categoryKey.id], false, false), moq.Times.once());
             });
           });
 
