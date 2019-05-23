@@ -132,7 +132,7 @@ export class EditTextTool extends MarkupTool {
     const text = this.text! as MarkupText;
     const original = this.boxed ? this.boxed : text;
     const undo = this.markup.undo;
-    undo.doGroup(() => {
+    undo.performOperation(this.keyin, () => {
       const newVal = this.editor!.value;
       if (newVal.trim() === "") { // if the result of the editing is blank, just delete the text element
         if (!this._fromPlaceTool)

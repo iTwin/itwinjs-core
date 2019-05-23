@@ -156,6 +156,9 @@ export class Handles {
     vbToBoxTrn: Transform;
 }
 
+// @internal
+export function initSvgExt(): void;
+
 // @beta
 export class LineTool extends RedlineTool {
     // (undocumented)
@@ -215,6 +218,8 @@ export class MarkupApp {
     // @internal (undocumented)
     static readonly dynamicsClass: string;
     // (undocumented)
+    static getActionName(action: string): any;
+    // (undocumented)
     static getVpToScreenMtx(): Matrix;
     // (undocumented)
     static getVpToVbMtx(): Matrix;
@@ -223,7 +228,6 @@ export class MarkupApp {
     // (undocumented)
     protected static lockViewportSize(view: ScreenViewport, markupData?: MarkupSvgData): void;
     static markup?: Markup;
-    static markupNamespace: I18NNamespace;
     // @internal (undocumented)
     static markupPrefix: string;
     // (undocumented)
@@ -232,6 +236,7 @@ export class MarkupApp {
     static readonly markupSvgClass: string;
     // @internal (undocumented)
     static readonly moveHandleClass: string;
+    static namespace: I18NNamespace;
     static props: {
         handles: {
             size: number;
@@ -403,7 +408,7 @@ export class MarkupSelected {
     readonly isEmpty: boolean;
     readonly onChanged: BeEvent<(selected: MarkupSelected) => void>;
     replace(oldEl: Element, newEl: Element): void;
-    reposition(undo: UndoManager, fn: (el: Element) => void): void;
+    reposition(cmdName: string, undo: UndoManager, fn: (el: Element) => void): void;
     // (undocumented)
     restart(el?: Element): void;
     // (undocumented)
@@ -651,16 +656,20 @@ export class Title extends Element {
 
 // @beta
 export class UndoManager {
-    doGroup(fn: VoidFunction): void;
     doRedo(): void;
     doUndo(): void;
     onAdded(elem: Element): void;
     onDelete(elem: Element): void;
     onModified(newElem: Element, oldElem: Element): void;
     onRepositioned(elem: Element, oldIndex: number, oldParent: Element): void;
+    performOperation(cmdName: string, fn: VoidFunction): void;
+    readonly redoPossible: boolean;
+    readonly redoString: string | undefined;
     // (undocumented)
     readonly size: number;
-    }
+    readonly undoPossible: boolean;
+    readonly undoString: string | undefined;
+}
 
 // @beta (undocumented)
 export interface WidthAndHeight {

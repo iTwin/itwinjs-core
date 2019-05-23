@@ -37,8 +37,10 @@
   },
   "keywords": [
     "Bentley",
+    "iModel",
     "BIM",
-    "iModel"
+    "SVG",
+    "Markup"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -67,18 +69,18 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
+    "glob": "^7.1.2",
     "mocha": "^5.2.0",
+    "nyc": "^14.0.0",
     "rimraf": "^2.6.2",
     "source-map-loader": "^0.2.3",
-    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.2.2",
     "typedoc": "^0.14.2",
+    "typescript": "~3.2.2",
     "webpack": "^4.20.2"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
-    "all": true
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   }
 }

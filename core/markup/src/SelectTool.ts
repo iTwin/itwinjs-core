@@ -313,7 +313,7 @@ export class Handles {
   }
   /** complete the modification for the active handle. */
   public endDrag(undo: UndoManager): EventHandled {
-    undo.doGroup(() => {
+    undo.performOperation(MarkupApp.getActionName("modify"), () => {
       const el = this.el;
       const original = el.originalEl!; // save original element
       if (original === undefined) {
@@ -400,7 +400,7 @@ export class MarkupSelected {
   public replace(oldEl: MarkupElement, newEl: MarkupElement) { if (this.drop(oldEl)) this.add(newEl); }
 
   public deleteAll(undo: UndoManager) {
-    undo.doGroup(() => this.elements.forEach((el) => { undo.onDelete(el); el.remove(); }));
+    undo.performOperation(MarkupApp.getActionName("delete"), () => this.elements.forEach((el) => { undo.onDelete(el); el.remove(); }));
     this.emptyAll();
   }
 
@@ -415,7 +415,7 @@ export class MarkupSelected {
     this.elements.forEach((el) => { ordered.push(el); });
     ordered.sort((lhs, rhs) => parent.index(lhs) - parent.index(rhs)); // Preserve relative z ordering
 
-    undo.doGroup(() => {
+    undo.performOperation(MarkupApp.getActionName("group"), () => {
       ordered.forEach((el) => {
         const oldParent = el.parent() as MarkupElement;
         const oldPos = el.position();
@@ -430,7 +430,7 @@ export class MarkupSelected {
     this.elements.forEach((el) => { if (el instanceof G) groups.add(el); });
     if (0 === groups.size)
       return;
-    undo.doGroup(() => {
+    undo.performOperation(MarkupApp.getActionName("ungroup"), () => {
       groups.forEach((g) => {
         g.unHilite(); this.elements.delete(g); undo.onDelete(g);
         g.each((index, children) => { const child = children[index]; const oldPos = child.position(); child.toParent(g.parent()); undo.onRepositioned(child, oldPos, g); }, false);
@@ -442,8 +442,8 @@ export class MarkupSelected {
   }
 
   /** Move all of the entries to a new position in the DOM via a callback. */
-  public reposition(undo: UndoManager, fn: (el: MarkupElement) => void) {
-    undo.doGroup(() => this.elements.forEach((el) => {
+  public reposition(cmdName: string, undo: UndoManager, fn: (el: MarkupElement) => void) {
+    undo.performOperation(cmdName, () => this.elements.forEach((el) => {
       const oldParent = el.parent() as MarkupElement;
       const oldPos = el.position();
       fn(el);
@@ -602,7 +602,7 @@ export class SelectTool extends MarkupTool {
       selected.emptyAll();
 
     // move or copy all of the elements in dragged set
-    undo.doGroup(() => this._dragging.forEach((el) => {
+    undo.performOperation(MarkupApp.getActionName("copy"), () => this._dragging.forEach((el) => {
       el.translate(delta.x, delta.y); // move to final location
       const original = el.originalEl!; // save original element
       el.originalEl = undefined; // clear original element

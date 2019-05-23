@@ -1,4 +1,13 @@
 {
+  "actions": {
+    "modify": "Modify markup",
+    "group": "Group markups",
+    "ungroup": "Ungroup markup",
+    "delete": "Delete markup",
+    "copy": "Copy markup",
+    "toFront": "Bring to front",
+    "toBack": "Send To back"
+  },
   "tools": {
     "Select": {
       "keyin": "Markup Select",
