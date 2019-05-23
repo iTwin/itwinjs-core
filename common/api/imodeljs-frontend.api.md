@@ -6162,9 +6162,7 @@ export class TentativePoint {
     viewport?: ScreenViewport;
 }
 
-// Warning: (ae-missing-release-tag) "TerrainProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @internal
 export abstract class TerrainProvider implements TiledGraphicsProvider.Provider {
     // (undocumented)
     abstract getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
@@ -6516,27 +6514,19 @@ export namespace TileAdmin {
     }
 }
 
-// Warning: (ae-missing-release-tag) "TiledGraphicsProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public (undocumented)
+// @internal (undocumented)
 export namespace TiledGraphicsProvider {
-    // @alpha
     export interface Provider {
         // (undocumented)
         getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
     }
-    // (undocumented)
     export type ProviderSet = Set<TiledGraphicsProvider.Provider>;
-    // (undocumented)
     export interface Tree {
         // (undocumented)
         plane?: Plane3dByOriginAndUnitNormal;
-        // Warning: (ae-incompatible-release-tags) The symbol "tileTree" is marked as @public, but its signature references "TileTree" which is marked as @internal
-        // 
         // (undocumented)
         tileTree: TileTree;
     }
-    // @alpha
     export enum Type {
         // (undocumented)
         BackgroundMap = 0,
@@ -7874,7 +7864,7 @@ export abstract class Viewport implements IDisposable {
     addDecorations(_decorations: Decorations): void;
     // @internal
     addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
-    // @alpha
+    // @internal
     addTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider): void;
     readonly alwaysDrawn: Id64Set | undefined;
     // @internal (undocumented)
@@ -7943,7 +7933,7 @@ export abstract class Viewport implements IDisposable {
     getSubCategories(categoryId: Id64String): Id64Set | undefined;
     getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
-    // @alpha
+    // @internal
     getTiledGraphicsProviders(type: TiledGraphicsProvider.Type): TiledGraphicsProvider.ProviderSet | undefined;
     getWorldFrustum(box?: Frustum): Frustum;
     hilite: Hilite.Settings;
@@ -8016,7 +8006,7 @@ export abstract class Viewport implements IDisposable {
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     // @internal (undocumented)
     removeAnimator(): void;
-    // @alpha
+    // @internal
     removeTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider): void;
     // @internal (undocumented)
     renderFrame(): boolean;

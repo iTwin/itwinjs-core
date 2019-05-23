@@ -1686,7 +1686,7 @@ export abstract class Viewport implements IDisposable {
     this._changeFlags.setFeatureOverrideProvider();
   }
   /** Add a TiledGraphicsProvider
-   * @alpha
+   * @internal
    */
   public addTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider) {
     if (undefined === this._tiledGraphicsProviders)
@@ -1699,14 +1699,14 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** Remove a TiledGraphicsProvider
-   * @alpha
+   * @internal
    */
   public removeTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider) {
     if (undefined !== this._tiledGraphicsProviders && undefined !== this._tiledGraphicsProviders.get(type))
       this._tiledGraphicsProviders.get(type)!.delete(provider);
   }
   /** Get the tiled graphics providers for given type
-   * @alpha
+   * @internal
    */
   public getTiledGraphicsProviders(type: TiledGraphicsProvider.Type): TiledGraphicsProvider.ProviderSet | undefined {
     return this._tiledGraphicsProviders ? this._tiledGraphicsProviders.get(type) : undefined;

@@ -310,7 +310,7 @@ internal;SyncFlags
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
-public;class TerrainProvider 
+internal;class TerrainProvider 
 internal;TextureImage
 internal;ThreeAxes
 internal;Tile 
@@ -318,9 +318,7 @@ internal;Tile
 alpha;class TileAdmin
 alpha;TileAdmin
 internal;ViewportSet 
-public;TiledGraphicsProvider
-alpha;Provider
-alpha;Type
+internal;TiledGraphicsProvider
 internal;class TileLoader
 internal;TileTree 
 internal;TileTree

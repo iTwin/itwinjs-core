@@ -8,22 +8,26 @@ import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { TileTree } from "./tile/TileTree";
 import { Viewport } from "./Viewport";
 
+/** @internal */
 export namespace TiledGraphicsProvider {
 
+  /** TileTree for display within a [[Viewport]].
+   * @internal
+   */
   export interface Tree {
     tileTree: TileTree;
     plane?: Plane3dByOriginAndUnitNormal;
   }
 
-  /** An object that provides a tile tree for display within a  [[Viewport]].
-   * @alpha
+  /** An object that provides a tile tree for display within a [[Viewport]].
+   * @internal
    */
   export interface Provider {
     getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
   }
 
   /** Types of TiledGraphicsProviders.
-   * @alpha
+   * @internal
    */
   export enum Type {
     BackgroundMap = 0,
@@ -31,6 +35,9 @@ export namespace TiledGraphicsProvider {
     Overlay = 2,
   }
 
+  /** A set of TiledGraphicsProviders.
+   * @internal
+   */
   export type ProviderSet = Set<TiledGraphicsProvider.Provider>;
 
 }
