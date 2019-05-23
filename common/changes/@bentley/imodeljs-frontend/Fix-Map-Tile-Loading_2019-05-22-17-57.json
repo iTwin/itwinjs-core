@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix background map tile when child not found.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Detect high-multiplicity knots when saturating a bspline. Skip those intervals in stroking.",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

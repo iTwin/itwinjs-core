@@ -293,6 +293,125 @@ describe("PropertyGrid", () => {
       expect(onPropertySelectionChanged.called).to.be.false;
     });
 
+    it("calls onPropertySelectionChanged when property gets right clicked and right click selection is enabled", async () => {
+      const onPropertySelectionChanged = sinon.spy();
+      const wrapper = mount(
+        <PropertyGrid
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider}
+          isPropertySelectionEnabled={true}
+          isPropertySelectionOnRightClickEnabled={true}
+          onPropertySelectionChanged={onPropertySelectionChanged}
+        />);
+
+      await TestUtils.flushAsyncOperations();
+
+      wrapper.update();
+
+      const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+      expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+      categoryBlock.find(".components--clickable").simulate("contextMenu");
+
+      expect(onPropertySelectionChanged.called).to.be.true;
+    });
+
+    it("calls onPropertySelectionChanged once when property gets right clicked after left clicked and both left and right click selections are enabled", async () => {
+      const onPropertySelectionChanged = sinon.spy();
+      const wrapper = mount(
+        <PropertyGrid
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider}
+          isPropertySelectionOnRightClickEnabled={true}
+          isPropertySelectionEnabled={true}
+          onPropertySelectionChanged={onPropertySelectionChanged}
+        />);
+
+      await TestUtils.flushAsyncOperations();
+
+      wrapper.update();
+
+      const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+      expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+      categoryBlock.find(".components--clickable").simulate("click");
+      categoryBlock.find(".components--clickable").simulate("contextMenu");
+
+      expect(onPropertySelectionChanged.callCount).to.be.equal(2);
+    });
+
+    it("does not deselect if right clicked a 2nd time", async () => {
+      const wrapper = mount(
+        <PropertyGrid
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider}
+          isPropertySelectionEnabled={true}
+          isPropertySelectionOnRightClickEnabled={true}
+        />);
+
+      await TestUtils.flushAsyncOperations();
+
+      wrapper.update();
+
+      const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+      expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+      categoryBlock.find(".components--clickable").simulate("contextMenu");
+      wrapper.update();
+      expect(wrapper.find(".components--selected").length).to.eq(1);
+
+      categoryBlock.find(".components--clickable").simulate("contextMenu");
+      wrapper.update();
+      expect(wrapper.find(".components--selected").length).to.eq(1);
+    });
+
+    it("deselects if left clicked after right clicked", async () => {
+      const wrapper = mount(
+        <PropertyGrid
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider}
+          isPropertySelectionEnabled={true}
+          isPropertySelectionOnRightClickEnabled={true}
+        />);
+
+      await TestUtils.flushAsyncOperations();
+
+      wrapper.update();
+
+      const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+      expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+      categoryBlock.find(".components--clickable").simulate("contextMenu");
+      wrapper.update();
+      expect(wrapper.find(".components--selected").length).to.eq(1);
+
+      categoryBlock.find(".components--clickable").simulate("click");
+      wrapper.update();
+      expect(wrapper.find(".components--selected").length).to.eq(0);
+    });
+
+    it("does not call onPropertySelectionChanged when property gets right clicked and selection is disabled", async () => {
+      const onPropertySelectionChanged = sinon.spy();
+      const wrapper = mount(
+        <PropertyGrid
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider}
+          isPropertySelectionEnabled={true}
+          isPropertySelectionOnRightClickEnabled={false}
+          onPropertySelectionChanged={onPropertySelectionChanged}
+        />);
+
+      await TestUtils.flushAsyncOperations();
+
+      wrapper.update();
+
+      const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+      expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+      categoryBlock.find(".components-property-record--horizontal").simulate("contextMenu");
+
+      expect(onPropertySelectionChanged.called).to.be.false;
+    });
   });
 
   describe("property editing", () => {

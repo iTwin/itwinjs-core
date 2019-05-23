@@ -426,8 +426,14 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       let allChildrenDrawable = true;
       const initialSize = selected.length;
       for (const child of children) {
-        if (Tile.SelectParent.Yes === child.selectTiles(selected, args, numSkipped))
+
+        if (Tile.SelectParent.Yes === child.selectTiles(selected, args, numSkipped)) {
           allChildrenDrawable = false; // NB: We must continue iterating children so that they can be requested if missing.
+          if (child.loadStatus === Tile.LoadStatus.NotFound) {
+            canSkipThisTile = false;
+            break;
+          }
+        }
       }
 
       if (allChildrenDrawable)

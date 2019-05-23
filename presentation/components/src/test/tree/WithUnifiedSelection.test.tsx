@@ -23,7 +23,9 @@ import {
 } from "@bentley/presentation-frontend";
 import { Tree, TreeProps, TreeNodeItem, UiComponents } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
-import { IPresentationTreeDataProvider, treeWithUnifiedSelection } from "../../presentation-components";
+import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
+import { treeWithUnifiedSelection } from "../../tree/WithUnifiedSelection";
+import { PRESENTATION_TREE_NODE_KEY } from "../../tree/Utils";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationTree = treeWithUnifiedSelection(Tree);
@@ -69,7 +71,7 @@ describe("Tree withUnifiedSelection", () => {
     providerMock.setup((x) => x.imodel).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
     providerMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
-    providerMock.setup((x) => x.getNodeKey(moq.It.isAny())).returns((n: TreeNodeItem) => n.extendedData.key);
+    providerMock.setup((x) => x.getNodeKey(moq.It.isAny())).returns((n: TreeNodeItem) => (n as any)[PRESENTATION_TREE_NODE_KEY]);
     providerMock.setup((x) => x.getNodes(moq.It.isAny())).returns(async (p) => p ? childNodes!(p) : rootNodes!());
     providerMock.setup((x) => x.getNodesCount(moq.It.isAny())).returns(async (p) => (p ? childNodes!(p) : rootNodes!()).length);
   };
@@ -177,8 +179,7 @@ describe("Tree withUnifiedSelection", () => {
 
       it("returns true when node key is in selection", () => {
         const nodeKey = createRandomECInstanceNodeKey();
-        const node = createRandomTreeNodeItem();
-        node.extendedData.key = nodeKey;
+        const node = createRandomTreeNodeItem(nodeKey);
         selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([nodeKey]));
 
         const tree = shallow(<PresentationTree
@@ -193,8 +194,7 @@ describe("Tree withUnifiedSelection", () => {
 
       it("returns true when ECInstance key of ECInstance node is in selection", () => {
         const nodeKey = createRandomECInstanceNodeKey();
-        const node = createRandomTreeNodeItem();
-        node.extendedData.key = nodeKey;
+        const node = createRandomTreeNodeItem(nodeKey);
         selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([nodeKey.instanceKey]));
 
         const tree = shallow(<PresentationTree
@@ -212,8 +212,7 @@ describe("Tree withUnifiedSelection", () => {
           type: faker.random.word(),
           pathFromRoot: [],
         };
-        const node = createRandomTreeNodeItem();
-        node.extendedData.key = nodeKey;
+        const node = createRandomTreeNodeItem(nodeKey);
         selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet());
 
         const tree = shallow(<PresentationTree
@@ -243,7 +242,7 @@ describe("Tree withUnifiedSelection", () => {
 
         tree.find(Tree).prop("onNodesSelected")!(nodes, false);
 
-        selectionHandlerMock.verify((x) => x.addToSelection(nodes.map((n) => (n.extendedData.key as ECInstanceNodeKey).instanceKey)), moq.Times.once());
+        selectionHandlerMock.verify((x) => x.addToSelection(nodes.map((n) => (dataProviderMock.target.getNodeKey(n) as ECInstanceNodeKey).instanceKey)), moq.Times.once());
         selectionHandlerMock.verify((x) => x.replaceSelection(moq.It.isAny()), moq.Times.never());
         callback.verifyAll();
       });
@@ -279,9 +278,11 @@ describe("Tree withUnifiedSelection", () => {
       });
 
       it("replaces ECInstance keys in selection manager", () => {
-        const nodes = [createRandomTreeNodeItem(), createRandomTreeNodeItem()];
-        nodes[0].extendedData.key = createRandomECInstanceNodeKey();
-        nodes[1].extendedData.key = { type: faker.random.word(), pathFromRoot: [] };
+        const keys = [
+          createRandomECInstanceNodeKey(),
+          { type: faker.random.word(), pathFromRoot: [] },
+        ];
+        const nodes = keys.map((key) => createRandomTreeNodeItem(key));
 
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
@@ -292,8 +293,8 @@ describe("Tree withUnifiedSelection", () => {
 
         selectionHandlerMock.verify((x) => x.addToSelection(moq.It.isAny()), moq.Times.never());
         selectionHandlerMock.verify((x) => x.replaceSelection([
-          (nodes[0].extendedData.key as ECInstanceNodeKey).instanceKey,
-          nodes[1].extendedData.key,
+          (keys[0] as ECInstanceNodeKey).instanceKey,
+          keys[1],
         ]), moq.Times.once());
       });
 
@@ -314,7 +315,7 @@ describe("Tree withUnifiedSelection", () => {
 
         tree.find(Tree).prop("onNodesDeselected")!(nodes);
 
-        selectionHandlerMock.verify((x) => x.removeFromSelection(nodes.map((n) => (n.extendedData.key as ECInstanceNodeKey).instanceKey)), moq.Times.once());
+        selectionHandlerMock.verify((x) => x.removeFromSelection(nodes.map((n) => (dataProviderMock.target.getNodeKey(n) as ECInstanceNodeKey).instanceKey)), moq.Times.once());
         callback.verifyAll();
       });
 
@@ -347,9 +348,11 @@ describe("Tree withUnifiedSelection", () => {
       });
 
       it("removes ECInstance keys from selection manager", () => {
-        const nodes = [createRandomTreeNodeItem(), createRandomTreeNodeItem()];
-        nodes[0].extendedData.key = createRandomECInstanceNodeKey();
-        nodes[1].extendedData.key = { type: faker.random.word(), pathFromRoot: [] };
+        const keys = [
+          createRandomECInstanceNodeKey(),
+          { type: faker.random.word(), pathFromRoot: [] },
+        ];
+        const nodes = keys.map((key) => createRandomTreeNodeItem(key));
 
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}
@@ -359,8 +362,8 @@ describe("Tree withUnifiedSelection", () => {
         tree.find(Tree).prop("onNodesDeselected")!(nodes);
 
         selectionHandlerMock.verify((x) => x.removeFromSelection([
-          (nodes[0].extendedData.key as ECInstanceNodeKey).instanceKey,
-          nodes[1].extendedData.key,
+          (keys[0] as ECInstanceNodeKey).instanceKey,
+          keys[1],
         ]), moq.Times.once());
       });
 

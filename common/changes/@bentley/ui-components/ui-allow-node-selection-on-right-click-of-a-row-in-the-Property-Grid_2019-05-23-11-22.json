@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added property selection to the property grid component on right click",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Laurynas.Vaisys@bentley.com"
+}

@@ -7,6 +7,7 @@ beta;DistanceTool
 beta;EditTextTool 
 beta;EllipseTool 
 beta;Handles
+internal;initSvgExt(): void
 beta;LineTool 
 beta;Markup
 beta;MarkupApp

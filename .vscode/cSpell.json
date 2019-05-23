@@ -167,6 +167,8 @@
         "superclasses",
         "superset",
         "svgdotjs",
+        "svgjs",
+        "Svgs",
         "symb",
         "symbologies",
         "symbology",

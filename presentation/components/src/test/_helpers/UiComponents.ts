@@ -9,18 +9,18 @@ import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/
 import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
 import { PropertyRecord, PrimitiveValue, PropertyDescription, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
+import { PRESENTATION_TREE_NODE_KEY } from "../../tree/Utils";
 
 export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {
-  return {
+  const node = {
     id: faker.random.uuid(),
     parentId,
     label: faker.random.word(),
     description: faker.random.words(),
     hasChildren: faker.random.boolean(),
-    extendedData: {
-      key: key ? key : createRandomECInstanceNodeKey(),
-    },
   };
+  (node as any)[PRESENTATION_TREE_NODE_KEY] = key ? key : createRandomECInstanceNodeKey();
+  return node;
 };
 
 export const createRandomPropertyRecord = (): PropertyRecord => {

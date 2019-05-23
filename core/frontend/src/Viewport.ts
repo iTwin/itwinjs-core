@@ -1387,9 +1387,10 @@ export abstract class Viewport implements IDisposable {
     return undefined !== ovr ? ovr.override(app) : app;
   }
 
-  /** Determine whether geometry belonging to a specific SubCategory is visible in this viewport.
+  /** Determine whether geometry belonging to a specific SubCategory is visible in this viewport, assuming the containing Category is displayed.
    * @param id The Id of the subcategory
    * @returns true if the subcategory is visible in this viewport.
+   * @note Because this function does not know the Id of the containing Category, it does not check if the Category is enabled for display. The caller should check that separately if he knows the Id of the Category.
    */
   public isSubCategoryVisible(id: Id64String): boolean { return this.view.isSubCategoryVisible(id); }
 
@@ -1686,7 +1687,7 @@ export abstract class Viewport implements IDisposable {
     this._changeFlags.setFeatureOverrideProvider();
   }
   /** Add a TiledGraphicsProvider
-   * @alpha
+   * @internal
    */
   public addTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider) {
     if (undefined === this._tiledGraphicsProviders)
@@ -1699,14 +1700,14 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** Remove a TiledGraphicsProvider
-   * @alpha
+   * @internal
    */
   public removeTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider) {
     if (undefined !== this._tiledGraphicsProviders && undefined !== this._tiledGraphicsProviders.get(type))
       this._tiledGraphicsProviders.get(type)!.delete(provider);
   }
   /** Get the tiled graphics providers for given type
-   * @alpha
+   * @internal
    */
   public getTiledGraphicsProviders(type: TiledGraphicsProvider.Type): TiledGraphicsProvider.ProviderSet | undefined {
     return this._tiledGraphicsProviders ? this._tiledGraphicsProviders.get(type) : undefined;

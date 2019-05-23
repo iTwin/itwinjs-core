@@ -3,20 +3,18 @@
 exports[`FilteredTreeDataProvider getNodes returns child nodes 1`] = `
 Array [
   Object {
-    "description": "Ex quaerat explicabo.",
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "sticky",
-          "id": "0x1d01000000f5fb",
-        },
-        "pathFromRoot": Array [
-          "8a0214f5-9431-442b-a3f9-5f0db34739fd",
-          "e2c0a107-d9c9-4758-b192-6883bea7421c",
-        ],
-        "type": "ECInstanceNode",
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "sticky",
+        "id": "0x1d01000000f5fb",
       },
+      "pathFromRoot": Array [
+        "8a0214f5-9431-442b-a3f9-5f0db34739fd",
+        "e2c0a107-d9c9-4758-b192-6883bea7421c",
+      ],
+      "type": "ECInstanceNode",
     },
+    "description": "Ex quaerat explicabo.",
     "hasChildren": false,
     "id": "e2c0a107-d9c9-4758-b192-6883bea7421c/8a0214f5-9431-442b-a3f9-5f0db34739fd",
     "isCheckboxVisible": true,
@@ -29,21 +27,19 @@ Array [
     },
   },
   Object {
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "Vermont",
+        "id": "0x5e54000001574b",
+      },
+      "pathFromRoot": Array [
+        "ea063b9c-f6fe-483e-8ae6-4729087ece56",
+        "9f025212-b800-47ff-9507-21582ec854f5",
+      ],
+      "type": "ECInstanceNode",
+    },
     "autoExpand": true,
     "description": "In quis consequuntur quos hic animi ipsam perferendis tenetur.",
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "Vermont",
-          "id": "0x5e54000001574b",
-        },
-        "pathFromRoot": Array [
-          "ea063b9c-f6fe-483e-8ae6-4729087ece56",
-          "9f025212-b800-47ff-9507-21582ec854f5",
-        ],
-        "type": "ECInstanceNode",
-      },
-    },
     "hasChildren": true,
     "id": "9f025212-b800-47ff-9507-21582ec854f5/ea063b9c-f6fe-483e-8ae6-4729087ece56",
     "isCheckboxVisible": true,
@@ -61,21 +57,19 @@ Array [
 exports[`FilteredTreeDataProvider getNodes returns root nodes 1`] = `
 Array [
   Object {
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "bandwidth",
+        "id": "0xa0da000001762c",
+      },
+      "pathFromRoot": Array [
+        "6fbe024f-2316-4265-a6e8-d65a837e308a",
+        "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19",
+      ],
+      "type": "ECInstanceNode",
+    },
     "autoExpand": true,
     "description": "Repellendus fugiat velit sit aperiam placeat fuga doloribus.",
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "bandwidth",
-          "id": "0xa0da000001762c",
-        },
-        "pathFromRoot": Array [
-          "6fbe024f-2316-4265-a6e8-d65a837e308a",
-          "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19",
-        ],
-        "type": "ECInstanceNode",
-      },
-    },
     "hasChildren": true,
     "id": "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19/6fbe024f-2316-4265-a6e8-d65a837e308a",
     "isCheckboxDisabled": true,
@@ -88,20 +82,18 @@ Array [
     },
   },
   Object {
-    "autoExpand": true,
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "SMS",
-          "id": "0xfd06000000f39f",
-        },
-        "pathFromRoot": Array [
-          "2801ae3e-4479-4099-92f9-4b3186fb7680",
-          "c80a28cf-09ee-4827-aec6-682ae559cab2",
-        ],
-        "type": "ECInstanceNode",
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "SMS",
+        "id": "0xfd06000000f39f",
       },
+      "pathFromRoot": Array [
+        "2801ae3e-4479-4099-92f9-4b3186fb7680",
+        "c80a28cf-09ee-4827-aec6-682ae559cab2",
+      ],
+      "type": "ECInstanceNode",
     },
+    "autoExpand": true,
     "hasChildren": true,
     "icon": "XSS",
     "id": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",

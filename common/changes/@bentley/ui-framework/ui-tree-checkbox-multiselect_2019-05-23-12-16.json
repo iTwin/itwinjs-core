@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use the updated onCheckboxClick API inside ModelSelectorTree and VisibilityTree.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Robert.Lukasonok@bentley.com"
+}

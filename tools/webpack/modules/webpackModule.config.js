@@ -27,7 +27,7 @@ const autoprefixer = require("autoprefixer");
 // NOTE: This was set up to return an array of configs, one for target: "web" and one for target: "node", but the node target didn't work, so I dropped it.
 module.exports = (env) => { return getConfig(env); };
 
-function getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, nestedDir, externalList, depth) {
+function getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, nestedDir, externalList, plugin, depth) {
   // we need the dependents and peer dependents. We care only about those in externalList.
   let dependentsAndPeerDependents = [];
   if (packageContents.dependencies)
@@ -37,8 +37,13 @@ function getExternalModuleVersionsFromPackage(externalModuleVersions, packageCon
   for (dependent of dependentsAndPeerDependents) {
     if (externalList[dependent]) {
       let packageName = dependent;
-      if (dependent.startsWith("@bentley"))
+      if (dependent.startsWith("@bentley")) {
         packageName = dependent.substr(9);
+      } else {
+        // we only want the @bentley externals when gathering them for plugins. We have no way of putting the versions into the others at runtime.
+        if (plugin)
+          continue;
+      }
       // if we don't already have it, get its info.
       if (!externalModuleVersions[packageName]) {
         const subDirectory = path.join(sourceDir, "node_modules", dependent);
@@ -56,7 +61,7 @@ function getExternalModuleVersionsFromPackage(externalModuleVersions, packageCon
       if (dependent.startsWith("@bentley") && externalList[dependent]) {
         const subDirectory = path.join(sourceDir, "node_modules", dependent);
         const dependentPackageContents = getPackageFromJson(subDirectory);
-        getExternalModuleVersionsFromPackage(externalModuleVersions, dependentPackageContents, sourceDir, subDirectory, externalList, depth + 1);
+        getExternalModuleVersionsFromPackage(externalModuleVersions, dependentPackageContents, sourceDir, subDirectory, externalList, plugin, depth + 1);
       }
     }
   }
@@ -67,7 +72,7 @@ function getExternalModuleVersions(sourceDir, packageContents, externalList, plu
   const externalModuleVersions = new Object();
   if (!plugin)
     externalModuleVersions["main"] = packageContents.version;
-  getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, undefined, externalList, 0);
+  getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, undefined, externalList, plugin, 0);
   return externalModuleVersions;
 }
 
@@ -83,7 +88,7 @@ function getPackageFromJson(sourceDir, alternateDir) {
         return {};
       }
     } else {
-      console.log ("Cannot find package file in", sourceDir);
+      console.log("Cannot find package file in", sourceDir);
       return {};
     }
   }
@@ -289,7 +294,7 @@ function getConfig(env) {
     cssRules = [{
       test: /\.scss$/,
       use: {
-        loader: require.resolve("sass-loader"),
+        loader: require.resolve("fast-sass-loader"),
         options: {
           includePaths: [path.resolve(contextDirectory, "node_modules")],
           outputStyle: "compressed",

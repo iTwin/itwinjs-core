@@ -11,7 +11,7 @@ import { addWindowToTexCoords } from "./Fragment";
 import { TextureUnit } from "../RenderFlags";
 import { System } from "../System";
 import { ClipDef } from "../TechniqueFlags";
-import { addViewMatrix, addEyeSpace } from "./Common";
+import { addEyeSpace } from "./Common";
 import { ClippingType } from "../../System";
 
 const getClipPlaneFloat = `
@@ -56,24 +56,8 @@ const unpackClipPlane = `
 `;
 
 const calcClipPlaneDist = `
-  float calcClipPlaneDist(vec4 camPos, vec4 plane, mat4 viewMatrix) {
-    // Transform direction of clip plane
-    vec3 norm = plane.xyz;
-    vec3 viewX = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
-    vec3 viewY = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
-    vec3 viewZ = vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
-
-    vec3 dir = vec3(dot(norm, viewX), dot(norm, viewY), dot(norm, viewZ));
-    dir = normalize(dir);
-
-    // Transform distance of clip plane
-    vec3 pos = norm * plane.w;
-    vec3 v0 = vec3(dot(pos, viewX) + viewMatrix[3][0],
-        dot(pos, viewY) + viewMatrix[3][1],
-        dot(pos, viewZ) + viewMatrix[3][2]);
-
-    vec4 viewPlane = vec4(dir, -dot(v0, dir));
-    return dot(camPos, viewPlane);
+  float calcClipPlaneDist(vec4 camPos, vec4 plane) {
+    return dot(camPos, plane);
   }
 `;
 
@@ -93,7 +77,7 @@ const applyClipPlanes = `
           numSetsClippedBy += int(clippedByCurrentPlaneSet);
           clippedByCurrentPlaneSet = false;
           }
-      else if (!clippedByCurrentPlaneSet && calcClipPlaneDist(v_eyeSpace, plane, u_viewMatrix) < 0.0)
+      else if (!clippedByCurrentPlaneSet && calcClipPlaneDist(v_eyeSpace, plane) < 0.0)
           clippedByCurrentPlaneSet = true;
       }
 
@@ -133,10 +117,8 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   });
 
   addModelViewMatrix(vert);
-  addViewMatrix(frag);
 
-  const useFloatIfAvailable = false; // ###TODO...
-  if (useFloatIfAvailable && System.instance.capabilities.supportsTextureFloat) {
+  if (System.instance.capabilities.supportsTextureFloat) {
     frag.addFunction(getClipPlaneFloat);
   } else {
     frag.addFunction(unpackFloat);

@@ -399,8 +399,7 @@ class FrontstageToolWidget extends React.Component {
   }
 
   private executeMeasureByPoints() {
-    // first load the plugin
-    IModelApp.tools.run("Plugin", ["MeasurePoints.js"]);
+    IModelApp.tools.run("Measure.Distance");
   }
 
   /* No longer used  <ActionItemButton actionItem={AppTools.analysisAnimationCommand} /> */

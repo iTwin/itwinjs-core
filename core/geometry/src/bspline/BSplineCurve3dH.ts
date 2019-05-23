@@ -318,8 +318,9 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       result = BezierCurve3dH.createOrder(order);
     const bezier = result as BezierCurve3dH;
     bezier.loadSpan4dPoles(this._bcurve.packedData, spanIndex);
-    bezier.saturateInPlace(this._bcurve.knots, spanIndex);
-    return result;
+    if (bezier.saturateInPlace(this._bcurve.knots, spanIndex))
+      return result;
+    return undefined;
   }
 
   /**

@@ -74,20 +74,18 @@ Array [
 exports[`TreeDataProvider getNodes children returns presentation manager result 1`] = `
 Array [
   Object {
-    "description": "Voluptatem repellendus sint rerum.",
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "Wisconsin",
-          "id": "0xe3970000015b4a",
-        },
-        "pathFromRoot": Array [
-          "5a887966-3af4-4c64-be5e-66399295a54e",
-          "21ab590b-334a-4e25-bb59-28504ca89d67",
-        ],
-        "type": "ECInstanceNode",
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "Wisconsin",
+        "id": "0xe3970000015b4a",
       },
+      "pathFromRoot": Array [
+        "5a887966-3af4-4c64-be5e-66399295a54e",
+        "21ab590b-334a-4e25-bb59-28504ca89d67",
+      ],
+      "type": "ECInstanceNode",
     },
+    "description": "Voluptatem repellendus sint rerum.",
     "hasChildren": true,
     "id": "21ab590b-334a-4e25-bb59-28504ca89d67/5a887966-3af4-4c64-be5e-66399295a54e",
     "label": "Tasty Wooden Mouse",
@@ -99,18 +97,16 @@ Array [
     },
   },
   Object {
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "Practical Plastic Fish",
-          "id": "0x17dfb0000004a94",
-        },
-        "pathFromRoot": Array [
-          "53634882-9809-4817-bdb7-62e5377376d7",
-          "efbbdf5e-70a4-4764-860c-82aebaa5384c",
-        ],
-        "type": "ECInstanceNode",
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "Practical Plastic Fish",
+        "id": "0x17dfb0000004a94",
       },
+      "pathFromRoot": Array [
+        "53634882-9809-4817-bdb7-62e5377376d7",
+        "efbbdf5e-70a4-4764-860c-82aebaa5384c",
+      ],
+      "type": "ECInstanceNode",
     },
     "id": "efbbdf5e-70a4-4764-860c-82aebaa5384c/53634882-9809-4817-bdb7-62e5377376d7",
     "label": "Cambridgeshire reboot",
@@ -127,20 +123,18 @@ Array [
 exports[`TreeDataProvider getNodes root returns presentation manager result 1`] = `
 Array [
   Object {
-    "checkBoxState": 1,
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "grey",
-          "id": "0x7f5e000000f4a6",
-        },
-        "pathFromRoot": Array [
-          "44689e68-48ae-45ef-90f6-e931fa4685cc",
-          "14189a13-8287-4e88-b429-40a6f4fc635a",
-        ],
-        "type": "ECInstanceNode",
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "grey",
+        "id": "0x7f5e000000f4a6",
       },
+      "pathFromRoot": Array [
+        "44689e68-48ae-45ef-90f6-e931fa4685cc",
+        "14189a13-8287-4e88-b429-40a6f4fc635a",
+      ],
+      "type": "ECInstanceNode",
     },
+    "checkBoxState": 1,
     "hasChildren": true,
     "id": "14189a13-8287-4e88-b429-40a6f4fc635a/44689e68-48ae-45ef-90f6-e931fa4685cc",
     "isCheckboxVisible": true,
@@ -153,21 +147,19 @@ Array [
     },
   },
   Object {
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "national",
+        "id": "0x37190000000e92",
+      },
+      "pathFromRoot": Array [
+        "c0ad3c15-e225-48d9-9174-cf691c86639b",
+        "762a6c71-77b4-413a-a82a-1d6b76624dbc",
+      ],
+      "type": "ECInstanceNode",
+    },
     "checkBoxState": 1,
     "description": "Eum quidem reiciendis veniam sunt sunt.",
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "national",
-          "id": "0x37190000000e92",
-        },
-        "pathFromRoot": Array [
-          "c0ad3c15-e225-48d9-9174-cf691c86639b",
-          "762a6c71-77b4-413a-a82a-1d6b76624dbc",
-        ],
-        "type": "ECInstanceNode",
-      },
-    },
     "icon": "orange",
     "id": "762a6c71-77b4-413a-a82a-1d6b76624dbc/c0ad3c15-e225-48d9-9174-cf691c86639b",
     "isCheckboxDisabled": true,

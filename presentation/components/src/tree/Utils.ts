@@ -10,6 +10,9 @@ import { Node, PageOptions as PresentationPageOptions } from "@bentley/presentat
 import { DelayLoadedTreeNodeItem, PageOptions as UiPageOptions, ItemStyle, ItemColorOverrides } from "@bentley/ui-components";
 
 /** @internal */
+export const PRESENTATION_TREE_NODE_KEY = "__presentation-components/key";
+
+/** @internal */
 export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string): DelayLoadedTreeNodeItem[] => {
   const list = new Array<DelayLoadedTreeNodeItem>();
   for (const node of nodes)
@@ -22,11 +25,11 @@ export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): Del
   const item: DelayLoadedTreeNodeItem = {
     id: [...node.key.pathFromRoot].reverse().join("/"),
     label: node.label,
-    extendedData: { key: node.key },
   };
+  (item as any)[PRESENTATION_TREE_NODE_KEY] = node.key;
+
   const style: ItemStyle = {};
   const colorOverrides: ItemColorOverrides = {};
-
   if (parentId)
     item.parentId = parentId;
   if (node.description)

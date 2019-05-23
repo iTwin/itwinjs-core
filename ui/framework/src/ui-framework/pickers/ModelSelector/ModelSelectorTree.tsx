@@ -165,8 +165,24 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   }
 
   // tslint:disable-next-line: naming-convention
-  private onCheckboxStateChange = async (node: TreeNodeItem, state: CheckBoxState) => {
-    state === CheckBoxState.On ? this._onNodesSelected([node]) : this._onNodesDeselected([node]);
+  private onCheckboxStateChange = async (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
+    const selectedNodes: TreeNodeItem[] = [];
+    const deselectedNodes: TreeNodeItem[] = [];
+    for (const { node, newState } of stateChanges) {
+      if (newState === CheckBoxState.On) {
+        selectedNodes.push(node);
+      } else {
+        deselectedNodes.push(node);
+      }
+    }
+
+    if (selectedNodes.length > 0) {
+      this._onNodesSelected(selectedNodes);
+    }
+
+    if (deselectedNodes.length > 0) {
+      this._onNodesDeselected(deselectedNodes);
+    }
   }
 
   // tslint:disable-next-line: naming-convention

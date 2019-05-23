@@ -183,12 +183,14 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
   }
 
   // tslint:disable-next-line: naming-convention
-  private onCheckboxStateChange = async (node: TreeNodeItem, state: CheckBoxState) => {
+  private onCheckboxStateChange = async (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
     if (!this._visibilityHandler)
       return;
 
-    // tslint:disable-next-line: no-floating-promises
-    this._visibilityHandler.changeVisibility(node, state === CheckBoxState.On);
+    for (const { node, newState } of stateChanges) {
+      // tslint:disable-next-line: no-floating-promises
+      this._visibilityHandler.changeVisibility(node, newState === CheckBoxState.On);
+    }
   }
 
   // tslint:disable-next-line: naming-convention
@@ -428,8 +430,14 @@ export class VisibilityHandler implements IDisposable {
       const ovr = (on === isDisplayedInSelector) ? PerModelCategoryVisibility.Override.None
         : on ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide;
       this._props.viewport.perModelCategoryVisibility.setOverride(parentModelId, categoryId, ovr);
+      if (ovr === PerModelCategoryVisibility.Override.None && on) {
+        // we took off the override which means the category is displayed in selector, but
+        // doesn't mean all its subcategories are displayed - this call ensures that
+        this._props.viewport.changeCategoryDisplay([categoryId], true, true);
+      }
+      return;
     }
-    this._props.viewport.changeCategoryDisplay([categoryId], on);
+    this._props.viewport.changeCategoryDisplay([categoryId], on, on ? true : false);
   }
 
   private async areElementCategoryAndModelDisplayed(elementId: Id64String): Promise<boolean> {
@@ -506,15 +514,15 @@ class SubjectModelIdsCache {
       return;
 
     this._subjectsHierarchy = new Map();
-    const ecsql = `SELECT ECInstanceId, Parent.Id FROM bis.Subject`;
+    const ecsql = `SELECT ECInstanceId id, Parent.Id parentId FROM bis.Subject WHERE Parent IS NOT NULL`;
     const result = this._imodel.query(ecsql, undefined, 1000);
     for await (const row of result) {
-      let list = this._subjectsHierarchy.get(row[1]);
+      let list = this._subjectsHierarchy.get(row.parentId);
       if (!list) {
         list = [];
-        this._subjectsHierarchy.set(row[1], list);
+        this._subjectsHierarchy.set(row.parentId, list);
       }
-      list.push(row[0]);
+      list.push(row.id);
     }
   }
 
@@ -523,15 +531,15 @@ class SubjectModelIdsCache {
       return;
 
     this._subjectModels = new Map();
-    const ecsql = `SELECT p.ECInstanceId, p.Parent.Id FROM bis.InformationPartitionElement p JOIN bis.Model m ON m.ModeledElement.Id = p.ECInstanceId`;
+    const ecsql = `SELECT p.ECInstanceId id, p.Parent.Id subjectId FROM bis.InformationPartitionElement p JOIN bis.Model m ON m.ModeledElement.Id = p.ECInstanceId`;
     const result = this._imodel.query(ecsql, undefined, 1000);
     for await (const row of result) {
-      let list = this._subjectModels.get(row[1]);
+      let list = this._subjectModels.get(row.subjectId);
       if (!list) {
         list = [];
-        this._subjectModels.set(row[1], list);
+        this._subjectModels.set(row.subjectId, list);
       }
-      list.push(row[0]);
+      list.push(row.id);
     }
   }
 
@@ -633,22 +641,19 @@ interface CategoryAndModelId {
   modelId: Id64String;
 }
 
-// cSpell:ignore printf
-
 class ElementCategoryAndModelRequestor extends DelayedRequestor<Id64String, CategoryAndModelId> {
   protected createResultIterator(elementIds: Id64String[]): AsyncIterableIterator<{ id: Id64String, modelId: Id64String, categoryId: Id64String }> {
     const q = `
-      SELECT * FROM (
-        SELECT e.ECInstanceId id, e.Model.Id modelId, printf('0x%x', ge3d.Category.Id) categoryId
-        FROM [bis].Element e
-        JOIN [bis].[GeometricElement3d] ge3d ON ge3d.ECInstanceId = e.ECInstanceId
-        UNION ALL
-        SELECT e.ECInstanceId id, e.Model.Id modelId, printf('0x%x', ge2d.Category.Id) categoryId
-        FROM [bis].Element e
-        JOIN [bis].[GeometricElement2d] ge2d ON ge2d.ECInstanceId = e.ECInstanceId
-      )
-      WHERE id IN (${new Array(elementIds.length).fill("?").join(",")})`;
-    return this._imodel.query(q, elementIds);
+      SELECT e.ECInstanceId id, e.Model.Id modelId, ge3d.Category.Id categoryId
+      FROM [bis].Element e
+      JOIN [bis].[GeometricElement3d] ge3d ON ge3d.ECInstanceId = e.ECInstanceId
+      WHERE e.ECInstanceId IN (${new Array(elementIds.length).fill("?").join(",")})
+      UNION ALL
+      SELECT e.ECInstanceId id, e.Model.Id modelId, ge2d.Category.Id categoryId
+      FROM [bis].Element e
+      JOIN [bis].[GeometricElement2d] ge2d ON ge2d.ECInstanceId = e.ECInstanceId
+      WHERE e.ECInstanceId IN (${new Array(elementIds.length).fill("?").join(",")})`;
+    return this._imodel.query(q, [...elementIds, ...elementIds]);
   }
   public getCategoryAndModelId = async (elementId: Id64String) => this.getResult(elementId);
 }

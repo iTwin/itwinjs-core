@@ -656,6 +656,9 @@ export class TransientIdSequence {
 export namespace Guid {
   const uuidPattern = new RegExp("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
+  /** Represents the empty Guid 00000000-0000-0000-0000-000000000000 */
+  export const empty: GuidString = "00000000-0000-0000-0000-000000000000";
+
   /** Determine whether the input string is "guid-like". That is, it follows the 8-4-4-4-12 pattern. This does not enforce
    *  that the string is actually in valid UUID format.
    */

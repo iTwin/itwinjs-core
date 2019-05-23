@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Throw IModelError if an IModelDb query would return too many rows",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "shaun.sewall@bentley.com"
+}

@@ -66,6 +66,7 @@ class RealityModelTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public tilesetJson: object;
   public yAxisUp: boolean = false;
+  public maxTilesToSkip = 1;    // Skip only one level in HLOD tree -- This matches the BIM tiles.  If our tiles loaded faster we could increase this.
   constructor(json: any, public client: RealityModelTileClient, tilesetTransform: Transform) {
     this.tilesetJson = json.root;
     this.rootTile = new RealityModelTileProps(json.root, "");

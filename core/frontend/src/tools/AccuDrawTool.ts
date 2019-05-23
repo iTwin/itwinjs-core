@@ -824,6 +824,9 @@ export class AccuDrawShortcuts {
     if (!accudraw.isActive)
       return; // Require compass to already be active for this shortcut...
 
+    if (aboutCurrentZ)
+      accudraw.changeBaseRotationMode(RotationMode.Context); // Establish current orientation as base; base Z is used when defining compass rotation by x axis...
+
     if (accudraw.clearTentative() || IModelApp.accuSnap.isHot ||
       (CompassMode.Polar === accudraw.compassMode && accudraw.getFieldLock(ItemField.ANGLE_Item)) ||
       (CompassMode.Polar !== accudraw.compassMode && accudraw.getFieldLock(ItemField.X_Item) && accudraw.getFieldLock(ItemField.Y_Item))) {

@@ -268,7 +268,7 @@ describe("Render mirukuru", () => {
         // Set bg color to red, elem color to 50% transparent blue => expect blending
         vp.view.displayStyle.backgroundColor = ColorDef.red;
         vp.invalidateRenderPlan();
-        ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromJSON({ rgb: new RgbColor(0, 0, 1), transparency: 0.5 }));
+        ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }));
         vp.setFeatureOverrideProviderChanged();
         await vp.drawFrame();
         colors = vp.readUniqueColors();
@@ -280,10 +280,8 @@ describe("Render mirukuru", () => {
             expect(c.r).least(0x70);
             expect(c.r).most(0x90);
             expect(c.g).to.equal(0);
-            /* ###TODO determine why blue is zero? No repro in display-test-app...
             expect(c.b).least(0x70);
             expect(c.b).most(0x90);
-            */
             expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImage()
           }
         }

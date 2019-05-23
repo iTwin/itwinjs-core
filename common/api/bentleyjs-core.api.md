@@ -163,15 +163,15 @@ export enum ChangeSetStatus {
 
 // @public
 export class ClientRequestContext {
-    constructor(activityId?: string, applicationId?: string, applicationVersion?: string, sessionId?: string);
-    readonly activityId: string;
+    constructor(activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
+    readonly activityId: GuidString;
     readonly applicationId: string;
     readonly applicationVersion: string;
     static readonly current: ClientRequestContext;
     // (undocumented)
     protected static _current: ClientRequestContext;
     enter(): this;
-    readonly sessionId: string;
+    readonly sessionId: GuidString;
     // (undocumented)
     useContextForRpc: boolean;
     }
@@ -449,6 +449,7 @@ export type GetMetaDataFunction = () => any;
 
 // @public
 export namespace Guid {
+    const empty: GuidString;
     export function createValue(): GuidString;
     export function isGuid(value: string): boolean;
     export function isV4Guid(value: string): boolean;

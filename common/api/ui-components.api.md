@@ -1765,6 +1765,7 @@ export interface PropertyGridProps extends CommonProps {
     isPropertyEditingEnabled?: boolean;
     isPropertyHoverEnabled?: boolean;
     isPropertySelectionEnabled?: boolean;
+    isPropertySelectionOnRightClickEnabled?: boolean;
     onPropertyContextMenu?: (args: PropertyGridContextMenuArgs) => void;
     // @beta
     onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
@@ -1902,8 +1903,9 @@ export interface RowItem {
     cells: CellItem[];
     // (undocumented)
     colorOverrides?: ItemColorOverrides;
-    // (undocumented)
-    extendedData?: any;
+    extendedData?: {
+        [key: string]: any;
+    };
     // (undocumented)
     isDisabled?: boolean;
     key: string;
@@ -1970,6 +1972,7 @@ export interface SharedRendererProps {
     onClick?: (property: PropertyRecord, key?: string) => void;
     onColumnRatioChanged?: (ratio: number) => void;
     onContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
+    onRightClick?: (property: PropertyRecord, key?: string) => void;
     orientation: Orientation;
     propertyRecord: PropertyRecord;
     uniqueKey?: string;
@@ -2629,8 +2632,9 @@ export interface TreeNodeItem {
     checkBoxState?: CheckBoxState;
     // (undocumented)
     description?: string;
-    // (undocumented)
-    extendedData?: any;
+    extendedData?: {
+        [key: string]: any;
+    };
     // (undocumented)
     icon?: string;
     // (undocumented)
@@ -2660,7 +2664,10 @@ export interface TreeProps extends CommonProps {
     imageLoader?: ITreeImageLoader;
     // @internal
     nodeHighlightingProps?: HighlightableTreeProps;
-    onCheckboxClick?: (node: TreeNodeItem, newState: CheckBoxState) => void;
+    onCheckboxClick?: (stateChanges: Array<{
+        node: TreeNodeItem;
+        newState: CheckBoxState;
+    }>) => void;
     onChildrenLoaded?: (parent: TreeNodeItem, children: TreeNodeItem[]) => void;
     onNodeCollapsed?: (node: TreeNodeItem) => void;
     onNodeExpanded?: (node: TreeNodeItem) => void;

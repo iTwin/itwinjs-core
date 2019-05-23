@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "packageName": "@bentley/express-server",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/express-server",
+  "email": "Jeff.Marker@bentley.com"
+}

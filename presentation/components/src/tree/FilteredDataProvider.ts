@@ -105,7 +105,7 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
   }
 
   public getNodeKey(node: TreeNodeItem): NodeKey {
-    return node.extendedData.key as NodeKey;
+    return this._parentDataProvider.getNodeKey(node);
   }
 
 }

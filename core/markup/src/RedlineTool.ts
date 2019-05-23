@@ -21,7 +21,7 @@ export abstract class RedlineTool extends MarkupTool {
   protected onAdded(el: MarkupElement) {
     const markup = this.markup;
     const undo = markup.undo;
-    undo.doGroup(() => undo.onAdded(el));
+    undo.performOperation(this.keyin, () => undo.onAdded(el));
     markup.selected.restart(el);
   }
   protected isComplete(_ev: BeButtonEvent) { return this._points.length >= this._nRequiredPoints; }
@@ -357,7 +357,7 @@ export class DistanceTool extends ArrowTool {
     if (!isDynamics) {
       const markup = this.markup;
       const undo = markup.undo;
-      undo.doGroup(() => { undo.onAdded(distanceLine); undo.onAdded(textWithBg); });
+      undo.performOperation(this.keyin, () => { undo.onAdded(distanceLine); undo.onAdded(textWithBg); });
       markup.selected.restart(textWithBg); // Select text+box so that user can freely position relative to distance line...
     }
   }

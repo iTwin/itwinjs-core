@@ -10,7 +10,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { NodeKey, NodePathElement, HierarchyRequestOptions } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, TreeNodeItem, PageOptions } from "@bentley/ui-components";
-import { createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
+import { PRESENTATION_TREE_NODE_KEY, createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 
 /**
@@ -55,7 +55,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
    * **Warning:** the `node` must be created by this data provider.
    */
   public getNodeKey(node: TreeNodeItem): NodeKey {
-    return node.extendedData.key as NodeKey;
+    return (node as any)[PRESENTATION_TREE_NODE_KEY];
   }
 
   /**

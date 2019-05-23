@@ -185,6 +185,7 @@ export class Bezier1dNd {
       data[i0] += fraction * (data[i1] - data[i0]);
     }
   }
+  private static _knotTolerance = 1.0e-8;
   /**
    * Compute new control points to "clamp" bspline unsaturated support to saturated form.
    * * At input time, the control points are associated with the input knots (unsaturated)
@@ -203,6 +204,8 @@ export class Bezier1dNd {
     const knotA = knotArray[kA];
     const knotB = knotArray[kB];
     this.setInterval(knotA, knotB);
+    if (knotB <= knotA + Bezier1dNd._knotTolerance)
+      return false;
     for (let numInsert = degree - 1; numInsert > 0; numInsert--) {
       //  left numInsert poles are pulled forward
       let k0 = kA - numInsert;

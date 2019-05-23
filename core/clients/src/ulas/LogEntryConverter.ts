@@ -5,7 +5,6 @@
 import { Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { UsageLogEntry, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, ProductVersion, UsageType } from "./UlasClient";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { UserInfo } from "../UserInfo";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
 
 const loggerCategory: string = ClientsLoggerCategory.UlasClient;
@@ -16,41 +15,41 @@ const loggerCategory: string = ClientsLoggerCategory.UlasClient;
  */
 export interface UsageLogEntryJson {
   /** Ultimate ID, i.e. company ID in SAP */
-  ultID: number | undefined;
+  ultID?: number;
   /** The ID of the Principal that was granted access to the application */
-  pid: GuidString | undefined;
+  pid?: GuidString;
   /** The GUID of the IMS user accessing the product, maybe the same as the Principal. */
-  imsID: GuidString | undefined;
+  imsID?: GuidString;
   /** The client’s machine name excluding domain information. */
   hID: string;
   /** The client’s login name excluding domain information */
-  uID: string | undefined;
+  uID?: string;
   /** The GUID embedded in the policy file that allows us to track the entitlement history. */
   polID: GuidString;
   /** The ID of the securable. */
   secID: string;
   /** The product ID for which usage is being submitted. It is a 4-digit Product ID from the GPR. */
-  prdid: number | undefined;
+  prdid: number;
   /** A feature string further identifying the product for which available usage is being submitted. Not to be confused with feature IDs. */
   fstr: string;
   /** The version of the application producing the usage.
    *  Format: Pad all sections out to 4 digits padding is with zeros, e.g. 9.10.2.113 becomes 9001000020113.
    */
-  ver: number | undefined;
+  ver: number;
   /** The GUID of the project that the usage should be associated with.
    *  If no project is selected, omit the field.
    */
-  projID: GuidString | undefined;
+  projID?: GuidString;
   /** The GUID that identifies a unique usage session, used to correlate data between feature usage and usage logs. */
-  corID: GuidString;
+  corID?: GuidString;
   /** The UTC time of the event. */
-  evTimeZ: string;
+  evTimeZ?: string;
   /** The version of the schema which this log entry represents. */
   lVer: number;
   /** Identifies the source of the usage log entry: RealTime, Offline, Checkout */
   lSrc: string;
   /** Identifies the country where the client reporting the usage belongs to. */
-  country: string | undefined;
+  country?: string;
   /** The type of usage that occurred on the client. It is acting as a filter to eliminate records from log processing that
    *  should not count towards a customer’s peak processing. One of: Production, Trial, Beta, HomeUse, PreActivation
    */
@@ -154,13 +153,12 @@ export class LogEntryConverter {
    * @returns The session id for the request context
    */
   private static getSessionId(requestContext: AuthorizedClientRequestContext): GuidString {
-    const defaultId = "00000000-0000-0000-0000-000000000000";
-    if (!requestContext.sessionId) {
-      Logger.logWarning(loggerCategory, "SessionId was not specified. Set up IModelApp.sessionId for frontend applications, or IModelHost.sessionId for agents");
-      return defaultId;
+    if (!Guid.isGuid(requestContext.sessionId)) {
+      Logger.logWarning(loggerCategory, "Specified sessionId is not a valid Guid. Set up IModelApp.sessionId for frontend applications, or IModelHost.sessionId for agents");
+      return Guid.empty;
     }
 
-    return requestContext.sessionId || defaultId;
+    return requestContext.sessionId;
   }
 
   public static toUsageLogJson(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): UsageLogEntryJson {
@@ -168,26 +166,22 @@ export class LogEntryConverter {
     const productVersion: ProductVersion = LogEntryConverter.getApplicationVersion(requestContext);
     const sessionId: GuidString = LogEntryConverter.getSessionId(requestContext);
 
-    const userInfo: UserInfo | undefined = requestContext.accessToken.getUserInfo();
-    const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
-
-    const imsID: GuidString | undefined = !!userInfo ? userInfo.id : undefined;
-    const ultID: number | undefined = !!featureTrackingInfo ? parseInt(featureTrackingInfo.ultimateSite, 10) : undefined;
-    const usageCountry: string | undefined = !!featureTrackingInfo ? featureTrackingInfo.usageCountryIso : undefined;
-
     const hID: string = LogEntryConverter.prepareMachineName(entry.hostName);
-    const hostUserName = userInfo && userInfo.email ? userInfo.email.id : undefined;
-    const uID: string | undefined = !!hostUserName ? LogEntryConverter.prepareUserName(hostUserName, entry.hostName) : imsID;
-
-    const ver: number | undefined = LogEntryConverter.toVersionNumber(productVersion);
+    const ver: number = LogEntryConverter.toVersionNumber(productVersion);
     const uType: string = LogEntryConverter.usageTypeToString(entry.usageType);
 
     return {
-      ultID, pid: imsID, // Principal ID for now is IMS Id (eventually should be pulled from policy files)
-      imsID, hID, uID, polID: LogEntryConverter._policyFileId, secID: LogEntryConverter._securableId, prdid: productId,
-      fstr: LogEntryConverter._featureString, ver, projID: entry.projectId, corID: sessionId,
-      evTimeZ: entry.timestamp, lVer: LogEntryConverter._logEntryVersion, lSrc: LogEntryConverter._logPostingSource,
-      country: usageCountry, uType,
+      hID,
+      polID: LogEntryConverter._policyFileId,
+      secID: LogEntryConverter._securableId,
+      prdid: productId,
+      fstr: LogEntryConverter._featureString,
+      ver,
+      projID: entry.projectId,
+      corID: sessionId,
+      lVer: LogEntryConverter._logEntryVersion,
+      lSrc: LogEntryConverter._logPostingSource,
+      uType,
     };
   }
 
@@ -197,23 +191,15 @@ export class LogEntryConverter {
     const productVersion: ProductVersion = LogEntryConverter.getApplicationVersion(requestContext);
     const sessionId: GuidString = LogEntryConverter.getSessionId(requestContext);
 
-    const userInfo: UserInfo | undefined = requestContext.accessToken.getUserInfo();
-    const featureTrackingInfo = userInfo ? userInfo.featureTracking : undefined;
-
-    const imsID: GuidString | undefined = !!userInfo ? userInfo.id : undefined;
-    const ultID: number | undefined = !!featureTrackingInfo ? parseInt(featureTrackingInfo.ultimateSite, 10) : undefined;
-    const usageCountry: string | undefined = !!featureTrackingInfo ? featureTrackingInfo.usageCountryIso : undefined;
-    const hostUserName = userInfo && userInfo.email ? userInfo.email.id : undefined;
     const ver: number | undefined = LogEntryConverter.toVersionNumber(productVersion);
 
     for (const entry of entries) {
       const hID: string = LogEntryConverter.prepareMachineName(entry.hostName);
-      const uID: string | undefined = !!hostUserName ? LogEntryConverter.prepareUserName(hostUserName, entry.hostName) : imsID;
 
       const evTimeZ: string = entry.timestamp;
       let sDateZ: string;
       let eDateZ: string;
-      let corID: GuidString;
+      let corID: GuidString | undefined;
       const startEntry: FeatureStartedLogEntry = entry as FeatureStartedLogEntry;
       const endEntry: FeatureEndedLogEntry = entry as FeatureEndedLogEntry;
       const defaultDate: string = "0001-01-01T00:00:00Z";
@@ -239,11 +225,21 @@ export class LogEntryConverter {
       }
 
       const entryJson: FeatureLogEntryJson = {
-        ultID, pid: imsID, // Principal ID for now is IMS Id (eventually should be pulled from policy files)
-        imsID, hID, uID, polID: LogEntryConverter._policyFileId, secID: LogEntryConverter._securableId,
-        prdid: productId, fstr: LogEntryConverter._featureString, ver, projID: entry.projectId, corID,
-        evTimeZ, lVer: LogEntryConverter._logEntryVersion, lSrc: LogEntryConverter._logPostingSource,
-        country: usageCountry, uType, ftrID: entry.featureId, sDateZ, eDateZ, uData,
+        hID,
+        polID: LogEntryConverter._policyFileId,
+        secID: LogEntryConverter._securableId,
+        prdid: productId,
+        fstr: LogEntryConverter._featureString,
+        ver,
+        projID: entry.projectId,
+        corID,
+        lVer: LogEntryConverter._logEntryVersion,
+        lSrc: LogEntryConverter._logPostingSource,
+        uType,
+        ftrID: entry.featureId,
+        sDateZ,
+        eDateZ,
+        uData,
       };
 
       json.push(entryJson);
@@ -251,10 +247,7 @@ export class LogEntryConverter {
     return json;
   }
 
-  private static toVersionNumber(version?: ProductVersion): number | undefined {
-    if (!version)
-      return undefined;
-
+  private static toVersionNumber(version: ProductVersion): number {
     // version must be encoded into a single number where each version digit is padded out to 4 digits
     // and the version is always considered to have 4 digits.
     // Ex: 3.99.4 -> 3.99.4.0 -> 3009900040000
@@ -275,7 +268,7 @@ export class LogEntryConverter {
     return machineName.toLowerCase();
   }
 
-  private static prepareUserName(userName: string, machineName: string): string {
+  /* private static prepareUserName(userName: string, machineName: string): string {
     if (!userName || userName.length === 0)
       return "";
 
@@ -295,7 +288,7 @@ export class LogEntryConverter {
       preparedUserName = `${machineName.toLowerCase()}\\${preparedUserName}`;
 
     return preparedUserName;
-  }
+  } */
 
   private static usageTypeToString(val: UsageType): string {
     switch (val) {

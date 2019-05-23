@@ -29,6 +29,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Point4d } from "../../geometry4d/Point4d";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { prettyPrint } from "../testFunctions";
 /** return knots [0,0,0, step, 2*step, ... N,N,N]
  * where there are:
  *  * (order-1) leading and trailing clamp values.
@@ -580,5 +581,50 @@ describe("BsplineCurve", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "WeightedCurveMatch");
     expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("StrokeWithKnotsA", () => {
+    const ck = new Checker();
+    const poles: Point3d[] = [];
+    for (let i = 0; i < 10; i++)
+      poles.push(Point3d.create(i, i * i, 0));
+    const knots = [0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4];
+    const bcurve = BSplineCurve3d.create(poles, knots, 4)!;
+    const path = Path.create(bcurve);
+    const options = new StrokeOptions();
+    options.chordTol = 0.01;
+    const strokes = path.getPackedStrokes(options);
+    console.log(prettyPrint(strokes!.getPoint3dArray()));
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("StrokeWithKnotsB", () => {
+    const ck = new Checker();
+    const path = IModelJson.Reader.parse({
+      path: [{
+        bcurve: {
+          points: [[562203.9888586091, 4184365.4828894683, 13.075188058999167],
+          [562203.8776459384, 4184365.258953491, 13.075185855086009],
+          [562203.7664332676, 4184365.035017514, 13.075183688796626],
+          [562203.6552205969, 4184364.811081537, 13.07518155809684],
+          [562203.5440079262, 4184364.58714556, 13.075179427397055],
+          [562203.4327952556, 4184364.3632095824, 13.07517733228783],
+          [562203.3215825849, 4184364.1392736053, 13.075175270883584],
+          [562203.0991924296, 4184363.691472501, 13.075171148727286],
+          [562202.8768022744, 4184363.2436713967, 13.075167161227737],
+          [562202.6544121193, 4184362.7958702925, 13.075163294885328]],
+          knots: [0, 0, 0, 0, 0.2500197756132385, 0.2500197756132385, 0.2500197756132385,
+            0.500039551226476, 0.500039551226476, 0.500039551226476, 1, 1, 1, 1],
+          closed: false,
+          order: 4,
+        },
+      }],
+    });
+    ck.testTrue(path instanceof Path);
+    if (path instanceof Path) {
+      const options = new StrokeOptions();
+      options.chordTol = 0.01;
+      const strokes = path.getPackedStrokes(options);
+      console.log(prettyPrint(strokes!.getPoint3dArray()));
+    }
   });
 });

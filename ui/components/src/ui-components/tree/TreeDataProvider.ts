@@ -23,12 +23,15 @@ export interface TreeNodeItem {
   isCheckboxVisible?: boolean;
   isCheckboxDisabled?: boolean;
   checkBoxState?: CheckBoxState;
-  extendedData?: any;
   isEditable?: boolean;
   /** Primitive typename. See PropertyRecord.PropertyDescription */
   typename?: string;
-
   style?: ItemStyle;
+  /**
+   * A key-value pairs data structure that can be used by data provider
+   * to store some custom data for this node item.
+   */
+  extendedData?: { [key: string]: any };
 }
 
 /** A [[TreeNodeItem]] for immediately loaded trees

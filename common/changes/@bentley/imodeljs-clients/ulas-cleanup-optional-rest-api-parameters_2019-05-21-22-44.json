@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "cease providing ulas user data that can be inferred from the accesstoken",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "evan.preslar@bentley.com"
+}

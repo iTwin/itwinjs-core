@@ -593,7 +593,6 @@ export class IModelDb extends IModel {
     } while (result.status !== QueryResponseStatus.Done);
   }
   /** Execute a query against this IModelDb.
-   * @deprecated use withPreparedStatement or query or queryRows instead
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -609,7 +608,8 @@ export class IModelDb extends IModel {
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid
+   * @throws [IModelError]($common) If the statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
+   * @deprecated use withPreparedStatement or query or queryPage instead
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
@@ -618,8 +618,9 @@ export class IModelDb extends IModel {
       const rows: any[] = [];
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         rows.push(stmt.getRow());
-        if (rows.length >= IModelDb.maxLimit)
-          break; // don't let a "rogue" query consume too many resources
+        if (rows.length > IModelDb.maxLimit) {
+          throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement", Logger.logError, loggerCategory);
+        }
       }
       return rows;
     });
@@ -688,10 +689,10 @@ export class IModelDb extends IModel {
     return stmt;
   }
 
-  /**
-   * Query for a set of entity ids, given an EntityQueryParams
-   * @param params the EntityQueryParams for query
+  /** Query for a set of entity ids, given an EntityQueryParams
+   * @param params The query parameters. The `limit` and `offset` members should be used to page results.
    * @returns an Id64Set with results of query
+   * @throws [IModelError]($common) if the generated statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
    *
    * *Example:*
    * ``` ts
@@ -711,8 +712,12 @@ export class IModelDb extends IModel {
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {
       for (const row of stmt) {
-        if (row.id !== undefined)
+        if (row.id !== undefined) {
           ids.add(row.id);
+          if (ids.size > IModelDb.maxLimit) {
+            throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement", Logger.logError, loggerCategory);
+          }
+        }
       }
     });
     return ids;
