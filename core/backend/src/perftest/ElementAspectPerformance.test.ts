@@ -64,7 +64,7 @@ describe("ElementAspectPerfomance", () => {
     assert.exists(imodeldb);
 
     let eleId: Id64String;
-    const count1 = 10;
+    const count1 = 5000;
     let totalTimeReadSimpELeGet = 0;
     let totalTimeInsertSimpELeGet = 0;
     let totalTimeUpdateSimpELeGet = 0;
@@ -106,17 +106,17 @@ describe("ElementAspectPerfomance", () => {
 
     }
     imodeldb.close(requestContext).catch();
-    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Insertion", totalTimeInsertSimpELeGet, { "ElementCount ": count1 });
-    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Updation", totalTimeUpdateSimpELeGet, { "ElementCount ": count1 });
-    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Deletion", totalTimeDeleteSimpELeGet, { "ElementCount ": count1 });
-    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Read", totalTimeReadSimpELeGet, { "ElementCount ": count1 });
+    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Insertion", totalTimeInsertSimpELeGet, count1);
+    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Updation", totalTimeUpdateSimpELeGet, count1);
+    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Deletion", totalTimeDeleteSimpELeGet, count1);
+    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Read", totalTimeReadSimpELeGet, count1);
   });
 
   it("UniqueAspectElement-Insertion-Updation-Deletion-Read", async () => {
     const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.latest());
     assert.exists(imodeldb);
 
-    const count1 = 10;
+    const count1 = 5000;
     let eleId: Id64String;
     let aspectProps: ElementAspectProps;
     let totalTimeInsert = 0;
@@ -173,17 +173,17 @@ describe("ElementAspectPerfomance", () => {
       totalTimeDelete = totalTimeDelete + elapsedTime3;
     }
     imodeldb.close(requestContext).catch();
-    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Insertion", totalTimeInsert, { "ElementCount ": count1 });
-    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Updation", totalTimeUpdate, { "ElementCount ": count1 });
-    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Deletion", totalTimeDelete, { "ElementCount ": count1 });
-    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Read", totalTimeRead, { "ElementCount ": count1 });
+    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Insertion", totalTimeInsert, count1);
+    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Updation", totalTimeUpdate, count1);
+    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Deletion", totalTimeDelete, count1);
+    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Read", totalTimeRead, count1);
   });
 
   it("MultiAspectElement-Insertion-Updation-Deletion-Read", async () => {
     const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.latest());
     assert.exists(imodeldb);
 
-    const count1 = 10;
+    const count1 = 5000;
     let eleId: Id64String;
     let totalTimeInsert = 0;
     let totalTimeUpdate = 0;
@@ -252,9 +252,9 @@ describe("ElementAspectPerfomance", () => {
       totalTimeDelete = totalTimeDelete + elapsedTime3;
     }
     imodeldb.close(requestContext).catch();
-    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Insertion", totalTimeInsert, { "ElementCount ": count1 });
-    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Updation", totalTimeUpdate, { "ElementCount ": count1 });
-    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Deletion", totalTimeDelete, { "ElementCount ": count1 });
-    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Read", totalTimeRead, { "ElementCount ": count1 });
+    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Insertion", totalTimeInsert, count1);
+    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Updation", totalTimeUpdate, count1);
+    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Deletion", totalTimeDelete, count1);
+    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Read", totalTimeRead, count1);
   });
 });
