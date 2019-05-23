@@ -941,7 +941,7 @@ export class ViewAttributes {
 
   private addBackgroundMap(): void {
     const isMapSupported = (view: ViewState) => view.is3d() && view.iModel.isGeoLocated;
-    const getBackgroundMap = (view: ViewState) => (view as ViewState3d).getDisplayStyle3d().backgroundMap;
+    const getBackgroundMap = (view: ViewState) => view.displayStyle.settings.backgroundMap ? view.displayStyle.settings.backgroundMap : {};
 
     const div = document.createElement("div");
     div.appendChild(document.createElement("hr")!);
@@ -996,7 +996,7 @@ export class ViewAttributes {
 
       const map = getBackgroundMap(view);
       providers.value = JsonUtils.asString(map.providerName, "BingProvider");
-      types.value = JsonUtils.asInt(map.mapType, BackgroundMapType.Hybrid).toString();
+      types.value = JsonUtils.asInt(map.providerData ? map.providerData.mapType : undefined, BackgroundMapType.Hybrid).toString();
     });
 
     div.appendChild(comboBoxesDiv);
