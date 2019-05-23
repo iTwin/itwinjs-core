@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { dispose, assert } from "@bentley/bentleyjs-core";
-import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, IndexedPolyfaceVisitor, UnionOfConvexClipPlaneSets, Vector3d, StrokeOptions } from "@bentley/geometry-core";
+import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, IndexedPolyfaceVisitor, UnionOfConvexClipPlaneSets, Vector3d, StrokeOptions, Transform } from "@bentley/geometry-core";
 import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Target } from "./Target";
@@ -13,60 +13,153 @@ import { RenderMemory, RenderClipVolume, ClippingType } from "../System";
 import { ClipMaskGeometry } from "./CachedGeometry";
 import { ViewRect } from "../../Viewport";
 import { FrameBuffer } from "./FrameBuffer";
-import { TextureHandle, Texture2DHandle } from "./Texture";
+import { TextureHandle, Texture2DData, Texture2DHandle } from "./Texture";
 import { GL } from "./GL";
 import { System } from "./System";
 import { RenderState } from "./RenderState";
 import { DrawParams } from "./DrawCommand";
 
-abstract class PlanesWriter {
-  protected readonly _view: DataView;
-  protected _curPos: number = 0;
+/** @internal */
+interface ClipPlaneSets {
+  readonly planes: UnionOfConvexClipPlaneSets;
+  readonly numPlanes: number;
+  readonly numSets: number;
+}
 
-  protected constructor(bytes: Uint8Array) { this._view = new DataView(bytes.buffer); }
+/** @internal */
+interface ClipPlaneTexture {
+  readonly handle: Texture2DHandle;
+  readonly data: Texture2DData;
+}
 
-  protected advance(numBytes: number): void { this._curPos += numBytes; }
+/** Maintains a texture representing clipping planes. Updated when view matrix changes.
+ * @internal
+ */
+abstract class ClippingPlanes {
+  /** Most recently-applied view matrix. */
+  private readonly _transform = Transform.createZero();
+  private readonly _texture: ClipPlaneTexture;
+  private readonly _planes: ClipPlaneSets;
+  /** Used for writing to texture data. */
+  private readonly _view: DataView;
+  /** Position at which to write next texture data. */
+  private _curPos: number = 0;
+
+  public static create(planes: ClipPlaneSets): ClippingPlanes | undefined {
+    return System.instance.capabilities.supportsTextureFloat ? FloatPlanes.create(planes) : PackedPlanes.create(planes);
+  }
+
+  public dispose(): void {
+    dispose(this._texture.handle);
+  }
+
+  public get bytesUsed(): number { return this._texture.handle.bytesUsed; }
+
+  public getTexture(transform: Transform): Texture2DHandle {
+    if (transform.isAlmostEqual(this._transform))
+      return this._texture.handle;
+
+    this.reset();
+    transform.clone(this._transform);
+
+    // Avoid allocations inside loop...
+    const pInwardNormal = new Vector3d();
+    const dir = new Vector3d();
+    const pos = new Point3d();
+    const v0 = new Vector3d();
+
+    let numSetsProcessed = 0;
+    for (const set of this._planes.planes.convexSets) {
+      if (set.planes.length === 0)
+        continue;
+
+      for (const plane of set.planes) {
+        plane.inwardNormalRef.clone(pInwardNormal);
+        let pDistance = plane.distance;
+
+        // Transform direction of clip plane
+        const norm = pInwardNormal;
+        transform.matrix.multiplyVector(norm, dir);
+        dir.normalizeInPlace();
+
+        // Transform distance of clip plane
+        transform.multiplyPoint3d(norm.scale(pDistance, v0), pos);
+        v0.setFromPoint3d(pos);
+
+        pInwardNormal.set(dir.x, dir.y, dir.z);
+        pDistance = -v0.dotProduct(dir);
+
+        // The plane has been transformed into view space
+        this.appendPlane(pInwardNormal, pDistance);
+      }
+
+      if (++numSetsProcessed < this._planes.numSets)
+        this.appendZeroPlane();
+    }
+
+    this._texture.handle.replaceTextureData(this._texture.data);
+    return this._texture.handle;
+  }
+
+  /** Exposed for testing purposes. */
+  public getTextureData(transform: Transform): Texture2DData {
+    this.getTexture(transform);
+    return this._texture.data;
+  }
+
+  protected constructor(planes: ClipPlaneSets, texture: ClipPlaneTexture) {
+    this._texture = texture;
+    this._planes = planes;
+    this._view = new DataView(texture.data.buffer);
+  }
+
+  protected abstract append(value: number): void;
+
   protected appendFloat(value: number): void { this._view.setFloat32(this._curPos, value, true); this.advance(4); }
   protected appendUint8(value: number): void { this._view.setUint8(this._curPos, value); this.advance(1); }
 
-  protected abstract append(value: number): void;
-  protected appendValues(a: number, b: number, c: number, d: number) {
+  private advance(numBytes: number): void { this._curPos += numBytes; }
+  private reset(): void { this._curPos = 0; }
+
+  private appendValues(a: number, b: number, c: number, d: number) {
     this.append(a);
     this.append(b);
     this.append(c);
     this.append(d);
   }
 
-  public abstract get numPixelsPerPlane(): number;
-  public abstract get dataType(): GL.Texture.DataType;
-
-  public appendPlane(normal: Vector3d, distance: number): void { this.appendValues(normal.x, normal.y, normal.z, distance); }
-  public appendZeroPlane(): void { this.appendValues(0, 0, 0, 0); }
+  private appendPlane(normal: Vector3d, distance: number): void { this.appendValues(normal.x, normal.y, normal.z, distance); }
+  private appendZeroPlane(): void { this.appendValues(0, 0, 0, 0); }
 }
 
-// ###TODO float texture produces 'not renderable' errors? gotta be doing something wrong...
-class FloatPlanesWriter extends PlanesWriter {
-  public constructor(bytes: Uint8Array) { super(bytes); }
+/** Stores clip planes in floating-point texture.
+ * @internal
+ */
+class FloatPlanes extends ClippingPlanes {
+  public static create(planes: ClipPlaneSets): ClippingPlanes | undefined {
+    const totalNumPlanes = planes.numPlanes + planes.numSets - 1;
+    const data = new Float32Array(totalNumPlanes * 4);
+    const handle = Texture2DHandle.createForData(1, totalNumPlanes, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+    return undefined !== handle ? new FloatPlanes(planes, { handle, data }) : undefined;
+  }
 
-  public get numPixelsPerPlane() { return 1; }
-  public get dataType() { return GL.Texture.DataType.Float; }
+  protected append(value: number) { this.appendFloat(value); }
 
-  public append(value: number) { this.appendFloat(value); }
+  private constructor(planes: ClipPlaneSets, texture: ClipPlaneTexture) { super(planes, texture); }
 }
 
-class PackedPlanesWriter extends PlanesWriter {
-  public constructor(bytes: Uint8Array) { super(bytes); }
+/** Stores clip planes packed into RGBA texture.
+ * @internal
+ */
+class PackedPlanes extends ClippingPlanes {
+  public static create(planes: ClipPlaneSets): ClippingPlanes | undefined {
+    const totalNumPlanes = planes.numPlanes + planes.numSets - 1;
+    const data = new Uint8Array(totalNumPlanes * 4 * 4);
+    const handle = Texture2DHandle.createForData(4, totalNumPlanes, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+    return undefined !== handle ? new PackedPlanes(planes, { handle, data }) : undefined;
+  }
 
-  public get numPixelsPerPlane() { return 4; }
-  public get dataType() { return GL.Texture.DataType.Float; }
-
-  public append(value: number) {
-    if (0 === value) {
-      // typescript arrays are zero-initialized. The packed representation of 0.0 is 4 zero bytes.
-      this.advance(4);
-      return;
-    }
-
+  protected append(value: number) {
     const sign = value < 0 ? 1 : 0;
     value = Math.abs(value);
     const exponent = Math.floor(Math.log10(value)) + 1;
@@ -86,26 +179,27 @@ class PackedPlanesWriter extends PlanesWriter {
     this.appendUint8(b2);
     this.appendUint8(b3);
   }
+
+  private constructor(planes: ClipPlaneSets, texture: ClipPlaneTexture) { super(planes, texture); }
 }
 
 /** A 3D clip volume defined as a texture derived from a set of planes.
  * @internal
  */
 export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.Consumer {
-  private _texture?: TextureHandle;
+  private _planes?: ClippingPlanes; // not read-only because dispose()...
 
-  private constructor(clip: ClipVector, texture?: TextureHandle) {
+  private constructor(clip: ClipVector, planes?: ClippingPlanes) {
     super(clip);
-    this._texture = texture;
+    this._planes = planes;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    if (undefined !== this._texture)
-      stats.addClipVolume(this._texture.bytesUsed);
+    if (undefined !== this._planes)
+      stats.addClipVolume(this._planes.bytesUsed);
   }
 
   public get type(): ClippingType { return ClippingType.Planes; }
-  public get texture(): TextureHandle | undefined { return this._texture; }
 
   /** Create a new ClipPlanesVolume from a ClipVector.
    * * The result is undefined if
@@ -118,10 +212,7 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
 
     const clipPrim = clipVec.clips[0];
     const clipPlaneSet = clipPrim.fetchClipPlanesRef();
-    if (clipPlaneSet)
-      return ClipPlanesVolume.createFromClipPlaneSet(clipPlaneSet, clipVec);
-
-    return undefined;
+    return undefined !== clipPlaneSet ? ClipPlanesVolume.createFromClipPlaneSet(clipPlaneSet, clipVec) : undefined;
   }
 
   private static createFromClipPlaneSet(clipPlaneSet: UnionOfConvexClipPlaneSets, clip: ClipVector) {
@@ -137,47 +228,20 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
     if (numPlanes === 0)
       return undefined;
 
-    const texture = this.createTexture(clipPlaneSet, numPlanes, numSets);
-    return new ClipPlanesVolume(clip, texture);
-  }
-
-  private static createTexture(planeSet: UnionOfConvexClipPlaneSets, numPlanes: number, numConvexSets: number): TextureHandle | undefined {
-    // Each row of texture holds one plane.
-    // We will insert a sigil plane with a zero normal vector to indicate the beginning of another set of clip planes.
-    const totalNumPlanes = numPlanes + (numConvexSets - 1);
-    const bytes = new Uint8Array(totalNumPlanes * 4 * 4);
-
-    let writer: PlanesWriter;
-    const useFloatIfAvailable = false; // ###TODO if floating point textures supported...
-    if (useFloatIfAvailable && System.instance.capabilities.supportsTextureFloat)
-      writer = new FloatPlanesWriter(bytes);
-    else
-      writer = new PackedPlanesWriter(bytes);
-
-    let numSetsProcessed = 0;
-    for (const convexSet of planeSet.convexSets) {
-      if (convexSet.planes.length === 0)
-        continue;
-
-      for (const plane of convexSet.planes)
-        writer.appendPlane(plane.inwardNormalRef, plane.distance);
-
-      numSetsProcessed++;
-      if (numSetsProcessed < numConvexSets)
-        writer.appendZeroPlane();
-    }
-
-    return Texture2DHandle.createForData(writer.numPixelsPerPlane, totalNumPlanes, bytes, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba /*, writer.dataType*/);
+    const planes = ClippingPlanes.create({ planes: clipPlaneSet, numPlanes, numSets });
+    return new ClipPlanesVolume(clip, planes);
   }
 
   public dispose() {
-    this._texture = dispose(this._texture);
+    this._planes = dispose(this._planes);
   }
 
   /** Push this ClipPlanesVolume clipping onto a target. */
   public pushToTarget(target: Target) {
-    if (this._texture !== undefined)
-      target.clips.set(this._texture.height, this._texture);
+    if (undefined !== this._planes) {
+      const texture = this._planes.getTexture(target.viewMatrix);
+      target.clips.set(texture.height, texture);
+    }
   }
 
   /** Push this ClipPlanesVolume clipping onto the target of a shader program executor. */
@@ -188,6 +252,11 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
   /** Pop this ClipPlanesVolume clipping from a target. */
   public pop(target: Target) {
     target.clips.clear();
+  }
+
+  /** Exposed for testing purposes. */
+  public getTextureData(transform = Transform.identity): Float32Array | Uint8Array | undefined {
+    return undefined !== this._planes ? this._planes.getTextureData(transform) : undefined;
   }
 }
 
