@@ -77,17 +77,25 @@ class TreeSelectionDemoWidget extends React.PureComponent<{}, State> {
     this.removeFromSelection(nodes);
   }
   // tslint:disable-next-line: naming-convention
-  private onCheckboxClick = (node: TreeNodeItem, newState: CheckBoxState) => {
-    switch (newState) {
-      case CheckBoxState.On:
-        // tslint:disable-next-line: no-floating-promises
-        this.addToSelection([node], false);
-        break;
-      case CheckBoxState.Off:
-        // tslint:disable-next-line: no-floating-promises
-        this.removeFromSelection([node]);
-        break;
+  private onCheckboxClick = (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
+    const selectedNodes: TreeNodeItem[] = [];
+    const deselectedNodes: TreeNodeItem[] = [];
+    for (const { node, newState } of stateChanges) {
+      switch (newState) {
+        case CheckBoxState.On:
+          selectedNodes.push(node);
+          break;
+
+        case CheckBoxState.Off:
+          deselectedNodes.push(node);
+          break;
+      }
     }
+
+    // tslint:disable-next-line: no-floating-promises
+    this.addToSelection(selectedNodes, false);
+    // tslint:disable-next-line: no-floating-promises
+    this.removeFromSelection(deselectedNodes);
   }
   public render() {
     return (

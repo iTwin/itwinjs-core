@@ -2662,7 +2662,10 @@ export interface TreeProps extends CommonProps {
     imageLoader?: ITreeImageLoader;
     // @internal
     nodeHighlightingProps?: HighlightableTreeProps;
-    onCheckboxClick?: (node: TreeNodeItem, newState: CheckBoxState) => void;
+    onCheckboxClick?: (stateChanges: Array<{
+        node: TreeNodeItem;
+        newState: CheckBoxState;
+    }>) => void;
     onChildrenLoaded?: (parent: TreeNodeItem, children: TreeNodeItem[]) => void;
     onNodeCollapsed?: (node: TreeNodeItem) => void;
     onNodeExpanded?: (node: TreeNodeItem) => void;

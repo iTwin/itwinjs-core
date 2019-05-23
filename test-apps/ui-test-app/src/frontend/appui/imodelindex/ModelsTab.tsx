@@ -481,18 +481,20 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     return ids;
   }
 
-  private _onCheckboxClick = async (node: TreeNodeItem) => {
-    // toggle the state of the checkbox
-    const check = (node.checkBoxState === CheckBoxState.On) ? CheckBoxState.Off : CheckBoxState.On;
+  private _onCheckboxClick = async (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
+    for (const { node } of stateChanges) {
+      // toggle the state of the checkbox
+      const check = (node.checkBoxState === CheckBoxState.On) ? CheckBoxState.Off : CheckBoxState.On;
 
-    // get the selected nodes
-    const _selectedNodes = this.state.selectedNodes.slice();
+      // get the selected nodes
+      const _selectedNodes = this.state.selectedNodes.slice();
 
-    // change the state of the selected node (which will recursively change any children)
-    await this._onNodesSelected(_selectedNodes, node, check);
+      // change the state of the selected node (which will recursively change any children)
+      await this._onNodesSelected(_selectedNodes, node, check);
 
-    // finally set the state
-    this.setState({ selectedNodes: _selectedNodes });
+      // finally set the state
+      this.setState({ selectedNodes: _selectedNodes });
+    }
   }
 
   /** Set item state for selected node and recursive change children if needed */

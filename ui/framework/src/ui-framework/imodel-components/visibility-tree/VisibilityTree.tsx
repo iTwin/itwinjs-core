@@ -183,12 +183,14 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
   }
 
   // tslint:disable-next-line: naming-convention
-  private onCheckboxStateChange = async (node: TreeNodeItem, state: CheckBoxState) => {
+  private onCheckboxStateChange = async (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
     if (!this._visibilityHandler)
       return;
 
-    // tslint:disable-next-line: no-floating-promises
-    this._visibilityHandler.changeVisibility(node, state === CheckBoxState.On);
+    for (const { node, newState } of stateChanges) {
+      // tslint:disable-next-line: no-floating-promises
+      this._visibilityHandler.changeVisibility(node, newState === CheckBoxState.On);
+    }
   }
 
   // tslint:disable-next-line: naming-convention
