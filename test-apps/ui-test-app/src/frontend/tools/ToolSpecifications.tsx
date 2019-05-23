@@ -86,24 +86,6 @@ export class AppTools {
     });
   }
 
-  /* ------------- NEEDSWORK - figure out how to move to plugin.
-  public static get measurePoints() {
-    return new ToolItemDef({
-      toolId: MeasurePointsTool.toolId,
-      iconSpec: "icon-measure-distance",
-      labelKey: "SampleApp:tools.Measure.Points.flyover",
-      tooltipKey: "SampleApp:tools.Measure.Points.description",
-      execute: () => { IModelApp.tools.run(MeasurePointsTool.toolId); },
-
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        returnState.isEnabled = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
-        return returnState;
-      },
-    });
-  }
-  ----------------------------- */
-
   // Tool that toggles the backstage
   public static get backstageToggleCommand() {
     return Backstage.backstageToggleCommand;

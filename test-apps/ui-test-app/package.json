@@ -33,10 +33,6 @@
         {
           "source": "./public/**/*",
           "dest": "./lib/webresources"
-        },
-        {
-          "source": "./src/frontend/plugins/public/**/*",
-          "dest": "./lib/webresources"
         }
       ],
       "webpack": {
@@ -46,14 +42,6 @@
         "styleSheets": true,
         "htmlTemplate": "./src/frontend/index.html"
       },
-      "subModules": [
-        {
-          "dest": "./lib/webresources",
-          "entry": "./lib/frontend/plugins/MeasurePoints.js",
-          "bundleName": "MeasurePoints",
-          "type": "plugin"
-        }
-      ],
       "makeConfig": {
         "dest": "./lib/webresources/config.json",
         "filter": "^imjs_"
