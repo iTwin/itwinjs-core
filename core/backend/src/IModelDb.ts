@@ -211,22 +211,26 @@ export class IModelDb extends IModel implements PageableECSql {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
-  /** Create a local iModel *snapshot* file. Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
+  /** Create an *empty* local iModel *snapshot* file. Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
-   * @param filePath The file that will contain the new iModel *snapshot*
+   * @param snapshotFile The file that will contain the new iModel *snapshot*
    * @param args The parameters that define the new iModel *snapshot*
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   * @beta
    */
-  public static createSnapshot(filePath: string, args: CreateIModelProps): IModelDb {
-    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(filePath, args);
+  public static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb {
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(snapshotFile, args);
     return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams!.openMode!));
   }
 
-  /** Create a local iModel *snapshot* file using an existing iModel file as a *seed* or starting point.
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+  /** Create a local iModel *snapshot* file using this iModel as a *seed* or starting point.
+   * Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
+   * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
+   * @param snapshotFile The file that will contain the new iModel *snapshot*
+   * @returns A writeable IModelDb
+   * @beta
    */
-  public static createSnapshotFromSeed(snapshotFile: string, seedFile: string): IModelDb {
-    IModelJsFs.copySync(seedFile, snapshotFile);
+  public createSnapshot(snapshotFile: string): IModelDb {
+    IModelJsFs.copySync(this.briefcase.pathname, snapshotFile);
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, false);
     const isSeedFileMaster: boolean = BriefcaseId.Master === briefcaseEntry.briefcaseId;
     const isSeedFileSnapshot: boolean = BriefcaseId.Snapshot === briefcaseEntry.briefcaseId;
@@ -261,6 +265,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @throws [[IModelError]]
    * @see [[open]], [[openSnapshot]]
    * @deprecated iModelHub manages the change history of an iModel, so writing changes to a local/unmanaged file doesn't make sense. Callers should migrate to [[openSnapshot]] or [[open]] instead.
+   * @internal
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
@@ -269,10 +274,16 @@ export class IModelDb extends IModel implements PageableECSql {
 
   /** Open a local iModel *snapshot*. Once created, *snapshots* are read-only and are typically used for archival or data transfer purposes.
    * @see [[open]]
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   * @throws [IModelError]($common) If the file is not found or is not a valid *snapshot*.
+   * @beta
    */
   public static openSnapshot(filePath: string): IModelDb {
-    return this.openStandalone(filePath, OpenMode.Readonly, false);
+    const iModelDb: IModelDb = this.openStandalone(filePath, OpenMode.Readonly, false);
+    const briefcaseId: number = iModelDb.getBriefcaseId().value;
+    if ((BriefcaseId.Snapshot === briefcaseId) || (BriefcaseId.Master === briefcaseId)) {
+      return iModelDb;
+    }
+    throw new IModelError(IModelStatus.BadRequest, "IModelDb.openSnapshot cannot be used to open a briefcase", Logger.logError, loggerCategory);
   }
 
   /** Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from iModelHub to the
@@ -344,7 +355,7 @@ export class IModelDb extends IModel implements PageableECSql {
   /** Close this local read-only iModel *snapshot*, if it is currently open.
    * > Note: A *snapshot* cannot be modified after this function is called.
    * @throws IModelError if the iModel is not open, or is not a *snapshot*.
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   * @beta
    */
   public closeSnapshot(): void {
     this.closeStandalone();
@@ -815,7 +826,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @param requestContext The client request context.
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
-   * @beta Need to consider the impact of *channels*
+   * @beta
    */
   public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
@@ -831,7 +842,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @param requestContext The client request context.
    * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
    * @throws [[IModelError]] If the pull and merge fails.
-   * @beta Need to consider the impact of *channels*
+   * @beta
    */
   public async pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void> {
     requestContext.enter();
@@ -846,7 +857,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @param requestContext The client request context.
    * @param version Version to reverse changes to.
    * @throws [[IModelError]] If the reversal fails.
-   * @beta Need to consider the impact of *channels*
+   * @beta
    */
   public async reverseChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
@@ -859,7 +870,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @param requestContext The client request context.
    * @param version Version to reinstate changes to.
    * @throws [[IModelError]] If the reinstate fails.
-   * @beta Need to consider the impact of *channels*
+   * @beta
    */
   public async reinstateChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();

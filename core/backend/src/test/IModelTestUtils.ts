@@ -173,6 +173,14 @@ export class IModelTestUtils {
     return assetFile;
   }
 
+  /** Orchestrates the steps necessary to create a new snapshot iModel from a seed file. */
+  public static createSnapshotFromSeed(testFileName: string, seedFileName: string): IModelDb {
+    const seedDb: IModelDb = IModelDb.openSnapshot(seedFileName);
+    const testDb: IModelDb = seedDb.createSnapshot(testFileName);
+    seedDb.closeSnapshot();
+    return testDb;
+  }
+
   public static getUniqueModelCode(testIModel: IModelDb, newModelCodeBase: string): Code {
     let newModelCode: string = newModelCodeBase;
     let iter: number = 0;

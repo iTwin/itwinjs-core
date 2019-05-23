@@ -18,7 +18,8 @@ describe("ElementAspect", () => {
   before(() => {
     // NOTE: see ElementAspectTests.PresentationRuleScenarios in DgnPlatform\Tests\DgnProject\NonPublished\ElementAspect_Test.cpp for how ElementAspectTest.bim was created
     const seedFileName = IModelTestUtils.resolveAssetFile("ElementAspectTest.bim");
-    iModel = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("ElementAspect", "ElementAspectTest.bim"), seedFileName);
+    const testFileName = IModelTestUtils.prepareOutputFile("ElementAspect", "ElementAspectTest.bim");
+    iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
   after(() => {

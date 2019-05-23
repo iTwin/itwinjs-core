@@ -354,9 +354,9 @@ export class BriefcaseId {
     constructor(value?: number);
     // (undocumented)
     static readonly Illegal: number;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly Master: number;
-    // @beta
+    // @beta (undocumented)
     static readonly Snapshot: number;
     // @deprecated (undocumented)
     static readonly Standalone: number;
@@ -1641,9 +1641,9 @@ export class IModelDb extends IModel implements PageableECSql {
     containsClass(classFullName: string): boolean;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb>;
     // @beta
-    static createSnapshot(filePath: string, args: CreateIModelProps): IModelDb;
+    createSnapshot(snapshotFile: string): IModelDb;
     // @beta
-    static createSnapshotFromSeed(snapshotFile: string, seedFile: string): IModelDb;
+    static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
@@ -1689,7 +1689,7 @@ export class IModelDb extends IModel implements PageableECSql {
     readonly openParams: OpenParams;
     // @beta
     static openSnapshot(filePath: string): IModelDb;
-    // @deprecated
+    // @internal @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;

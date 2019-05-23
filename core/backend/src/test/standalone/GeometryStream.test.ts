@@ -15,10 +15,9 @@ describe("GeometryStream", () => {
   let imodel: IModelDb;
 
   before(() => {
-    imodel = IModelDb.createSnapshotFromSeed(
-      IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim"),
-      IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"),
-    );
+    const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
+    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
   after(() => {

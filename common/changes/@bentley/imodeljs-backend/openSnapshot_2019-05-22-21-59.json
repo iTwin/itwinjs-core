@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "IModelDb.openSnapshot cannot open a briefcase copy of an iModel managed by iModelHub",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "shaun.sewall@bentley.com"
+}

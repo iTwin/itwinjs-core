@@ -2,13 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { Code, EntityMetaData } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { Code, EntityMetaData } from "@bentley/imodeljs-common";
-import {
-  DefinitionElement, IModelDb, RepositoryLink, SpatialViewDefinition,
-  ViewDefinition3d, UrlLink, BackendRequestContext,
-} from "../../imodeljs-backend";
+import { BackendRequestContext, DefinitionElement, IModelDb, RepositoryLink, SpatialViewDefinition, UrlLink, ViewDefinition3d } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -17,10 +14,9 @@ describe("Class Registry", () => {
   const requestContext = new BackendRequestContext();
 
   before(() => {
-    imodel = IModelDb.createSnapshotFromSeed(
-      IModelTestUtils.prepareOutputFile("ClassRegistry", "ClassRegistryTest.bim"),
-      IModelTestUtils.resolveAssetFile("test.bim"),
-    );
+    const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "ClassRegistryTest.bim");
+    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
   });
 

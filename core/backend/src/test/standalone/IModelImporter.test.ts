@@ -18,6 +18,7 @@ import {
   PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
 } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 class TestDataManager {
   public sourceDb: IModelDb;
@@ -278,7 +279,7 @@ describe("IModelImporter", () => {
       IModelJsFs.mkdirSync(outputDir);
 
     const sourceDb: IModelDb = IModelDb.openSnapshot(path.join(seedDataDirectory, sourceDbFileName));
-    const targetDb: IModelDb = IModelDb.createSnapshotFromSeed(path.join(outputDir, targetDbFileName), path.join(seedDataDirectory, targetDbFileName));
+    const targetDb: IModelDb = IModelTestUtils.createSnapshotFromSeed(path.join(outputDir, targetDbFileName), path.join(seedDataDirectory, targetDbFileName));
     assert.exists(sourceDb);
     assert.exists(targetDb);
     assert.isTrue(sourceDb.codeSpecs.hasName(dgnV8CodeSpecName));

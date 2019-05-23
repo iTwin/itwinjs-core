@@ -294,7 +294,7 @@ export class IModelConnection extends IModel {
 
   /** Open an IModelConnection to a read-only iModel *snapshot* (not managed by iModelHub) from a file name that is resolved by the backend.
    * This method is intended for desktop or mobile applications and should not be used for web applications.
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   * @beta
    */
   public static async openSnapshot(fileName: string): Promise<IModelConnection> {
     const openResponse: IModel = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
@@ -303,7 +303,7 @@ export class IModelConnection extends IModel {
   }
 
   /** Close this IModelConnection to a read-only iModel *snapshot*.
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   * @beta
    */
   public async closeSnapshot(): Promise<void> {
     if (!this.iModelToken)

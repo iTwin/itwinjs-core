@@ -10,7 +10,7 @@ import { IModel, IModelToken } from "../IModel";
 
 /** The RPC interface for working with *snapshot* iModels.
  * This interface is intended for desktop and mobile products. Web products are discouraged from registering this interface.
- * @beta The *snapshot* concept is solid, but the concept name might change which would cause a class rename.
+ * @beta
  */
 export abstract class SnapshotIModelRpcInterface extends RpcInterface {
   /** The types that can be marshaled by the interface. */

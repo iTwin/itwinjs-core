@@ -31,10 +31,17 @@ describe("RulesEmbedding", () => {
     expect(expected).to.not.deep.equal(actual);
   }
 
+  function createSnapshotFromSeed(testFileName: string, seedFileName: string): IModelDb {
+    const seedDb: IModelDb = IModelDb.openSnapshot(seedFileName);
+    const testDb: IModelDb = seedDb.createSnapshot(testFileName);
+    seedDb.closeSnapshot();
+    return testDb;
+  }
+
   before(async () => {
     initialize();
     nativePlatform = new (createDefaultNativePlatform())();
-    imodel = IModelDb.createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
 
