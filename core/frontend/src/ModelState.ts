@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ModelState */
 
-import { dispose, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { dispose, Id64, Id64String, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { BatchType, GeometricModel2dProps, ModelProps, RelatedElement, ServerTimeoutError, TileTreeProps } from "@bentley/imodeljs-common";
+import { BatchType, GeometricModel2dProps, ModelProps, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
@@ -197,7 +197,7 @@ export abstract class GeometricModelState extends ModelState /* implements TileT
       IModelApp.viewManager.onNewTilesReady();
     }).catch((err) => {
       // Retry in case of timeout; otherwise fail.
-      if (err instanceof ServerTimeoutError)
+      if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout)
         state.loadStatus = TileTree.LoadStatus.NotLoaded;
       else
         state.loadStatus = TileTree.LoadStatus.NotFound;

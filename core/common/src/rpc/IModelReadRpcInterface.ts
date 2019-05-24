@@ -4,15 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { Id64String, Id64Set } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Vector2d, Vector3d, Range3dProps } from "@bentley/geometry-core";
-import { Code } from "../Code";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { Range3dProps } from "@bentley/geometry-core";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { RpcNotFoundResponse } from "./core/RpcControl";
 import { EntityQueryParams } from "../EntityProps";
-import { IModel, IModelToken } from "../IModel";
-import { IModelVersion } from "../IModelVersion";
+import { IModelTokenProps, IModelProps } from "../IModel";
 import { ModelProps } from "../ModelProps";
 import { ElementProps } from "../ElementProps";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
@@ -33,52 +31,42 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
  * @public
  */
 export abstract class IModelReadRpcInterface extends RpcInterface {
-  /** The types that can be marshaled by the interface. */
-  public static types = () => [
-    IModelVersion,
-    IModelToken,
-    Point2d,
-    Point3d,
-    Vector2d,
-    Vector3d,
-    Date,
-    Code,
-    IModelNotFoundResponse,
-  ]
-
   /** Returns the IModelReadRpcInterface instance for the frontend. */
   public static getClient(): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface); }
 
+  /** The immutable name of the interface. */
+  public static readonly interfaceName = "IModelReadRpcInterface";
+
   /** The semantic version of the interface. */
-  public static version = "0.3.0";
+  public static interfaceVersion = "0.4.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  public async openForRead(_iModelToken: IModelToken): Promise<IModel> { return this.forward(arguments); }
-  public async close(_iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
-  public async queryPage(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]> { return this.forward(arguments); }
-  public async queryRowCount(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<number> { return this.forward(arguments); }
-  public async getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<ModelProps[]> { return this.forward(arguments); }
-  public async queryModelRanges(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<Range3dProps[]> { return this.forward(arguments); }
-  public async queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }
-  public async getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<ElementProps[]> { return this.forward(arguments); }
-  public async queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward(arguments); }
-  public async queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set> { return this.forward(arguments); }
-  public async getClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
-  public async getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> { return this.forward(arguments); }
-  public async getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<ViewStateProps> { return this.forward(arguments); }
-  public async readFontJson(_iModelToken: IModelToken): Promise<any> { return this.forward(arguments); }
-  public async getToolTipMessage(_iModelToken: IModelToken, _elementId: string): Promise<string[]> { return this.forward(arguments); }
-  public async getViewThumbnail(_iModelToken: IModelToken, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
-  public async getDefaultViewId(_iModelToken: IModelToken): Promise<Id64String> { return this.forward(arguments); }
+  public async openForRead(_iModelToken: IModelTokenProps): Promise<IModelProps> { return this.forward(arguments); }
+  public async close(_iModelToken: IModelTokenProps): Promise<boolean> { return this.forward(arguments); }
+  public async queryPage(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]> { return this.forward(arguments); }
+  public async queryRowCount(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object): Promise<number> { return this.forward(arguments); }
+  public async getModelProps(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<ModelProps[]> { return this.forward(arguments); }
+  public async queryModelRanges(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<Range3dProps[]> { return this.forward(arguments); }
+  public async queryModelProps(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }
+  public async getElementProps(_iModelToken: IModelTokenProps, _elementIds: Id64String[]): Promise<ElementProps[]> { return this.forward(arguments); }
+  public async queryElementProps(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward(arguments); }
+  public async queryEntityIds(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<Id64String[]> { return this.forward(arguments); }
+  public async getClassHierarchy(_iModelToken: IModelTokenProps, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
+  public async getAllCodeSpecs(_iModelToken: IModelTokenProps): Promise<any[]> { return this.forward(arguments); }
+  public async getViewStateData(_iModelToken: IModelTokenProps, _viewDefinitionId: string): Promise<ViewStateProps> { return this.forward(arguments); }
+  public async readFontJson(_iModelToken: IModelTokenProps): Promise<any> { return this.forward(arguments); }
+  public async getToolTipMessage(_iModelToken: IModelTokenProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
+  public async getViewThumbnail(_iModelToken: IModelTokenProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
+  public async getDefaultViewId(_iModelToken: IModelTokenProps): Promise<Id64String> { return this.forward(arguments); }
   /** @beta */
-  public async requestSnap(_iModelToken: IModelToken, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
+  public async requestSnap(_iModelToken: IModelTokenProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
   /** @beta */
-  public async cancelSnap(_iModelToken: IModelToken, _sessionId: string): Promise<void> { return this.forward(arguments); }
+  public async cancelSnap(_iModelToken: IModelTokenProps, _sessionId: string): Promise<void> { return this.forward(arguments); }
   /** @beta */
-  public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelToken, _props: string): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
+  public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
   /** @beta */
-  public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelToken, _props: string): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
+  public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
 }

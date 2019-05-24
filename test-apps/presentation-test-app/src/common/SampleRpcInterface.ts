@@ -6,11 +6,11 @@ import { RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 
 /** Sample RPC interface. */
 export default abstract class SampleRpcInterface extends RpcInterface {
-  /** The version of the interface. */
-  public static version = "1.0.0";
+  /** The immutable name of the interface. */
+  public static readonly interfaceName = "SampleRpcInterface";
 
-  /** The types that can be marshaled by the interface. */
-  public static types = () => [];
+  /** The version of the interface. */
+  public static interfaceVersion = "1.0.0";
 
   public static getClient(): SampleRpcInterface { return RpcManager.getClientForInterface(SampleRpcInterface); }
 

@@ -596,13 +596,13 @@ class Admin extends TileAdmin {
   public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
     this.initializeRetryInterval();
     const intfc = IModelTileRpcInterface.getClient();
-    return this._memoizeRequests ? intfc.requestTileTreeProps(iModel.iModelToken, treeId) : intfc.getTileTreeProps(iModel.iModelToken, treeId);
+    return this._memoizeRequests ? intfc.requestTileTreeProps(iModel.iModelToken.toJSON(), treeId) : intfc.getTileTreeProps(iModel.iModelToken.toJSON(), treeId);
   }
 
   public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string): Promise<Uint8Array> {
     this.initializeRetryInterval();
     const intfc = IModelTileRpcInterface.getClient();
-    return this._memoizeRequests ? intfc.requestTileContent(iModel.iModelToken, treeId, contentId) : intfc.getTileContent(iModel.iModelToken, treeId, contentId);
+    return this._memoizeRequests ? intfc.requestTileContent(iModel.iModelToken.toJSON(), treeId, contentId) : intfc.getTileContent(iModel.iModelToken.toJSON(), treeId, contentId);
   }
 
   private initializeRetryInterval(): void {

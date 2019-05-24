@@ -51,7 +51,7 @@ else
 
 // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request
 for (const definition of rpcConfiguration.interfaces())
-  RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findParameterOfType(IModelToken) || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+  RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
 
 // cSpell:ignore SETIMODELCONNECTION setTestProperty sampleapp setaccesstoken uitestapp setisimodellocal
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.

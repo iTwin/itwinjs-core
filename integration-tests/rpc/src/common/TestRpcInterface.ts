@@ -2,23 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterface, RpcManager, RpcOperationsProfile, IModelToken, RpcNotFoundResponse, IModelReadRpcInterface, WipRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, RpcOperationsProfile, IModelTokenProps, RpcNotFoundResponse, IModelReadRpcInterface, WipRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { Readable, PassThrough } from "stream";
 
-export class TestOp1Params {
-  public a: number;
-  public b: number;
-
-  constructor(a: number, b: number) {
-    this.a = a;
-    this.b = b;
-  }
-
-  public sum() {
-    return this.a + this.b;
-  }
+export interface TestOp1Params {
+  a: number;
+  b: number;
 }
 
 export enum TestNotFoundResponseCode {
@@ -27,17 +16,19 @@ export enum TestNotFoundResponseCode {
 }
 
 export class TestNotFoundResponse extends RpcNotFoundResponse {
+  public isTestNotFoundResponse: true;
   public code: TestNotFoundResponseCode;
 
   constructor(code: TestNotFoundResponseCode) {
     super();
+    this.isTestNotFoundResponse = true;
     this.code = code;
   }
 }
 
 export abstract class ZeroMajorRpcInterface extends RpcInterface {
-  public static version = "0.1.1";
-  public static types = () => [TestOp1Params];
+  public static readonly interfaceName = "ZeroMajorRpcInterface";
+  public static interfaceVersion = "0.1.1";
 
   public static getClient(): ZeroMajorRpcInterface {
     return RpcManager.getClientForInterface(ZeroMajorRpcInterface);
@@ -49,23 +40,14 @@ export abstract class ZeroMajorRpcInterface extends RpcInterface {
 }
 
 // tslint:disable-next-line:no-empty-interface
-export interface TokenValues extends IModelToken { }
+export interface TokenValues extends IModelTokenProps { }
 
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly OP8_INITIALIZER = 5;
   public static readonly OP8_PENDING_MESSAGE = "Initializing op8";
 
-  public static version = "1.1.1";
-
-  public static types = () => [
-    TestOp1Params,
-    Date,
-    Map,
-    Set,
-    TestNotFoundResponse,
-    IModelToken,
-    AccessToken,
-  ]
+  public static readonly interfaceName = "TestRpcInterface";
+  public static interfaceVersion = "1.1.1";
 
   public static getClient(): TestRpcInterface {
     return RpcManager.getClientForInterface(TestRpcInterface);
@@ -84,18 +66,6 @@ export abstract class TestRpcInterface extends RpcInterface {
   }
 
   public async op2(_id: Id64String): Promise<Id64String> {
-    return this.forward(arguments);
-  }
-
-  public async op3(_date: Date): Promise<Date> {
-    return this.forward(arguments);
-  }
-
-  public async op4(_map: Map<any, any>): Promise<Map<any, any>> {
-    return this.forward(arguments);
-  }
-
-  public async op5(_set: Set<any>): Promise<Set<any>> {
     return this.forward(arguments);
   }
 
@@ -139,14 +109,14 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async op16(_token: IModelToken, _values: TokenValues): Promise<boolean> {
+  public async op16(_token: IModelTokenProps, _values: TokenValues): Promise<boolean> {
     return this.forward(arguments);
   }
 }
 
 export abstract class TestRpcInterface2 extends RpcInterface {
-  public static version = "1.0.0";
-  public static types = () => [];
+  public static readonly interfaceName = "TestRpcInterface2";
+  public static interfaceVersion = "1.0.0";
 
   public static getClient(): TestRpcInterface2 {
     return RpcManager.getClientForInterface(TestRpcInterface2);
@@ -158,8 +128,8 @@ export abstract class TestRpcInterface2 extends RpcInterface {
 }
 
 export abstract class TestRpcInterface3 extends RpcInterface {
-  public static version = "1.0.0";
-  public static types = () => [];
+  public static readonly interfaceName = "TestRpcInterface3";
+  public static interfaceVersion = "1.0.0";
 
   public static getClient(): TestRpcInterface3 {
     return RpcManager.getClientForInterface(TestRpcInterface3);
@@ -175,8 +145,8 @@ export abstract class TestRpcInterface3 extends RpcInterface {
 }
 
 export abstract class RpcTransportTest extends RpcInterface {
-  public static version = "1.0.0";
-  public static types = () => [];
+  public static readonly interfaceName = "RpcTransportTest";
+  public static interfaceVersion = "1.0.0";
 
   public static getClient(): RpcTransportTest { return RpcManager.getClientForInterface(RpcTransportTest); }
   public async primitive(_value: string): Promise<string> { return this.forward(arguments); }
@@ -225,15 +195,6 @@ export class RpcTransportTestImpl extends RpcInterface implements RpcTransportTe
       b: RpcTransportTestImpl.mutateString(value.b),
       c: RpcTransportTestImpl.mutateBits(value.c),
     });
-  }
-
-  public async supplyResource(_token: IModelToken, _name: string): Promise<Readable | undefined> {
-    const data = new Uint8Array(2);
-    data[0] = 1;
-    data[1] = 2;
-    const source = new PassThrough();
-    source.end(data);
-    return source;
   }
 }
 

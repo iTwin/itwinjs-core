@@ -5,12 +5,11 @@
 /** @module RpcInterface */
 
 import { assert, BeDuration, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, IModelToken, RpcInterface, RpcManager, RpcPendingResponse, TileTreeProps, CloudStorageContainerDescriptor, CloudStorageContainerUrl, TileContentIdentifier, CloudStorageTileCache } from "@bentley/imodeljs-common";
+import { IModelTileRpcInterface, IModelToken, RpcInterface, RpcManager, RpcPendingResponse, TileTreeProps, CloudStorageContainerDescriptor, CloudStorageContainerUrl, TileContentIdentifier, CloudStorageTileCache, IModelTokenProps } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
-import { Readable } from "stream";
 
 interface TileRequestProps {
   requestContext: ClientRequestContext;
@@ -151,33 +150,37 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileCon
 export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface {
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
-  public async getTileTreeProps(iModelToken: IModelToken, id: string): Promise<TileTreeProps> {
+  public async getTileTreeProps(tokenProps: IModelTokenProps, id: string): Promise<TileTreeProps> {
     const requestContext = ClientRequestContext.current;
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const db = IModelDb.find(iModelToken);
     return db.tiles.requestTileTreeProps(requestContext, id);
   }
 
-  public async getTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array> {
+  public async getTileContent(tokenProps: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array> {
     const requestContext = ClientRequestContext.current;
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const db = IModelDb.find(iModelToken);
     const content = db.tiles.requestTileContent(requestContext, treeId, contentId);
-    this.cacheTile(iModelToken, treeId, contentId, content);
+    this.cacheTile(tokenProps, treeId, contentId, content);
     return content;
   }
 
-  public async requestTileTreeProps(iModelToken: IModelToken, treeId: string): Promise<TileTreeProps> {
+  public async requestTileTreeProps(tokenProps: IModelTokenProps, treeId: string): Promise<TileTreeProps> {
     const requestContext = ClientRequestContext.current;
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     return RequestTileTreePropsMemoizer.perform({ requestContext, iModelToken, treeId });
   }
 
-  public async requestTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array> {
+  public async requestTileContent(tokenProps: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array> {
     const requestContext = ClientRequestContext.current;
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const content = RequestTileContentMemoizer.perform({ requestContext, iModelToken, treeId, contentId });
-    this.cacheTile(iModelToken, treeId, contentId, content);
+    this.cacheTile(tokenProps, treeId, contentId, content);
     return content;
   }
 
-  public async getTileCacheContainerUrl(_iModelToken: IModelToken, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
+  public async getTileCacheContainerUrl(_tokenProps: IModelTokenProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     if (!IModelHost.usingExternalTileCache) {
       return CloudStorageContainerUrl.empty();
     }
@@ -186,18 +189,12 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry);
   }
 
-  public async supplyResource(_token: IModelToken, name: string): Promise<Readable | undefined> {
-    if (!IModelHost.usingExternalTileCache) {
-      return Promise.resolve(undefined);
-    }
-
-    return IModelHost.tileCacheService.download(name);
-  }
-
-  private cacheTile(iModelToken: IModelToken, treeId: string, contentId: string, content: Promise<Uint8Array>) {
+  private cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Promise<Uint8Array>) {
     if (!IModelHost.usingExternalTileCache) {
       return;
     }
+
+    const iModelToken = IModelToken.fromJSON(tokenProps);
 
     try {
       const id: TileContentIdentifier = { iModelToken, treeId, contentId };

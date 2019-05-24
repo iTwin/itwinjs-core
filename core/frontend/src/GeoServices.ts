@@ -57,7 +57,7 @@ class GCtoIMCResultCache {
     let missing: XYZProps[] | undefined;
 
     // Index by cache key to obtain index in input array.
-    const originalPositions: any = { };
+    const originalPositions: any = {};
 
     for (let iPoint: number = 0; iPoint < request.geoCoords.length; ++iPoint) {
       const thisGeoCoord: XYZProps = request.geoCoords[iPoint];
@@ -95,7 +95,7 @@ class GCtoIMCResultCache {
       const promises: Array<Promise<void>> = [];
       for (let i = 0; i < missing.length; i += maxPointsPerRequest) {
         const remainingRequest = { sourceDatum: this._sourceDatum, geoCoords: missing.slice(i, i + maxPointsPerRequest) };
-        const promise = IModelReadRpcInterface.getClient().getIModelCoordinatesFromGeoCoordinates(this._iModel.iModelToken, JSON.stringify(remainingRequest)).then((remainingResponse) => {
+        const promise = IModelReadRpcInterface.getClient().getIModelCoordinatesFromGeoCoordinates(this._iModel.iModelToken.toJSON(), JSON.stringify(remainingRequest)).then((remainingResponse) => {
           // put the responses into the cache, and fill in the output response for each
           for (let iResponse: number = 0; iResponse < remainingResponse.iModelCoords.length; ++iResponse) {
             const thisPoint: PointWithStatus = remainingResponse.iModelCoords[iResponse];
@@ -173,7 +173,7 @@ class IMCtoGCResultCache {
     } else {
       // keep track of how many came from the cache (mostly for tests).
       response.fromCache = request.iModelCoords.length - originalPositions.length;
-      const remainingResponse = await IModelReadRpcInterface.getClient().getGeoCoordinatesFromIModelCoordinates(this._iModel.iModelToken, JSON.stringify(remainingRequest));
+      const remainingResponse = await IModelReadRpcInterface.getClient().getGeoCoordinatesFromIModelCoordinates(this._iModel.iModelToken.toJSON(), JSON.stringify(remainingRequest));
       // put the responses into the cache, and fill in the output response for each
       for (let iResponse: number = 0; iResponse < remainingResponse.geoCoords.length; ++iResponse) {
         const thisPoint: PointWithStatus = remainingResponse.geoCoords[iResponse];

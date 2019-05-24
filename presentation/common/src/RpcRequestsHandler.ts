@@ -116,7 +116,7 @@ export class RpcRequestsHandler implements IDisposable {
         clientState[holder.key] = holderState;
       }
     }
-    await this.rpcClient.syncClientState(token, this.createRequestOptions({ state: clientState }));
+    await this.rpcClient.syncClientState(token.toJSON(), this.createRequestOptions({ state: clientState }));
   }
 
   private async requestRepeatedly<TResult, TOptions extends PresentationRpcRequestOptions>(func: (opts: TOptions) => PresentationRpcResponse<TResult>, options: TOptions, imodelToken: IModelToken, repeatCount: number = 1): Promise<TResult> {

@@ -38,7 +38,7 @@ Logger.setLevelDefault(LogLevel.Warning);
     const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
     // __PUBLISH_EXTRACT_END__
     for (const def of rpcConfiguration.interfaces())
-      RpcOperation.forEach(def, (operation) => operation.policy.token = (request) => (request.findParameterOfType(IModelToken) || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+      RpcOperation.forEach(def, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
   }
 })();
 

@@ -21,7 +21,6 @@ import { GeometryQuery } from '@bentley/geometry-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
-import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelClient } from '@bentley/imodeljs-clients';
@@ -42,6 +41,7 @@ import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PolyfaceVisitor } from '@bentley/geometry-core';
 import { Range1d } from '@bentley/geometry-core';
+import { Range1dProps } from '@bentley/geometry-core';
 import { Range2d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { Range3dProps } from '@bentley/geometry-core';
@@ -51,7 +51,6 @@ import { RpcInterfaceStatus } from '@bentley/bentleyjs-core';
 import { SerializedClientRequestContext } from '@bentley/bentleyjs-core';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
-import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { Writable } from 'stream';
 import { XYAndZ } from '@bentley/geometry-core';
@@ -133,13 +132,13 @@ export interface AnalysisStyleProps {
     // (undocumented)
     inputName?: string;
     // (undocumented)
-    inputRange?: Range1d;
+    inputRange?: Range1dProps;
     // (undocumented)
     normalChannelName?: string;
     // (undocumented)
     scalarChannelName?: string;
     // (undocumented)
-    scalarRange?: Range1d;
+    scalarRange?: Range1dProps;
     // (undocumented)
     scalarThematicSettings?: Gradient.ThematicSettingsProps;
 }
@@ -267,6 +266,16 @@ export interface AuxCoordSystemProps extends ElementProps {
 // @public
 export type AxisAlignedBox3d = Range3d;
 
+// Warning: (ae-missing-release-tag) "AxisAlignedBox3dProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// 
+// @public
+export type AxisAlignedBox3dProps = Range3dProps;
+
+// @public (undocumented)
+export class BackendError extends IModelError {
+    constructor(errorNumber: number, name: string, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+}
+
 // @public
 export enum BackgroundFill {
     None = 0,
@@ -326,7 +335,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     // (undocumented)
     checkToken: boolean;
     getOperationFromPath(path: string): SerializedRpcOperation;
-    inflateToken(tokenFromBody: IModelToken, request: SerializedRpcRequest): IModelToken;
+    inflateToken(tokenFromBody: IModelTokenProps, request: SerializedRpcRequest): IModelTokenProps;
     serializedClientRequestContextHeaderNames: SerializedClientRequestContext;
     supplyPathForOperation(operation: RpcOperation, request: RpcRequest | undefined): string;
     // @internal
@@ -1124,12 +1133,19 @@ export interface CustomAttribute {
 export { DbResult }
 
 // @beta
-export class DecorationGeometryProps {
+export class DecorationGeometry {
     constructor(id: Id64String, geometryStream: GeometryStreamProps);
     // (undocumented)
     readonly geometryStream: GeometryStreamProps;
     // (undocumented)
     readonly id: Id64String;
+}
+
+// Warning: (ae-incompatible-release-tags) The symbol "DecorationGeometryProps" is marked as @public, but its signature references "DecorationGeometry" which is marked as @beta
+// Warning: (ae-missing-release-tag) "DecorationGeometryProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// 
+// @public
+export interface DecorationGeometryProps extends Pick<DecorationGeometry, keyof DecorationGeometry> {
 }
 
 // @public
@@ -1141,16 +1157,16 @@ export interface DefinitionElementProps extends ElementProps {
 // @internal
 export abstract class DevToolsRpcInterface extends RpcInterface {
     static getClient(): DevToolsRpcInterface;
+    static readonly interfaceName = "DevToolsRpcInterface";
+    static interfaceVersion: string;
     // (undocumented)
-    ping(_iModelToken: IModelToken): Promise<boolean>;
+    ping(_iModelToken: IModelTokenProps): Promise<boolean>;
     // (undocumented)
-    setLogLevel(_iModelToken: IModelToken, _loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined>;
+    setLogLevel(_iModelToken: IModelTokenProps, _loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined>;
     // (undocumented)
-    stats(_iModelToken: IModelToken, _options: DevToolsStatsOptions): Promise<any>;
-    static types: () => (typeof IModelToken | typeof IModelNotFoundResponse)[];
-    static version: string;
+    stats(_iModelToken: IModelTokenProps, _options: DevToolsStatsOptions): Promise<any>;
     // (undocumented)
-    versions(_iModelToken: IModelToken): Promise<any>;
+    versions(_iModelToken: IModelTokenProps): Promise<any>;
 }
 
 // @internal
@@ -2375,6 +2391,8 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 export interface IModelProps {
     ecefLocation?: EcefLocationProps;
     globalOrigin?: XYZProps;
+    iModelToken?: IModelTokenProps;
+    name?: string;
     projectExtents?: Range3dProps;
     rootSubject: RootSubjectProps;
 }
@@ -2382,50 +2400,50 @@ export interface IModelProps {
 // @public
 export abstract class IModelReadRpcInterface extends RpcInterface {
     // @beta (undocumented)
-    cancelSnap(_iModelToken: IModelToken, _sessionId: string): Promise<void>;
+    cancelSnap(_iModelToken: IModelTokenProps, _sessionId: string): Promise<void>;
     // (undocumented)
-    close(_iModelToken: IModelToken): Promise<boolean>;
+    close(_iModelToken: IModelTokenProps): Promise<boolean>;
     // (undocumented)
-    getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]>;
+    getAllCodeSpecs(_iModelToken: IModelTokenProps): Promise<any[]>;
     // (undocumented)
-    getClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<string[]>;
+    getClassHierarchy(_iModelToken: IModelTokenProps, _startClassName: string): Promise<string[]>;
     static getClient(): IModelReadRpcInterface;
     // (undocumented)
-    getDefaultViewId(_iModelToken: IModelToken): Promise<Id64String>;
+    getDefaultViewId(_iModelToken: IModelTokenProps): Promise<Id64String>;
     // (undocumented)
-    getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<ElementProps[]>;
+    getElementProps(_iModelToken: IModelTokenProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
     // @beta (undocumented)
-    getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelToken, _props: string): Promise<GeoCoordinatesResponseProps>;
+    getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<GeoCoordinatesResponseProps>;
     // @beta (undocumented)
-    getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelToken, _props: string): Promise<IModelCoordinatesResponseProps>;
+    getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<IModelCoordinatesResponseProps>;
     // (undocumented)
-    getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<ModelProps[]>;
+    getModelProps(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
     // (undocumented)
-    getToolTipMessage(_iModelToken: IModelToken, _elementId: string): Promise<string[]>;
+    getToolTipMessage(_iModelToken: IModelTokenProps, _elementId: string): Promise<string[]>;
     // (undocumented)
-    getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<ViewStateProps>;
+    getViewStateData(_iModelToken: IModelTokenProps, _viewDefinitionId: string): Promise<ViewStateProps>;
     // (undocumented)
-    getViewThumbnail(_iModelToken: IModelToken, _viewId: string): Promise<Uint8Array>;
+    getViewThumbnail(_iModelToken: IModelTokenProps, _viewId: string): Promise<Uint8Array>;
+    static readonly interfaceName = "IModelReadRpcInterface";
+    static interfaceVersion: string;
     // (undocumented)
-    openForRead(_iModelToken: IModelToken): Promise<IModel>;
+    openForRead(_iModelToken: IModelTokenProps): Promise<IModelProps>;
     // (undocumented)
-    queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ElementProps[]>;
+    queryElementProps(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<ElementProps[]>;
     // (undocumented)
-    queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set>;
+    queryEntityIds(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<Id64String[]>;
     // (undocumented)
-    queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ModelProps[]>;
+    queryModelProps(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<ModelProps[]>;
     // (undocumented)
-    queryModelRanges(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<Range3dProps[]>;
+    queryModelRanges(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
-    queryPage(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]>;
+    queryPage(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]>;
     // (undocumented)
-    queryRowCount(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<number>;
+    queryRowCount(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object): Promise<number>;
     // (undocumented)
-    readFontJson(_iModelToken: IModelToken): Promise<any>;
+    readFontJson(_iModelToken: IModelTokenProps): Promise<any>;
     // @beta (undocumented)
-    requestSnap(_iModelToken: IModelToken, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps>;
-    static types: () => (typeof Point3d | typeof Vector3d | typeof Code | typeof Point2d | typeof IModelToken | typeof IModelNotFoundResponse | typeof Vector2d)[];
-    static version: string;
+    requestSnap(_iModelToken: IModelTokenProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps>;
 }
 
 export { IModelStatus }
@@ -2435,18 +2453,17 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
-    getTileCacheContainerUrl(_iModelToken: IModelToken, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
+    getTileCacheContainerUrl(_tokenProps: IModelTokenProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
     // @internal (undocumented)
-    getTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array>;
+    getTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array>;
     // @internal
-    getTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps>;
+    getTileTreeProps(_tokenProps: IModelTokenProps, _id: string): Promise<TileTreeProps>;
+    static readonly interfaceName = "IModelTileRpcInterface";
+    static interfaceVersion: string;
     // @internal (undocumented)
-    requestTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array>;
+    requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array>;
     // @internal
-    requestTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps>;
-    // (undocumented)
-    static types: () => (typeof IModelToken | typeof IModelNotFoundResponse)[];
-    static version: string;
+    requestTileTreeProps(_tokenProps: IModelTokenProps, _id: string): Promise<TileTreeProps>;
 }
 
 // @public
@@ -2459,9 +2476,17 @@ export class IModelToken {
     openMode?: OpenMode | undefined);
     changeSetId?: string | undefined;
     readonly contextId?: string | undefined;
+    static fromJSON(props: IModelTokenProps): IModelToken;
     readonly iModelId?: string | undefined;
     readonly key?: string | undefined;
     openMode?: OpenMode | undefined;
+    toJSON(): IModelTokenProps;
+}
+
+// Warning: (ae-missing-release-tag) "IModelTokenProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// 
+// @public
+export interface IModelTokenProps extends Pick<IModelToken, Exclude<keyof IModelToken, "toJSON">> {
 }
 
 // @public
@@ -2481,16 +2506,16 @@ export class IModelVersion {
 // @alpha
 export abstract class IModelWriteRpcInterface extends RpcInterface {
     static getClient(): IModelWriteRpcInterface;
+    static readonly interfaceName = "IModelWriteRpcInterface";
+    static interfaceVersion: string;
     // (undocumented)
-    openForWrite(_iModelToken: IModelToken): Promise<IModel>;
+    openForWrite(_iModelToken: IModelTokenProps): Promise<IModelProps>;
     // (undocumented)
-    saveChanges(_iModelToken: IModelToken, _description?: string): Promise<void>;
+    saveChanges(_iModelToken: IModelTokenProps, _description?: string): Promise<void>;
     // (undocumented)
-    saveThumbnail(_iModelToken: IModelToken, _val: Uint8Array): Promise<void>;
-    static types: () => (typeof Point3d | typeof Range3d | typeof IModelToken | typeof IModelNotFoundResponse)[];
+    saveThumbnail(_iModelToken: IModelTokenProps, _val: Uint8Array): Promise<void>;
     // (undocumented)
-    updateProjectExtents(_iModelToken: IModelToken, _newExtents: AxisAlignedBox3d): Promise<void>;
-    static version: string;
+    updateProjectExtents(_iModelToken: IModelTokenProps, _newExtents: AxisAlignedBox3dProps): Promise<void>;
 }
 
 // @public
@@ -2701,15 +2726,13 @@ export { LogFunction }
 // @internal (undocumented)
 export interface MarshalingBinaryMarker {
     // (undocumented)
-    [RpcMarshalingDirective.Binary]: true;
-    // (undocumented)
     chunks: number;
     // (undocumented)
     index: number;
     // (undocumented)
-    size: number;
+    isBinary: true;
     // (undocumented)
-    type: number;
+    size: number;
 }
 
 // @internal (undocumented)
@@ -3889,13 +3912,11 @@ export abstract class RpcInterface {
 // @public (undocumented)
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> {
     // (undocumented)
-    name: string;
+    interfaceName: string;
+    // (undocumented)
+    interfaceVersion: string;
     // (undocumented)
     prototype: T;
-    // (undocumented)
-    types: () => Function[];
-    // (undocumented)
-    version: string;
 }
 
 // @public
@@ -3944,34 +3965,8 @@ export class RpcManager {
 
 // @internal (undocumented)
 export class RpcMarshaling {
-    static deserialize(operation: RpcOperation, protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
-    static serialize(operation: RpcOperation | string, protocol: RpcProtocol | undefined, _value: any): Promise<RpcSerializedValue>;
-}
-
-// @internal
-export enum RpcMarshalingDirective {
-    // (undocumented)
-    Binary = "__binary__",
-    // (undocumented)
-    Error = "__error__",
-    // (undocumented)
-    ErrorMessage = "__error_message__",
-    // (undocumented)
-    ErrorName = "__error_name__",
-    // (undocumented)
-    ErrorStack = "__error_stack__",
-    // (undocumented)
-    JSON = "__JSON__",
-    // (undocumented)
-    Map = "__map__",
-    // (undocumented)
-    Name = "__name__",
-    // (undocumented)
-    Set = "__set__",
-    // (undocumented)
-    Undefined = "__undefined__",
-    // (undocumented)
-    Unregistered = "__unregistered__"
+    static deserialize(protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
+    static serialize(protocol: RpcProtocol | undefined, value: any): Promise<RpcSerializedValue>;
 }
 
 // @beta
@@ -4076,7 +4071,7 @@ export abstract class RpcProtocol {
     getCode(status: RpcRequestStatus): number;
     getOperationFromPath(path: string): SerializedRpcOperation;
     getStatus(code: number): RpcRequestStatus;
-    inflateToken(tokenFromBody: IModelToken, _request: SerializedRpcRequest): IModelToken;
+    inflateToken(tokenFromBody: IModelTokenProps, _request: SerializedRpcRequest): IModelTokenProps;
     readonly invocationType: typeof RpcInvocation;
     // @internal (undocumented)
     onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void;
@@ -4163,8 +4158,6 @@ export class RpcRegistry {
     // (undocumented)
     terminateRpcInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
     // (undocumented)
-    types: Map<string, Function>;
-    // (undocumented)
     unregisterImpl<TDefinition extends RpcInterface>(definition: RpcInterfaceDefinition<TDefinition>): void;
 }
 
@@ -4180,9 +4173,10 @@ export abstract class RpcRequest<TResponse = any> {
     readonly elapsed: number;
     static readonly events: BeEvent<RpcRequestEventHandler>;
     readonly extendedStatus: string;
-    findParameterOfType<T>(requestConstructor: {
-        new (...args: any[]): T;
+    findParameterOfType<T>(requiredProperties: {
+        [index: string]: string;
     }): T | undefined;
+    findTokenPropsParameter(): IModelTokenProps | undefined;
     // (undocumented)
     protected handleUnknownResponse(code: number): void;
     readonly id: string;
@@ -4278,7 +4272,7 @@ export enum RpcRequestStatus {
 }
 
 // @public
-export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined;
+export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelTokenProps | undefined;
 
 // @public
 export enum RpcResponseCacheControl {
@@ -4363,7 +4357,7 @@ export class ServerError extends IModelError {
 
 // @public (undocumented)
 export class ServerTimeoutError extends ServerError {
-    constructor(errorNumber: number, message: string, log?: LogFunction);
+    constructor(message: string, log?: LogFunction);
 }
 
 // @beta
@@ -4505,12 +4499,12 @@ export interface SnapResponseProps {
 // @beta
 export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     // (undocumented)
-    closeSnapshot(_iModelToken: IModelToken): Promise<boolean>;
+    closeSnapshot(_iModelToken: IModelTokenProps): Promise<boolean>;
     static getClient(): SnapshotIModelRpcInterface;
+    static readonly interfaceName = "SnapshotIModelRpcInterface";
+    static interfaceVersion: string;
     // (undocumented)
-    openSnapshot(_fileName: string): Promise<IModel>;
-    static types: () => (typeof IModelToken)[];
-    static version: string;
+    openSnapshot(_fileName: string): Promise<IModelProps>;
 }
 
 // @beta
@@ -4584,7 +4578,7 @@ export namespace SpatialClassificationProps {
     export interface PropertiesProps {
         expand: number;
         // (undocumented)
-        flags: Flags;
+        flags: FlagsProps;
         // (undocumented)
         isActive: boolean;
         modelId: Id64String;
@@ -5222,20 +5216,20 @@ export class WebAppRpcRequest extends RpcRequest {
 // @internal
 export abstract class WipRpcInterface extends RpcInterface {
     // (undocumented)
-    attachChangeCache(_iModelToken: IModelToken): Promise<void>;
+    attachChangeCache(_iModelToken: IModelTokenProps): Promise<void>;
     // (undocumented)
-    detachChangeCache(_iModelToken: IModelToken): Promise<void>;
+    detachChangeCache(_iModelToken: IModelTokenProps): Promise<void>;
     // (undocumented)
-    getChangedElements(_iModelToken: IModelToken, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined>;
+    getChangedElements(_iModelToken: IModelTokenProps, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined>;
     static getClient(): WipRpcInterface;
+    static readonly interfaceName = "WipRpcInterface";
+    static interfaceVersion: string;
     // (undocumented)
-    isChangeCacheAttached(_iModelToken: IModelToken): Promise<boolean>;
+    isChangeCacheAttached(_iModelToken: IModelTokenProps): Promise<boolean>;
     // (undocumented)
-    isChangesetProcessed(_iModelToken: IModelToken, _changesetId: string): Promise<boolean>;
+    isChangesetProcessed(_iModelToken: IModelTokenProps, _changesetId: string): Promise<boolean>;
     // (undocumented)
-    placeholder(_iModelToken: IModelToken): Promise<string>;
-    static types: () => (typeof IModelToken)[];
-    static version: string;
+    placeholder(_iModelToken: IModelTokenProps): Promise<string>;
 }
 
 

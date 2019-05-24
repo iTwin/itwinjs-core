@@ -8,6 +8,7 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyError } from '@bentley/bentleyjs-core';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ClientRequestContextProps } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import * as https from 'https';
@@ -81,6 +82,22 @@ export class AuthorizationToken extends Token {
 export class AuthorizedClientRequestContext extends ClientRequestContext {
     constructor(accessToken: AccessToken, activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
     accessToken: AccessToken;
+}
+
+// Warning: (ae-missing-release-tag) "AuthorizedClientRequestContextProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// 
+// @public
+export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
+    // (undocumented)
+    accessToken: any;
+}
+
+// @public (undocumented)
+export namespace AuthorizedClientRequestContextProps {
+    // Warning: (ae-incompatible-release-tags) The symbol "fromContext" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
+    // 
+    // (undocumented)
+    export function fromContext(context: AuthorizedClientRequestContext): AuthorizedClientRequestContextProps;
 }
 
 // @internal

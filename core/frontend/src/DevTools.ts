@@ -45,7 +45,7 @@ export class DevTools {
 
     const pingFn = async (): Promise<number> => {
       const start = Date.now();
-      await DevToolsRpcInterface.getClient().ping(this._iModelToken);
+      await DevToolsRpcInterface.getClient().ping(this._iModelToken.toJSON());
       return Promise.resolve(Date.now() - start);
     };
 
@@ -78,16 +78,16 @@ export class DevTools {
 
   /** Returns JSON object with backend statistics */
   public async stats(options: DevToolsStatsOptions = DevToolsStatsOptions.FormatUnits): Promise<any> {
-    return DevToolsRpcInterface.getClient().stats(this._iModelToken, options);
+    return DevToolsRpcInterface.getClient().stats(this._iModelToken.toJSON(), options);
   }
 
   // Returns JSON object with backend versions (application and iModelJs)
   public async versions(): Promise<any> {
-    return DevToolsRpcInterface.getClient().versions(this._iModelToken);
+    return DevToolsRpcInterface.getClient().versions(this._iModelToken.toJSON());
   }
 
   /** Sets up a log level at the backend and returns the old log level */
   public async setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined> {
-    return DevToolsRpcInterface.getClient().setLogLevel(this._iModelToken, inLoggerCategory, newLevel);
+    return DevToolsRpcInterface.getClient().setLogLevel(this._iModelToken.toJSON(), inLoggerCategory, newLevel);
   }
 }

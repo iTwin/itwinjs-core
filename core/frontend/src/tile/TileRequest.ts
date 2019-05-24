@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
-import { ImageSource, ServerTimeoutError } from "@bentley/imodeljs-common";
+import { assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
+import { ImageSource } from "@bentley/imodeljs-common";
 import { Tile, TileTree, TileLoader } from "./TileTree";
 import { TileAdmin } from "./TileAdmin";
 import { Viewport } from "../Viewport";
@@ -56,7 +56,7 @@ export class TileRequest {
 
       return this.handleResponse(response);
     } catch (_err) {
-      if (_err instanceof ServerTimeoutError) {
+      if (_err.errorNumber && _err.errorNumber === IModelStatus.ServerTimeout) {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();
         this._state = TileRequest.State.Failed;

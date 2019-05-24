@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Geometry */
 
-import { Angle, Constant, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, Constant, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector3d, YawPitchRollAngles, Range3dProps } from "@bentley/geometry-core";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { Frustum } from "../Frustum";
 
@@ -12,6 +12,9 @@ import { Frustum } from "../Frustum";
  * @public
  */
 export type AxisAlignedBox3d = Range3d;
+
+/** The properties of a Range3d. */
+export type AxisAlignedBox3dProps = Range3dProps;
 
 /** A bounding box aligned to the orientation of a 3d Element
  * @public

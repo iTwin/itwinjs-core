@@ -63,6 +63,15 @@ export class ClientRequestContext {
   }
 }
 
+/** The data properties of ClientRequestContext. */
+export interface ClientRequestContextProps extends Pick<ClientRequestContext, Exclude<keyof ClientRequestContext, "enter" | "useContextForRpc">> { }
+
+export namespace ClientRequestContextProps {
+  export function fromContext(context: ClientRequestContext): ClientRequestContextProps {
+    return Object.create(Object.prototype, Object.getOwnPropertyDescriptors(context));
+  }
+}
+
 /** Serialized format for sending the client request context across the RPC layer
  * @public
  */

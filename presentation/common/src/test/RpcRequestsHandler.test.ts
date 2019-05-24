@@ -13,7 +13,7 @@ import {
   createRandomSelectionScope,
 } from "./_helpers/random";
 import { BeEvent, using, Id64String } from "@bentley/bentleyjs-core";
-import { IModelToken, RpcManager, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelToken, RpcManager, RpcInterface, RpcInterfaceDefinition, IModelTokenProps } from "@bentley/imodeljs-common";
 import {
   RpcRequestsHandler, PresentationRpcInterface,
   KeySet, Paged, SelectionInfo, PresentationStatus,
@@ -22,11 +22,15 @@ import {
 import { PresentationRpcRequestOptions, ClientStateSyncRequestOptions, PresentationRpcResponse } from "../PresentationRpcInterface";
 import { IClientStateHolder } from "../RpcRequestsHandler";
 
+interface IModelTokenPropsForTest extends IModelTokenProps {
+  toJSON: () => any;
+}
+
 describe("RpcRequestsHandler", () => {
 
   let clientId: string;
   let defaultRpcOptions: PresentationRpcRequestOptions & { imodel: IModelToken };
-  const token = new IModelToken();
+  const token: IModelTokenPropsForTest = { iModelId: "test", contextId: "test", toJSON() { return this; } };
   const successResponse = async <TResult>(result: TResult): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result });
   const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined });
 

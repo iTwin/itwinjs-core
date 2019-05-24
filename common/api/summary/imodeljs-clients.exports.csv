@@ -9,6 +9,8 @@ internal;ArgumentCheck
 public;AuthenticationError 
 beta;AuthorizationToken 
 beta;AuthorizedClientRequestContext 
+public;AuthorizedClientRequestContextProps 
+public;AuthorizedClientRequestContextProps
 internal;Briefcase 
 internal;BriefcaseAccessMode
 internal;BriefcaseDeletedEvent 

@@ -18,7 +18,7 @@ import { RpcResponseCacheControl } from "./RpcConstants";
  */
 export class RpcOperationPolicy {
   /** Supplies the IModelToken for an operation request. */
-  public token: RpcRequestTokenSupplier_T = (request) => request.findParameterOfType(IModelToken);
+  public token: RpcRequestTokenSupplier_T = (request) => request.findTokenPropsParameter();
 
   /** Supplies the initial retry interval for an operation request. */
   public retryInterval: RpcRequestInitialRetryIntervalSupplier_T = (configuration) => configuration.pendingOperationRetryInterval;
@@ -59,7 +59,7 @@ export class RpcOperation {
 
     const proto = (definition.prototype as any);
     if (!proto.hasOwnProperty(propertyName))
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${definition.name}" does not does not declare operation "${operationName}"`);
+      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${definition.interfaceName}" does not does not declare operation "${operationName}"`);
 
     return proto[propertyName][OPERATION];
   }
@@ -82,7 +82,7 @@ export class RpcOperation {
   public readonly operationName: string;
 
   /** The version of this operation. */
-  public get interfaceVersion(): string { return this.interfaceDefinition.version; }
+  public get interfaceVersion(): string { return this.interfaceDefinition.interfaceVersion; }
 
   /** The policy for this operation. */
   public policy: RpcOperationPolicy;

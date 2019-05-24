@@ -10,6 +10,8 @@ public;AuxCoordSystem2dProps
 public;AuxCoordSystem3dProps 
 public;AuxCoordSystemProps 
 public;AxisAlignedBox3d = Range3d
+public;AxisAlignedBox3dProps = Range3dProps
+public;BackendError 
 public;BackgroundFill
 public;BackgroundMapProps
 public;BackgroundMapType
@@ -53,7 +55,8 @@ public;CreateIModelProps
 internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 beta;CustomAttribute
-beta;DecorationGeometryProps
+beta;DecorationGeometry
+public;DecorationGeometryProps 
 public;DefinitionElementProps 
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
@@ -148,6 +151,7 @@ public;IModelProps
 public;class IModelReadRpcInterface 
 public;class IModelTileRpcInterface 
 public;IModelToken
+public;IModelTokenProps 
 public;IModelVersion
 alpha;class IModelWriteRpcInterface 
 public;InformationPartitionElementProps 
@@ -262,7 +266,6 @@ public;RpcInvocation
 public;RpcInvocationCallback_T = (invocation: RpcInvocation) => void
 public;RpcManager
 internal;RpcMarshaling
-internal;RpcMarshalingDirective
 beta;RpcMobilePlatform
 internal;RpcMultipart
 public;RpcNotFoundResponse 
@@ -288,7 +291,7 @@ public;RpcRequestFulfillment
 public;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
 public;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
 public;RpcRequestStatus
-public;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined
+public;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelTokenProps | undefined
 public;RpcResponseCacheControl
 public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 public;RpcSerializedValue

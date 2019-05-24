@@ -8,7 +8,7 @@ import { Id64, Id64String, JsonUtils, assert, IndexMap, IndexedValue, compareNum
 import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
-import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor, Range1d } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor, Range1d, Range1dProps } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
 import { CameraProps, ViewFlagProps, GroundPlaneProps, SolarShadowProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
@@ -2365,9 +2365,9 @@ export interface AnalysisStyleProps {
   scalarChannelName?: string;
   normalChannelName?: string;
   displacementScale?: number;
-  scalarRange?: Range1d;
+  scalarRange?: Range1dProps;
   scalarThematicSettings?: Gradient.ThematicSettingsProps;
-  inputRange?: Range1d;
+  inputRange?: Range1dProps;
 }
 
 /** @alpha */

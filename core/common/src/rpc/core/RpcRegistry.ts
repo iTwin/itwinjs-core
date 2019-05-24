@@ -8,8 +8,8 @@ import { RpcInterface, RpcInterfaceImplementation, RpcInterfaceDefinition } from
 import { RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 import { RpcControlChannel } from "./RpcControl";
-import { IModelError, ServerError } from "../../IModelError";
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { IModelError } from "../../IModelError";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { RpcConfiguration, RpcPendingQueue, initializeRpcRequest } from "../../imodeljs-common";
 
 // tslint:disable:ban-types
@@ -68,7 +68,7 @@ export class RpcRegistry {
       const endpoints = responses.reduce((a, b) => a.concat(b), []);
       for (const endpoint of endpoints) {
         const definition = this.definitionClasses.get(endpoint.interfaceName);
-        endpoint.compatible = (definition && RpcInterface.isVersionCompatible(endpoint.interfaceVersion, definition.version)) ? true : false;
+        endpoint.compatible = (definition && RpcInterface.isVersionCompatible(endpoint.interfaceVersion, definition.interfaceVersion)) ? true : false;
       }
 
       return endpoints;
@@ -76,7 +76,7 @@ export class RpcRegistry {
   }
 
   public getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T {
-    let instance = this.proxies.get(definition.name) as (T | undefined);
+    let instance = this.proxies.get(definition.interfaceName) as (T | undefined);
     if (!instance)
       instance = this.instantiateClient(definition);
 
@@ -84,7 +84,7 @@ export class RpcRegistry {
   }
 
   public getImplForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T {
-    let instance = this.implementations.get(definition.name) as (T | undefined);
+    let instance = this.implementations.get(definition.interfaceName) as (T | undefined);
     if (!instance)
       instance = this.instantiateImpl(definition);
 
@@ -98,42 +98,40 @@ export class RpcRegistry {
 
   public registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, implementation: RpcInterfaceImplementation<TImplementation>) {
     this.unregisterImpl(definition);
-    this.implementationClasses.set(definition.name, implementation);
+    this.implementationClasses.set(definition.interfaceName, implementation);
   }
 
   public unregisterImpl<TDefinition extends RpcInterface>(definition: RpcInterfaceDefinition<TDefinition>) {
-    this.implementationClasses.delete(definition.name);
+    this.implementationClasses.delete(definition.interfaceName);
 
-    const impl = this.implementations.get(definition.name);
+    const impl = this.implementations.get(definition.interfaceName);
     if (impl) {
       impl.configuration.onRpcImplTerminated(definition, impl);
-      this.implementations.delete(definition.name);
+      this.implementations.delete(definition.interfaceName);
     }
   }
 
   public supplyImplInstance<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, instance: TImplementation): void {
-    this.suppliedImplementations.set(definition.name, instance);
+    this.suppliedImplementations.set(definition.interfaceName, instance);
   }
 
   public isRpcInterfaceInitialized<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): boolean {
-    return this.definitionClasses.has(definition.name);
+    return this.definitionClasses.has(definition.interfaceName);
   }
 
   public initializeRpcInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void {
-    if (this.definitionClasses.has(definition.name))
+    if (this.definitionClasses.has(definition.interfaceName))
       return;
 
     this.notifyInitialize();
-    this.definitionClasses.set(definition.name, definition);
+    this.definitionClasses.set(definition.interfaceName, definition);
     this.configureOperations(definition);
-    this.registerTypes(definition);
   }
 
   public terminateRpcInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
-    this.purgeTypes(definition);
     this.unregisterImpl(definition);
     this.purgeClient(definition);
-    this.definitionClasses.delete(definition.name);
+    this.definitionClasses.delete(definition.interfaceName);
   }
 
   public definitionClasses: Map<string, RpcInterfaceDefinition> = new Map();
@@ -141,7 +139,6 @@ export class RpcRegistry {
   public implementations: Map<string, RpcInterface> = new Map();
   public suppliedImplementations: Map<string, RpcInterface> = new Map();
   public implementationClasses: Map<string, RpcInterfaceImplementation> = new Map();
-  public types: Map<string, Function> = new Map();
 
   public id = (() => {
     let i = 0;
@@ -151,14 +148,14 @@ export class RpcRegistry {
   private instantiateImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>): TImplementation {
     this.checkInitialized(definition);
 
-    const registeredImplementation = this.implementationClasses.get(definition.name) as RpcInterfaceImplementation<TImplementation>;
+    const registeredImplementation = this.implementationClasses.get(definition.interfaceName) as RpcInterfaceImplementation<TImplementation>;
     if (!registeredImplementation)
-      throw new IModelError(BentleyStatus.ERROR, `An RPC interface implementation class for "${definition.name}" is not registered.`);
+      throw new IModelError(BentleyStatus.ERROR, `An RPC interface implementation class for "${definition.interfaceName}" is not registered.`);
 
     if (definition.prototype.configurationSupplier)
       registeredImplementation.prototype.configurationSupplier = definition.prototype.configurationSupplier;
 
-    const supplied = this.suppliedImplementations.get(definition.name);
+    const supplied = this.suppliedImplementations.get(definition.interfaceName);
     const implementation = supplied || new registeredImplementation();
     if (!(implementation instanceof registeredImplementation))
       throw new IModelError(BentleyStatus.ERROR, `Invalid RPC interface implementation.`);
@@ -167,7 +164,7 @@ export class RpcRegistry {
       (supplied.configuration as any) = RpcConfiguration.supply(supplied);
     }
 
-    this.implementations.set(definition.name, implementation);
+    this.implementations.set(definition.interfaceName, implementation);
     implementation.configuration.onRpcImplInitialized(definition, implementation);
     return implementation;
   }
@@ -176,7 +173,7 @@ export class RpcRegistry {
     this.checkInitialized(definition);
 
     const proxy = new (definition as any)() as T;
-    this.proxies.set(definition.name, proxy);
+    this.proxies.set(definition.interfaceName, proxy);
 
     Object.getOwnPropertyNames(definition.prototype).forEach((operationName) => {
       if (operationName === "constructor" || operationName === "configurationSupplier")
@@ -200,8 +197,8 @@ export class RpcRegistry {
   }
 
   private checkInitialized<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
-    if (!this.definitionClasses.has(definition.name))
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface "${definition.name}" is not initialized.`);
+    if (!this.definitionClasses.has(definition.interfaceName))
+      throw new IModelError(BentleyStatus.ERROR, `RPC interface "${definition.interfaceName}" is not initialized.`);
   }
 
   private configureOperations<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
@@ -220,42 +217,11 @@ export class RpcRegistry {
     });
   }
 
-  private registerTypes<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
-    definition.types().forEach((type) => {
-      this.registerType(definition, type, true);
-    });
-
-    for (const type of [Error, EvalError, RangeError, ReferenceError, SyntaxError, TypeError, URIError, BentleyError, IModelError, ServerError]) {
-      this.registerType(definition, type, false);
-    }
-  }
-
-  private registerType(definition: RpcInterfaceDefinition, type: Function, throwIfRegistered: boolean) {
-    const name = `${definition.name}_${type.name}`;
-    if (this.types.has(name)) {
-      if (throwIfRegistered)
-        throw new IModelError(BentleyStatus.ERROR, `Class "${name}" is already registered for RPC interface type marshaling.`);
-      else
-        return;
-    }
-
-    this.types.set(name, type);
-  }
-
   private purgeClient<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
-    const proxy = this.proxies.get(definition.name);
+    const proxy = this.proxies.get(definition.interfaceName);
     if (proxy) {
       proxy.configuration.onRpcClientTerminated(definition, proxy);
-      this.proxies.delete(definition.name);
-    }
-  }
-
-  private purgeTypes<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
-    const keyPrefix = `${definition.name}_`;
-    for (const key of this.types.keys()) {
-      if (key.indexOf(keyPrefix) !== -1) {
-        this.types.delete(key);
-      }
+      this.proxies.delete(definition.interfaceName);
     }
   }
 

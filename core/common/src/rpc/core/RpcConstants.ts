@@ -12,23 +12,6 @@ export enum RpcResponseCacheControl {
   Immutable,
 }
 
-/** RPC interface type marshaling directives.
- * @internal
- */
-export enum RpcMarshalingDirective {
-  Name = "__name__",
-  JSON = "__JSON__",
-  Undefined = "__undefined__",
-  Map = "__map__",
-  Set = "__set__",
-  Unregistered = "__unregistered__",
-  Error = "__error__",
-  ErrorName = "__error_name__",
-  ErrorMessage = "__error_message__",
-  ErrorStack = "__error_stack__",
-  Binary = "__binary__",
-}
-
 /** RPC protocol event types.
  * @public
  */

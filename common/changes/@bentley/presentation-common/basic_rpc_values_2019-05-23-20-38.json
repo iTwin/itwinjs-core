@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "RPC system now accepts only basic values (primitives, \"interface\" objects, and binary).",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "steve.wilson@bentley.com"
+}

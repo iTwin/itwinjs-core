@@ -65,13 +65,13 @@ export class ElectronRpcProtocol extends RpcProtocol {
   }
 
   private registerInterface(definition: RpcInterfaceDefinition) {
-    if (ElectronRpcProtocol.instances.has(definition.name))
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface "${definition.name}"" is already associated with a protocol.`);
+    if (ElectronRpcProtocol.instances.has(definition.interfaceName))
+      throw new IModelError(BentleyStatus.ERROR, `RPC interface "${definition.interfaceName}"" is already associated with a protocol.`);
 
-    ElectronRpcProtocol.instances.set(definition.name, this);
+    ElectronRpcProtocol.instances.set(definition.interfaceName, this);
   }
 
   private purgeInterface(definition: RpcInterfaceDefinition) {
-    ElectronRpcProtocol.instances.delete(definition.name);
+    ElectronRpcProtocol.instances.delete(definition.interfaceName);
   }
 }

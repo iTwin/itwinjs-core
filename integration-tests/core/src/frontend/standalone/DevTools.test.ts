@@ -16,6 +16,7 @@ describe("DevTools", () => {
     const iModelToken: IModelToken = {
       iModelId: "test",
       changeSetId: "test",
+      toJSON() { return this; },
     }; // Supply a real token in an integration test
     devTools = DevTools.connectToBackendInstance(iModelToken);
   });

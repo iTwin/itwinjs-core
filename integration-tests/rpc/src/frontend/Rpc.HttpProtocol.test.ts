@@ -33,14 +33,14 @@ if (false) {
 
       // assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.PENDING_RESPONSE_QUOTA_MESSAGE, value: expectedPendings }));
 
-      const params = new TestOp1Params(1, 1);
+      const params: TestOp1Params = { a: 1, b: 1 };
       const remoteSum = await TestRpcInterface.getClient().op1(params);
 
       // assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.PENDING_RESPONSE_QUOTA_MESSAGE, value: 0 }));
       removeListener();
 
       assert.equal(pendingsReceived, expectedPendings);
-      assert.equal(remoteSum, params.sum());
+      assert.equal(remoteSum, params.a + params.b);
     });
 
     it("should reject an unknown status code", async () => {

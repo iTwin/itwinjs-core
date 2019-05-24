@@ -15,6 +15,11 @@ import { ThumbnailProps } from "./Thumbnail";
  * @public
  */
 export class IModelToken {
+  /** Constructs an IModelToken from a props object. */
+  public static fromJSON(props: IModelTokenProps): IModelToken {
+    return new IModelToken(props.key, props.contextId, props.iModelId, props.changeSetId, props.openMode);
+  }
+
   /** Constructor */
   public constructor(
     /** Key used for identifying the iModel on the backend */
@@ -29,7 +34,15 @@ export class IModelToken {
     public openMode?: OpenMode,
   ) {
   }
+
+  /** Creates a props object for this IModelToken. */
+  public toJSON(): IModelTokenProps {
+    return Object.create(Object.prototype, Object.getOwnPropertyDescriptors(this));
+  }
 }
+
+/** The data properties of IModelToken. */
+export interface IModelTokenProps extends Pick<IModelToken, Exclude<keyof IModelToken, "toJSON">> { }
 
 /** Properties that position an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
  * @public
@@ -91,6 +104,10 @@ export interface IModelProps {
   globalOrigin?: XYZProps;
   /** The location of the iModel in Earth Centered Earth Fixed coordinates. iModel units are always meters */
   ecefLocation?: EcefLocationProps;
+  /** The name of the iModel. */
+  name?: string;
+  /** The token of the iModel. */
+  iModelToken?: IModelTokenProps;
 }
 
 /** The properties that can be supplied when creating a *new* iModel.

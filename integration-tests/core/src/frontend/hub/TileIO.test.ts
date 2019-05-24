@@ -625,7 +625,7 @@ describe("mirukuru TileTree", () => {
       if (treeCounter >= numRetries)
         imodel.tiles.getTileTreeProps = getTileTreeProps;
 
-      throw new ServerTimeoutError(504, "fake timeout");
+      throw new ServerTimeoutError("fake timeout");
     };
 
     const getTileContent = imodel.tiles.getTileContent;
@@ -634,7 +634,7 @@ describe("mirukuru TileTree", () => {
       if (tileCounter >= numRetries)
         imodel.tiles.getTileContent = getTileContent;
 
-      throw new ServerTimeoutError(504, "fake timeout");
+      throw new ServerTimeoutError("fake timeout");
     };
 
     await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {

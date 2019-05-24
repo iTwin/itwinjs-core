@@ -13,7 +13,7 @@ import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtoco
 import { RpcRequest } from "../core/RpcRequest";
 import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import { IModelToken } from "../../IModel";
+import { IModelToken, IModelTokenProps } from "../../IModel";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 
 enum AppMode {
@@ -70,7 +70,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     const prefix = this.pathPrefix;
     const appTitle = this.info.title;
     const appVersion = this.info.version;
-    const operationId = `${operation.interfaceDefinition.name}-${operation.interfaceVersion}-${operation.operationName}`;
+    const operationId = `${operation.interfaceDefinition.interfaceName}-${operation.interfaceVersion}-${operation.operationName}`;
 
     let appMode: string;
     let contextId: string;
@@ -111,7 +111,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
    * Inflates the IModelToken from the URL path for each request on the backend.
    * @note This function updates the IModelToken value supplied in the request body.
    */
-  public inflateToken(tokenFromBody: IModelToken, request: SerializedRpcRequest): IModelToken {
+  public inflateToken(tokenFromBody: IModelTokenProps, request: SerializedRpcRequest): IModelTokenProps {
     const urlPathComponents = request.path.split("/");
 
     const iModelKey = tokenFromBody.key;

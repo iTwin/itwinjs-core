@@ -12,6 +12,7 @@ import { GuidString } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelToken } from '@bentley/imodeljs-common';
+import { IModelTokenProps } from '@bentley/imodeljs-common';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { RpcInterface } from '@bentley/imodeljs-common';
 
@@ -857,43 +858,43 @@ export class PresentationError extends BentleyError {
 // @public
 export class PresentationRpcInterface extends RpcInterface {
     // (undocumented)
-    computeSelection(_token: IModelToken, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
+    computeSelection(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
     // (undocumented)
-    getContent(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<ContentJSON | undefined>;
+    getContent(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<ContentJSON | undefined>;
     // (undocumented)
-    getContentAndSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<{
+    getContentAndSize(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<{
         content?: ContentJSON;
         size: number;
     }>;
     // (undocumented)
-    getContentDescriptor(_token: IModelToken, _options: ContentRpcRequestOptions, _displayType: string, _keys: KeySetJSON, _selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined>;
+    getContentDescriptor(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _displayType: string, _keys: KeySetJSON, _selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined>;
     // (undocumented)
-    getContentSetSize(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<number>;
+    getContentSetSize(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<number>;
     // (undocumented)
-    getDisplayLabel(_token: IModelToken, _options: LabelRpcRequestOptions, _key: InstanceKeyJSON): PresentationRpcResponse<string>;
+    getDisplayLabel(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _key: InstanceKeyJSON): PresentationRpcResponse<string>;
     // (undocumented)
-    getDisplayLabels(_token: IModelToken, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<string[]>;
+    getDisplayLabels(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<string[]>;
     // (undocumented)
-    getDistinctValues(_token: IModelToken, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
+    getDistinctValues(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
     // (undocumented)
-    getFilteredNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElementJSON[]>;
+    getFilteredNodePaths(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)
-    getNodePaths(_token: IModelToken, _options: HierarchyRpcRequestOptions, _paths: InstanceKeyJSON[][], _markedIndex: number): PresentationRpcResponse<NodePathElementJSON[]>;
+    getNodePaths(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _paths: InstanceKeyJSON[][], _markedIndex: number): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)
-    getNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKeyJSON): PresentationRpcResponse<NodeJSON[]>;
+    getNodes(_token: IModelTokenProps, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKeyJSON): PresentationRpcResponse<NodeJSON[]>;
     // (undocumented)
-    getNodesAndCount(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKeyJSON): PresentationRpcResponse<{
+    getNodesAndCount(_token: IModelTokenProps, _options: Paged<HierarchyRpcRequestOptions>, _parentKey?: NodeKeyJSON): PresentationRpcResponse<{
         nodes: NodeJSON[];
         count: number;
     }>;
     // (undocumented)
-    getNodesCount(_token: IModelToken, _options: HierarchyRpcRequestOptions, _parentKey?: NodeKeyJSON): PresentationRpcResponse<number>;
+    getNodesCount(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _parentKey?: NodeKeyJSON): PresentationRpcResponse<number>;
     // (undocumented)
-    getSelectionScopes(_token: IModelToken, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
+    getSelectionScopes(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
+    static readonly interfaceName = "PresentationRpcInterface";
+    static interfaceVersion: string;
     // @internal
-    syncClientState(_token: IModelToken, _options: ClientStateSyncRequestOptions): PresentationRpcResponse;
-    static types: () => never[];
-    static version: string;
+    syncClientState(_token: IModelTokenProps, _options: ClientStateSyncRequestOptions): PresentationRpcResponse;
 }
 
 // @public

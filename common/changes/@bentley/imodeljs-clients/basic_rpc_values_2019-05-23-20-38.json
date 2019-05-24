@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "RPC system now accepts only basic values (primitives, \"interface\" objects, and binary).",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "steve.wilson@bentley.com"
+}

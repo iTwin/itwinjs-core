@@ -176,6 +176,18 @@ export class ClientRequestContext {
     useContextForRpc: boolean;
     }
 
+// Warning: (ae-missing-release-tag) "ClientRequestContextProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// 
+// @public
+export interface ClientRequestContextProps extends Pick<ClientRequestContext, Exclude<keyof ClientRequestContext, "enter" | "useContextForRpc">> {
+}
+
+// @public (undocumented)
+export namespace ClientRequestContextProps {
+    // (undocumented)
+    export function fromContext(context: ClientRequestContext): ClientRequestContextProps;
+}
+
 // @public
 export type CloneFunction<T> = (value: T) => T;
 
@@ -762,6 +774,8 @@ export enum IModelStatus {
     ReadOnlyDomain = 65583,
     // (undocumented)
     RepositoryManagerError = 65584,
+    // (undocumented)
+    ServerTimeout = 65603,
     // (undocumented)
     SQLiteError = 65585,
     // (undocumented)

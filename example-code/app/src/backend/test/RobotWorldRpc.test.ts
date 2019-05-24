@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { IModelDb, IModelJsFs, PhysicalModel } from "@bentley/imodeljs-backend";
-import { SnapshotIModelRpcInterface, IModel, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager } from "@bentley/imodeljs-common";
+import { SnapshotIModelRpcInterface, IModel, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager, IModelTokenProps } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -58,7 +58,7 @@ describe("RobotWorldRpc", () => {
 
     const iModel: IModelConnection = await IModelConnection.openSnapshot(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim");
     assert.isTrue(iModel !== undefined);
-    const iToken: IModelToken = iModel.iModelToken;
+    const iToken: IModelTokenProps = iModel.iModelToken.toJSON();
 
     let modelId!: Id64String;
     for (const modelStr of await iModel.queryEntityIds({ from: "bis:element", where: "CodeValue='test'" }))
@@ -75,9 +75,9 @@ describe("RobotWorldRpc", () => {
       //  |                   |
       //  |R1                 V
       //  +-- -- -- -- -- -- --
-      const robot1Id = await roWrite.insertRobot(iToken, modelId, "r1", Point3d.create(0, 0, 0));
-      const barrier1Id = await roWrite.insertBarrier(iToken, modelId, Point3d.create(0, 5, 0), Angle.createDegrees(0), 5);
-      const barrier2Id = await roWrite.insertBarrier(iToken, modelId, Point3d.create(5, 0, 0), Angle.createDegrees(90), 5);
+      const robot1Id = await roWrite.insertRobot(iToken, modelId, "r1", Point3d.create(0, 0, 0).toJSON());
+      const barrier1Id = await roWrite.insertBarrier(iToken, modelId, Point3d.create(0, 5, 0).toJSON(), Angle.createDegrees(0).toJSON(), 5);
+      const barrier2Id = await roWrite.insertBarrier(iToken, modelId, Point3d.create(5, 0, 0).toJSON(), Angle.createDegrees(90).toJSON(), 5);
 
       await iModel.saveChanges();
       const barrier1 = (await iModel.elements.getProps(barrier1Id))[0];
