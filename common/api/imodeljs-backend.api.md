@@ -2677,11 +2677,10 @@ export class KnownLocations {
     static readonly tmpdir: string;
 }
 
-// @public
+// @internal
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
-    // @internal
     constructor(props: LightLocationProps, iModel: IModelDb);
-    // @internal (undocumented)
+    // (undocumented)
     static readonly className: string;
     enabled: boolean;
 }

@@ -557,8 +557,6 @@ export class AccuDrawShortcuts {
     static itemFieldNewInput(index: ItemField): void;
     // (undocumented)
     static itemFieldUnlockAll(): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemRotationModeChange" is marked as @alpha, but its signature references "RotationMode" which is marked as @internal
-    // 
     // (undocumented)
     static itemRotationModeChange(rotation: RotationMode): void;
     // (undocumented)
@@ -597,8 +595,6 @@ export class AccuDrawShortcuts {
     static rotateToElement(updateCurrentACS: boolean): void;
     // (undocumented)
     static setOrigin(explicitOrigin?: Point3d): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "setStandardRotation" is marked as @alpha, but its signature references "RotationMode" which is marked as @internal
-    // 
     // (undocumented)
     static setStandardRotation(rotation: RotationMode): void;
     // (undocumented)
@@ -1803,12 +1799,8 @@ export class DefaultViewTouchTool extends ViewManip {
 }
 
 // @public
-export class DepthRangeNpc {
-    constructor(minimum?: number, maximum?: number);
-    // (undocumented)
+export interface DepthRangeNpc {
     maximum: number;
-    middle(): number;
-    // (undocumented)
     minimum: number;
 }
 
@@ -2273,7 +2265,6 @@ export function extractImageSourceDimensions(source: ImageSource): Promise<Point
 
 // @public
 export interface FeatureOverrideProvider {
-    // (undocumented)
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
 
@@ -2585,10 +2576,8 @@ export class GeometricModel3dState extends GeometricModelState {
     readonly is3d: boolean;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "GeometricModelState" is marked as @public, but its signature references "TileTreeModelState" which is marked as @alpha
-// 
 // @public
-export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
+export abstract class GeometricModelState extends ModelState {
     // @internal (undocumented)
     readonly asGeometricModel: GeometricModelState;
     // @internal (undocumented)
@@ -2633,10 +2622,8 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 // @public
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
 
-// Warning: (ae-incompatible-release-tags) The symbol "GraphicBranch" is marked as @public, but its signature references "RenderMemory" which is marked as @internal
-// 
 // @public
-export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
+export class GraphicBranch implements IDisposable {
     constructor(ownsEntries?: boolean);
     add(graphic: RenderGraphic): void;
     // @internal
@@ -3018,7 +3005,7 @@ export abstract class ImageryProviderEPSG3857 extends ImageryProvider {
 
 // @public
 export class IModelApp {
-    // Warning: (ae-incompatible-release-tags) The symbol "accuDraw" is marked as @public, but its signature references "AccuDraw" which is marked as @internal
+    // @internal
     static readonly accuDraw: AccuDraw;
     static readonly accuSnap: AccuSnap;
     static readonly applicationId: string;
@@ -3063,7 +3050,7 @@ export class IModelApp {
 
 // @public
 export interface IModelAppOptions {
-    // Warning: (ae-incompatible-release-tags) The symbol "accuDraw" is marked as @public, but its signature references "AccuDraw" which is marked as @internal
+    // @internal
     accuDraw?: AccuDraw;
     accuSnap?: AccuSnap;
     applicationId?: string;
@@ -4232,15 +4219,13 @@ export class PerformanceMetrics {
     startNewFrame(sceneTime?: number): void;
 }
 
-// @alpha
+// @beta
 export namespace PerModelCategoryVisibility {
-    // @beta
     export enum Override {
         Hide = 2,
         None = 0,
         Show = 1
     }
-    // @beta
     export interface Overrides {
         clearOverrides(modelIds?: Id64Arg): void;
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
@@ -4267,18 +4252,16 @@ export namespace Pixel {
         getPixel(x: number, y: number): Data;
     }
     export class Data {
-        // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @beta, but its signature references "PackedFeatureTable" which is marked as @internal
-        constructor(feature?: Feature | undefined, distanceFraction?: number, type?: GeometryType, planarity?: Planarity, featureTable?: PackedFeatureTable | undefined);
+        // @internal
+        constructor(feature?: Feature, distanceFraction?: number, type?: GeometryType, planarity?: Planarity, featureTable?: PackedFeatureTable);
         // (undocumented)
         readonly distanceFraction: number;
         // (undocumented)
         readonly elementId: Id64String | undefined;
         // (undocumented)
-        readonly feature?: Feature | undefined;
-        // Warning: (ae-incompatible-release-tags) The symbol "featureTable" is marked as @beta, but its signature references "PackedFeatureTable" which is marked as @internal
-        // 
-        // (undocumented)
-        readonly featureTable?: PackedFeatureTable | undefined;
+        readonly feature?: Feature;
+        // @internal (undocumented)
+        readonly featureTable?: PackedFeatureTable;
         // (undocumented)
         readonly geometryClass: GeometryClass | undefined;
         // (undocumented)
@@ -4605,10 +4588,8 @@ export class RenderClassifierModel {
     readonly type: ClassifierType;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "RenderClipVolume" is marked as @beta, but its signature references "RenderMemory" which is marked as @internal
-// 
 // @beta
-export abstract class RenderClipVolume implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderClipVolume implements IDisposable {
     protected constructor(clipVector: ClipVector);
     readonly clipVector: ClipVector;
     // @internal (undocumented)
@@ -4643,10 +4624,8 @@ export const enum RenderDiagnostics {
     WebGL = 4
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "RenderGraphic" is marked as @public, but its signature references "RenderMemory" which is marked as @internal
-// 
 // @public
-export abstract class RenderGraphic implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderGraphic implements IDisposable {
     // @internal (undocumented)
     abstract collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
@@ -4915,6 +4894,7 @@ export abstract class RenderSystem implements IDisposable {
     enableDiagnostics(_enable: RenderDiagnostics): void;
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
+    // @beta
     getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
     // @internal (undocumented)
     getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _models: ModelSelectorState, _categories: CategorySelectorState, _imodel: IModelConnection): RenderSolarShadowMap | undefined;
@@ -5027,7 +5007,7 @@ export class RotateViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export enum RotationMode {
     // (undocumented)
     ACS = 5,
@@ -5588,23 +5568,23 @@ export enum SnapStatus {
 export namespace SpatialClassification {
     // @internal (undocumented)
     export function addModelClassifierToScene(classifiedModel: TileTreeModelState, context: SceneContext): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "addSpatialClassifier" is marked as @beta, but its signature references "TileTreeModelState" which is marked as @alpha
+    // @alpha
     export function addSpatialClassifier(model: TileTreeModelState, classifier: SpatialClassificationProps.PropertiesProps): void;
     // @internal (undocumented)
     export function createClassifier(id: Id64String, iModel: IModelConnection): Promise<RenderClassifierModel | undefined>;
-    // Warning: (ae-incompatible-release-tags) The symbol "getActiveSpatialClassifier" is marked as @beta, but its signature references "TileTreeModelState" which is marked as @alpha
+    // @alpha
     export function getActiveSpatialClassifier(model: TileTreeModelState): number;
     // @internal (undocumented)
     export function getClassifierProps(model: TileTreeModelState): SpatialClassificationProps.Properties | undefined;
-    // Warning: (ae-incompatible-release-tags) The symbol "getSpatialClassifier" is marked as @beta, but its signature references "TileTreeModelState" which is marked as @alpha
+    // @alpha
     export function getSpatialClassifier(model: TileTreeModelState, index: number): SpatialClassificationProps.Properties | undefined;
     // @internal (undocumented)
     export function loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
     // @internal (undocumented)
     export function loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "setActiveSpatialClassifier" is marked as @beta, but its signature references "TileTreeModelState" which is marked as @alpha
+    // @alpha
     export function setActiveSpatialClassifier(model: TileTreeModelState, classifierIndex: number, active: boolean): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "setSpatialClassifier" is marked as @beta, but its signature references "TileTreeModelState" which is marked as @alpha
+    // @alpha
     export function setSpatialClassifier(model: TileTreeModelState, index: number, classifier: SpatialClassificationProps.Properties): void;
 }
 
@@ -7409,9 +7389,7 @@ export class ViewClipSettingsProvider {
     getActiveClipStatus(viewport: Viewport): ActiveClipStatus;
     // (undocumented)
     protected getAllSettings(iModel: IModelConnection, shared: boolean): Promise<SettingsMapResult>;
-    // Warning: (ae-incompatible-release-tags) The symbol "getCachedSetting" is marked as @alpha, but its signature references "SavedClipCache" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     protected getCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SavedClipCache>;
     // (undocumented)
     getClip(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<ClipVector | undefined>;
@@ -7423,17 +7401,13 @@ export class ViewClipSettingsProvider {
     protected getRequestContext(): Promise<AuthorizedFrontendRequestContext>;
     // (undocumented)
     protected getSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult>;
-    // Warning: (ae-incompatible-release-tags) The symbol "getSettings" is marked as @alpha, but its signature references "SavedClipEntry" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     getSettings(settings: SavedClipEntry[], iModel: IModelConnection, shared?: boolean): Promise<SettingsStatus>;
     // @internal (undocumented)
     modifiedActiveClip(viewport: Viewport): boolean;
     // (undocumented)
     namespace: string;
-    // Warning: (ae-incompatible-release-tags) The symbol "newCachedSetting" is marked as @alpha, but its signature references "SavedClipProps" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     protected newCachedSetting(iModel: IModelConnection, shared: boolean, newId: GuidString, settings: SavedClipProps): Promise<SettingsStatus>;
     // (undocumented)
     newClip(iModel: IModelConnection, shared: boolean, clip: ClipVector, name?: string): Promise<GuidString | undefined>;
@@ -7447,9 +7421,7 @@ export class ViewClipSettingsProvider {
     replaceClip(iModel: IModelConnection, shared: boolean, existingId: GuidString, clip: ClipVector): Promise<SettingsStatus>;
     // (undocumented)
     saveActiveClip(viewport: Viewport, shared: boolean, name?: string): Promise<GuidString | undefined>;
-    // Warning: (ae-incompatible-release-tags) The symbol "saveSetting" is marked as @alpha, but its signature references "SavedClipProps" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     protected saveSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsResult>;
     // @internal (undocumented)
     setActiveClipId(viewport: Viewport, existingId: GuidString): void;
@@ -7457,9 +7429,7 @@ export class ViewClipSettingsProvider {
     protected shareCachedSetting(iModel: IModelConnection, existingId: GuidString, newShared: boolean): Promise<SettingsStatus>;
     // (undocumented)
     shareClip(iModel: IModelConnection, existingId: GuidString, newShare: boolean): Promise<SettingsStatus>;
-    // Warning: (ae-incompatible-release-tags) The symbol "updateCachedSetting" is marked as @alpha, but its signature references "SavedClipProps" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal (undocumented)
     protected updateCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsStatus>;
     // (undocumented)
     protected validateActiveClipId(viewport: Viewport): void;

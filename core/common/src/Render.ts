@@ -267,7 +267,7 @@ export namespace RenderTexture {
     /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element Id of the corresponding Texture element in the [[IModelDb]].
      * Textures created on the front-end generally have no key.
      */
-    public readonly key?: string; // The Id of a persistent texture
+    public readonly key?: string;
     /** Indicates the type of texture. */
     public readonly type: Type;
     /** Indicates that some object is managing the lifetime of this texture and will take care of calling its dispose function appropriately.
@@ -705,9 +705,9 @@ export class ViewFlags {
   }
 }
 
-/** @internal */
+/** @alpha */
 export namespace ViewFlag {
-  /** @internal */
+  /** @alpha */
   export const enum PresenceFlag { // tslint:disable-line:no-const-enum
     kRenderMode,
     kText,
@@ -737,7 +737,7 @@ export namespace ViewFlag {
   }
 
   /** Overrides a subset of ViewFlags.
-   * @internal
+   * @alpha
    */
   export class Overrides {
     private _present = 0;
@@ -1017,7 +1017,7 @@ export namespace AmbientOcclusion {
     readonly blurTexelStepSize?: number;
   }
 
-  /** Describes the symbology with which edges should be drawn. */
+  /** Describes the properties with which ambient occlusion should be drawn. These properties correspond to a horizon-based ambient occlusion approach. */
   export class Settings implements Props {
     private static _defaultBias: number = 0.25;
     private static _defaultZLengthCap: number = 0.0025;
@@ -1751,16 +1751,16 @@ export enum BackgroundFill {
  * within a view using [[ViewFlags]].
  * @see [[GeometryStreamProps]].
  * @see [[Feature]].
- * @alpha Confusion with ECClass?
+ * @public
  */
 export enum GeometryClass {
   /** Used to classify the "real" geometry within a model. Most geometry falls within this class. */
   Primary = 0,
   /** Used to classify geometry used as a drawing aid in constructing the Primary geometry. For example, grid lines. */
   Construction = 1,
-  /** Used to classify annotations which dimension the Primary geometry. */
+  /** Used to classify annotations which dimension (measure) the Primary geometry. */
   Dimension = 2,
-  /** Used to classify area pattern geometry. */
+  /** Used to classify geometry used to fill planar regions with a 2d pattern (e.g., hatch lines). */
   Pattern = 3,
 }
 
@@ -1821,7 +1821,6 @@ export class GeometryParams {
   public fillTransparency?: number;
   /** Optional geometry classification that can be toggled off with a [[ViewFlags]] independent of [[SubCategoryAppearance.invisible]].
    * Default is [[GeometryClass.Primary]].
-   * @alpha
    */
   public geometryClass?: GeometryClass;
   /** Optional line style to override [[SubCategoryAppearance.styleId]] plus modifiers to override the line style definition.
@@ -1980,7 +1979,7 @@ export namespace Hilite {
 
   /**
    * Describes how the hilite effect is applied to elements within a [[Viewport]].
-   * The hilite effect is applied to elements contained in either the [[IModelConnection]]'s [[HilitedSet]] or its [[SelectionSet]].
+   * The hilite effect is applied to elements contained in the [[IModelConnection]]'s [[SelectionSet]].
    * It is designed to draw attention to those elements. The effect is produced as follows:
    *  1. All hilited elements are drawn as normal, except that their element color is mixed with the hilite color.
    *  2. The union of the regions of the screen corresponding to hilited elements is computed.
@@ -2026,12 +2025,11 @@ export namespace Hilite {
  * FeatureTable associated with the primitive.
  *
  * @see [[FeatureSymbology]] for mechanisms for controlling or overriding the symbology of individual features within a [[ViewState]].
- * @beta Name?
+ * @public
  */
 export class Feature {
   public readonly elementId: string;
   public readonly subCategoryId: string;
-  /** @alpha */
   public readonly geometryClass: GeometryClass;
 
   public constructor(elementId: Id64String = Id64.invalid, subCategoryId: Id64String = Id64.invalid, geometryClass: GeometryClass = GeometryClass.Primary) {
@@ -2043,7 +2041,13 @@ export class Feature {
   public get isDefined(): boolean { return !Id64.isInvalid(this.elementId) || !Id64.isInvalid(this.subCategoryId) || this.geometryClass !== GeometryClass.Primary; }
   public get isUndefined(): boolean { return !this.isDefined; }
 
+  /** Returns true if this feature is equivalent to the supplied feature. */
   public equals(other: Feature): boolean { return 0 === this.compare(other); }
+
+  /** Performs ordinal comparison of this feature with another.
+   * @param rhs The feature to compare with.
+   * @returns zero if the features are equivalent, a negative value if this feature compares as "less than" `rhs`, or a positive value if this feature compares "greater than" `rhs`.
+   */
   public compare(rhs: Feature): number {
     if (this === rhs)
       return 0;

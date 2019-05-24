@@ -53,7 +53,7 @@ export enum CompassMode {
   Rectangular = 1,
 }
 
-/** @internal */
+/** @alpha */
 export enum RotationMode {
   Top = 1,
   Front = 2,

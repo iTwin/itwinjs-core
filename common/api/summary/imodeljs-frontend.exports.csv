@@ -204,9 +204,7 @@ internal;PackedFeatureTable
 public;PanViewTool 
 alpha;ParseResults
 internal;PerformanceMetrics
-alpha;PerModelCategoryVisibility
-beta;Override
-beta;Overrides
+beta;PerModelCategoryVisibility
 public;PhysicalModelState 
 internal;PingTestResult
 beta;Pixel
@@ -244,7 +242,7 @@ public;RenderSystem
 beta;Options
 internal;class RenderTarget 
 public;RotateViewTool 
-internal;RotationMode
+alpha;RotationMode
 internal;RoundOff
 internal;SavedClipCache
 internal;SavedClipEntry
@@ -281,15 +279,15 @@ public;SnapMode
 public;SnapStatus
 beta;SpatialClassification
 internal;addModelClassifierToScene(classifiedModel: TileTreeModelState, context: SceneContext): void
-beta;addSpatialClassifier(model: TileTreeModelState, classifier: SpatialClassificationProps.PropertiesProps): void
+alpha;addSpatialClassifier(model: TileTreeModelState, classifier: SpatialClassificationProps.PropertiesProps): void
 internal;createClassifier(id: Id64String, iModel: IModelConnection): Promise
-beta;getActiveSpatialClassifier(model: TileTreeModelState): number
+alpha;getActiveSpatialClassifier(model: TileTreeModelState): number
 internal;getClassifierProps(model: TileTreeModelState): SpatialClassificationProps.Properties | undefined
-beta;getSpatialClassifier(model: TileTreeModelState, index: number): SpatialClassificationProps.Properties | undefined
+alpha;getSpatialClassifier(model: TileTreeModelState, index: number): SpatialClassificationProps.Properties | undefined
 internal;loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise
 internal;loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise
-beta;setActiveSpatialClassifier(model: TileTreeModelState, classifierIndex: number, active: boolean): Promise
-beta;setSpatialClassifier(model: TileTreeModelState, index: number, classifier: SpatialClassificationProps.Properties): void
+alpha;setActiveSpatialClassifier(model: TileTreeModelState, classifierIndex: number, active: boolean): Promise
+alpha;setSpatialClassifier(model: TileTreeModelState, index: number, classifier: SpatialClassificationProps.Properties): void
 public;SpatialLocationModelState 
 public;SpatialModelState 
 public;SpatialViewState 

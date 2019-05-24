@@ -57,12 +57,12 @@ beta;DecorationGeometryProps
 public;DefinitionElementProps 
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
-beta;DisplayStyle3dProps 
+public;DisplayStyle3dProps 
 beta;DisplayStyle3dSettings 
-beta;DisplayStyle3dSettingsProps 
-beta;DisplayStyleProps 
+public;DisplayStyle3dSettingsProps 
+public;DisplayStyleProps 
 beta;DisplayStyleSettings
-beta;DisplayStyleSettingsProps
+public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DPoint2dProps = number[]
 public;EcefLocation 
@@ -87,7 +87,7 @@ public;EntityProps
 public;EntityQueryParams
 public;EnvironmentProps
 public;ExternalSourceAspectProps 
-beta;Feature
+public;Feature
 internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
@@ -113,7 +113,7 @@ public;GeometricElement3dProps
 public;GeometricElementProps 
 public;GeometricModel2dProps 
 public;GeometryAppearanceProps
-alpha;GeometryClass
+public;GeometryClass
 public;GeometryParams
 public;GeometryPartInstanceProps
 public;GeometryPartProps 
@@ -160,7 +160,7 @@ beta;kPagingDefaultOptions: PageOptions
 public;LatAndLong
 public;LatLongAndHeight 
 internal;Light
-beta;LightLocationProps 
+internal;LightLocationProps 
 internal;LightProps
 internal;LightType
 public;LinePixels
@@ -341,7 +341,7 @@ public;ViewAttachmentProps
 public;ViewDefinition2dProps 
 public;ViewDefinition3dProps 
 public;ViewDefinitionProps 
-internal;ViewFlag
+alpha;ViewFlag
 public;ViewFlagProps
 public;ViewFlags
 public;ViewQueryParams 

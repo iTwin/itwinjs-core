@@ -690,7 +690,7 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
 }
 
 /** The position in space of a Light.
- * @public
+ * @internal
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
   /** @internal */

@@ -10,7 +10,7 @@ import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
 import { GraphicType } from "../rendering";
 import { DecorateContext } from "../ViewContext";
-import { CoordSystem, DepthRangeNpc, ScreenViewport, Viewport, ViewRect } from "../Viewport";
+import { CoordSystem, ScreenViewport, Viewport, ViewRect } from "../Viewport";
 import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
 import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool, ToolSettings } from "./Tool";
 import { AccuDraw } from "../AccuDraw";
@@ -1966,7 +1966,7 @@ export class WindowAreaTool extends ViewTool {
 
       let npcZValues = vp.determineVisibleDepthRange(windowRange);
       if (!npcZValues)
-        npcZValues = new DepthRangeNpc(0, ViewManip.getFocusPlaneNpc(vp));  // Just use the focus plane
+        npcZValues = { minimum: 0, maximum: ViewManip.getFocusPlaneNpc(vp) };
 
       const lensAngle = cameraView.getLensAngle();
 

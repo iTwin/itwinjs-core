@@ -1529,6 +1529,7 @@ export class ViewClipSettingsProvider {
     return IModelApp.settings.getUserSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
   }
 
+  /** @internal */
   protected async saveSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsResult> {
     const requestContext = await this.getRequestContext();
     if (shared)
@@ -1543,6 +1544,7 @@ export class ViewClipSettingsProvider {
     return IModelApp.settings.deleteUserSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
   }
 
+  /** @internal */
   protected async getCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SavedClipCache> {
     const existing = this._cachedClips.get(existingId);
     if (undefined !== existing && shared === existing.shared)
@@ -1563,6 +1565,7 @@ export class ViewClipSettingsProvider {
     }
   }
 
+  /** @internal */
   protected async newCachedSetting(iModel: IModelConnection, shared: boolean, newId: GuidString, settings: SavedClipProps): Promise<SettingsStatus> {
     try {
       const result = await this.saveSetting(iModel, shared, newId, settings);
@@ -1574,6 +1577,7 @@ export class ViewClipSettingsProvider {
     }
   }
 
+  /** @internal */
   protected async updateCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsStatus> {
     const existing = await this.getCachedSetting(iModel, shared, existingId);
     if (undefined === existing.clip)
@@ -1690,6 +1694,7 @@ export class ViewClipSettingsProvider {
     return true;
   }
 
+  /** @internal */
   public async getSettings(settings: SavedClipEntry[], iModel: IModelConnection, shared?: boolean): Promise<SettingsStatus> {
     let userStatus = SettingsStatus.Success;
     let sharedStatus = SettingsStatus.Success;

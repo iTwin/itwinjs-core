@@ -100,7 +100,7 @@ export interface TileTreeModelState {
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
  * @public
  */
-export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
+export abstract class GeometricModelState extends ModelState /* implements TileTreeModelState */ {
   /** @internal */
   public static get className() { return "GeometricModel"; }
 

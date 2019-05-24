@@ -41,6 +41,7 @@ import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
  * @public
  */
 export interface FeatureOverrideProvider {
+  /** Add to the supplied `overrides` any symbology overrides to be applied to the specified `viewport`. */
   addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
 
@@ -293,15 +294,11 @@ export class ViewRect {
  * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0.
  * @public
  */
-export class DepthRangeNpc {
-  /**
-   * @param minimum The lowest (closest to back) value.
-   * @param maximum The highest (closest to the front) value.
-   */
-  constructor(public minimum = 0, public maximum = 1.0) { }
-
-  /** The value at the middle (halfway between the minimum and maximum) of this depth */
-  public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
+export interface DepthRangeNpc {
+  /** The value closest to the back. */
+  minimum: number;
+  /** The value closest to the front. */
+  maximum: number;
 }
 
 /** Coordinate system types
@@ -948,7 +945,7 @@ export enum ViewUndoEvent { Undo = 0, Redo = 1 }
  * The override affects geometry on all subcategories belonging to the overridden category. That is, if the category is overridden to be visible, then geometry on all subcategories of the category
  * will be visible, regardless of any [SubCategoryOverride]($common)s applied by the view's [[DisplayStyleState]].
  * @see [[Viewport.perModelCategoryVisibility]]
- * @alpha
+ * @beta
  */
 export namespace PerModelCategoryVisibility {
   /** Describes whether and how a category's visibility is overridden.
@@ -1819,7 +1816,7 @@ export abstract class Viewport implements IDisposable {
         return;
 
       if (undefined === result) {
-        result = new DepthRangeNpc(minimum, maximum);
+        result = { minimum, maximum };
       } else {
         result.minimum = minimum;
         result.maximum = maximum;
@@ -1852,8 +1849,9 @@ export abstract class Viewport implements IDisposable {
     // We use the depth of the center of the view for that.
     let depthRange = this.determineVisibleDepthRange();
     if (!depthRange)
-      depthRange = new DepthRangeNpc();
-    const middle = depthRange.middle();
+      depthRange = { minimum: 0, maximum: 1 };
+
+    const middle = depthRange.minimum + ((depthRange.maximum - depthRange.minimum) / 2.0);
     const corners = [
       new Point3d(0.0, 0.0, middle), // lower left, at target depth
       new Point3d(1.0, 1.0, middle), // upper right at target depth

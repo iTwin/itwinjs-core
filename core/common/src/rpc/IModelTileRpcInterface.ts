@@ -34,15 +34,21 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  // The following 2 functions may produce a 504 error if the response takes a long time.
+  /** The following 2 functions may produce a 504 error if the response takes a long time.
+   * @internal
+   */
   public async getTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps> { return this.forward(arguments); }
+  /** @internal */
   public async getTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array> {
     const cached = await IModelTileRpcInterface.checkCache(iModelToken, treeId, contentId);
     return cached || this.forward(arguments);
   }
 
-  // The following 2 functions use memoized promises to avoid 504 errors if the response takes a long time.
+  /** The following 2 functions use memoized promises to avoid 504 errors if the response takes a long time.
+   * @internal
+   */
   public async requestTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps> { return this.forward(arguments); }
+  /** @internal */
   public async requestTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array> {
     const cached = await IModelTileRpcInterface.checkCache(iModelToken, treeId, contentId);
     return cached || this.forward(arguments);

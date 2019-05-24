@@ -237,7 +237,7 @@ export interface LineStyleProps extends ElementProps {
 }
 
 /** Properties of a [LightLocation]($backend)
- * @beta
+ * @internal
  */
 export interface LightLocationProps extends GeometricElement3dProps {
   enabled?: boolean;

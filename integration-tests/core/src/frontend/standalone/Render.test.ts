@@ -9,7 +9,6 @@ import { testViewports, comparePixelData, Color } from "../TestViewport";
 import { RenderMode, ColorDef, Hilite, RgbColor } from "@bentley/imodeljs-common";
 import { RenderMemory, Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
-  DepthRangeNpc,
   IModelConnection,
   FeatureOverrideProvider,
   FeatureSymbology,
@@ -356,7 +355,7 @@ describe("Render mirukuru", () => {
       expect(fullRange!.minimum).to.equal(fullRange!.maximum);
 
       // If we pass in a DepthRangeNpc, the same object should be returned to us.
-      const myRange = new DepthRangeNpc();
+      const myRange = { minimum: 0, maximum: 1 };
       let range = vp.determineVisibleDepthRange(fullRect, myRange);
       expect(range).to.equal(myRange);
       expect(range!.maximum).to.equal(fullRange!.maximum);

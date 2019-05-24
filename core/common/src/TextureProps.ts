@@ -22,7 +22,9 @@ export interface TextureProps extends DefinitionElementProps {
   width: number;
   /** The height of the image. */
   height: number;
-  /** Optional flags.  Currently unused; should always be TextureFlags.None. */
+  /** Optional flags.  Currently unused; should always be TextureFlags.None.
+   * @beta
+   */
   flags: TextureFlags;
   /** An optional description of the texture. */
   description?: string;

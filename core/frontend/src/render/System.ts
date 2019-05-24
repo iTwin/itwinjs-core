@@ -248,7 +248,7 @@ export class RenderPlan {
  * The latter are produced using a [[GraphicBuilder]].
  * @public
  */
-export abstract class RenderGraphic implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Consumer */ {
   public abstract dispose(): void;
 
   /** @internal */
@@ -272,7 +272,7 @@ export const enum ClippingType {
  * @see [System.createClipVolume]
  * @beta
  */
-export abstract class RenderClipVolume implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderClipVolume implements IDisposable /* , RenderMemory.Consumer */ {
   /** The ClipVector from which this volume was created. It must not be modified. */
   public readonly clipVector: ClipVector;
 
@@ -433,7 +433,7 @@ export class Decorations implements IDisposable {
  * @see [[RenderSystem.createBranch]]
  * @public
  */
-export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
+export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ {
   /** The child nodes of this branch */
   public readonly entries: RenderGraphic[] = [];
   /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */
@@ -485,11 +485,21 @@ export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
 export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
-    public constructor(public readonly feature?: Feature,
-      public readonly distanceFraction: number = -1.0,
-      public readonly type: GeometryType = GeometryType.Unknown,
-      public readonly planarity: Planarity = Planarity.Unknown,
-      public readonly featureTable?: PackedFeatureTable) { }
+    public readonly feature?: Feature;
+    public readonly distanceFraction: number;
+    public readonly type: GeometryType;
+    public readonly planarity: Planarity;
+    /** @internal */
+    public readonly featureTable?: PackedFeatureTable;
+
+    /** @internal */
+    public constructor(feature?: Feature, distanceFraction = -1.0, type = GeometryType.Unknown, planarity = Planarity.Unknown, featureTable?: PackedFeatureTable) {
+      this.feature = feature;
+      this.distanceFraction = distanceFraction;
+      this.type = type;
+      this.planarity = planarity;
+      this.featureTable = featureTable;
+    }
 
     public get elementId(): Id64String | undefined { return undefined !== this.feature ? this.feature.elementId : undefined; }
     public get subCategoryId(): Id64String | undefined { return undefined !== this.feature ? this.feature.subCategoryId : undefined; }
@@ -1070,6 +1080,7 @@ export abstract class RenderSystem implements IDisposable {
    * @note If a texture matching the specified gradient already exists, it will be returned.
    * Otherwise, the newly-created texture will be cached on the IModelConnection such that a subsequent call to getGradientTexture with an equivalent gradient will
    * return the previously-created texture.
+   * @beta
    */
   public getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
 

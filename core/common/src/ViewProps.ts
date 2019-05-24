@@ -21,7 +21,6 @@ export interface ViewStateProps {
   viewDefinitionProps: ViewDefinitionProps;
   categorySelectorProps: CategorySelectorProps;
   modelSelectorProps?: ModelSelectorProps;
-  /** @beta */
   displayStyleProps: DisplayStyleProps;
   /** @beta */
   sheetProps?: SheetProps;
@@ -269,7 +268,7 @@ export interface ContextRealityModelProps {
  * These settings are not stored directly as members of the [[DisplayStyleProps]]. Instead, they are stored
  * as members of `jsonProperties.styles`.
  * @see [[DisplayStyleSettings]].
- * @beta
+ * @public
  */
 export interface DisplayStyleSettingsProps {
   viewflags?: ViewFlagProps;
@@ -281,7 +280,9 @@ export interface DisplayStyleSettingsProps {
    * @alpha
    */
   analysisStyle?: AnalysisStyleProps;
-  /** Schedule script */
+  /** Schedule script
+   * @beta
+   */
   scheduleScript?: RenderSchedule.ElementTimelineProps[];
   /** Overrides applied to the appearances of subcategories in the view. */
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
@@ -295,21 +296,27 @@ export interface DisplayStyleSettingsProps {
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
  * @see [[DisplayStyle3dSettings]].
- * @beta
+ * @public
  */
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   /** Settings controlling display of skybox and ground plane. */
   environment?: EnvironmentProps;
-  /** Settings controlling display of visible and hidden edges. */
+  /** Settings controlling display of visible and hidden edges.
+   * @beta
+   */
   hline?: HiddenLine.SettingsProps;
-  /** Settings controlling display of ambient occlusion, stored in Props. */
+  /** Settings controlling display of ambient occlusion, stored in Props.
+   * @beta
+   */
   ao?: AmbientOcclusion.Props;
-  /** Settings controlling display of solar shadoss, stored in Props. */
+  /** Settings controlling display of solar shadoss, stored in Props.
+   * @beta
+   */
   solarShadows?: SolarShadows.Props;
 }
 
 /** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]].
- * @beta
+ * @public
  */
 export interface DisplayStyleProps extends DefinitionElementProps {
   /** Display styles store their settings in a `styles` property within [[ElementProps.jsonProperties]]. */
@@ -319,7 +326,7 @@ export interface DisplayStyleProps extends DefinitionElementProps {
 }
 
 /** JSON representation of a [[DisplayStyle3d]] or [[DisplayStyle3dState]].
- * @beta
+ * @public
  */
 export interface DisplayStyle3dProps extends DisplayStyleProps {
   /** Display styles store their settings in a `styles` property within [[ElementProps.jsonProperties]]. */

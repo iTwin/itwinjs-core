@@ -18,7 +18,7 @@ export enum ImageBufferFormat {
   Alpha = 5,
 }
 
-/** Uncompressed bitmap image data
+/** Uncompressed rectangular bitmap image data.
  * @public
  */
 export class ImageBuffer {

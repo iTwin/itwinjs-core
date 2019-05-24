@@ -1160,7 +1160,7 @@ export enum DevToolsStatsOptions {
     None = 0
 }
 
-// @beta
+// @public
 export interface DisplayStyle3dProps extends DisplayStyleProps {
     jsonProperties?: {
         styles?: DisplayStyle3dSettingsProps;
@@ -1181,15 +1181,18 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     toJSON(): DisplayStyle3dSettingsProps;
 }
 
-// @beta
+// @public
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
+    // @beta
     ao?: AmbientOcclusion.Props;
     environment?: EnvironmentProps;
+    // @beta
     hline?: HiddenLine.SettingsProps;
+    // @beta
     solarShadows?: SolarShadows.Props;
 }
 
-// @beta
+// @public
 export interface DisplayStyleProps extends DefinitionElementProps {
     jsonProperties?: {
         styles?: DisplayStyleSettingsProps;
@@ -1221,7 +1224,7 @@ export class DisplayStyleSettings {
     viewFlags: ViewFlags;
     }
 
-// @beta
+// @public
 export interface DisplayStyleSettingsProps {
     // @alpha
     analysisStyle?: AnalysisStyleProps;
@@ -1230,6 +1233,7 @@ export interface DisplayStyleSettingsProps {
     ContextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64String[];
     monochromeColor?: ColorDefProps;
+    // @beta
     scheduleScript?: RenderSchedule.ElementTimelineProps[];
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
     // (undocumented)
@@ -1495,17 +1499,14 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
     version?: string;
 }
 
-// @beta
+// @public
 export class Feature {
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @beta, but its signature references "GeometryClass" which is marked as @alpha
     constructor(elementId?: Id64String, subCategoryId?: Id64String, geometryClass?: GeometryClass);
-    // (undocumented)
     compare(rhs: Feature): number;
     // (undocumented)
     readonly elementId: string;
-    // (undocumented)
     equals(other: Feature): boolean;
-    // @alpha (undocumented)
+    // (undocumented)
     readonly geometryClass: GeometryClass;
     // (undocumented)
     readonly isDefined: boolean;
@@ -1791,7 +1792,7 @@ export interface GeometryAppearanceProps {
     weight?: number;
 }
 
-// @alpha
+// @public
 export enum GeometryClass {
     Construction = 1,
     Dimension = 2,
@@ -1812,7 +1813,6 @@ export class GeometryParams {
     fillColor?: ColorDef;
     fillDisplay?: FillDisplay;
     fillTransparency?: number;
-    // @alpha
     geometryClass?: GeometryClass;
     // @beta
     gradient?: Gradient.Symb;
@@ -2436,17 +2436,13 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
     getTileCacheContainerUrl(_iModelToken: IModelToken, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
-    // (undocumented)
+    // @internal (undocumented)
     getTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array>;
-    // Warning: (ae-incompatible-release-tags) The symbol "getTileTreeProps" is marked as @public, but its signature references "TileTreeProps" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal
     getTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps>;
-    // (undocumented)
+    // @internal (undocumented)
     requestTileContent(iModelToken: IModelToken, treeId: string, contentId: string): Promise<Uint8Array>;
-    // Warning: (ae-incompatible-release-tags) The symbol "requestTileTreeProps" is marked as @public, but its signature references "TileTreeProps" which is marked as @internal
-    // 
-    // (undocumented)
+    // @internal
     requestTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps>;
     // (undocumented)
     static types: () => (typeof IModelToken | typeof IModelNotFoundResponse)[];
@@ -2562,7 +2558,7 @@ export class Light {
     shadows: number;
 }
 
-// @beta
+// @internal
 export interface LightLocationProps extends GeometricElement3dProps {
     // (undocumented)
     enabled?: boolean;
@@ -4947,7 +4943,7 @@ export interface ViewDefinitionProps extends DefinitionElementProps {
     displayStyleId: Id64String;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export namespace ViewFlag {
     export class Overrides {
         constructor(flags?: ViewFlags);
@@ -4956,6 +4952,7 @@ export namespace ViewFlag {
         apply(base: ViewFlags): ViewFlags;
         // (undocumented)
         clear(): void;
+        // @internal
         readonly clipVolumeOverride: boolean | undefined;
         // (undocumented)
         clone(out?: Overrides): Overrides;
@@ -5159,7 +5156,7 @@ export interface ViewQueryParams extends EntityQueryParams {
 export interface ViewStateProps {
     // (undocumented)
     categorySelectorProps: CategorySelectorProps;
-    // @beta (undocumented)
+    // (undocumented)
     displayStyleProps: DisplayStyleProps;
     // (undocumented)
     modelSelectorProps?: ModelSelectorProps;

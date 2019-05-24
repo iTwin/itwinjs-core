@@ -150,7 +150,7 @@ public;class InformationReferenceElement
 beta;InstanceChange
 public;KeepBriefcase
 public;KnownLocations
-public;LightLocation 
+internal;LightLocation 
 public;LineStyle 
 public;LineStyleDefinition
 public;class LinkElement 
