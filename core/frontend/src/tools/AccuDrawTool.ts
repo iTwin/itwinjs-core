@@ -141,7 +141,7 @@ export class AccuDrawShortcuts {
   }
 
   // Helper method for GUI implementation...
-  public static itemFieldNavigate(index: ItemField, str: string, forward: boolean): void {
+  public static async itemFieldNavigate(index: ItemField, str: string, forward: boolean): Promise<void> {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -150,7 +150,7 @@ export class AccuDrawShortcuts {
       accudraw.saveCoordinate(index, accudraw.getValueByIndex(index));
 
     if (!accudraw.isActive && KeyinStatus.Partial === accudraw.getKeyinStatus(index)) {
-      accudraw.processFieldInput(index, str, true);
+      await accudraw.processFieldInput(index, str, true);
     } else {
       accudraw.setKeyinStatus(index, KeyinStatus.Dynamic);
       accudraw.onFieldValueChange(index);
@@ -188,9 +188,9 @@ export class AccuDrawShortcuts {
 
   public static itemFieldNewInput(index: ItemField): void { IModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Partial); }
 
-  public static itemFieldAcceptInput(index: ItemField, str: string): void {
+  public static async itemFieldAcceptInput(index: ItemField, str: string): Promise<void> {
     const accudraw = IModelApp.accuDraw;
-    accudraw.processFieldInput(index, str, true);
+    await accudraw.processFieldInput(index, str, true);
     accudraw.setKeyinStatus(index, KeyinStatus.Dynamic);
 
     if (accudraw.getFieldLock(index))

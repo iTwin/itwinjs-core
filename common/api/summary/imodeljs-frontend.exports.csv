@@ -28,11 +28,14 @@ alpha;BasePropertyEditorParams
 beta;BasePropertyValue
 internal;BaseTiledMapProvider
 public;BeButton
-public;BeButtonEvent
+public;BeButtonEvent 
+public;BeButtonEventProps
 public;BeButtonState
 public;BeModifierKeys
 public;BeTouchEvent 
+public;BeTouchEventProps 
 public;BeWheelEvent 
+public;BeWheelEventProps 
 internal;bisectRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectRange3d(range: Range3d, takeUpper: boolean): void
 alpha;ButtonGroupEditorParams 

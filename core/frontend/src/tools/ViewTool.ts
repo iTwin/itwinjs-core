@@ -2039,7 +2039,7 @@ export class DefaultViewTouchTool extends ViewManip {
     }
     this._lastPtView.setFrom(this._startPtView);
     this._startTouchCount = ev.touchCount;
-    this._startDirection = (2 <= ev.touchCount ? Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp)) : Vector2d.createZero());
+    this._startDirection = (2 <= ev.touchCount ? Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp)) : Vector2d.createZero());
     this._startDistance = (2 === ev.touchCount ? this._startDirection.magnitude() : 0.0);
   }
 
@@ -2048,7 +2048,7 @@ export class DefaultViewTouchTool extends ViewManip {
       return 1.0;
 
     const vp = this.viewport!;
-    const distance = (2 === ev.touchCount ? BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp).distance(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp)) : 0.0);
+    const distance = (2 === ev.touchCount ? BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp).distance(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp)) : 0.0);
 
     if (0.0 === distance)
       return 1.0;
@@ -2070,7 +2070,7 @@ export class DefaultViewTouchTool extends ViewManip {
       return Angle.createDegrees(0.0);
 
     const vp = this.viewport!;
-    const direction = Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp));
+    const direction = Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp));
     const rotation = this._startDirection.angleTo(direction);
 
     if (Math.abs(rotation.radians) < Angle.createDegrees(5.0).radians)

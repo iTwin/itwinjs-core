@@ -225,25 +225,30 @@ export class CurrentInputState {
   }
 
   public toEvent(ev: BeButtonEvent, useSnap: boolean) {
-    let from = CoordSource.User;
-    const uorPt = this.uorPoint.clone();
-    let vp = this.viewport;
+    let coordsFrom = CoordSource.User;
+    const point = this.uorPoint.clone();
+    let viewport = this.viewport;
 
     if (useSnap) {
       const snap = TentativeOrAccuSnap.getCurrentSnap(false);
       if (snap) {
-        from = snap.isHot ? CoordSource.ElemSnap : CoordSource.User;
-        uorPt.setFrom(snap.isPointAdjusted ? snap.adjustedPoint : snap.getPoint()); // NOTE: adjustedPoint can be set by adjustSnapPoint even when not hot...
-        vp = snap.viewport;
+        coordsFrom = snap.isHot ? CoordSource.ElemSnap : CoordSource.User;
+        point.setFrom(snap.isPointAdjusted ? snap.adjustedPoint : snap.getPoint()); // NOTE: adjustedPoint can be set by adjustSnapPoint even when not hot...
+        viewport = snap.viewport;
       } else if (IModelApp.tentativePoint.isActive) {
-        from = CoordSource.TentativePoint;
-        uorPt.setFrom(IModelApp.tentativePoint.getPoint());
-        vp = IModelApp.tentativePoint.viewport;
+        coordsFrom = CoordSource.TentativePoint;
+        point.setFrom(IModelApp.tentativePoint.getPoint());
+        viewport = IModelApp.tentativePoint.viewport;
       }
     }
 
     const buttonState = this.button[this.lastButton];
-    ev.initEvent(uorPt, this.rawPoint, this.viewPoint, vp!, from, this.qualifiers, this.lastButton, buttonState.isDown, buttonState.isDoubleClick, buttonState.isDragging, this.inputSource);
+    ev.init({
+      point, rawPoint: this.rawPoint, viewPoint: this.viewPoint, viewport, coordsFrom,
+      keyModifiers: this.qualifiers, button: this.lastButton, isDown: buttonState.isDown,
+      isDoubleClick: buttonState.isDoubleClick, isDragging: buttonState.isDragging,
+      inputSource: this.inputSource,
+    });
   }
 
   public adjustLastDataPoint(ev: BeButtonEvent) {
@@ -255,10 +260,14 @@ export class CurrentInputState {
 
   public toEventFromLastDataPoint(ev: BeButtonEvent) {
     const state = this.button[BeButton.Data];
-    const uorPt = state.downUorPt;
-    const rawPt = state.downRawPt;
-    const viewPt = this.viewport!.worldToView(rawPt);
-    ev.initEvent(uorPt, rawPt, viewPt, this.viewport!, CoordSource.User, this.qualifiers, BeButton.Data, state.isDown, state.isDoubleClick, state.isDragging, state.inputSource);
+    const point = state.downUorPt;
+    const rawPoint = state.downRawPt;
+    const viewPoint = this.viewport!.worldToView(rawPoint);
+    ev.init({
+      point, rawPoint, viewPoint, viewport: this.viewport!, coordsFrom: CoordSource.User,
+      keyModifiers: this.qualifiers, button: BeButton.Data, isDown: state.isDown,
+      isDoubleClick: state.isDoubleClick, isDragging: state.isDragging, inputSource: state.inputSource,
+    });
   }
 
   public fromPoint(vp: ScreenViewport, pt: XAndY, source: InputSource) {
@@ -527,20 +536,20 @@ export class ToolAdmin {
   }
 
   private async onTouch(event: ToolEvent): Promise<void> {
-    const touchEv = event.ev as TouchEvent;
+    const touchEvent = event.ev as TouchEvent;
     const vp = event.vp!;
     if (this.filterViewport(vp))
       return;
 
     vp.removeAnimator();
-    const ev = new BeTouchEvent(touchEv);
+    const ev = new BeTouchEvent({ touchEvent });
     const current = this.currentInputState;
-    const pos = BeTouchEvent.getTouchListCentroid(0 !== touchEv.targetTouches.length ? touchEv.targetTouches : touchEv.changedTouches, vp);
+    const pos = BeTouchEvent.getTouchListCentroid(0 !== touchEvent.targetTouches.length ? touchEvent.targetTouches : touchEvent.changedTouches, vp);
 
-    switch (touchEv.type) {
+    switch (touchEvent.type) {
       case "touchstart":
       case "touchend":
-        current.setKeyQualifiers(touchEv);
+        current.setKeyQualifiers(touchEvent);
         break;
     }
 
@@ -548,7 +557,7 @@ export class ToolAdmin {
     current.toEvent(ev, false);
     const tool = this.activeTool;
 
-    switch (touchEv.type) {
+    switch (touchEvent.type) {
       case "touchstart": {
         current.lastTouchStart = ev;
         IModelApp.accuSnap.onTouchStart(ev);
@@ -569,9 +578,9 @@ export class ToolAdmin {
           return;
 
         // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < ev.touchInfo.changedTouches.length; i++) {
-          const currTouch = ev.touchInfo.changedTouches[i];
-          const startTouch = BeTouchEvent.findTouchById(current.lastTouchStart.touchInfo.targetTouches, currTouch.identifier);
+        for (let i = 0; i < ev.touchEvent.changedTouches.length; i++) {
+          const currTouch = ev.touchEvent.changedTouches[i];
+          const startTouch = BeTouchEvent.findTouchById(current.lastTouchStart.touchEvent.targetTouches, currTouch.identifier);
 
           if (undefined !== startTouch) {
             const currPt = BeTouchEvent.getTouchPosition(currTouch, vp);
@@ -613,13 +622,13 @@ export class ToolAdmin {
         if (undefined === current.lastTouchStart)
           return;
 
-        if (ev.touchInfo.timeStamp - current.lastTouchStart.touchInfo.timeStamp < ToolSettings.touchMoveDelay.milliseconds)
+        if (ev.touchEvent.timeStamp - current.lastTouchStart.touchEvent.timeStamp < ToolSettings.touchMoveDelay.milliseconds)
           return;
 
         // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < ev.touchInfo.changedTouches.length; i++) {
-          const currTouch = ev.touchInfo.changedTouches[i];
-          const startTouch = BeTouchEvent.findTouchById(current.lastTouchStart.touchInfo.targetTouches, currTouch.identifier);
+        for (let i = 0; i < ev.touchEvent.changedTouches.length; i++) {
+          const currTouch = ev.touchEvent.changedTouches[i];
+          const startTouch = BeTouchEvent.findTouchById(current.lastTouchStart.touchEvent.targetTouches, currTouch.identifier);
 
           if (undefined === startTouch)
             continue;
@@ -1445,7 +1454,7 @@ export class ToolAdmin {
 
   /** Can be called by tools that wish to emulate mouse button down/up events for onTouchTap. */
   public async convertTouchTapToButtonDownAndUp(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
-    const pt2d = ev.getDisplayPoint();
+    const pt2d = ev.viewPoint;
     await this.onButtonDown(ev.viewport!, pt2d, button, InputSource.Touch);
     return this.onButtonUp(ev.viewport!, pt2d, button, InputSource.Touch);
   }
@@ -1454,25 +1463,25 @@ export class ToolAdmin {
    * @note Calls the tool's onMouseStartDrag method from onMotion.
    */
   public async convertTouchMoveStartToButtonDownAndMotion(startEv: BeTouchEvent, ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
-    await this.onButtonDown(startEv.viewport!, startEv.getDisplayPoint(), button, InputSource.Touch);
-    return this.onMotion(ev.viewport!, ev.getDisplayPoint(), InputSource.Touch, true);
+    await this.onButtonDown(startEv.viewport!, startEv.viewPoint, button, InputSource.Touch);
+    return this.onMotion(ev.viewport!, ev.viewPoint, InputSource.Touch, true);
   }
 
   /** Can be called by tools that wish to emulate pressing the mouse button for onTouchStart or onTouchMoveStart. */
   public async convertTouchStartToButtonDown(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
-    return this.onButtonDown(ev.viewport!, ev.getDisplayPoint(), button, InputSource.Touch);
+    return this.onButtonDown(ev.viewport!, ev.viewPoint, button, InputSource.Touch);
   }
 
   /** Can be called by tools that wish to emulate releasing the mouse button for onTouchEnd or onTouchComplete.
    * @note Calls the tool's onMouseEndDrag method if convertTouchMoveStartToButtonDownAndMotion was called for onTouchMoveStart.
    */
   public async convertTouchEndToButtonUp(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
-    return this.onButtonUp(ev.viewport!, ev.getDisplayPoint(), button, InputSource.Touch);
+    return this.onButtonUp(ev.viewport!, ev.viewPoint, button, InputSource.Touch);
   }
 
   /** Can be called by tools that wish to emulate a mouse motion event for onTouchMove. */
   public async convertTouchMoveToMotion(ev: BeTouchEvent): Promise<void> {
-    return this.onMotion(ev.viewport!, ev.getDisplayPoint(), InputSource.Touch);
+    return this.onMotion(ev.viewport!, ev.viewPoint, InputSource.Touch);
   }
 
   /** @internal */

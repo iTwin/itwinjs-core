@@ -132,49 +132,108 @@ export class BeButtonState {
   }
 }
 
-/** @public */
-export class BeButtonEvent {
+/** Properties for constructing a BeButtonEvent
+ * @public
+ */
+export interface BeButtonEventProps {
+  /** The point for this event, in world coordinates.
+   * @note these coordinates may have been *adjusted* for some reason (e.g. snapping, locks, etc.) from the [[rawPoint]].
+   */
+  point?: Point3d;
+  /** The *raw* (unadjusted) point for this event, in world coordinates. */
+  rawPoint?: Point3d;
+  /** The point, in screen coordinates for this event.
+   * @note generally the z value is not useful, but some 3d pointing devices do supply it.
+   */
+  viewPoint?: Point3d;
+  /** The [[ScreenViewport]] for the BeButtonEvent. If undefined, this event is invalid. */
+  viewport?: ScreenViewport;
+  /** How the coordinate values were generated (either from an action by the user or from a program.) */
+  coordsFrom?: CoordSource;
+  keyModifiers?: BeModifierKeys;
+  /** The mouse button for this event. */
+  button?: BeButton;
+  /** If true, this event was generated from a mouse-down transition, false from a button-up transition. */
+  isDown?: boolean;
+  /** If true, this is the second down in a rapid double-click of the same button. */
+  isDoubleClick?: boolean;
+  /** If true, this event was created by pressing, holding, and then moving a mouse button. */
+  isDragging?: boolean;
+  /** Whether this event came from a pointing device (e.g. mouse) or a touch device. */
+  inputSource?: InputSource;
+}
+
+/** Object sent to Tools that holds information about button/touch/wheel events.
+ * @public
+ */
+export class BeButtonEvent implements BeButtonEventProps {
   private readonly _point: Point3d = new Point3d();
   private readonly _rawPoint: Point3d = new Point3d();
   private readonly _viewPoint: Point3d = new Point3d();
+  /** The [[ScreenViewport]] from which this BeButtonEvent was generated. If undefined, this event is invalid. */
   public viewport?: ScreenViewport;
-  public coordsFrom = CoordSource.User;   // how were the coordinate values in point generated?
+  /** How the coordinate values were generated (either from an action by the user or from a program.) */
+  public coordsFrom = CoordSource.User;
+  /** The keyboard modifiers that were pressed when the event was generated. */
   public keyModifiers = BeModifierKeys.None;
+  /** If true, this event was generated from a mouse-down transition, false from a button-up transition. */
   public isDown = false;
+  /** If true, this is the second down in a rapid double-click of the same button. */
   public isDoubleClick = false;
+  /** If true, this event was created by pressing, holding, and then moving a mouse button. */
   public isDragging = false;
+  /** The mouse button that created this event. */
   public button = BeButton.Data;
+  /** Whether this event came from a pointing device (e.g. mouse) or a touch device. */
   public inputSource = InputSource.Unknown;
 
+  public constructor(props?: BeButtonEventProps) { if (props) this.init(props); }
+
+  /** Determine whether this BeButtonEvent has valid data.
+   * @note BeButtonEvents may be constructed as "blank", and are not considered to hold valid data unless the [[viewport]] member is defined.
+   */
   public get isValid(): boolean { return this.viewport !== undefined; }
+  /** The point for this event, in world coordinates.
+   * @note these coordinates may have been *adjusted* for some reason (e.g. snapping, locks, etc.) from the [[rawPoint]].
+   */
   public get point() { return this._point; }
   public set point(pt: Point3d) { this._point.setFrom(pt); }
+  /** The *raw* (unadjusted) point for this event, in world coordinates. */
   public get rawPoint() { return this._rawPoint; }
   public set rawPoint(pt: Point3d) { this._rawPoint.setFrom(pt); }
+  /** The point, in screen coordinates for this event.
+   * @note generally the z value is not useful, but some 3d pointing devices do supply it.
+   */
   public get viewPoint() { return this._viewPoint; }
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
 
+  /** Mark this BeButtonEvent as invalid. Can only become valid again by calling [[init]] */
   public invalidate() { this.viewport = undefined; }
-  public initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: ScreenViewport, from: CoordSource, keyModifiers: BeModifierKeys = BeModifierKeys.None, button = BeButton.Data, isDown = true, doubleClick = false, isDragging = false, source = InputSource.Unknown) {
-    this.point = point;
-    this.rawPoint = rawPoint;
-    this.viewPoint = viewPt;
-    this.viewport = vp;
-    this.coordsFrom = from;
-    this.keyModifiers = keyModifiers;
-    this.isDown = isDown;
-    this.isDoubleClick = doubleClick;
-    this.isDragging = isDragging;
-    this.button = button;
-    this.inputSource = source;
+
+  /** Initialize the values of this BeButtonEvent. */
+  public init(props: BeButtonEventProps) {
+    if (undefined !== props.point) this.point = props.point;
+    if (undefined !== props.rawPoint) this.rawPoint = props.rawPoint;
+    if (undefined !== props.viewPoint) this.viewPoint = props.viewPoint;
+    if (undefined !== props.viewport) this.viewport = props.viewport;
+    if (undefined !== props.coordsFrom) this.coordsFrom = props.coordsFrom;
+    if (undefined !== props.keyModifiers) this.keyModifiers = props.keyModifiers;
+    if (undefined !== props.isDown) this.isDown = props.isDown;
+    if (undefined !== props.isDoubleClick) this.isDoubleClick = props.isDoubleClick;
+    if (undefined !== props.isDragging) this.isDragging = props.isDragging;
+    if (undefined !== props.button) this.button = props.button;
+    if (undefined !== props.inputSource) this.inputSource = props.inputSource;
   }
 
-  public getDisplayPoint(): Point2d { return new Point2d(this._viewPoint.x, this._viewPoint.y); }
+  /** Determine whether the control key was pressed  */
   public get isControlKey() { return 0 !== (this.keyModifiers & BeModifierKeys.Control); }
+  /** Determine whether the shift key was pressed  */
   public get isShiftKey() { return 0 !== (this.keyModifiers & BeModifierKeys.Shift); }
+  /** Determine whether the alt key was pressed  */
   public get isAltKey() { return 0 !== (this.keyModifiers & BeModifierKeys.Alt); }
 
-  public setFrom(src: BeButtonEvent) {
+  /** Copy the values from another BeButtonEvent into this BeButtonEvent */
+  public setFrom(src: BeButtonEvent): this {
     this.point = src.point;
     this.rawPoint = src.rawPoint;
     this.viewPoint = src.viewPoint;
@@ -186,35 +245,41 @@ export class BeButtonEvent {
     this.isDragging = src.isDragging;
     this.button = src.button;
     this.inputSource = src.inputSource;
+    return this;
   }
-  public clone(result?: BeButtonEvent): BeButtonEvent {
-    result = result ? result : new BeButtonEvent();
-    result.setFrom(this);
-    return result;
-  }
+  /** Make a copy of this BeButtonEvent. */
+  public clone(): this { return new (this.constructor as typeof BeButtonEvent)(this) as this; }
 }
 
-/** Specialization of ButtonEvent for touch input.
+/** Properties for initializing a BeTouchEvent
  * @public
  */
-export class BeTouchEvent extends BeButtonEvent {
-  public get touchCount(): number { return this.touchInfo.targetTouches.length; }
+export interface BeTouchEventProps extends BeButtonEventProps {
+  touchEvent: TouchEvent;
+}
+
+/** A ButtonEvent generated by touch input.
+ * @public
+ */
+export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
+  public tapCount: number = 0;
+  public touchEvent: TouchEvent;
+  public get touchCount(): number { return this.touchEvent.targetTouches.length; }
   public get isSingleTouch(): boolean { return 1 === this.touchCount; }
   public get isTwoFingerTouch(): boolean { return 2 === this.touchCount; }
-  public tapCount: number = 0;
   public get isSingleTap(): boolean { return 1 === this.tapCount && 1 === this.touchCount; }
   public get isDoubleTap(): boolean { return 2 === this.tapCount && 1 === this.touchCount; }
   public get isTwoFingerTap(): boolean { return 1 === this.tapCount && 2 === this.touchCount; }
-  public constructor(public touchInfo: TouchEvent) { super(); }
-  public setFrom(src: BeTouchEvent) {
-    super.setFrom(src);
-    this.touchInfo = src.touchInfo;
-    this.tapCount = src.tapCount;
+  public constructor(props: BeTouchEventProps) {
+    super(props);
+    this.touchEvent = props.touchEvent;
   }
-  public clone(result?: BeTouchEvent): BeTouchEvent {
-    result = result ? result : new BeTouchEvent(this.touchInfo);
-    result.setFrom(this);
-    return result;
+
+  public setFrom(src: BeTouchEvent): this {
+    super.setFrom(src);
+    this.touchEvent = src.touchEvent;
+    this.tapCount = src.tapCount;
+    return this;
   }
   public static getTouchPosition(touch: Touch, vp: ScreenViewport): Point2d {
     const rect = vp.getClientRect();
@@ -253,19 +318,26 @@ export class BeTouchEvent extends BeButtonEvent {
   }
 }
 
-/** Information about movement of the mouse wheel.
+/** Properties for constructing a BeWheelEvent
  * @public
  */
-export class BeWheelEvent extends BeButtonEvent {
-  public constructor(public wheelDelta: number = 0) { super(); }
-  public setFrom(src: BeWheelEvent): void {
+export interface BeWheelEventProps extends BeButtonEventProps {
+  wheelDelta?: number;
+}
+/** A BeButtonEvent generated by movement of a mouse wheel.
+ * @note wheel events include mouse location.
+ * @public
+ */
+export class BeWheelEvent extends BeButtonEvent implements BeWheelEventProps {
+  public wheelDelta: number = 0;
+  public constructor(props?: BeWheelEventProps) {
+    super(props);
+    if (props && props.wheelDelta !== undefined) this.wheelDelta = props.wheelDelta;
+  }
+  public setFrom(src: BeWheelEvent): this {
     super.setFrom(src);
     this.wheelDelta = src.wheelDelta;
-  }
-  public clone(result?: BeWheelEvent): BeWheelEvent {
-    result = result ? result : new BeWheelEvent();
-    result.setFrom(this);
-    return result;
+    return this;
   }
 }
 

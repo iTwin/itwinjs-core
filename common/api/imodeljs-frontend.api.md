@@ -239,7 +239,7 @@ export class AccuDraw {
     // (undocumented)
     distanceLock(synchText: boolean, saveInHistory: boolean): void;
     // (undocumented)
-    doAutoPoint(index: ItemField, mode: CompassMode): void;
+    doAutoPoint(index: ItemField, mode: CompassMode): Promise<void>;
     // (undocumented)
     doLockAngle(isSnapped: boolean): void;
     // (undocumented)
@@ -349,7 +349,7 @@ export class AccuDraw {
     // (undocumented)
     readonly point: Point3d;
     // (undocumented)
-    processFieldInput(index: ItemField, input: string, synchText: boolean): void;
+    processFieldInput(index: ItemField, input: string, synchText: boolean): Promise<void>;
     // (undocumented)
     processHints(): void;
     // (undocumented)
@@ -369,7 +369,7 @@ export class AccuDraw {
     // (undocumented)
     saveState(stateBuffer: SavedState): void;
     // (undocumented)
-    sendDataPoint(pt: Point3d, vp: ScreenViewport): void;
+    sendDataPoint(pt: Point3d, viewport: ScreenViewport): Promise<void>;
     // (undocumented)
     setCompassMode(mode: CompassMode): void;
     // (undocumented)
@@ -542,7 +542,7 @@ export class AccuDrawShortcuts {
     // Warning: (ae-incompatible-release-tags) The symbol "itemFieldAcceptInput" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
     // 
     // (undocumented)
-    static itemFieldAcceptInput(index: ItemField, str: string): void;
+    static itemFieldAcceptInput(index: ItemField, str: string): Promise<void>;
     // Warning: (ae-incompatible-release-tags) The symbol "itemFieldLockToggle" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
     // 
     // (undocumented)
@@ -550,7 +550,7 @@ export class AccuDrawShortcuts {
     // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNavigate" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
     // 
     // (undocumented)
-    static itemFieldNavigate(index: ItemField, str: string, forward: boolean): void;
+    static itemFieldNavigate(index: ItemField, str: string, forward: boolean): Promise<void>;
     // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNewInput" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
     // 
     // (undocumented)
@@ -1178,47 +1178,43 @@ export enum BeButton {
     Reset = 1
 }
 
-// @public (undocumented)
-export class BeButtonEvent {
-    // (undocumented)
+// @public
+export class BeButtonEvent implements BeButtonEventProps {
+    constructor(props?: BeButtonEventProps);
     button: BeButton;
-    // (undocumented)
-    clone(result?: BeButtonEvent): BeButtonEvent;
-    // (undocumented)
+    clone(): this;
     coordsFrom: CoordSource;
-    // (undocumented)
-    getDisplayPoint(): Point2d;
-    // (undocumented)
-    initEvent(point: Point3d, rawPoint: Point3d, viewPt: Point3d, vp: ScreenViewport, from: CoordSource, keyModifiers?: BeModifierKeys, button?: BeButton, isDown?: boolean, doubleClick?: boolean, isDragging?: boolean, source?: InputSource): void;
-    // (undocumented)
+    init(props: BeButtonEventProps): void;
     inputSource: InputSource;
-    // (undocumented)
     invalidate(): void;
-    // (undocumented)
     readonly isAltKey: boolean;
-    // (undocumented)
     readonly isControlKey: boolean;
-    // (undocumented)
     isDoubleClick: boolean;
-    // (undocumented)
     isDown: boolean;
-    // (undocumented)
     isDragging: boolean;
-    // (undocumented)
     readonly isShiftKey: boolean;
-    // (undocumented)
     readonly isValid: boolean;
-    // (undocumented)
     keyModifiers: BeModifierKeys;
-    // (undocumented)
     point: Point3d;
-    // (undocumented)
     rawPoint: Point3d;
-    // (undocumented)
-    setFrom(src: BeButtonEvent): void;
-    // (undocumented)
+    setFrom(src: BeButtonEvent): this;
     viewPoint: Point3d;
+    viewport?: ScreenViewport;
+}
+
+// @public
+export interface BeButtonEventProps {
+    button?: BeButton;
+    coordsFrom?: CoordSource;
+    inputSource?: InputSource;
+    isDoubleClick?: boolean;
+    isDown?: boolean;
+    isDragging?: boolean;
     // (undocumented)
+    keyModifiers?: BeModifierKeys;
+    point?: Point3d;
+    rawPoint?: Point3d;
+    viewPoint?: Point3d;
     viewport?: ScreenViewport;
 }
 
@@ -1255,10 +1251,8 @@ export enum BeModifierKeys {
 }
 
 // @public
-export class BeTouchEvent extends BeButtonEvent {
-    constructor(touchInfo: TouchEvent);
-    // (undocumented)
-    clone(result?: BeTouchEvent): BeTouchEvent;
+export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
+    constructor(props: BeTouchEventProps);
     // (undocumented)
     static findTouchById(list: TouchList, id: number): Touch | undefined;
     // (undocumented)
@@ -1276,24 +1270,34 @@ export class BeTouchEvent extends BeButtonEvent {
     // (undocumented)
     readonly isTwoFingerTouch: boolean;
     // (undocumented)
-    setFrom(src: BeTouchEvent): void;
+    setFrom(src: BeTouchEvent): this;
     // (undocumented)
     tapCount: number;
     // (undocumented)
     readonly touchCount: number;
     // (undocumented)
-    touchInfo: TouchEvent;
+    touchEvent: TouchEvent;
 }
 
 // @public
-export class BeWheelEvent extends BeButtonEvent {
-    constructor(wheelDelta?: number);
+export interface BeTouchEventProps extends BeButtonEventProps {
     // (undocumented)
-    clone(result?: BeWheelEvent): BeWheelEvent;
+    touchEvent: TouchEvent;
+}
+
+// @public
+export class BeWheelEvent extends BeButtonEvent implements BeWheelEventProps {
+    constructor(props?: BeWheelEventProps);
     // (undocumented)
-    setFrom(src: BeWheelEvent): void;
+    setFrom(src: BeWheelEvent): this;
     // (undocumented)
     wheelDelta: number;
+}
+
+// @public
+export interface BeWheelEventProps extends BeButtonEventProps {
+    // (undocumented)
+    wheelDelta?: number;
 }
 
 // @internal (undocumented)

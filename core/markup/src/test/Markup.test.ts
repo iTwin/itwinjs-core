@@ -52,26 +52,22 @@ describe("Markup", () => {
     let outline = text.getOutline(1);
     let trn = outline.attr("transform");
     assert.equal(trn, "matrix(1,0,0,1,20,15)", "transform of outline");
-    //  assert.equal(outline.width(), 67.03125, "bbox width");
-    // assert.equal(outline.height(), 55, "bbox height");
+    const bbStr = outline.bbox().toString();
 
     text.markupStretch(22, 41, 37, 14, new Matrix().rotateO(20).translateO(3, 2.1));
     outline = text.getOutline(1);
     trn = outline.attr("transform");
     assert.equal(trn, "matrix(0.9396926207859084,0.3420201433256687,-0.3420201433256687,0.9396926207859084,3,2.1)", "getOutline transform");
-    // assert.equal(outline.height(), 55, "stretched bbox height should not change");
-    // assert.equal(outline.width(), 67.03125, "stretched width should not change");
+    assert.equal(bbStr, outline.bbox().toString(), "markupStretch should not change bbox for text");
 
     const npcToVp = text.getNpcToVp();
-    assert.isDefined(npcToVp, "npcToVp");
-    // "matrix(61.10938574548361,22.241997445647392,-18.127067596260442,49.803708901653145,12.234543869793056,-23.271700761219527)", "getNpcToVp");
+    assert.isDefined(npcToVp, "npcToVp should work");
 
     // outline should work on empty text
     text.node.textContent = "";
     outline = text.getOutline(1);
     trn = outline.attr("transform");
     assert.equal(trn, "matrix(0.9396926207859084,0.3420201433256687,-0.3420201433256687,0.9396926207859084,3,2.1)", "empty text transform");
-    // assert.equal(outline.bbox().toString(), "-1 -28 26.984375 35", "bbox of empty text");
   });
 
   it("SVG Matrix", () => {
