@@ -1467,7 +1467,7 @@ export interface EntityProps {
     id?: Id64String;
 }
 
-// @alpha
+// @public
 export interface EntityQueryParams {
     from?: string;
     limit?: number;
@@ -2408,16 +2408,10 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getViewThumbnail(_iModelToken: IModelToken, _viewId: string): Promise<Uint8Array>;
     // (undocumented)
     openForRead(_iModelToken: IModelToken): Promise<IModel>;
-    // Warning: (ae-incompatible-release-tags) The symbol "queryElementProps" is marked as @public, but its signature references "EntityQueryParams" which is marked as @alpha
-    // 
     // (undocumented)
     queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ElementProps[]>;
-    // Warning: (ae-incompatible-release-tags) The symbol "queryEntityIds" is marked as @public, but its signature references "EntityQueryParams" which is marked as @alpha
-    // 
     // (undocumented)
     queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set>;
-    // Warning: (ae-incompatible-release-tags) The symbol "queryModelProps" is marked as @public, but its signature references "EntityQueryParams" which is marked as @alpha
-    // 
     // (undocumented)
     queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ModelProps[]>;
     // (undocumented)
@@ -2835,7 +2829,7 @@ export interface ModelProps extends EntityProps {
     parentModel?: Id64String;
 }
 
-// @alpha
+// @public
 export interface ModelQueryParams extends EntityQueryParams {
     // (undocumented)
     wantPrivate?: boolean;
@@ -5155,7 +5149,7 @@ export class ViewFlags {
     weights: boolean;
 }
 
-// @alpha
+// @public
 export interface ViewQueryParams extends EntityQueryParams {
     // (undocumented)
     wantPrivate?: boolean;

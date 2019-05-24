@@ -84,7 +84,7 @@ public;ElementProps
 beta;EntityMetaData 
 beta;EntityMetaDataProps
 public;EntityProps
-alpha;EntityQueryParams
+public;EntityQueryParams
 public;EnvironmentProps
 public;ExternalSourceAspectProps 
 beta;Feature
@@ -180,7 +180,7 @@ beta;MobileRpcManager
 beta;MobileRpcProtocol 
 beta;MobileRpcRequest 
 public;ModelProps 
-alpha;ModelQueryParams 
+public;ModelQueryParams 
 public;ModelSelectorProps 
 public;NavigationBindingValue
 public;NavigationValue
@@ -344,7 +344,7 @@ public;ViewDefinitionProps
 internal;ViewFlag
 public;ViewFlagProps
 public;ViewFlags
-alpha;ViewQueryParams 
+public;ViewQueryParams 
 public;ViewStateProps
 internal;WEB_RPC_CONSTANTS:
 public;class WebAppRpcProtocol 

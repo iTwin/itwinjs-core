@@ -20,8 +20,8 @@ export interface EntityProps {
   [propName: string]: any;
 }
 
-/** Parameters for performing an ECSQL SELECT query on [Entity]($backend) classes.
- * @alpha Use ECSQL and IModelConnection.queryRows instead?
+/** Parameters for performing a query on [Entity]($backend) classes.
+ * @public
  */
 export interface EntityQueryParams {
   /** The sql className, in the form "Schema.ClassName", of the class to search. */

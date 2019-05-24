@@ -43,7 +43,9 @@ export interface CategorySelectorProps extends DefinitionElementProps {
   categories: Id64Array;
 }
 
-/** @alpha Use ECSQL and IModelConnection.queryRows instead? */
+/** Parameters for performing a query on [ViewDefinition]($backend) classes.
+ * @public
+ */
 export interface ViewQueryParams extends EntityQueryParams {
   wantPrivate?: boolean;
 }
