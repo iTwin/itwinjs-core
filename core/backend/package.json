@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.192.0-dev.14",
+  "version": "0.192.0-dev.15",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -40,25 +40,25 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^0.192.0-dev.14",
-    "@bentley/geometry-core": "^0.192.0-dev.14",
-    "@bentley/imodeljs-clients": "^0.192.0-dev.14",
-    "@bentley/imodeljs-clients-backend": "^0.192.0-dev.14",
-    "@bentley/imodeljs-common": "^0.192.0-dev.14"
+    "@bentley/bentleyjs-core": "^0.192.0-dev.15",
+    "@bentley/geometry-core": "^0.192.0-dev.15",
+    "@bentley/imodeljs-clients": "^0.192.0-dev.15",
+    "@bentley/imodeljs-clients-backend": "^0.192.0-dev.15",
+    "@bentley/imodeljs-common": "^0.192.0-dev.15"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.192.0-dev.14",
-    "@bentley/bentleyjs-core": "0.192.0-dev.14",
-    "@bentley/build-tools": "0.192.0-dev.14",
-    "@bentley/geometry-core": "0.192.0-dev.14",
-    "@bentley/imodeljs-clients": "0.192.0-dev.14",
-    "@bentley/imodeljs-clients-backend": "0.192.0-dev.14",
-    "@bentley/imodeljs-common": "0.192.0-dev.14",
-    "@bentley/perf-tools": "0.192.0-dev.14",
+    "@bentley/config-loader": "0.192.0-dev.15",
+    "@bentley/bentleyjs-core": "0.192.0-dev.15",
+    "@bentley/build-tools": "0.192.0-dev.15",
+    "@bentley/geometry-core": "0.192.0-dev.15",
+    "@bentley/imodeljs-clients": "0.192.0-dev.15",
+    "@bentley/imodeljs-clients-backend": "0.192.0-dev.15",
+    "@bentley/imodeljs-common": "0.192.0-dev.15",
+    "@bentley/perf-tools": "0.192.0-dev.15",
     "@types/chai": "^4.1.4",
     "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",
