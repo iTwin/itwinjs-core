@@ -476,6 +476,8 @@ export abstract class MarkupTool extends PrimitiveTool {
 export abstract class ModifyHandle {
     constructor(handles: Handles);
     // (undocumented)
+    addTouchPadding(visible: Element, handles: Handles): Element;
+    // (undocumented)
     handles: Handles;
     abstract modify(ev: BeButtonEvent): void;
     // (undocumented)

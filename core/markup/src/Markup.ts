@@ -66,7 +66,7 @@ export class MarkupApp {
       /** The attributes of box around the element. */
       moveOutline: { "cursor": "move", "stroke-dasharray": "6,6", "fill": "none", "stroke-opacity": .85, "stroke": "white" },
       /** The attributes of box that provides the move cursor. */
-      move: { "cursor": "move", "opacity": 0, "stroke-width": 6, "stroke": "white" },
+      move: { "cursor": "move", "opacity": 0, "stroke-width": 10, "stroke": "white" },
       /** The attributes of handles on the vertices of lines. */
       vertex: { "cursor": "url(cursors/crosshair.cur), crosshair", "fill-opacity": .85, "stroke": "black", "fill": "white" },
     },
@@ -131,14 +131,14 @@ export class MarkupApp {
         textBox: { "fill": "lightGrey", "fill-opacity": .1, "stroke-opacity": .85, "stroke": "lightBlue" },
       },
     },
-    /** Used to draw a border outline around the view while it is being marked up so the user can tell Markup is active */
+    /** Used to draw the border outline around the view while it is being marked up so the user can tell Markup is active */
     borderOutline: {
       "stroke": "gold",
       "stroke-width": 6,
       "stroke-opacity": 0.4,
       "fill": "none",
     },
-    /** Used to draw a border corner symbols the view while it is being marked up so the user can tell Markup is active */
+    /** Used to draw the border corner symbols for the view while it is being marked up so the user can tell Markup is active */
     borderCorners: {
       "stroke": "black",
       "stroke-width": 2,

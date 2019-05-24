@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Improve touch interaction with markup handles.",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "Brien.Bastings@bentley.com"
+}

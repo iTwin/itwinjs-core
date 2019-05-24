@@ -6,7 +6,7 @@
 
 import { Point2d, Point3d, Transform, XAndY, Vector2d } from "@bentley/geometry-core";
 import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource } from "@bentley/imodeljs-frontend";
-import { ArrayXY, Box, Circle, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
+import { ArrayXY, Box, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 import { EditTextTool } from "./TextEdit";
@@ -45,14 +45,24 @@ export abstract class ModifyHandle {
   }
   public setMouseHandler(target: MarkupElement) {
     const node = target.node;
-    node.onmousedown = (ev: MouseEvent) => {
-      if (ev.button === 0 && undefined === this.handles.active)
+    node.addEventListener("mousedown", (event) => {
+      const ev = event as MouseEvent;
+      if (0 === ev.button && undefined === this.handles.active)
         this.handles.active = this;
-    };
-    node.ontouchstart = (_ev: TouchEvent) => {
+    });
+    node.addEventListener("touchstart", () => {
       if (undefined === this.handles.active)
         this.handles.active = this;
-    };
+    });
+  }
+  public addTouchPadding(visible: MarkupElement, handles: Handles): MarkupElement {
+    if (InputSource.Touch !== IModelApp.toolAdmin.currentInputState.inputSource)
+      return visible;
+    const padding = visible.cloneMarkup().scale(3).attr("opacity", 0);
+    const g = handles.group!.group();
+    padding.addTo(g);
+    visible.addTo(g);
+    return g;
   }
 }
 
@@ -60,7 +70,7 @@ export abstract class ModifyHandle {
  * @beta
  */
 class StretchHandle extends ModifyHandle {
-  private readonly _circle: Circle;
+  private readonly _circle: MarkupElement;
   public posNpc: Point2d;
   public startPos!: Point2d;
   public opposite!: Point2d;
@@ -70,8 +80,8 @@ class StretchHandle extends ModifyHandle {
     super(handles);
     this.posNpc = new Point2d(xy[0], xy[1]);
     const props = MarkupApp.props.handles;
-    this._circle = handles.group!.circle(props.size).addClass(MarkupApp.stretchHandleClass) // the visible "circle" for this handle
-      .attr(props.stretch).attr("cursor", cursor + "-resize");
+    this._circle = handles.group!.circle(props.size).addClass(MarkupApp.stretchHandleClass).attr(props.stretch).attr("cursor", cursor + "-resize"); // the visible "circle" for this handle
+    this._circle = this.addTouchPadding(this._circle, handles);
     this.setMouseHandler(this._circle);
   }
   public setPosition() {
@@ -125,7 +135,7 @@ class StretchHandle extends ModifyHandle {
  */
 class RotateHandle extends ModifyHandle {
   private readonly _line: Line;
-  private readonly _circle: Circle;
+  private readonly _circle: MarkupElement;
   public location!: Point2d;
 
   constructor(public handles: Handles) {
@@ -134,6 +144,7 @@ class RotateHandle extends ModifyHandle {
 
     this._line = handles.group!.line(0, 0, 1, 1).attr(props.rotateLine).addClass(MarkupApp.rotateLineClass);
     this._circle = handles.group!.circle(props.size * 1.25).attr(props.rotate).addClass(MarkupApp.rotateHandleClass);
+    this._circle = this.addTouchPadding(this._circle, handles);
     this.setMouseHandler(this._circle);
   }
   public get centerVb() { return this.handles.npcToVb({ x: .5, y: .5 }); }
@@ -157,7 +168,7 @@ class RotateHandle extends ModifyHandle {
  * @beta
  */
 class VertexHandle extends ModifyHandle {
-  private readonly _circle: Circle;
+  private readonly _circle: MarkupElement;
   private readonly _x: string;
   private readonly _y: string;
 
@@ -167,6 +178,7 @@ class VertexHandle extends ModifyHandle {
     this._circle = handles.group!.circle(props.size).attr(props.vertex).addClass(MarkupApp.vertexHandleClass);
     this._x = "x" + (index + 1);
     this._y = "y" + (index + 1);
+    this._circle = this.addTouchPadding(this._circle, handles);
     this.setMouseHandler(this._circle);
   }
   public setPosition(): void {
@@ -270,9 +282,10 @@ export class Handles {
     // then add all the stretch handles
     const pts = [[0, 0], [0, .5], [0, 1], [.5, 1], [1, 1], [1, .5], [1, 0], [.5, 0]];
     const cursors = ["nw", "w", "sw", "s", "se", "e", "ne", "n"];
+    const order = [7, 3, 1, 5, 2, 6, 0, 4];
     const angle = el.screenCTM().decompose().rotate || 0;
     const start = Math.round(-angle / 45); // so that we rotate the cursors for rotated elements
-    pts.forEach((h, i) => this.handles.push(new StretchHandle(this, h as ArrayXY, cursors[(i + start + 8) % 8])));
+    order.forEach((index) => this.handles.push(new StretchHandle(this, pts[index] as ArrayXY, cursors[(index + start + 8) % 8])));
     this.draw(); // show starting state
   }
 
