@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { FrustumUniforms, FrustumUniformType, ClipPlanesVolume, Clips } from "../webgl";
 import { ClipVector, ClipShape, Point3d } from "@bentley/geometry-core";
-import { WebGLTestContext } from "./utils/WebGLTestContext";
+import { IModelApp } from "../IModelApp";
 
 describe("FrustumUniforms", () => {
   it("should create, store, and retrieve FrustumUniforms", () => {
@@ -37,15 +37,12 @@ describe("FrustumUniforms", () => {
 
 describe("Clips", () => {
   before(() => {
-    WebGLTestContext.startup();
+    IModelApp.startup();
   });
   after(() => {
-    WebGLTestContext.shutdown();
+    IModelApp.shutdown();
   });
   it("should create, store, and retrieve Clips", () => {
-    if (!WebGLTestContext.isInitialized)
-      return;
-
     const points: Point3d[] = [];
     points[0] = Point3d.create(1.0, 1.0, 0.0);
     points[1] = Point3d.create(2.0, 1.0, 0.0);

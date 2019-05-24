@@ -628,7 +628,7 @@ async function loadIModel(testConfig: DefaultConfigs) {
     try {
       activeViewState.iModelConnection = await IModelConnection.openSnapshot(testConfig.iModelFile!);
     } catch (err) {
-      debugPrint("openSnapshot failed: " + err.toString());
+      alert("openSnapshot failed: " + err.toString());
       openLocalIModel = false;
     }
   }

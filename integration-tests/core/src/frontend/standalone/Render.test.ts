@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { WebGLTestContext } from "../WebGLTestContext";
 import { testViewports, comparePixelData, Color } from "../TestViewport";
 import { RenderMode, ColorDef, Hilite, RgbColor } from "@bentley/imodeljs-common";
 import { RenderMemory, Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
+  IModelApp,
   IModelConnection,
   FeatureOverrideProvider,
   FeatureSymbology,
@@ -26,14 +26,14 @@ describe("Render mirukuru", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    WebGLTestContext.startup();
+    IModelApp.startup();
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
     imodel = await IModelConnection.openSnapshot(imodelLocation);
   });
 
   after(async () => {
     if (imodel) await imodel.closeSnapshot();
-    WebGLTestContext.shutdown();
+    IModelApp.shutdown();
   });
 
   it("should have expected view definition", async () => {

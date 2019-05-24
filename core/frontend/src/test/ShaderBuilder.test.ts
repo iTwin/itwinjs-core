@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { WebGLTestContext } from "./utils/WebGLTestContext";
 import { IModelApp } from "../IModelApp";
 import {
   System,
@@ -81,8 +80,8 @@ describe("ShaderVariables tests", () => {
 });
 
 describe("Test shader compilation", () => {
-  before(() => WebGLTestContext.startup());
-  after(() => WebGLTestContext.shutdown());
+  before(() => IModelApp.startup());
+  after(() => IModelApp.shutdown());
 
   it.skip("should build and compile a simple shader program", () => {
     const builder = new ProgramBuilder();

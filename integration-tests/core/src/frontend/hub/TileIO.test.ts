@@ -10,7 +10,6 @@ import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType, ServerTim
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import * as path from "path";
 import { MockRender, RenderGraphic, IModelApp, IModelConnection, GeometricModelState, TileAdmin, TileTree } from "@bentley/imodeljs-frontend";
-import { WebGLTestContext } from "../WebGLTestContext";
 import { TileTestCase, TileTestData } from "./TileIO.data";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./TileIO.data.1.2";
@@ -240,17 +239,17 @@ describe("TileIO (WebGL)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    WebGLTestContext.startup();
+    IModelApp.startup();
     imodel = await IModelConnection.openSnapshot(iModelLocation);
   });
 
   after(async () => {
     if (imodel) await imodel.closeSnapshot();
-    WebGLTestContext.shutdown();
+    IModelApp.shutdown();
   });
 
   it("should read an iModel tile containing a single rectangle", async () => {
-    if (WebGLTestContext.isInitialized) {
+    if (IModelApp.initialized) {
       await processEachRectangle(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
@@ -273,7 +272,7 @@ describe("TileIO (WebGL)", () => {
   });
 
   it("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", async () => {
-    if (WebGLTestContext.isInitialized) {
+    if (IModelApp.initialized) {
       await processEachTriangles(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
@@ -314,7 +313,7 @@ describe("TileIO (WebGL)", () => {
   });
 
   it("should read an iModel tile containing single open yellow line string", async () => {
-    if (WebGLTestContext.isInitialized) {
+    if (IModelApp.initialized) {
       await processEachLineString(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
@@ -339,7 +338,7 @@ describe("TileIO (WebGL)", () => {
   });
 
   it("should read an iModel tile containing multiple line strings", async () => {
-    if (WebGLTestContext.isInitialized) {
+    if (IModelApp.initialized) {
       await processEachLineStrings(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
@@ -382,7 +381,7 @@ describe("TileIO (WebGL)", () => {
   });
 
   it("should read an iModel tile containing edges and silhouettes", async () => {
-    if (WebGLTestContext.isInitialized) {
+    if (IModelApp.initialized) {
       await processEachCylinder(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
         const batch = graphic as Batch;
@@ -420,7 +419,7 @@ describe("TileIO (mock render)", () => {
   });
 
   it("should support canceling operation", async () => {
-    if (WebGLTestContext.isInitialized) {
+    if (IModelApp.initialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new TileIO.StreamBuffer(currentTestCase.rectangle.bytes.buffer);
       const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, BatchType.Primary, true, (_) => true);

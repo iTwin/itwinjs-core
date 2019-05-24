@@ -14,7 +14,6 @@ import {
   IModelApp,
 } from "@bentley/imodeljs-frontend";
 import { Feature, GeometryClass } from "@bentley/imodeljs-common";
-import { WebGLTestContext } from "./WebGLTestContext";
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
   if (undefined === lhs && undefined === rhs)
@@ -284,7 +283,7 @@ export async function createOnScreenTestViewport(viewId: Id64String, imodel: IMo
 }
 
 export async function testOnScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: ScreenTestViewport) => Promise<void>): Promise<void> {
-  if (!WebGLTestContext.isInitialized)
+  if (!IModelApp.initialized)
     return Promise.resolve();
 
   // ###TODO: Make ScreenTestViewport integrate properly with the (non-continuous) render loop...
@@ -302,7 +301,7 @@ export async function testOnScreenViewport(viewId: Id64String, imodel: IModelCon
 
 // Execute a test against both an off-screen and on-screen viewport.
 export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
-  if (!WebGLTestContext.isInitialized)
+  if (!IModelApp.initialized)
     return Promise.resolve();
 
   await testOnScreenViewport(viewId, imodel, width, height, test);

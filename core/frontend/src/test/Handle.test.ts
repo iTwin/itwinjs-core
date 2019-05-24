@@ -5,12 +5,11 @@
 import { expect } from "chai";
 import { GL } from "../render/webgl/GL";
 import { BufferHandle } from "../render/webgl/Handle";
-import { WebGLTestContext } from "./utils/WebGLTestContext";
 import { IModelApp } from "../IModelApp";
 
 describe("Handles", () => {
-  before(() => WebGLTestContext.startup());
-  after(() => WebGLTestContext.shutdown());
+  before(() => IModelApp.startup());
+  after(() => IModelApp.shutdown());
 
   it("should create and use BufferHandles for GL resources", () => {
     if (!IModelApp.hasRenderSystem) {

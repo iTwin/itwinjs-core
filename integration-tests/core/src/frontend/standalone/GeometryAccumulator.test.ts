@@ -5,6 +5,7 @@
 
 import { expect, assert } from "chai";
 import {
+  IModelApp,
   IModelConnection,
   // Viewport,
   SpatialViewState,
@@ -24,7 +25,6 @@ import {
 import { Branch, System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Transform, Range3d, StrokeOptions, LineString3d, Path, Point3d, Loop } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-import { WebGLTestContext } from "../WebGLTestContext";
 // import { FakeGraphic } from "./Graphic.test";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
@@ -54,7 +54,7 @@ describe("GeometryAccumulator tests", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    WebGLTestContext.startup();
+    IModelApp.startup();
     iModel = await IModelConnection.openSnapshot(iModelLocation);
     spatialView = await iModel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -62,14 +62,10 @@ describe("GeometryAccumulator tests", () => {
 
   after(async () => {
     if (iModel) await iModel.closeSnapshot();
-    WebGLTestContext.shutdown();
+    IModelApp.shutdown();
   });
 
   it("addPath works as expected", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     accum = new GeometryAccumulator(iModel, System.instance);
 
     const points: Point3d[] = [];
@@ -91,10 +87,6 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addLoop works as expected", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     accum = new GeometryAccumulator(iModel, System.instance);
 
     const points: Point3d[] = [];
@@ -119,10 +111,6 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPolyface works as expected", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     accum = new GeometryAccumulator(iModel, System.instance);
 
     const points: Point3d[] = [];
@@ -163,10 +151,6 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addGeometry works as expected", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     accum = new GeometryAccumulator(iModel, System.instance);
 
     expect(accum.geometries.isEmpty).to.be.true;
@@ -177,10 +161,6 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("clear works as expected", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     accum = new GeometryAccumulator(iModel, System.instance);
 
     expect(accum.isEmpty).to.be.true;
@@ -191,10 +171,6 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("toMeshBuilderMap works as expected", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     accum = new GeometryAccumulator(iModel, System.instance);
 
     const points: Point3d[] = [];
@@ -236,10 +212,6 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("toMeshes works as expected", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     accum = new GeometryAccumulator(iModel, System.instance);
 
     const points: Point3d[] = [];
@@ -281,10 +253,6 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("saveToGraphicList works as expected", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     accum = new GeometryAccumulator(iModel, System.instance);
 
     const points: Point3d[] = [];

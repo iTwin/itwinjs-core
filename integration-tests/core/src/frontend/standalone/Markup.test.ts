@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { MaybeRenderApp } from "../WebGLTestContext";
 import { IModelConnection, IModelApp, StandardViewTool, StandardViewId, WindowAreaTool } from "@bentley/imodeljs-frontend";
 import { MarkupApp, SelectTool, LineTool, EditTextTool } from "@bentley/imodeljs-markup";
 import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
@@ -17,7 +16,7 @@ describe("Markup tests", async () => {
   let vp: ScreenTestViewport;
 
   before(async () => {
-    MaybeRenderApp.startup();
+    IModelApp.startup();
     imodel = await IModelConnection.openSnapshot(testIModelName);
     await MarkupApp.initialize();
     vp = await createOnScreenTestViewport("0x24", imodel, 500, 500);

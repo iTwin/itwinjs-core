@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { WebGLTestContext } from "../WebGLTestContext";
 import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
@@ -122,11 +121,11 @@ describe("Disposal of System (#integration)", () => {
     viewDiv!.style.width = viewDiv!.style.height = "1000px";
     document.body.appendChild(viewDiv!);
 
-    WebGLTestContext.startup();
+    IModelApp.startup();
 
     const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
     await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    WebGLTestContext.setAuthorizationClient(imsTestAuthorizationClient);
+    IModelApp.authorizationClient = imsTestAuthorizationClient;
 
     imodel0 = await IModelConnection.openSnapshot(iModelLocation);
 
@@ -138,7 +137,7 @@ describe("Disposal of System (#integration)", () => {
   after(async () => {
     await imodel0.closeSnapshot();
     await imodel1.close();
-    WebGLTestContext.shutdown();
+    IModelApp.shutdown();
   });
 
   it("expect rendersystem disposal to trigger disposal of textures cached in id-map (#integration)", async () => {
@@ -182,11 +181,11 @@ describe("Disposal of WebGL Resources (#integration)", () => {
     assert(null !== viewDiv);
     document.body.appendChild(viewDiv!);
 
-    WebGLTestContext.startup();
+    IModelApp.startup();
 
     const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
     await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    WebGLTestContext.setAuthorizationClient(imsTestAuthorizationClient);
+    IModelApp.authorizationClient = imsTestAuthorizationClient;
 
     imodel0 = await IModelConnection.openSnapshot(iModelLocation);
 
@@ -198,7 +197,7 @@ describe("Disposal of WebGL Resources (#integration)", () => {
   after(async () => {
     await imodel0.closeSnapshot();
     await imodel1.close();
-    WebGLTestContext.shutdown();
+    IModelApp.shutdown();
   });
 
   // ###TODO: Update TileIO.data.ts for new tile format...
