@@ -259,6 +259,9 @@
               },
               {
                 "$ref": "#/definitions/StyleOverride"
+              },
+              {
+                "$ref": "#/definitions/ExtendedDataRule"
               }
             ]
           },
@@ -857,6 +860,43 @@
         "class",
         "parentPropertyName",
         "specType"
+      ],
+      "type": "object"
+    },
+    "ExtendedDataRule": {
+      "additionalProperties": false,
+      "description": "Rule used to inject some extended data into presentation data\nobjects (nodes, records).\n\nA couple of typical use cases:\n- Table is showing models and elements polymorphically and application\n   wants to handle all models and all elements differently. The rule can be used\n   to inject some flag that tells whether table row represents a model or an element.\n- Tree shows a hierarchy of models and elements. Then element node is clicked,\n   application needs to additionally know element model's ID. The rule can be used\n   to inject that ID into element's node.",
+      "properties": {
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order for it to be used. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "items": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "A map of items that define the values stored in the extended data structure.\n\nThe key part of the pair should be unique within all keys which are used for specific\npresentation object, even if they are applied using different `ExtendedData` definitions.\n\nThe value part of the pair is an ECExpression, which can use\na limited set of symbols and whose\nevaluated result is used as the value of the extended data item.",
+          "type": "object"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "ExtendedData"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "items",
+        "ruleType"
       ],
       "type": "object"
     },
@@ -1884,6 +1924,9 @@
               },
               {
                 "$ref": "#/definitions/StyleOverride"
+              },
+              {
+                "$ref": "#/definitions/ExtendedDataRule"
               }
             ]
           },
@@ -2309,6 +2352,9 @@
           },
           {
             "$ref": "#/definitions/StyleOverride"
+          },
+          {
+            "$ref": "#/definitions/ExtendedDataRule"
           },
           {
             "$ref": "#/definitions/ChildNodeRule"

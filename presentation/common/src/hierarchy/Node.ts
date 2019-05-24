@@ -39,6 +39,8 @@ export interface Node {
   isChecked?: boolean;
   /** Is this node's checkbox enabled */
   isCheckboxEnabled?: boolean;
+  /** Extended data injected into this node */
+  extendedData?: { [key: string]: any };
 }
 
 /**
@@ -60,6 +62,7 @@ export interface NodeJSON {
   isCheckboxVisible?: boolean;
   isChecked?: boolean;
   isCheckboxEnabled?: boolean;
+  extendedData?: { [key: string]: any };
 }
 /** @public */
 export namespace Node {

@@ -31,7 +31,7 @@ public;ContentRule
 public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification
 public;ContentSpecificationBase
 public;ContentSpecificationTypes
-public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride
+public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
 public;DefaultContentDisplayTypes
