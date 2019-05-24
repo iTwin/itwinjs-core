@@ -170,7 +170,7 @@ export class IModelDb extends IModel implements PageableECSql {
   public static readonly onOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>();
 
   /** Event raised just after an IModelDb is opened.
-   * @note This event is *not* raised for standalone IModelDbs.
+   * @note This event is *not* raised for snapshot IModelDbs.
    *
    * **Example:**
    * ``` ts
@@ -178,9 +178,9 @@ export class IModelDb extends IModel implements PageableECSql {
    * ```
    */
   public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: IModelDb) => void>();
-  /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
+  /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for snapshot IModelDbs. */
   public static readonly onCreate = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>();
-  /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
+  /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for snapshot IModelDbs. */
   public static readonly onCreated = new BeEvent<(_imodelDb: IModelDb) => void>();
 
   private _briefcase?: BriefcaseEntry;
@@ -336,6 +336,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @throws IModelError if the iModel is not open, or is not standalone
    * @see [[closeSnapshot]]
    * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[closeSnapshot]].
+   * @internal
    */
   public closeStandalone(): void {
     if (!this.briefcase)
@@ -364,14 +365,14 @@ export class IModelDb extends IModel implements PageableECSql {
   /** Close this iModel, if it is currently open.
    * @param requestContext The client request context.
    * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
-   * @throws IModelError if the iModel is not open, or is really a standalone iModel
+   * @throws IModelError if the iModel is not open, or is really a snapshot iModel
    */
   public async close(requestContext: AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     requestContext.enter();
     if (!this.briefcase)
       throw this.newNotOpenError();
     if (this.briefcase.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
+      throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a snapshot iModel. Use IModelDb.closeSnapshot() instead");
 
     try {
       await BriefcaseManager.close(requestContext, this.briefcase, keepBriefcase);

@@ -358,7 +358,7 @@ export class BriefcaseId {
     static readonly Master: number;
     // @beta (undocumented)
     static readonly Snapshot: number;
-    // @deprecated (undocumented)
+    // @internal (undocumented)
     static readonly Standalone: number;
     // (undocumented)
     toString(): string;
@@ -1632,7 +1632,7 @@ export class IModelDb extends IModel implements PageableECSql {
     close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
     // @beta
     closeSnapshot(): void;
-    // @deprecated
+    // @internal @deprecated
     closeStandalone(): void;
     readonly codeSpecs: CodeSpecs;
     // @beta

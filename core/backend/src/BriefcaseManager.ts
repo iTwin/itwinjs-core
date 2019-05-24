@@ -31,7 +31,7 @@ export class BriefcaseId {
   public static get Illegal(): number { return 0xffffffff; }
   /** @internal */
   public static get Master(): number { return 0; }
-  /** @deprecated */
+  /** @internal */
   public static get Standalone(): number { return 1; }
   /** @beta */
   public static get Snapshot(): number { return 1; }
