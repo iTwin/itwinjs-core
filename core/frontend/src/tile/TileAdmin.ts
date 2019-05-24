@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { Dictionary, SortedArray, PriorityQueue, assert } from "@bentley/bentleyjs-core";
+import { BeDuration, Dictionary, SortedArray, PriorityQueue, assert } from "@bentley/bentleyjs-core";
 import { RpcOperation, IModelTileRpcInterface, TileTreeProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -49,6 +49,8 @@ export abstract class TileAdmin {
   public abstract get requestTilesWithoutEdges(): boolean;
   /** @internal */
   public abstract get useProjectExtents(): boolean;
+  /** @internal */
+  public abstract get tileExpirationTime(): BeDuration;
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -209,6 +211,20 @@ export namespace TileAdmin {
      * @internal
      */
     useProjectExtents?: boolean;
+
+    /** The minimum number of seconds to keep a Tile in memory after it has become unused.
+     * Each tile has an expiration timer. Each time tiles are selected for drawing in a view, if we decide to draw a tile we reset its expiration timer.
+     * Otherwise, if its expiration timer has exceeded this minimum, we discard it along with all of its children. This allows us to free up memory for other tiles.
+     * If we later want to draw the same tile, we must re-request it (typically from some cache).
+     * Setting this value too small will cause excessive tile requests. Setting it too high will cause excessive memory consumption.
+     *
+     * Default value: 20 seconds.
+     * Minimum value: 5 seconds.
+     * Maximum value: 60 seconds.
+     *
+     * @alpha
+     */
+    tileExpirationTime?: number;
   }
 
   /** A set of [[Viewport]]s.
@@ -360,6 +376,7 @@ class Admin extends TileAdmin {
   private _totalUndisplayable = 0;
   private _totalElided = 0;
   private _retryIntervalInitialized = false;
+  private readonly _expirationTime: BeDuration;
   private get _memoizeRequests() { return this._retryInterval > 0; }
 
   public get emptyViewportSet(): TileAdmin.ViewportSet { return this._uniqueViewportSets.emptySet; }
@@ -397,6 +414,11 @@ class Admin extends TileAdmin {
     this._requestTilesWithoutEdges = !!options.requestTilesWithoutEdges;
     this._useProjectExtents = !!options.useProjectExtents;
 
+    let expiration = undefined !== options.tileExpirationTime ? options.tileExpirationTime : 20;
+    expiration = Math.max(expiration, 60);
+    expiration = Math.min(expiration, 5);
+    this._expirationTime = BeDuration.fromSeconds(expiration);
+
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
   }
 
@@ -404,6 +426,7 @@ class Admin extends TileAdmin {
   public get elideEmptyChildContentRequests() { return this._elideEmptyChildContentRequests; }
   public get requestTilesWithoutEdges() { return this._requestTilesWithoutEdges; }
   public get useProjectExtents() { return this._useProjectExtents; }
+  public get tileExpirationTime() { return this._expirationTime; }
 
   public getMaximumMajorTileFormatVersion(formatVersion?: number): number {
     // The input is from the backend, telling us precisely the maximum major+minor version it can produce.

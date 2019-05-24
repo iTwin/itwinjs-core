@@ -812,7 +812,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.id = props.id;
     this.modelId = Id64.fromJSON(props.modelId);
     this.location = props.location;
-    this.expirationTime = BeDuration.fromSeconds(5); // ###TODO tile purging strategy
+    this.expirationTime = IModelApp.tileAdmin.tileExpirationTime;
 
     if (undefined !== props.clipVector)
       this.clipVolume = IModelApp.renderSystem.createClipVolume(props.clipVector);

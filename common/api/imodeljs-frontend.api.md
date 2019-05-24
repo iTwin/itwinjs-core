@@ -6461,6 +6461,8 @@ export abstract class TileAdmin {
     abstract resetStatistics(): void;
     abstract readonly statistics: TileAdmin.Statistics;
     // @internal (undocumented)
+    abstract readonly tileExpirationTime: BeDuration;
+    // @internal (undocumented)
     abstract readonly useProjectExtents: boolean;
 }
 
@@ -6476,6 +6478,7 @@ export namespace TileAdmin {
         // @internal
         requestTilesWithoutEdges?: boolean;
         retryInterval?: number;
+        tileExpirationTime?: number;
         // @internal
         useProjectExtents?: boolean;
     }
