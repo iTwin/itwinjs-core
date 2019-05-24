@@ -11,32 +11,6 @@
       "processId": "${command:PickProcess}"
     },
     {
-      "name": "Frontend Tests",
-      "type": "chrome",
-      "request": "attach",
-      "preLaunchTask": "start-debugging-frontend-tests",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
-      "sourceMaps": true,
-      "timeout": 20000,
-      "smartStep": true,
-      "showAsyncStacks": true,
-      "webRoot": "${workspaceFolder}",
-      "internalConsoleOptions": "openOnSessionStart"
-    },
-    {
-      "name": "Markup Tests",
-      "type": "chrome",
-      "request": "attach",
-      "preLaunchTask": "start-debugging-markup-tests",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/markup/certa.json
-      "sourceMaps": true,
-      "timeout": 20000,
-      "smartStep": true,
-      "showAsyncStacks": true,
-      "webRoot": "${workspaceFolder}",
-      "internalConsoleOptions": "openOnSessionStart"
-    },
-    {
       "type": "node",
       "request": "launch",
       "name": "Run Backend Tests (Integration)",
@@ -603,7 +577,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Integration Tests (backend)",
+      "name": "⚠️Integration Tests (backend)",
       "cwd": "${workspaceRoot}/integration-tests/core/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
       "args": [
@@ -623,7 +597,7 @@
       "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
     },
     {
-      "name": "Integration Tests (frontend)",
+      "name": "⚠️Integration Tests (frontend)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/core/certa.json
@@ -631,12 +605,13 @@
       "timeout": 200000,
       "smartStep": true,
       "showAsyncStacks": true,
+      "breakOnLoadStrategy": "instrument",
       "webRoot": "${workspaceFolder}"
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "perf-test-app tests (backend)",
+      "name": "⚠️perf-test-app tests (backend)",
       "cwd": "${workspaceRoot}/test-apps/perf-test-app/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
       "args": [
@@ -658,20 +633,75 @@
       "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
     },
     {
-      "name": "perf-test-app tests (frontend)",
+      "name": "⚠️perf-test-app tests (frontend)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/core/certa.json
       "sourceMaps": true,
       "timeout": 200000,
       "smartStep": true,
+      "breakOnLoadStrategy": "instrument",
       "showAsyncStacks": true,
       "webRoot": "${workspaceFolder}"
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "RPC Integration Tests (backend)",
+      "name": "⚠️Frontend Tests (certa/backend)",
+      "cwd": "${workspaceRoot}/core/frontend/",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "debug:tests"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in core/frontend/certa.json
+    },
+    {
+      "name": "⚠️Frontend Tests (chrome)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
+      "sourceMaps": true,
+      "timeout": 20000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "breakOnLoadStrategy": "instrument",
+      "webRoot": "${workspaceFolder}",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "⚠️Markup Tests (certa/backend)",
+      "cwd": "${workspaceRoot}/core/markup/",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "debug:tests"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in core/markup/certa.json
+    },
+    {
+      "name": "⚠️Markup Tests (chrome)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in core/markup/certa.json
+      "sourceMaps": true,
+      "timeout": 20000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "breakOnLoadStrategy": "instrument",
+      "webRoot": "${workspaceFolder}",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "⚠️RPC Integration Tests (backend)",
       "cwd": "${workspaceRoot}/integration-tests/rpc/",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -692,7 +722,7 @@
       "port": 5858 // NB: This must match ports.debugging in integration-tests/rpc/certa.json
     },
     {
-      "name": "RPC Integration Tests (frontend)",
+      "name": "⚠️RPC Integration Tests (frontend)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/rpc/certa.json
@@ -700,22 +730,44 @@
       "timeout": 200000,
       "smartStep": true,
       "showAsyncStacks": true,
+      "breakOnLoadStrategy": "instrument",
       "webRoot": "${workspaceFolder}"
     },
   ],
   "compounds": [
     {
-      "name": "Integration Tests",
+      "name": "✔️Frontend Tests",
       "configurations": [
-        "Integration Tests (frontend)",
-        "Integration Tests (backend)"
+        "⚠️Frontend Tests (chrome)",
+        "⚠️Frontend Tests (certa/backend)"
       ]
     },
     {
-      "name": "RPC Tests",
+      "name": "✔️Markup Tests",
       "configurations": [
-        "RPC Integration Tests (frontend)",
-        "RPC Integration Tests (backend)"
+        "⚠️Markup Tests (chrome)",
+        "⚠️Markup Tests (certa/backend)"
+      ]
+    },
+    {
+      "name": "✔️Integration Tests",
+      "configurations": [
+        "⚠️Integration Tests (frontend)",
+        "⚠️Integration Tests (backend)"
+      ]
+    },
+    {
+      "name": "✔️RPC Tests",
+      "configurations": [
+        "⚠️RPC Integration Tests (frontend)",
+        "⚠️RPC Integration Tests (backend)"
+      ]
+    },
+    {
+      "name": "✔️perf-test-app tests",
+      "configurations": [
+        "⚠️perf-test-app tests (backend)",
+        "⚠️perf-test-app tests (frontend)"
       ]
     },
     {
@@ -723,13 +775,6 @@
       "configurations": [
         "display-test-app Electron (backend)",
         "display-test-app (frontend)"
-      ]
-    },
-    {
-      "name": "perf-test-app tests",
-      "configurations": [
-        "perf-test-app tests (backend)",
-        "perf-test-app tests (frontend)"
       ]
     }
   ],
@@ -755,12 +800,6 @@
         "http2",
         "direct"
       ]
-    },
-    {
-      "id": "test",
-      "type": "command",
-      "command": "workbench.action.tasks.runTask",
-      "args": "get-node-path"
-    },
+    }
   ]
 }

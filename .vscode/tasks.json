@@ -15,54 +15,6 @@
       "type": "npm",
       "script": "test",
       "problemMatcher": []
-    },
-    {
-      "label": "start-debugging-frontend-tests",
-      "type": "npm",
-      "script": "debug:tests",
-      "path": "core/frontend/",
-      "isBackground": true,
-      "presentation": {
-        "reveal": "never",
-        "focus": false,
-        "panel": "dedicated"
-      },
-      // This is required to let the debugger start before the task completes:
-      "problemMatcher": {
-        "owner": "custom",
-        "pattern": {
-          "regexp": "__________"
-        },
-        "background": {
-          "activeOnStart": true,
-          "endsPattern": "\\s",
-          "beginsPattern": "\\s"
-        }
-      }
-    },
-    {
-      "label": "start-debugging-markup-tests",
-      "type": "npm",
-      "script": "debug:tests",
-      "path": "core/markup/",
-      "isBackground": true,
-      "presentation": {
-        "reveal": "never",
-        "focus": false,
-        "panel": "dedicated"
-      },
-      // This is required to let the debugger start before the task completes:
-      "problemMatcher": {
-        "owner": "custom",
-        "pattern": {
-          "regexp": "__________"
-        },
-        "background": {
-          "activeOnStart": true,
-          "endsPattern": "\\s",
-          "beginsPattern": "\\s"
-        }
-      }
-    },
+    }
   ]
 }

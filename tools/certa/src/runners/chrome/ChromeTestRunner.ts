@@ -56,6 +56,11 @@ async function loadScript(page: puppeteer.Page, scriptPath: string) {
 }
 
 async function loadScriptAndTemporarilyBreak(page: puppeteer.Page, scriptPath: string) {
+  // Give VSCode a second to attach before setting an instrumentation breakpoint.
+  // This way it can detect the instrumentationBreakpoint and auto-resume once breakpoints are loaded.
+  // Otherwise, VSCode will only be able to see that the page is paused, not _why_ it was paused.
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   // Connect to debugger over chrome devtools protocol, and have it stop on the first statement of next script loaded
   const session = await page.target().createCDPSession();
   await session.send("Debugger.enable");
@@ -64,10 +69,9 @@ async function loadScriptAndTemporarilyBreak(page: puppeteer.Page, scriptPath: s
   // _Start_ loading the script, but don't wait for it to finish - it can't finish with that breakpoint set!
   const loadedPromise = loadScript(page, scriptPath);
 
-  // Resume execution once breakpoints have had a chance to be resolved (unless user already resumed)
-  // FIXME: Need a more reliable way to wait for breakpoints to be resolved...
+  // Resume execution once breakpoints have had a chance to be resolved (unless user/vscode already resumed)
   const resumed = new Promise((resolve) => session.once("Debugger.resumed", resolve)).then(() => false);
-  const timeout = new Promise((resolve) => setTimeout(resolve, 5000)).then(() => true);
+  const timeout = new Promise((resolve) => setTimeout(resolve, 30000)).then(() => true);
   if (await Promise.race([resumed, timeout]))
     await session.send("Debugger.resume");
   await session.detach();
@@ -86,7 +90,7 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       };
 
       if (config.debug)
-        options.args.push(`--remote-debugging-port=${config.ports.frontendDebugging}`);
+        options.args.push(`--disable-gpu`, `--remote-debugging-port=${config.ports.frontendDebugging}`);
 
       const browser = await puppeteer.launch(options);
       const page = (await browser.pages()).pop() || await browser.newPage();

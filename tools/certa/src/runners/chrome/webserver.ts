@@ -53,4 +53,6 @@ app.use("*", (req, resp) => {
 
 // Run the server...
 app.set("port", process.env.CERTA_PORT || 3000);
-app.listen(app.get("port"));
+app.listen(app.get("port"), () => {
+  console.log(`Certa web frontend now listening on port ${app.get("port")}`);
+});
