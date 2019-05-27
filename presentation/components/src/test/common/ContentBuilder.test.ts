@@ -86,7 +86,7 @@ describe("ContentBuilder", () => {
         [field.name]: "some display value",
       };
       const item = new Item([createRandomECInstanceKey()], faker.random.words(),
-        faker.random.uuid(), undefined, values, displayValues, []);
+        faker.random.uuid(), undefined, values, displayValues, [], { test: "custom value" });
       const record = ContentBuilder.createPropertyRecord(field, item);
       expect(record).to.matchSnapshot();
     });
@@ -421,7 +421,7 @@ describe("ContentBuilder", () => {
         [field.name]: undefined,
       };
       const item = new Item([createRandomECInstanceKey()], faker.random.words(),
-        faker.random.uuid(), undefined, values, displayValues, []);
+        faker.random.uuid(), undefined, values, displayValues, [], { test: "custom value" });
       const record = ContentBuilder.createPropertyRecord(field, item);
       expect(record).to.matchSnapshot();
     });
