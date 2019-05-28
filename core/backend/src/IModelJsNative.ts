@@ -9,7 +9,7 @@ import {
 import { ElementProps, ChangedElements, QueryLimit, QueryQuota, QueryPriority } from "@bentley/imodeljs-common";
 import { ExportGraphicsProps } from "./ExportGraphics";
 import { IModelDb, TxnIdString } from "./IModelDb";
-import * as CQM from "./ConcurrentQueryManager";
+import { Config as CQMConfig, PostStatus as CQMPostStatus, PollStatus as CQMPollStatus } from "./ConcurrentQueryManager";
 
 // tslint:disable:prefer-get
 /** Module that declares the IModelJs native code.
@@ -67,10 +67,10 @@ export declare namespace IModelJsNative {
   }
 
   export interface IConcurrentQueryManager {
-    cqmInitialize(config: CQM.Config): boolean;
+    cqmInitialize(config: CQMConfig): boolean;
     cqmIsInitialized(): boolean;
-    cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: CQM.PostStatus, taskId: number };
-    cqmPollQuery(taskId: number): { status: CQM.PollStatus, result: string, rowCount: number };
+    cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: CQMPostStatus, taskId: number };
+    cqmPollQuery(taskId: number): { status: CQMPollStatus, result: string, rowCount: number };
   }
   export interface TileContent {
     content: Uint8Array;
@@ -201,10 +201,10 @@ export declare namespace IModelJsNative {
     public updateLinkTableRelationship(props: string): DbResult;
     public updateModel(modelProps: string): IModelStatus;
     public updateProjectExtents(newExtentsJson: string): void;
-    public cqmInitialize(config: CQM.Config): boolean;
+    public cqmInitialize(config: CQMConfig): boolean;
     public cqmIsInitialized(): boolean;
-    public cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: CQM.PostStatus, taskId: number };
-    public cqmPollQuery(taskId: number): { status: CQM.PollStatus, result: string, rowCount: number };
+    public cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: CQMPostStatus, taskId: number };
+    public cqmPollQuery(taskId: number): { status: CQMPollStatus, result: string, rowCount: number };
     public static vacuum(dbName: string, pageSize?: number): DbResult;
   }
 
@@ -218,10 +218,10 @@ export declare namespace IModelJsNative {
     public saveChanges(changesetName?: string): DbResult;
     public abandonChanges(): DbResult;
     public importSchema(schemaPathName: string): DbResult;
-    public cqmInitialize(config: CQM.Config): boolean;
+    public cqmInitialize(config: CQMConfig): boolean;
     public cqmIsInitialized(): boolean;
-    public cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: CQM.PostStatus, taskId: number };
-    public cqmPollQuery(taskId: number): { status: CQM.PollStatus, result: string, rowCount: number };
+    public cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: CQMPostStatus, taskId: number };
+    public cqmPollQuery(taskId: number): { status: CQMPollStatus, result: string, rowCount: number };
   }
 
   export class ChangedElementsECDb implements IDisposable {

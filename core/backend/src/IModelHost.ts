@@ -26,7 +26,7 @@ import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
-import * as CQM from "./ConcurrentQueryManager";
+import { Config as CQMConfig } from "./ConcurrentQueryManager";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
 /** @alpha */
@@ -126,7 +126,7 @@ export class IModelHostConfiguration {
    */
   public crashReportingConfig?: CrashReportingConfig;
 
-  public concurrentQueryManagerConfig: CQM.Config = {
+  public concurrentQueryManagerConfig: CQMConfig = {
     concurrent: os.cpus().length,
     autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
     minMonitorInterval: 1, // 1 seconds

@@ -490,7 +490,6 @@ export class IModelDb extends IModel {
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
    */
-
   public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
     for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
       return row.nRows;

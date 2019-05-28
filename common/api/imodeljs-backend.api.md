@@ -96,13 +96,15 @@ import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import * as os from 'os';
-import { PageableECSql } from '@bentley/imodeljs-common';
-import { PageOptions } from '@bentley/imodeljs-common';
 import { Placement2d } from '@bentley/imodeljs-common';
 import { Placement3d } from '@bentley/imodeljs-common';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PropertyCallback } from '@bentley/imodeljs-common';
+import { QueryLimit } from '@bentley/imodeljs-common';
+import { QueryPriority } from '@bentley/imodeljs-common';
+import { QueryQuota } from '@bentley/imodeljs-common';
+import { QueryResponse } from '@bentley/imodeljs-common';
 import { Range2d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { Rank } from '@bentley/imodeljs-common';
@@ -949,7 +951,7 @@ export abstract class DriverBundleElement extends InformationContentElement {
 }
 
 // @public
-export class ECDb implements IDisposable, PageableECSql {
+export class ECDb implements IDisposable {
     constructor();
     abandonChanges(): void;
     // @internal
@@ -967,9 +969,9 @@ export class ECDb implements IDisposable, PageableECSql {
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(ecsql: string): ECSqlStatement;
-    query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
-    queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
+    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
+    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse>;
     saveChanges(changeSetName?: string): void;
     // @internal
     withPreparedSqliteStatement<T>(sql: string, cb: (stmt: SqliteStatement) => T): T;
@@ -1610,7 +1612,7 @@ export class GroupModel extends GroupInformationModel {
 }
 
 // @public
-export class IModelDb extends IModel implements PageableECSql {
+export class IModelDb extends IModel {
     abandonChanges(): void;
     // @internal (undocumented)
     readonly briefcase: BriefcaseEntry;
@@ -1690,13 +1692,13 @@ export class IModelDb extends IModel implements PageableECSql {
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @beta
     pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void>;
-    query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
+    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
-    queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
+    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse>;
     // (undocumented)
     readFontJson(): string;
     // @beta
@@ -1825,6 +1827,8 @@ export class IModelHost {
 export class IModelHostConfiguration {
     appAssetsDir?: string;
     briefcaseCacheDir: string;
+    // (undocumented)
+    concurrentQueryManagerConfig: Config;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
     // @internal
@@ -1992,7 +1996,7 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export function clearLogLevelCache(): void;
-    export class DgnDb {
+    export class DgnDb implements IConcurrentQueryManager {
         constructor();
         // (undocumented)
         abandonChanges(): DbResult;
@@ -2022,6 +2026,21 @@ export namespace IModelJsNative {
         cancelTo(txnId: TxnIdString): IModelStatus;
         // (undocumented)
         closeIModel(): void;
+        // (undocumented)
+        cqmInitialize(config: Config): boolean;
+        // (undocumented)
+        cqmIsInitialized(): boolean;
+        // (undocumented)
+        cqmPollQuery(taskId: number): {
+            status: PollStatus;
+            result: string;
+            rowCount: number;
+        };
+        // (undocumented)
+        cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
+            status: PostStatus;
+            taskId: number;
+        };
         // (undocumented)
         createChangeCache(changeCacheFile: ECDb, changeCachePath: string): DbResult;
         // (undocumented)
@@ -2210,12 +2229,27 @@ export namespace IModelJsNative {
     // (undocumented)
     export function dropObjectFromVault(id: string): void;
     // (undocumented)
-    export class ECDb implements IDisposable {
+    export class ECDb implements IDisposable, IConcurrentQueryManager {
         constructor();
         // (undocumented)
         abandonChanges(): DbResult;
         // (undocumented)
         closeDb(): void;
+        // (undocumented)
+        cqmInitialize(config: Config): boolean;
+        // (undocumented)
+        cqmIsInitialized(): boolean;
+        // (undocumented)
+        cqmPollQuery(taskId: number): {
+            status: PollStatus;
+            result: string;
+            rowCount: number;
+        };
+        // (undocumented)
+        cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
+            status: PostStatus;
+            taskId: number;
+        };
         // (undocumented)
         createDb(dbName: string): DbResult;
         // (undocumented)
@@ -2460,6 +2494,24 @@ export namespace IModelJsNative {
     export function getObjectFromVault(id: string): any;
     // (undocumented)
     export function getObjectRefCountFromVault(id: string): number;
+    // (undocumented)
+    export interface IConcurrentQueryManager {
+        // (undocumented)
+        cqmInitialize(config: Config): boolean;
+        // (undocumented)
+        cqmIsInitialized(): boolean;
+        // (undocumented)
+        cqmPollQuery(taskId: number): {
+            status: PollStatus;
+            result: string;
+            rowCount: number;
+        };
+        // (undocumented)
+        cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
+            status: PostStatus;
+            taskId: number;
+        };
+    }
     // (undocumented)
     export class ImportContext implements IDisposable {
         constructor(sourceDb: DgnDb, targetDb: DgnDb);
