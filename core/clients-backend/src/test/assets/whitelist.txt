@@ -72,9 +72,9 @@ iModelScope/Version/********-****-****-****-************?$select=*,HasThumbnail-
 iModelScope/Version/?$filter=ChangeSetId+eq+'****************************************'
 iModelScope/Version/?$filter=Name+eq+'*'&$select=*,HasThumbnail-forward-LargeThumbnail.*
 iModelScope/Version/?$filter=Name+eq+'*'
-ProjectScope/LargeThumbnail/********-****-****-****-************/$file
-ProjectScope/SmallThumbnail/********-****-****-****-************/$file
-ProjectScope/iModel/
-ProjectScope/iModel/********-****-****-****-************
-ProjectScope/iModel/?$filter=Name+eq+'*'
-ProjectScope/iModel/?$orderby=CreatedDate+asc&$top=*
+ContextScope/LargeThumbnail/********-****-****-****-************/$file
+ContextScope/SmallThumbnail/********-****-****-****-************/$file
+ContextScope/iModel/
+ContextScope/iModel/********-****-****-****-************
+ContextScope/iModel/?$filter=Name+eq+'*'
+ContextScope/iModel/?$orderby=CreatedDate+asc&$top=*

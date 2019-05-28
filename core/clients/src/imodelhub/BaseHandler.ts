@@ -53,7 +53,7 @@ export class IModelBaseHandler extends WsgClient {
     }
   }
 
-  public formatProjectIdForUrl(projectId: string) { return projectId; }
+  public formatContextIdForUrl(contextId: string) { return contextId; }
 
   public getFileHandler(): FileHandler | undefined { return this._fileHandler; }
 

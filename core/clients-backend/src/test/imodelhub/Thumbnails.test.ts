@@ -24,8 +24,8 @@ function mockDownloadThumbnail(requestPath: string, size: ThumbnailSize) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, { response });
 }
 
-function mockDownloadLatestThumbnail(_projectId: string, imodelId: GuidString, size: ThumbnailSize) {
-  const requestPath = utils.createRequestUrl(ScopeType.Project, _projectId, `${size}Thumbnail`, imodelId + "/$file");
+function mockDownloadLatestThumbnail(_contextId: string, imodelId: GuidString, size: ThumbnailSize) {
+  const requestPath = utils.createRequestUrl(ScopeType.Context, _contextId, `${size}Thumbnail`, imodelId + "/$file");
   mockDownloadThumbnail(requestPath, size);
 }
 
@@ -43,7 +43,7 @@ async function getIModelId(requestContext: AuthorizedClientRequestContext, name:
   return utils.getIModelId(requestContext, name);
 }
 
-// todo: tests fail because the imodel has been deleted from the project
+// todo: tests fail because the imodel has been deleted from the context
 describe.skip("iModelHub ThumbnailHandler", () => {
   const test: TestParameters[] = [{ size: "Small", thumbnails: [] }, { size: "Large", thumbnails: [] }];
   let _projectId: string;
@@ -148,7 +148,7 @@ describe.skip("iModelHub ThumbnailHandler", () => {
   test.forEach((params: TestParameters) => {
     it(`should download latest iModel's ${params.size}Thumbnail as a PNG file`, async () => {
       mockDownloadLatestThumbnail(_projectId, imodelId, params.size);
-      const image: string = await imodelHubClient.thumbnails.download(requestContext, imodelId, { projectId: _projectId, size: params.size });
+      const image: string = await imodelHubClient.thumbnails.download(requestContext, imodelId, { contextId: _projectId, size: params.size });
       chai.assert(image);
       chai.expect(image.length).greaterThan(getThumbnailLength(params.size));
       chai.assert(image.startsWith(pngPrefixStr));

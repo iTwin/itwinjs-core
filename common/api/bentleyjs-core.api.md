@@ -595,6 +595,10 @@ export enum IModelHubStatus {
     // (undocumented)
     EventTypeDoesNotExist = 102432,
     // (undocumented)
+    FailedToGetAssetMembers = 102446,
+    // (undocumented)
+    FailedToGetAssetPermissions = 102445,
+    // (undocumented)
     FailedToGetProjectById = 102442,
     // (undocumented)
     FailedToGetProjectMembers = 102437,

@@ -302,6 +302,9 @@ export enum IModelHubStatus {
   DatabaseOperationFailed = IMODELHUBERROR_BASE + 43,
   SeedFileInitializationFailed = IMODELHUBERROR_BASE + 44,
 
+  FailedToGetAssetPermissions = IMODELHUBERROR_BASE + 45,
+  FailedToGetAssetMembers = IMODELHUBERROR_BASE + 46,
+
   // Errors that are returned for incorrect iModelHub request.
   UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1,
   InvalidArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 2,
@@ -632,6 +635,8 @@ export class BentleyError extends Error {
       case IModelHubStatus.ProjectIdIsNotSpecified: return "Project Id is not specified";
       case IModelHubStatus.FailedToGetProjectPermissions: return "Failed to get project permissions";
       case IModelHubStatus.FailedToGetProjectMembers: return "Failed to get project members";
+      case IModelHubStatus.FailedToGetAssetPermissions: return "Failed to get asset permissions";
+      case IModelHubStatus.FailedToGetAssetMembers: return "Failed to get asset members";
       case IModelHubStatus.ChangeSetAlreadyHasVersion: return "ChangeSet already has version";
       case IModelHubStatus.VersionAlreadyExists: return "Version already exists";
       case IModelHubStatus.JobSchedulingFailed: return "Failed to schedule a background job";

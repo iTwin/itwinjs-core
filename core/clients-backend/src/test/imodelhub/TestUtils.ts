@@ -8,7 +8,7 @@ import * as chai from "chai";
 import { Base64 } from "js-base64";
 import { GuidString, Guid, Id64, Id64String, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import {
-  ECJsonTypeMap, AccessToken, UserInfo, Project, ProgressInfo,
+  ECJsonTypeMap, AccessToken, UserInfo, Project, Asset, ProgressInfo,
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, BriefcaseQuery, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery, Config, IModelBaseHandler,
@@ -148,8 +148,8 @@ export function createRequestUrl(scope: ScopeType, id: string | GuidString, clas
     case ScopeType.iModel:
       requestUrl += `iModel--${id}/iModelScope/`;
       break;
-    case ScopeType.Project:
-      requestUrl += `Project--${id}/ProjectScope/`;
+    case ScopeType.Context:
+      requestUrl += `Context--${id}/ContextScope/`;
       break;
     case ScopeType.Global:
       requestUrl += "Global--Global/GlobalScope/";
@@ -187,6 +187,22 @@ export async function bootstrapBankProject(requestContext: AuthorizedClientReque
   bankProjects.push(projectName);
 }
 
+export async function getAssetId(requestContext: AuthorizedClientRequestContext, assetName?: string): Promise<string> {
+  if (TestConfig.enableMocks)
+    return Guid.createValue();
+
+  assetName = assetName || TestConfig.assetName;
+
+  await bootstrapBankProject(requestContext, assetName);
+
+  const asset: Asset = await getCloudEnv().contextMgr.queryAssetByName(requestContext, assetName);
+
+  if (!asset || !asset.wsgId)
+    return Promise.reject(`Asset with name ${assetName} doesn't exist.`);
+
+  return asset.wsgId;
+}
+
 export async function getProjectId(requestContext: AuthorizedClientRequestContext, projectName?: string): Promise<string> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
@@ -195,7 +211,7 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
 
   await bootstrapBankProject(requestContext, projectName);
 
-  const project: Project = await getCloudEnv().contextMgr.queryContextByName(requestContext, projectName);
+  const project: Project = await getCloudEnv().contextMgr.queryProjectByName(requestContext, projectName);
 
   if (!project || !project.wsgId)
     return Promise.reject(`Project with name ${TestConfig.projectName} doesn't exist.`);
@@ -204,15 +220,15 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
 }
 
 /** iModels */
-export async function deleteIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, imodelName: string): Promise<void> {
+export async function deleteIModelByName(requestContext: AuthorizedClientRequestContext, contextId: string, imodelName: string): Promise<void> {
   if (TestConfig.enableMocks)
     return;
 
   const client = getDefaultClient();
-  const imodels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName));
+  const imodels = await client.iModels.get(requestContext, contextId, new IModelQuery().byName(imodelName));
 
   for (const imodel of imodels) {
-    await client.iModels.delete(requestContext, projectId, imodel.id!);
+    await client.iModels.delete(requestContext, contextId, imodel.id!);
   }
 }
 
@@ -631,26 +647,26 @@ export function getMockSeedFilePath() {
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
 }
 
-export async function createIModel(requestContext: AuthorizedClientRequestContext, name: string, projectId?: string, deleteIfExists = false, fromSeedFile = false) {
+export async function createIModel(requestContext: AuthorizedClientRequestContext, name: string, contextId?: string, deleteIfExists = false, fromSeedFile = false) {
   if (TestConfig.enableMocks)
     return;
 
-  projectId = projectId || await getProjectId(requestContext, TestConfig.projectName);
+  contextId = contextId || await getProjectId(requestContext, TestConfig.projectName);
 
   const client = getDefaultClient();
 
-  const imodels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(name));
+  const imodels = await client.iModels.get(requestContext, contextId, new IModelQuery().byName(name));
 
   if (imodels.length > 0) {
     if (deleteIfExists) {
-      await client.iModels.delete(requestContext, projectId, imodels[0].id!);
+      await client.iModels.delete(requestContext, contextId, imodels[0].id!);
     } else {
       return;
     }
   }
 
   const pathName = fromSeedFile ? getMockSeedFilePath() : undefined;
-  return client.iModels.create(requestContext, projectId, name, pathName, "", undefined, 240000);
+  return client.iModels.create(requestContext, contextId, name, pathName, "", undefined, 240000);
 }
 
 export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {

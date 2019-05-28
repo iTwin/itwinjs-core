@@ -15,7 +15,7 @@ export enum RequestType {
 
 export enum ScopeType {
   iModel,
-  Project,
+  Context,
   Global,
 }
 

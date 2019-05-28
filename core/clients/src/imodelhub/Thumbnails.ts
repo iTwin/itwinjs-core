@@ -44,8 +44,8 @@ export class LargeThumbnail extends Thumbnail { }
  * @alpha
  */
 export interface TipThumbnail {
-  /** Id of the iModel's [[Project]]. */
-  projectId: string;
+  /** Id of the iModel's context ([[Project]] or [[Asset]]). */
+  contextId: string;
   /** Size of the [[Thumbnail]]. */
   size: ThumbnailSize;
 }
@@ -85,12 +85,12 @@ export class ThumbnailHandler {
   }
 
   /** Get relative url for tip Thumbnail requests.
-   * @param projectId Id of the [[Project]].
+   * @param contextId Id of the context ([[Project]] or [[Asset]]).
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    */
-  private getRelativeProjectUrl(projectId: string, iModelId: GuidString, size: ThumbnailSize) {
-    return `/Repositories/Project--${this._handler.formatProjectIdForUrl(projectId)}/ProjectScope/${size}Thumbnail/${iModelId.toString()}/$file`;
+  private getRelativeContextUrl(contextId: string, iModelId: GuidString, size: ThumbnailSize) {
+    return `/Repositories/Context--${this._handler.formatContextIdForUrl(contextId)}/ContextScope/${size}Thumbnail/${iModelId.toString()}/$file`;
   }
 
   /** Get relative url for Thumbnail requests.
@@ -106,7 +106,7 @@ export class ThumbnailHandler {
    * @param thumbnail SmallThumbnail, LargeThumbnail or TipThumbnail.
    */
   private isTipThumbnail(thumbnail: Thumbnail | TipThumbnail): thumbnail is TipThumbnail {
-    return (thumbnail as TipThumbnail).projectId !== undefined;
+    return (thumbnail as TipThumbnail).contextId !== undefined;
   }
 
   /** Download the thumbnail.
@@ -137,19 +137,19 @@ export class ThumbnailHandler {
 
   /** Download the latest iModel's thumbnail.
    * @param requestContext The client request context.
-   * @param projectId Id of the connect project.
+   * @param contextId Id of the connect context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
    */
-  private async downloadTipThumbnail(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, size: ThumbnailSize): Promise<string> {
+  private async downloadTipThumbnail(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString, size: ThumbnailSize): Promise<string> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, `Downloading tip ${size}Thumbnail`, () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("projectId", projectId);
+    ArgumentCheck.validGuid("contextId", contextId);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
-    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeProjectUrl(projectId, iModelId, size);
+    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeContextUrl(contextId, iModelId, size);
     const pngImage = await this.downloadThumbnail(requestContext, url);
     requestContext.enter();
 
@@ -196,7 +196,7 @@ export class ThumbnailHandler {
     ArgumentCheck.validGuid("iModelId", iModelId);
 
     if (this.isTipThumbnail(thumbnail)) {
-      return this.downloadTipThumbnail(requestContext, thumbnail.projectId, iModelId, thumbnail.size);
+      return this.downloadTipThumbnail(requestContext, thumbnail.contextId, iModelId, thumbnail.size);
     }
 
     const size: ThumbnailSize = thumbnail instanceof SmallThumbnail ? "Small" : "Large";

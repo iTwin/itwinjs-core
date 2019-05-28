@@ -23,7 +23,7 @@ export async function initializeCustomCloudEnv(state: SimpleViewState, url: stri
   const bankContextClient = new IModelBankFileSystemContextClient(url);
   const requestContext = new AuthorizedFrontendRequestContext(state.accessToken!);
 
-  state.project = await bankContextClient.queryContextByName(requestContext, projectName);
+  state.project = await bankContextClient.queryProjectByName(requestContext, projectName);
 
   (IModelApp as any)._iModelClient = new IModelBankClient(url, undefined);
 }

@@ -3,16 +3,24 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ConnectClient, Project, IModelHubClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, ConnectClient, Project, Asset, IModelHubClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { ContextManagerClient, IModelAuthorizationClient, IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
 import { TestConfig } from "../TestConfig";
 import { getDefaultClient } from "./TestUtils";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
 class TestConnectClient implements ContextManagerClient {
-  public async queryContextByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project> {
+  public async queryProjectByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project> {
     const client = new ConnectClient();
     return client.getProject(requestContext, {
+      $select: "*",
+      $filter: `Name+eq+'${name}'`,
+    });
+  }
+
+  public async queryAssetByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Asset> {
+    const client = new ConnectClient();
+    return client.getAsset(requestContext, {
       $select: "*",
       $filter: `Name+eq+'${name}'`,
     });

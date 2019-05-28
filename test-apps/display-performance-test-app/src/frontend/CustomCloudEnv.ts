@@ -26,7 +26,7 @@ export async function initializeCustomCloudEnv(projectName: string | undefined, 
   const bankContextClient = new IModelBankFileSystemContextClient(url);
   const requestContext = new AuthorizedFrontendRequestContext(accessToken!);
 
-  const project = await bankContextClient.queryContextByName(requestContext, projectName);
+  const project = await bankContextClient.queryProjectByName(requestContext, projectName);
 
   (IModelApp as any)._iModelClient = new IModelBankClient(url, undefined);
 

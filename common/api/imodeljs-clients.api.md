@@ -68,6 +68,12 @@ export class ArgumentCheck {
 }
 
 // @public
+export class Asset extends CommonContext {
+    // (undocumented)
+    assetType?: string;
+}
+
+// @public
 export class AuthenticationError extends ResponseError {
 }
 
@@ -432,6 +438,12 @@ export class ConnectClient extends WsgClient {
     constructor();
     // (undocumented)
     static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
+    // Warning: (ae-incompatible-release-tags) The symbol "getAsset" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getAsset" is marked as @public, but its signature references "RequestQueryOptions" which is marked as @alpha
+    getAsset(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset>;
+    // Warning: (ae-incompatible-release-tags) The symbol "getAssets" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getAssets" is marked as @public, but its signature references "RequestQueryOptions" which is marked as @alpha
+    getAssets(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset[]>;
     // Warning: (ae-incompatible-release-tags) The symbol "getInvitedProjects" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
     // Warning: (ae-incompatible-release-tags) The symbol "getInvitedProjects" is marked as @public, but its signature references "ConnectRequestQueryOptions" which is marked as @internal
     getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]>;
@@ -487,6 +499,36 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
 
 // @internal (undocumented)
 export type ConstructorType = new () => any;
+
+// Warning: (ae-incompatible-release-tags) The symbol "Context" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
+// 
+// @public
+export class Context extends WsgInstance {
+    // (undocumented)
+    allowExternalTeamMembers?: boolean;
+    // (undocumented)
+    contextTypeId?: ContextType;
+    // (undocumented)
+    dataLocationId?: string;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    number?: string;
+    // (undocumented)
+    status?: number;
+    // (undocumented)
+    ultimateRefId?: string;
+}
+
+// @public
+export enum ContextType {
+    // (undocumented)
+    Asset = 2,
+    // (undocumented)
+    Project = 3,
+    // (undocumented)
+    Unknown = 0
+}
 
 // @internal
 export class DefaultCodeUpdateOptionsProvider {
@@ -806,7 +848,9 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     // (undocumented)
     deleteContext(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void>;
     // (undocumented)
-    queryContextByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project>;
+    queryAssetByName(requestContext: AuthorizedClientRequestContext, assetName: string): Promise<Asset>;
+    // (undocumented)
+    queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project>;
 }
 
 // @internal
@@ -830,7 +874,7 @@ export class IModelBaseHandler extends WsgClient {
     // (undocumented)
     protected _fileHandler: FileHandler | undefined;
     // (undocumented)
-    formatProjectIdForUrl(projectId: string): string;
+    formatContextIdForUrl(contextId: string): string;
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     getAgent(): any;
     getCustomRequestOptions(): CustomRequestOptions;
@@ -977,6 +1021,8 @@ export abstract class IModelHubEvent extends IModelHubBaseEvent {
 
 // @public
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
+    contextId?: string;
+    contextTypeId?: ContextType;
     // @internal
     fromJson(obj: any): void;
     iModelId?: GuidString;
@@ -1277,44 +1323,14 @@ export interface ProgressInfo {
     total?: number;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "Project" is marked as @public, but its signature references "WsgInstance" which is marked as @internal
-// 
 // @public
-export class Project extends WsgInstance {
-    // (undocumented)
-    allowExternalTeamMembers?: boolean;
+export class Project extends CommonContext {
     // (undocumented)
     assetId?: string;
     // (undocumented)
-    countryCode?: string;
-    // (undocumented)
-    dataLocationId?: string;
-    // (undocumented)
-    industry?: string;
-    // (undocumented)
     isRbacEnabled?: boolean;
     // (undocumented)
-    lastModifiedDate?: string;
-    // (undocumented)
-    latitude?: string;
-    // (undocumented)
-    location?: string;
-    // (undocumented)
-    longitude?: string;
-    // (undocumented)
-    name?: string;
-    // (undocumented)
-    number?: string;
-    // (undocumented)
-    registeredDate?: string;
-    // (undocumented)
-    status?: number;
-    // (undocumented)
-    timeZoneLocation?: string;
-    // (undocumented)
     type?: string;
-    // (undocumented)
-    ultimateRefId?: string;
 }
 
 // @internal
@@ -1708,7 +1724,7 @@ export type ThumbnailSize = "Small" | "Large";
 
 // @alpha
 export interface TipThumbnail {
-    projectId: string;
+    contextId: string;
     size: ThumbnailSize;
 }
 

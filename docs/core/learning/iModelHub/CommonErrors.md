@@ -1,5 +1,5 @@
 # Common errors thrown in majority of the iModel Hub calls
-[IModelHubError]($clients) with [IModelHubStatus.UserDoesNotHavePermission]($bentley) is thrown when the user does not have permission to perform that call. Users need at least Read permission to perform most of the calls. [IModelHubStatus.FailedToGetProjectPermissions]$(bentley) can be thrown when call to RBAC service has failed. See [Permissions](./Permissions.md) for more information.
+[IModelHubError]($clients) with [IModelHubStatus.UserDoesNotHavePermission]($bentley) is thrown when the user does not have permission to perform that call. Users need at least Read permission to perform most of the calls. [IModelHubStatus.FailedToGetProjectPermissions]$(bentley), [IModelHubStatus.FailedToGetAssetPermissions]$(bentley) can be thrown when call to RBAC service has failed. See [Permissions](./Permissions.md) for more information.
 
 [IModelHubError]($clients) with [IModelHubStatus.iModelDoesNotExist]($bentley) occurs when an [HubIModel]($clients) with specified [Guid]($bentley) value does not exist on that project. That id might belong to an iModel for a different project, a deleted iModel, or it might not be associated with any iModel at all.
 

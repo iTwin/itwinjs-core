@@ -6,6 +6,7 @@ internal;AggregateResponseError
 alpha;AllCodesDeletedEvent 
 alpha;AllLocksDeletedEvent 
 internal;ArgumentCheck
+public;Asset 
 public;AuthenticationError 
 internal;AuthorizationToken 
 beta;AuthorizedClientRequestContext 
@@ -47,6 +48,8 @@ public;ConnectClient
 internal;ConnectRequestQueryOptions 
 internal;ConnectSettingsClient 
 internal;ConstructorType = new () => any
+public;Context 
+public;ContextType
 internal;DefaultCodeUpdateOptionsProvider
 internal;DefaultLockUpdateOptionsProvider
 internal;DefaultRequestOptionsProvider

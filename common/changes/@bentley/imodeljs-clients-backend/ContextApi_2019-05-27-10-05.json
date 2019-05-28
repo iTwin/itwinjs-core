@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Switched from iModelHub Project API to Context API",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "Algirdas.Mikoliunas@bentley.com"
+}

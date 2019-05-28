@@ -23,7 +23,7 @@ const iModelTemplateEmpty = "Empty";
  * For iModel representation in iModel.js, see [IModel]($common). For the file that is used for that iModel, see [IModelDb]($backend).
  * @public
  */
-@ECJsonTypeMap.classToJson("wsg", "ProjectScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+@ECJsonTypeMap.classToJson("wsg", "ContextScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubIModel extends WsgInstance {
     /** Id of the iModel. */
     @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
@@ -33,7 +33,7 @@ export class HubIModel extends WsgInstance {
     @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
     public description?: string;
 
-    /** Name of the iModel. iModels must have unique names per [[Project]]. */
+    /** Name of the iModel. iModels must have unique names per context ([[Project]] or [[Asset]]). */
     @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
     public name?: string;
 
@@ -238,7 +238,7 @@ export class IModelQuery extends InstanceIdQuery {
 
 /**
  * Handler for managing [[HubIModel]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
- * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[Project]] workflow.
+ * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per context workflow.
  * @public
  */
 export class IModelsHandler {
@@ -249,7 +249,7 @@ export class IModelsHandler {
     /** Constructor for IModelsHandler. Should use @see IModelClient instead of directly constructing this.
      * @param handler Handler for WSG requests.
      * @param fileHandler Handler for file system.
-     * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[Project]] workflow.
+     * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per context workflow.
      * @internal
      */
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
@@ -259,16 +259,16 @@ export class IModelsHandler {
     }
 
     /** Get relative url for iModel requests.
-     * @param projectId Id of the project.
+     * @param contextId Id of the context.
      * @param iModelId Id of the iModel. See [[HubIModel]].
      */
     private getRelativeUrl(contextId: string, iModelId?: GuidString) {
-        return `/Repositories/Project--${this._handler.formatProjectIdForUrl(contextId)}/ProjectScope/iModel/${iModelId || ""}`;
+        return `/Repositories/Context--${this._handler.formatContextIdForUrl(contextId)}/ContextScope/iModel/${iModelId || ""}`;
     }
 
-    /** Get iModels that belong to the specified [[Project]].
+    /** Get iModels that belong to the specified context.
      * @param requestContext The client request context.
-     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
      * @param query Optional query object to filter the queried iModels or select different data from them.
      * @returns [[HubIModel]] instances that match the query.
      * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an HubIModel with the specified id could not be found.
@@ -276,21 +276,21 @@ export class IModelsHandler {
      */
     public async get(requestContext: AuthorizedClientRequestContext, contextId: string, query: IModelQuery = new IModelQuery()): Promise<HubIModel[]> {
         requestContext.enter();
-        Logger.logInfo(loggerCategory, `Started querying iModels in project`, () => ({ contextId }));
+        Logger.logInfo(loggerCategory, `Started querying iModels in context`, () => ({ contextId }));
         ArgumentCheck.defined("requestContext", requestContext);
         ArgumentCheck.defined("contextId", contextId); // contextId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
 
         const imodels = await this._handler.getInstances<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
         requestContext.enter();
-        Logger.logInfo(loggerCategory, `Finished querying iModels in project`, () => ({ contextId, count: imodels.length }));
+        Logger.logInfo(loggerCategory, `Finished querying iModels in context`, () => ({ contextId, count: imodels.length }));
 
         return imodels;
     }
 
     /**
-     * Delete an iModel with specified id from a [[Project]]. This method is not supported in iModelBank.
+     * Delete an iModel with specified id from a context. This method is not supported in iModelBank.
      * @param requestContext The client request context.
-     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
      * @param iModelId Id of the iModel to be deleted. See [[HubIModel]].
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel with specified id does not exist.
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
@@ -318,7 +318,7 @@ export class IModelsHandler {
 
     /** Create an iModel instance
      * @param requestContext The client request context.
-     * @param contextId Id of the connect [[Project]].
+     * @param contextId Id of the connect context.
      * @param iModelName Name of the iModel on the Hub.
      * @param description Description of the iModel on the Hub.
      * @param iModelTemplate iModel template.
@@ -392,7 +392,7 @@ export class IModelsHandler {
     /** Create an iModel from given seed file. In most cases [IModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
      * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
      * @param requestContext The client request context.
-     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
      * @param name Name of the iModel on the Hub.
      * @param path iModel seed file path. If not defined, iModel will be created from an empty file.
      * @param description Description of the iModel on the Hub.
@@ -470,7 +470,7 @@ export class IModelsHandler {
 
     /** Update iModel's name and/or description
      * @param requestContext The client request context.
-     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
      * @param imodel iModel to update. See [[HubIModel]].
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
@@ -524,7 +524,7 @@ export class IModelsHandler {
 
 /**
  * Handler for managing [[HubIModel]] instance. Use [[IModelHubClient.IModel]] to get an instance of this handler.
- * @note Use [[IModelHubClient.IModels]] if multiple iModels per [[Project]] are supported.
+ * @note Use [[IModelHubClient.IModels]] if multiple iModels per context are supported.
  * @public
  */
 export class IModelHandler {
@@ -533,7 +533,7 @@ export class IModelHandler {
     /**
      * Constructor for IModelHandler. Should use @see IModelClient instead of directly constructing this.
      * @param handler Handler for managing [[HubIModel]] instances.
-     * @note Use [[IModelHubClient.IModels]] if multiple iModels per [[Project]] are supported.
+     * @note Use [[IModelHubClient.IModels]] if multiple iModels per context are supported.
      * @internal
      */
     constructor(handler: IModelsHandler) {
@@ -541,9 +541,9 @@ export class IModelHandler {
     }
 
     /**
-     * Get iModel that belong to the specified [[Project]].
+     * Get iModel that belong to the specified context.
      * @param requestContext The client request context.
-     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
      * @returns [[HubIModel]] instances that match the query.
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -562,9 +562,9 @@ export class IModelHandler {
     }
 
     /**
-     * Delete an iModel from a [[Project]]. This method is not supported in iModelBank.
+     * Delete an iModel from a context. This method is not supported in iModelBank.
      * @param requestContext The client request context.
-     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -577,7 +577,7 @@ export class IModelHandler {
     /**
      * Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
      * @param requestContext The client request context.
-     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
      * @returns State of the seed file initialization.
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
      * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
@@ -593,7 +593,7 @@ export class IModelHandler {
      *
      * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
      * @param requestContext The client request context.
-     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
      * @param name Name of the iModel on the Hub.
      * @param path iModel seed file path. If not defined, iModel will be created from an empty file.
      * @param description Description of the iModel on the Hub.
@@ -625,7 +625,7 @@ export class IModelHandler {
     /**
      * Update iModel's name and/or description
      * @param requestContext The client request context.
-     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
      * @param imodel iModel to update. See [[HubIModel]].
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
@@ -640,7 +640,7 @@ export class IModelHandler {
     /**
      * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
      * @param requestContext The client request context.
-     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
      * @param path Path where seed file should be downloaded, including filename.
      * @param progressCallback Callback for tracking progress.
      * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelHubStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { Project } from "../ConnectClients";
+import { Project, Asset } from "../ConnectClients";
 import { ContextManagerClient } from "../IModelCloudEnvironment";
 import { IModelHubClientError } from "../imodelhub/Errors";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
@@ -27,8 +27,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
   constructor(public baseUri: string) {
   }
 
-  public async queryContextByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
-
+  private async queryContextProps(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<IModelFileSystemContextProps[]> {
     requestContext.enter();
     const url: string = this.baseUri + "/sv1.0/Repositories/IModelBankFileSystem--main/IModelBankFileSystem/Context";
     requestContext.enter();
@@ -59,10 +58,28 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     if (props.length !== 1)
       return Promise.reject(new IModelHubClientError(IModelHubStatus.InvalidArgumentError));
 
+    Logger.logTrace(loggerCategory, `Successful GET request to ${url}`);
+
+    return props;
+  }
+
+  public async queryAssetByName(requestContext: AuthorizedClientRequestContext, assetName: string): Promise<Asset> {
+    const props = await this.queryContextProps(requestContext, assetName);
+    requestContext.enter();
+
+    const asset = new Asset();
+    asset.wsgId = asset.ecId = props[0].id;
+    asset.name = props[0].name;
+    return Promise.resolve(asset);
+  }
+
+  public async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
+    const props = await this.queryContextProps(requestContext, projectName);
+    requestContext.enter();
+
     const project = new Project();
     project.wsgId = project.ecId = props[0].id;
     project.name = props[0].name;
-    Logger.logTrace(loggerCategory, `Successful GET request to ${url}`);
     return Promise.resolve(project);
   }
 

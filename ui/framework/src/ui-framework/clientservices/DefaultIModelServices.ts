@@ -90,10 +90,10 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Get the thumbnail for the iModel */
-  public async getThumbnail(accessToken: AccessToken, projectId: string, iModelId: GuidString): Promise<string | undefined> {
+  public async getThumbnail(accessToken: AccessToken, contextId: string, iModelId: GuidString): Promise<string | undefined> {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
     try {
-      const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { projectId: projectId!, size: "Small" });
+      const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { contextId: contextId!, size: "Small" });
       return pngImage;
     } catch (err) {
       // No image available
