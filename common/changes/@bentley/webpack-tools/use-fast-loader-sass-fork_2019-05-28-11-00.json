@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use optimize-css-assets-webpack-plugin instead of fork of fast-sass-loader.",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Barry.Bentley@bentley.com"
+}

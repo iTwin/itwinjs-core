@@ -20,9 +20,9 @@
 const path = require("path");
 const fs = require("fs-extra");
 const webpack = require("webpack");
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const SpriteLoaderPlugin = require("svg-sprite-loader/plugin");
 const autoprefixer = require("autoprefixer");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 // NOTE: This was set up to return an array of configs, one for target: "web" and one for target: "node", but the node target didn't work, so I dropped it.
 module.exports = (env) => { return getConfig(env); };
@@ -206,6 +206,8 @@ function getConfig(env) {
 
   // set up Uglify.
   if (!devMode) {
+    const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+    const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
     webpackLib.optimization.minimizer = [
       new UglifyJSPlugin({
         uglifyOptions: {
@@ -239,6 +241,7 @@ function getConfig(env) {
         cache: true,
         sourceMap: true,
       }),
+      new OptimizeCSSAssetsPlugin({}),
     ];
   }
 
@@ -288,7 +291,29 @@ function getConfig(env) {
 
   // add the DefinePlugin.
   webpackLib.plugins.push(new webpack.DefinePlugin(definePluginDefinitions));
-
+  let finalCssLoader;
+  if (!devMode) {
+    webpackLib.plugins.push(new MiniCssExtractPlugin({
+      filename: "[name].css",
+      chunkFileName: "[name].css",
+    }));
+    finalCssLoader = {
+      loader: MiniCssExtractPlugin.loader,
+      options: {
+        // here is the rationale for this "hack", which works with mini-css-extract-plugin 0.6.0:
+        // The resourcePath argument is where the css file is found during the build, and the context argument is the directory where package.json is found.
+        // If the css is coming from the current directory (resourcePath starts with context), then return undefined (which lets webpack pick the output path)
+        // If the css is coming from elsewhere (for example, bentley-icons-generic.css is coming from deep in node_modules), then we know that a) the css is going
+        // to be put somewhere relative to the webserver root, and b) our css file is going to be put into a directory with the version name, so we need to add "../"
+        // to the output path. I wish there were a better way to do this, but I don't know what it is. BJB 5/24/2019.
+        publicPath: (resourcePath, context) => {
+          return (resourcePath.startsWith(context)) ? undefined : "../";
+        }
+      },
+    }
+  } else {
+    finalCssLoader = require.resolve("style-loader");
+  }
   // if using style sheets (import "xxx.scss" lines in .ts or .tsx files), then we need the sass-loader
   if (env.stylesheets) {
     cssRules = [{
@@ -314,7 +339,7 @@ function getConfig(env) {
         {
           test: /\.s?css$/,
           use: [
-            require.resolve("style-loader"),
+            finalCssLoader,
             {
               loader: require.resolve("css-loader"),
               options: {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "loader finds and loads css files in production mode.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Barry.Bentley@bentley.com"
+}

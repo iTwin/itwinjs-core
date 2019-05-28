@@ -124,10 +124,12 @@ class Utils {
     }
   }
 
-  public static moveFile(sourceDirectory: string, destDirectory: string, fileName: string) {
+  public static moveFile(sourceDirectory: string, destDirectory: string, fileName: string, warn: boolean) {
     const sourceFile = path.join(sourceDirectory, fileName);
     if (!fs.existsSync(sourceFile)) {
-      console.log("Error: Trying to move file that does not exist", sourceFile);
+      if (warn)
+        console.log("Error: Trying to move file that does not exist", sourceFile);
+      return;
     }
     const destFile = path.join(destDirectory, fileName);
     fs.renameSync(sourceFile, destFile);
@@ -229,6 +231,11 @@ class ModuleCopier {
 
   // symlinks the module file and source map file if available.
   private symlinkOrCopyModuleFile(moduleSourceFile: string, outFilePath: string) {
+    const mapFile = moduleSourceFile + ".map";
+    const outMapFile = outFilePath + ".map";
+    const cssFile = moduleSourceFile.replace(".js", ".css");
+    const outCssFile = outFilePath.replace(".js", ".css");
+
     if (this._alwaysCopy) {
       // copy  the module file.
       if (this._detail > 3)
@@ -240,11 +247,7 @@ class ModuleCopier {
 
       fs.copyFileSync(moduleSourceFile, outFilePath);
 
-      // if there's a source map file, link that, too.
-      const mapFile = moduleSourceFile + ".map";
-
       if (fs.existsSync(mapFile)) {
-        const outMapFile = outFilePath + ".map";
         if (this._detail > 3)
           console.log("  Copying file", mapFile, "to", outMapFile);
 
@@ -252,17 +255,26 @@ class ModuleCopier {
         if (fs.existsSync(outMapFile))
           fs.unlinkSync(outMapFile)
 
-        fs.copyFileSync(mapFile, outMapFile);
+        if (fs.existsSync(mapFile))
+          fs.copyFileSync(mapFile, outMapFile);
+
+        if (fs.existsSync(outCssFile))
+          fs.unlinkSync(outCssFile)
+
+        if (fs.existsSync(cssFile))
+          fs.copyFileSync(cssFile, outCssFile);
+
       }
     } else {
       // symlink the module file.
       this.ensureSymlink(moduleSourceFile, outFilePath);
 
       // if there's a source map file, link that, too.
-      const mapFile = moduleSourceFile + ".map";
-      const outMapFile = outFilePath + ".map";
       if (fs.existsSync(mapFile))
         this.ensureSymlink(mapFile, outMapFile);
+
+      if (fs.existsSync(cssFile))
+        this.ensureSymlink(cssFile, outCssFile);
     }
   }
 
@@ -775,10 +787,11 @@ class IModelJsModuleBuilder {
             try {
               const destPath = path.resolve(outputPath, "v" + version);
               Utils.makeDirectoryNoError(destPath);
-              Utils.moveFile(outputPath, destPath, "main.js");
-              Utils.moveFile(outputPath, destPath, "main.js.map");
-              Utils.moveFile(outputPath, destPath, "runtime.js");
-              Utils.moveFile(outputPath, destPath, "runtime.js.map");
+              Utils.moveFile(outputPath, destPath, "main.js", true);
+              Utils.moveFile(outputPath, destPath, "main.js.map", true);
+              Utils.moveFile(outputPath, destPath, "main.css", false);
+              Utils.moveFile(outputPath, destPath, "runtime.js", true);
+              Utils.moveFile(outputPath, destPath, "runtime.js.map", true);
             } catch (moveError) {
               resolve(new Result(operation.concat(" (move file)"), 1, moveError));
             }

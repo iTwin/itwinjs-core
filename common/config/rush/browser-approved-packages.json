@@ -319,6 +319,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "fast-css-loader",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "fast-sass-loader",
       "allowedCategories": [ "tools" ]
     },
@@ -525,6 +529,10 @@
     {
       "name": "openid-client",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "optimize-css-assets-webpack-plugin",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "popper.js",

@@ -5,9 +5,7 @@
   "license": "MIT",
   "version": "0.0.0",
   "scripts": {
-    "build": "npm run build:copy-config && npm run build:src",
-    "build:src": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
-    "build:copy-config": "cpx ./src/backend/web/BackendServer.config.json ./lib/backend/web",
+    "build": "cpx ./src/backend/web/BackendServer.config.json ./lib/backend/web && node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
     "lint": "tslint -p . 1>&2",
     "electron": "electron ./lib/backend/main.js",
     "start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/WebServer.js --port=3000 --resources=./lib/webresources/",
