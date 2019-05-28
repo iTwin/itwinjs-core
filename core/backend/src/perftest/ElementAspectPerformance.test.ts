@@ -114,10 +114,10 @@ describe("ElementAspectPerfomance", () => {
 
     }
     imodeldb.closeSnapshot();
-    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Insertion", totalTimeInsertSimpELeGet, { ElementCount: count1 });
-    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Updation", totalTimeUpdateSimpELeGet, { ElementCount: count1 });
-    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Deletion", totalTimeDeleteSimpELeGet, { ElementCount: count1 });
-    reporter.addEntry("ElementAspectPerfomance", "SimpleElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Read", totalTimeReadSimpELeGet, { ElementCount: count1 });
+    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeInsertSimpELeGet, { ElementCount: count1, Operation: "Insert" });
+    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeUpdateSimpELeGet, { ElementCount: count1, Operation: "Update" });
+    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeDeleteSimpELeGet, { ElementCount: count1, Operation: "Delete1" });
+    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeReadSimpELeGet, { ElementCount: count1, Operation: "Read" });
   });
 
   it("UniqueAspectElement-Insertion-Updation-Deletion-Read", async () => {
@@ -183,10 +183,10 @@ describe("ElementAspectPerfomance", () => {
       totalTimeDelete = totalTimeDelete + elapsedTime3;
     }
     imodeldb.closeSnapshot();
-    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Insertion", totalTimeInsert, { ElementCount: count1 });
-    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Updation", totalTimeUpdate, { ElementCount: count1 });
-    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Deletion", totalTimeDelete, { ElementCount: count1 });
-    reporter.addEntry("ElementAspectPerfomance", "UniqueAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Read", totalTimeRead, { ElementCount: count1 });
+    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeInsert, { ElementCount: count1, Operation: "Insert" });
+    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeUpdate, { ElementCount: count1, Operation: "Update" });
+    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeDelete, { ElementCount: count1, Operation: "Delete" });
+    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeRead, { ElementCount: count1, Operation: "Read" });
   });
 
   it("MultiAspectElement-Insertion-Updation-Deletion-Read", async () => {
@@ -264,9 +264,9 @@ describe("ElementAspectPerfomance", () => {
       totalTimeDelete = totalTimeDelete + elapsedTime3;
     }
     imodeldb.closeSnapshot();
-    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Insertion", totalTimeInsert, { ElementCount: count1 });
-    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Updation", totalTimeUpdate, { ElementCount: count1 });
-    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Deletion", totalTimeDelete, { ElementCount: count1 });
-    reporter.addEntry("ElementAspectPerfomance", "MultiAspectElement-Insertion-Updation-Deletion-Read", "Execution time(s) of Read", totalTimeRead, { ElementCount: count1 });
+    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeInsert, { ElementCount: count1, Operation: "Insert" });
+    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeUpdate, { ElementCount: count1, Operation: "Update" });
+    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeDelete, { ElementCount: count1, Operation: "Delete" });
+    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeRead, { ElementCount: count1, Operation: "Read" });
   });
 });
