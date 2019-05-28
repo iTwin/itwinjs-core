@@ -1,6 +1,5 @@
 sep=;
 Release Tag;API Item
-public;AccessMode
 public;AnnotationElement2d 
 beta;AppActivityMonitor
 public;AuthorizedBackendRequestContext 
@@ -95,7 +94,6 @@ public;ElementUniqueAspect
 public;ElevationCallout 
 public;EmbeddedFileLink 
 public;Entity 
-public;ExclusiveAccessOption
 beta;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 beta;ExportGraphicsInfo
 beta;ExportGraphicsMesh

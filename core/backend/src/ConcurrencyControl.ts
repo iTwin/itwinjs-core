@@ -211,7 +211,7 @@ export class ConcurrencyControl {
         objectId: Id64.fromString("0x1"),
         briefcaseId: this._iModel.briefcase.briefcaseId,
         seedFileId: this._iModel.briefcase.fileId,
-        releasedWithChangeSet: this._iModel.briefcase.changeSetId,
+        releasedWithChangeSet: this._iModel.briefcase.currentChangeSetId,
       },
     ];
     assert(this.inBulkOperation(), "should always be in bulk mode");
@@ -232,7 +232,7 @@ export class ConcurrencyControl {
         objectId: Id64.fromString("0x1"),
         briefcaseId: this._iModel.briefcase.briefcaseId,
         seedFileId: this._iModel.briefcase.fileId,
-        releasedWithChangeSet: this._iModel.briefcase.changeSetId,
+        releasedWithChangeSet: this._iModel.briefcase.currentChangeSetId,
       },
     ];
     assert(this.inBulkOperation(), "should always be in bulk mode");
@@ -254,7 +254,7 @@ export class ConcurrencyControl {
       lock.lockLevel = reqLock.Level;
       lock.lockType = reqLock.LockableId.Type;
       lock.objectId = reqLock.LockableId.Id;
-      lock.releasedWithChangeSet = this._iModel.briefcase.changeSetId;
+      lock.releasedWithChangeSet = this._iModel.briefcase.currentChangeSetId;
       lock.seedFileId = this._iModel.briefcase.fileId!;
       locks.push(lock);
     }

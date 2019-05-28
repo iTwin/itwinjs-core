@@ -9,7 +9,7 @@ import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodelj
 import { HubIModel, IModelQuery, ChangeSetPostPushEvent, NamedVersionCreatedEvent, RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/imodeljs-clients";
 import {
   IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, AuthorizedBackendRequestContext,
-  ECSqlStatement, AccessMode, ChangeSummary, ConcurrencyControl, IModelJsFs,
+  ECSqlStatement, ChangeSummary, ConcurrencyControl, IModelJsFs,
 } from "../../imodeljs-backend";
 import * as utils from "./../../../../clients-backend/lib/test/imodelhub/TestUtils";
 import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients-backend/lib/test/ResponseBuilder";
@@ -50,7 +50,7 @@ describe("PushRetry", () => {
   const extractChangeSummary = async (changeSetId: string) => {
     if (!testIModel) {
       // Open a new local briefcase of the iModel at the specified version
-      testIModel = await IModelDb.open(requestContext, testProjectId, testIModelId.toString(), OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.asOfChangeSet(changeSetId));
+      testIModel = await IModelDb.open(requestContext, testProjectId, testIModelId.toString(), OpenParams.pullAndPush(), IModelVersion.asOfChangeSet(changeSetId));
     } else {
       // Update the existing local briefcase of the iModel to the specified version
       await testIModel.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(changeSetId));

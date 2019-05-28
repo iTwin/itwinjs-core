@@ -10,14 +10,14 @@ import { UserInfo } from "./UserInfo";
 import { Base64 } from "js-base64";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 
-/** @beta */
+/** @internal */
 export enum IncludePrefix {
   Yes = 0,
   No = 1,
 }
 
 /** Base class for JWT and SAML tokens
- * @beta
+ * @internal
  */
 export abstract class Token {
   protected _samlAssertion?: string;
@@ -127,7 +127,7 @@ export abstract class Token {
 }
 
 /** Token issued by Active Secure Token Service or Federated Authentication Service for user authentication/authorization
- * @beta
+ * @internal
  */
 export class AuthorizationToken extends Token {
 
@@ -151,7 +151,7 @@ export class AuthorizationToken extends Token {
 }
 
 /** Token issued by DelegationSecureTokenService for API access
- * @beta
+ * @internal
  */
 export class AccessToken extends Token {
   private static _samlTokenPrefix = "Token";
@@ -166,7 +166,7 @@ export class AccessToken extends Token {
 
   /** Sets up a new AccessToken based on the SAML that was passed in.
    * Does NOT validate the resulting token.
-   * @beta
+   * @internal
    */
   public static fromSamlAssertion(samlAssertion: string): AccessToken {
     const token = new AccessToken();
@@ -191,6 +191,7 @@ export class AccessToken extends Token {
 
   /** Create an AccessToken from a SAML string for Windows Federated Authentication workflows.
    * Does NOT validate the token.
+   * @internal
    */
   public static fromSamlTokenString(accessTokenStr: string, includesPrefix: IncludePrefix = IncludePrefix.Yes): AccessToken {
     let saml = accessTokenStr;
@@ -266,6 +267,7 @@ export class AccessToken extends Token {
   /**
    * Creates an AccessToken from an untyped JSON object
    * @param jsonObj
+   * @internal
    */
   public static fromJson(jsonObj: any): AccessToken | undefined {
     if (jsonObj._jwt)

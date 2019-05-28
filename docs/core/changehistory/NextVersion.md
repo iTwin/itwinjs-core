@@ -28,3 +28,9 @@ Here is an example of how to adjust your source code:
   seedDb.closeSnapshot(); // or IModelDb.close
   return snapshotDb;
 ```
+
+## Changes to IModelDb.open API
+
+Removed the following parameters to [IModelDb.open]($backend) to simplify the implementation:
+* [OpenParams]($backend).pullOnly(): Use OpenParams.fixedVersion() or OpenParams.pullAndPush()
+* AccessMode: Using OpenParams.fixedVersion() always causes the briefcase to be shared, and using OpenParams.pullAndPush() always causes the briefcase to be exclusive.

@@ -97,6 +97,12 @@ export class HubUtility {
     return iModel.id!;
   }
 
+  /** Query the latest change set (id) of the specified iModel */
+  public static async queryLatestChangeSetId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<GuidString> {
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
+    return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
+  }
+
   /** Download all change sets of the specified iModel */
   private static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: string, iModelId: GuidString): Promise<ChangeSet[]> {
     const query = new ChangeSetQuery();
@@ -274,7 +280,7 @@ export class HubUtility {
     }
 
     // Upload a new iModel
-    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, pathname, "", undefined, 2 * 60 * 1000);
+    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, pathname, "", undefined, 10 * 60 * 1000);
     return iModel.id!;
   }
 

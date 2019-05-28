@@ -2491,11 +2491,11 @@ export interface IModelTokenProps extends Pick<IModelToken, Exclude<keyof IModel
 
 // @public
 export class IModelVersion {
-    static asOfChangeSet(changeSetId: string): IModelVersion;
-    evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: string, imodelClient: IModelClient): Promise<string>;
+    static asOfChangeSet(changeSetId: GuidString): IModelVersion;
+    evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString>;
     static first(): IModelVersion;
     static fromJson(jsonObj: any): IModelVersion;
-    getAsOfChangeSet(): string | undefined;
+    getAsOfChangeSet(): GuidString | undefined;
     getName(): string | undefined;
     readonly isFirst: boolean;
     readonly isLatest: boolean;

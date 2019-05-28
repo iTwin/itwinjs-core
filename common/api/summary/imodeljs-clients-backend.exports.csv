@@ -4,8 +4,8 @@ internal;AzureFileHandler
 internal;BufferedStream 
 public;ClientsBackendLoggerCategory
 internal;IOSAzureFileHandler 
-beta;OidcAgentClient 
-beta;OidcAgentClientConfiguration 
+internal;OidcAgentClient 
+internal;OidcAgentClientConfiguration 
 internal;OidcAgentClientConfigurationV2 = OidcBackendClientConfiguration
 internal;OidcAgentClientV2 
 beta;class OidcBackendClient 

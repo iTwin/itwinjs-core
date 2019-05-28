@@ -3,14 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
+import {
+  ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set,
+  Id64String, JsonUtils, Logger, OpenMode, PerfLogger, BeDuration,
+} from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PageableECSql,
+  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PageableECSql, RpcPendingResponse,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as os from "os";
@@ -47,23 +50,7 @@ export type ChangeSetDescriber = (endTxnId: TxnIdString) => string;
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub
  * @public
  */
-export enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
-
-/** Mode to access the IModelDb
- * @public
- */
-export enum AccessMode { Shared = 1, Exclusive = 2 }
-
-/** Additional options for exclusive access to IModelDb
- * @public
- */
-export enum ExclusiveAccessOption {
-  /** Create or acquire a new briefcase every time the open call is made */
-  CreateNewBriefcase = 1,
-
-  /** Try and reuse an previously open briefcase every time the open call is made */
-  TryReuseOpenBriefcase = 2,
-}
+export enum SyncMode { FixedVersion = 1, PullAndPush = 2 }
 
 /** Parameters to open an IModelDb
  * @public
@@ -74,56 +61,42 @@ export class OpenParams {
     /** Mode to Open the IModelDb */
     public readonly openMode: OpenMode,
 
-    /** Mode to access the IModelDb */
-    public readonly accessMode?: AccessMode,
-
     /** Operations allowed when synchronizing changes between the IModelDb and IModelHub */
     public readonly syncMode?: SyncMode,
 
-    /** Additional hint for exclusive access to either create a new briefcase or try and reuse a previously opened briefcase */
-    public readonly exclusiveAccessOption?: ExclusiveAccessOption,
-
+    /** Timeout (in milliseconds) before the open operations throws a RpcPendingResponse exception
+     * after queuing up the open. If undefined, waits for the open to complete.
+     */
+    public timeout?: number,
   ) {
     this.validate();
   }
 
-  /** Returns true if the open params open a standalone Db */
-  public get isStandalone(): boolean { return this.accessMode === undefined || this.syncMode === undefined; }
+  /** Returns true if the open params open a snapshot Db */
+  public get isStandalone(): boolean { return this.syncMode === undefined; }
 
   private validate() {
-    if (this.isStandalone && !(this.accessMode === undefined && this.syncMode === undefined))
+    if (this.isStandalone && this.syncMode !== undefined)
       throw new IModelError(BentleyStatus.ERROR, "Invalid parameters - only openMode can be defined if opening a standalone Db");
 
-    if (this.openMode === OpenMode.Readonly && this.syncMode && this.syncMode !== SyncMode.FixedVersion) {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot pull changes into a ReadOnly IModel");
-    }
-
-    if (this.syncMode === SyncMode.PullAndPush && this.accessMode === AccessMode.Shared) {
-      throw new IModelError(BentleyStatus.ERROR, "Pushing changes from a shared IModelDb is not supported");
-    }
-
-    if (this.accessMode === AccessMode.Shared && this.exclusiveAccessOption === ExclusiveAccessOption.CreateNewBriefcase) {
-      throw new IModelError(BentleyStatus.ERROR, "Accessing a shared IModelDb (i.e., setting AccessMode.Shared) implies that the briefcase would be reused if possible (i.e., need to pass BriefcaseOption.TryReuse)");
+    if (this.openMode === OpenMode.Readonly && this.syncMode === SyncMode.PullAndPush) {
+      throw new IModelError(BentleyStatus.ERROR, "Cannot pull or push changes into/from a ReadOnly IModel");
     }
   }
 
   /** Create parameters to open the Db as of a fixed version in a readonly mode */
-  public static fixedVersion(accessMode: AccessMode = AccessMode.Shared, exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.Readonly, accessMode, SyncMode.FixedVersion, exclusiveAccessOption); }
-
-  /** Create parameters to open the Db to allow only pulls from the Hub */
-  public static pullOnly(accessMode: AccessMode = AccessMode.Exclusive, exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.ReadWrite, accessMode, SyncMode.PullOnly, exclusiveAccessOption); }
+  public static fixedVersion(): OpenParams { return new OpenParams(OpenMode.Readonly, SyncMode.FixedVersion); }
 
   /** Create parameters to open the Db to make edits and push changes to the Hub */
-  public static pullAndPush(exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush, exclusiveAccessOption); }
+  public static pullAndPush(): OpenParams { return new OpenParams(OpenMode.ReadWrite, SyncMode.PullAndPush); }
 
   /** Create parameters to open a standalone Db
    * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
    */
   public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
-
   /** Returns true if equal and false otherwise */
   public equals(other: OpenParams) {
-    return other.accessMode === this.accessMode && other.openMode === this.openMode && other.syncMode === this.syncMode && other.exclusiveAccessOption === this.exclusiveAccessOption;
+    return other.openMode === this.openMode && other.syncMode === this.syncMode;
   }
 }
 
@@ -219,7 +192,7 @@ export class IModelDb extends IModel implements PageableECSql {
    */
   public static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(snapshotFile, args);
-    return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams!.openMode!));
+    return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams.openMode));
   }
 
   /** Create a local iModel *snapshot* file using this iModel as a *seed* or starting point.
@@ -302,14 +275,32 @@ export class IModelDb extends IModel implements PageableECSql {
     IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
 
     let briefcaseEntry: BriefcaseEntry;
+    let timedOut = false;
     try {
       briefcaseEntry = await BriefcaseManager.open(requestContext, contextId, iModelId, openParams, version);
       requestContext.enter();
+
+      if (briefcaseEntry.isPending) {
+        if (typeof openParams.timeout === "undefined")
+          await briefcaseEntry.isPending;
+        else {
+          const waitPromise = BeDuration.wait(openParams.timeout).then(() => {
+            timedOut = true;
+          });
+          await Promise.race([briefcaseEntry.isPending, waitPromise]);
+        }
+      }
     } catch (error) {
       requestContext.enter();
       Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ token: requestContext.accessToken.toTokenString(), contextId, iModelId, ...openParams }));
       throw error;
     }
+
+    if (timedOut) {
+      Logger.logTrace(loggerCategory, "Issuing pending status in IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
+      throw new RpcPendingResponse();
+    }
+
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
     try {
       const client = new UlasClient();
@@ -322,14 +313,16 @@ export class IModelDb extends IModel implements PageableECSql {
     }
     IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
 
-    // TODO: Included for temporary debugging using SEQ. To be removed!!
-    if (!IModelDb.find(imodelDb.iModelToken))
-      Logger.logError(loggerCategory, "Error with IModelDb.open. Cannot find briefcase!", () => ({ ...imodelDb.iModelToken, ...openParams }));
-    else
-      Logger.logTrace(loggerCategory, "Finished IModelDb.open", () => ({ ...imodelDb.iModelToken, ...openParams }));
-
     perfLogger.dispose();
     return imodelDb;
+  }
+
+  /**
+   * Returns true if this is a standalone iModel
+   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
+   */
+  public get isStandalone(): boolean {
+    return this.briefcase.openParams.isStandalone;
   }
 
   /** Close this standalone iModel, if it is currently open
@@ -341,16 +334,10 @@ export class IModelDb extends IModel implements PageableECSql {
   public closeStandalone(): void {
     if (!this.briefcase)
       throw this.newNotOpenError();
-    if (!this.briefcase.isStandalone)
+    if (!this.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use to close a managed iModel. Use IModelDb.close() instead");
-
-    try {
-      BriefcaseManager.closeStandalone(this.briefcase);
-    } catch (error) {
-      throw error;
-    } finally {
-      this.clearBriefcaseEntry();
-    }
+    BriefcaseManager.closeStandalone(this.briefcase);
+    this.clearBriefcaseEntry();
   }
 
   /** Close this local read-only iModel *snapshot*, if it is currently open.
@@ -371,7 +358,7 @@ export class IModelDb extends IModel implements PageableECSql {
     requestContext.enter();
     if (!this.briefcase)
       throw this.newNotOpenError();
-    if (this.briefcase.isStandalone)
+    if (this.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a snapshot iModel. Use IModelDb.closeSnapshot() instead");
 
     try {
@@ -409,7 +396,7 @@ export class IModelDb extends IModel implements PageableECSql {
     this.clearSqliteStatementCache();
   }
 
-  private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase.changeSetId; }
+  private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase.currentChangeSetId; }
 
   /** Event called when the iModel is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -835,7 +822,7 @@ export class IModelDb extends IModel implements PageableECSql {
     await BriefcaseManager.pullAndMergeChanges(requestContext, this.briefcase, version);
     requestContext.enter();
     this.concurrencyControl.onMergedChanges();
-    this._token.changeSetId = this.briefcase.changeSetId;
+    this._token.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
   }
 
@@ -850,7 +837,7 @@ export class IModelDb extends IModel implements PageableECSql {
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
     requestContext.enter();
-    this._token.changeSetId = this.briefcase.changeSetId;
+    this._token.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
   }
 
@@ -907,7 +894,7 @@ export class IModelDb extends IModel implements PageableECSql {
     if (!this.briefcase)
       throw this.newNotOpenError();
 
-    if (this.briefcase.isStandalone) {
+    if (this.isStandalone) {
       const status = this.briefcase.nativeDb.importSchema(schemaFileName);
       if (DbResult.BE_SQLITE_OK !== status)
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileName }));

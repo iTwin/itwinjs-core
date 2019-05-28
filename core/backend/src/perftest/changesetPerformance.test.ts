@@ -32,7 +32,7 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
   // open imodel first time from imodel-hub with first revision
   const startTime = new Date().getTime();
-  const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.asOfChangeSet(firstChangeSetId));
+  const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(firstChangeSetId));
   const endTime = new Date().getTime();
   assert.exists(imodeldb);
   const elapsedTime = (endTime - startTime) / 1000.0;
@@ -42,7 +42,7 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
   // open imodel from local cache with second revision
   const startTime1 = new Date().getTime();
-  const imodeldb1: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.asOfChangeSet(secondChangeSetId));
+  const imodeldb1: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(secondChangeSetId));
   const endTime1 = new Date().getTime();
   assert.exists(imodeldb1);
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
@@ -52,7 +52,7 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
   // open imodel from local cache with latest revision
   const startTime3 = new Date().getTime();
-  const imodeldb3: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.latest());
+  const imodeldb3: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
   const endTime3 = new Date().getTime();
   assert.exists(imodeldb3);
   const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
@@ -172,7 +172,7 @@ const getElementCount = (iModel: IModelDb): number => {
 
 async function executeQueryTime(requestContext: AuthorizedClientRequestContext, csvPath: string, projectId: string, imodelId: string) {
   csvPath = csvPath;
-  const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.latest());
+  const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
   assert.exists(imodeldb);
   const startTime = new Date().getTime();
   const stat = imodeldb.executeQuery("SELECT * FROM BisCore.LineStyle");

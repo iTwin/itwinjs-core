@@ -533,7 +533,7 @@ export class BentleyError extends Error {
       case ChangeSetStatus.ApplyError: return "Error applying a change set when reversing or reinstating it";
       case ChangeSetStatus.ChangeTrackingNotEnabled: return "Change tracking has not been enabled. The ChangeSet API mandates this";
       case ChangeSetStatus.CorruptedChangeStream: return "Contents of the change stream are corrupted and does not match the ChangeSet";
-      case ChangeSetStatus.FileNotFound: return "File containing the changes to the change set is not found";
+      case ChangeSetStatus.FileNotFound: return "File containing the changes was not found";
       case ChangeSetStatus.FileWriteError: return "Error writing the contents of the change set to the backing change stream file";
       case ChangeSetStatus.HasLocalChanges: return "Cannot perform the operation since the Db has local changes";
       case ChangeSetStatus.HasUncommittedChanges: return "Cannot perform the operation since current transaction has uncommitted changes";

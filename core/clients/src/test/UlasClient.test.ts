@@ -113,7 +113,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isTrue(hasThrown, "UlasClient.logUsage is expected to throw if UsageType is not one of the enum values.");
   });
 
-  it.only("AccessToken without feature tracking claims (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("AccessToken without feature tracking claims (#integration)", async function (this: Mocha.ITestCallbackContext) {
     enum TokenMode {
       Complete,
       NoUserProfile,

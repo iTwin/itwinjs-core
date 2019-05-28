@@ -28,7 +28,7 @@ describe("OidcAgentClientV2 (#integration)", () => {
     agentConfiguration = {
       clientId: Config.App.getString("imjs_agent_test_client_id_v2"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret_v2"),
-      scope: "context-registry-service imodelhub",
+      scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
     };
 
   });

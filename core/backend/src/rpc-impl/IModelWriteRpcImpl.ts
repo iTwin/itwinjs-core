@@ -6,8 +6,7 @@
 import { Id64, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { RpcInterface, RpcManager, IModelProps, IModelToken, IModelTokenProps, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat, AxisAlignedBox3dProps } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, ExclusiveAccessOption } from "../IModelDb";
-import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
+import { IModelDb, OpenParams } from "../IModelDb";
 import { Range3d } from "@bentley/geometry-core";
 
 /**
@@ -20,7 +19,9 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   public async openForWrite(tokenProps: IModelTokenProps): Promise<IModelProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const db = await OpenIModelDbMemoizer.openIModelDb(requestContext, iModelToken, OpenParams.pullAndPush(ExclusiveAccessOption.TryReuseOpenBriefcase));
+    const openParams: OpenParams = OpenParams.pullAndPush();
+    openParams.timeout = 1000;
+    const db = await IModelDb.open(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams);
     return db.toJSON();
   }
 

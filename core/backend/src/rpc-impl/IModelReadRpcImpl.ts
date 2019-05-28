@@ -10,14 +10,13 @@ import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
   ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, ImageSourceFormat, IModelProps,
   IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelToken, IModelTokenProps, ModelProps, PageOptions, RpcInterface, RpcManager,
-  SnapRequestProps, SnapResponseProps, ViewStateProps, IModel,
+  SnapRequestProps, SnapResponseProps, ViewStateProps, IModel, IModelVersion,
 } from "@bentley/imodeljs-common";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { SpatialCategory } from "../Category";
 import { IModelDb, OpenParams } from "../IModelDb";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { DictionaryModel } from "../Model";
-import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 import { QueryPageMemoizer } from "./QueryPageMemoizer";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -32,7 +31,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async openForRead(tokenProps: IModelTokenProps): Promise<IModelProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const db = await OpenIModelDbMemoizer.openIModelDb(requestContext, iModelToken, OpenParams.fixedVersion());
+    const openParams: OpenParams = OpenParams.fixedVersion();
+    openParams.timeout = 1000; // 1 second
+    const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
+    const db = await IModelDb.open(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
     return db.toJSON();
   }
 

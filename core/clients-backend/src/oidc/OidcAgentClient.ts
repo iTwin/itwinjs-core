@@ -9,7 +9,7 @@ import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackend
 import { OidcDelegationClient } from "./OidcDelegationClient";
 
 /** Client configuration to create OIDC/OAuth tokens for agent applications
- * @beta
+ * @internal
  */
 export interface OidcAgentClientConfiguration extends OidcBackendClientConfiguration {
   serviceUserEmail: string;
@@ -17,7 +17,7 @@ export interface OidcAgentClientConfiguration extends OidcBackendClientConfigura
 }
 
 /** Utility to generate OIDC/OAuth tokens for agent or service applications
- * @beta
+ * @internal
  */
 export class OidcAgentClient extends OidcBackendClient {
   constructor(private _agentConfiguration: OidcAgentClientConfiguration) {

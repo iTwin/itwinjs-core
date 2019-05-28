@@ -20,11 +20,10 @@ import { LogFunction } from '@bentley/bentleyjs-core';
 import { Range2d } from '@bentley/geometry-core';
 import { URL } from 'url';
 
-// @beta
+// @internal
 export class AccessToken extends Token {
     // (undocumented)
     static foreignProjectAccessTokenJsonProperty: string;
-    // @internal
     static fromForeignProjectAccessTokenJson(foreignJsonStr: string): AccessToken | undefined;
     static fromJson(jsonObj: any): AccessToken | undefined;
     static fromJsonWebTokenString(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo): AccessToken;
@@ -72,7 +71,7 @@ export class ArgumentCheck {
 export class AuthenticationError extends ResponseError {
 }
 
-// @beta
+// @internal
 export class AuthorizationToken extends Token {
     static fromSamlAssertion(samlAssertion: string): AuthorizationToken;
     toTokenString(includePrefix?: IncludePrefix): string;
@@ -80,7 +79,9 @@ export class AuthorizationToken extends Token {
 
 // @beta
 export class AuthorizedClientRequestContext extends ClientRequestContext {
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @beta, but its signature references "AccessToken" which is marked as @internal
     constructor(accessToken: AccessToken, activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
+    // Warning: (ae-incompatible-release-tags) The symbol "accessToken" is marked as @beta, but its signature references "AccessToken" which is marked as @internal
     accessToken: AccessToken;
 }
 
@@ -536,7 +537,7 @@ export class ECJsonTypeMap {
 export class EventHandler extends EventBaseHandler {
     // @internal
     constructor(handler: IModelBaseHandler);
-    // Warning: (ae-incompatible-release-tags) The symbol "createListener" is marked as @public, but its signature references "AccessToken" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "createListener" is marked as @public, but its signature references "AccessToken" which is marked as @internal
     createListener(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: IModelHubEvent) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined>;
     // Warning: (ae-incompatible-release-tags) The symbol "getSASToken" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
@@ -689,7 +690,7 @@ export class GlobalEventHandler extends EventBaseHandler {
     // @internal
     constructor(handler: IModelBaseHandler);
     // Warning: (ae-incompatible-release-tags) The symbol "createListener" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "createListener" is marked as @public, but its signature references "AccessToken" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "createListener" is marked as @public, but its signature references "AccessToken" which is marked as @internal
     createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number, getOperation?: GetEventOperationType): Promise<IModelHubGlobalEvent | undefined>;
     // Warning: (ae-incompatible-release-tags) The symbol "getSASToken" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
@@ -783,6 +784,7 @@ export interface IAngularOidcFrontendClient extends IOidcFrontendClient {
 
 // @beta
 export interface IAuthorizationClient {
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @beta, but its signature references "AccessToken" which is marked as @internal
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     hasExpired: boolean;
     hasSignedIn: boolean;
@@ -922,8 +924,8 @@ export class IModelHubClient extends IModelClient {
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "FileHandler" which is marked as @internal
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelBaseHandler" which is marked as @internal
     constructor(fileHandler?: FileHandler, iModelBaseHandler?: IModelBaseHandler);
-    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @beta
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AuthorizationToken" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @public, but its signature references "AccessToken" which is marked as @internal
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
 }
 
@@ -1055,7 +1057,7 @@ export interface ImsUserCredentials {
     password: string;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export enum IncludePrefix {
     // (undocumented)
     No = 1,
@@ -1084,11 +1086,13 @@ export class InstanceIdQuery extends Query {
 
 // @beta
 export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
+    // Warning: (ae-incompatible-release-tags) The symbol "getAccessToken" is marked as @beta, but its signature references "AccessToken" which is marked as @internal
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     hasExpired: boolean;
     hasSignedIn: boolean;
     initialize(requestContext: ClientRequestContext): Promise<void>;
     isAuthorized: boolean;
+    // Warning: (ae-incompatible-release-tags) The symbol "onUserStateChanged" is marked as @beta, but its signature references "AccessToken" which is marked as @internal
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
     signIn(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
@@ -1708,7 +1712,7 @@ export interface TipThumbnail {
     size: ThumbnailSize;
 }
 
-// @beta
+// @internal
 export abstract class Token {
     protected constructor();
     // (undocumented)
@@ -1915,7 +1919,7 @@ export class UserStatisticsQuery extends Query {
 // 
 // @public
 export class Version extends WsgInstance {
-    changeSetId?: string;
+    changeSetId?: GuidString;
     createdDate?: string;
     description?: string;
     // (undocumented)

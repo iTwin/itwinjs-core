@@ -185,6 +185,10 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to request tiles from an IModelConnection", async () => {
+    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
+    iModel = await IModelConnection.open(testProjectId, testIModelId);
+
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
     expect(modelProps.length).to.equal(1);
 

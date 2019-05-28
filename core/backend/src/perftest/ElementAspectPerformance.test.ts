@@ -56,7 +56,7 @@ describe("ElementAspectPerfomance", () => {
       password: configData.password,
     };
     requestContext = await IModelTestUtils.getTestUserRequestContext(userCredentials);
-    imodeldbhub = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.latest());
+    imodeldbhub = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(imodeldbhub);
   });
 

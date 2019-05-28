@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Refactored and simplified implementation of IModelDb.open",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ramanujam.Raman@bentley.com"
+}

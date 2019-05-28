@@ -42,7 +42,7 @@ export class Version extends WsgInstance {
 
   /** Id of the [[ChangeSet]] that the named Version was created for. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetId")
-  public changeSetId?: string;
+  public changeSetId?: GuidString;
 
   /** Id of the [[SmallThumbnail]] of the named Version. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId")

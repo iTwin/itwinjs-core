@@ -1,13 +1,13 @@
 sep=;
 Release Tag;API Item
-beta;AccessToken 
+internal;AccessToken 
 internal;addSelectFileAccessKey(query: RequestQueryOptions): void
 internal;AggregateResponseError 
 alpha;AllCodesDeletedEvent 
 alpha;AllLocksDeletedEvent 
 internal;ArgumentCheck
 public;AuthenticationError 
-beta;AuthorizationToken 
+internal;AuthorizationToken 
 beta;AuthorizedClientRequestContext 
 public;AuthorizedClientRequestContextProps 
 public;AuthorizedClientRequestContextProps
@@ -99,7 +99,7 @@ internal;ImsDelegationSecureTokenClient
 internal;ImsFederatedAuthenticationClient 
 internal;ImsTestAuthorizationClient 
 internal;ImsUserCredentials
-beta;IncludePrefix
+internal;IncludePrefix
 internal;InitializationState
 internal;InstanceIdQuery 
 beta;IOidcFrontendClient 
@@ -155,7 +155,7 @@ alpha;ThumbnailHandler
 alpha;ThumbnailQuery 
 alpha;ThumbnailSize = "Small" | "Large"
 alpha;TipThumbnail
-beta;class Token
+internal;class Token
 internal;UlasClient 
 internal;UrlDiscoveryClient 
 internal;UsageLogEntry

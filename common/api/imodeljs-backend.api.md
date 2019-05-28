@@ -143,14 +143,6 @@ import { XYAndZ } from '@bentley/geometry-core';
 import { YawPitchRollAngles } from '@bentley/geometry-core';
 
 // @public
-export enum AccessMode {
-    // (undocumented)
-    Exclusive = 2,
-    // (undocumented)
-    Shared = 1
-}
-
-// @public
 export class AnnotationElement2d extends GraphicalElement2d {
     // @internal
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
@@ -321,32 +313,35 @@ export class BisCoreSchema extends Schema {
 
 // @internal
 export class BriefcaseEntry {
+    constructor(contextId: GuidString, iModelId: GuidString, targetChangeSetId: GuidString, pathname: string, openParams: OpenParams, briefcaseId: number);
     briefcaseId: number;
-    changeSetId: string;
-    changeSetIndex?: number;
     conflictError?: ConflictingCodesError;
-    readonly currentChangeSetId: string;
+    contextId: string;
+    readonly currentChangeSetId: GuidString;
     readonly currentChangeSetIndex: number;
     fileId?: string;
-    // (undocumented)
     getDebugInfo(): any;
     getKey(): string;
     readonly hasReversedChanges: boolean;
-    imodelClientContext?: string;
     // (undocumented)
     iModelDb: IModelDb | undefined;
     iModelId: GuidString;
     isOpen: boolean;
-    isStandalone: boolean;
-    nativeDb: IModelJsNative.DgnDb;
+    isPending: Promise<void>;
+    // (undocumented)
+    readonly nativeDb: IModelJsNative.DgnDb;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onBeforeVersionUpdate: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
-    openParams?: OpenParams;
+    openParams: OpenParams;
+    parentChangeSetId: GuidString;
+    parentChangeSetIndex?: number;
     pathname: string;
-    reversedChangeSetId?: string;
+    reversedChangeSetId?: GuidString;
     reversedChangeSetIndex?: number;
-    userId?: string;
+    setNativeDb(nativeDb: IModelJsNative.DgnDb): void;
+    targetChangeSetId: string;
+    targetChangeSetIndex?: number;
 }
 
 // @public
@@ -379,7 +374,6 @@ export class BriefcaseManager {
     static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken;
     // (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
-    static deleteClosed(requestContext: AuthorizedClientRequestContext): Promise<void>;
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
     static dumpChangeSet(briefcase: BriefcaseEntry, changeSetToken: ChangeSetToken): void;
     static findBriefcaseByToken(iModelToken: IModelToken): BriefcaseEntry | undefined;
@@ -390,7 +384,9 @@ export class BriefcaseManager {
     // (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
     static imodelClient: IModelClient;
-    static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry>;
+    static open(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry>;
+    // (undocumented)
+    static openPullAndPush(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): Promise<BriefcaseEntry>;
     static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry;
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
     static purgeCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
@@ -1325,12 +1321,6 @@ export class Entity implements EntityProps {
     toJSON(): EntityProps;
 }
 
-// @public
-export enum ExclusiveAccessOption {
-    CreateNewBriefcase = 1,
-    TryReuseOpenBriefcase = 2
-}
-
 // @beta
 export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
@@ -1671,6 +1661,8 @@ export class IModelDb extends IModel implements PageableECSql {
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
     readonly isReadonly: boolean;
+    // @deprecated
+    readonly isStandalone: boolean;
     // (undocumented)
     static readonly maxLimit = 10000;
     // (undocumented)
@@ -2934,20 +2926,17 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 export class OpenParams {
     constructor(
     openMode: OpenMode, 
-    accessMode?: AccessMode | undefined, 
     syncMode?: SyncMode | undefined, 
-    exclusiveAccessOption?: ExclusiveAccessOption | undefined);
-    readonly accessMode?: AccessMode | undefined;
+    timeout?: number | undefined);
     equals(other: OpenParams): boolean;
-    readonly exclusiveAccessOption?: ExclusiveAccessOption | undefined;
-    static fixedVersion(accessMode?: AccessMode, exclusiveAccessOption?: ExclusiveAccessOption): OpenParams;
+    static fixedVersion(): OpenParams;
     readonly isStandalone: boolean;
     readonly openMode: OpenMode;
-    static pullAndPush(exclusiveAccessOption?: ExclusiveAccessOption): OpenParams;
-    static pullOnly(accessMode?: AccessMode, exclusiveAccessOption?: ExclusiveAccessOption): OpenParams;
+    static pullAndPush(): OpenParams;
     // @deprecated
     static standalone(openMode: OpenMode): OpenParams;
     readonly syncMode?: SyncMode | undefined;
+    timeout?: number | undefined;
     }
 
 // @public
@@ -3469,9 +3458,7 @@ export enum SyncMode {
     // (undocumented)
     FixedVersion = 1,
     // (undocumented)
-    PullAndPush = 3,
-    // (undocumented)
-    PullOnly = 2
+    PullAndPush = 2
 }
 
 // @internal
