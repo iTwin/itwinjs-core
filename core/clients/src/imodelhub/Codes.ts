@@ -201,6 +201,18 @@ export class CodeQuery extends Query {
   private _isMultiCodeQuery = true;
 
   /**
+   * Default page size which is used when querying Codes
+   * @internal
+   */
+  public static defaultPageSize: number = 10000;
+
+  /** Constructor that sets default page size. */
+  constructor() {
+    super();
+    this.pageSize(CodeQuery.defaultPageSize);
+  }
+
+  /**
    * Used by the handler to check whether codes in query can be grouped.
    * @internal
    */

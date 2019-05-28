@@ -204,6 +204,18 @@ export class LockQuery extends Query {
   private _isMultiLockQuery = true;
 
   /**
+   * Default page size which is used when querying Locks
+   * @internal
+   */
+  public static defaultPageSize: number = 10000;
+
+  /** Constructor that sets default page size. */
+  constructor() {
+    super();
+    this.pageSize(LockQuery.defaultPageSize);
+  }
+
+  /**
    * Used by the handler to check whether locks in query can be grouped.
    * @internal
    */

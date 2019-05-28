@@ -98,6 +98,17 @@ export class ChangeSet extends WsgInstance {
  * @public
  */
 export class ChangeSetQuery extends StringIdQuery {
+  /**
+   * Default page size which is used when querying ChangeSets
+   * @internal
+   */
+  public static defaultPageSize: number = 1000;
+
+  /** Constructor that sets default page size. */
+  constructor() {
+    super();
+    this.pageSize(ChangeSetQuery.defaultPageSize);
+  }
 
   /**
    * Query will additionally select [[ChangeSet]] file download URL. This is needed to use the ChangeSet object with [[ChangeSetHandler.download]].

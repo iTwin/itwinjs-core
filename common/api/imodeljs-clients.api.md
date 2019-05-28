@@ -225,6 +225,7 @@ export class ChangeSetPrePushEvent extends IModelHubEvent {
 // 
 // @public
 export class ChangeSetQuery extends StringIdQuery {
+    constructor();
     afterVersion(versionId: GuidString): this;
     betweenChangeSets(firstChangeSetId: string, secondChangeSetId?: string): this;
     betweenVersionAndChangeSet(versionId: GuidString, changeSetId: string): this;
@@ -233,6 +234,8 @@ export class ChangeSetQuery extends StringIdQuery {
     bySeedFileId(seedFileId: GuidString): this;
     // @internal (undocumented)
     protected checkValue(id: string): void;
+    // @internal
+    static defaultPageSize: number;
     fromId(id: string): this;
     getVersionChangeSets(versionId: GuidString): this;
     latest(): this;
@@ -346,10 +349,13 @@ export class CodeHandler {
 // 
 // @alpha
 export class CodeQuery extends Query {
+    constructor();
     byBriefcaseId(briefcaseId: number): this;
     byCodes(codes: HubCode[]): this;
     byCodeScope(codeScope: string): this;
     byCodeSpecId(codeSpecId: Id64String): this;
+    // @internal
+    static defaultPageSize: number;
     // @internal
     readonly isMultiCodeQuery: boolean;
     unavailableCodes(briefcaseId: number): this;
@@ -1195,6 +1201,7 @@ export enum LockLevel {
 // 
 // @alpha
 export class LockQuery extends Query {
+    constructor();
     byBriefcaseId(briefcaseId: number): this;
     byLockLevel(lockLevel: LockLevel): this;
     byLocks(locks: Lock[]): this;
@@ -1202,6 +1209,8 @@ export class LockQuery extends Query {
     byObjectId(objectId: Id64String): this;
     byReleasedWithChangeSet(changeSetId: string): this;
     byReleasedWithChangeSetIndex(changeSetIndex: number): this;
+    // @internal
+    static defaultPageSize: number;
     // @internal
     readonly isMultiLockQuery: boolean;
     unavailableLocks(briefcaseId: number, lastChangeSetIndex: string): this;
@@ -1340,6 +1349,7 @@ export class Query {
     filter(filter: string): this;
     getQueryOptions(): RequestQueryOptions;
     orderBy(orderBy: string): this;
+    pageSize(n: number): this;
     // (undocumented)
     protected _query: RequestQueryOptions;
     resetQueryOptions(): void;
@@ -1550,6 +1560,7 @@ export interface RequestOptions {
 export interface RequestQueryOptions {
     $filter?: string;
     $orderby?: string;
+    $pageSize?: number;
     $select?: string;
     $skip?: number;
     $top?: number;

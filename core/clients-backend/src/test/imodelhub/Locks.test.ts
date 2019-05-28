@@ -115,16 +115,33 @@ describe("iModelHubClient LockHandler", () => {
   });
 
   it("should get information on Locks", async function (this: Mocha.ITestCallbackContext) {
-
-    utils.mockGetLocks(imodelId, "", ResponseBuilder.generateObject<Lock>(Lock));
+    utils.mockGetLocks(imodelId, `?$top=${LockQuery.defaultPageSize}`, ResponseBuilder.generateObject<Lock>(Lock));
     // Needs to acquire before expecting more than 0.
     const locks: Lock[] = await iModelClient.locks.get(requestContext, imodelId);
     chai.expect(locks.length).to.be.greaterThan(0);
   });
 
+  it("should get Locks in chunks", async function (this: Mocha.ITestCallbackContext) {
+    const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId),
+    utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId)];
+
+    utils.mockGetLocks(imodelId, `?$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
+    const locks: Lock[] = await iModelClient.locks.get(requestContext, imodelId);
+    chai.expect(locks.length).to.be.greaterThan(0);
+
+    if (locks.length > 20) {
+      const locks2: Lock[] = await iModelClient.locks.get(requestContext, imodelId, new LockQuery().pageSize(10));
+      chai.expect(locks2.length).to.be.equal(locks.length);
+    } else {
+      utils.mockGetLocks(imodelId, `?$top=2`, ...mockedLocks);
+      const locks2: Lock[] = await iModelClient.locks.get(requestContext, imodelId, new LockQuery().pageSize(2));
+      chai.expect(locks2.length).to.be.equal(locks.length);
+    }
+  });
+
   it("should get locks by briefcaseId", async () => {
     const filter = `?$filter=BriefcaseId+eq+${briefcases[0].briefcaseId}`;
-    utils.mockGetLocks(imodelId, filter, utils.generateLock(briefcases[0].briefcaseId));
+    utils.mockGetLocks(imodelId, filter + `&$top=${LockQuery.defaultPageSize}`, utils.generateLock(briefcases[0].briefcaseId));
 
     const query = new LockQuery().byBriefcaseId(briefcases[0].briefcaseId!);
     const locks = await iModelClient.locks.get(requestContext, imodelId, query);
@@ -148,8 +165,8 @@ describe("iModelHubClient LockHandler", () => {
     const filter = `?$filter=ReleasedWithChangeSet+eq+%27${changeSet.id}%27`;
     const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, undefined,
       undefined, undefined, changeSet.id), utils.generateLock(briefcases[0].briefcaseId)];
-    utils.mockGetLocks(imodelId, "", ...mockedLocks);
-    utils.mockGetLocks(imodelId, filter, mockedLocks[0]);
+    utils.mockGetLocks(imodelId, `?$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
+    utils.mockGetLocks(imodelId, filter + `&$top=${LockQuery.defaultPageSize}`, mockedLocks[0]);
 
     const allLocks = await iModelClient.locks.get(requestContext, imodelId);
     const query = new LockQuery().byReleasedWithChangeSet(changeSet.id!);
@@ -163,8 +180,8 @@ describe("iModelHubClient LockHandler", () => {
     const filter = `?$filter=ReleasedWithChangeSetIndex+eq+${changeSet.index}`;
     const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, undefined,
       undefined, undefined, changeSet.id), utils.generateLock(briefcases[0].briefcaseId)];
-    utils.mockGetLocks(imodelId, "", ...mockedLocks);
-    utils.mockGetLocks(imodelId, filter, mockedLocks[0]);
+    utils.mockGetLocks(imodelId, `?$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
+    utils.mockGetLocks(imodelId, filter + `&$top=${LockQuery.defaultPageSize}`, mockedLocks[0]);
 
     const allLocks = await iModelClient.locks.get(requestContext, imodelId);
     const query = new LockQuery().byReleasedWithChangeSetIndex(Number.parseInt(changeSet.index!, 10));
@@ -176,7 +193,7 @@ describe("iModelHubClient LockHandler", () => {
 
   it("should get locks by lock level and lock type", async () => {
     const filter = `?$filter=LockLevel+eq+${LockLevel.Shared}+and+LockType+eq+${LockType.Model}`;
-    utils.mockGetLocks(imodelId, filter, utils.generateLock(briefcases[0].briefcaseId));
+    utils.mockGetLocks(imodelId, filter + `&$top=${LockQuery.defaultPageSize}`, utils.generateLock(briefcases[0].briefcaseId));
 
     const query = new LockQuery().byLockLevel(LockLevel.Shared).byLockType(LockType.Model);
     const locks = await iModelClient.locks.get(requestContext, imodelId, query);
@@ -192,7 +209,7 @@ describe("iModelHubClient LockHandler", () => {
     const fileId: GuidString = Guid.createValue();
     const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0"),
     utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0")];
-    utils.mockGetLocks(imodelId, "?$filter=BriefcaseId+eq+2", ...mockedLocks);
+    utils.mockGetLocks(imodelId, `?$filter=BriefcaseId+eq+2&$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
 
     let existingLocks = await iModelClient.locks.get(requestContext, imodelId, new LockQuery().byBriefcaseId(briefcases[0].briefcaseId!));
     existingLocks = existingLocks.slice(0, 2);
@@ -219,7 +236,7 @@ describe("iModelHubClient LockHandler", () => {
       utils.mockGetLocks(imodelId, undefined, ...mockedLocks);
 
       const filter = `?$filter=BriefcaseId+ne+${briefcases[0].briefcaseId}+and+(LockLevel+gt+0+or+ReleasedWithChangeSetIndex+gt+${changeSet.index!})`;
-      utils.mockGetLocks(imodelId, filter, ...mockedLocks);
+      utils.mockGetLocks(imodelId, filter + `&$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
     }
     const query = new LockQuery().unavailableLocks(briefcases[0].briefcaseId!, changeSet.index!);
     const locks = await iModelClient.locks.get(requestContext, imodelId, query);

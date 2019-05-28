@@ -51,6 +51,13 @@ export interface RequestQueryOptions {
    * Example: "Size desc"
    */
   $orderby?: string;
+
+  /**
+   *  Sets the limit on the number of entries to be returned by a single response.
+   *  Can be used with a Top option. For example if Top is set to 1000 and PageSize
+   *  is set to 100 then 10 requests will be performed to get result.
+   */
+  $pageSize?: number;
 }
 
 /** @alpha */

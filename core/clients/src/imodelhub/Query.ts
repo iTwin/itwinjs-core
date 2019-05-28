@@ -103,6 +103,16 @@ export class Query {
     this._query.$orderby = orderBy;
     return this;
   }
+
+  /**
+   * Select all entries from the query by pages.
+   * @param n Maximum number of entries in a single response.
+   * @returns This query.
+   */
+  public pageSize(n: number) {
+    this._query.$pageSize = n;
+    return this;
+  }
 }
 
 /** Query for instances with string based instance ids.
@@ -121,6 +131,7 @@ export class StringIdQuery extends Query {
   public byId(id: string) {
     this.checkValue(id);
     this._byId = id;
+    this._query.$pageSize = undefined;
     return this;
   }
 
@@ -154,6 +165,7 @@ export class InstanceIdQuery extends Query {
   public byId(id: GuidString) {
     ArgumentCheck.validGuid("id", id);
     this._byId = id;
+    this._query.$pageSize = undefined;
     return this;
   }
 

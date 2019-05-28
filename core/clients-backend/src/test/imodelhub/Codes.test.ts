@@ -167,10 +167,29 @@ describe("iModelHub CodeHandler", () => {
   });
 
   it("should get codes", async () => {
-    utils.mockGetCodes(imodelId, "", utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
+    utils.mockGetCodes(imodelId, `?$top=${CodeQuery.defaultPageSize}`, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
     const codes = await iModelClient.codes.get(requestContext, imodelId);
     chai.assert(codes);
     chai.expect(codes).length.to.be.greaterThan(0);
+  });
+
+  it("should get codes in chunks", async () => {
+    const mockedCodes = [utils.randomCode(briefcaseId), utils.randomCode(briefcaseId), utils.randomCode(briefcaseId),
+    utils.randomCode(briefcaseId), utils.randomCode(briefcaseId), utils.randomCode(briefcaseId)];
+
+    utils.mockGetCodes(imodelId, `?$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);
+    const codes = await iModelClient.codes.get(requestContext, imodelId, new CodeQuery());
+    chai.assert(codes);
+    chai.expect(codes).length.to.be.greaterThan(0);
+
+    if (codes.length > 20) {
+      const codes2 = await iModelClient.codes.get(requestContext, imodelId, new CodeQuery().pageSize(10));
+      chai.expect(codes2.length).to.be.equal(codes.length);
+    } else {
+      utils.mockGetCodes(imodelId, "?$top=2", ...mockedCodes);
+      const codes2 = await iModelClient.codes.get(requestContext, imodelId, new CodeQuery().pageSize(2));
+      chai.expect(codes2.length).to.be.equal(codes.length);
+    }
   });
 
   it("should get codes only with their values", async function (this: Mocha.ITestCallbackContext) {
@@ -189,7 +208,7 @@ describe("iModelHub CodeHandler", () => {
   });
 
   it("should get codes by briefcase id", async () => {
-    const filter = `?$filter=BriefcaseId+eq+${briefcaseId}`;
+    const filter = `?$filter=BriefcaseId+eq+${briefcaseId}&$top=${CodeQuery.defaultPageSize}`;
     utils.mockGetCodes(imodelId, filter, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
 
     const query = new CodeQuery().byBriefcaseId(briefcaseId);
@@ -201,7 +220,7 @@ describe("iModelHub CodeHandler", () => {
 
   it("should get codes by code spec id", async () => {
     const codeSpecId = utils.randomCode(briefcaseId).codeSpecId!;
-    const filter = `?$filter=CodeSpecId+eq+%27${codeSpecId}%27`;
+    const filter = `?$filter=CodeSpecId+eq+%27${codeSpecId}%27&$top=${CodeQuery.defaultPageSize}`;
     utils.mockGetCodes(imodelId, filter, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
 
     const query = new CodeQuery().byCodeSpecId(codeSpecId);
@@ -216,12 +235,12 @@ describe("iModelHub CodeHandler", () => {
     const codeSpecId = codes[0].codeSpecId!;
     const filter = `BriefcaseId+eq+${briefcaseId}+and+CodeSpecId+eq+%27${codeSpecId}%27`;
 
-    utils.mockGetCodes(imodelId, "?$filter=" + filter, ...codes);
+    utils.mockGetCodes(imodelId, "?$filter=" + filter + `&$top=${CodeQuery.defaultPageSize}`, ...codes);
     const query1 = new CodeQuery().byBriefcaseId(briefcaseId).byCodeSpecId(codeSpecId);
     const queriedCodes1 = await iModelClient.codes.get(requestContext, imodelId, query1);
     chai.assert(queriedCodes1);
 
-    utils.mockGetCodes(imodelId, "?$filter=" + filter, ...codes);
+    utils.mockGetCodes(imodelId, "?$filter=" + filter + `&$top=${CodeQuery.defaultPageSize}`, ...codes);
     const query2 = new CodeQuery().filter(filter);
     const queriedCodes2 = await iModelClient.codes.get(requestContext, imodelId, query2);
     chai.assert(queriedCodes2);
@@ -232,7 +251,7 @@ describe("iModelHub CodeHandler", () => {
   it("should get codes by code scope", async () => {
     const codeScope = utils.randomCode(briefcaseId).codeScope!;
     const filter = `?$filter=CodeScope+eq+%27${codeScope}%27`;
-    utils.mockGetCodes(imodelId, filter, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
+    utils.mockGetCodes(imodelId, filter + `&$top=${CodeQuery.defaultPageSize}`, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
 
     const query = new CodeQuery().byCodeScope(codeScope);
     const codes = await iModelClient.codes.get(requestContext, imodelId, query);
@@ -243,7 +262,7 @@ describe("iModelHub CodeHandler", () => {
 
   it("should get codes by instance ids", async () => {
     const mockedCodes = [utils.randomCode(briefcaseId), utils.randomCode(briefcaseId)];
-    utils.mockGetCodes(imodelId, "", ...mockedCodes);
+    utils.mockGetCodes(imodelId, `?$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);
 
     let existingCodes = await iModelClient.codes.get(requestContext, imodelId);
     existingCodes = existingCodes.slice(0, 2);
@@ -261,7 +280,7 @@ describe("iModelHub CodeHandler", () => {
 
   it("should relinquish codes", async () => {
     const filter = `?$filter=BriefcaseId+eq+${briefcaseId}`;
-    utils.mockGetCodes(imodelId, filter, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
+    utils.mockGetCodes(imodelId, filter + `&$top=${CodeQuery.defaultPageSize}`, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
     const query = new CodeQuery().byBriefcaseId(briefcaseId);
     let codes = await iModelClient.codes.get(requestContext, imodelId, query);
     chai.expect(codes.length).to.be.greaterThan(0);
@@ -269,7 +288,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockDeleteAllCodes(imodelId, briefcaseId);
     await iModelClient.codes.deleteAll(requestContext, imodelId, briefcaseId);
 
-    utils.mockGetCodes(imodelId, filter);
+    utils.mockGetCodes(imodelId, filter + `&$top=${CodeQuery.defaultPageSize}`);
     codes = await iModelClient.codes.get(requestContext, imodelId, query);
     chai.expect(codes.length).to.be.equal(0);
   });
@@ -278,10 +297,9 @@ describe("iModelHub CodeHandler", () => {
     if (TestConfig.enableMocks) {
       const mockedCodes = [utils.randomCode(briefcaseId2),
       utils.randomCode(briefcaseId2)];
-      utils.mockGetCodes(imodelId, undefined, ...mockedCodes);
 
       const filter = `?$filter=BriefcaseId+ne+${briefcaseId}`;
-      utils.mockGetCodes(imodelId, filter, ...mockedCodes);
+      utils.mockGetCodes(imodelId, filter + `&$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);
     }
     const query = new CodeQuery().unavailableCodes(briefcaseId);
     const codes = await iModelClient.codes.get(requestContext, imodelId, query);

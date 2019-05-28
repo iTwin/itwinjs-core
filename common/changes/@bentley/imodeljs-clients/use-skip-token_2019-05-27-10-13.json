@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use paging for Locks, Codes and ChangeSets",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Andrius.Zonys@bentley.com"
+}
