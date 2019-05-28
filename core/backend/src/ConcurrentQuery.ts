@@ -4,10 +4,6 @@ import { QueryQuota } from "@bentley/imodeljs-common";
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** Wrapper around a promise that allows synchronous queries of it's state
- * @internal
- */
-
 /** Configuration for concurrent query manager
  * @internal
  */
@@ -28,14 +24,18 @@ export interface Config {
   quota?: QueryQuota;
 }
 
-/** Post status for concurrent query manager */
+/** Post status for concurrent query manager
+ *  @internal
+ */
 export enum PostStatus {
   NotInitalized = 0,
   Done = 1,
   QueueSizeExceded = 2,
 }
 
-/** Poll status for concurrent query manager */
+/** Poll status for concurrent query manager
+ *  @internal
+ */
 export enum PollStatus {
   NotInitalized = 0,
   Done = 1,

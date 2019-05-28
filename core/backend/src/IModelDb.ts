@@ -34,7 +34,7 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
-import { PollStatus, PostStatus } from "./ConcurrentQueryManager";
+import { PollStatus, PostStatus } from "./ConcurrentQuery";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -119,6 +119,7 @@ export class IModelDb extends IModel {
   /** @beta */
   public readonly txns = new TxnManager(this);
   private _relationships?: Relationships;
+  private _concurrentQueryInitalized: boolean = false;
   private readonly _statementCache = new ECSqlStatementCache();
   private readonly _sqliteStatementCache = new SqliteStatementCache();
   private _codeSpecs?: CodeSpecs;
@@ -494,9 +495,11 @@ export class IModelDb extends IModel {
     for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
       return row.nRows;
     }
-    throw new IModelError(QueryResponseStatus.Error, "Fail to compute row count");
+    throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
-  /** Execute a query agaisnt this ECDb
+
+  /** Execute a query agaisnt this ECDb but restricted by quota and limit settings. This intente to be used internally
+   *  @internal
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -510,31 +513,30 @@ export class IModelDb extends IModel {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param limit Specify row count and offset from which to start.
-   * @param quota Specify constraint for the query.
-   * @param priority Specify priority for this query.
+   * @param limitRows Specify upper limit for rows that can be returned by the query.
+   * @param quota Specify non binding quota. These values are constrainted by global setting
+   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
+   * @param priority Specify non binding priority for the query. It can help user to adjust
+   * priority of query in queue so that small and quicker queries can be prioritized over others.
    * @returns Returns structure containing rows and status.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
-    if (!this.nativeDb.cqmIsInitialized()) {
-      if (!this.nativeDb.cqmInitialize(IModelHost.configuration!.concurrentQueryManagerConfig))
-        throw new IModelError(QueryResponseStatus.Error, "Failed to initalize ConncurrentQueryManager");
+    if (!this._concurrentQueryInitalized) {
+      this._concurrentQueryInitalized = this.nativeDb.concurrentQueryInit(IModelHost.configuration!.concurrentQueryManagerConfig);
     }
-
     if (!bindings) bindings = [];
     if (!limit) limit = {};
     if (!quota) quota = {};
     if (!priority) priority = QueryPriority.Normal;
 
     return new Promise<QueryResponse>((resolve) => {
-      const postrc = this.nativeDb.cqmPostQuery(ecsql, JSON.stringify(bindings), limit!, quota!, priority!);
+      const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings), limit!, quota!, priority!);
       if (postrc.status !== PostStatus.Done)
         resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
       const poll = () => {
-        const pollrc = this.nativeDb.cqmPollQuery(postrc.taskId);
+        const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
         if (pollrc.status === PollStatus.Done)
           resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result) });
         else if (pollrc.status === PollStatus.Partial)
@@ -549,7 +551,7 @@ export class IModelDb extends IModel {
       setTimeout(() => { poll(); });
     });
   }
-  /** Execute a pageable query.
+  /** Execute a query and stream its results
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -563,9 +565,14 @@ export class IModelDb extends IModel {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * @param limitRows Specify upper limit for rows that can be returned by the query.
+   * @param quota Specify non binding quota. These values are constrainted by global setting
+   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
+   * @param priority Specify non binding priority for the query. It can help user to adjust
+   * priority of query in queue so that small and quicker queries can be prioritized over others.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid
+   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
   public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
     let result: QueryResponse;
@@ -578,7 +585,7 @@ export class IModelDb extends IModel {
       }
 
       if (result.status === QueryResponseStatus.Error)
-        throw new IModelError(QueryResponseStatus.Error, "Fail to execute ECSQL");
+        throw new IModelError(QueryResponseStatus.Error, "Failed to execute ECSQL");
 
       if (rowsToGet > 0) {
         rowsToGet -= result.rows.length;

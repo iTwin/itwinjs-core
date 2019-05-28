@@ -26,7 +26,7 @@ import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
-import { Config as CQMConfig } from "./ConcurrentQueryManager";
+import { Config as CQMConfig } from "./ConcurrentQuery";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
 /** @alpha */
@@ -135,7 +135,7 @@ export class IModelHostConfiguration {
     maxQueueSize: os.cpus().length * 500,
     quota: {
       maxTimeAllowed: 60, // 1 Minute
-      maxMemoryAllowed: 1 * 1024 * 1024, // 4 Mb
+      maxMemoryAllowed: 2 * 1024 * 1024, // 4 Mb
     },
   };
 }

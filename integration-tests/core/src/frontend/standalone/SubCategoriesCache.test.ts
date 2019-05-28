@@ -355,7 +355,7 @@ describe("SubCategoriesCache", () => {
     q.expectLoaded("0x2d", "0x2e");
   });
 
-  it("should not process requests fulfilled after disposal", async () => {
+  it.skip("should not process requests fulfilled after disposal", async () => {
     const q = new Queue(imodel);
 
     // Request a category that is not yet loaded.

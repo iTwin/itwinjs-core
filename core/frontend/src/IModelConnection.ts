@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { assert, BeEvent, BentleyStatus, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, BentleyStatus, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence, DbResult } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range3dProps, XYAndZ } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, ImageSourceFormat, IModel, IModelError,
@@ -338,10 +338,12 @@ export class IModelConnection extends IModel {
     for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
       return row.nRows;
     }
-    throw new IModelError(QueryResponseStatus.Error, "Fail to compute row count");
+    Logger.logTrace(loggerCategory, "IModelConnection.queryRowCount", () => ({ ...this.iModelToken, ecsql, bindings }));
+    throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
 
-  /** Execute a query against this ECDb
+  /** Execute a query agaisnt this ECDb but restricted by quota and limit settings. This intente to be used internally
+   *  @internal
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -355,17 +357,21 @@ export class IModelConnection extends IModel {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param options Provide paging option. This allow set page size and page number from which to grab rows from.
-   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * @param limitRows Specify upper limit for rows that can be returned by the query.
+   * @param quota Specify non binding quota. These values are constrainted by global setting
+   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
+   * @param priority Specify non binding priority for the query. It can help user to adjust
+   * priority of query in queue so that small and quicker queries can be prioritized over others.
+   * @returns Returns structure containing rows and status.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
     Logger.logTrace(loggerCategory, "IModelConnection.queryRows", () => ({ ...this.iModelToken, ecsql, bindings, limit, quota, priority }));
     return IModelReadRpcInterface.getClient().queryRows(this.iModelToken.toJSON(), ecsql, bindings, limit, quota, priority);
   }
 
-  /** Execute a pageable query.
+  /** Execute a query and stream its results
+   *  @alpha
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -379,10 +385,14 @@ export class IModelConnection extends IModel {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param options Provide paging option. Which allow page to start iterating from and also size of the page to use.
-   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * @param limitRows Specify upper limit for rows that can be returned by the query.
+   * @param quota Specify non binding quota. These values are constrainted by global setting
+   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
+   * @param priority Specify non binding priority for the query. It can help user to adjust
+   * priority of query in queue so that small and quicker queries can be prioritized over others.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid
+   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
   public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
     let result: QueryResponse;
@@ -395,7 +405,7 @@ export class IModelConnection extends IModel {
       }
 
       if (result.status === QueryResponseStatus.Error)
-        throw new IModelError(QueryResponseStatus.Error, "Fail to execute ECSQL");
+        throw new IModelError(QueryResponseStatus.Error, "Failed to execute ECSQL");
 
       if (rowsToGet > 0) {
         rowsToGet -= result.rows.length;

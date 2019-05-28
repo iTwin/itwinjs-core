@@ -72,7 +72,7 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const row of db.query(query, undefined, pageSize)) {
+      for await (const row of db.query(query)) {
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {
