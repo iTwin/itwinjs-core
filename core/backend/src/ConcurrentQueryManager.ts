@@ -8,8 +8,6 @@ import { QueryQuota } from "@bentley/imodeljs-common";
  * @internal
  */
 
-
-
 /** Configuration for concurrent query manager
  * @internal
  */
@@ -30,7 +28,6 @@ export interface Config {
   quota?: QueryQuota;
 }
 
-
 /** Post status for concurrent query manager */
 export enum PostStatus {
   NotInitalized = 0,
@@ -48,4 +45,3 @@ export enum PollStatus {
   Error = 5,
   NotFound = 6,
 }
-
