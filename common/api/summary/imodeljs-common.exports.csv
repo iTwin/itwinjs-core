@@ -160,7 +160,6 @@ internal;INSTANCE: unique symbol
 internal;interop: any
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
-beta;kPagingDefaultOptions: PageOptions
 public;LatAndLong
 public;LatLongAndHeight 
 internal;Light
@@ -209,8 +208,6 @@ internal;OpenAPIResponse
 internal;OpenAPIResponses
 internal;OpenAPISchema
 internal;OPERATION: unique symbol
-public;PageableECSql
-public;PageOptions
 public;Placement2d 
 public;Placement2dProps
 public;Placement3d 
@@ -233,6 +230,11 @@ internal;QPoint2dList
 internal;QPoint3d
 internal;QPoint3dList
 internal;Quantization
+public;QueryLimit
+public;QueryPriority
+internal;QueryQuota
+internal;QueryResponse
+internal;QueryResponseStatus
 public;Rank
 internal;ReadableFormData 
 internal;REGISTRY: unique symbol
