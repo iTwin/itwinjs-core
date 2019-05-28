@@ -971,6 +971,7 @@ export class ECDb implements IDisposable {
     prepareStatement(ecsql: string): ECSqlStatement;
     query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
+    // @internal
     queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse>;
     saveChanges(changeSetName?: string): void;
     // @internal
@@ -1698,6 +1699,7 @@ export class IModelDb extends IModel {
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
+    // @internal
     queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse>;
     // (undocumented)
     readFontJson(): string;
@@ -2027,20 +2029,7 @@ export namespace IModelJsNative {
         // (undocumented)
         closeIModel(): void;
         // (undocumented)
-        cqmInitialize(config: Config): boolean;
-        // (undocumented)
-        cqmIsInitialized(): boolean;
-        // (undocumented)
-        cqmPollQuery(taskId: number): {
-            status: PollStatus;
-            result: string;
-            rowCount: number;
-        };
-        // (undocumented)
-        cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
-            status: PostStatus;
-            taskId: number;
-        };
+        concurrentQueryInit(config: Config): boolean;
         // (undocumented)
         createChangeCache(changeCacheFile: ECDb, changeCachePath: string): DbResult;
         // (undocumented)
@@ -2158,7 +2147,18 @@ export namespace IModelJsNative {
         // (undocumented)
         openIModel(dbName: string, mode: OpenMode): DbResult;
         // (undocumented)
+        pollConcurrentQuery(taskId: number): {
+            status: PollStatus;
+            result: string;
+            rowCount: number;
+        };
+        // (undocumented)
         pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | TileContent>;
+        // (undocumented)
+        postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
+            status: PostStatus;
+            taskId: number;
+        };
         // (undocumented)
         queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
         // (undocumented)
@@ -2236,20 +2236,7 @@ export namespace IModelJsNative {
         // (undocumented)
         closeDb(): void;
         // (undocumented)
-        cqmInitialize(config: Config): boolean;
-        // (undocumented)
-        cqmIsInitialized(): boolean;
-        // (undocumented)
-        cqmPollQuery(taskId: number): {
-            status: PollStatus;
-            result: string;
-            rowCount: number;
-        };
-        // (undocumented)
-        cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
-            status: PostStatus;
-            taskId: number;
-        };
+        concurrentQueryInit(config: Config): boolean;
         // (undocumented)
         createDb(dbName: string): DbResult;
         // (undocumented)
@@ -2260,6 +2247,17 @@ export namespace IModelJsNative {
         isOpen(): boolean;
         // (undocumented)
         openDb(dbName: string, mode: OpenMode, upgradeProfiles?: boolean): DbResult;
+        // (undocumented)
+        pollConcurrentQuery(taskId: number): {
+            status: PollStatus;
+            result: string;
+            rowCount: number;
+        };
+        // (undocumented)
+        postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
+            status: PostStatus;
+            taskId: number;
+        };
         // (undocumented)
         saveChanges(changesetName?: string): DbResult;
     }
@@ -2497,17 +2495,15 @@ export namespace IModelJsNative {
     // (undocumented)
     export interface IConcurrentQueryManager {
         // (undocumented)
-        cqmInitialize(config: Config): boolean;
+        concurrentQueryInit(config: Config): boolean;
         // (undocumented)
-        cqmIsInitialized(): boolean;
-        // (undocumented)
-        cqmPollQuery(taskId: number): {
+        pollConcurrentQuery(taskId: number): {
             status: PollStatus;
             result: string;
             rowCount: number;
         };
         // (undocumented)
-        cqmPostQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
+        postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
             status: PostStatus;
             taskId: number;
         };
