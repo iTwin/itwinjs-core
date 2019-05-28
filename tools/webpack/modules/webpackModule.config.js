@@ -76,6 +76,18 @@ function getExternalModuleVersions(sourceDir, packageContents, externalList, plu
   return externalModuleVersions;
 }
 
+function addExternalCssFiles(externalVersions, styleSheets) {
+  if (externalVersions["ui-core"])
+    externalVersions["ui-core.css"] = externalVersions["ui-core"];
+  if (externalVersions["ui-components"])
+    externalVersions["ui-components.css"] = externalVersions["ui-components"];
+  if (externalVersions["ui-ninezone"])
+    externalVersions["ui-ninezone.css"] = externalVersions["ui-ninezone"];
+  if (externalVersions["ui-framework"])
+    externalVersions["ui-framework.css"] = externalVersions["ui-framework"];
+  if (styleSheets && externalVersions["main"])
+    externalVersions["main.css"] = externalVersions["main"];
+}
 
 // gets the version from this modules package.json file, so it can be injected into the output.
 function getPackageFromJson(sourceDir, alternateDir) {
@@ -252,8 +264,13 @@ function getConfig(env) {
     const externalModuleVersions = getExternalModuleVersions(sourceDir, packageContents, webpackLib.externals, env.plugin);
 
     if (env.htmltemplate) {
+      const externalModulesWithCssFiles = Object.assign(externalModuleVersions);
+
+      if (env.prod)
+        addExternalCssFiles(externalModulesWithCssFiles, env.stylesheets);
+
       const HtmlWebpackPlugin = require("html-webpack-plugin");
-      const versionString = JSON.stringify(externalModuleVersions);
+      const versionString = JSON.stringify(externalModulesWithCssFiles);
       const imjsLoaderVersion = externalModuleVersions["imodeljs-frontend"];
       const runtimeVersion = packageContents.version;
       webpackLib.plugins.push(new HtmlWebpackPlugin({
@@ -268,7 +285,6 @@ function getConfig(env) {
     }
 
     if (env.plugin) {
-
       // correct the keys with something like 0.190.0-dev.8 to something like ">=0.190.0.dev-0" otherwise the semver matching is too strict.
       for (const key in externalModuleVersions) {
         if (externalModuleVersions.hasOwnProperty(key)) {
