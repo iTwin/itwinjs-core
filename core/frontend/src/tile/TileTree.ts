@@ -250,6 +250,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public get isLeaf(): boolean { return this._isLeaf; }
   public get isDisplayable(): boolean { return this.maximumSize > 0; }
   public get isParentDisplayable(): boolean { return undefined !== this.parent && this.parent.isDisplayable; }
+  public get isUndisplayableRootTile(): boolean { return undefined === this.parent && !this.isDisplayable; }
   public get emptySubRangeMask(): number { return undefined !== this._emptySubRangeMask ? this._emptySubRangeMask : 0; }
 
   public get graphics(): RenderGraphic | undefined { return this._graphic; }
@@ -422,21 +423,26 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       args.markChildrenLoading();
 
     if (undefined !== children) {
+      // If we are the root tile and we are not displayable, then we want to draw *any* currently available children in our place, or else we would draw nothing.
+      // Otherwise, if we want to draw children in our place, we should wait for *all* of them to load, or else we would show missing chunks where not-yet-loaded children belong.
+      const isUndisplayableRootTile = this.isUndisplayableRootTile;
       this._childrenLastUsed = args.now;
-      let allChildrenDrawable = true;
+      let drawChildren = true;
       const initialSize = selected.length;
       for (const child of children) {
-
+        // NB: We must continue iterating children so that they can be requested if missing.
         if (Tile.SelectParent.Yes === child.selectTiles(selected, args, numSkipped)) {
-          allChildrenDrawable = false; // NB: We must continue iterating children so that they can be requested if missing.
           if (child.loadStatus === Tile.LoadStatus.NotFound) {
-            canSkipThisTile = false;
-            break;
+            // At least one child we want to draw failed to load. e.g., we reached max depth of map tile tree. Draw parent instead.
+            drawChildren = canSkipThisTile = false;
+          } else {
+            // At least one child we want to draw is not yet loaded. Wait for it to load before drawing it and its siblings, unless we have nothing to draw in their place.
+            drawChildren = isUndisplayableRootTile;
           }
         }
       }
 
-      if (allChildrenDrawable)
+      if (drawChildren)
         return Tile.SelectParent.No;
 
       // Some types of tiles (like maps) allow the ready children to be drawn on top of the parent while other children are not yet loaded.
@@ -478,8 +484,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       return;
     }
 
-    if (undefined !== olderThan && this._childrenLastUsed.milliseconds > olderThan.milliseconds) {
-      // this node has been used recently. Keep it, but potentially unload its grandchildren.
+    if (undefined !== olderThan && (this.isUndisplayableRootTile || this._childrenLastUsed.milliseconds > olderThan.milliseconds)) {
+      // this node has been used recently, or should never be unloaded based on expiration time. Keep it, but potentially unload its grandchildren.
       for (const child of children)
         child.unloadChildren(olderThan);
     } else {

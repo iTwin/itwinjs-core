@@ -6253,6 +6253,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     isRegionCulled(args: Tile.DrawArgs): boolean;
     // (undocumented)
+    readonly isUndisplayableRootTile: boolean;
+    // (undocumented)
     readonly loader: TileLoader;
     // (undocumented)
     readonly loadStatus: Tile.LoadStatus;
