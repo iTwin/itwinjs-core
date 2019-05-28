@@ -35,7 +35,7 @@ async function getDefaultConfigs(): Promise<string> {
 }
 
 async function saveCsv(outputPath: string, outputName: string, rowData: Map<string, number | string>): Promise<void> {
-  return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, rowData);
+  return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, JSON.stringify([...rowData]));
 }
 
 const wantConsoleOutput: boolean = false;
