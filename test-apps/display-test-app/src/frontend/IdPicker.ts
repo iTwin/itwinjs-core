@@ -164,10 +164,12 @@ export abstract class IdPicker extends ToolBarDropDown {
 
     const elemIds = "(" + Array.from(selectedElems).join(",") + ")";
     const ecsql = "SELECT DISTINCT " + elementType + ".Id FROM bis.GeometricElement" + (is2d ? "2d" : "3d") + " WHERE ECInstanceId IN " + elemIds;
-    return this._vp.view.iModel.queryPage(ecsql).then((rows) => {
-      const column = elementType.toLowerCase() + ".id";
-      return rows.map((value) => value[column]);
-    });
+    const rows = [];
+    for await (const row of this._vp.view.iModel.query(ecsql)) {
+      rows.push(row);
+    }
+    const column = elementType.toLowerCase() + ".id";
+    return rows.map((value) => value[column]);
   }
 
   private toggleIds(ids: Id64Arg, enabled: boolean): void {
@@ -210,7 +212,10 @@ export class CategoryPicker extends IdPicker {
     const view = this._vp.view;
     const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
     const bindings = view.is2d() ? [view.baseModelId] : undefined;
-    const rows = Array.from(await view.iModel.queryPage(ecsql, bindings, { size: 1000 })); // max rows to return after which result will be truncated.
+    const rows: any[] = [];
+    for await (const row of view.iModel.query(`${ecsql} LIMIT 1000`, bindings)) {
+      rows.push(row);
+    }
     rows.sort((lhs, rhs) => {
       const lhName = getCategoryName(lhs);
       const rhName = getCategoryName(rhs);

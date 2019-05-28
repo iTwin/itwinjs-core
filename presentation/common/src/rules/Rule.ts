@@ -76,4 +76,5 @@ export enum RuleTypes {
   CheckBox = "CheckBox",
   ImageIdOverride = "ImageIdOverride",
   StyleOverride = "StyleOverride",
+  ExtendedData = "ExtendedData",
 }

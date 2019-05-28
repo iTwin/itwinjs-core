@@ -4473,6 +4473,10 @@ export class PropertyRecord {
     // (undocumented)
     description?: string;
     // (undocumented)
+    extendedData?: {
+        [key: string]: any;
+    };
+    // (undocumented)
     isDisabled?: boolean;
     // (undocumented)
     isMerged?: boolean;

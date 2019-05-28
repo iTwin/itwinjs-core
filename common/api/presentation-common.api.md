@@ -240,7 +240,7 @@ export enum ContentSpecificationTypes {
 }
 
 // @public
-export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride;
+export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule;
 
 // @public
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
@@ -583,9 +583,14 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
 
 // @public
 export class Item {
-    constructor(primaryKeys: InstanceKey[], label: string, imageId: string, classInfo: ClassInfo | undefined, values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[]);
+    constructor(primaryKeys: InstanceKey[], label: string, imageId: string, classInfo: ClassInfo | undefined, values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: {
+        [key: string]: any;
+    });
     classInfo?: ClassInfo;
     displayValues: ValuesDictionary<DisplayValue>;
+    extendedData?: {
+        [key: string]: any;
+    };
     // @internal
     static fromJSON(json: ItemJSON | string | undefined): Item | undefined;
     imageId: string;
@@ -752,6 +757,9 @@ export namespace NestedContentValue {
 export interface Node {
     backColor?: string;
     description?: string;
+    extendedData?: {
+        [key: string]: any;
+    };
     fontStyle?: string;
     foreColor?: string;
     hasChildren?: boolean;
@@ -1311,6 +1319,8 @@ export enum RuleTypes {
     ContentModifier = "ContentModifier",
     // (undocumented)
     DisabledSorting = "DisabledSorting",
+    // (undocumented)
+    ExtendedData = "ExtendedData",
     // (undocumented)
     Grouping = "Grouping",
     // (undocumented)

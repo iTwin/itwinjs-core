@@ -96,7 +96,7 @@ const createRecordDescription = (typeDescription: TypeDescription, displayValue:
 };
 
 const createRecord = (propertyDescription: PropertyDescription, typeDescription: TypeDescription,
-  value: Value, displayValue: DisplayValue, isReadOnly: boolean, isMerged: boolean): PropertyRecord => {
+  value: Value, displayValue: DisplayValue, isReadOnly: boolean, isMerged: boolean, extendedData?: { [key: string]: any }): PropertyRecord => {
   const valueObj = createValue(propertyDescription, typeDescription, isMerged, value, displayValue);
   const record = new PropertyRecord(valueObj, propertyDescription);
   if (displayValue)
@@ -105,6 +105,8 @@ const createRecord = (propertyDescription: PropertyDescription, typeDescription:
     record.isMerged = true;
   if (isReadOnly)
     record.isReadonly = true;
+  if (extendedData)
+    record.extendedData = extendedData;
   return record;
 };
 
@@ -169,6 +171,8 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, path?:
     record.isMerged = true;
   if (field.isReadonly || isMerged)
     record.isReadonly = true;
+  if (item.extendedData)
+    record.extendedData = item.extendedData;
   return record;
 };
 
@@ -192,7 +196,7 @@ export class ContentBuilder {
     const isValueReadOnly = field.isReadonly || item.isFieldMerged(field.name);
     return createRecord(ContentBuilder.createPropertyDescription(field), field.type,
       item.values[field.name], item.displayValues[field.name],
-      isValueReadOnly, item.isFieldMerged(field.name));
+      isValueReadOnly, item.isFieldMerged(field.name), item.extendedData);
   }
 
   /**

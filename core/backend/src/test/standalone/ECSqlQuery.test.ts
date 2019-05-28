@@ -29,7 +29,7 @@ describe("ECSql Query", () => {
     imodel5.closeSnapshot();
   });
 
-  it("Paging Results", async () => {
+  it.only("Paging Results", async () => {
     const getRowPerPage = (nPageSize: number, nRowCount: number) => {
       const nRowPerPage = nRowCount / nPageSize;
       const nPages = Math.ceil(nRowPerPage);
@@ -60,15 +60,15 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const row = await db.queryPage(query, undefined, { size: pageSize, start: k });
-        assert.equal(row.length, rowPerPage[k]);
+        const rs = await db.queryRows(query, undefined, { maxRowAllowed: pageSize, startRowOffset: k * pageSize });
+        assert.equal(rs.rows.length, rowPerPage[k]);
       }
     }
 
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const row of db.query(query, undefined, { size: pageSize })) {
+      for await (const row of db.query("SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element")) {
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {

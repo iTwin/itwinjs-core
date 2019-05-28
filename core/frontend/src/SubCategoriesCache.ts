@@ -66,9 +66,9 @@ export class SubCategoriesCache {
       return undefined;
 
     const request = new SubCategoriesCache.Request(missing, this._imodel);
-    const promise = request.dispatch().then((pages?: SubCategoriesCache.Result) => {
-      if (undefined !== pages)
-        this.processResults(pages, missing!);
+    const promise = request.dispatch().then((result?: SubCategoriesCache.Result) => {
+      if (undefined !== result)
+        this.processResults(result, missing!);
 
       return !request.wasCanceled;
     });
@@ -97,10 +97,9 @@ export class SubCategoriesCache {
     return new SubCategoryAppearance(props);
   }
 
-  private processResults(pages: SubCategoriesCache.Result, missing: Id64Set): void {
-    for (const rows of pages)
-      for (const row of rows)
-        this.add(row.parentId as string, row.id as string, SubCategoriesCache.createSubCategoryAppearance(row.appearance));
+  private processResults(result: SubCategoriesCache.Result, missing: Id64Set): void {
+    for (const row of result)
+      this.add(row.parentId as string, row.id as string, SubCategoriesCache.createSubCategoryAppearance(row.appearance));
 
     // Ensure that any category Ids which returned no results (e.g., non-existent category, invalid Id, etc) are still recorded so they are not repeatedly re-requested
     for (const id of missing)
@@ -128,23 +127,19 @@ export namespace SubCategoriesCache {
     appearance: SubCategoryAppearance.Props;
   }
 
-  export type ResultPage = ResultRow[];
-  export type Result = ResultPage[];
+  export type Result = ResultRow[];
 
   export class Request {
     private readonly _imodel: IModelConnection;
     private readonly _ecsql: string[] = [];
-    private readonly _pages: Result = [];
-    private readonly _pageSize: number;
+    private readonly _result: Result = [];
     private _canceled = false;
     private _curECSqlIndex = 0;
-    private _curPageIndex = 0;
 
     public get wasCanceled() { return this._canceled || this._imodel.isClosed; }
 
-    public constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery = 200, maxSubCategoriesPerPage = 1000) {
+    public constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery = 200) {
       this._imodel = imodel;
-      this._pageSize = maxSubCategoriesPerPage;
 
       const catIds = [...categoryIds];
       while (catIds.length !== 0) {
@@ -160,33 +155,20 @@ export namespace SubCategoriesCache {
       if (this.wasCanceled || this._curECSqlIndex >= this._ecsql.length) // handle case of empty category Id set...
         return undefined;
 
-      let rows: ResultRow[] | undefined;
       try {
         const ecsql = this._ecsql[this._curECSqlIndex];
-        rows = Array.from(await this._imodel.queryPage(ecsql, undefined, { start: this._curPageIndex, size: this._pageSize }));
+        for await (const row of this._imodel.query(ecsql)) {
+          this._result.push(row);
+          if (this.wasCanceled)
+            return undefined;
+        }
       } catch (_) {
         // ###TODO: detect cases in which retry is warranted
         // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
         // incomplete results. Since we're not retrying, that's the best we can do.
-        rows = undefined;
-      }
-
-      // NB: from hereafter, we only check the cancellation flag if more results need to be obtained.
-      if (undefined !== rows && rows.length > 0) {
-        this._pages.push(rows);
-        if (rows.length >= this._pageSize) {
-          // More rows (may) exist for current ecsql query. If canceled, abort.
-          if (this.wasCanceled)
-            return undefined;
-
-          // Obtain the next page of results for current ECSql query.
-          ++this._curPageIndex;
-          return this.dispatch();
-        }
       }
 
       // Finished with current ECSql query. Dispatch the next if one exists.
-      this._curPageIndex = 0;
       if (++this._curECSqlIndex < this._ecsql.length) {
         if (this.wasCanceled)
           return undefined;
@@ -195,7 +177,7 @@ export namespace SubCategoriesCache {
       }
 
       // Even if we were canceled, we've retrieved all the rows. Might as well process them to prevent another request for some of the same rows from being enqueued.
-      return this._pages;
+      return this._result;
     }
   }
 

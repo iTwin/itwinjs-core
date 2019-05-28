@@ -26,7 +26,7 @@ import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
-
+import * as CQM from "./ConcurrentQueryManager";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
 /** @alpha */
@@ -125,6 +125,19 @@ export class IModelHostConfiguration {
    * @alpha
    */
   public crashReportingConfig?: CrashReportingConfig;
+
+  public concurrentQueryManagerConfig: CQM.Config = {
+    concurrent: os.cpus().length,
+    autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
+    minMonitorInterval: 1, // 1 seconds
+    idolCleanupTime: 30 * 60, // 30 minutes
+    cachedStatementsPerThread: 40,
+    maxQueueSize: os.cpus().length * 500,
+    quota: {
+      maxTimeAllowed: 60, // 1 Minute
+      maxMemoryAllowed: 1 * 1024 * 1024, // 4 Mb
+    },
+  };
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.

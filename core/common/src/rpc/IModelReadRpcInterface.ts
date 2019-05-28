@@ -16,7 +16,7 @@ import { ElementProps } from "../ElementProps";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 import { IModelCoordinatesResponseProps, GeoCoordinatesResponseProps } from "../GeoCoordinateServices";
 import { ViewStateProps } from "../ViewProps";
-import { PageOptions } from "../Paging";
+import { QueryPriority, QueryResponse, QueryLimit, QueryQuota } from "../Paging";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)
@@ -46,8 +46,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   ===========================================================================================*/
   public async openForRead(_iModelToken: IModelTokenProps): Promise<IModelProps> { return this.forward(arguments); }
   public async close(_iModelToken: IModelTokenProps): Promise<boolean> { return this.forward(arguments); }
-  public async queryPage(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]> { return this.forward(arguments); }
-  public async queryRowCount(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object): Promise<number> { return this.forward(arguments); }
+  public async queryRows(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority): Promise<QueryResponse> { return this.forward(arguments); }
   public async getModelProps(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<ModelProps[]> { return this.forward(arguments); }
   public async queryModelRanges(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<Range3dProps[]> { return this.forward(arguments); }
   public async queryModelProps(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }

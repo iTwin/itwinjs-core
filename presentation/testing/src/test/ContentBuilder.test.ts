@@ -11,6 +11,7 @@ import { PresentationManager, Presentation, RulesetManager } from "@bentley/pres
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Content, Descriptor, DefaultContentDisplayTypes, KeySet, Ruleset, ValuesDictionary, Item, RegisteredRuleset, Field, CategoryDescription, PrimitiveTypeDescription, PropertyValueFormat, Value, DisplayValue } from "@bentley/presentation-common";
 import { ContentBuilder, IContentBuilderDataProvider } from "../ContentBuilder";
+import { QueryResponse, QueryResponseStatus } from "../../../../core/common/lib/Paging";
 
 use(ChaiAsPromised);
 
@@ -117,18 +118,18 @@ function verifyInstanceKey(instanceKey: [string, Set<string>], instances: TestIn
   throw new Error(`Wrong className provided - '${className}'`);
 }
 
-async function executeQuery(query: string, instances: TestInstance[]): Promise<any[]> {
+async function executeQuery(query: string, instances: TestInstance[]): Promise<QueryResponse> {
   if (query.includes("SELECT s.Name")) {
-    return instances as Array<{ schemaName: string, className: string }>; // ids are returned as well, but that shouldn't be a problem
+    return { rows: instances, status: QueryResponseStatus.Done };
   }
 
   for (const entry of instances) {
     if (query.includes(`"${entry.schemaName}"."${entry.className}"`)) {
-      return entry.ids;
+      return { rows: entry.ids, status: QueryResponseStatus.Done }
     }
   }
 
-  return [];
+  return { rows: [], status: QueryResponseStatus.Done };
 }
 
 function verifyKeyset(keyset: KeySet, testInstances: TestInstance[], verificationSpy: sinon.SinonSpy) {
@@ -202,7 +203,7 @@ describe("ContentBuilder", () => {
 
     before(() => {
       imodelMock.reset();
-      imodelMock.setup(async (imodel) => imodel.queryPage(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
+      imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
     });
 
     it("returns all required instances with empty records", async () => {
@@ -243,7 +244,7 @@ describe("ContentBuilder", () => {
 
       it("returns all required instances with empty records", async () => {
         imodelMock.reset();
-        imodelMock.setup(async (imodel) => imodel.queryPage(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
+        imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
 
         const verificationSpy = sinon.spy();
 
@@ -267,13 +268,13 @@ describe("ContentBuilder", () => {
       it("throws when id query throws an unexpected error", async () => {
         function executeQueryAndThrow(query: string, instances: TestInstance[]) {
           if (query.includes("SELECT s.Name")) {
-            return instances as Array<{ schemaName: string, className: string }>;
+            return { rows: instances, status: QueryResponseStatus.Done };
           }
           throw new Error("Test error");
         }
 
         imodelMock.reset();
-        imodelMock.setup(async (imodel) => imodel.queryPage(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQueryAndThrow(query, testInstances));
+        imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQueryAndThrow(query, testInstances));
 
         const verificationSpy = sinon.spy();
 
@@ -290,7 +291,7 @@ describe("ContentBuilder", () => {
 
       before(() => {
         imodelMock.reset();
-        imodelMock.setup(async (imodel) => imodel.queryPage(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
+        imodelMock.setup(async (imodel) => imodel.queryRows(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(async (query) => executeQuery(query, testInstances));
       });
 
       it("returns an empty list", async () => {

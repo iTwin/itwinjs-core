@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ECSqlStatement, ECSqlInsertResult, ECSqlValue, ECEnumValue } from "../../ECSqlStatement";
-import { NavigationValue } from "@bentley/imodeljs-common";
+import { NavigationValue, QueryResponseStatus } from "@bentley/imodeljs-common";
 import { ECDb } from "../../ECDb";
 import { IModelDb } from "../../IModelDb";
 import { DbResult, Id64String, Id64, using } from "@bentley/bentleyjs-core";
@@ -51,18 +51,22 @@ describe("ECSqlStatement", () => {
           });
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
+        ecdb.saveChanges();
         const args = new Array(rowIds.length).fill("?").join(",");
-        let row = await ecdb.queryPage(`SELECT * FROM ts.Foo WHERE ECInstanceId IN (${args})`, rowIds);
-        assert.equal(row.length, rowIds.length);
-        assert.isTrue(Reflect.has(row[0], "id"));
-        row = await ecdb.queryPage(`SELECT * FROM (SELECT ECInstanceId AS id FROM ts.Foo) WHERE id IN (${args})`, rowIds);
-        assert.equal(row.length, rowIds.length);
-        assert.isTrue(Reflect.has(row[0], "id"));
-        assert.isTrue(String(row[0].id).startsWith("0x"));
-        row = await ecdb.queryPage(`SELECT * FROM (SELECT ECInstanceId AS sap FROM ts.Foo) WHERE sap IN (${args})`, rowIds);
-        assert.isTrue(Reflect.has(row[0], "sap"));
-        assert.equal(row.length, rowIds.length);
-        assert.isTrue(String(row[0].sap).startsWith("0x"));
+        let rs = await ecdb.queryRows(`SELECT * FROM ts.Foo WHERE ECInstanceId IN (${args})`, rowIds);
+        assert.equal(rs.status, QueryResponseStatus.Done);
+        assert.equal(rs.rows.length, rowIds.length);
+        assert.isTrue(Reflect.has(rs.rows[0], "id"));
+        rs = await ecdb.queryRows(`SELECT * FROM (SELECT ECInstanceId AS id FROM ts.Foo) WHERE id IN (${args})`, rowIds);
+        assert.equal(rs.status, QueryResponseStatus.Done);
+        assert.equal(rs.rows.length, rowIds.length);
+        assert.isTrue(Reflect.has(rs.rows[0], "id"));
+        assert.isTrue(String(rs.rows[0].id).startsWith("0x"));
+        rs = await ecdb.queryRows(`SELECT * FROM (SELECT ECInstanceId AS sap FROM ts.Foo) WHERE sap IN (${args})`, rowIds);
+        assert.equal(rs.status, QueryResponseStatus.Done);
+        assert.isTrue(Reflect.has(rs.rows[0], "sap"));
+        assert.equal(rs.rows.length, rowIds.length);
+        assert.isTrue(String(rs.rows[0].sap).startsWith("0x"));
 
       });
   });
@@ -82,28 +86,62 @@ describe("ECSqlStatement", () => {
           });
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
+        ecdb.saveChanges();
         for (let i = 1; i < ROW_COUNT; i++) {
           const rowCount = await ecdb.queryRowCount("SELECT ECInstanceId, ECClassId, n FROM ts.Foo WHERE n <= ?", [i]);
           assert.equal(rowCount, i);
         }
 
-        const temp = await ecdb.queryPage("SELECT ECInstanceId FROM ONLY ts.Foo");
-        assert.equal(temp.length, ROW_COUNT);
+        const temp = await ecdb.queryRows("SELECT ECInstanceId FROM ONLY ts.Foo");
+        assert.equal(temp.rows.length, ROW_COUNT);
         // query page by page
         const PAGE_SIZE = 5;
         const QUERY = "SELECT n FROM ts.Foo";
-        const EXPECTED_ROW_COUNT = [5, 5, 5, 5, 5, 2, 0];
+        const EXPECTED_ROW_COUNT = [5, 5, 5, 5, 5, 2];
         const ready = [];
         for (let i = 0; i < EXPECTED_ROW_COUNT.length; i++) {
-          ready.push(ecdb.queryPage(QUERY, undefined, { start: i, size: PAGE_SIZE }));
+          ready.push(ecdb.queryRows(QUERY, undefined, { startRowOffset: i * PAGE_SIZE, maxRowAllowed: PAGE_SIZE }));
         }
         // verify if each page has right count of rows
         const results = await Promise.all(ready);
         for (let i = 0; i < EXPECTED_ROW_COUNT.length; i++) {
-          assert.equal(results[i].length, EXPECTED_ROW_COUNT[i]);
+          assert.equal(results[i].rows.length, EXPECTED_ROW_COUNT[i]);
         }
       });
   });
+
+  it("Paging use cache statement v1", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+        const ROW_COUNT = 100;
+        // insert test rows
+        for (let i = 1; i <= ROW_COUNT; i++) {
+          const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+            return stmt.stepForInsert();
+          });
+          assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+        }
+        ecdb.saveChanges();
+        // check if varying page number does not require prepare new statements
+        ecdb.clearStatementCache();
+        const rca = await ecdb.queryRows("SELECT count(*) as nRows FROM ts.Foo");
+        assert.equal(rca.rows[0].nRows, 100); // expe
+        const rc = await ecdb.queryRowCount("SELECT * FROM ts.Foo");
+        assert.equal(rc, 100); // expe
+        let rowNo = 0;
+        for await (const row of ecdb.query("SELECT * FROM ts.Foo")) {
+          assert.equal(row.n, rowNo + 1);
+          rowNo = rowNo + 1;
+        }
+        assert.equal(rowNo, 100); // expect all rows
+      });
+  });
+
   it("Paging use cache statement", async () => {
     await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
@@ -120,17 +158,17 @@ describe("ECSqlStatement", () => {
           });
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
-
+        ecdb.saveChanges();
         // check if varying page number does not require prepare new statements
         ecdb.clearStatementCache();
-        for (const testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) {
+        for (const _testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) {
           let rowNo = 1;
-          for await (const row of ecdb.query("SELECT n FROM ts.Foo WHERE n != ? and ECInstanceId < ?", [123, 30], { size: testPageSize })) {
+          for await (const row of ecdb.query("SELECT n FROM ts.Foo WHERE n != ? and ECInstanceId < ?", [123, 30])) {
             assert.equal(row.n, rowNo);
             rowNo = rowNo + 1;
           }
           assert.equal(rowNo, 28); // expect all rows
-          assert.equal(1, ecdb.getCachedStatementCount()); // there must be single cached statement used with differetn size pages.
+          assert.equal(0, ecdb.getCachedStatementCount()); // there must be single cached statement used with differetn size pages.
         }
       });
   });

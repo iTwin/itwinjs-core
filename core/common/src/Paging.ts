@@ -3,31 +3,48 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
+/** ECSql query quota constraint. Its not guaranteed exactly but will be meet as accuratly as possiable
+ * @internal
+ */
+export interface QueryQuota {
+  /** Maximum time in seconds after which query will be stopped */
+  maxTimeAllowed?: number;
+  /** Maximum size of result in bytes after which query will be stopped */
+  maxMemoryAllowed?: number;
+}
 
-/** Provide paging option for the queries.
+/** ECSql query subset specification
  * @public
  */
-export interface PageOptions {
-  /** Zero base page number */
-  start?: number;
-  /** Number of rows per page */
-  size?: number;
-  /** load on main loop */
-  stepsPerTick?: number;
+export interface QueryLimit {
+  /** Maximum time in seconds after which query will be stopped */
+  maxRowAllowed?: number;
+  /** Maximum size of result in bytes after which query will be stopped */
+  startRowOffset?: number;
 }
-/** Default option used when caller does not provide one
- * @beta Remove nonstandard "k" prefix?
+/** Queue priority for query and its not guaranteed
+ * @public
  */
-export const kPagingDefaultOptions: PageOptions = { start: 0, size: 512, stepsPerTick: 20 };
+export enum QueryPriority {
+  Low = 0,
+  Normal = 1,
+  High = 2,
+}
 
-/** @public */
-export interface PageableECSql {
-  /** Compute number of rows that would be returned by the ECSQL. */
-  queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
-
-  /** Execute a query agaisnt this ECDb */
-  queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
-
-  /** Execute a pageable query. */
-  query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
+/** State of query operations
+ * @internal
+ */
+export enum QueryResponseStatus {
+  Partial = 3, /** Partial result due to query exceded allocated quota */
+  Done = 2, /** There is no more rows */
+  Error = 5, /** Error while preparing or stepping into query */
+  Timeout = 4, /** Query time quota while it was in queue */
+  PostError = 6, /** Submitting query task failed. May happen if queue size execeds */
+}
+/** Result of a query. Its not intented to be used directly by client
+ * @internal
+ */
+export interface QueryResponse {
+  rows: any[];
+  status: QueryResponseStatus;
 }
