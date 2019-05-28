@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed typo in function name",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "khanaffan@gmail.com"
+}

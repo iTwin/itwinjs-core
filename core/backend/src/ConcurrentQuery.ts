@@ -18,8 +18,8 @@ export interface Config {
   maxQueueSize?: number;
   /** Minimum time interval in seconds after which monitor kickin. */
   minMonitorInterval?: number;
-  /** Idol period of time in seconds after which resouces and caches are purged */
-  idolCleanupTime?: number;
+  /** idle period of time in seconds after which resouces and caches are purged */
+  idleCleanupTime?: number;
   /** Global restriction on query quota */
   quota?: QueryQuota;
 }

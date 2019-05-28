@@ -320,7 +320,7 @@ export class ECDb implements IDisposable {
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
     if (!this._concurrentQueryInitalized) {
-      this._concurrentQueryInitalized = this.nativeDb.concurrentQueryInit(IModelHost.configuration!.concurrentQueryManagerConfig);
+      this._concurrentQueryInitalized = this.nativeDb.concurrentQueryInit(IModelHost.configuration!.concurrentQuery);
     }
 
     if (!bindings) bindings = [];

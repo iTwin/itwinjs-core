@@ -1830,7 +1830,7 @@ export class IModelHostConfiguration {
     appAssetsDir?: string;
     briefcaseCacheDir: string;
     // (undocumented)
-    concurrentQueryManagerConfig: Config;
+    concurrentQuery: Config;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
     // @internal
@@ -2973,8 +2973,8 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 // @public
 export class OpenParams {
     constructor(
-    openMode: OpenMode, 
-    syncMode?: SyncMode | undefined, 
+    openMode: OpenMode,
+    syncMode?: SyncMode | undefined,
     timeout?: number | undefined);
     equals(other: OpenParams): boolean;
     static fixedVersion(): OpenParams;
