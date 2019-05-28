@@ -602,7 +602,7 @@ describe("mirukuru TileTree", () => {
 
     // Test current version of tile tree by asking model to load it
     const modelTree = await getTileTree(imodel, "0x1c");
-    await test(modelTree, IModelTileIO.CurrentVersion.Combined, "-0-0-0-0-0-1");
+    await test(modelTree, IModelTileIO.CurrentVersion.Combined, "-1-0-0-0-0-1");
 
     // Test directly loading a tile tree of version 3.0
     const v3Props = await imodel.tiles.getTileTreeProps("0x1c");
@@ -688,7 +688,7 @@ describe("TileAdmin", () => {
     class App extends TileAdminApp {
       private static async testPrimaryTree(imodel: IModelConnection, expectedTreeIdStr: string, animationId?: Id64String) {
         // Test without edges
-        const requestWithoutEdges = IModelApp.tileAdmin.requestTilesWithoutEdges;
+        const requestWithoutEdges = true;
         let expectedTreeIdStrNoEdges = expectedTreeIdStr;
         if (requestWithoutEdges) {
           // "0xabc" => E:0_0xabc"
@@ -791,12 +791,8 @@ describe("TileAdmin", () => {
       }
     }
 
-    // First, test with the "omit edges" feature disabled
-    let myImodel = await App.start({ requestTilesWithoutEdges: false });
-    await App.test(myImodel);
-
-    // Now test with "omit edges" feature enabled
-    myImodel = await App.restart({ requestTilesWithoutEdges: true });
+    // NB: We used to be able to configure TileAdmin to omit (or not omit) edges from requested tiles. That option was removed when we were satisfied with the feature.
+    const myImodel = await App.start({});
     await App.test(myImodel);
     await App.stop();
   });

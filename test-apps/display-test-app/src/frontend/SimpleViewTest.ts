@@ -127,9 +127,6 @@ async function main() {
   if (configuration.disableInstancing)
     DisplayTestApp.tileAdminProps.enableInstancing = false;
 
-  if (configuration.omitEdges)
-    DisplayTestApp.tileAdminProps.requestTilesWithoutEdges = true;
-
   if (configuration.useProjectExtents)
     DisplayTestApp.tileAdminProps.useProjectExtents = true;
 

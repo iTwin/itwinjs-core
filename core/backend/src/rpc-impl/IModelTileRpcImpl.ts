@@ -150,22 +150,6 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileCon
 export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface {
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
-  public async getTileTreeProps(tokenProps: IModelTokenProps, id: string): Promise<TileTreeProps> {
-    const requestContext = ClientRequestContext.current;
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const db = IModelDb.find(iModelToken);
-    return db.tiles.requestTileTreeProps(requestContext, id);
-  }
-
-  public async getTileContent(tokenProps: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array> {
-    const requestContext = ClientRequestContext.current;
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const db = IModelDb.find(iModelToken);
-    const content = db.tiles.requestTileContent(requestContext, treeId, contentId);
-    this.cacheTile(tokenProps, treeId, contentId, content);
-    return content;
-  }
-
   public async requestTileTreeProps(tokenProps: IModelTokenProps, treeId: string): Promise<TileTreeProps> {
     const requestContext = ClientRequestContext.current;
     const iModelToken = IModelToken.fromJSON(tokenProps);

@@ -6434,8 +6434,6 @@ export abstract class TileAdmin {
     // @beta
     static create(props?: TileAdmin.Props): TileAdmin;
     // @internal (undocumented)
-    abstract readonly elideEmptyChildContentRequests: boolean;
-    // @internal (undocumented)
     abstract readonly emptyViewportSet: TileAdmin.ViewportSet;
     // @internal (undocumented)
     abstract readonly enableInstancing: boolean;
@@ -6464,8 +6462,6 @@ export abstract class TileAdmin {
     // @internal
     abstract requestTiles(vp: Viewport, tiles: Set<Tile>): void;
     // @internal (undocumented)
-    abstract readonly requestTilesWithoutEdges: boolean;
-    // @internal (undocumented)
     abstract requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
     abstract resetStatistics(): void;
     abstract readonly statistics: TileAdmin.Statistics;
@@ -6479,13 +6475,10 @@ export abstract class TileAdmin {
 export namespace TileAdmin {
     export interface Props {
         disableThrottling?: boolean;
-        elideEmptyChildContentRequests?: boolean;
         enableInstancing?: boolean;
         maxActiveRequests?: number;
         // @internal
         maximumMajorTileFormatVersion?: number;
-        // @internal
-        requestTilesWithoutEdges?: boolean;
         retryInterval?: number;
         tileExpirationTime?: number;
         // @internal

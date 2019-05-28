@@ -34,3 +34,17 @@ Here is an example of how to adjust your source code:
 Removed the following parameters to [IModelDb.open]($backend) to simplify the implementation:
 * [OpenParams]($backend).pullOnly(): Use OpenParams.fixedVersion() or OpenParams.pullAndPush()
 * AccessMode: Using OpenParams.fixedVersion() always causes the briefcase to be shared, and using OpenParams.pullAndPush() always causes the briefcase to be exclusive.
+
+## Changes to tile features
+
+Removed or modified some properties used to feature-gate various tile-related features.
+
+Frontend:
+  * Removed `TileAdmin.requestTilesWithoutEdges`. Tiles are now always requested without edges if edges are not required.
+  * Removed `TileAdmin.elideEmptyChildContentRequests`. Such requests are now always elided.
+  * `TileAdmin.enableInstancing` now defaults to `true` instead of `false`.
+  * Previously, if `TileAdmin.retryInterval` was undefined, requests for tile content and tile tree JSON would not be memoized. Now, they are always memoized, and the interval defaults to 1000ms if not explicitly defined.
+  * Previously, requests for tile content would by default use POST method and responses would not be cacheable. Now by default they use GET and responses are cacheable.
+
+Backend:
+  * Removed `IModelHostConfiguration.useTileContentThreadPool`. The thread pool is now always used.

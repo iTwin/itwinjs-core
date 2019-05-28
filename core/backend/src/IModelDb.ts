@@ -1690,21 +1690,9 @@ export namespace IModelDb {
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      if (IModelHost.useTileContentThreadPool) {
-        return new Promise<Uint8Array>((resolve, reject) => {
-          this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
-        });
-      } else {
-        return new Promise<Uint8Array>((resolve, reject) => {
-          requestContext.enter();
-          this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
-            if (undefined !== ret.error)
-              reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
-            else
-              resolve(ret.result!);
-          });
-        });
-      }
+      return new Promise<Uint8Array>((resolve, reject) => {
+        this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
+      });
     }
   }
 }

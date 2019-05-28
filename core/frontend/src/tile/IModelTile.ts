@@ -207,7 +207,7 @@ export namespace IModelTile {
       if (undefined !== treeId.animationId)
         idStr = idStr + "A:" + treeId.animationId + "_";
 
-      if (!treeId.edgesRequired && admin.requestTilesWithoutEdges) {
+      if (!treeId.edgesRequired) {
         // Tell backend not to bother generating+returning edges - we would just discard them anyway
         idStr = idStr + "E:0_";
       }
@@ -277,12 +277,11 @@ export namespace IModelTile {
       // This mask is a bitfield in which an 'on' bit indicates sub-volume containing no geometry.
       // Don't bother creating children or requesting content for such empty volumes.
       const admin = IModelApp.tileAdmin;
-      const doElision = admin.elideEmptyChildContentRequests;
-      const emptyMask = doElision ? parent.emptySubRangeMask : 0;
+      const emptyMask = parent.emptySubRangeMask;
 
       // Spatial tree range == project extents; content range == model range.
       // Trivially reject children whose ranges are entirely outside model range.
-      let treeContentRange = doElision ? parent.root.contentRange : undefined;
+      let treeContentRange = parent.root.contentRange;
       if (undefined !== treeContentRange && treeContentRange.containsRange(parent.range)) {
         // Parent is wholly within model range - don't bother testing child ranges against it.
         treeContentRange = undefined;

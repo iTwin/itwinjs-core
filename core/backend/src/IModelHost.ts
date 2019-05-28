@@ -98,10 +98,6 @@ export class IModelHostConfiguration {
    * @internal
    */
   public static defaultTileRequestTimeout = 20 * 1000;
-  /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries.
-   * @internal
-   */
-  public useTileContentThreadPool = false;
 
   /** The default time, in seconds, used for [[logTileLoadTimeThreshold]]. To change this, override that property.
    * @internal
@@ -347,11 +343,6 @@ export class IModelHost {
   public static get tileContentRequestTimeout(): number {
     return undefined !== IModelHost.configuration ? IModelHost.configuration.tileContentRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
   }
-
-  /** If true, requests for tile content will execute on a separate thread pool to avoid blocking other, less expensive asynchronous requests such as ECSql queries.
-   * @internal
-   */
-  public static get useTileContentThreadPool(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useTileContentThreadPool; }
 
   /** The backend will log when a tile took longer to load than this threshold in seconds. */
   public static get logTileLoadTimeThreshold(): number { return undefined !== IModelHost.configuration ? IModelHost.configuration.logTileLoadTimeThreshold : IModelHostConfiguration.defaultLogTileLoadTimeThreshold; }
