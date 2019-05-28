@@ -55,8 +55,7 @@ public;CreateIModelProps
 internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 beta;CustomAttribute
-beta;DecorationGeometry
-public;DecorationGeometryProps 
+beta;DecorationGeometryProps
 public;DefinitionElementProps 
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
@@ -150,8 +149,8 @@ public;IModelNotFoundResponse
 public;IModelProps
 public;class IModelReadRpcInterface 
 public;class IModelTileRpcInterface 
-public;IModelToken
-public;IModelTokenProps 
+public;IModelToken 
+public;IModelTokenProps
 public;IModelVersion
 alpha;class IModelWriteRpcInterface 
 public;InformationPartitionElementProps 

@@ -10,8 +10,7 @@ public;Asset
 public;AuthenticationError 
 internal;AuthorizationToken 
 beta;AuthorizedClientRequestContext 
-public;AuthorizedClientRequestContextProps 
-public;AuthorizedClientRequestContextProps
+beta;AuthorizedClientRequestContextProps 
 internal;Briefcase 
 internal;BriefcaseAccessMode
 internal;BriefcaseDeletedEvent 

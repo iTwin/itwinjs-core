@@ -7,6 +7,13 @@
 import { AccessToken } from "./Token";
 import { Guid, ClientRequestContext, ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
 
+/** The properties of AuthorizedClientRequestContext.
+ * @beta
+ */
+export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
+  accessToken: any;
+}
+
 /** Provides generic context for a server application to get details of a particular request that originated at the client.
  * This context includes an [[AccessToken]] that carries authorization information. For services that do not require authorization
  * it's sufficient to pass an instance of the base class [[ClientRequestContext]].
@@ -14,7 +21,7 @@ import { Guid, ClientRequestContext, ClientRequestContextProps, GuidString } fro
  * @see [[ClientRequestContext]]
  * @beta
  */
-export class AuthorizedClientRequestContext extends ClientRequestContext {
+export class AuthorizedClientRequestContext extends ClientRequestContext implements AuthorizedClientRequestContextProps {
   /** The access token value of the client application. */
   public accessToken: AccessToken;
 
@@ -23,15 +30,10 @@ export class AuthorizedClientRequestContext extends ClientRequestContext {
     super(activityId, applicationId, applicationVersion, sessionId);
     this.accessToken = accessToken;
   }
-}
 
-/** The data properties of AuthorizedClientRequestContext. */
-export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
-  accessToken: any;
-}
-
-export namespace AuthorizedClientRequestContextProps {
-  export function fromContext(context: AuthorizedClientRequestContext): AuthorizedClientRequestContextProps {
-    return Object.create(Object.prototype, Object.getOwnPropertyDescriptors(context));
+  public toJSON(): AuthorizedClientRequestContextProps {
+    const obj = super.toJSON() as AuthorizedClientRequestContextProps;
+    obj.accessToken = this.accessToken;
+    return obj;
   }
 }

@@ -162,7 +162,7 @@ export enum ChangeSetStatus {
 }
 
 // @public
-export class ClientRequestContext {
+export class ClientRequestContext implements ClientRequestContextProps {
     constructor(activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
     readonly activityId: GuidString;
     readonly applicationId: string;
@@ -172,20 +172,18 @@ export class ClientRequestContext {
     protected static _current: ClientRequestContext;
     enter(): this;
     readonly sessionId: GuidString;
+    // @internal (undocumented)
+    toJSON(): ClientRequestContextProps;
     // (undocumented)
     useContextForRpc: boolean;
     }
 
-// Warning: (ae-missing-release-tag) "ClientRequestContextProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export interface ClientRequestContextProps extends Pick<ClientRequestContext, Exclude<keyof ClientRequestContext, "enter" | "useContextForRpc">> {
-}
-
-// @public (undocumented)
-export namespace ClientRequestContextProps {
-    // (undocumented)
-    export function fromContext(context: ClientRequestContext): ClientRequestContextProps;
+export interface ClientRequestContextProps {
+    readonly activityId: GuidString;
+    readonly applicationId: string;
+    readonly applicationVersion: string;
+    readonly sessionId: GuidString;
 }
 
 // @public

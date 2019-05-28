@@ -14,8 +14,7 @@ beta;BeUiEvent
 beta;BriefcaseStatus
 public;ChangeSetApplyOption
 beta;ChangeSetStatus
-public;ClientRequestContext
-public;ClientRequestContextProps 
+public;ClientRequestContext 
 public;ClientRequestContextProps
 public;CloneFunction
 public;compareBooleans(a: boolean, b: boolean): number

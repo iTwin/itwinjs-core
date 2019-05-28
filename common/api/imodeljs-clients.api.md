@@ -84,27 +84,19 @@ export class AuthorizationToken extends Token {
 }
 
 // @beta
-export class AuthorizedClientRequestContext extends ClientRequestContext {
+export class AuthorizedClientRequestContext extends ClientRequestContext implements AuthorizedClientRequestContextProps {
     // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @beta, but its signature references "AccessToken" which is marked as @internal
     constructor(accessToken: AccessToken, activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
     // Warning: (ae-incompatible-release-tags) The symbol "accessToken" is marked as @beta, but its signature references "AccessToken" which is marked as @internal
     accessToken: AccessToken;
+    // (undocumented)
+    toJSON(): AuthorizedClientRequestContextProps;
 }
 
-// Warning: (ae-missing-release-tag) "AuthorizedClientRequestContextProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
+// @beta
 export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
     // (undocumented)
     accessToken: any;
-}
-
-// @public (undocumented)
-export namespace AuthorizedClientRequestContextProps {
-    // Warning: (ae-incompatible-release-tags) The symbol "fromContext" is marked as @public, but its signature references "AuthorizedClientRequestContext" which is marked as @beta
-    // 
-    // (undocumented)
-    export function fromContext(context: AuthorizedClientRequestContext): AuthorizedClientRequestContextProps;
 }
 
 // @internal

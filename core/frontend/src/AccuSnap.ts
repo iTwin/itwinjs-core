@@ -14,7 +14,7 @@ import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, Hit
 import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Decorator } from "./ViewManager";
-import { SnapRequestProps, DecorationGeometry } from "@bentley/imodeljs-common";
+import { SnapRequestProps } from "@bentley/imodeljs-common";
 import { CanvasDecoration } from "./rendering";
 
 /** Virtual cursor for using AccuSnap with touch input.
@@ -643,7 +643,7 @@ export class AccuSnap implements Decorator {
         if (out) out.snapStatus = SnapStatus.NoSnapPossible;
         return undefined;
       }
-      requestProps.decorationGeometry = [new DecorationGeometry(thisHit.sourceId, thisGeom)];
+      requestProps.decorationGeometry = [{ id: thisHit.sourceId, geometryStream: thisGeom }];
     }
 
     if (snapModes.includes(SnapMode.Intersection)) {
@@ -657,9 +657,9 @@ export class AccuSnap implements Decorator {
             if (undefined === geom)
               continue;
             if (undefined === requestProps.decorationGeometry)
-              requestProps.decorationGeometry = [new DecorationGeometry(hit.sourceId, geom)];
+              requestProps.decorationGeometry = [{ id: thisHit.sourceId, geometryStream: geom }];
             else
-              requestProps.decorationGeometry.push(new DecorationGeometry(hit.sourceId, geom));
+              requestProps.decorationGeometry.push({ id: thisHit.sourceId, geometryStream: geom });
           }
 
           if (undefined === requestProps.intersectCandidates)
