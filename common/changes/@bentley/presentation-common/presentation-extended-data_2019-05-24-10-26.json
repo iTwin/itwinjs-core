@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add a new presentation rule `ExtendedDataRule` for injecting custom data into presentation objects.",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}

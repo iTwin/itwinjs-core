@@ -11,6 +11,7 @@ import { InstanceLabelOverride } from "./InstanceLabelOverride";
 import { LabelOverride } from "./LabelOverride";
 import { SortingRule } from "./SortingRule";
 import { StyleOverride } from "./StyleOverride";
+import { ExtendedDataRule } from "./ExtendedDataRule";
 
 /**
  * Customization rules allow customizing each node or content item separately.
@@ -37,4 +38,5 @@ export declare type CustomizationRule = InstanceLabelOverride |
   ImageIdOverride |
   LabelOverride |
   SortingRule |
-  StyleOverride;
+  StyleOverride |
+  ExtendedDataRule;

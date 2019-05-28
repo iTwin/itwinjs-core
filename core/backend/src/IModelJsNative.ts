@@ -6,12 +6,12 @@ import {
   BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbOpcode, DbResult, GuidString, Id64String,
   IDisposable, IModelStatus, Logger, OpenMode, RepositoryStatus, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
-import { ElementProps, ChangedElements } from "@bentley/imodeljs-common";
+import { ElementProps, ChangedElements, QueryLimit, QueryQuota, QueryPriority } from "@bentley/imodeljs-common";
 import { ExportGraphicsProps } from "./ExportGraphics";
 import { IModelDb, TxnIdString } from "./IModelDb";
+import { Config, PollStatus, PostStatus } from "./ConcurrentQuery";
 
 // tslint:disable:prefer-get
-
 /** Module that declares the IModelJs native code.
  * @internal
  */
@@ -65,7 +65,11 @@ export declare namespace IModelJsNative {
     /** Result of the operation. This property is defined if the operation completed successfully */
     result?: ResultType;
   }
-
+  export interface IConcurrentQueryManager {
+    concurrentQueryInit(config: Config): boolean;
+    postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: PostStatus, taskId: number };
+    pollConcurrentQuery(taskId: number): { status: PollStatus, result: string, rowCount: number };
+  }
   export interface TileContent {
     content: Uint8Array;
     elapsedSeconds: number;
@@ -91,7 +95,7 @@ export declare namespace IModelJsNative {
   }
 
   /** The native object for a Briefcase. */
-  export class DgnDb {
+  export class DgnDb implements IConcurrentQueryManager {
     constructor();
     public static getAssetsDir(): string;
     public abandonChanges(): DbResult;
@@ -195,10 +199,13 @@ export declare namespace IModelJsNative {
     public updateLinkTableRelationship(props: string): DbResult;
     public updateModel(modelProps: string): IModelStatus;
     public updateProjectExtents(newExtentsJson: string): void;
+    public concurrentQueryInit(config: Config): boolean;
+    public postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: PostStatus, taskId: number };
+    public pollConcurrentQuery(taskId: number): { status: PollStatus, result: string, rowCount: number };
     public static vacuum(dbName: string, pageSize?: number): DbResult;
   }
 
-  export class ECDb implements IDisposable {
+  export class ECDb implements IDisposable, IConcurrentQueryManager {
     constructor();
     public createDb(dbName: string): DbResult;
     public openDb(dbName: string, mode: OpenMode, upgradeProfiles?: boolean): DbResult;
@@ -208,6 +215,9 @@ export declare namespace IModelJsNative {
     public saveChanges(changesetName?: string): DbResult;
     public abandonChanges(): DbResult;
     public importSchema(schemaPathName: string): DbResult;
+    public concurrentQueryInit(config: Config): boolean;
+    public postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: PostStatus, taskId: number };
+    public pollConcurrentQuery(taskId: number): { status: PollStatus, result: string, rowCount: number };
   }
 
   export class ChangedElementsECDb implements IDisposable {

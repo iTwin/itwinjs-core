@@ -281,7 +281,8 @@ async function generateTileFromSnapshot(iModelPath: string, useTileCache: boolea
         emptyTileCount++;
       if (returnTileStats)
         tileStats.push({ treeId: id.treeId, contentId: id.contentId, sizeInBytes: tile.length, elapsedTime: tileTime.elapsed.milliseconds });
-      await reportProgress(nTiles, contentIds.length);    }
+      await reportProgress(nTiles, contentIds.length);
+    }
   }
   totalTime.stop();
   return {
@@ -305,7 +306,7 @@ async function generateTileFromSnapshot(iModelPath: string, useTileCache: boolea
 
 async function writeTileStates(reportFolder: string, run: BeTimePoint, bimFile: string, tileStats: TileStats[]) {
   const tileStatFile = path.join(reportFolder, `${run.milliseconds}-${bimFile}.csv`);
-  const out = fs.createWriteStream(tileStatFile, { encoding: "utf8", flags: "wx+"});
+  const out = fs.createWriteStream(tileStatFile, { encoding: "utf8", flags: "wx+" });
   let tileIndex = 1;
   out.write("index,treeId,contentId,size (bytes),elapsedTime (ms)\r\n");
   for (const tileStat of tileStats) {
@@ -317,7 +318,7 @@ async function writeTileStates(reportFolder: string, run: BeTimePoint, bimFile: 
 
 async function generateResultForDataset(params: TileGenParams) {
   if (!params.reportFolder)
-  params.reportFolder = params.datasetFolder;
+    params.reportFolder = params.datasetFolder;
 
   const bimFiles = fs.readdirSync(params.datasetFolder).filter((fileName) => fileName.endsWith(".bim"));
   const run = BeTimePoint.now().minus(BeDuration.fromMilliseconds(1554830762265));

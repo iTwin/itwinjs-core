@@ -2436,10 +2436,11 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     queryModelProps(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<ModelProps[]>;
     // (undocumented)
     queryModelRanges(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
+    // Warning: (ae-incompatible-release-tags) The symbol "queryRows" is marked as @public, but its signature references "QueryQuota" which is marked as @internal
+    // Warning: (ae-incompatible-release-tags) The symbol "queryRows" is marked as @public, but its signature references "QueryResponse" which is marked as @internal
+    // 
     // (undocumented)
-    queryPage(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object, _options?: PageOptions): Promise<any[]>;
-    // (undocumented)
-    queryRowCount(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object): Promise<number>;
+    queryRows(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority): Promise<QueryResponse>;
     // (undocumented)
     readFontJson(_iModelToken: IModelTokenProps): Promise<any>;
     // @beta (undocumented)
@@ -2538,9 +2539,6 @@ export function isPowerOfTwo(num: number): boolean;
 
 // @internal (undocumented)
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
-
-// @beta
-export const kPagingDefaultOptions: PageOptions;
 
 // @public (undocumented)
 export interface LatAndLong {
@@ -3105,20 +3103,6 @@ export interface OpenAPISchema {
 // @internal (undocumented)
 export const OPERATION: unique symbol;
 
-// @public (undocumented)
-export interface PageableECSql {
-    query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
-    queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
-    queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
-}
-
-// @public
-export interface PageOptions {
-    size?: number;
-    start?: number;
-    stepsPerTick?: number;
-}
-
 // @public
 export class Placement2d implements Placement2dProps {
     constructor(origin: Point2d, angle: Angle, bbox: ElementAlignedBox2d);
@@ -3498,6 +3482,50 @@ export namespace Quantization {
     export function quantize(pos: number, origin: number, scale: number): number;
     // (undocumented)
     export function unquantize(qpos: number, origin: number, scale: number): number;
+}
+
+// @public
+export interface QueryLimit {
+    maxRowAllowed?: number;
+    startRowOffset?: number;
+}
+
+// @public
+export enum QueryPriority {
+    // (undocumented)
+    High = 2,
+    // (undocumented)
+    Low = 0,
+    // (undocumented)
+    Normal = 1
+}
+
+// @internal
+export interface QueryQuota {
+    maxMemoryAllowed?: number;
+    maxTimeAllowed?: number;
+}
+
+// @internal
+export interface QueryResponse {
+    // (undocumented)
+    rows: any[];
+    // (undocumented)
+    status: QueryResponseStatus;
+}
+
+// @internal
+export enum QueryResponseStatus {
+    // (undocumented)
+    Done = 2,
+    // (undocumented)
+    Error = 5,
+    // (undocumented)
+    Partial = 3,
+    // (undocumented)
+    PostError = 6,
+    // (undocumented)
+    Timeout = 4
 }
 
 // @public

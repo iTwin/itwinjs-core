@@ -55,12 +55,12 @@ export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): Del
     if (!node.isCheckboxEnabled)
       item.isCheckboxDisabled = true;
   }
-
   if (Object.keys(colorOverrides).length > 0)
     style.colorOverrides = colorOverrides;
   if (Object.keys(style).length > 0)
     item.style = style;
-
+  if (node.extendedData)
+    item.extendedData = node.extendedData;
   return item;
 };
 

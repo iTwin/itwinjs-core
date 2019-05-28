@@ -112,7 +112,6 @@ import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OidcClient } from '@bentley/imodeljs-clients';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
-import { PageOptions } from '@bentley/imodeljs-common';
 import { Path } from '@bentley/geometry-core';
 import { Placement2d } from '@bentley/imodeljs-common';
 import { PlacementProps } from '@bentley/imodeljs-common';
@@ -131,6 +130,10 @@ import { QParams2d } from '@bentley/imodeljs-common';
 import { QParams3d } from '@bentley/imodeljs-common';
 import { QPoint3d } from '@bentley/imodeljs-common';
 import { QPoint3dList } from '@bentley/imodeljs-common';
+import { QueryLimit } from '@bentley/imodeljs-common';
+import { QueryPriority } from '@bentley/imodeljs-common';
+import { QueryQuota } from '@bentley/imodeljs-common';
+import { QueryResponse } from '@bentley/imodeljs-common';
 import { Range1d } from '@bentley/geometry-core';
 import { Range1dProps } from '@bentley/geometry-core';
 import { Range2d } from '@bentley/geometry-core';
@@ -3123,10 +3126,12 @@ export class IModelConnection extends IModel {
     readonly openMode: OpenMode;
     // @beta
     static openSnapshot(fileName: string): Promise<IModelConnection>;
-    query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any>;
+    // @alpha
+    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
-    queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
+    // @internal
+    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse>;
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     saveChanges(description?: string): Promise<void>;
     readonly selectionSet: SelectionSet;
@@ -4473,6 +4478,10 @@ export class PropertyRecord {
     // (undocumented)
     description?: string;
     // (undocumented)
+    extendedData?: {
+        [key: string]: any;
+    };
+    // (undocumented)
     isDisabled?: boolean;
     // (undocumented)
     isMerged?: boolean;
@@ -5777,7 +5786,7 @@ export namespace SubCategoriesCache {
     export type QueueFunc = () => void;
     // (undocumented)
     export class Request {
-        constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery?: number, maxSubCategoriesPerPage?: number);
+        constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery?: number);
         // (undocumented)
         cancel(): void;
         // (undocumented)
@@ -5786,9 +5795,7 @@ export namespace SubCategoriesCache {
         readonly wasCanceled: boolean;
     }
     // (undocumented)
-    export type Result = ResultPage[];
-    // (undocumented)
-    export type ResultPage = ResultRow[];
+    export type Result = ResultRow[];
     // (undocumented)
     export interface ResultRow {
         // (undocumented)

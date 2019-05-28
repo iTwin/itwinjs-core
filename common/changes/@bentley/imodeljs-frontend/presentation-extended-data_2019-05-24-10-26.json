@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "PropertyRecord can now optionally have `extendedData` which is a map of `any`",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

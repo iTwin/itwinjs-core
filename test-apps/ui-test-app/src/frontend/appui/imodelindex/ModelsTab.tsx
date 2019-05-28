@@ -250,16 +250,17 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   private async readDocCodes() {
     // Query categories and add them to state
     const ecsql = "SELECT c.ecinstanceid FROM meta.ECClassDef c WHERE c.Name='PhysicalPartition'";
-    const rows = await this.props.iModelConnection!.queryPage(ecsql);
+    const rows = [];
+    for await (const row of this.props.iModelConnection!.query(ecsql)) {
+      rows.push(row);
+    }
     if (rows.length !== 1)
       return;
 
     const physicalClassId = rows[0].id as string;
 
     const ecsql2 = "SELECT me.ecinstanceid, me.codevalue as codevalue, me.ecclassid as classid, l.userlabel as userlabel, l.jsonproperties as jsonproperties FROM bis.InformationContentElement me JOIN bis.repositorylink l USING bis.ElementHasLinks";
-    const models = await this.props.iModelConnection!.queryPage(ecsql2);
-
-    for (const model of models) {
+    for await (const model of this.props.iModelConnection!.query(ecsql2)) {
       const name: string = model.codevalue ? model.codevalue as string : "";
       const description: string = model.userlabel ? model.userlabel as string : "";
       const attributes = model.jsonproperties;

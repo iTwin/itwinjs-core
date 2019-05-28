@@ -27,6 +27,7 @@ export interface ItemJSON {
   values: ValuesDictionary<ValueJSON>;
   displayValues: ValuesDictionary<DisplayValueJSON>;
   mergedFieldNames: string[];
+  extendedData?: { [key: string]: any };
 }
 
 /**
@@ -48,6 +49,8 @@ export class Item {
   public displayValues: ValuesDictionary<DisplayValue>;
   /** List of field names whose values are merged (see [Merging values]($docs/learning/content/Terminology#value-merging)) */
   public mergedFieldNames: string[];
+  /** Extended data injected into this content item */
+  public extendedData?: { [key: string]: any };
 
   /**
    * Creates an instance of Item.
@@ -58,9 +61,10 @@ export class Item {
    * @param values Raw values dictionary
    * @param displayValues Display values dictionary
    * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/learning/content/Terminology#value-merging))
+   * @param extendedData Extended data injected into this content item
    */
   public constructor(primaryKeys: InstanceKey[], label: string, imageId: string, classInfo: ClassInfo | undefined,
-    values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[]) {
+    values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: { [key: string]: any }) {
     this.primaryKeys = primaryKeys;
     this.label = label;
     this.imageId = imageId;
@@ -68,6 +72,7 @@ export class Item {
     this.values = values;
     this.displayValues = displayValues;
     this.mergedFieldNames = mergedFieldNames;
+    this.extendedData = extendedData;
   }
 
   /**
