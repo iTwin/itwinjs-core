@@ -29,7 +29,7 @@ describe("ECSql Query", () => {
     imodel5.closeSnapshot();
   });
 
-  it.only("Paging Results", async () => {
+  it("Paging Results", async () => {
     const getRowPerPage = (nPageSize: number, nRowCount: number) => {
       const nRowPerPage = nRowCount / nPageSize;
       const nPages = Math.ceil(nRowPerPage);
