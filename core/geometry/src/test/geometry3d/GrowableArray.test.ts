@@ -337,7 +337,7 @@ describe("GrowablePoint3dArray", () => {
     ck.checkpoint("Solids.PointMoments");
     // https://en.wikipedia.org/wiki/List_of_second_moments_of_area
     // https://en.wikipedia.org/wiki/List_of_moments_of_inertia
-    // Filled rectngular area with x size b, y size h, centered at origin.
+    // Filled rectangular area with x size b, y size h, centered at origin.
     const b = 6.0;
     const h = 2.0;
     const IX = b * h * h * h / 12.0;
@@ -454,7 +454,7 @@ describe("GrowablePoint3dArray", () => {
       xyzPoints.push(p);
 
     ck.testTrue(GrowableXYZArray.isAlmostEqual(xyzPoints, xyzPoints), "isAlmostEqual duplicate pair");
-    ck.testTrue(GrowableXYZArray.isAlmostEqual(undefined, undefined), "isAlmostEqual undfined pair");
+    ck.testTrue(GrowableXYZArray.isAlmostEqual(undefined, undefined), "isAlmostEqual undefined pair");
 
     ck.testFalse(GrowableXYZArray.isAlmostEqual(undefined, xyzPoints), "isAlmostEqual one undefined");
     ck.testFalse(GrowableXYZArray.isAlmostEqual(xyzPoints, undefined), "isAlmostEqual one undefined");
@@ -520,16 +520,16 @@ describe("GrowablePoint3dArray", () => {
 
     const array1 = new GrowableXYZArray();
     // transfers with bad source index
-    ck.testExactNumber(0, array1.pushFromGrowableXYZArray(array0, -1), "invalide source index for pushFromGrowable");
-    ck.testExactNumber(0, array1.pushFromGrowableXYZArray(array0, n0 + 1), "invalide source index for pushFromGrowable");
-    // Any trasnfer into empty array is bad . ..
+    ck.testExactNumber(0, array1.pushFromGrowableXYZArray(array0, -1), "invalid source index for pushFromGrowable");
+    ck.testExactNumber(0, array1.pushFromGrowableXYZArray(array0, n0 + 1), "invalid source index for pushFromGrowable");
+    // Any transfer into empty array is bad . ..
     ck.testFalse(array1.transferFromGrowableXYZArray(-1, array0, 1), "invalid source index transferFromGrowable");
     ck.testFalse(array1.transferFromGrowableXYZArray(0, array0, 1), "invalid source index transferFromGrowable");
     ck.testFalse(array1.transferFromGrowableXYZArray(100, array0, 1), "invalid source index transferFromGrowable");
 
-    ck.testUndefined(array1.crossProductIndexIndexIndex(-1, 0, 1), "bad index0 for cross prodcut");
-    ck.testUndefined(array1.crossProductIndexIndexIndex(0, 100, 1), "bad index1 for cross prodcut");
-    ck.testUndefined(array1.crossProductIndexIndexIndex(0, 1, 100), "bad index2 for cross prodcut");
+    ck.testUndefined(array1.crossProductIndexIndexIndex(-1, 0, 1), "bad index0 for cross product");
+    ck.testUndefined(array1.crossProductIndexIndexIndex(0, 100, 1), "bad index1 for cross product");
+    ck.testUndefined(array1.crossProductIndexIndexIndex(0, 1, 100), "bad index2 for cross product");
     const spacePoint = Point3d.create(1, 2, 3);
     ck.testUndefined(array1.crossProductXYAndZIndexIndex(spacePoint, -1, 0), "bad indexA for cross product");
     ck.testUndefined(array1.crossProductXYAndZIndexIndex(spacePoint, 0, -1), "bad indexB for cross product");
@@ -571,7 +571,7 @@ describe("GrowablePoint3dArray", () => {
   it("Compress", () => {
     const ck = new Checker();
     const data = new GrowableFloat64Array();
-    data.compressAdjcentDuplicates(); // nothing happens on empty array.
+    data.compressAdjacentDuplicates(); // nothing happens on empty array.
     const n0 = 22;
     for (let i = 0; i < n0; i++) {
       const c = Math.cos(i * i);
@@ -588,7 +588,7 @@ describe("GrowablePoint3dArray", () => {
         data.push(i);
     }
     const n1 = data.length;
-    data.compressAdjcentDuplicates(0.0001);
+    data.compressAdjacentDuplicates(0.0001);
     ck.testExactNumber(n0, data.length, "compressed array big length", n1);
     expect(ck.getNumErrors()).equals(0);
   });

@@ -79,7 +79,7 @@ export class CurveLocationDetail {
    * * e.g. CurvePrimitive.moveSignedDistanceFromFraction
    */
   public curveSearchStatus?: CurveSearchStatus;
-  /** A context-specific addtional point */
+  /** A context-specific additional point */
   public pointQ: Point3d;  // extra point for use in computations
 
   public constructor() {
@@ -220,7 +220,7 @@ export class CurveLocationDetail {
     let a = requestedSignedDistance;
     let status = CurveSearchStatus.success;
     if (!allowExtension && !Geometry.isIn01(endFraction)) {
-      // cap the movement at the endponit
+      // cap the movement at the endpoint
       if (endFraction < 0.0) {
         a = - curve.curveLengthBetweenFractions(startFraction, 0.0);
         endFraction = 0.0;

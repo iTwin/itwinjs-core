@@ -26,7 +26,7 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
  * @public
  */
 export class ConvexClipPlaneSet implements Clipper {
-  /** Value acting as "at infinity" for coordinaates along a ray. */
+  /** Value acting as "at infinity" for coordinates along a ray. */
   public static readonly hugeVal = 1e37;
   private _planes: ClipPlane[];
   // private _parity: number;   <--- Not yet used
@@ -473,7 +473,7 @@ export class ConvexClipPlaneSet implements Clipper {
   /**
    * test many points.  Distribute them to arrays depending on in/out result.
    * @param points points to test
-   * @param inOrOn points tahtare in or on the set
+   * @param inOrOn points that are in or on the set
    * @param out points that are out.
    */
   public clipPointsOnOrInside(points: Point3d[], inOrOn: Point3d[], out: Point3d[]) {
@@ -490,12 +490,12 @@ export class ConvexClipPlaneSet implements Clipper {
   /**
    * Clip a polygon to the planes of the clip plane set.
    * * For a convex input polygon, the output is another convex polygon.
-   * * For a nonconvex input, the output may have double-back edges along plane intersections.  This is still a valid clip in a parity sense.
+   * * For a non-convex input, the output may have double-back edges along plane intersections.  This is still a valid clip in a parity sense.
    * * The containingPlane parameter allows callers within ConvexClipPlane set to bypass planes known to contain the polygon
    * @param input input polygon, usually convex.
    * @param output output polygon
    * @param work work array.
-   * @param containingPlane if this plane is found inthe convex set, it is NOT applied.
+   * @param containingPlane if this plane is found in the convex set, it is NOT applied.
    */
   public polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work: GrowableXYZArray, planeToSkip?: ClipPlane) {
     if (input instanceof GrowableXYZArray)
@@ -580,7 +580,7 @@ export class ConvexClipPlaneSet implements Clipper {
     const normalRows = Matrix3d.createIdentity();
     const allPlanes = this._planes;
     const n = allPlanes.length;
-    let numPoints = 0;    // explicityly count points -- can't wait to end for points.length because it may be an optional output.
+    let numPoints = 0;    // explicitly count points -- can't wait to end for points.length because it may be an optional output.
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++)
         for (let k = j + 1; k < n; k++) {
@@ -616,9 +616,9 @@ export class ConvexClipPlaneSet implements Clipper {
   }
   /**
    * Add planes for z-direction clip between low and high z levels.
-   * @param invisible value to apply to the `invisble` bit for the new planes
+   * @param invisible value to apply to the `invisible` bit for the new planes
    * @param zLow low z value.  The plane clips out points with z below this.
-   * @param zHigh high z value.  The plane clips out points iwth z above this.
+   * @param zHigh high z value.  The plane clips out points with z above this.
    */
   public addZClipPlanes(invisible: boolean, zLow?: number, zHigh?: number) {
     if (zLow !== undefined)

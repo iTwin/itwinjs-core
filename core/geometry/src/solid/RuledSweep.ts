@@ -50,7 +50,7 @@ export class RuledSweep extends SolidPrimitive {
   /** Return a reference to the array of SweepContour. */
   public sweepContoursRef(): SweepContour[] { return this._contours; }
   /** Return clones of all the sweep contours
-   * * See also cloneContours, which returns the spatial contours without their local coordinate system defintions)
+   * * See also cloneContours, which returns the spatial contours without their local coordinate system definitions)
    */
   public cloneSweepContours(): SweepContour[] {
     const result = [];
@@ -91,7 +91,7 @@ export class RuledSweep extends SolidPrimitive {
   /** Return a coordinate frame (right handed unit vectors)
    * * origin on base contour
    * * x, y directions from base contour.
-   * * z direction perpenedicular
+   * * z direction perpendicular
    */
   public getConstructiveFrame(): Transform | undefined {
     if (this._contours.length === 0) return undefined;
@@ -196,7 +196,7 @@ export class RuledSweep extends SolidPrimitive {
     return undefined;
   }
   /**
-   * Return true if this is a closed volume, as obseverd by
+   * Return true if this is a closed volume, as observed by
    * * cap flag
    * identical first and last contours.
    */

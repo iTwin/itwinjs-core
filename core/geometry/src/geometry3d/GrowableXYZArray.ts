@@ -47,11 +47,11 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   /** Return the number of float64 in use. */
   public get float64Length() { return this._xyzInUse * 3; }
   /** Return the raw packed data.
-   * * Note that the length of the returned FLoat64Array is a count of doubles, and includes the excess capacity
+   * * Note that the length of the returned Float64Array is a count of doubles, and includes the excess capacity
    */
   public float64Data(): Float64Array { return this._data; }
 
-  /** If necessary, increase the capacity to a new pointCount.  Current coordinates and point count (length) are unchnaged. */
+  /** If necessary, increase the capacity to a new pointCount.  Current coordinates and point count (length) are unchanged. */
   public ensureCapacity(pointCapacity: number) {
     if (pointCapacity > this._xyzCapacity) {
       const newData = new Float64Array(pointCapacity * 3);
@@ -105,7 +105,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    * * A GrowableXYZArray
    * * Any json object satisfying Point3d.isXYAndZ
    * * Any json object satisfying Point3d.isXAndY
-   * * A FLoat64Array of doubles, interpretted as xyzxyz
+   * * A Float64Array of doubles, interpreted as xyzxyz
    * * An array of any of the above
    * @param data source points.
    * @param result optional pre-allocated GrowableXYZArray to clear and fill.
@@ -137,7 +137,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    * * A GrowableXYZArray
    * * Any json object satisfying Point3d.isXYAndZ
    * * Any json object satisfying Point3d.isXAndY
-   * * A FLoat64Array of doubles, interpretted as xyzxyz
+   * * A Float64Array of doubles, interpreted as xyzxyz
    * * An array of any of the above
    * @returns the number of points added.
    */
@@ -157,7 +157,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     else if (Geometry.isNumberArray(p, 2))
       this.pushXYZ(p[0], p[1], 0.0);
     else if (Array.isArray(p)) {
-      // diret recursion re-wraps p and goes infinite.  unroll here .
+      // direct recursion re-wraps p and goes infinite.  unroll here .
       for (const q of p)
         this.pushFrom(q);
     } else if (Point3d.isXYAndZ(p))
@@ -203,7 +203,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
       this._xyzInUse--;
   }
   /**
-   * Test if index is valid for an xyz (point or vector) withibn this array
+   * Test if index is valid for an xyz (point or vector) within this array
    * @param index xyz index to test.
    */
   public isIndexValid(index: number): boolean {
@@ -275,8 +275,8 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   }
 
   /**
-   * Read coordinates from source array, place them at indexe within this array.
-   * @param destIndex point index where coordinats are to be placed in this array
+   * Read coordinates from source array, place them at index within this array.
+   * @param destIndex point index where coordinates are to be placed in this array
    * @param source source array
    * @param sourceIndex point index in source array
    * @returns true if destIndex and sourceIndex are both valid.
@@ -349,7 +349,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     return true;
   }
   /**
-   * Set the coordinates of a single point given as coordintes
+   * Set the coordinates of a single point given as coordinates
    * @param pointIndex index of point to set
    * @param x x coordinate
    * @param y y coordinate
@@ -417,7 +417,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
   }
 
-  /** multiply each xyz (as a vector) by matrix inverse transpse, renormalize the vector, replace values.
+  /** multiply each xyz (as a vector) by matrix inverse transpose, renormalize the vector, replace values.
    * * This is the way to apply a matrix (possibly with skew and scale) to a surface normal, and
    *      have it end up perpendicular to the transformed in-surface vectors.
    * * Return false if matrix is not invertible or if any normalization fails.

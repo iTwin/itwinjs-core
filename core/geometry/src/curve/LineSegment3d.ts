@@ -38,11 +38,11 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   private _point0: Point3d;
   private _point1: Point3d;
   /** Return REFERENCE to the start point of this segment.
-   * * (This is distinct from the `CurvePrimtive` abstract method `endPoint()` which creates a returned point
+   * * (This is distinct from the `CurvePrimitive` abstract method `endPoint()` which creates a returned point
    */
   public get point0Ref(): Point3d { return this._point0; }
   /** Return REFERENCE to the end point of this segment.
-   * * (This is distinct from the `CurvePrimtive` abstract method `endPoint()` which creates a returned point
+   * * (This is distinct from the `CurvePrimitive` abstract method `endPoint()` which creates a returned point
    */
   public get point1Ref(): Point3d { return this._point1; }
   /**
@@ -58,7 +58,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   private constructor(point0: Point3d, point1: Point3d) { super(); this._point0 = point0; this._point1 = point1; }
   /** Set the start and endpoints by capturing input references. */
   public setRefs(point0: Point3d, point1: Point3d) { this._point0 = point0; this._point1 = point1; }
-  /** Set the start and endponits by cloning the input parameters. */
+  /** Set the start and endpoints by cloning the input parameters. */
   public set(point0: Point3d, point1: Point3d) { this._point0 = point0.clone(); this._point1 = point1.clone(); }
   /** copy (clone) data from other */
   public setFrom(other: LineSegment3d) { this._point0.setFrom(other._point0); this._point1.setFrom(other._point1); }
@@ -100,7 +100,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     c.tryTransformInPlace(transform);
     return c;
   }
-  /** Create with start and end points.  The ponit contents are cloned into the LineSegment3d. */
+  /** Create with start and end points.  The point contents are cloned into the LineSegment3d. */
   public static create(point0: Point3d, point1: Point3d, result?: LineSegment3d) {
     if (result) {
       result.set(point0, point1);  // and this will clone them !!
@@ -114,7 +114,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param x1 end point x coordinate.
    * @param y1 end point y coordinate.
    * @param z z coordinate to use for both points.
-   * @param result optional existing LineSegment to be reinitiazlized.
+   * @param result optional existing LineSegment to be reinitialized.
    */
   public static createXYXY(x0: number, y0: number, x1: number, y1: number, z: number = 0, result?: LineSegment3d) {
     if (result) {
@@ -131,7 +131,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param x1 end point x coordinate.
    * @param y1 end point y coordinate.
    * @param z z coordinate to use for both points.
-   * @param result optional existing LineSegment to be reinitiazlized.
+   * @param result optional existing LineSegment to be reinitialized.
    */
   public static createXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: LineSegment3d) {
     if (result) {
@@ -298,7 +298,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   }
 
   /**
-   * Find intervals of this curveprimitve that are interior to a clipper
+   * Find intervals of this curve primitive that are interior to a clipper
    * @param clipper clip structure (e.g. clip planes)
    * @param announce function to be called announcing fractional intervals"  ` announce(fraction0, fraction1, curvePrimitive)`
    */

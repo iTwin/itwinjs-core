@@ -319,7 +319,7 @@ describe("GrowableXYArray", () => {
       xyPoints.push(p);
 
     ck.testTrue(GrowableXYArray.isAlmostEqual(xyPoints, xyPoints), "isAlmostEqual duplicate pair");
-    ck.testTrue(GrowableXYArray.isAlmostEqual(undefined, undefined), "isAlmostEqual undfined pair");
+    ck.testTrue(GrowableXYArray.isAlmostEqual(undefined, undefined), "isAlmostEqual undefined pair");
 
     ck.testFalse(GrowableXYArray.isAlmostEqual(undefined, xyPoints), "isAlmostEqual one undefined");
     ck.testFalse(GrowableXYArray.isAlmostEqual(xyPoints, undefined), "isAlmostEqual one undefined");
@@ -391,14 +391,14 @@ describe("GrowableXYArray", () => {
     // transfers with bad source index
     ck.testExactNumber(0, array1.pushFromGrowableXYArray(array0, -1), "invalid source index for pushFromGrowable");
     ck.testExactNumber(0, array1.pushFromGrowableXYArray(array0, n0 + 1), "invalid source index for pushFromGrowable");
-    // Any trasnfer into empty array is bad . ..
+    // Any transfer into empty array is bad . ..
     ck.testFalse(array1.transferFromGrowableXYArray(-1, array0, 1), "invalid source index transferFromGrowable");
     ck.testFalse(array1.transferFromGrowableXYArray(0, array0, 1), "invalid source index transferFromGrowable");
     ck.testFalse(array1.transferFromGrowableXYArray(100, array0, 1), "invalid source index transferFromGrowable");
 
-    ck.testUndefined(array1.crossProductIndexIndexIndex(-1, 0, 1), "bad index0 for cross prodcut");
-    ck.testUndefined(array1.crossProductIndexIndexIndex(0, 100, 1), "bad index1 for cross prodcut");
-    ck.testUndefined(array1.crossProductIndexIndexIndex(0, 1, 100), "bad index2 for cross prodcut");
+    ck.testUndefined(array1.crossProductIndexIndexIndex(-1, 0, 1), "bad index0 for cross product");
+    ck.testUndefined(array1.crossProductIndexIndexIndex(0, 100, 1), "bad index1 for cross product");
+    ck.testUndefined(array1.crossProductIndexIndexIndex(0, 1, 100), "bad index2 for cross product");
     const spacePoint = Point2d.create(1, 2);
     ck.testUndefined(array1.crossProductXAndYIndexIndex(spacePoint, -1, 0), "bad indexA for cross product");
     ck.testUndefined(array1.crossProductXAndYIndexIndex(spacePoint, 0, -1), "bad indexB for cross product");
@@ -440,7 +440,7 @@ describe("GrowableXYArray", () => {
   it("Compress", () => {
     const ck = new Checker();
     const data = new GrowableFloat64Array();
-    data.compressAdjcentDuplicates(); // nothing happens on empty array.
+    data.compressAdjacentDuplicates(); // nothing happens on empty array.
     const n0 = 22;
     for (let i = 0; i < n0; i++) {
       const c = Math.cos(i * i);
@@ -457,7 +457,7 @@ describe("GrowableXYArray", () => {
         data.push(i);
     }
     const n1 = data.length;
-    data.compressAdjcentDuplicates(0.0001);
+    data.compressAdjacentDuplicates(0.0001);
     ck.testExactNumber(n0, data.length, "compressed array big length", n1);
     expect(ck.getNumErrors()).equals(0);
   });

@@ -12,7 +12,7 @@ import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BezierCoffs, UnivariateBezier } from "../numerics/BezierPolynomials";
 import { KnotVector } from "./KnotVector";
 /**
- * Shared implmentation details for derived bezier curve classes
+ * Shared implementation details for derived bezier curve classes
  * * BezierCurve3d implements with blockSize 3.
  * * BezierCurve3dH implements with blockSize 4.
  * @public
@@ -43,7 +43,7 @@ export class Bezier1dNd {
   public get order() { return this._order; }
   /** return the packed data array.  This is a REFERENCE to the array. */
   public get packedData() { return this._packedData; }
-  /** Create a Bezier1dNd, using the structure of `data[0]` to determine the beizer order. */
+  /** Create a Bezier1dNd, using the structure of `data[0]` to determine the bezier order. */
   public static create(data: Point2d[] | Point3d[] | Point4d[]): Bezier1dNd | undefined {
     if (data.length < 1)
       return undefined;
@@ -189,7 +189,7 @@ export class Bezier1dNd {
   /**
    * Compute new control points to "clamp" bspline unsaturated support to saturated form.
    * * At input time, the control points are associated with the input knots (unsaturated)
-   * * At output, they control points are modified by repeated knot insertion to be fully clampled.
+   * * At output, they control points are modified by repeated knot insertion to be fully clamped.
    * @param knots knot values for the current (unsaturated) pole set
    * @param spanIndex index of span whose (unsaturated) poles are in the bezier.
    * @param optional function for `setInterval (knotA, knotB)` call to announce knot limits.
@@ -233,7 +233,7 @@ export class Bezier1dNd {
     return true;
   }
   /**
-   * Saturate a univaraite bspline coefficient array in place
+   * Saturate a univariate bspline coefficient array in place
    * * On input, the array is the coefficients one span of a bspline, packed in an array of `(knots.order)` values.
    * * These are modified in place, and on return are a bezier for the same knot interval.
    * @param coffs input as bspline coefficients, returned as bezier coefficients
@@ -280,7 +280,7 @@ export class Bezier1dNd {
   }
   /**
    * Apply deCasteljou interpolations to isolate a smaller bezier polygon, representing interval 0..fraction of the original
-   * @param fracton "end" fraction for split.
+   * @param fraction "end" fraction for split.
    * @returns false if fraction is 0 -- no changes applied.
    */
   public subdivideInPlaceKeepLeft(fraction: number): boolean {
@@ -300,7 +300,7 @@ export class Bezier1dNd {
 
   /**
    * Apply deCasteljou interpolations to isolate a smaller bezier polygon, representing interval 0..fraction of the original
-   * @param fracton "end" fraction for split.
+   * @param fraction "end" fraction for split.
    * @returns false if fraction is 0 -- no changes applied.
    */
   public subdivideInPlaceKeepRight(fraction: number): boolean {
@@ -317,9 +317,9 @@ export class Bezier1dNd {
   }
 
   /**
-   * Saturate a univaraite bspline coefficient array in place
-   * @param fracton0 fracton for first split.   This is the start of the output polygon
-   * @param fracton1 fracton for first split.   This is the start of the output polygon
+   * Saturate a univariate bspline coefficient array in place
+   * @param fraction0 fraction for first split.   This is the start of the output polygon
+   * @param fraction1 fraction for first split.   This is the start of the output polygon
    * @return false if fractions are (almost) identical.
    */
   public subdivideToIntervalInPlace(fraction0: number, fraction1: number): boolean {

@@ -180,21 +180,21 @@ export class TransitionSpiral3d extends CurvePrimitive {
   public static averageCurvatureR0R1(r0: number, r1: number): number {
     return 0.5 * (TransitionSpiral3d.radiusToCurvature(r0) + TransitionSpiral3d.radiusToCurvature(r1));
   }
-  /** Return the arclength of a transition spiral with given sweep and radius pair. */
+  /** Return the arc length of a transition spiral with given sweep and radius pair. */
   public static radiusRadiusSweepRadiansToArcLength(radius0: number, radius1: number, sweepRadians: number): number {
     return Math.abs(sweepRadians / TransitionSpiral3d.averageCurvatureR0R1(radius0, radius1));
   }
 
   /** Return the turn angle for spiral of given length between two radii */
-   public static radiusRadiusLengthToSweepRadians(radius0: number, radius1: number, arcLength: number): number {
+  public static radiusRadiusLengthToSweepRadians(radius0: number, radius1: number, arcLength: number): number {
     return TransitionSpiral3d.averageCurvatureR0R1(radius0, radius1) * arcLength;
   }
 
-/** Reuturn the end radius for spiral of given start radius, length, and turn angle. */
+  /** Return the end radius for spiral of given start radius, length, and turn angle. */
   public static radius0LengthSweepRadiansToRadius1(radius0: number, arcLength: number, sweepRadians: number) {
     return TransitionSpiral3d.curvatureToRadius((2.0 * sweepRadians / arcLength) - TransitionSpiral3d.radiusToCurvature(radius0));
   }
-/** Return the start radius for spiral of given end radius, length, and turn angle. */
+  /** Return the start radius for spiral of given end radius, length, and turn angle. */
   public static radius1LengthSweepRadiansToRadius0(radius1: number, arcLength: number, sweepRadians: number) {
     return TransitionSpiral3d.curvatureToRadius((2.0 * sweepRadians / arcLength) - TransitionSpiral3d.radiusToCurvature(radius1));
   }
@@ -210,7 +210,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
   public localToWorld: Transform;
   /** stroked approximation */
   private _strokes: LineString3d;
-  /** Total curve arclength (computed) */
+  /** Total curve arc length (computed) */
   private _arcLength01: number;
   /** Curvatures (inverse radii) at start and end */
   private _curvature01: Segment1d;
@@ -240,7 +240,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     this.refreshComputedProperties();
     this._properties = properties;
   }
-  /** Return the origial defining properties (if any) saved by the constructor. */
+  /** Return the original defining properties (if any) saved by the constructor. */
   public get originalProperties(): TransitionConditionalProperties | undefined { return this._properties; }
   /** default spiral type name. (clothoid) */
   public static readonly defaultSpiralType = "clothoid";
@@ -358,7 +358,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
       fractionInterval ? fractionInterval.clone() : Segment1d.create(0, 1),
       localToWorld, data.curveLength!, data1);
   }
-/** Copy all defining data from another spiral. */
+  /** Copy all defining data from another spiral. */
   public setFrom(other: TransitionSpiral3d): TransitionSpiral3d {
     this.localToWorld.setFrom(other.localToWorld);
     this.radius01.setFrom(other.radius01);
@@ -373,7 +373,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
   public clone(): TransitionSpiral3d {
     return TransitionSpiral3d.createRadiusRadiusBearingBearing(this.radius01, this.bearing01, this.activeFractionInterval, this.localToWorld);
   }
-/** apply `transform` to this spiral's local to world transform. */
+  /** apply `transform` to this spiral's local to world transform. */
   public tryTransformInPlace(transform: Transform): boolean {
     transform.multiplyTransformTransform(this.localToWorld, this.localToWorld);
     return true;
@@ -384,7 +384,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     result.tryTransformInPlace(transform);  // ok, we're confident it will always work.
     return result;
   }
-/** Return the spiral start point. */
+  /** Return the spiral start point. */
   public startPoint(): Point3d { return this._strokes.startPoint(); }
   /** return the spiral end point. */
   public endPoint(): Point3d { return this._strokes.endPoint(); }
@@ -400,7 +400,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
   public curveLength() { return this._arcLength01; }
   /** Test if `other` is an instance of `TransitionSpiral3d` */
   public isSameGeometryClass(other: any): boolean { return other instanceof TransitionSpiral3d; }
-  /** Add strokes from this sprial to `dest` */
+  /** Add strokes from this spiral to `dest` */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void { this._strokes.emitStrokes(dest, options); }
   /** emit srokeable fragments to `dest` handler. */
   public emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void {
@@ -431,7 +431,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     this.activeFractionInterval.reverseInPlace();
     this._strokes.reverseInPlace();
   }
-  /** Evalue curve point with respect to fraction. */
+  /** Evaluate curve point with respect to fraction. */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
     fraction = Geometry.clampToStartEnd(fraction, 0, 1);
     const numStrokes = this._strokes.points.length - 1;
@@ -445,7 +445,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     this.localToWorld.multiplyPoint3d(result, result);
     return result;
   }
-  /** Evalue curve point and derivative with respect to fraction. */
+  /** Evaluate curve point and derivative with respect to fraction. */
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
     result = result ? result : Ray3d.createZero();
     this.fractionToPoint(fraction, result.origin);
@@ -487,7 +487,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleTransitionSpiral(this);
   }
-  /** extend the ragne by the strokes of the spiral */
+  /** extend the range by the strokes of the spiral */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     this._strokes.extendRange(rangeToExtend, transform);
   }

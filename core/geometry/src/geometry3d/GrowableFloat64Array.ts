@@ -18,7 +18,7 @@ export type BlockComparisonFunction = (data: Float64Array, blockSize: number, in
 /**
  * A `GrowableFloat64Array` is Float64Array accompanied by a count of how many of the array's entries are considered in use.
  * * In C++ terms, this is like an std::vector
- * * As entries are added to the array, the buffer is reallocated as needed to accomodate.
+ * * As entries are added to the array, the buffer is reallocated as needed to accommodate.
  * * The reallocations leave unused space to accept further additional entries without reallocation.
  * * The `length` property returns the number of entries in use.
  * * the `capacity` property returns the (usually larger) length of the (overallocated) Float64Array.
@@ -172,7 +172,7 @@ export class GrowableFloat64Array {
   /**
    * * Reduce the length by one.
    * * Note that there is no method return value -- use `back` to get that value before `pop()`
-   * * (As with std::vector, seprating the `pop` from the value access elmiinates error testing from `pop` call)
+   * * (As with std::vector, separating the `pop` from the value access eliminates error testing from `pop` call)
    */
   public pop() {
     // Could technically access outside of array, if filled and then reduced using pop (similar to C
@@ -181,11 +181,11 @@ export class GrowableFloat64Array {
       this._inUse--;
     }
   }
-/** Access by index, without bounds check */
+  /** Access by index, without bounds check */
   public atUncheckedIndex(index: number): number {
     return this._data[index];
   }
-/** Access the 0-index member, without bounds check */
+  /** Access the 0-index member, without bounds check */
   public front() {
     return this._data[0];
   }
@@ -239,7 +239,7 @@ export class GrowableFloat64Array {
    * * compress out multiple copies of values.
    * * this is done in the current order of the array.
    */
-  public compressAdjcentDuplicates(tolerance: number = 0.0) {
+  public compressAdjacentDuplicates(tolerance: number = 0.0) {
     const data = this._data;
     const n = this._inUse;
     if (n === 0)

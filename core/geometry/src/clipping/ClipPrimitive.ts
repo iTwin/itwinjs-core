@@ -45,15 +45,15 @@ export enum ClipMaskXYZRangePlanes {
 }
 
 /**
- * * ClipPrimitve is a base class for clipping implementations that use
+ * * ClipPrimitive is a base class for clipping implementations that use
  *   * A ClipPlaneSet designated "clipPlanes"
  *   * an "invisible" flag
  * * When constructed directly, objects of type ClipPrimitive (directly, not through a derived class) will have just planes
  * * Derived classes (e.g. ClipShape) carry additional data of a swept shape.
  * * ClipPrimitive can be constructed with no planes.
  *     * Derived class is responsible for filling the plane sets.
- *     * At discrtionn of derived classes, plane construction can be done at construction time or "on demand when" queries call `ensurePlaneSets ()`
- * * ClipPrimitive can be constructetd with planes (and no derived class).
+ *     * At discretion of derived classes, plane construction can be done at construction time or "on demand when" queries call `ensurePlaneSets ()`
+ * * ClipPrimitive can be constructed with planes (and no derived class).
  * @public
  */
 export class ClipPrimitive {
@@ -61,12 +61,12 @@ export class ClipPrimitive {
   protected _clipPlanes?: UnionOfConvexClipPlaneSets;
   /** If true, pointInside inverts the sense of the pointInside for the _clipPlanes */
   protected _invisible: boolean;
-/** Get a reference to the `UnionOfConvexClipPlaneSets`.
- *  * It triggers construction of the sets by `this.ensurePlaneSets()`.
- *  * Derived class typically caches the set on the first such call.
- */
+  /** Get a reference to the `UnionOfConvexClipPlaneSets`.
+   *  * It triggers construction of the sets by `this.ensurePlaneSets()`.
+   *  * Derived class typically caches the set on the first such call.
+   */
   public fetchClipPlanesRef(): UnionOfConvexClipPlaneSets | undefined { this.ensurePlaneSets(); return this._clipPlanes; }
-  /** Ask if this primtivie is a hole. */
+  /** Ask if this primitive is a hole. */
   public get invisible(): boolean { return this._invisible; }
 
   protected constructor(planeSet?: UnionOfConvexClipPlaneSets | undefined, isInvisible: boolean = false) {
@@ -87,7 +87,7 @@ export class ClipPrimitive {
 
     return new ClipPrimitive(planeData, isInvisible);
   }
-/** Emit json form of the clip planes */
+  /** Emit json form of the clip planes */
   public toJSON(): any {
     const data: any = {};
     if (this._clipPlanes)
@@ -104,7 +104,7 @@ export class ClipPrimitive {
   public arePlanesDefined(): boolean {
     return this._clipPlanes !== undefined;
   }
-/** Return a deep clone  */
+  /** Return a deep clone  */
   public clone(): ClipPrimitive {
     const newPlanes = this._clipPlanes ? this._clipPlanes.clone() : undefined;
     const result = new ClipPrimitive(newPlanes, this._invisible);
@@ -201,10 +201,10 @@ export class ClipPrimitive {
       }
     return inside;
   }
-/** Promote json object form to class instance
- * * First try to convert to a ClipShape
- * * then try as a standalone instance of the base class ClipPrimitive.
- */
+  /** Promote json object form to class instance
+   * * First try to convert to a ClipShape
+   * * then try as a standalone instance of the base class ClipPrimitive.
+   */
   public static fromJSON(json: any): ClipPrimitive | undefined {
     // try known derived classes first . . .
     const shape = ClipShape.fromClipShapeJSON(json);
@@ -215,7 +215,7 @@ export class ClipPrimitive {
       return prim;
     return undefined;
   }
-/** Specific converter producing the base class ClipPrimitive. */
+  /** Specific converter producing the base class ClipPrimitive. */
   public static fromJSONClipPrimitive(json: any): ClipPrimitive | undefined {
     if (json && json.planes) {
       const planes = json.planes;
@@ -252,7 +252,7 @@ export class ClipShape extends ClipPrimitive {
   protected _zLow?: number;
   /** optional high z (in local coordinates) */
   protected _zHigh?: number;
-  /** true if this is considered a hole (keep geometry oustide of the polygon.) */
+  /** true if this is considered a hole (keep geometry outside of the polygon.) */
   protected _isMask: boolean;
   /** transform from local to world */
   protected _transformFromClip?: Transform;
@@ -276,7 +276,7 @@ export class ClipShape extends ClipPrimitive {
   public get zLowValid(): boolean { return this._zLow !== undefined; }
   /** Returns true if this ClipShape's upper z boundary is set. */
   public get zHighValid(): boolean { return this._zHigh !== undefined; }
-  /** Return true if this ClipShpae has a local to world transorm */
+  /** Return true if this ClipShape has a local to world transform */
   public get transformIsValid(): boolean { return this._transformFromClip !== undefined; }
   /** Return this zLow, which may be undefined. */
   public get zLow(): number | undefined { return this._zLow; }
@@ -294,7 +294,7 @@ export class ClipShape extends ClipPrimitive {
     this._polygon = polygon;
   }
   /**
-   * * If the ClipShape's associated `UnionOfConvexClipPlaneSets` is defined, do nohting.
+   * * If the ClipShape's associated `UnionOfConvexClipPlaneSets` is defined, do nothing.
    * * If the ClipShape's associated `UnionOfConvexClipPlaneSets` is undefined, generate it from the `ClipShape` and transform.
    */
   public ensurePlaneSets() {
@@ -584,7 +584,7 @@ export class ClipShape extends ClipPrimitive {
     if (this._transformFromClip)
       transform.multiplyTransformTransform(this._transformFromClip!, this._transformFromClip);
     else
-      this._transformFromClip = transform.clone ();
+      this._transformFromClip = transform.clone();
     this._transformToClip = this._transformFromClip!.inverse(); // could be undefined
     return true;
   }

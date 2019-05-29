@@ -20,7 +20,7 @@ export type Matrix4dProps = Point4dProps[];
  * * A Matrix4d is a matrix with 4 rows and 4 columns.
  * * The 4 rows may be described as the x,y,z,w rows.
  * * The 4 columns may be described as the x,y,z,w columns.
- * * The matrix is physically stored as a FLoat64Array with 16 numbers.
+ * * The matrix is physically stored as a Float64Array with 16 numbers.
  * * The layout in the Float64Array is "by row"
  *   * indices 0,1,2,3 are the "x row".   They may be called the xx,xy,xz,xw entries
  *   * indices 4,5,6,7 are the "y row"    They may be called the yx,yy,yz,yw entries
@@ -553,7 +553,7 @@ export class Matrix4d implements BeJSONFunctions {
         // console.log(inverse.rowArrays());
       }
     }
-    // divide through by pivots (all have  beeen confirmed nonzero)
+    // divide through by pivots (all have been confirmed nonzero)
     inverse.scaleRowsInPlace(1.0 / work._coffs[0], 1.0 / work._coffs[5], 1.0 / work._coffs[10], 1.0 / work._coffs[15]);
     // console.log("descaled", inverse.rowArrays());
     return inverse;

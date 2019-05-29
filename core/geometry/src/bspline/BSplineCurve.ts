@@ -51,21 +51,21 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
  *
  * Nearly all bsplines are "clamped ".
  * * Clamping make the curve pass through its first and last poles, with tangents directed along the first and last edges of the control polygon.
- * * The knots for a clampled bspline have `degree` copies of the lowest knot value and `degree` copies of the highest knot value.
+ * * The knots for a clamped bspline have `degree` copies of the lowest knot value and `degree` copies of the highest knot value.
  * * For instance, the knot vector `[0,0,0,1,2,3,3,3]
  *   * can be evaluated from `0<=knot<=3`
  *   * has 3 spans: 0 to 1, 1 to 2, 2 to 3
  *   * has 6 poles
  *   * passes through its first and last poles.
  * * `create` methods may allow classic convention that has an extra knot at the beginning and end of the knot vector.
- *   * The extra knots (first and last) were never referenced by the bspline recurrance relations.
- *   * When the `ceate` methods recognize the classic setup (`numPoles + order = numKnots`), the extra knot is not saved with the BSplineCurve3dBase knots.
+ *   * The extra knots (first and last) were never referenced by the bspline recurrence relations.
+ *   * When the `create` methods recognize the classic setup (`numPoles + order = numKnots`), the extra knot is not saved with the BSplineCurve3dBase knots.
  *
  * * The weighted variant has the problem that CurvePrimitive 3d typing does not allow undefined result where Point4d has zero weight.
  * * The convention for these is to return 000 in such places.
  *
  * * Note the class relationships:
- *   * BSpline1dNd knows the bspline reucurrance relations for control points (poles) with no physical meaning.
+ *   * BSpline1dNd knows the bspline recurrence relations for control points (poles) with no physical meaning.
  *   * BsplineCurve3dBase owns a protected BSpline1dNd
  *   * BsplineCurve3dBase is derived from CurvePrimitive, which creates obligation to act as a 3D curve, such as
  *     * evaluate fraction to point and derivatives wrt fraction
@@ -145,7 +145,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     return result;
   }
   /**
-   * Return the start point of hte curve.
+   * Return the start point of the curve.
    */
   public startPoint(): Point3d { return this.evaluatePointInSpan(0, 0.0); }
   /**
@@ -173,7 +173,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     return result;
   }
   /**
-    * Return a BezierCurveBase for this curve.  The concrete return type may be BezierCuve3d or BezierCurve3dH according to the instance type and the prefer3dH parameter.
+    * Return a BezierCurveBase for this curve.  The concrete return type may be BezierCurve3d or BezierCurve3dH according to the instance type and the prefer3dH parameter.
     * @param spanIndex
     * @param prefer3dH true to force promotion to homogeneous.
     * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
@@ -247,9 +247,9 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
       allCoffs[i] = plane.weightedAltitude(this.getPolePoint4d(i, point4d)!);
       minMax.extendX(allCoffs[i]);
     }
-    // A univaraite bspline throught the altitude poles gives altitude as function of the bspline knot.
+    // A univariate bspline through the altitude poles gives altitude as function of the bspline knot.
     // The (bspline) altitude function for each span is `order` consecutive altitudes.
-    // If those altitutdes bracket zero, the span may potentially have a crossing.
+    // If those altitudes bracket zero, the span may potentially have a crossing.
     // When that occurs,
     let univariateBezier: UnivariateBezier | undefined;
     let numFound = 0;
@@ -372,7 +372,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       numPoles /= 3;  // blocked as xyz
     }
     const numKnots = knotArray.length;
-    // shift knots-of-interest limits for overclampled case ...
+    // shift knots-of-interest limits for overclamped case ...
     const skipFirstAndLast = (numPoles + order === numKnots);
     if (order < 1 || numPoles < order)
       return undefined;
@@ -506,7 +506,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   }
 
   /**
-   * Assess legnth and turn to determine a stroke count.
+   * Assess length and turn to determine a stroke count.
    * @param options stroke options structure.
    */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
@@ -567,7 +567,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return mode;
   }
   /**
-   * Return a BezierCurveBase for this curve.  The concrete return type may be BezierCuve3d or BezierCurve3dH according to this type.
+   * Return a BezierCurveBase for this curve.  The concrete return type may be BezierCurve3d or BezierCurve3dH according to this type.
    * @param spanIndex
    * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
    */

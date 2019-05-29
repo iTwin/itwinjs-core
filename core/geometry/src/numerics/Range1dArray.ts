@@ -99,7 +99,7 @@ export class Range1dArray {
   }
 
   /** Internal step: Read an interval from the array.
-   *  If it overlaps the work interval, advance the work interval, and return true to notify caller to increment readindex.
+   *  If it overlaps the work interval, advance the work interval, and return true to notify caller to increment read index.
    */
   private static advanceIntervalUnion(workRange: Range1d, source: Range1d[], readIndex: number): boolean {
     if (readIndex >= source.length)
@@ -290,7 +290,7 @@ export class Range1dArray {
     if (sort)
       result.sort();
     if (compress)
-      result.compressAdjcentDuplicates();
+      result.compressAdjacentDuplicates();
 
     return result;
   }

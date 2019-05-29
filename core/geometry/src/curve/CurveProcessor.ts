@@ -39,13 +39,13 @@ export abstract class RecursiveCurveProcessor {
       this.announceCurvePrimitive(curve, i++);
   }
 
-  /** annouce beginning or end of loops in a parity region */
+  /** announce beginning or end of loops in a parity region */
   public announceParityRegion(data: ParityRegion, _indexInParent: number = -1): void {
     let i = 0;
     for (const loop of data.children)
       this.announceLoop(loop, i++);
   }
-  /** annouce beginning or end of a parity region */
+  /** announce beginning or end of a parity region */
   public announceUnionRegion(data: UnionRegion, _indexInParent: number = -1): void {
     let i = 0;
     for (const child of data.children) {
@@ -53,7 +53,7 @@ export abstract class RecursiveCurveProcessor {
     }
   }
 
-  /** annouce a bag of curves.
+  /** announce a bag of curves.
    * * The default implementation visits each child and calls the appropriate dispatch to
    * * `this.announceCurvePrimitive(child)`
    * * `child.announceToCurveProcessor(this)`
@@ -107,7 +107,7 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
     this.leave();
   }
 
-  /** annouce beginning or end of loops in a parity region */
+  /** announce beginning or end of loops in a parity region */
   public announceParityRegion(data: ParityRegion, _indexInParent: number = -1): void {
     this.enter(data);
     let i = 0;
@@ -115,14 +115,14 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
       this.announceLoop(loop, i++);
     this.leave();
   }
-  /** annouce beginning or end of a parity region */
+  /** announce beginning or end of a parity region */
   public announceUnionRegion(data: UnionRegion, indexInParent: number = -1): void {
     this.enter(data);
     super.announceUnionRegion(data, indexInParent);
     this.leave();
   }
   /**
-   * Announce membes of an unstructured collection.
+   * Announce members of an unstructured collection.
    * * push the collection reference on the stack
    * * announce children
    * * pop the stack

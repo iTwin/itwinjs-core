@@ -31,7 +31,7 @@ export class Path extends CurveChain {
   /** Construct an empty path. */
   public constructor() { super(); }
   /**
-   * Create a path from a variable length list of curve primtiives
+   * Create a path from a variable length list of curve primitives
    * * CurvePrimitive params are captured !!!
    * @param curves variable length list of individual curve primitives or point arrays.
    */
@@ -47,7 +47,7 @@ export class Path extends CurveChain {
     return result;
   }
   /**
-   * Create a path from a an array of curve primtiives
+   * Create a path from a an array of curve primitives
    * @param curves array of individual curve primitives
    */
   public static createArray(curves: CurvePrimitive[]): Path {
@@ -57,14 +57,14 @@ export class Path extends CurveChain {
     }
     return result;
   }
-/** Return a deep copy, with leaf-level curve primitives stroked. */
+  /** Return a deep copy, with leaf-level curve primitives stroked. */
   public cloneStroked(options?: StrokeOptions): AnyCurve {
     const strokes = LineString3d.create();
     for (const curve of this.children)
       curve.emitStrokes(strokes, options);
     return Path.create(strokes);
   }
-  /** Return the boundary type (1) of a corresponding  Microstation CurveVector */
+  /** Return the boundary type (1) of a corresponding  MicroStation CurveVector */
   public dgnBoundaryType(): number { return 1; }
   /**
    * Return the `[index]` curve primitive, using `modulo` to map`index` to the cyclic indexing.

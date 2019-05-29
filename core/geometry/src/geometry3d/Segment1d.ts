@@ -11,10 +11,10 @@ import { Geometry } from "../Geometry";
  * * The interval is defined by two values x0 and x1.
  * * The x0 and x1 values can be in either order.
  *   * if `x0 < x1` fractional coordinates within the segment move from left to right.
- *   * if `x0 > x1` fractional coordinatesw within the segment move from right to left.
+ *   * if `x0 > x1` fractional coordinates within the segment move from right to left.
  * * This differs from a Range1d in that:
  * * For a Range1d the reversed ordering of its limit values means "empty interval".
- * * For a Segment1d the reversed ordering is a real interval but fractional positions mvoe backwards.
+ * * For a Segment1d the reversed ordering is a real interval but fractional positions move backwards.
  * * The segment is parameterized with a fraction
  * * * Fraction 0 is the start (`x0`)
  * * * Fraction 1 is the end (`x1`)
@@ -70,7 +70,7 @@ export class Segment1d {
 
   }
   /**
-   * Evalauate the segment at fractional position
+   * Evaluate the segment at fractional position
    * @returns position within the segment
    * @param fraction fractional position within this segment
    */

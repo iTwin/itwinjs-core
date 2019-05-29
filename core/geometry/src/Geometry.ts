@@ -60,7 +60,7 @@ export enum StandardViewIndex {
   Back = 6,
   /** View towards origin from (-1,-1,1) */
   Iso = 7,
-  /** View towars origin from (1,-1,1) */
+  /** View towards origin from (1,-1,1) */
   RightIso = 8,
 }
 
@@ -118,7 +118,7 @@ export interface PlaneAltitudeEvaluator {
   weightedAltitude(point: Point4d): number;
 }
 /**
- * Interace for `toJSON` and `setFromJSON` methods
+ * Interface for `toJSON` and `setFromJSON` methods
  * @public
  */
 export interface BeJSONFunctions {
@@ -183,7 +183,7 @@ export class Geometry {
 
   /** Radians value for full circle 2PI radians minus `smallAngleRadians` */
   public static readonly fullCircleRadiansMinusSmallAngle = 2.0 * Math.PI - 1.0e-12;    // smallAngleRadians less than 360degrees
-  /** Correct `distance` to zero if smaller than metric tolernace.   Otherwise return it unchnaged. */
+  /** Correct `distance` to zero if smaller than metric tolerance.   Otherwise return it unchanged. */
   public static correctSmallMetricDistance(distance: number, replacement: number = 0.0): number {
     if (Math.abs(distance) < Geometry.smallMetricDistance) {
       return replacement;
@@ -212,19 +212,19 @@ export class Geometry {
   public static isSameCoordinateSquared(x: number, y: number): boolean {
     return Math.abs(Math.sqrt(x) - Math.sqrt(y)) < Geometry.smallMetricDistance;
   }
-  /** boolean test for smalll `dataA.distance (dataB)`  within `smallMetricDistance` */
+  /** boolean test for small `dataA.distance (dataB)`  within `smallMetricDistance` */
   public static isSamePoint3d(dataA: Point3d, dataB: Point3d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
   /** boolean test for distance between `XYZ` objects within `smallMetricDistance`
    *  * Note that Point3d and Vector3d are both derived from XYZ, so this method tolerates mixed types.
    */
   public static isSameXYZ(dataA: XYZ, dataB: XYZ): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
-  /** boolean test for smalll `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
+  /** boolean test for small `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
   public static isSamePoint3dXY(dataA: Point3d, dataB: Point3d): boolean { return dataA.distanceXY(dataB) < Geometry.smallMetricDistance; }
-  /** boolean test for smalll `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
+  /** boolean test for small `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
   public static isSameVector3d(dataA: Vector3d, dataB: Vector3d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
-  /** boolean test for smalll `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
+  /** boolean test for small `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
   public static isSamePoint2d(dataA: Point2d, dataB: Point2d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
-  /** boolean test for smalll `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
+  /** boolean test for small `dataA.distanceXY (dataB)`  within `smallMetricDistance` */
   public static isSameVector2d(dataA: Vector2d, dataB: Vector2d): boolean { return dataA.distance(dataB) < Geometry.smallMetricDistance; }
 
   /**
@@ -282,7 +282,7 @@ export class Geometry {
   /** Test if `value` is small compared to `smallAngleRadians` */
   public static isSmallAngleRadians(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
   /** Toleranced equality test, using tolerance `smallAngleRadians * ( 1 + abs(a) + (abs(b)))`
-   * * Effectively an absolute tolerance of `smallAngleRadians`, with tolernace increasing for larger values of a and b.
+   * * Effectively an absolute tolerance of `smallAngleRadians`, with tolerance increasing for larger values of a and b.
   */
   public static isAlmostEqualNumber(a: number, b: number) {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
@@ -360,11 +360,11 @@ export class Geometry {
 
   /** Return the hypotenuse `sqrt(x*x + y*y + z*z)`. This is much faster than `Math.hypot(x,y,z)`. */
   public static hypotenuseXYZ(x: number, y: number, z: number) { return Math.sqrt(x * x + y * y + z * z); }
-  /** Return the squared hypetenuse `(x*x + y*y + z*z)`. This is much faster than `Math.hypot(x,y,z)`. */
+  /** Return the squared hypotenuse `(x*x + y*y + z*z)`. This is much faster than `Math.hypot(x,y,z)`. */
   public static hypotenuseSquaredXYZ(x: number, y: number, z: number) { return x * x + y * y + z * z; }
   /** Return the (full 4d) hypotenuse `sqrt(x*x + y*y + z*z + w*w)`. This is much faster than `Math.hypot(x,y,z,w)`. */
   public static hypotenuseXYZW(x: number, y: number, z: number, w: number) { return Math.sqrt(x * x + y * y + z * z + w * w); }
-  /** Return the squared hypetenuse `(x*x + y*y + z*z+w*w)`. This is much faster than `Math.hypot(x,y,z)`. */
+  /** Return the squared hypotenuse `(x*x + y*y + z*z+w*w)`. This is much faster than `Math.hypot(x,y,z)`. */
   public static hypotenuseSquaredXYZW(x: number, y: number, z: number, w: number) { return x * x + y * y + z * z + w * w; }
   /**
    * Return the distance between xy points given as numbers.
@@ -439,7 +439,7 @@ export class Geometry {
     const tol = Geometry.smallAngleRadians;
     if (aaa > tol * b)
       return b / aaa;
-    return 0; // hm.. maybe should be infinte?
+    return 0; // hm.. maybe should be infinite?
   }
 
   /** Returns the determinant of 3x3 matrix with x and y rows taken from 3 points, third row from corresponding numbers.

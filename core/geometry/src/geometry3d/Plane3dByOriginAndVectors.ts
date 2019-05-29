@@ -20,7 +20,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
   public origin: Point3d;
   /** u direction in plane grid */
   public vectorU: Vector3d;
-  /** v direction in plane gride */
+  /** v direction in plane grid */
   public vectorV: Vector3d;
   private constructor(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d) {
     this.origin = origin;
@@ -39,10 +39,10 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
   }
   /**
    * Return a Plane3dByOriginAndVectors, with
-   * * irigin is the translation (aka origin) from the Transform
+   * * origin is the translation (aka origin) from the Transform
    * * vectorU is the X column of the transform
    * * vectorV is the Y column of the transform.
-   * @param transform source trnasform
+   * @param transform source transform
    * @param xLength optional length to impose on vectorU.
    * @param yLength optional length to impose on vectorV.
    * @param result optional preexisting result
@@ -91,7 +91,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     this.vectorV.setFrom(vectorV);
     return this;
   }
-    /** Create a new plane from direct numeric parameters */
+  /** Create a new plane from direct numeric parameters */
   public static createOriginAndVectorsXYZ(x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     if (result)
       return result.setOriginAndVectorsXYZ(x0, y0, z0, ux, uy, uz, vx, vy, vz);

@@ -428,7 +428,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Return details of the closest point on the arc, optionally extending to full ellipse.
    * @param spacePoint search for point closest to this point.
-   * @param extend if true, considere projections to the complete ellipse.   If false, consider only endpoints and projections within the arc sweep.
+   * @param extend if true, consider projections to the complete ellipse.   If false, consider only endpoints and projections within the arc sweep.
    * @param result optional preallocated result.
    */
   public closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail {
@@ -474,7 +474,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return true;
   }
   /**
-   * Return true if the ellispe center and basis vectors are in the plane
+   * Return true if the ellipse center and basis vectors are in the plane
    * @param plane
    */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
@@ -674,7 +674,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     };
   }
   /**
-   * Test if this arc is almost equal to another GeoemtryQuery object
+   * Test if this arc is almost equal to another GeometryQuery object
    */
   public isAlmostEqual(otherGeometry: GeometryQuery): boolean {
     if (otherGeometry instanceof Arc3d) {

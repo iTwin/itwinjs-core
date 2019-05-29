@@ -151,8 +151,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
   /**
    *
    * * Run an integration (with a default gaussian quadrature) with a fixed fractional step
-   * * This is typically called by specific curve type implementations of curveLengthBetweenFrations.
-   *   * For example, in Arc3d implementation of curveLengthBetweenFrations:
+   * * This is typically called by specific curve type implementations of curveLengthBetweenFractions.
+   *   * For example, in Arc3d implementation of curveLengthBetweenFractions:
    *     * If the Arc3d is true circular, it the arc is true circular, use the direct `arcLength = radius * sweepRadians`
    *     * If the Arc3d is not true circular, call this method with an interval count appropriate to eccentricity and sweepRadians.
    * @returns Returns an integral estimated by numerical quadrature between the fractional positions.
@@ -174,7 +174,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
   /**
    *
    * * (Attempt to) find a position on the curve at a signed distance from start fraction.
-   * * Return the postion as a CurveLocationDetail.
+   * * Return the position as a CurveLocationDetail.
    * * In the `CurveLocationDetail`, record:
    *   * `fractional` position
    *   * `fraction` = coordinates of the point
@@ -184,7 +184,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    *     * `error` (unusual) computation failed not supported for this curve.
    *     * `success` full movement completed
    *     * `stoppedAtBoundary` partial movement completed. This can be due to either
-   *        * `allowExtendsion` parameter sent as `false`
+   *        * `allowExtension` parameter sent as `false`
    *        * the curve type (e.g. bspline) does not support extended range.
    * * if `allowExtension` is true, movement may still end at the startpoint or endpoint for curves that do not support extended geometry (specifically bsplines)
    * * if the curve returns a value (i.e. not `undefined`) for `curve.getFractionToDistanceScale()`, the base class carries out the computation
@@ -231,7 +231,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * The derivative of that integral with respect to end fraction is the tangent magnitude at end fraction.
    * * Use that function and (easily evaluated!) derivative for a Newton iteration
    * * TO ALL WHO HAVE FUZZY MEMORIES OF CALCULUS CLASS: "The derivative of the integral wrt upper limit is the value of the integrand there" is the
-   *       fundamental theorem of integral calculus !!! The fundeamental theorem is not just an abstraction !!! It is being used
+   *       fundamental theorem of integral calculus !!! The fundamental theorem is not just an abstraction !!! It is being used
    *       here in its barest possible form !!!
    * * See https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus
    * @param startFraction
@@ -254,7 +254,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     let numConverged = 0;
     const tangent = Ray3d.createXAxis();
     // on each loop entry:
-    // fractionA is the most recent endOfInterval.  (It may have been reached by a mixtrueo forward and backward step.)
+    // fractionA is the most recent endOfInterval.  (It may have been reached by a mixture of forward and backward step.)
     // distanceA is the distance to (the point at) fractionA
     // fractionB is the next end fraction
     for (let iterations = 0; iterations < 10; iterations++) {
@@ -343,7 +343,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
   /**
    * * If the curve primitive has distance-along-curve strictly proportional to curve fraction, return true
    * * If distance-along-the-curve is not proportional, return undefined.
-   * * When defined, the scale factor is alwyas the length of the curve.
+   * * When defined, the scale factor is always the length of the curve.
    * * This scale factor is typically available for these curve types:
    * * * All `LineSegment3d`
    * * * Arc3d which is a true circular arc (axes perpendicular and of equal length).
@@ -404,7 +404,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * For CurvePrimitiveWithDistanceIndex, the top level gets (only) a total count, and each child gets
    *       its own StrokeCountMap with appropriate structure.
    * @param options StrokeOptions that determine count
-   * @param parentStrokeMap optional map from parent.  Its count, curveLength, and a1 values are incresed with count and distance from this primitive.
+   * @param parentStrokeMap optional map from parent.  Its count, curveLength, and a1 values are increased with count and distance from this primitive.
    * @return sum of `a0+this.curveLength()`, for use as `a0` of successor in chain.
    */
   public computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentMap?: StrokeCountMap) {

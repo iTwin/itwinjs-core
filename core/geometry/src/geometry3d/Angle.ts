@@ -18,7 +18,7 @@ export class Angle implements BeJSONFunctions {
     public static readonly piRadians = 3.14159265358979310000e+000;
     /** maximal accuracy value of pi/2 ( 90 degrees), in radians */
     public static readonly pi2Radians = 6.28318530717958620000e+000;
-    /** scale factor for converting degees to radians */
+    /** scale factor for converting degrees to radians */
     public static readonly degreesPerRadian = (45.0 / Angle.piOver4Radians);
     /** scale factor for converting radians to degrees */
     public static readonly radiansPerDegree = (Angle.piOver4Radians / 45.0);
@@ -155,7 +155,7 @@ export class Angle implements BeJSONFunctions {
     public tan(): number { return Math.tan(this._radians); }
     /** Test if a radians value is nearly 2PI or larger (!) */
     public static isFullCircleRadians(radians: number) { return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle; }
-    /** Test if the radians value  is a cmoplete circle */
+    /** Test if the radians value  is a complete circle */
     public static isHalfCircleRadians(radians: number) { return (Math.abs(Math.abs(radians)) - Math.PI) <= Geometry.smallAngleRadians; }
     /** test if the angle is aa full circle */
     public get isFullCircle(): boolean { return Angle.isFullCircleRadians(this._radians); }

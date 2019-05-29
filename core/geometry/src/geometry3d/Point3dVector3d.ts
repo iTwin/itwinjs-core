@@ -242,7 +242,7 @@ export class Point3d extends XYZ {
   /** Create a new Point3d with given coordinates
    * @param x x part
    * @param y y part
-   * @param z z partpubli
+   * @param z z part
    */
   public static create(x: number = 0, y: number = 0, z: number = 0, result?: Point3d): Point3d {
     if (result) {
@@ -698,7 +698,7 @@ export class Vector3d extends XYZ {
     return result;
   }
   /**
-   * Return a vector which is in the xy plane, perpendicular ot the xy part of this vector, and of unit lenght.
+   * Return a vector which is in the xy plane, perpendicular ot the xy part of this vector, and of unit length.
    * * If the xy part is 00, the return is the rotated (but not normalized) xy parts of this vector.
    * @param result optional preallocated result.
    */
@@ -842,7 +842,7 @@ export class Vector3d extends XYZ {
     return result;
   }
   /**
-   * Return a (optionally new or reused) vector in the diretion of `this` but with specified length.
+   * Return a (optionally new or reused) vector in the direction of `this` but with specified length.
    * @param length desired length of vector
    * @param result optional preallocated result
    */
@@ -887,7 +887,7 @@ export class Vector3d extends XYZ {
     return Vector3d.create(x, y, z, result);
   }
   /**
-   * Try to normalize (divide by magnitude), storing the resul tin place.
+   * Try to normalize (divide by magnitude), storing the result in place.
    * @param smallestMagnitude smallest magnitude allowed as divisor.
    * @returns false if magnitude is too small.  In this case the vector is unchanged.
    */

@@ -79,7 +79,7 @@ export class NumberArray {
     }
     return false;
   }
-  /** Return the max absolute vlaue in a array of numbers. */
+  /** Return the max absolute value in a array of numbers. */
   public static maxAbsArray(values: number[]) {
     const arrLen = values.length;
     if (arrLen === 0) {
@@ -314,8 +314,8 @@ export class Point3dArray {
   }
   /**
    * Compute the 8 weights of trilinear mapping
-   * By appropriate choice of weights, this can be usef for both point and derivative mappints.
-   * @param weights preallocated array to recevie weights.
+   * By appropriate choice of weights, this can be used for both point and derivative mappints.
+   * @param weights preallocated array to receive weights.
    * @param u0 low u weight
    * @param u1 high u weight
    * @param v0 low v weight
@@ -640,7 +640,7 @@ export class Point3dArray {
     return data.map((p: XYAndZ) => Point2d.create(p.x, p.y));
   }
   /**
-   * cloen points in the input array, inserting points within each edge to limit edge length.
+   * clone points in the input array, inserting points within each edge to limit edge length.
    * @param points array of points
    * @param maxEdgeLength max length of an edge
    */

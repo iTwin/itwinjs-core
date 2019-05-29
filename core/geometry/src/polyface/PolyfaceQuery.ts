@@ -23,7 +23,7 @@ import { Segment1d } from "../geometry3d/Segment1d";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { Geometry } from "../Geometry";
 
-/** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each mtehod.
+/** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each method.
  * @public
  */
 export class PolyfaceQuery {
@@ -98,7 +98,7 @@ export class PolyfaceQuery {
   /** Compute area moments for the mesh. In the returned MomentData:
    * * origin is the centroid.
    * * localToWorldMap has the origin and principal directions
-   * * radiiOfGyration radii for rotation aroud the x,y,z axes.
+   * * radiiOfGyration radii for rotation around the x,y,z axes.
    */
   public static computePrincipalAreaMoments(source: Polyface): MomentData | undefined {
     const origin = source.data.getPoint(0);
@@ -121,7 +121,7 @@ export class PolyfaceQuery {
       }
     }
     const badClusters: SortableEdgeCluster[] = [];
-    edges.sortAndcollectClusters(undefined, badClusters, undefined, badClusters);
+    edges.sortAndCollectClusters(undefined, badClusters, undefined, badClusters);
     return badClusters.length === 0;
   }
   /** Find segments (within the linestring) which project to facets.
@@ -182,7 +182,7 @@ export class PolyfaceQuery {
     }
   }
   /** Find segments (within the linestring) which project to facets.
-   * * Assumble each segment pair as a facet in a new polyface
+   * * Assemble each segment pair as a facet in a new polyface
    * * Facets are ASSUMED to be convex and planar.
    */
   public static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
@@ -208,6 +208,7 @@ export class PolyfaceQuery {
  * * The panel is ordered so the outward normal is to the right of the draped segment.
  * @param indexAOnFacet index (in points) of the point that is the first facet point for moving forward along the linestring
  * @param indexBOnFacet index (in points) of the point that is the second facet point for moving forward along the linestring
+ * @public
  */
 export type AnnounceDrapePanel = (linestring: GrowableXYZArray, segmentIndex: number,
   polyface: Polyface, facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number) => any;
