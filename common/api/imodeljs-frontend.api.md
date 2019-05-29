@@ -6136,7 +6136,7 @@ export class TentativePoint {
     // (undocumented)
     onInitialized(): void;
     // (undocumented)
-    process(ev: BeButtonEvent): Promise<void>;
+    process(ev: BeButtonEvent): void;
     // (undocumented)
     removeTentative(): void;
     // (undocumented)
