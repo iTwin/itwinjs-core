@@ -78,9 +78,9 @@ describe("ElementAspectPerfomance", () => {
     let totalTimeUpdateSimpELeGet = 0;
     let totalTimeDeleteSimpELeGet = 0;
 
-    for (let m = 0; m < count1; ++m) {
-      const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, imodeldb);
+    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, imodeldb);
 
+    for (let m = 0; m < count1; ++m) {
       // insert simple element with no aspect
       const startTime1 = new Date().getTime();
       eleId = imodeldb.elements.insertElement(IModelTestUtils.createPhysicalObject(imodeldb, r.modelId, r.spatialCategoryId));
@@ -134,9 +134,9 @@ describe("ElementAspectPerfomance", () => {
     let totalTimeDelete = 0;
     let totalTimeRead = 0;
 
-    for (let m = 0; m < count1; ++m) {
-      const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, imodeldb);
+    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, imodeldb);
 
+    for (let m = 0; m < count1; ++m) {
       // insert element with unique aspect
       const startTime1 = new Date().getTime();
       eleId = imodeldb.elements.insertElement(IModelTestUtils.createPhysicalObject(imodeldb, r.modelId, r.spatialCategoryId));
@@ -202,9 +202,9 @@ describe("ElementAspectPerfomance", () => {
     let totalTimeDelete = 0;
     let totalTimeRead = 0;
 
-    for (let m = 0; m < count1; ++m) {
-      const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, imodeldb);
+    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, imodeldb);
 
+    for (let m = 0; m < count1; ++m) {
       // insert element with multi aspect
       const startTime1 = new Date().getTime();
       eleId = imodeldb.elements.insertElement(IModelTestUtils.createPhysicalObject(imodeldb, r.modelId, r.spatialCategoryId));
