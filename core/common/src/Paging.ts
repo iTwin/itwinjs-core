@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-/** ECSql query quota constraint. Its not guaranteed exactly but will be meet as accuratly as possiable
+/** ECSql query quota constraint. Its not guaranteed exactly but will be meet as accurately as possible
  * @internal
  */
 export interface QueryQuota {
@@ -35,13 +35,13 @@ export enum QueryPriority {
  * @internal
  */
 export enum QueryResponseStatus {
-  Partial = 3, /** Partial result due to query exceded allocated quota */
+  Partial = 3, /** Partial result due to query exceeded allocated quota */
   Done = 2, /** There is no more rows */
   Error = 5, /** Error while preparing or stepping into query */
   Timeout = 4, /** Query time quota while it was in queue */
-  PostError = 6, /** Submitting query task failed. May happen if queue size execeds */
+  PostError = 6, /** Submitting query task failed. May happen if queue size exceeds */
 }
-/** Result of a query. Its not intented to be used directly by client
+/** Result of a query. Its not intended to be used directly by client
  * @internal
  */
 export interface QueryResponse {

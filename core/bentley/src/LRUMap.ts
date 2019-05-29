@@ -65,7 +65,7 @@ class ValueIterator<K, V> implements Iterator<V | undefined> {
   }
 }
 
-/** The interface that must be satisified by the underlying container type used by a LRUCache.
+/** The interface that must be satisfied by the underlying container type used by a LRUCache.
  * Compatible with a [[Dictionary]] or a standard Map.
  * @public
  */

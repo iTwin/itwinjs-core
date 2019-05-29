@@ -51,7 +51,7 @@ export function dispose(disposable?: IDisposable): undefined {
 }
 
 /** Disposes of and empties a list of disposable objects.
- * @param list The list of disposable obejcts.
+ * @param list The list of disposable objects.
  * @returns undefined
  * @public
  */

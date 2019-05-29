@@ -117,7 +117,7 @@ export class ECJsNames {
    *
    * @param ecProperty Property name as defined in the ECSchema for regular ECProperties
    *        or the name of an ECSQL system properties
-   * @param isSystemProperty if ommitted, the method will try to find out whether the given property
+   * @param isSystemProperty if omitted, the method will try to find out whether the given property
    *        is a system property or not. If true is specified, the method will throw if the property name
    *        is not a known system property. If false is specified, the method will not attempt to recognize
    *        the property name as system property.

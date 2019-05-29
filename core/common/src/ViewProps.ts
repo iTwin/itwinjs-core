@@ -309,7 +309,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
    * @beta
    */
   ao?: AmbientOcclusion.Props;
-  /** Settings controlling display of solar shadoss, stored in Props.
+  /** Settings controlling display of solar shadows, stored in Props.
    * @beta
    */
   solarShadows?: SolarShadows.Props;

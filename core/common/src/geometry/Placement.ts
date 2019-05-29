@@ -13,7 +13,9 @@ import { Frustum } from "../Frustum";
  */
 export type AxisAlignedBox3d = Range3d;
 
-/** The properties of a Range3d. */
+/** The properties of a Range3d.
+ * @public
+ */
 export type AxisAlignedBox3dProps = Range3dProps;
 
 /** A bounding box aligned to the orientation of a 3d Element

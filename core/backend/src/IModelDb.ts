@@ -119,7 +119,7 @@ export class IModelDb extends IModel {
   /** @beta */
   public readonly txns = new TxnManager(this);
   private _relationships?: Relationships;
-  private _concurrentQueryInitalized: boolean = false;
+  private _concurrentQueryInitialized: boolean = false;
   private readonly _statementCache = new ECSqlStatementCache();
   private readonly _sqliteStatementCache = new SqliteStatementCache();
   private _codeSpecs?: CodeSpecs;
@@ -498,8 +498,7 @@ export class IModelDb extends IModel {
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
 
-  /** Execute a query agaisnt this ECDb but restricted by quota and limit settings. This intente to be used internally
-   *  @internal
+  /** Execute a query against this ECDb but restricted by quota and limit settings. This is intended to be used internally
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -514,16 +513,17 @@ export class IModelDb extends IModel {
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrainted by global setting
+   * @param quota Specify non binding quota. These values are constrained by global setting
    * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
    * @param priority Specify non binding priority for the query. It can help user to adjust
    * priority of query in queue so that small and quicker queries can be prioritized over others.
    * @returns Returns structure containing rows and status.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @internal
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
-    if (!this._concurrentQueryInitalized) {
-      this._concurrentQueryInitalized = this.nativeDb.concurrentQueryInit(IModelHost.configuration!.concurrentQuery);
+    if (!this._concurrentQueryInitialized) {
+      this._concurrentQueryInitialized = this.nativeDb.concurrentQueryInit(IModelHost.configuration!.concurrentQuery);
     }
     if (!bindings) bindings = [];
     if (!limit) limit = {};
@@ -566,7 +566,7 @@ export class IModelDb extends IModel {
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrainted by global setting
+   * @param quota Specify non binding quota. These values are constrained by global setting
    * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
    * @param priority Specify non binding priority for the query. It can help user to adjust
    * priority of query in queue so that small and quicker queries can be prioritized over others.

@@ -266,8 +266,6 @@ export interface AuxCoordSystemProps extends ElementProps {
 // @public
 export type AxisAlignedBox3d = Range3d;
 
-// Warning: (ae-missing-release-tag) "AxisAlignedBox3dProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type AxisAlignedBox3dProps = Range3dProps;
 

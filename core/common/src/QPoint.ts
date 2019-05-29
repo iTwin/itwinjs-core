@@ -266,7 +266,7 @@ export class QParams3d {
   public static fromZeroToOne() { return QParams3d.fromRange(Range3d.createArray([Point3d.create(0, 0, 0), Point3d.create(1, 1, 1)])); }
 }
 
-/** Represents a quantized 3d point as an (x, y, z) tripliet in the integer range [0, 0xffff].
+/** Represents a quantized 3d point as an (x, y, z) triplet in the integer range [0, 0xffff].
  * @internal
  */
 export class QPoint3d {

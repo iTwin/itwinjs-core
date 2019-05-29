@@ -190,7 +190,7 @@ async function generateContentIds(rootTiles: Tile[], maxDepth: number): Promise<
 
 function changePageSize(iModelPath: string, pageSizeInKb: number) {
   using(new ECDb(), (ecdb: ECDb) => {
-    ecdb.openDb(iModelPath, ECDbOpenMode.Readwrite);
+    ecdb.openDb(iModelPath, ECDbOpenMode.ReadWrite);
     if (!ecdb.isOpen)
       throw new Error(`changePageSize() fail to open file ${iModelPath}`);
     const currentPageSize = ecdb.withPreparedSqliteStatement(`PRAGMA page_size`, (stmt) => {

@@ -1479,7 +1479,7 @@ export abstract class Viewport implements IDisposable {
   /** Add or remove a set of models from those models currently displayed in this viewport.
    * @param modelIds The Ids of the models to add or remove.
    * @param display Whether or not to display the specified models in the viewport.
-   * @returns false if thsi Viewport is not viewing a [[SpatialViewState]]
+   * @returns false if this Viewport is not viewing a [[SpatialViewState]]
    * @note This function has no effect unless the viewport is viewing a [[SpatialViewState]].
    */
   public changeModelDisplay(models: Id64Arg, display: boolean): boolean {

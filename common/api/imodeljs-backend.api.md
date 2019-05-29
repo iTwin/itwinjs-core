@@ -985,7 +985,7 @@ export enum ECDbOpenMode {
     // (undocumented)
     Readonly = 0,
     // (undocumented)
-    Readwrite = 1
+    ReadWrite = 1
 }
 
 // @public

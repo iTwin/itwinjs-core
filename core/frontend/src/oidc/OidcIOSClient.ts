@@ -21,7 +21,7 @@ export class OidcIOSClient extends OidcClient implements IOidcFrontendClient {
   public async initialize(): Promise<void> {
     return new Promise<void>((resolve) => {
       (window as any).notifyOidcClient = () => {
-        this.realodInfo();
+        this.reloadInfo();
         this.onUserStateChanged.raiseEvent(this._accessToken);
       };
       resolve();
@@ -29,7 +29,7 @@ export class OidcIOSClient extends OidcClient implements IOidcFrontendClient {
   }
 
   /** Load oidc info that is set by native side and set access_token */
-  private realodInfo() {
+  private reloadInfo() {
     const settings = window.localStorage.getItem("ios:oidc_info");
     const info = JSON.parse(settings!);
     const startsAt: Date = new Date(info!.expires_at - info!.expires_in);

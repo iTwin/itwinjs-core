@@ -317,7 +317,7 @@ export class CartographicRange {
 
   /** This method returns the raw latitude / longitude for the range in a Range2d object.
    * The X value represents the longitude and the Y value the latitudes.
-   * Y values are kepts conscribed between -PI and +PI while
+   * Y values are kept conscribed between -PI and +PI while
    * longitude values can be expressed in any range between -2PI to +2PI
    * given the minimum longitude is always smaller numerically than the maximum longitude.
    * Note that usually the longitudes are usually by convention in the range of -PI to PI except
