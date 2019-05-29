@@ -223,6 +223,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
           <div className="drawing-view-window"
             data-testid="drawing-view-window"
             onMouseDown={this._handleWindowMouseDown}
+            onTouchStart={this._handleWindowTouchStart}
             style={viewWindowStyle}
             ref={this._viewElementRef} />
           {!is3D &&
@@ -426,12 +427,43 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   }
 
   private _lastClientXY: Point2d = Point2d.createZero();
+  private _processWindowDrag(movement: Point2d) {
+    const vect = Vector3d.create(movement.x / this.state.drawingZoom, -movement.y / this.state.drawingZoom, 0);
+    const offset = this.state.rotateMinimapWithView || this._isViewport3D() ? this.state.rotation.multiplyTransposeVector(vect) : vect;
+    const origin = this.state.origin.plus(offset);
+    const panningDirection = this._getPanVector();
+    const wasAlmostZero = this.state.panningDirection.isAlmostZero;
+    this.setState({ startOrigin: origin, origin, panningDirection, isPanning: false }, () => {
+      this._updateFrustum();
+      if (wasAlmostZero && !this.state.panningDirection.isAlmostZero) {
+        this._animationFrame = setTimeout(this._panAnimation, 16.667);
+      }
+    });
+  }
+  private _processWindowEndDrag() {
+    this.setState({ isMoving: false });
+    this._updateFrustum(true);
+    if (this.state.mode === MapMode.Closed) {
+      setTimeout(() => {
+        const startMapOrigin = this.state.mapOrigin;
+        const mapOrigin = this.state.origin.clone();
+        // istanbul ignore next
+        if (this._mounted) {
+          this.setState({ startMapOrigin, mapOrigin, animation: 0 }, () => {
+            this._animationFrame = setTimeout(this._animation, 16.667);
+          });
+        }
+      }, 0);
+    }
+  }
+
   private _handleMouseDown = (event: React.MouseEvent) => {
     // Used only to determine if mouse was moved between mousedown and mouseup
     const mouseStart = Point2d.create(event.clientX, event.clientY);
     this.setState({ mouseStart });
     this._lastClientXY = Point2d.create(event.clientX, event.clientY);
   }
+
   private _handleDrawingMouseDown = (event: React.MouseEvent) => {
     if (this.state.mode === MapMode.Opened) {
       event.preventDefault();
@@ -449,17 +481,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     const movement = mouse.minus(this._lastClientXY);
     if (this.state.isMoving) {
       // add scaled mouse movement
-      const vect = Vector3d.create(movement.x / this.state.drawingZoom, -movement.y / this.state.drawingZoom, 0);
-      const offset = this.state.rotateMinimapWithView || this._isViewport3D() ? this.state.rotation.multiplyTransposeVector(vect) : vect;
-      const origin = this.state.origin.plus(offset);
-      const panningDirection = this._getPanVector();
-      const wasAlmostZero = this.state.panningDirection.isAlmostZero;
-      this.setState({ startOrigin: origin, origin, panningDirection, isPanning: false }, () => {
-        this._updateFrustum();
-        if (wasAlmostZero && !this.state.panningDirection.isAlmostZero) {
-          this._animationFrame = setTimeout(this._panAnimation, 16.667);
-        }
-      });
+      this._processWindowDrag(movement);
     } else if (this.state.isPanning) {
       if (this.state.mode === MapMode.Opened) {
         const vect = Vector3d.create(movement.x / this.state.drawingZoom, -movement.y / this.state.drawingZoom, 0);
@@ -478,20 +500,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       (event.target === this._viewContainerElement || event.target === this._viewElement)) {
       this._openLargeMap();
     } else if (this.state.isMoving) {
-      this.setState({ isMoving: false });
-      this._updateFrustum(true);
-      if (this.state.mode === MapMode.Closed) {
-        setTimeout(() => {
-          const startMapOrigin = this.state.mapOrigin;
-          const mapOrigin = this.state.origin.clone();
-          // istanbul ignore next
-          if (this._mounted) {
-            this.setState({ startMapOrigin, mapOrigin, animation: 0 }, () => {
-              this._animationFrame = setTimeout(this._animation, 16.667);
-            });
-          }
-        }, 0);
-      }
+      this._processWindowEndDrag();
     } else if (this.state.isPanning) {
       if (this.state.mode === MapMode.Opened) {
         event.stopPropagation();
@@ -501,6 +510,37 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       this._closeLargeMap();
     }
     this._lastClientXY = Point2d.create(event.clientX, event.clientY);
+  }
+
+  private _handleWindowTouchStart = (event: any) => {
+    if (1 !== event.targetTouches.length)
+      return;
+    window.addEventListener("touchmove", this._onTouchMove, false);
+    window.addEventListener("touchend", this._onTouchEnd, false);
+    const mouseStart = Point2d.create(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
+    this.setState({ mouseStart });
+    this._lastClientXY = mouseStart.clone();
+    this.setState({ isMoving: true });
+  }
+
+  private _onTouchMove = (event: TouchEvent) => {
+    if (1 !== event.targetTouches.length)
+      return;
+    const mouse = Point2d.create(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
+    const movement = mouse.minus(this._lastClientXY);
+    // add scaled mouse movement
+    this._processWindowDrag(movement);
+    this._lastClientXY = mouse;
+  }
+
+  private _onTouchEnd = (event: TouchEvent) => {
+    if (0 !== event.targetTouches.length)
+      return;
+    this._processWindowEndDrag();
+    if (0 !== event.changedTouches.length)
+      this._lastClientXY = Point2d.create(event.changedTouches[0].clientX, event.changedTouches[0].clientY); // Doesn't seem necessary...but _handleMouseDragEnd sets it...
+    window.removeEventListener("touchmove", this._onTouchMove);
+    window.removeEventListener("touchend", this._onTouchEnd);
   }
 
   /** @internal */

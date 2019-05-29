@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support touch move for navigation controls.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Brien.Bastings@bentley.com"
+}

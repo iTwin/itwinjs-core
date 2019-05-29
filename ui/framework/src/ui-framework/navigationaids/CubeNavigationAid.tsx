@@ -250,7 +250,8 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       <div className={classnames("uifw-cube-container", this.props.className)}
         style={this.props.style}
         data-testid="cube-navigation-aid"
-        onMouseDown={this._handleBoxClick} >
+        onMouseDown={this._handleBoxMouseDown}
+        onTouchStart={this._handleBoxTouchStart} >
         <div className={"cube-element-container"}>
           <Cube
             className={classnames("nav-cube", { dragging: this.state.dragging })}
@@ -334,19 +335,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   }
 
   private _lastClientXY: Vector2d = Vector2d.createZero();
-
-  private _handleBoxClick = (event: any) => {
-    event.preventDefault();
-    // only start listening after drag is confirmed. Ie. the 3D box is clicked.
-    window.addEventListener("mousemove", this._onMouseDrag, false);
-    window.addEventListener("mouseup", this._onMouseStopDrag, false);
-
-    this._lastClientXY = Vector2d.create(event.clientX, event.clientY);
-    this._start = this._lastClientXY;
-  }
-
-  private _onMouseDrag = (event: MouseEvent) => {
-    const mousePos = Vector2d.create(event.clientX, event.clientY);
+  private _processDrag(mousePos: Vector2d) {
     if (!this._start.isAlmostEqual(mousePos)) {
       const movement = mousePos.minus(this._lastClientXY);
       const diff = movement.scale(0.05);
@@ -365,12 +354,51 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     this._lastClientXY = mousePos;
   }
 
-  private _onMouseStopDrag = () => {
+  private _handleBoxMouseDown = (event: any) => {
+    event.preventDefault();
+    // only start listening after drag is confirmed. Ie. the 3D box is clicked.
+    window.addEventListener("mousemove", this._onMouseMove, false);
+    window.addEventListener("mouseup", this._onMouseUp, false);
+    this._lastClientXY = Vector2d.create(event.clientX, event.clientY);
+    this._start = this._lastClientXY;
+  }
+
+  private _onMouseMove = (event: MouseEvent) => {
+    const mousePos = Vector2d.create(event.clientX, event.clientY);
+    this._processDrag(mousePos);
+  }
+
+  private _onMouseUp = () => {
     this.setState({ dragging: false });
     ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, CubeNavigationAid._getMatrixFace(this.state.endRotMatrix), true);
     // remove so event only triggers after this.onMouseStartDrag
-    window.removeEventListener("mousemove", this._onMouseDrag);
-    window.removeEventListener("mouseup", this._onMouseStopDrag);
+    window.removeEventListener("mousemove", this._onMouseMove);
+    window.removeEventListener("mouseup", this._onMouseUp);
+  }
+
+  private _handleBoxTouchStart = (event: any) => {
+    if (1 !== event.targetTouches.length)
+      return;
+    window.addEventListener("touchmove", this._onTouchMove, false);
+    window.addEventListener("touchend", this._onTouchEnd, false);
+    this._lastClientXY = Vector2d.create(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
+    this._start = this._lastClientXY;
+  }
+
+  private _onTouchMove = (event: TouchEvent) => {
+    if (1 !== event.targetTouches.length)
+      return;
+    const mousePos = Vector2d.create(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
+    this._processDrag(mousePos);
+  }
+
+  private _onTouchEnd = (event: TouchEvent) => {
+    if (0 !== event.targetTouches.length)
+      return;
+    this.setState({ dragging: false });
+    ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, CubeNavigationAid._getMatrixFace(this.state.endRotMatrix), true);
+    window.removeEventListener("touchmove", this._onTouchMove);
+    window.removeEventListener("touchend", this._onTouchEnd);
   }
 
   private _handleFaceCellClick = (pos: Vector3d, face: Face) => {
@@ -390,7 +418,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       }
       this._animateRotation(rotMatrix, face);
     }
-    window.removeEventListener("mousemove", this._onMouseDrag);
+    window.removeEventListener("mousemove", this._onMouseMove);
   }
 
   private _animateRotation = (endRotMatrix: Matrix3d, face: Face) => {
