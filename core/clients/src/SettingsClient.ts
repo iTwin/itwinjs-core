@@ -28,6 +28,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    * @param requestContext The client request context.
    * @param authSamlToken Authorization SAML token (e.g. as obtained from ImsFederatedAuthenticationClient)
    * @returns SAML access token
+   * @internal
    */
   public async getAccessToken(requestContext: ClientRequestContext, authSamlToken: AuthorizationToken): Promise<AccessToken> {
     const baseUrl: string = await this.getUrl(requestContext);

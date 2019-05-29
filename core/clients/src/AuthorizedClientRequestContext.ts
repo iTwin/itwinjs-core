@@ -8,7 +8,7 @@ import { AccessToken } from "./Token";
 import { Guid, ClientRequestContext, ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
 
 /** The properties of AuthorizedClientRequestContext.
- * @beta
+ * @public
  */
 export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
   accessToken: any;
@@ -19,18 +19,25 @@ export interface AuthorizedClientRequestContextProps extends ClientRequestContex
  * it's sufficient to pass an instance of the base class [[ClientRequestContext]].
  * @see [ClientRequestContext rules]($docs/learning/backend/managingclientrequestcontext.md).
  * @see [[ClientRequestContext]]
- * @beta
+ * @public
  */
 export class AuthorizedClientRequestContext extends ClientRequestContext implements AuthorizedClientRequestContextProps {
-  /** The access token value of the client application. */
+  /** The access token value of the client application.
+   * @beta
+   */
   public accessToken: AccessToken;
 
-  /** Constructor */
+  /** Constructor
+   * @beta
+   */
   public constructor(accessToken: AccessToken, activityId: GuidString = Guid.createValue(), applicationId: string = "", applicationVersion: string = "", sessionId: GuidString = Guid.empty) {
     super(activityId, applicationId, applicationVersion, sessionId);
     this.accessToken = accessToken;
   }
 
+  /**
+   * @internal
+   */
   public toJSON(): AuthorizedClientRequestContextProps {
     const obj = super.toJSON() as AuthorizedClientRequestContextProps;
     obj.accessToken = this.accessToken;

@@ -9,7 +9,7 @@ import { ArgumentCheck } from "./Errors";
 import { GuidString } from "@bentley/bentleyjs-core";
 
 /** Base class for iModelHub Query objects. Query objects are used to modify the results when getting instances from iModelHub.
- * @internal
+ * @beta
  */
 export class Query {
   protected _query: RequestQueryOptions = {};
@@ -116,7 +116,7 @@ export class Query {
 }
 
 /** Query for instances with string based instance ids.
- * @internal
+ * @beta
  */
 export class StringIdQuery extends Query {
   /** @internal */
@@ -150,7 +150,7 @@ export class StringIdQuery extends Query {
 }
 
 /** Query for instances with Guid based instance ids.
- * @internal
+ * @beta
  */
 export class InstanceIdQuery extends Query {
   /** @internal */

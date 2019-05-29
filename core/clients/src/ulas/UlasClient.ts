@@ -253,6 +253,7 @@ export class UlasClient extends Client {
    * @param requestContext The client request context.
    * @param authTokenInfo Access token.
    * @returns Resolves to the (delegation) access token.
+   * @internal
    */
   public async getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     const imsClient = new ImsDelegationSecureTokenClient();

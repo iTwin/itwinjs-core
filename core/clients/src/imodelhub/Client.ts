@@ -13,7 +13,7 @@ import { ArgumentCheck } from "./Errors";
 
 /**
  * Class that allows access to different iModelHub class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
- * @public
+ * @beta
  */
 export class IModelHubClient extends IModelClient {
   /**
@@ -33,6 +33,7 @@ export class IModelHubClient extends IModelClient {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if authorizationToken is undefined.
    * @throws [[ResponseError]] if request to delegation service failed.
    * @throws Error if failed to parse response.
+   * @internal
    */
   public async getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     ArgumentCheck.defined("authorizationToken", authorizationToken);

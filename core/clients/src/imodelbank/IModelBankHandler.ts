@@ -9,7 +9,7 @@ import { FileHandler } from "../imodeljs-clients";
 
 /**
  * This class acts as the WsgClient for other iModelBank Handlers.
- * @internal
+ * @beta
  */
 export class IModelBankHandler extends IModelBaseHandler {
   private _baseUrl: string;

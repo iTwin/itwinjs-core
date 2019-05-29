@@ -21,7 +21,7 @@ const iModelTemplateEmpty = "Empty";
  * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as iModelId argument to those methods.
  *
  * For iModel representation in iModel.js, see [IModel]($common). For the file that is used for that iModel, see [IModelDb]($backend).
- * @public
+ * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "ContextScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubIModel extends WsgInstance {
@@ -57,7 +57,7 @@ export class HubIModel extends WsgInstance {
 }
 
 /** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
- * @internal
+ * @beta
  */
 export enum InitializationState {
     /** Initialization was successful. */
@@ -220,7 +220,7 @@ class SeedFileHandler {
 
 /**
  * Query object for getting [[HubIModel]] instances. You can use this to modify the [[IModelsHandler.get]] results.
- * @public
+ * @beta
  */
 export class IModelQuery extends InstanceIdQuery {
     /**
@@ -239,7 +239,7 @@ export class IModelQuery extends InstanceIdQuery {
 /**
  * Handler for managing [[HubIModel]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
  * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per context workflow.
- * @public
+ * @beta
  */
 export class IModelsHandler {
     private _handler: IModelBaseHandler;
@@ -525,7 +525,7 @@ export class IModelsHandler {
 /**
  * Handler for managing [[HubIModel]] instance. Use [[IModelHubClient.IModel]] to get an instance of this handler.
  * @note Use [[IModelHubClient.IModels]] if multiple iModels per context are supported.
- * @public
+ * @beta
  */
 export class IModelHandler {
     private _handler: IModelsHandler;

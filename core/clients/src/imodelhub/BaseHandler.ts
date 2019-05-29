@@ -28,7 +28,7 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
 
 /**
  * This class acts as the WsgClient for other iModelHub Handlers.
- * @internal
+ * @beta
  */
 export class IModelBaseHandler extends WsgClient {
   protected _url?: string;
@@ -114,6 +114,7 @@ export class IModelBaseHandler extends WsgClient {
    * @param requestContext The client request context
    * @param authorizationToken Authorization token.
    * @returns Resolves to the (delegation) access token.
+   * @internal
    */
   public async getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     const imsClient = new ImsDelegationSecureTokenClient();

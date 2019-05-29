@@ -14,7 +14,7 @@ const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /**
  * Error returned from iModelHub service.
- * @public
+ * @beta
  */
 export class IModelHubError extends WsgError {
   /** Extended data of the error. */
@@ -166,7 +166,7 @@ export class IModelHubError extends WsgError {
 
 /**
  * Errors for incorrect iModelHub requests.
- * @public
+ * @beta
  */
 export class IModelHubClientError extends IModelHubError {
   /** Creates IModelHubClientError from id.

@@ -18,7 +18,7 @@ import { LockLevel, LockType } from "./Locks";
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /** Type of [[IModelHubEvent]]. Event type is used to define which events you wish to receive from your [[EventSubscription]]. See [[EventSubscriptionHandler.create]] and [[EventSubscriptionHandler.update]].
- * @public
+ * @beta
  */
 export type EventType =
   /** Sent when one or more [[Lock]]s are updated. See [[LockEvent]].
@@ -51,7 +51,7 @@ export type EventType =
   "VersionEvent";
 
 /** Base type for all iModelHub events.
- * @public
+ * @beta
  */
 export abstract class IModelHubEvent extends IModelHubBaseEvent {
   /** Id of the iModel where the event occured. */
@@ -68,7 +68,7 @@ export abstract class IModelHubEvent extends IModelHubBaseEvent {
 }
 
 /** Base type for iModelHub events that have BriefcaseId.
- * @public
+ * @beta
  */
 export abstract class BriefcaseEvent extends IModelHubEvent {
   /** Id of the [[Briefcase]] involved in this event. */
@@ -117,7 +117,7 @@ export class AllLocksDeletedEvent extends BriefcaseEvent {
 }
 
 /** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetHandler.create]]. It's sent when a new [[ChangeSet]] is successfully pushed to an iModel. See [[ChangeSetPrePushEvent]] for the event indicating the start of a ChangeSet push.
- * @public
+ * @beta
  */
 export class ChangeSetPostPushEvent extends BriefcaseEvent {
   /** Id of the ChangeSet that was pushed. */
@@ -137,7 +137,7 @@ export class ChangeSetPostPushEvent extends BriefcaseEvent {
 }
 
 /** Sent when a [[ChangeSet]] push has started. See [[ChangeSetHandler.create]]. ChangeSetPrePushEvent indicates that iModelHub allowed one of the [[Briefcase]]s to push a ChangeSet and all other push attempts will fail, until this push times out or succeeds. See [[ChangeSetPostPushEvent]] for an event indicating a successful push.
- * @public
+ * @beta
  */
 export class ChangeSetPrePushEvent extends IModelHubEvent {
 }
@@ -181,13 +181,13 @@ export class BriefcaseDeletedEvent extends BriefcaseEvent {
 }
 
 /** Sent when an iModel is deleted. See [[IModelHandler.delete]]. [[EventSubscription]] will be deleted 5 minutes after iModel is deleted, removing all events from subscription queues, making it possible for this event to be missed if not retrieved immediately.
- * @public
+ * @beta
  */
 export class IModelDeletedEvent extends IModelHubEvent {
 }
 
 /** Sent when a new named [[Version]] is created. See [[VersionHandler.create]].
- * @public
+ * @beta
  */
 export class VersionEvent extends IModelHubEvent {
   /** Id of the created Version. */
@@ -247,7 +247,7 @@ export function ParseEvent(response: Response) {
 }
 
 /** Subscription to receive [[IModelHubEvent]]s. Each subscription has a separate queue for events that it hasn't read yet. Subscriptions are deleted, if they are inactive for an hour. Use wsgId of this instance for the methods that require subscriptionId. See [[EventSubscriptionHandler]].
- * @public
+ * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSubscription", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class EventSubscription extends WsgInstance {
@@ -257,14 +257,14 @@ export class EventSubscription extends WsgInstance {
 }
 
 /** Shared access signature token for getting [[IModelHubEvent]]s. It's used to authenticate for [[EventHandler.getEvent]]. To receive an instance call [[EventHandler.getSASToken]].
- * @public
+ * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSAS", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class EventSAS extends BaseEventSAS {
 }
 
 /** Handler for managing [[EventSubscription]]s. Use [[EventHandler.Subscriptions]] to get an instance of this class.
- * @public
+ * @beta
  */
 export class EventSubscriptionHandler {
   private _handler: IModelBaseHandler;
@@ -352,7 +352,7 @@ export class EventSubscriptionHandler {
 }
 
 /** Handler for receiving [[IModelHubEvent]]s. Use [[IModelClient.Events]] to get an instance of this class.
- * @public
+ * @beta
  */
 export class EventHandler extends EventBaseHandler {
   private _subscriptionHandler: EventSubscriptionHandler | undefined;
