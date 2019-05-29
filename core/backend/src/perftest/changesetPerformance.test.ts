@@ -14,9 +14,11 @@ import {
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
-async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, csvPath: string, projectId: string, imodelId: string, client: IModelHubClient) {
+async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string, imodelId: string, client: IModelHubClient) {
   csvPath = csvPath;
+  reporter = reporter;
   const changeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
   const firstChangeSetId = changeSets[0].wsgId;
   const secondChangeSetId = changeSets[1].wsgId;
@@ -39,6 +41,7 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   assert.strictEqual<string>(imodeldb.briefcase.currentChangeSetId, firstChangeSetId);
   imodeldb.close(requestContext).catch();
   fs.appendFileSync(csvPath, "Open, From Hub first cs," + elapsedTime + "\n");
+  reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime, { Description: "from hub first CS", Operation: "Open" });
 
   // open imodel from local cache with second revision
   const startTime1 = new Date().getTime();
@@ -49,6 +52,7 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   assert.strictEqual<string>(imodeldb1.briefcase.currentChangeSetId, secondChangeSetId);
   imodeldb1.close(requestContext).catch();
   fs.appendFileSync(csvPath, "Open, From Cache second cs," + elapsedTime1 + "\n");
+  reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime1, { Description: "from cache second CS", Operation: "Open" });
 
   // open imodel from local cache with latest revision
   const startTime3 = new Date().getTime();
@@ -58,10 +62,12 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
   imodeldb3.close(requestContext).catch();
   fs.appendFileSync(csvPath, "Open, From Cache Latest CS," + elapsedTime3 + "\n");
+  reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime3, { Description: "from cache latest CS", Operation: "Open" });
 }
 
-async function pushImodelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, csvPath: string, projectId: string, imodelPushId: string) {
+async function pushImodelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string, imodelPushId: string) {
   csvPath = csvPath;
+  reporter = reporter;
   const iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.latest());
   assert.exists(iModelPullAndPush);
 
@@ -74,6 +80,7 @@ async function pushImodelAfterMetaChanges(requestContext: AuthorizedClientReques
   const endTime = new Date().getTime();
   const elapsedTime = (endTime - startTime) / 1000.0;
   fs.appendFileSync(csvPath, "Update, Make Meta Changes," + elapsedTime + "\n");
+  reporter.addEntry("ImodelChangesetPerformance", "PushMetaChangeToHub", "Execution time(s)", elapsedTime, { Description: "make meta changes", Operation: "Update" });
 
   try {
     // get the time to push a meta data change of an imodel to imodel hub
@@ -82,6 +89,7 @@ async function pushImodelAfterMetaChanges(requestContext: AuthorizedClientReques
     const endTime1 = new Date().getTime();
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     fs.appendFileSync(csvPath, "Push, Meta Changes to Hub," + elapsedTime1 + "\n");
+    reporter.addEntry("ImodelChangesetPerformance", "PushMetaChangeToHub", "Execution time(s)", elapsedTime1, { Description: "meta changes to hub", Operation: "Push" });
   } catch (error) { }
   await iModelPullAndPush.close(requestContext, KeepBriefcase.No);
 }
@@ -108,8 +116,9 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
   return { modelId, spatialCategoryId };
 }
 
-async function pushImodelAfterDataChanges(requestContext: AuthorizedClientRequestContext, csvPath: string, projectId: string) {
+async function pushImodelAfterDataChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string) {
   csvPath = csvPath;
+  reporter = reporter;
   const iModelName = "CodesPushTest";
   // delete any existing imodel with given name
   const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
@@ -133,11 +142,13 @@ async function pushImodelAfterDataChanges(requestContext: AuthorizedClientReques
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   fs.appendFileSync(csvPath, "Push, Data Changes to Hub," + elapsedTime1 + "\n");
+  reporter.addEntry("ImodelChangesetPerformance", "PushDataChangeToHub", "Execution time(s)", elapsedTime1, { Description: "data changes to hub", Operation: "Push" });
   await rwIModel.close(requestContext, KeepBriefcase.No);
 }
 
-async function pushImodelAfterSchemaChanges(requestContext: AuthorizedClientRequestContext, csvPath: string, projectId: string) {
+async function pushImodelAfterSchemaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string) {
   csvPath = csvPath;
+  reporter = reporter;
   const iModelName = "SchemaPushTest";
   // delete any existing imodel with given name
   const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
@@ -161,6 +172,7 @@ async function pushImodelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   fs.appendFileSync(csvPath, "Push, Schema Changes to Hub," + elapsedTime1 + "\n");
+  reporter.addEntry("ImodelChangesetPerformance", "PushSchemaChangeToHub", "Execution time(s)", elapsedTime1, { Description: "schema changes to hub", Operation: "Push" });
   await rwIModel.close(requestContext, KeepBriefcase.No);
 }
 
@@ -170,8 +182,9 @@ const getElementCount = (iModel: IModelDb): number => {
   return count;
 };
 
-async function executeQueryTime(requestContext: AuthorizedClientRequestContext, csvPath: string, projectId: string, imodelId: string) {
+async function executeQueryTime(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string, imodelId: string) {
   csvPath = csvPath;
+  reporter = reporter;
   const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
   assert.exists(imodeldb);
   const startTime = new Date().getTime();
@@ -180,11 +193,13 @@ async function executeQueryTime(requestContext: AuthorizedClientRequestContext, 
   const elapsedTime1 = (endTime - startTime) / 1000.0;
   assert.equal(7, stat.length);
   fs.appendFileSync(csvPath, "ExecuteQuery, Execute a simple ECSQL query," + elapsedTime1 + "\n");
+  reporter.addEntry("ImodelChangesetPerformance", "ExecuteQuery", "Execution time(s)", elapsedTime1, { Description: "execute a simple ECSQL query", Operation: "ExecuteQuery" });
   imodeldb.close(requestContext).catch();
 }
 
-async function reverseChanges(requestContext: AuthorizedClientRequestContext, csvPath: string, projectId: string) {
+async function reverseChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string) {
   csvPath = csvPath;
+  reporter = reporter;
   const iModelName = "reverseChangeTest";
   // delete any existing imodel with given name
   const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
@@ -227,11 +242,13 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, cs
   assert.equal(reverseCount, firstCount);
 
   fs.appendFileSync(csvPath, "ReverseChanges, Reverse the imodel to first CS from latest," + elapsedTime1 + "\n");
+  reporter.addEntry("ImodelChangesetPerformance", "ReverseChanges", "Execution time(s)", elapsedTime1, { Description: "reverse the imodel to first CS from latest", Operation: "ReverseChanges" });
   await rwIModel.close(requestContext, KeepBriefcase.No);
 }
 
-async function reinstateChanges(requestContext: AuthorizedClientRequestContext, csvPath: string, projectId: string) {
+async function reinstateChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string) {
   csvPath = csvPath;
+  reporter = reporter;
   const iModelName = "reinstateChangeTest";
   // delete any existing imodel with given name
   const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
@@ -277,6 +294,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   assert.equal(reinstateCount, secondCount);
 
   fs.appendFileSync(csvPath, "ReinstateChanges, Reinstate the imodel to latest CS from first," + elapsedTime1 + "\n");
+  reporter.addEntry("ImodelChangesetPerformance", "ReinstateChanges", "Execution time(s)", elapsedTime1, { Description: "reinstate the imodel to latest CS from first", Operation: "ReinstateChanges" });
   await rwIModel.close(requestContext, KeepBriefcase.No);
 }
 
@@ -287,6 +305,7 @@ describe("ImodelChangesetPerformance", async () => {
   if (!IModelJsFs.existsSync(csvPath)) {
     fs.appendFileSync(csvPath, "Operation,Description,ExecutionTime\n");
   }
+  const reporter = new Reporter();
   let projectId: string;
   let imodelId: string;
   let imodelPushId: string;
@@ -315,32 +334,37 @@ describe("ImodelChangesetPerformance", async () => {
     requestContext = await IModelTestUtils.getTestUserRequestContext(userCredentials);
   });
 
-  it("GetImodelFromHubAFterCSApplied", async () => {
-    await getImodelAfterApplyingCS(requestContext, csvPath, projectId, imodelId, client);
+  after(() => {
+    const csvPath1 = path.join(KnownTestLocations.outputDir, "BackendOnlyPerfTest.csv");
+    reporter.exportCSV(csvPath1);
   });
 
-  it("PushImodelMetaChangeToImodelHUb", async () => {
-    pushImodelAfterMetaChanges(requestContext, csvPath, projectId, imodelPushId).catch();
+  it("GetImodel", async () => {
+    await getImodelAfterApplyingCS(requestContext, reporter, csvPath, projectId, imodelId, client).catch();
   });
 
-  it("PushImodelDataChangeToImodelHUb", async () => {
-    pushImodelAfterDataChanges(requestContext, csvPath, projectId).catch();
+  it("PushMetaChangeToHub", async () => {
+    await pushImodelAfterMetaChanges(requestContext, reporter, csvPath, projectId, imodelPushId).catch();
   });
 
-  it("pushImodelAfterSchemaChanges", async () => {
-    pushImodelAfterSchemaChanges(requestContext, csvPath, projectId).catch();
+  it("PushDataChangeToHub", async () => {
+    await pushImodelAfterDataChanges(requestContext, reporter, csvPath, projectId).catch();
   });
 
-  it("executeQuery", async () => {
-    executeQueryTime(requestContext, csvPath, projectId, imodelId).catch();
+  it("PushSchemaChangeToHub", async () => {
+    await pushImodelAfterSchemaChanges(requestContext, reporter, csvPath, projectId).catch();
   });
 
-  it("reverseChanges", async () => {
-    reverseChanges(requestContext, csvPath, projectId).catch();
+  it("ExecuteQuery", async () => {
+    await executeQueryTime(requestContext, reporter, csvPath, projectId, imodelId).catch();
   });
 
-  it("reinstateChanges", async () => {
-    reinstateChanges(requestContext, csvPath, projectId).catch();
+  it("ReverseChanges", async () => {
+    await reverseChanges(requestContext, reporter, csvPath, projectId).catch();
+  });
+
+  it("ReinstateChanges", async () => {
+    await reinstateChanges(requestContext, reporter, csvPath, projectId).catch();
   });
 
 });
