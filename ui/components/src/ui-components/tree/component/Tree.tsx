@@ -977,7 +977,7 @@ class PlaceholderNode extends React.Component<{ node: BeInspireTreeNode<TreeNode
   public render() {
     // note: props get mutated here
     this.props.node.setDirty(false);
-    const level = this.props.node.getParents().length;
+    const level = this.props.node.getParents().length + 1;
     return <TreeNodePlaceholder level={level} />;
   }
 }
