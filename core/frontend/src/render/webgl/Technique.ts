@@ -34,6 +34,7 @@ import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
+import { createCombineTexturesProgram } from "./glsl/CombineTextures";
 
 /** Defines a rendering technique implemented using one or more shader programs.
  * @internal
@@ -646,6 +647,7 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.SkySphereTexture] = new SingularTechnique(createSkySphereProgram(gl, false));
     this._list[TechniqueId.AmbientOcclusion] = new SingularTechnique(createAmbientOcclusionProgram(gl));
     this._list[TechniqueId.Blur] = new SingularTechnique(createBlurProgram(gl));
+    this._list[TechniqueId.CombineTextures] = new SingularTechnique(createCombineTexturesProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
     this._list[TechniqueId.Edge] = new EdgeTechnique(gl, false);
     this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, true);

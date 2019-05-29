@@ -688,6 +688,23 @@ export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
     super(params, TechniqueId.CopyPickBuffers, textures);
   }
 }
+export class CombineTexturesGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(texture0: WebGLTexture, texture1: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined !== params) {
+      return new CombineTexturesGeometry(params, [texture0, texture1]);
+    } else {
+      return undefined;
+    }
+  }
+
+  public get texture0() { return this._textures[0]; }
+  public get texture1() { return this._textures[1]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.CombineTextures, textures);
+  }
+}
 
 /** @internal */
 export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeometry {
