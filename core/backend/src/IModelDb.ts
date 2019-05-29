@@ -306,12 +306,12 @@ export class IModelDb extends IModel {
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
     try {
       const client = new UlasClient();
-      const ulasEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
+      const ulasEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, contextId);
       await client.logUsage(requestContext, ulasEntry);
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Could not log usage information", () => imodelDb.iModelToken);
+      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.Message, iModelToken: imodelDb.iModelToken }));
     }
     IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
 

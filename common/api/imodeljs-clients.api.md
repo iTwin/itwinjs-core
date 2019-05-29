@@ -618,7 +618,7 @@ export type EventType =
 
 // @internal
 export class FeatureEndedLogEntry extends FeatureLogEntry {
-    constructor(featureId: GuidString, startEntryId: GuidString, hostName: string, usageType: UsageType);
+    constructor(featureId: GuidString, startEntryId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString);
     static fromStartEntry(startEntry: FeatureStartedLogEntry): FeatureEndedLogEntry;
     // (undocumented)
     readonly startEntryId: GuidString;
@@ -626,10 +626,10 @@ export class FeatureEndedLogEntry extends FeatureLogEntry {
 
 // @internal
 export class FeatureLogEntry {
-    constructor(featureId: GuidString, hostName: string, usageType: UsageType);
+    constructor(featureId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString);
+    contextId?: GuidString;
     readonly featureId: GuidString;
     readonly hostName: string;
-    projectId?: GuidString;
     readonly timestamp: string;
     usageData: FeatureLogEntryAttribute[];
     readonly usageType: UsageType;
@@ -661,7 +661,7 @@ export interface FeatureLogEntryJson extends UsageLogEntryJson {
 
 // @internal
 export class FeatureStartedLogEntry extends FeatureLogEntry {
-    constructor(featureId: GuidString, hostName: string, usageType: UsageType);
+    constructor(featureId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString);
     readonly entryId: GuidString;
 }
 
@@ -1731,9 +1731,9 @@ export class UrlDiscoveryClient extends Client {
 
 // @internal
 export class UsageLogEntry {
-    constructor(hostName: string, usageType: UsageType);
+    constructor(hostName: string, usageType: UsageType, contextId?: GuidString);
+    contextId?: GuidString;
     readonly hostName: string;
-    projectId?: GuidString;
     readonly timestamp: string;
     readonly usageType: UsageType;
 }
