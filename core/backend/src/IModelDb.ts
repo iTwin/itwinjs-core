@@ -529,18 +529,37 @@ export class IModelDb extends IModel {
     if (!limit) limit = {};
     if (!quota) quota = {};
     if (!priority) priority = QueryPriority.Normal;
-
+    const base64Header = "encoding=base64;";
+    // handle binary type
+    const reviver = (_name: string, value: any) => {
+      if (typeof value === "string") {
+        if (value.length >= base64Header.length && value.startsWith(base64Header)) {
+          const out = value.substr(base64Header.length);
+          const buffer = Buffer.from(out, "base64");
+          return new Uint8Array(buffer);
+        }
+      }
+      return value;
+    };
+    // handle binary type
+    const replacer = (_name: string, value: any) => {
+      if (value && value.constructor === Uint8Array) {
+        const buffer = Buffer.from(value);
+        return base64Header + buffer.toString("base64");
+      }
+      return value;
+    };
     return new Promise<QueryResponse>((resolve) => {
-      const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings), limit!, quota!, priority!);
+      const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!);
       if (postrc.status !== PostStatus.Done)
         resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
       const poll = () => {
         const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
         if (pollrc.status === PollStatus.Done)
-          resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result) });
+          resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
         else if (pollrc.status === PollStatus.Partial)
-          resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result) });
+          resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
         else if (pollrc.status === PollStatus.Timeout)
           resolve({ status: QueryResponseStatus.Timeout, rows: [] });
         else if (pollrc.status === PollStatus.Pending)
@@ -585,7 +604,7 @@ export class IModelDb extends IModel {
       }
 
       if (result.status === QueryResponseStatus.Error)
-        throw new IModelError(QueryResponseStatus.Error, "Failed to execute ECSQL");
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows.length > 0 ? result.rows[0] : "Failed to execute ECSQL");
 
       if (rowsToGet > 0) {
         rowsToGet -= result.rows.length;

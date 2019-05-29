@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Improve reading and binding binary blob using concurrent query manager",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "khanaffan@gmail.com"
+}
