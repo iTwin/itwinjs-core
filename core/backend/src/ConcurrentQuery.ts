@@ -20,6 +20,8 @@ export interface Config {
   minMonitorInterval?: number;
   /** idle period of time in seconds after which resouces and caches are purged */
   idleCleanupTime?: number;
+  /** Poll interval in milli seconds. */
+  pollInterval?: number;
   /** Global restriction on query quota */
   quota?: QueryQuota;
 }

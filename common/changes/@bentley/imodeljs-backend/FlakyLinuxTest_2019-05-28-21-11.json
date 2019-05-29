@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Made poll interval configurable for concurrent query manager.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "khanaffan@gmail.com"
+}

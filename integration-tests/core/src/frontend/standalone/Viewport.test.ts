@@ -689,8 +689,12 @@ describe("Viewport changed events", async () => {
     });
   });
 
-  // ###TODO AFFAN TIMES OUT SPORADICALLY USU ON LINUX SEEN TWICE ON WINDOWS
-  it.skip("should load subcategories for all displayed categories", async () => {
+  it("should load subcategories for all displayed categories", async () => {
+    // Current concurrent query manager initalized on first query. This initalization cost time as each thread must also
+    // open connection to db. This time get included in the first call to sub categories making timing variable and cause failure on Linux
+    // Following query is just a dummy query to get the query manager initialized before the actual test begin.
+    await testImodel.queryRowCount("select null from bis.element");
+
     // NB: Because subcategories are cached, and previous tests probably loaded some, we must clear the cache.
     const subcats = testImodel.subcategories;
     subcats.onIModelConnectionClose();

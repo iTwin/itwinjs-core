@@ -544,11 +544,11 @@ export class IModelDb extends IModel {
         else if (pollrc.status === PollStatus.Timeout)
           resolve({ status: QueryResponseStatus.Timeout, rows: [] });
         else if (pollrc.status === PollStatus.Pending)
-          setTimeout(() => { poll(); }, 500);
+          setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
         else
           resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });
       };
-      setTimeout(() => { poll(); });
+      setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
     });
   }
   /** Execute a query and stream its results

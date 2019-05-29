@@ -129,9 +129,10 @@ export class IModelHostConfiguration {
     idleCleanupTime: 30 * 60, // 30 minutes
     cachedStatementsPerThread: 40,
     maxQueueSize: os.cpus().length * 500,
+    pollInterval: 50,
     quota: {
       maxTimeAllowed: 60, // 1 Minute
-      maxMemoryAllowed: 2 * 1024 * 1024, // 4 Mb
+      maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes
     },
   };
 }

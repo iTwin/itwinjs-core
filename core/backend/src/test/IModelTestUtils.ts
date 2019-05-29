@@ -258,7 +258,7 @@ export class IModelTestUtils {
   public static startBackend() {
     IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
     const config = new IModelHostConfiguration();
-    config.concurrentQuery.concurrent = 2; // for test restrict this to two threads. Making closing connection faster
+    config.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
     IModelHost.startup(config);
   }
 
