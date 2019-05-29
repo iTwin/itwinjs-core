@@ -475,12 +475,18 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     // (undocumented)
     deleteSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
+    deleteSharedSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
+    // (undocumented)
     deleteUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     getAccessToken(requestContext: ClientRequestContext, authSamlToken: AuthorizationToken): Promise<AccessToken>;
     // (undocumented)
     getSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
     getSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
+    // (undocumented)
+    getSharedSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
+    // (undocumented)
+    getSharedSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsMapResult>;
     // (undocumented)
     protected getUrlSearchKey(): string;
     // (undocumented)
@@ -489,6 +495,8 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     getUserSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
     // (undocumented)
     saveSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+    // (undocumented)
+    saveSharedSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
     saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
@@ -1634,12 +1642,16 @@ export class SeedFile extends WsgInstance {
 // @alpha
 export interface SettingsAdmin {
     deleteSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+    deleteSharedSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
     deleteUserSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     getSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     getSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
+    getSharedSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
+    getSharedSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsMapResult>;
     getUserSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     getUserSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
     saveSetting(requestContext: AuthorizedClientRequestContext, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+    saveSharedSetting(requestContext: AuthorizedClientRequestContext, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
     saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 }
 

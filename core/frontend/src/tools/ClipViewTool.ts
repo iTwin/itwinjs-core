@@ -1518,14 +1518,14 @@ export class ViewClipSettingsProvider {
   protected async getAllSettings(iModel: IModelConnection, shared: boolean): Promise<SettingsMapResult> {
     const requestContext = await this.getRequestContext();
     if (shared)
-      return IModelApp.settings.getSettingsByNamespace(requestContext, this.namespace, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+      return IModelApp.settings.getSharedSettingsByNamespace(requestContext, this.namespace, this.appSpecific, this.getProjectId(iModel)!, this.getiModelId(iModel));
     return IModelApp.settings.getUserSettingsByNamespace(requestContext, this.namespace, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
   }
 
   protected async getSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult> {
     const requestContext = await this.getRequestContext();
     if (shared)
-      return IModelApp.settings.getSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+      return IModelApp.settings.getSharedSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel)!, this.getiModelId(iModel));
     return IModelApp.settings.getUserSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
   }
 
@@ -1533,14 +1533,14 @@ export class ViewClipSettingsProvider {
   protected async saveSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsResult> {
     const requestContext = await this.getRequestContext();
     if (shared)
-      return IModelApp.settings.saveSetting(requestContext, settings, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+      return IModelApp.settings.saveSharedSetting(requestContext, settings, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel)!, this.getiModelId(iModel));
     return IModelApp.settings.saveUserSetting(requestContext, settings, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
   }
 
   protected async deleteSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult> {
     const requestContext = await this.getRequestContext();
     if (shared)
-      return IModelApp.settings.deleteSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+      return IModelApp.settings.deleteSharedSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel)!, this.getiModelId(iModel));
     return IModelApp.settings.deleteUserSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
   }
 
