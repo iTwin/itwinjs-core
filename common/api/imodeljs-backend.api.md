@@ -1938,7 +1938,7 @@ export class IModelJsFsStats {
 export namespace IModelJsNative {
     // (undocumented)
     export function addReferenceToObjectInVault(id: string): void;
-    export const enum BackendLoggerCategory {
+    export enum BackendLoggerCategory {
         // (undocumented)
         BeSQLite = "BeSQLite",
         // (undocumented)

@@ -137,6 +137,7 @@ dependencies:
   cross-env: 5.2.0
   cross-spawn: 6.0.5
   css-loader: 2.1.1
+  cssnano: 4.1.10
   csstype: 2.6.5
   debug: 2.6.9
   deep-assign: 2.0.0
@@ -8349,7 +8350,7 @@ packages:
       debug: 3.2.6
       ignore-by-default: 1.0.1
       minimatch: 3.0.4
-      pstree.remy: 1.1.6
+      pstree.remy: 1.1.7
       semver: 5.7.0
       supports-color: 5.5.0
       touch: 3.1.0
@@ -9936,10 +9937,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-MHACAkHpihU/REGGPLj4sEfc/XKW2bheigvHO1dUqjaKigMp1C8+WLQYRGgeKFMsw5PMfegZcaN8IDXK/cD0+g==
-  /pstree.remy/1.1.6:
+  /pstree.remy/1.1.7:
     dev: false
     resolution:
-      integrity: sha512-NdF35+QsqD7EgNEI5mkI/X+UwaxVEbQaz9f4IooEmMUv6ZPmlTQYGjBPJGgrlzNdjSvIy4MWMg6Q6vCgBO2K+w==
+      integrity: sha512-xsMgrUwRpuGskEzBFkH8NmTimbZ5PcPup0LA8JJkHIm2IMUbQcpo3yeLNWVrufEYjh8YwtSVh0xz6UeWc5Oh5A==
   /public-encrypt/4.0.3:
     dependencies:
       bn.js: 4.11.8
@@ -15519,6 +15520,7 @@ packages:
       concurrently: 3.6.1
       cpx: 1.5.0
       css-loader: /css-loader/2.1.1/webpack@4.32.2
+      cssnano: 4.1.10
       dotenv: 6.2.0
       enzyme: 3.9.0
       enzyme-adapter-react-16: /enzyme-adapter-react-16/1.12.1/ee2efeb9ba09e3479f87e6d53c5a2c00
@@ -15778,6 +15780,7 @@ specifiers:
   cross-env: ^5.1.4
   cross-spawn: ^6.0.5
   css-loader: ^2.1.1
+  cssnano: ^4.1.10
   csstype: ^2.5.7
   debug: ^2.6.9
   deep-assign: ^2.0.0

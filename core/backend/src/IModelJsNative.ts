@@ -47,7 +47,7 @@ export declare namespace IModelJsNative {
   export function clearLogLevelCache(): void;
 
   /** Logger categories used by the native addon */
-  export const enum BackendLoggerCategory {  // tslint:disable-line:no-const-enum
+  export enum BackendLoggerCategory {
     Success = 0,
     BeSQLite = "BeSQLite",
     Changeset = "Changeset",
