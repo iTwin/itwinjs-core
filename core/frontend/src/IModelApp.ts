@@ -42,7 +42,6 @@ import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
 declare var BUILD_SEMVER: string;
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
@@ -87,8 +86,6 @@ export interface IModelAppOptions {
   quantityFormatter?: QuantityFormatter;
   /** @internal */
   renderSys?: RenderSystem | RenderSystem.Options;
-  /** @internal */
-  backgroundMapProvider?: TiledGraphicsProvider.Provider;
   /** @internal */
   terrainProvider?: TerrainProvider;
 }

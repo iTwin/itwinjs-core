@@ -818,8 +818,9 @@ class MapBoxImageryProvider extends ImageryProvider {
 
 const enum GcsConverterStatus { Uninitialized, Pending, NotAvailable, Available }
 
-/** @internal */
-// methods and properties common to both BackgroundMapProviders and OverlayMapProviders
+/** Methods and properties common to both BackgroundMapProviders and OverlayMapProviders
+ * @internal
+ */
 export class BaseTiledMapProvider {
   protected _iModel: IModelConnection;
   protected _tileTree?: TileTree;
@@ -915,9 +916,10 @@ export class BaseTiledMapProvider {
   }
 }
 
-/** @internal */
-// this class is the specialization of BasedTiledMapProvider used for Background Maps. In that case, the ImageryProvider is constructed
-// internally using the BackgroundMapProps persisted to the iModel.
+/** This class is the specialization of BasedTiledMapProvider used for Background Maps. In that case, the ImageryProvider is constructed
+ * internally using the BackgroundMapProps persisted to the iModel.
+ * @internal
+ */
 export class BackgroundMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
   public providerName: string;
   public mapType: BackgroundMapType;

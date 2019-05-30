@@ -1123,7 +1123,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     type: number;
 }
 
-// @internal (undocumented)
+// @internal
 export class BackgroundMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
     constructor(json: BackgroundMapProps, iModel: IModelConnection);
     // (undocumented)
@@ -1148,7 +1148,7 @@ export interface BasePropertyValue {
     valueFormat: PropertyValueFormat;
 }
 
-// @internal (undocumented)
+// @internal
 export class BaseTiledMapProvider {
     constructor(iModel: IModelConnection, groundBias: number);
     // (undocumented)
@@ -1883,6 +1883,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     removeContextRealityModel(index: number): void;
     // @internal (undocumented)
     readonly scheduleScript: RenderScheduleState.Script | undefined;
+    // @alpha
     setBackgroundMap(mapProps: BackgroundMapProps): void;
     abstract readonly settings: DisplayStyleSettings;
     viewFlags: ViewFlags;
@@ -3063,8 +3064,6 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: IAuthorizationClient;
-    // @internal (undocumented)
-    backgroundMapProvider?: TiledGraphicsProvider.Provider;
     i18n?: I18N | I18NOptions;
     imodelClient?: IModelClient;
     // @internal (undocumented)

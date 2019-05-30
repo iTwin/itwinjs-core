@@ -1212,7 +1212,7 @@ export class DisplayStyleSettings {
     });
     addExcludedElements(id: Id64String): void;
     backgroundColor: ColorDef;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     backgroundMap: BackgroundMapProps | undefined;
     dropExcludedElement(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
