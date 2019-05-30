@@ -14,7 +14,7 @@ export interface LatAndLong { longitude: number; latitude: number; }
 /** @public */
 export interface LatLongAndHeight extends LatAndLong { height: number; }
 
-/** A position on the earth defined by longitude, latitude, and height above the WSG84 ellipsoid.
+/** A position on the earth defined by longitude, latitude, and height above the [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) ellipsoid.
  * @public
  */
 export class Cartographic implements LatLongAndHeight {
