@@ -58,3 +58,32 @@ It is no longer possible to send class instances, maps, sets, or objects with fu
 Binary data transfer is still supported via `Uint8Array`.
 
 These new type restrictions are enforced via the `require-basic-rpc-values` tslint rule. With these new restrictions in place, the RPC system is now compatible with aggressive webpacking policies that mangle class names at build time.
+
+
+## Changes to ECSql Query API
+
+This change breaks RPC interface [IModelReadRpcInterface]($common). Both frontend and backend developer must update there packages.
+
+Backend:
+  * Renamed `IModelDb.queryPage` to [IModelDb.queryRows]($backend). This method is also marked `internal` and user should not call it directly. Instead user should always use [IModelDb.query]($frontend). This method now also throw exception if query prepare fails.
+  * Changed methoid signature for [IModelDb.query]($backend). But first two parameters are same.
+
+Common:
+  * Renamed `IModelDb.queryPage` to [IModelDb.queryRows]($common).
+  * Removed `queryRowCount`method from [IModelReadRpcInterface]($common)
+
+Backend:
+  * Renamed `IModelDb.queryPage` to [IModelConnection.queryRows]($frontend). This method is also marked `internal` and user should not call it directly. Instead user should always use [IModelConnection.query]($frontend). This method now also throw exception if query prepare fails.
+  * Changed methoid signature for [IModelDb.query]($backend). But first two parameters are same.
+
+### How can you update code
+```ts
+      const rows = await imodel.queryPage("SELECT ECInstanceId FROM bis.Element LIMIT 1");
+```
+  can be be changed to following.
+```ts
+      const rows = [];
+      for await (const row of imodel.query("SELECT ECInstanceId FROM bis.Element LIMIT 1")) {
+        rows.push(row);
+      }
+```
