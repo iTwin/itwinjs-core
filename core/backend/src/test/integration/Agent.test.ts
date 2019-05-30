@@ -6,29 +6,29 @@ import { assert } from "chai";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { Config, AccessToken } from "@bentley/imodeljs-clients";
-import { OidcAgentClientConfigurationV2, OidcAgentClientV2 } from "@bentley/imodeljs-clients-backend";
+import { OidcAgentClientConfiguration, OidcAgentClient } from "@bentley/imodeljs-clients-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelDb, OpenParams, AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
 
 describe("Agent (#integration)", () => {
 
-  let agentConfiguration: OidcAgentClientConfigurationV2;
+  let agentConfiguration: OidcAgentClientConfiguration;
 
   before(async () => {
     IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
     agentConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id_v2"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret_v2"),
+      clientId: Config.App.getString("imjs_agent_test_client_id"),
+      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
       scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
     };
 
   });
 
   it("Agent should be able to open an iModel Readonly", async () => {
-    const agentClient = new OidcAgentClientV2(agentConfiguration);
+    const agentClient = new OidcAgentClient(agentConfiguration);
     const jwt: AccessToken = await agentClient.getToken(new ClientRequestContext());
     const requestContext = new AuthorizedBackendRequestContext(jwt);
 
@@ -40,7 +40,7 @@ describe("Agent (#integration)", () => {
   });
 
   it("Agent should be able to open an iModel ReadWrite", async () => {
-    const agentClient = new OidcAgentClientV2(agentConfiguration);
+    const agentClient = new OidcAgentClient(agentConfiguration);
     const jwt: AccessToken = await agentClient.getToken(new ClientRequestContext());
     const requestContext = new AuthorizedBackendRequestContext(jwt);
 

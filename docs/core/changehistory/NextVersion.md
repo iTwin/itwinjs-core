@@ -35,6 +35,24 @@ Removed the following parameters to [IModelDb.open]($backend) to simplify the im
 * [OpenParams]($backend).pullOnly(): Use OpenParams.fixedVersion() or OpenParams.pullAndPush()
 * AccessMode: Using OpenParams.fixedVersion() always causes the briefcase to be shared, and using OpenParams.pullAndPush() always causes the briefcase to be exclusive.
 
+## Changes to OidcAgentClient
+
+[OidcAgentClient]($clients-backend) now follows the typical OIDC client credentials authorization workflow. This implies the caller need not supply "serviceUserEmail" and "serviceUserPassword" as part of the configuration. For example:
+
+```ts
+const agentConfiguration:  = {
+      clientId: "some-client-id-obtained-through-registration",
+      clientSecret: "some-client-secret-obtained-through-registration",
+      scope: "context-registry-service imodelhub",
+    };
+
+const agentClient = new OidcAgentClient(agentConfiguration);
+```
+
+Note that what was OidcAgentClientV2 has now become [OidcAgentClient]($clients-backend) - i.e., the older OidcAgentClient has been entirely replaced.
+
+**Most importantly, it's required that agent applications re-register and obtain a new configuration - clientId and clientSecret - the older registrations will NOT work anymore.**
+
 ## Changes to tile features
 
 Removed or modified some properties used to feature-gate various tile-related features.
