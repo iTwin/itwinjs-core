@@ -229,12 +229,14 @@ class ModuleCopier {
                 // if there is a symlink already there, copyFileSync fails, so check for that case.
                 if (fs.existsSync(outMapFile))
                     fs.unlinkSync(outMapFile);
-                if (fs.existsSync(mapFile))
-                    fs.copyFileSync(mapFile, outMapFile);
+                fs.copyFileSync(mapFile, outMapFile);
+            }
+            if (fs.existsSync(cssFile)) {
+                if (this._detail > 3)
+                    console.log("  Copying file", cssFile, "to", outCssFile);
                 if (fs.existsSync(outCssFile))
                     fs.unlinkSync(outCssFile);
-                if (fs.existsSync(cssFile))
-                    fs.copyFileSync(cssFile, outCssFile);
+                fs.copyFileSync(cssFile, outCssFile);
             }
         }
         else {
