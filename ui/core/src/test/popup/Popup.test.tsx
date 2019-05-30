@@ -210,4 +210,44 @@ describe("Popup />", () => {
       wrapper.unmount();
     });
   });
+
+  describe("keyboard handling", () => {
+    it("should close on Escape", () => {
+      const spyOnClose = sinon.spy();
+      const wrapper = mount(<Popup isOpen={true} onClose={spyOnClose} />);
+      expect(wrapper.state("isOpen")).to.be.true;
+
+      window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
+
+      spyOnClose.calledOnce.should.true;
+      expect(wrapper.state("isOpen")).to.be.false;
+
+      wrapper.unmount();
+    });
+    it("should close on Enter", () => {
+      const spyOnClose = sinon.spy();
+      const wrapper = mount(<Popup isOpen={true} onClose={spyOnClose} />);
+      expect(wrapper.state("isOpen")).to.be.true;
+
+      window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Enter" }));
+
+      spyOnClose.calledOnce.should.true;
+      expect(wrapper.state("isOpen")).to.be.false;
+
+      wrapper.unmount();
+    });
+    it("should do nothing on 'a'", () => {
+      const spyOnClose = sinon.spy();
+      const wrapper = mount(<Popup isOpen={true} onClose={spyOnClose} />);
+      expect(wrapper.state("isOpen")).to.be.true;
+
+      window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "a" }));
+
+      spyOnClose.calledOnce.should.false;
+      expect(wrapper.state("isOpen")).to.be.true;
+
+      wrapper.unmount();
+    });
+  });
+
 });

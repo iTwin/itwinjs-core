@@ -6,9 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, NoChildrenProps, flattenChildren } from "@bentley/ui-core";
 import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
-import { NoChildrenProps, FlattenChildren } from "../utilities/Props";
 import { Items } from "./Items";
 import "./Toolbar.scss";
 
@@ -106,7 +105,7 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
   }
 
   public render() {
-    const flattened = FlattenChildren(this.props.items);
+    const flattened = flattenChildren(this.props.items);
     const itemsArray = React.Children.toArray(flattened);
     this._refs = [];
     this._update = false;

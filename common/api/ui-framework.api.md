@@ -36,7 +36,7 @@ import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
 import { MessageSeverity } from '@bentley/ui-core';
 import { NineZoneProps } from '@bentley/ui-ninezone';
-import { NoChildrenProps } from '@bentley/ui-ninezone';
+import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { NotificationManager } from '@bentley/imodeljs-frontend';

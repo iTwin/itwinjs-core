@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Moved NoChildrenProps, OmitChildrenProp and flattenChildren to ui-core from ui-ninezone",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

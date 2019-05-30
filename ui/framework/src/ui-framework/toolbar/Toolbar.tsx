@@ -7,14 +7,8 @@
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 
-import { CommonProps, Orientation } from "@bentley/ui-core";
-import {
-  NoChildrenProps,
-  Direction,
-  ToolbarPanelAlignment,
-  Toolbar as NZ_Toolbar,
-  Size,
-} from "@bentley/ui-ninezone";
+import { CommonProps, Orientation, NoChildrenProps } from "@bentley/ui-core";
+import { Direction, Size, ToolbarPanelAlignment, Toolbar as NZ_Toolbar } from "@bentley/ui-ninezone";
 
 import { ItemList } from "../shared/ItemMap";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";

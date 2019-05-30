@@ -6,7 +6,9 @@
 
 import { CommonProps } from '@bentley/ui-core';
 import * as CSS from 'csstype';
+import { NoChildrenProps } from '@bentley/ui-core';
 import { Omit } from '@bentley/ui-core';
+import { OmitChildrenProp } from '@bentley/ui-core';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 
@@ -16,8 +18,6 @@ export class AppButton extends React.PureComponent<AppButtonProps> {
     render(): JSX.Element;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "AppButtonProps" is marked as @alpha, but its signature references "OmitChildrenProp" which is marked as @internal
-// 
 // @alpha
 export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
 }
@@ -38,8 +38,6 @@ export class BackButton extends React.PureComponent<BackButtonProps> {
     render(): JSX.Element;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "BackButtonProps" is marked as @alpha, but its signature references "OmitChildrenProp" which is marked as @internal
-// 
 // @alpha
 export interface BackButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
 }
@@ -99,7 +97,6 @@ export class BackTarget extends React.PureComponent<BackTargetProps> {
 
 // @beta
 export interface BackTargetProps extends MergeTargetProps {
-    // Warning: (ae-incompatible-release-tags) The symbol "zoneIndex" is marked as @beta, but its signature references "WidgetZoneIndex" which is marked as @alpha
     zoneIndex: WidgetZoneIndex;
 }
 
@@ -326,9 +323,6 @@ export interface ExpandableItemProps extends CommonProps {
     panel?: React.ReactNode;
 }
 
-// @internal
-export const FlattenChildren: (children: React.ReactNode) => React.ReactNode;
-
 // @alpha (undocumented)
 export interface FloatingProps {
     // (undocumented)
@@ -407,8 +401,6 @@ export class FooterSeparator extends React.PureComponent<FooterSeparatorProps> {
     render(): JSX.Element;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "FooterSeparatorProps" is marked as @beta, but its signature references "NoChildrenProps" which is marked as @alpha
-// 
 // @beta
 export interface FooterSeparatorProps extends CommonProps, NoChildrenProps {
 }
@@ -682,7 +674,6 @@ export interface ItemProps extends CommonProps {
     isDisabled?: boolean;
     onClick?: () => void;
     onKeyDown?: (e: React.KeyboardEvent) => void;
-    // Warning: (ae-incompatible-release-tags) The symbol "onSizeKnown" is marked as @beta, but its signature references "Size" which is marked as @alpha
     onSizeKnown?: (size: Size) => void;
     title?: string;
 }
@@ -1061,19 +1052,8 @@ export class NineZoneRoot extends Root {
     readonly nineZone: NineZone;
 }
 
-// @alpha
-export interface NoChildrenProps {
-    // (undocumented)
-    children?: undefined;
-}
-
 // @internal
 export const offsetAndContainInContainer: (tooltipBounds: RectangleProps, containerSize: SizeProps, offset?: PointProps) => Point;
-
-// @internal
-export type OmitChildrenProp<T extends {
-    children?: React.ReactNode;
-}> = Omit<T, "children">;
 
 // @alpha
 export enum OrthogonalDirection {
@@ -1176,8 +1156,6 @@ export interface PointProps {
     readonly y: number;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "ProgressProps" is marked as @beta, but its signature references "NoChildrenProps" which is marked as @alpha
-// 
 // @beta
 export interface ProgressProps extends CommonProps, NoChildrenProps {
     progress: number;
@@ -1477,7 +1455,7 @@ export abstract class ShrinkVerticalStrategy extends ShrinkStrategy {
     getMinSize(layout: Layout): number;
 }
 
-// @alpha
+// @beta
 export class Size implements SizeProps {
     constructor(width?: number, height?: number);
     static create(size: SizeProps): Size;
@@ -1613,7 +1591,7 @@ export interface StatusMessageProps extends CommonProps {
     status: Status;
 }
 
-// @alpha (undocumented)
+// @beta
 export type StatusZoneIndex = 8;
 
 // @alpha (undocumented)
@@ -1904,8 +1882,6 @@ export class ToolbarPanelAlignmentHelpers {
     static readonly START_CLASS_NAME = "nz-panel-alignment-start";
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "ToolbarProps" is marked as @beta, but its signature references "NoChildrenProps" which is marked as @alpha
-// 
 // @beta
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
@@ -2154,7 +2130,7 @@ export class WidgetZone extends ZoneManager {
     protected _widgets: Widget[] | undefined;
 }
 
-// @alpha (undocumented)
+// @beta
 export type WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9;
 
 // @alpha (undocumented)

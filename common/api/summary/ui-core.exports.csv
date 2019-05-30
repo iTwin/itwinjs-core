@@ -53,6 +53,7 @@ public;ExpansionToggle
 public;ExpansionToggleProps 
 beta;Face
 public;FillCentered: React.FunctionComponent
+internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer: React.FunctionComponent
 internal;getClassName: (obj: any) => string
 internal;getDisplayName: (component: React.ComponentType
@@ -97,12 +98,14 @@ public;MessageContainerProps
 public;MessagedComponentProps
 public;MessageSeverity
 public;MutedText: React.FunctionComponent
+beta;NoChildrenProps
 beta;NodeCheckboxProps
 beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
 beta;NodeCheckboxRenderProps = Omit
 alpha;NumericInput 
 alpha;NumericInputProps 
 public;Omit
+beta;OmitChildrenProp
 public;Orientation
 internal;Point
 beta;Popup 

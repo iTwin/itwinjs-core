@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { OmitChildrenProp, NoChildrenProps } from "../../../utilities/Props";
+import { OmitChildrenProp, NoChildrenProps } from "@bentley/ui-core";
 import { ToolbarIcon, ToolbarIconProps } from "./Icon";
 import "./Back.scss";
 

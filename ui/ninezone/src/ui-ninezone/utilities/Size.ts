@@ -13,7 +13,7 @@ export interface SizeProps {
 }
 
 /** Describes 2d dimensions.
- * @alpha
+ * @beta
  */
 export class Size implements SizeProps {
   /** Creates a size from [[SizeProps]]. */

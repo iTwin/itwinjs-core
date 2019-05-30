@@ -13,9 +13,13 @@ import { ZoneManager, getDefaultZoneProps, ZonePropsBase, ContentZone, WidgetZon
 
 /** @alpha */
 export type ContentZoneIndex = 5;
-/** @alpha */
+/** Zone Index for status bar
+ * @beta
+ */
 export type StatusZoneIndex = 8;
-/** @alpha */
+/** Zone Index for widgets
+ * @beta
+ */
 export type WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9;
 /** @alpha */
 export type ZoneIndex = WidgetZoneIndex | ContentZoneIndex;
