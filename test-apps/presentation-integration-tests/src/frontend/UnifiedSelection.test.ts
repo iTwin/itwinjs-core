@@ -66,6 +66,10 @@ describe("Unified Selection", () => {
       handler = new ViewportSelectionHandler(imodel);
     });
 
+    afterEach(() => {
+      handler.dispose();
+    });
+
     it("hilites subject", async () => {
       Presentation.selection.addToSelection("", imodel, new KeySet([instances.subject.key]));
       await waitForAllAsyncs([handler]);
