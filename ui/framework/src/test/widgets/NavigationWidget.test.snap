@@ -32,6 +32,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "fillZone": false,
       "horizontalDirection": 3,
       "horizontalItems": undefined,
+      "horizontalPanelAlignment": 1,
       "id": "navigationWidget",
       "isFloating": false,
       "isFloatingStateSupported": false,
@@ -45,8 +46,9 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "state": 4,
       "stateChanged": false,
       "syncEventIds": Array [],
-      "verticalDirection": 2,
+      "verticalDirection": 0,
       "verticalItems": undefined,
+      "verticalPanelAlignment": 0,
       "widgetType": 1,
     }
   }

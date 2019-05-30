@@ -13,13 +13,34 @@ import { Direction } from "@bentley/ui-ninezone";
 
 const tool1 = new CommandItemDef({
   commandId: "tool1",
+  label: "Tool 1",
   iconSpec: "icon-placeholder",
 });
 
+const toolItemEventId = "test-button-state";
+const toolItemStateFunc = (state: Readonly<BaseItemState>): BaseItemState => state;
+
 const tool2 = new CommandItemDef({
   commandId: "tool2",
+  label: "Tool 2",
   iconSpec: "icon-placeholder",
   applicationData: { key: "value" },
+  stateSyncIds: [toolItemEventId],
+  stateFunc: toolItemStateFunc,
+});
+
+const groupItemEventId = "test-button-state";
+const groupItemStateFunc = (state: Readonly<BaseItemState>): BaseItemState => state;
+
+const group1 = new GroupItemDef({
+  groupId: "nested-group",
+  label: "Group 1",
+  iconSpec: "icon-placeholder",
+  items: [tool1, tool2],
+  direction: Direction.Bottom,
+  itemsInColumn: 7,
+  stateSyncIds: [groupItemEventId],
+  stateFunc: groupItemStateFunc,
 });
 
 describe("GroupItem", () => {
@@ -31,7 +52,7 @@ describe("GroupItem", () => {
   describe("<GroupButton />", () => {
 
     it("should render", () => {
-      mount(
+      const wrapper = mount(
         <GroupButton
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
@@ -40,6 +61,21 @@ describe("GroupItem", () => {
           itemsInColumn={4}
         />,
       );
+      wrapper.unmount();
+    });
+
+    it("should not render if not visible", () => {
+      const wrapper = mount(
+        <GroupButton
+          labelKey="UiFramework:tests.label"
+          iconSpec="icon-placeholder"
+          items={[tool1, tool2]}
+          direction={Direction.Bottom}
+          itemsInColumn={4}
+          isVisible={false}
+        />,
+      );
+      wrapper.unmount();
     });
 
     it("renders correctly", () => {
@@ -54,8 +90,23 @@ describe("GroupItem", () => {
       ).should.matchSnapshot();
     });
 
+    it("should handle props change", () => {
+      const wrapper = mount(
+        <GroupButton
+          labelKey="UiFramework:tests.label"
+          iconSpec="icon-placeholder"
+          items={[tool1, tool2]}
+          direction={Direction.Bottom}
+          itemsInColumn={4}
+        />,
+      );
+
+      wrapper.setProps({ labelKey: "UiFramework:tests.label2" });
+      wrapper.unmount();
+    });
+
     it("sync event should trigger stateFunc", () => {
-      const testEventId = "test-buttonstate";
+      const testEventId = "test-button-state";
       let stateFunctionCalled = false;
       const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => { stateFunctionCalled = true; return state; };
 
@@ -74,6 +125,28 @@ describe("GroupItem", () => {
       expect(stateFunctionCalled).to.eq(false);
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
       expect(stateFunctionCalled).to.eq(true);
+
+      stateFunctionCalled = false;
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId + "-noop");
+      expect(stateFunctionCalled).to.eq(false);
+
+      wrapper.unmount();
+    });
+
+    it("sync event should trigger stateFunc in items", () => {
+      const testEventId = "test-button-state";
+
+      const wrapper = mount(
+        <GroupButton
+          labelKey="UiFramework:tests.label"
+          iconSpec="icon-placeholder"
+          items={[tool1, tool2]}
+          direction={Direction.Bottom}
+          itemsInColumn={4}
+        />,
+      );
+
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
 
       wrapper.unmount();
     });
@@ -97,16 +170,20 @@ describe("GroupItem", () => {
       wrapper.update();
 
       expect(wrapper.find("div.nz-toolbar-item-expandable-group-panel").length).to.eq(1);
+
+      wrapper.unmount();
     });
 
     it("GroupButton opens & support history", () => {
       const executeSpy = sinon.spy();
 
       const testSpyTool = new CommandItemDef({
-        commandId: "spytool",
+        commandId: "spyTool",
         iconSpec: "icon-placeholder",
-        labelKey: "SampleApp:buttons.tool1",
+        labelKey: "SampleApp:buttons.spyTool",
         execute: executeSpy,
+        stateSyncIds: [toolItemEventId],
+        stateFunc: toolItemStateFunc,
       });
 
       const wrapper = mount(
@@ -118,6 +195,11 @@ describe("GroupItem", () => {
           itemsInColumn={7}
         />,
       );
+
+      const expandableItem = wrapper.find("div.nz-toolbar-item-expandable-expandable");
+      expect(expandableItem.length).to.eq(1);
+      expandableItem.simulate("mouseenter");
+      expandableItem.simulate("mouseleave");
 
       const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
       expect(buttonDiv.length).to.eq(1);
@@ -134,7 +216,38 @@ describe("GroupItem", () => {
       const historyItem = wrapper.find("div.nz-toolbar-item-expandable-history-item");
       expect(historyItem.length).to.eq(1);
       historyItem.simulate("click");
+      expect(executeSpy.calledTwice).to.be.true;
+
+      wrapper.unmount();
+    });
+
+    it("GroupButton supports history item with no sync", () => {
+      const wrapper = mount(
+        <GroupButton
+          labelKey="SampleApp:buttons.toolGroup"
+          iconSpec="icon-placeholder"
+          items={[tool1]}
+          direction={Direction.Bottom}
+          itemsInColumn={7}
+        />,
+      );
+
+      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
+      expect(buttonDiv.length).to.eq(1);
+
+      buttonDiv.simulate("click");
       wrapper.update();
+
+      const toolItems = wrapper.find("div.nz-toolbar-item-expandable-group-tool-item");
+      expect(toolItems.length).to.eq(1);
+      toolItems.at(0).simulate("click");
+      wrapper.update();
+
+      const historyItem = wrapper.find("div.nz-toolbar-item-expandable-history-item");
+      expect(historyItem.length).to.eq(1);
+      historyItem.simulate("click");
+
+      wrapper.unmount();
     });
 
     it("should set focus to home on Esc", () => {
@@ -143,6 +256,30 @@ describe("GroupItem", () => {
       element.simulate("focus");
       element.simulate("keyDown", { key: "Escape", keyCode: 27 });
       expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+      wrapper.unmount();
+    });
+
+    it("should include a GroupToolExpander when a GroupItemDef is included", () => {
+      const wrapper = mount(<GroupButton items={[tool1, tool2, group1]} />);
+
+      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
+      expect(buttonDiv.length).to.eq(1);
+
+      buttonDiv.simulate("click");
+      wrapper.update();
+
+      const expanderDiv = wrapper.find("div.nz-toolbar-item-expandable-group-tool-expander");
+      expect(expanderDiv.length).to.eq(1);
+
+      expanderDiv.simulate("click");
+      wrapper.update();
+
+      const backArrowDiv = wrapper.find("div.nz-toolbar-item-expandable-group-backArrow");
+      expect(backArrowDiv.length).to.eq(1);
+
+      backArrowDiv.simulate("click");
+      wrapper.update();
+
       wrapper.unmount();
     });
   });

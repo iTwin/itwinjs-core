@@ -24,7 +24,7 @@ import {
   Widget,
   FrontstageComposer,
 } from "../../ui-framework";
-import { ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { ScreenViewport, ViewState3d, MockRender } from "@bentley/imodeljs-frontend";
 import { ViewportComponentEvents } from "@bentley/ui-components";
 import sinon = require("sinon");
 import { NavigationWidget } from "../../ui-framework/widgets/NavigationWidget";
@@ -35,6 +35,15 @@ describe("ViewportContentControl", () => {
 
   const viewportMock = moq.Mock.ofType<ScreenViewport>();
   const viewMock = moq.Mock.ofType<ViewState3d>();
+
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+    MockRender.App.startup();
+  });
+
+  after(() => {
+    MockRender.App.shutdown();
+  });
 
   class TestViewportContentControl extends ViewportContentControl {
     constructor(info: ConfigurableCreateInfo, options: any) {

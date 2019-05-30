@@ -682,6 +682,8 @@ export interface ItemProps extends CommonProps {
     isDisabled?: boolean;
     onClick?: () => void;
     onKeyDown?: (e: React.KeyboardEvent) => void;
+    // Warning: (ae-incompatible-release-tags) The symbol "onSizeKnown" is marked as @beta, but its signature references "Size" which is marked as @alpha
+    onSizeKnown?: (size: Size) => void;
     title?: string;
 }
 

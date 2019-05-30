@@ -8,9 +8,10 @@ import * as React from "react";
 
 import { WidgetDef, ToolbarWidgetProps } from "./WidgetDef";
 import { ItemList } from "../shared/ItemMap";
-import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
+import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
+import { Toolbar } from "../toolbar/Toolbar";
+import { Orientation } from "@bentley/ui-core";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
  * @public
@@ -18,6 +19,9 @@ import { Toolbar, Direction } from "@bentley/ui-ninezone";
 export class ToolbarWidgetDefBase extends WidgetDef {
   public horizontalDirection: Direction;
   public verticalDirection: Direction;
+
+  public horizontalPanelAlignment: ToolbarPanelAlignment;
+  public verticalPanelAlignment: ToolbarPanelAlignment;
 
   public horizontalItems?: ItemList;
   public verticalItems?: ItemList;
@@ -28,33 +32,21 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     this.horizontalDirection = (def.horizontalDirection !== undefined) ? def.horizontalDirection : Direction.Bottom;
     this.verticalDirection = (def.verticalDirection !== undefined) ? def.verticalDirection : Direction.Right;
 
+    this.horizontalPanelAlignment = ToolbarPanelAlignment.Start;
+    this.verticalPanelAlignment = ToolbarPanelAlignment.Start;
+
     this.horizontalItems = def.horizontalItems;
     this.verticalItems = def.verticalItems;
-  }
-
-  private renderToolbarItems(itemList: ItemList): React.ReactNode[] | null {
-    let items: React.ReactNode[] | null = null;
-
-    // istanbul ignore else
-    if (itemList && itemList.items) {
-      items = new Array<React.ReactNode>();
-
-      itemList.items.forEach((item, index) => {
-        // istanbul ignore else
-        if (item instanceof ActionButtonItemDef && items)
-          items.push(item.toolbarReactNode(index));
-      });
-    }
-
-    return items;
   }
 
   public renderHorizontalToolbar = (): React.ReactNode | null => {
     if (this.horizontalItems && this.horizontalItems.items.length) {
       return (
         <Toolbar
+          orientation={Orientation.Horizontal}
           expandsTo={this.horizontalDirection}
-          items={this.renderToolbarItems(this.horizontalItems)}
+          panelAlignment={this.horizontalPanelAlignment}
+          items={this.horizontalItems}
         />
       );
     }
@@ -66,8 +58,10 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     if (this.verticalItems && this.verticalItems.items.length) {
       return (
         <Toolbar
+          orientation={Orientation.Vertical}
           expandsTo={this.verticalDirection}
-          items={this.renderToolbarItems(this.verticalItems)}
+          panelAlignment={this.verticalPanelAlignment}
+          items={this.verticalItems}
         />
       );
     }

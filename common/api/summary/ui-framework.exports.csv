@@ -15,8 +15,8 @@ public;ActivityMessageCancelledEvent
 public;ActivityMessageEventArgs
 public;ActivityMessageUpdatedEvent 
 alpha;AnalysisAnimationTimelineDataProvider 
-public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef
-public;AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps
+public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef | CustomItemDef
+public;AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps | ConditionalItemProps | CustomItemProps
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 public;AppNotificationManager 
 public;Backstage 
@@ -47,6 +47,8 @@ public;CommandItemDef
 public;CommandItemProps 
 public;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
+alpha;ConditionalItemDef 
+alpha;ConditionalItemProps 
 public;ConfigurableBase 
 public;ConfigurableCreateInfo
 public;ConfigurableUiActionId
@@ -83,6 +85,8 @@ internal;CubeHover
 alpha;CubeNavigationAid 
 alpha;CubeNavigationAidControl 
 alpha;CubeNavigationAidProps 
+alpha;CustomItemDef 
+alpha;CustomItemProps 
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
@@ -156,7 +160,7 @@ beta;InputFieldMessageProps
 public;InputFieldMessageRemovedEvent 
 beta;InputStatus
 public;class ItemDefBase
-public;ItemList
+public;ItemList 
 public;ItemMap 
 public;ItemProps 
 public;ItemPropsList
@@ -297,6 +301,8 @@ beta;ThemeManager: any
 internal;TileLoadingIndicator 
 public;ToolActivatedEvent 
 public;ToolActivatedEventArgs
+internal;Toolbar 
+internal;ToolbarProps 
 public;ToolbarWidgetDefBase 
 public;ToolbarWidgetProps 
 public;ToolButton 

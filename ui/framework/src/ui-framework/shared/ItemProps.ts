@@ -10,6 +10,8 @@ import { GroupItemDef } from "../toolbar/GroupItem";
 import { ToolItemDef } from "./ToolItemDef";
 import { BaseItemState } from "./ItemDefBase";
 import { CommandItemDef } from "./CommandItemDef";
+import { ActionButtonItemDef } from "./ActionButtonItemDef";
+import { CustomItemDef } from "./CustomItemDef";
 
 // -----------------------------------------------------------------------------
 // ItemProps and sub-interfaces
@@ -100,7 +102,7 @@ export interface CommandItemProps extends ItemProps, CommandHandler {
 /** Union of all Item definitions that can be specified in a GroupItem
  * @public
  */
-export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef;
+export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef | CustomItemDef;
 
 /** Definition for a Group item that opens a group of items.
  * @public
@@ -112,10 +114,26 @@ export interface GroupItemProps extends ItemProps {
   itemsInColumn?: number;
 }
 
+/** Definition for a Conditional item that conditionally renders other items based on UiSync events.
+ * @alpha
+ */
+export interface ConditionalItemProps extends ItemProps {
+  conditionalId?: string;
+  items: AnyItemDef[];
+}
+
+/** Definition for a Custom item that renders a React component.
+ * @alpha
+ */
+export interface CustomItemProps extends ItemProps {
+  customId?: string;
+  reactElement: React.ReactNode;
+}
+
 /** Union of all Item properties.
  * @public
  */
-export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps;
+export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps | ConditionalItemProps | CustomItemProps;
 
 /** Definition for a list of AnyItemProps.
  * @public

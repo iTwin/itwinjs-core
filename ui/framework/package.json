@@ -93,12 +93,14 @@
     "@types/chai-spies": "^1.0.0",
     "@types/classnames": "^2.2.3",
     "@types/enzyme": "^3.1.12",
+    "@types/faker": "^4.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/react": "^16.8.0",
     "@types/react-dom": "^16.8.0",
     "@types/react-redux": "^7.0.1",
+    "@types/react-resize-detector": "^3.1.0",
     "@types/rimraf": "^2.0.2",
     "@types/sinon": "^5.0.5",
     "@types/sinon-chai": "^3.2.0",
@@ -111,6 +113,7 @@
     "enzyme": "^3.4.0",
     "enzyme-adapter-react-16": "1.12.1",
     "enzyme-to-json": "^3.3.4",
+    "faker": "^4.1.0",
     "ignore-styles": "^5.0.1",
     "jsdom": "^11.12.0",
     "jsdom-global": "3.0.2",
@@ -146,6 +149,7 @@
     "react-dnd": "^5.0.0",
     "react-dnd-html5-backend": "^5.0.1",
     "react-redux": "^5.0.7",
+    "react-resize-detector": "^3.2.0",
     "react-split-pane": "0.1.77",
     "redux": "^4.0.0"
   },
@@ -158,9 +162,9 @@
       "ts-node/register"
     ],
     "check-coverage": true,
-    "statements": 86,
-    "branches": 77,
-    "functions": 86,
-    "lines": 86
+    "statements": 87,
+    "branches": 80,
+    "functions": 88,
+    "lines": 88
   }
 }

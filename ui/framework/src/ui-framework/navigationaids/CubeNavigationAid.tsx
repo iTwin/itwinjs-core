@@ -162,6 +162,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   private _handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
     const { animation, dragging, endRotMatrix } = this.state;
     const activeContentControl = this.props.contentControlOverride !== undefined ? this.props.contentControlOverride : /* istanbul ignore next */ ContentViewManager.getActiveContentControl();
+    // istanbul ignore else
     if (activeContentControl && activeContentControl.isViewport && activeContentControl.viewport === args.viewport && animation >= 1 && !dragging) {
       const newMatrix = activeContentControl.viewport.view.getRotation().clone();
       if (!endRotMatrix.isAlmostEqual(newMatrix)) {
@@ -233,6 +234,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
 
     const faces: { [key: string]: React.ReactNode } = {};
     for (const key in labels) {
+      // istanbul ignore else
       if (labels.hasOwnProperty(key)) {
         const f = key as Face;
         const label = labels[f];
@@ -277,6 +279,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       return Face.None;
     }
     for (const face in cubeNavigationFaceRotations) {
+      // istanbul ignore else
       if (face in cubeNavigationFaceRotations) {
         const loc = cubeNavigationFaceRotations[face];
         if (rotMatrix.isAlmostEqual(loc)) {
@@ -296,9 +299,11 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     const startInverse = start.transpose();
     const diff = end.multiplyMatrixMatrix(startInverse);
     const angleAxis = diff.getAxisAndAngleOfRotation();
+    // istanbul ignore else
     if (angleAxis.ok) {
       const angle = Angle.createRadians(angleAxis.angle.radians * CubeNavigationAid._animationFn(anim));
       const newDiff = Matrix3d.createRotationAroundVector(angleAxis.axis, angle);
+      // istanbul ignore else
       if (newDiff) {
         const newMatrix = newDiff.multiplyMatrixMatrix(start);
         return newMatrix;
@@ -336,6 +341,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
 
   private _lastClientXY: Vector2d = Vector2d.createZero();
   private _processDrag(mousePos: Vector2d) {
+    // istanbul ignore else
     if (!this._start.isAlmostEqual(mousePos)) {
       const movement = mousePos.minus(this._lastClientXY);
       const diff = movement.scale(0.05);
@@ -404,10 +410,12 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   private _handleFaceCellClick = (pos: Vector3d, face: Face) => {
     const { endRotMatrix } = this.state;
     let rotMatrix = Matrix3d.createRigidViewAxesZTowardsEye(pos.x, pos.y, pos.z).inverse();
+    // istanbul ignore else
     if (rotMatrix) {
       // if isMatrixFace and user is clicking on top/bottom, the current matrix face must be top or bottom
       if (!CubeNavigationAid._isMatrixFace(endRotMatrix) && (face === Face.Top || face === Face.Bottom)) {
         const angleAxis = endRotMatrix.getAxisAndAngleOfRotation();
+        // istanbul ignore else
         if (angleAxis.ok) {
           const xAx = endRotMatrix.columnX();
           const a = Math.atan2(xAx.y, xAx.x);

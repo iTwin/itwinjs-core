@@ -17,6 +17,7 @@ import {
   ContentControl,
   ConfigurableCreateInfo,
   FrontstageManager,
+  ItemList,
 } from "../../ui-framework";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager";
@@ -96,6 +97,19 @@ describe("NavigationWidget", () => {
         verticalToolbar={verticalToolbar}
       />,
     ).should.matchSnapshot();
+  });
+
+  it("NavigationWidget should render with an item list", () => {
+    const hItemList = new ItemList([CoreTools.selectElementCommand]);
+    const vItemList = new ItemList([CoreTools.fitViewCommand]);
+
+    const wrapper = mount(
+      <NavigationWidget
+        horizontalItems={hItemList}
+        verticalItems={vItemList}
+      />,
+    );
+    wrapper.unmount();
   });
 
   it("NavigationWidget should support update", () => {

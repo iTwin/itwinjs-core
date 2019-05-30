@@ -719,6 +719,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "svg-baker-runtime",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "svg-react-loader",
       "allowedCategories": [ "frontend" ]
     },

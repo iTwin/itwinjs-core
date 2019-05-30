@@ -13,7 +13,7 @@ import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 
-import { Item } from "@bentley/ui-ninezone";
+import { Item, Size } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { CommonProps } from "@bentley/ui-core";
 
@@ -23,6 +23,7 @@ import { CommonProps } from "@bentley/ui-core";
 export interface ActionItemButtonProps extends CommonProps {
   actionItem: ActionButtonItemDef;
   isEnabled?: boolean;
+  onSizeKnown?: (size: Size) => void;
 }
 
 /** Helper method to set state from props */
@@ -131,6 +132,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
         onClick={this._execute}
         onKeyDown={this._handleKeyDown}
         icon={icon}
+        onSizeKnown={this.props.onSizeKnown}
       />
     );
   }

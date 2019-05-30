@@ -286,6 +286,7 @@ export class SyncUiEventDispatcher {
     });
 
     Presentation.selection.scopes.getSelectionScopes(iModelConnection).then((availableScopes: SelectionScope[]) => { // tslint:disable-line:no-floating-promises
+      // istanbul ignore else
       if (availableScopes) {
         const presentationScopes: PresentationSelectionScope[] = [];
         availableScopes.map((scope) => presentationScopes.push(scope));

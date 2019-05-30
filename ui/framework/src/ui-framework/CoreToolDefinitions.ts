@@ -84,7 +84,9 @@ export class CoreTools {
       iconSpec: "icon-cursor",
       label: () => SelectionTool.flyover,
       tooltip: () => SelectionTool.description,
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: () => {
+        IModelApp.tools.run(SelectionTool.toolId);
+      },
     });
   }
 

@@ -9,7 +9,7 @@ import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { CommonProps, UiError } from "@bentley/ui-core";
 import { ViewportComponentEvents, ViewClassFullNameChangedEventArgs } from "@bentley/ui-components";
-import { Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
+import { Tools as NZ_ToolsWidget, Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
@@ -35,7 +35,8 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     super(props);
 
     this.widgetType = WidgetType.Navigation;
-
+    this.verticalDirection = (props.verticalDirection !== undefined) ? props.verticalDirection : Direction.Left;
+    this.horizontalPanelAlignment = ToolbarPanelAlignment.End;
     this._navigationAidId = (props.navigationAidId !== undefined) ? props.navigationAidId : "";
   }
 

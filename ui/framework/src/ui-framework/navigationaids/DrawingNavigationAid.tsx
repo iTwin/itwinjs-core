@@ -18,6 +18,8 @@ import { UiFramework } from "../UiFramework";
 import "./DrawingNavigationAid.scss";
 import { CommonProps } from "@bentley/ui-core";
 
+// cSpell:ignore Quaternion Quaternions unrotate
+
 /**
  * A Drawing Navigation Aid control.
  * @alpha
@@ -373,6 +375,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   // Synchronize with rotation coming from the Viewport
   private _handleViewRotationChangeEvent = (args: ViewRotationChangeEventArgs) => {
     const activeContentControl = this.props.contentControlOverride !== undefined ? this.props.contentControlOverride : /* istanbul ignore next */ ContentViewManager.getActiveContentControl();
+    // istanbul ignore else
     if (!this.state.isMoving && !this.state.isPanning && activeContentControl && activeContentControl.isViewport && activeContentControl.viewport === args.viewport) {
       const extents = args.viewport.view.getExtents().clone();
       const rotation = args.viewport.view.getRotation().clone();
@@ -421,6 +424,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   }
 
   private _handleKeyUp = (event: React.KeyboardEvent) => {
+    // istanbul ignore else
     if ((event.key === "Escape" || event.key === "Esc") && this.state.mode === MapMode.Opened) {
       this._closeLargeMap();
     }
@@ -482,7 +486,8 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     if (this.state.isMoving) {
       // add scaled mouse movement
       this._processWindowDrag(movement);
-    } else if (this.state.isPanning) {
+    } else /* istanbul ignore else */ if (this.state.isPanning) {
+      // istanbul ignore else
       if (this.state.mode === MapMode.Opened) {
         const vect = Vector3d.create(movement.x / this.state.drawingZoom, -movement.y / this.state.drawingZoom, 0);
         const offset = this.state.rotateMinimapWithView || this._isViewport3D() ? this.state.rotation.multiplyTransposeVector(vect) : vect;
@@ -502,6 +507,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     } else if (this.state.isMoving) {
       this._processWindowEndDrag();
     } else if (this.state.isPanning) {
+      // istanbul ignore else
       if (this.state.mode === MapMode.Opened) {
         event.stopPropagation();
         this.setState({ isPanning: false });
@@ -565,7 +571,9 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   }
 
   private _openLargeMap = () => {
+    // istanbul ignore else
     if (this.state.mode === MapMode.Closed && this.state.animation === 1.0) {
+      // istanbul ignore else
       if (this._rootElement) {
         const rect = this._rootElement.getBoundingClientRect();
         this._rootOffset = rect;
@@ -584,6 +592,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   }
 
   private _closeLargeMap = () => {
+    // istanbul ignore else
     if (this.state.mode === MapMode.Opened && this.state.animation === 1.0) {
       const startMapOrigin = this.state.mapOrigin;
       const mapOrigin = this.state.origin.clone();
@@ -635,6 +644,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   }
 
   private _handleWheel = (event: React.WheelEvent) => {
+    // istanbul ignore else
     if (this.state.mode === MapMode.Opened && this.state.animation === 1) {
       const { mapOrigin, drawingZoom } = this.state;
       const mapSize = this._getOpenedMapSize();
@@ -751,6 +761,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
   }
 
   private _update = () => {
+    // istanbul ignore else
     if (this._vp) {
       const max = Math.max(this.props.extents.x, this.props.extents.y);
       this._vp.view.extentLimits = { max, min: Constant.oneMillimeter };
@@ -769,6 +780,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
         if (oldProps !== undefined && oldProps.viewId !== "" && oldProps.viewId !== this.props.viewId && this._vp) {
           viewManager.dropViewport(this._vp, true);
         }
+        // istanbul ignore else
         if (this._canvasElement && (this.props.canvasSizeOverride || /* istanbul ignore next */ (this._canvasElement.clientWidth !== 0 && this._canvasElement.clientHeight !== 0))) {
           const previousView = viewManager.selectedView;
           this._vp = screenViewport.create(this._canvasElement, this.props.view.clone());

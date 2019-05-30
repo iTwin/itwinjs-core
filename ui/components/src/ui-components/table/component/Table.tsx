@@ -148,7 +148,7 @@ export interface TableCellUpdatedArgs {
 }
 
 /** @internal */
-export interface TableState {
+interface TableState {
   columns: ReactDataGridColumn[];
   hiddenColumns: string[];
   rows: RowProps[];

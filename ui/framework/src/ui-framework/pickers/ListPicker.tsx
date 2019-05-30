@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally } from "@bentley/ui-ninezone";
+import { Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally, Size } from "@bentley/ui-ninezone";
 import * as classnames from "classnames";
 import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
@@ -44,6 +44,7 @@ export interface ListPickerProps {
   iconSpec?: string | React.ReactNode;
   setEnabled: (item: ListItem, enabled: boolean) => any;
   onExpanded?: (expand: boolean) => void;
+  onSizeKnown?: (size: Size) => void;
 }
 
 /** State for the [[ListPickerBase]] component
@@ -209,13 +210,14 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
           title={this.props.title}
           onClick={this._toggleIsExpanded}
           icon={icon}
+          onSizeKnown={this.props.onSizeKnown}
         />
       </ExpandableItem>
     );
   }
 
   /** Returns the list with the items */
-  public getExpandedContent() {
+  public getExpandedContent(): React.ReactNode {
     if (!this.state.expanded)
       return undefined;
 

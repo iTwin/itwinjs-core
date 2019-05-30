@@ -653,6 +653,29 @@ export interface BreadcrumbUpdateEventArgs {
     oldDataProvider: TreeDataProvider;
 }
 
+// @beta
+export class CellEditingEngine {
+    constructor(props: EditableTreeProps);
+    // (undocumented)
+    activateEditor: (node: BeInspireTreeNode<TreeNodeItem>) => void;
+    // (undocumented)
+    checkStatus: (node: BeInspireTreeNode<TreeNodeItem>, isPressedItemSelected: boolean) => void;
+    // (undocumented)
+    static createPropertyRecord(value: string, typename?: string, editor?: string): PropertyRecord;
+    // (undocumented)
+    deactivateEditor: () => void;
+    // (undocumented)
+    readonly hasSubscriptions: boolean;
+    // (undocumented)
+    isEditingEnabled(node: BeInspireTreeNode<TreeNodeItem>): boolean | undefined;
+    // (undocumented)
+    renderEditor(node: BeInspireTreeNode<TreeNodeItem>, style?: React.CSSProperties): JSX.Element;
+    // (undocumented)
+    subscribe(getCurrentNode: GetCurrentlyEditedNode, setCurrentNode: SetCurrentlyEditedNode): void;
+    // (undocumented)
+    unsubscribe(): void;
+}
+
 // @public
 export interface CellItem {
     // (undocumented)
@@ -665,6 +688,18 @@ export interface CellItem {
     record?: PropertyRecord;
     // (undocumented)
     style?: ItemStyle;
+}
+
+// @public
+export interface CellProps {
+    // (undocumented)
+    displayValue: string;
+    // (undocumented)
+    item: CellItem;
+    // (undocumented)
+    render: React.ComponentType<{
+        isSelected: boolean;
+    }>;
 }
 
 // @beta
@@ -912,6 +947,16 @@ export class DoublePropertyValueRenderer implements IPropertyValueRenderer {
     render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
 }
 
+// @internal (undocumented)
+export class DragAction<Item> {
+    constructor(componentSelectionHandler: MultiSelectionHandler<Item>, itemSelectionHandlers: Array<Array<SingleSelectionHandler<Item>>>, firstItem: Item);
+    // (undocumented)
+    updateDragAction(latestItem: Item): {
+        selections: Item[];
+        deselections: Item[];
+    };
+}
+
 // @beta
 export interface DragDropArguments<DragDropObject = any> {
     clientOffset: {
@@ -1138,8 +1183,14 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
     convertToString(value?: Primitives.Float): string;
 }
 
+// @beta
+export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
+
 // @public
 export const hasChildren: (node: TreeNodeItem) => boolean;
+
+// @public
+export const hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean;
 
 // @public
 export class HexadecimalTypeConverter extends TypeConverter {
@@ -1416,6 +1467,14 @@ export interface MilestoneRange {
     start: Date;
 }
 
+// @internal
+export interface MultiSelectionHandler<TItem> {
+    areEqual: (item1: TItem, item2: TItem) => boolean;
+    deselectAll: () => void;
+    selectBetween: (item1: TItem, item2: TItem) => TItem[];
+    updateSelection: (selections: TItem[], deselections: TItem[]) => void;
+}
+
 // @beta
 export interface MutableTableDataProvider extends TableDataProvider {
     // (undocumented)
@@ -1518,6 +1577,15 @@ export abstract class NumericTypeConverterBase extends TypeConverter implements 
     // (undocumented)
     sortCompare(a: Primitives.Numeric, b: Primitives.Numeric, _ignoreCase?: boolean): number;
 }
+
+// @public
+export type OnItemsDeselectedCallback<Item> = (items: Item[]) => void | boolean;
+
+// @public
+export type OnItemsSelectedCallback<TItem> = (items: TItem[], replace: boolean) => void | boolean;
+
+// @public
+export type OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void;
 
 // @public
 export interface OperatorProcessor {
@@ -1880,6 +1948,12 @@ export interface PropertyViewProps extends SharedRendererProps {
 }
 
 // @public
+export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
+    // (undocumented)
+    icon?: boolean;
+}
+
+// @public
 export class ResultSelector extends React.PureComponent<ResultSelectorProps, ResultSelectorState> {
     // @internal
     constructor(props: ResultSelectorProps);
@@ -1909,6 +1983,22 @@ export interface RowItem {
     // (undocumented)
     isDisabled?: boolean;
     key: string;
+}
+
+// @public
+export interface RowProps {
+    // (undocumented)
+    cells: {
+        [key: string]: CellProps;
+    };
+    // (undocumented)
+    index: number;
+    // (undocumented)
+    item: RowItem;
+    // (undocumented)
+    render?: () => React.ReactNode;
+    // (undocumented)
+    style?: React.CSSProperties;
 }
 
 // @beta
@@ -1955,6 +2045,20 @@ export interface ScrubberProps extends CommonProps {
     totalDuration: number;
 }
 
+// @internal (undocumented)
+export class SelectionHandler<Item> {
+    constructor(selectionMode: SelectionMode, onItemsSelectedCallback?: OnItemsSelectedCallback<Item>, onItemsDeselectedCallback?: OnItemsDeselectedCallback<Item>);
+    completeDragAction(): void;
+    createDragAction(componentSelectionHandler: MultiSelectionHandler<Item>, items: Array<Array<SingleSelectionHandler<Item>>>, firstItem: Item): void;
+    createSelectionFunction(componentHandler: MultiSelectionHandler<Item>, itemHandler: SingleSelectionHandler<Item>): OnSelectionChanged;
+    // (undocumented)
+    onItemsDeselectedCallback?: OnItemsDeselectedCallback<Item>;
+    // (undocumented)
+    onItemsSelectedCallback?: OnItemsSelectedCallback<Item>;
+    selectionMode: SelectionMode;
+    updateDragAction(latestItem: Item): void;
+}
+
 // @public
 export enum SelectionMode {
     Extended = 12,
@@ -1962,6 +2066,21 @@ export enum SelectionMode {
     Single = 1,
     SingleAllowDeselect = 5
 }
+
+// @public
+export enum SelectionModeFlags {
+    // (undocumented)
+    DragEnabled = 2,
+    // (undocumented)
+    KeysEnabled = 8,
+    // (undocumented)
+    SelectionLimitOne = 1,
+    // (undocumented)
+    ToggleEnabled = 4
+}
+
+// @beta
+export type SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode<TreeNodeItem>) => void;
 
 // @public
 export interface SharedRendererProps {
@@ -2144,6 +2263,15 @@ export class SimpleTreeDataProvider implements ITreeDataProvider {
 
 // @public
 export type SimpleTreeDataProviderHierarchy = Map<string | undefined, TreeNodeItem[]>;
+
+// @internal
+export interface SingleSelectionHandler<TItem> {
+    deselect: () => void;
+    isSelected: () => boolean;
+    item: () => TItem;
+    preselect: () => void;
+    select: () => void;
+}
 
 // @alpha
 export interface SolarDataProvider {
@@ -2694,6 +2822,21 @@ export interface TreeProps extends CommonProps {
     selectionMode?: SelectionMode;
     showDescriptions?: boolean;
     showIcons?: boolean;
+}
+
+// @internal
+export namespace TreeTest {
+    // (undocumented)
+    export enum TestId {
+        // (undocumented)
+        Node = "tree-node",
+        // (undocumented)
+        NodeCheckbox = "tree-node-checkbox",
+        // (undocumented)
+        NodeContents = "tree-node-contents",
+        // (undocumented)
+        NodeExpansionToggle = "tree-node-expansion-toggle"
+    }
 }
 
 // @public

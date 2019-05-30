@@ -9,17 +9,18 @@ import * as React from "react";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
 import { GroupItemProps, AnyItemDef } from "../shared/ItemProps";
-import { Icon } from "../shared/IconComponent";
+import { Icon, IconSpec } from "../shared/IconComponent";
 import { ItemList, ItemMap } from "../shared/ItemMap";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 
 import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn,
-  GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction,
+  GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction, Size,
 } from "@bentley/ui-ninezone";
 import { withOnOutsideClick, CommonProps } from "@bentley/ui-core";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import classnames = require("classnames");
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -38,6 +39,11 @@ export class GroupItemDef extends ActionButtonItemDef {
   public direction: Direction;
   public itemsInColumn: number;
   public items: AnyItemDef[];
+  public directionExplicit: boolean;
+
+  /** @internal */
+  public overflow: boolean = false;
+
   private _itemList!: ItemList;
   private _itemMap!: ItemMap;
 
@@ -45,6 +51,7 @@ export class GroupItemDef extends ActionButtonItemDef {
     super(groupItemProps);
 
     this.groupId = (groupItemProps.groupId !== undefined) ? groupItemProps.groupId : "";
+    this.directionExplicit = (groupItemProps.direction !== undefined);
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
 
@@ -92,6 +99,7 @@ export class GroupItemDef extends ActionButtonItemDef {
       <GroupItem
         key={key}
         groupItemDef={this}
+        onSizeKnown={this.handleSizeKnown}
       />
     );
   }
@@ -99,7 +107,7 @@ export class GroupItemDef extends ActionButtonItemDef {
 }
 
 // -----------------------------------------------------------------------------
-// GroupItem class, props & state
+// GroupItem component, props & state
 // -----------------------------------------------------------------------------
 
 interface HistoryItem {
@@ -109,53 +117,58 @@ interface HistoryItem {
 }
 
 interface ToolGroupItem {
-  iconSpec?: string | React.ReactNode;
+  iconSpec?: IconSpec;
   label: string;
   trayId?: string;
 }
+type ColumnItemMap = Map<string, ToolGroupItem>;
 
 interface ToolGroupColumn {
-  items: Map<string, ToolGroupItem>;
+  items: ColumnItemMap;
 }
+type ToolGroupColumnMap = Map<number, ToolGroupColumn>;
 
 interface ToolGroupTray {
   title: string;
-  columns: Map<number, ToolGroupColumn>;
-}
-
-type ColumnItemMap = Map<string, ToolGroupItem>;
-
-interface Props extends CommonProps {
+  columns: ToolGroupColumnMap;
   groupItemDef: GroupItemDef;
+}
+type ToolGroupTrayMap = Map<string, ToolGroupTray>;
+
+interface GroupItemComponentProps extends CommonProps {
+  groupItemDef: GroupItemDef;
+  onSizeKnown?: (size: Size) => void;
 }
 
 interface GroupItemState extends BaseItemState {
   groupItemDef: GroupItemDef;
   trayId: string;
   backTrays: ReadonlyArray<string>;
-  trays: Map<string, ToolGroupTray>;
+  trays: ToolGroupTrayMap;
   history: History<HistoryItem>;
   isExtended: boolean;
 }
 
 /** Group Item React component.
  */
-class GroupItem extends React.Component<Props, GroupItemState> {
+class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState> {
 
   /** @internal */
   public readonly state: Readonly<GroupItemState>;
   private _componentUnmounting = false;
   private _childSyncIds?: Set<string>;
   private _childRefreshRequired = false;
+  private _trayIndex = 0;
 
-  constructor(props: Props) {
+  constructor(props: GroupItemComponentProps) {
     super(props);
 
     this._loadChildSyncIds(props);
-    this.state = GroupItem.processGroupItemDef(this.props.groupItemDef);
+    this.state = this.getGroupItemState(this.props.groupItemDef);
   }
 
-  private _loadChildSyncIds(props: Props) {
+  private _loadChildSyncIds(props: GroupItemComponentProps) {
+    // istanbul ignore else
     if (props.groupItemDef && props.groupItemDef.items.length > 0) {
       props.groupItemDef.items.forEach((itemDef: AnyItemDef) => {
         const item: ItemDefBase | undefined = itemDef;
@@ -169,10 +182,12 @@ class GroupItem extends React.Component<Props, GroupItemState> {
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    // istanbul ignore next
     if (this._componentUnmounting) return;
 
     let refreshState = false;
 
+    // istanbul ignore else
     if (this._childSyncIds && this._childSyncIds.size > 0)
       if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value)))
         this._childRefreshRequired = true;  // this is cleared when render occurs
@@ -181,12 +196,15 @@ class GroupItem extends React.Component<Props, GroupItemState> {
 
     if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0)
       refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+
     if (refreshState || this._childRefreshRequired) {
       if (this.props.groupItemDef.stateFunc)
         newState = this.props.groupItemDef.stateFunc(newState) as GroupItemState;
+
+      // istanbul ignore else
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)
         || this._childRefreshRequired) {
-        this.setState((_prevState) => ({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible, isPressed: newState.isPressed }));
+        this.setState({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible, isPressed: newState.isPressed });
       }
     }
   }
@@ -200,48 +218,28 @@ class GroupItem extends React.Component<Props, GroupItemState> {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
-  public shouldComponentUpdate(nextProps: Props, nextState: GroupItemState) {
+  public shouldComponentUpdate(nextProps: GroupItemComponentProps, nextState: GroupItemState) {
     if (!PropsHelper.isShallowEqual(nextState, this.state))
       return true;
     if (!PropsHelper.isShallowEqual(nextProps, this.props))
       return true;
 
+    // istanbul ignore else
     if (this._childRefreshRequired) {
       this._childRefreshRequired = false;
       return true;
     }
 
+    // istanbul ignore next
     return false;
   }
 
-  private static processGroupItemDef(groupItemDef: GroupItemDef): GroupItemState {
-    // Separate into column items
-    const columns = new Map<number, ToolGroupColumn>();
-    const numberOfColumns = Math.ceil(groupItemDef.itemCount / groupItemDef.itemsInColumn);
-    const numberItemsInColumn = Math.ceil(groupItemDef.itemCount / numberOfColumns);
-    let itemIndex: number = 0;
-
-    for (let columnIndex = 0; columnIndex < numberOfColumns; columnIndex++) {
-      const columnItems: ColumnItemMap = new Map<string, ToolGroupItem>();
-      const columnItemMax = Math.min(groupItemDef.itemCount, itemIndex + numberItemsInColumn);
-
-      for (; itemIndex < columnItemMax; itemIndex++) {
-        const item = groupItemDef.getItemByIndex(itemIndex);
-        // istanbul ignore else
-        if (item)
-          columnItems.set(item.id, item);
-      }
-
-      columns.set(columnIndex, { items: columnItems });
-    }
-
+  private getGroupItemState(groupItemDef: GroupItemDef): GroupItemState {
     // Separate into trays
     const trays = new Map<string, ToolGroupTray>();
-    const trayId = "tray1";
-    trays.set(trayId, {
-      columns,
-      title: groupItemDef.tooltip,
-    });
+    const trayId = this.resetTrayId();
+
+    this.processGroupItemDef(groupItemDef, trayId, trays);
 
     const state = {
       groupItemDef,
@@ -258,14 +256,73 @@ class GroupItem extends React.Component<Props, GroupItemState> {
     return state;
   }
 
-  public componentDidUpdate(prevProps: Props, _prevState: GroupItemState) {
+  private resetTrayId(): string {
+    this._trayIndex = 1;
+    return `tray-${this._trayIndex}`;
+  }
+
+  private generateTrayId(): string {
+    return `tray-${this._trayIndex}`;
+  }
+
+  private processGroupItemDef(groupItemDef: GroupItemDef, trayId: string, trays: ToolGroupTrayMap): void {
+    // Separate into column items
+    const columns = new Map<number, ToolGroupColumn>();
+    const numberOfColumns = Math.ceil(groupItemDef.itemCount / groupItemDef.itemsInColumn);
+    const numberItemsInColumn = Math.ceil(groupItemDef.itemCount / numberOfColumns);
+    let itemIndex: number = 0;
+
+    for (let columnIndex = 0; columnIndex < numberOfColumns; columnIndex++) {
+      const columnItems: ColumnItemMap = new Map<string, ToolGroupItem>();
+      const columnItemMax = Math.min(groupItemDef.itemCount, itemIndex + numberItemsInColumn);
+
+      for (; itemIndex < columnItemMax; itemIndex++) {
+        const item = groupItemDef.getItemByIndex(itemIndex);
+        // istanbul ignore else
+        if (item) {
+          if (item instanceof GroupItemDef) {
+            item.resolveItems();
+
+            this._trayIndex++;
+            const itemTrayId = this.generateTrayId();
+            const groupItem: ToolGroupItem = { iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId };
+
+            columnItems.set(item.id, groupItem);
+            this.processGroupItemDef(item, itemTrayId, trays);
+          } else {
+            columnItems.set(item.id, item);
+          }
+        }
+      }
+
+      columns.set(columnIndex, { items: columnItems });
+    }
+
+    trays.set(trayId, {
+      columns,
+      title: groupItemDef.tooltip,
+      groupItemDef,
+    });
+  }
+
+  public componentDidUpdate(prevProps: GroupItemComponentProps, _prevState: GroupItemState) {
     if (this.props !== prevProps) {
-      this.setState(GroupItem.processGroupItemDef(this.props.groupItemDef));
+      this.setState(this.getGroupItemState(this.props.groupItemDef));
     }
   }
 
   private get _tray() {
     const tray = this.state.trays.get(this.state.trayId);
+    // istanbul ignore next
+    if (!tray)
+      throw new RangeError();
+
+    return tray;
+  }
+
+  private getTray(trayId: string) {
+    const tray = this.state.trays.get(trayId);
+    // istanbul ignore next
     if (!tray)
       throw new RangeError();
 
@@ -284,46 +341,59 @@ class GroupItem extends React.Component<Props, GroupItemState> {
     if (!this.state.isVisible)
       return null;
 
-    const { groupItemDef, ...props } = this.props;
-    const icon = <Icon iconSpec={groupItemDef.iconSpec} />;
+    const { groupItemDef, className, ...props } = this.props;
+
+    const iconSpec: IconSpec = groupItemDef.overflow ? "nz-ellipsis" : groupItemDef.iconSpec;
+    const icon = <Icon iconSpec={iconSpec} />;
+    const classNames = classnames(
+      className,
+      groupItemDef.overflow && "nz-toolbar-item-overflow",
+    );
 
     return (
       <ExpandableItem
         {...props}
+        className={classNames}
         key={this.state.groupItemDef.id}
         onIsHistoryExtendedChange={(isExtended) => this._handleOnIsHistoryExtendedChange(isExtended)}
         panel={this.getGroupTray()}
         history={this.getHistoryTray()}
       >
         <Item
+          className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
           isDisabled={!this.state.isEnabled}
           title={this.state.groupItemDef.label}
           onClick={() => this._toggleGroupButton()}
           onKeyDown={this._handleKeyDown}
           icon={icon}
+          onSizeKnown={this.props.onSizeKnown}
         />
       </ExpandableItem>
     );
   }
 
   private _toggleGroupButton = () => {
-    this.setState((_prevState) => ({
-      ..._prevState,
+    this.setState((prevState) => ({
+      ...prevState,
       isExtended: false,
-      isPressed: !_prevState.isPressed,
+      isPressed: !prevState.isPressed,
     }));
   }
 
   private _closeGroupButton = () => {
-    this.setState((_prevState) => ({
-      ..._prevState,
+    const trayId = this.resetTrayId();
+
+    this.setState((prevState) => ({
+      ...prevState,
       isExtended: false,
       isPressed: false,
+      trayId,
+      backTrays: [],
     }));
   }
 
   private _handleOnIsHistoryExtendedChange = (isExtended: boolean) => {
-    this.setState((_prevState) => ({ isExtended }));
+    this.setState({ isExtended });
   }
 
   private handleToolGroupItemClicked(trayKey: string, columnIndex: number, itemKey: string) {
@@ -331,15 +401,20 @@ class GroupItem extends React.Component<Props, GroupItemState> {
       (prevState) => {
         const key = columnIndex + "-" + itemKey;
         const item = { trayKey, columnIndex, itemKey };
+        const trayId = this.resetTrayId();
         return {
           ...prevState,
           isExpanded: false,
           isPressed: false,
           history: DefaultHistoryManager.addItem(key, item, prevState.history),
+          trayId,
+          backTrays: [],
         };
       },
       () => {
-        const childItem = this.state.groupItemDef.getItemById(itemKey);
+        const tray = this.getTray(trayKey);
+        const childItem = tray.groupItemDef.getItemById(itemKey);
+        // istanbul ignore else
         if (childItem && childItem instanceof ActionButtonItemDef)
           childItem.execute();
       },
@@ -356,7 +431,9 @@ class GroupItem extends React.Component<Props, GroupItemState> {
         };
       },
       () => {
-        const childItem = this.state.groupItemDef.getItemById(item.itemKey);
+        const tray = this.getTray(item.trayKey);
+        const childItem = tray.groupItemDef.getItemById(item.itemKey);
+        // istanbul ignore else
         if (childItem && childItem instanceof ActionButtonItemDef)
           childItem.execute();
       },
@@ -384,6 +461,7 @@ class GroupItem extends React.Component<Props, GroupItemState> {
             let isActive = false;
             let isEnabled = true;
 
+            // istanbul ignore else
             if (item instanceof ItemDefBase) {
               isVisible = item.isVisible;
               isActive = item.isActive;

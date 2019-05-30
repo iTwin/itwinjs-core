@@ -13,7 +13,7 @@ import { Icon } from "../shared/IconComponent";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 
-import { AppButton, Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
+import { AppButton, Tools as NZ_ToolsWidget, Direction } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
 
 /** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
@@ -23,12 +23,13 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
   private _appButton: CommandItemDef | undefined;
   private _reactElement: React.ReactNode;
 
-  constructor(def: ToolWidgetProps) {
-    super(def);
+  constructor(props: ToolWidgetProps) {
+    super(props);
 
-    this._appButton = def.appButton;
+    this._appButton = props.appButton;
 
     this.widgetType = WidgetType.Tool;
+    this.verticalDirection = (props.verticalDirection !== undefined) ? props.verticalDirection : Direction.Right;
   }
 
   public get reactElement(): React.ReactNode {

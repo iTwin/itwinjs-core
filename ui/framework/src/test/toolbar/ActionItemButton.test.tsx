@@ -14,6 +14,7 @@ import {
   BaseItemState, SyncUiEventDispatcher,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
+import { SyncUiEventId } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 
 describe("ActionItemButton", () => {
 
@@ -76,7 +77,7 @@ describe("ActionItemButton", () => {
   it("sync event should trigger stateFunc", () => {
     const states: BaseItemState[] = [{ isVisible: true, isActive: false }, { isVisible: false, isActive: false }, { isVisible: true, isActive: true }];
     let count = -1;
-    const testEventId = "test-buttonstate";
+    const testEventId = "test-button-state";
     let stateFunctionCalled = false;
     const testStateFunc = (): BaseItemState => { count += 1; stateFunctionCalled = true; return states[count]; };
     const testSyncStateCommand =
@@ -103,6 +104,30 @@ describe("ActionItemButton", () => {
     wrapper.update();
     // force to state[2]
     stateFunctionCalled = false;
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    expect(stateFunctionCalled).to.eq(true);
+    wrapper.update();
+    wrapper.unmount();
+  });
+
+  it("ToolActivated sync event should trigger stateFunc", () => {
+    const state: BaseItemState = { isVisible: true, isActive: true, isEnabled: true };
+    const testEventId = SyncUiEventId.ToolActivated;
+    let stateFunctionCalled = false;
+    const testStateFunc = (): BaseItemState => { stateFunctionCalled = true; return state; };
+    const testSyncStateCommand =
+      new CommandItemDef({
+        commandId: "command",
+        iconSpec: "icon-placeholder",
+        labelKey: "UiFramework:tests.label",
+        isEnabled: false,
+        stateSyncIds: [testEventId],
+        stateFunc: testStateFunc,
+        execute: () => { },
+      });
+
+    const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />);
+    expect(stateFunctionCalled).to.eq(false);
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
