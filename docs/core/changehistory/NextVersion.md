@@ -48,3 +48,13 @@ Frontend:
 
 Backend:
   * Removed `IModelHostConfiguration.useTileContentThreadPool`. The thread pool is now always used.
+
+## Changes to RPC type marshaling system
+
+The iModel.js RPC system now permits only primitive values, "interface" objects that contain only data values, and binary data over the wire. Therefore, all RPC interface methods can only accept and return these types now.
+
+It is no longer possible to send class instances, maps, sets, or objects with function members between the frontend and backend using the RPC system.
+
+Binary data transfer is still supported via `Uint8Array`.
+
+These new type restrictions are enforced via the `require-basic-rpc-values` tslint rule. With these new restrictions in place, the RPC system is now compatible with aggressive webpacking policies that mangle class names at build time.
