@@ -298,87 +298,56 @@ describe("ViewportSelectionHandler", () => {
 
   describe("reacting to unified selection changes", () => {
 
-    let setHiliteSpy: any;
+    const hiliteSpies = {
+      clear: sinon.spy(),
+      elements: sinon.spy(),
+      models: sinon.spy(),
+      subcategories: sinon.spy(),
+    };
     beforeEach(() => {
-      setHiliteSpy = sinon.spy(imodelMock.target.hilited, "setHilite");
+      hiliteSpies.clear = sinon.spy(imodelMock.target.hilited, "clear");
+      hiliteSpies.elements = sinon.spy(imodelMock.target.hilited.elements, "addIds");
+      hiliteSpies.models = sinon.spy(imodelMock.target.hilited.models, "addIds");
+      hiliteSpies.subcategories = sinon.spy(imodelMock.target.hilited.subcategories, "addIds");
     });
+
+    const triggerSelectionChange = ({ sourceName = "", selectionLevel = 0, imodel = imodelMock.object }: { sourceName?: string, selectionLevel?: number, imodel?: IModelConnection } = {}) => {
+      const selectionChangeArgs: SelectionChangeEventArgs = {
+        imodel,
+        changeType: SelectionChangeType.Add,
+        level: selectionLevel,
+        source: sourceName,
+        timestamp: new Date(),
+        keys: new KeySet(),
+      };
+      selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs, selectionManagerMock.object);
+    };
 
     it("ignores selection changes to other imodels", async () => {
       const otherImodel = moq.Mock.ofType<IModelConnection>();
-      const selectionChangeArgs: SelectionChangeEventArgs = {
-        imodel: otherImodel.object,
-        changeType: SelectionChangeType.Clear,
-        level: 0,
-        source: faker.random.word(),
-        timestamp: new Date(),
-        keys: new KeySet(),
-      };
-      selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs, selectionManagerMock.object);
+      triggerSelectionChange({ imodel: otherImodel.object });
       selectionManagerMock.verify((x) => x.getSelection(imodelMock.object, moq.It.isAny()), moq.Times.never());
-      expect(setHiliteSpy).to.not.be.called;
+      expect(hiliteSpies.clear).to.not.be.called;
+      expect(hiliteSpies.models).to.not.be.called;
+      expect(hiliteSpies.subcategories).to.not.be.called;
+      expect(hiliteSpies.elements).to.not.be.called;
     });
 
     it("ignores selection changes to selection levels other than 0", async () => {
-      const selectionChangeArgs: SelectionChangeEventArgs = {
-        imodel: imodelMock.object,
-        changeType: SelectionChangeType.Clear,
-        level: 1,
-        source: faker.random.word(),
-        timestamp: new Date(),
-        keys: new KeySet(),
-      };
-      selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs, selectionManagerMock.object);
+      triggerSelectionChange({ selectionLevel: 1 });
       selectionManagerMock.verify((x) => x.getSelection(imodelMock.object, moq.It.isAny()), moq.Times.never());
-      expect(setHiliteSpy).to.not.be.called;
+      expect(hiliteSpies.clear).to.not.be.called;
+      expect(hiliteSpies.models).to.not.be.called;
+      expect(hiliteSpies.subcategories).to.not.be.called;
+      expect(hiliteSpies.elements).to.not.be.called;
     });
 
-    it("replaces viewport selection with content of current unified selection", async () => {
+    it("sets transient elements hilite when there's no content for unified selection", async () => {
       // the handler asks selection manager for overall selection
       const persistentKeys = [createRandomECInstanceKey(), createRandomECInstanceNodeKey()];
       const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
-      const keys = new KeySet([...persistentKeys, transientKey]);
-      selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => keys);
-
-      // then it asks for content for that selection
-      const overrides: DescriptorOverrides = {
-        displayType: DefaultContentDisplayTypes.Viewport,
-        contentFlags: ContentFlags.KeysOnly,
-        hiddenFieldNames: [],
-      };
-      const expectedContent = new Content(createRandomDescriptor(), [
-        new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, []),
-      ]);
-      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, moq.isKeySet(new KeySet(persistentKeys))))
-        .returns(async () => expectedContent);
-
-      // trigger the selection change
-      const selectionChangeArgs: SelectionChangeEventArgs = {
-        imodel: imodelMock.object,
-        changeType: SelectionChangeType.Add,
-        level: 0,
-        source: "",
-        timestamp: new Date(),
-        keys: new KeySet(),
-      };
-      selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs, selectionManagerMock.object);
-
-      // wait for event handler to finish
-      await waitForAllAsyncs([handler]);
-
-      // verify viewport selection was changed with expected ids
-      const ids = [
-        transientKey.id,
-        expectedContent.contentSet[0].primaryKeys[0].id,
-      ];
-      expect(setHiliteSpy).to.be.calledWith(ids);
-    });
-
-    it("replaces viewport selection with only transient ids when there's no content for unified selection", async () => {
-      // the handler asks selection manager for overall selection
-      const persistentKeys = [createRandomECInstanceKey(), createRandomECInstanceNodeKey()];
-      const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
-      const keys = new KeySet([...persistentKeys, transientKey]);
-      selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => keys);
+      const selectedKeys = new KeySet([...persistentKeys, transientKey]);
+      selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => selectedKeys);
 
       // then it asks for content descriptor + content for that selection - return undefined
       // descriptor for 'no content'
@@ -389,57 +358,126 @@ describe("ViewportSelectionHandler", () => {
       presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
         DefaultContentDisplayTypes.Viewport, moq.isKeySet(new KeySet(persistentKeys)), selectionInfo)).returns(async () => undefined);
 
-      // trigger the selection change
-      const selectionChangeArgs: SelectionChangeEventArgs = {
-        imodel: imodelMock.object,
-        changeType: SelectionChangeType.Add,
-        level: selectionInfo.level!,
-        source: selectionInfo.providerName,
-        timestamp: new Date(),
-        keys: new KeySet(),
-      };
-      selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs, selectionManagerMock.object);
-
-      // wait for event handler to finish
+      // trigger the selection change and wait for event handler to finish
+      triggerSelectionChange();
       await waitForAllAsyncs([handler]);
 
       // verify viewport selection was changed with expected ids
-      expect(setHiliteSpy).to.be.calledWith([transientKey.id]);
+      expect(hiliteSpies.clear).to.be.calledOnce;
+      expect(hiliteSpies.elements).to.be.calledOnceWith([transientKey.id]);
     });
 
-    it("ignores viewport selection changes while reacting to unified selection changes", async () => {
+    it("sets element hilite from current unified selection", async () => {
       // the handler asks selection manager for overall selection
-      const keys = new KeySet();
-      selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => keys);
+      const persistentKey = createRandomECInstanceKey();
+      const selectedKeys = new KeySet([persistentKey]);
+      selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => selectedKeys);
 
-      // then it asks for content descriptor + content for that selection - return undefined
-      // descriptor for 'no content'
-      const selectionInfo: SelectionInfo = {
-        providerName: faker.random.word(),
-        level: 0,
+      // then it asks for content for that selection
+      const overrides: DescriptorOverrides = {
+        displayType: DefaultContentDisplayTypes.Viewport,
+        contentFlags: ContentFlags.KeysOnly,
+        hiddenFieldNames: [],
       };
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
-        DefaultContentDisplayTypes.Viewport, moq.isKeySet(keys), selectionInfo)).returns(async () => undefined);
+      const expectedContent = new Content(createRandomDescriptor(), [
+        new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], {}), // element
+      ]);
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, moq.isKeySet(new KeySet([persistentKey]))))
+        .returns(async () => expectedContent);
 
-      // trigger the selection change
-      const selectionChangeArgs: SelectionChangeEventArgs = {
-        imodel: imodelMock.object,
-        changeType: SelectionChangeType.Add,
-        level: selectionInfo.level!,
-        source: selectionInfo.providerName,
-        timestamp: new Date(),
-        keys: new KeySet(),
-      };
-      selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs, selectionManagerMock.object);
-
-      // wait for event handler to finish
+      // trigger the selection change and wait for event handler to finish
+      triggerSelectionChange();
       await waitForAllAsyncs([handler]);
 
-      // ensure this didn't result in any more unified selection changes
-      selectionManagerMock.verify((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-      selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-      selectionManagerMock.verify((x) => x.removeFromSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-      selectionManagerMock.verify((x) => x.clearSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      // verify viewport selection was changed with expected ids
+      expect(hiliteSpies.clear).to.be.calledOnce;
+      expect(hiliteSpies.elements).to.be.calledOnceWith([expectedContent.contentSet[0].primaryKeys[0].id]);
+    });
+
+    it("sets model hilite from current unified selection", async () => {
+      // the handler asks selection manager for overall selection
+      const persistentKey = createRandomECInstanceKey();
+      const selectedKeys = new KeySet([persistentKey]);
+      selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => selectedKeys);
+
+      // then it asks for content for that selection
+      const overrides: DescriptorOverrides = {
+        displayType: DefaultContentDisplayTypes.Viewport,
+        contentFlags: ContentFlags.KeysOnly,
+        hiddenFieldNames: [],
+      };
+      const expectedContent = new Content(createRandomDescriptor(), [
+        new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], { isModel: true }),
+      ]);
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, moq.isKeySet(new KeySet([persistentKey]))))
+        .returns(async () => expectedContent);
+
+      // trigger the selection change and wait for event handler to finish
+      triggerSelectionChange();
+      await waitForAllAsyncs([handler]);
+
+      // verify viewport selection was changed with expected ids
+      expect(hiliteSpies.clear).to.be.calledOnce;
+      expect(hiliteSpies.models).to.be.calledOnceWith([expectedContent.contentSet[0].primaryKeys[0].id]);
+    });
+
+    it("sets subcategory hilite from current unified selection", async () => {
+      // the handler asks selection manager for overall selection
+      const persistentKey = createRandomECInstanceKey();
+      const selectedKeys = new KeySet([persistentKey]);
+      selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => selectedKeys);
+
+      // then it asks for content for that selection
+      const overrides: DescriptorOverrides = {
+        displayType: DefaultContentDisplayTypes.Viewport,
+        contentFlags: ContentFlags.KeysOnly,
+        hiddenFieldNames: [],
+      };
+      const expectedContent = new Content(createRandomDescriptor(), [
+        new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], { isSubCategory: true }),
+      ]);
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, moq.isKeySet(new KeySet([persistentKey]))))
+        .returns(async () => expectedContent);
+
+      // trigger the selection change and wait for event handler to finish
+      triggerSelectionChange();
+      await waitForAllAsyncs([handler]);
+
+      // verify viewport selection was changed with expected ids
+      expect(hiliteSpies.clear).to.be.calledOnce;
+      expect(hiliteSpies.subcategories).to.be.calledOnceWith([expectedContent.contentSet[0].primaryKeys[0].id]);
+    });
+
+    it("sets mixed hilite from current unified selection", async () => {
+      // the handler asks selection manager for overall selection
+      const persistentKey = createRandomECInstanceKey();
+      const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
+      const selectedKeys = new KeySet([persistentKey, transientKey]);
+      selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => selectedKeys);
+
+      // then it asks for content for that selection
+      const overrides: DescriptorOverrides = {
+        displayType: DefaultContentDisplayTypes.Viewport,
+        contentFlags: ContentFlags.KeysOnly,
+        hiddenFieldNames: [],
+      };
+      const expectedContent = new Content(createRandomDescriptor(), [
+        new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], { isModel: true }),
+        new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], { isSubCategory: true }),
+        new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], {}), // element
+      ]);
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, overrides, moq.isKeySet(new KeySet([persistentKey]))))
+        .returns(async () => expectedContent);
+
+      // trigger the selection change and wait for event handler to finish
+      triggerSelectionChange();
+      await waitForAllAsyncs([handler]);
+
+      // verify viewport selection was changed with expected ids
+      expect(hiliteSpies.clear).to.be.calledOnce;
+      expect(hiliteSpies.models).to.be.calledOnceWith([expectedContent.contentSet[0].primaryKeys[0].id]);
+      expect(hiliteSpies.subcategories).to.be.calledOnceWith([expectedContent.contentSet[1].primaryKeys[0].id]);
+      expect(hiliteSpies.elements).to.be.calledOnceWith([transientKey.id, expectedContent.contentSet[2].primaryKeys[0].id]);
     });
 
     it("ignores intermediate unified selection changes", async () => {
@@ -462,42 +500,43 @@ describe("ViewportSelectionHandler", () => {
       });
 
       // trigger the selection change
-      const selectionChangeArgs = (name: string): SelectionChangeEventArgs => ({
-        imodel: imodelMock.object,
-        changeType: SelectionChangeType.Add,
-        level: 0,
-        source: name,
-        timestamp: new Date(),
-        keys: new KeySet(),
-      });
-      selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs("initial"), selectionManagerMock.object);
+      triggerSelectionChange({ sourceName: "initial" });
 
       // handler should now be waiting for the first content request to resolve - ensure
       // viewport selection was not replaced yet
       presentationManagerMock.verify(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined },
         overrides, moq.isKeySet(keys)), moq.Times.once());
-      expect(setHiliteSpy).to.not.be.called;
+      expect(hiliteSpies.clear).to.not.be.called;
+      expect(hiliteSpies.models).to.not.be.called;
+      expect(hiliteSpies.subcategories).to.not.be.called;
+      expect(hiliteSpies.elements).to.not.be.called;
 
       // trigger some intermediate selection changes
       for (let i = 1; i <= 10; ++i)
-        selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs(i.toString()), selectionManagerMock.object);
+        triggerSelectionChange({ sourceName: i.toString() });
 
       // ensure new content requests were not triggered
       presentationManagerMock.verify(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined },
         overrides, moq.isKeySet(keys)), moq.Times.once());
 
       // now resolve the first content request
-      await contentRequests[0].resolve(undefined);
+      await contentRequests[0].resolve(new Content(createRandomDescriptor(), [
+        new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], {}),
+      ]));
 
       // ensure viewport selection change was made
-      expect(setHiliteSpy).to.be.calledOnce;
+      expect(hiliteSpies.clear).to.be.calledOnce;
+      expect(hiliteSpies.elements).to.be.calledOnce;
 
       // ensure a new content request was made for the last selection change
       presentationManagerMock.verify(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined },
         overrides, moq.isKeySet(keys)), moq.Times.exactly(2));
-      await contentRequests[1].resolve(undefined);
+      await contentRequests[1].resolve(new Content(createRandomDescriptor(), [
+        new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], {}),
+      ]));
       await waitForAllAsyncs([handler]);
-      expect(setHiliteSpy).to.be.calledTwice;
+      expect(hiliteSpies.clear).to.be.calledTwice;
+      expect(hiliteSpies.elements).to.be.calledTwice;
     });
 
   });

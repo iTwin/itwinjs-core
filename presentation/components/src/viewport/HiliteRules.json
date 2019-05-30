@@ -4,19 +4,90 @@
   "rules": [
     {
       "ruleType": "Content",
+      "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"Subject\", \"BisCore\")",
+      "onlyIfNotHandled": true,
+      "specifications": [
+        {
+          "specType": "ContentRelatedInstances",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementOwnsChildElements"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Subject",
+              "PhysicalPartition"
+            ]
+          },
+          "isRecursive": true,
+          "instanceFilter": "this.IsOfClass(\"PhysicalPartition\", \"BisCore\")"
+        }
+      ]
+    },
+    {
+      "ruleType": "Content",
       "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"Model\", \"BisCore\")",
       "onlyIfNotHandled": true,
-      "specifications": []
+      "specifications": [
+        {
+          "specType": "SelectedNodeInstances"
+        }
+      ]
+    },
+    {
+      "ruleType": "ExtendedData",
+      "condition": "ThisNode.IsOfClass(\"Model\", \"BisCore\") ORELSE ThisNode.IsOfClass(\"PhysicalPartition\", \"BisCore\")",
+      "items": {
+        "isModel": "true"
+      }
     },
     {
       "ruleType": "Content",
       "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"Category\", \"BisCore\")",
       "onlyIfNotHandled": true,
-      "specifications": []
+      "specifications": [
+        {
+          "specType": "ContentRelatedInstances",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "CategoryOwnsSubCategories"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "SubCategory"
+            ]
+          }
+        }
+      ]
     },
     {
       "ruleType": "Content",
-      "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"Element\", \"BisCore\")",
+      "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"SubCategory\", \"BisCore\")",
+      "onlyIfNotHandled": true,
+      "specifications": [
+        {
+          "specType": "SelectedNodeInstances"
+        }
+      ]
+    },
+    {
+      "ruleType": "ExtendedData",
+      "condition": "ThisNode.IsOfClass(\"SubCategory\", \"BisCore\")",
+      "items": {
+        "isSubCategory": "true"
+      }
+    },
+    {
+      "ruleType": "Content",
+      "condition": "ContentDisplayType = \"Graphics\" ANDALSO SelectedNode.IsOfClass(\"GeometricElement\", \"BisCore\")",
       "onlyIfNotHandled": true,
       "specifications": [
         {

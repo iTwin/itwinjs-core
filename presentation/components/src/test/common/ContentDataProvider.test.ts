@@ -554,6 +554,13 @@ describe("ContentDataProvider", () => {
       presentationManagerMock.verifyAll();
     });
 
+    it("doesn't request for content when keyset is empty and `shouldRequestContentForEmptyKeyset()` returns `false`", async () => {
+      provider.keys = new KeySet();
+      const spy = sinon.spy(provider, "shouldConfigureContentDescriptor");
+      await provider.getContent();
+      expect(spy).to.not.be.called;
+    });
+
   });
 
 });
