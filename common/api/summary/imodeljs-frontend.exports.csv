@@ -248,7 +248,7 @@ public;RotateViewTool
 alpha;RotationMode
 internal;RoundOff
 internal;SavedClipCache
-internal;SavedClipEntry
+alpha;SavedClipEntry
 internal;SavedClipProps
 internal;SavedState
 internal;SceneContext 

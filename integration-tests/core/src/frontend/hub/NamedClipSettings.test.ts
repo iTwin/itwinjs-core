@@ -10,14 +10,6 @@ import { TestUsers } from "./TestUsers";
 import { TestUtility } from "./TestUtility";
 import { Point3d, Plane3dByOriginAndUnitNormal, ConvexClipPlaneSet, ClipPlane, ClipPrimitive, ClipVector } from "@bentley/geometry-core";
 
-function createViewDiv() {
-  const div = document.createElement("div") as HTMLDivElement;
-  assert(null !== div);
-  div!.style.width = div!.style.height = "1000px";
-  document.body.appendChild(div!);
-  return div;
-}
-
 export class NamedClipTestUtils {
   public static async cleanExistingSettings(imodel: IModelConnection, shared: boolean, provider: ViewClipSettingsProvider): Promise<void> {
     provider.clearActiveClipIdAllViews();
@@ -56,7 +48,10 @@ export class NamedClipTestUtils {
 describe("ViewClipDecorationProvider (#integration)", () => {
   let imodel: IModelConnection;
   let viewState: SpatialViewState;
-  const viewDiv = createViewDiv();
+  const viewDiv = document.createElement("div") as HTMLDivElement;
+  assert(null !== viewDiv);
+  viewDiv!.style.width = viewDiv!.style.height = "1000px";
+  document.body.appendChild(viewDiv!);
   const viewClipDecoProvider = ViewClipDecorationProvider.create();
 
   before(async () => {
@@ -145,6 +140,52 @@ describe("ViewClipDecorationProvider (#integration)", () => {
     for (const entry of settings) {
       const index = clipIds.indexOf(entry.id);
       assert.isTrue(-1 !== index && entry.name === index.toString(), "found clip id with expected name");
+    }
+  });
+
+  it.only("test shared setttings", async () => {
+    const viewport = ScreenViewport.create(viewDiv!, viewState.clone());
+    await NamedClipTestUtils.cleanExistingSettings(viewport.iModel, false, viewClipDecoProvider.settings); // Cleanup user clips from previous test runs...
+    await NamedClipTestUtils.cleanExistingSettings(viewport.iModel, true, viewClipDecoProvider.settings); // Cleanup shared clips from previous test runs...
+
+    // Create some new saved user clips...
+    const clipIds: GuidString[] = [];
+    const nClips = 3;
+    const planeSet = ConvexClipPlaneSet.createEmpty();
+    for (let iPlane = 0; iPlane < nClips; iPlane++) {
+      const clip = NamedClipTestUtils.createClipPlane(viewport, iPlane, Point3d.create(), planeSet);
+      assert.isFalse(undefined === clip, "created new clip vector with additional plane added");
+      const newId = await viewClipDecoProvider.settings.newClip(viewport.iModel, false, clip!);
+      assert.isFalse(undefined === newId, "user clip successfully saved");
+      clipIds.push(newId!);
+    }
+    assert.isTrue(clipIds.length === nClips, "created correct number of user saved clips");
+
+    // Test changing user clip to shared...
+    for (let iClip = 0; iClip < nClips; iClip++) {
+      const shareStatus = await viewClipDecoProvider.settings.shareClip(viewport.iModel, clipIds[iClip], true);
+      assert.isTrue(SettingsStatus.Success === shareStatus, "shareClip should return Success");
+    }
+
+    // Test populating cache from shared settings...
+    viewClipDecoProvider.settings.clearActiveClipIdAllViews(); // clear cache to test getClip from shared settings...
+    for (let iClip = 0; iClip < nClips; iClip++) {
+      const clip = await viewClipDecoProvider.settings.getClip(viewport.iModel, true, clipIds[iClip]);
+      assert.isFalse(undefined === clip, "cached - retrieved shared clip");
+      const clipPlanes = ViewClipTool.isSingleConvexClipPlaneSet(clip!);
+      assert.isFalse(undefined === clipPlanes, "cached - retrieved clip planes from clip");
+      assert.isTrue(clipPlanes!.planes.length === iClip + 1, "cached - has correct number of clip planes");
+      const shareStatus = await viewClipDecoProvider.settings.shareClip(viewport.iModel, clipIds[iClip], true);
+      assert.isTrue(SettingsStatus.Success === shareStatus, "shareClip should return Success");
+    }
+
+    // Test getSettings for shared clips (don't specify shared to return both user and shared clips to maker sure sharClip deleted user setting)...
+    const settings: SavedClipEntry[] = [];
+    const getStatus = await viewClipDecoProvider.settings.getSettings(settings, viewport.iModel);
+    assert.isTrue(SettingsStatus.Success === getStatus, "getSettings should return Success");
+    assert.isTrue(3 === settings.length, "getSettings returned expected number of settings");
+    for (const entry of settings) {
+      assert.isTrue(entry.shared, "clip is shared");
     }
   });
 

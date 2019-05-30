@@ -5,11 +5,11 @@
 /** @module Tools */
 
 import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d } from "@bentley/geometry-core";
-import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels, IModelError } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { BeButtonEvent, EventHandled, CoordinateLockOverrides } from "./Tool";
 import { LocateResponse } from "../ElementLocateManager";
-import { Id64Arg, Id64, BeEvent, GuidString, Guid } from "@bentley/bentleyjs-core";
+import { Id64Arg, Id64, BeEvent, GuidString, Guid, IModelStatus } from "@bentley/bentleyjs-core";
 import { Viewport, ScreenViewport } from "../Viewport";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { PrimitiveTool } from "./PrimitiveTool";
@@ -1493,14 +1493,14 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 /** @alpha */
 export enum ActiveClipStatus { None, Unsaved, Saved, Modified }
 
+/** @alpha */
+export interface SavedClipEntry { id: GuidString; name?: string; shared: boolean; }
+
 /** @internal */
 export interface SavedClipProps { clip: ClipVector; name?: string; }
 
 /** @internal */
 export interface SavedClipCache { clip?: ClipVector; name?: string; shared: boolean; modified: boolean; }
-
-/** @internal */
-export interface SavedClipEntry { id: GuidString; name?: string; shared: boolean; }
 
 /** @alpha Support for saving clip information as user or project settings */
 export class ViewClipSettingsProvider {
@@ -1515,33 +1515,52 @@ export class ViewClipSettingsProvider {
   protected getProjectId(iModel: IModelConnection): string | undefined { return iModel.iModelToken.contextId; }
   protected getiModelId(iModel: IModelConnection): string | undefined { return iModel.iModelToken.iModelId; }
 
+  /** @internal */
   protected async getAllSettings(iModel: IModelConnection, shared: boolean): Promise<SettingsMapResult> {
+    const projectId = this.getProjectId(iModel);
+    const modelId = this.getiModelId(iModel);
+    if (undefined === projectId || undefined === modelId)
+      throw new IModelError(IModelStatus.MissingId, "Required project id and model id are not specified");
     const requestContext = await this.getRequestContext();
     if (shared)
-      return IModelApp.settings.getSharedSettingsByNamespace(requestContext, this.namespace, this.appSpecific, this.getProjectId(iModel)!, this.getiModelId(iModel));
-    return IModelApp.settings.getUserSettingsByNamespace(requestContext, this.namespace, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+      return IModelApp.settings.getSharedSettingsByNamespace(requestContext, this.namespace, this.appSpecific, projectId, modelId);
+    return IModelApp.settings.getUserSettingsByNamespace(requestContext, this.namespace, this.appSpecific, projectId, modelId);
   }
 
+  /** @internal */
   protected async getSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult> {
+    const projectId = this.getProjectId(iModel);
+    const modelId = this.getiModelId(iModel);
+    if (undefined === projectId || undefined === modelId)
+      throw new IModelError(IModelStatus.MissingId, "Required project id and model id are not specified");
     const requestContext = await this.getRequestContext();
     if (shared)
-      return IModelApp.settings.getSharedSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel)!, this.getiModelId(iModel));
-    return IModelApp.settings.getUserSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+      return IModelApp.settings.getSharedSetting(requestContext, this.namespace, existingId, this.appSpecific, projectId, modelId);
+    return IModelApp.settings.getUserSetting(requestContext, this.namespace, existingId, this.appSpecific, projectId, modelId);
   }
 
   /** @internal */
   protected async saveSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsResult> {
+    const projectId = this.getProjectId(iModel);
+    const modelId = this.getiModelId(iModel);
+    if (undefined === projectId || undefined === modelId)
+      throw new IModelError(IModelStatus.MissingId, "Required project id and model id are not specified");
     const requestContext = await this.getRequestContext();
     if (shared)
-      return IModelApp.settings.saveSharedSetting(requestContext, settings, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel)!, this.getiModelId(iModel));
-    return IModelApp.settings.saveUserSetting(requestContext, settings, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+      return IModelApp.settings.saveSharedSetting(requestContext, settings, this.namespace, existingId, this.appSpecific, projectId, modelId);
+    return IModelApp.settings.saveUserSetting(requestContext, settings, this.namespace, existingId, this.appSpecific, projectId, modelId);
   }
 
+  /** @internal */
   protected async deleteSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult> {
+    const projectId = this.getProjectId(iModel);
+    const modelId = this.getiModelId(iModel);
+    if (undefined === projectId || undefined === modelId)
+      throw new IModelError(IModelStatus.MissingId, "Required project id and model id are not specified");
     const requestContext = await this.getRequestContext();
     if (shared)
-      return IModelApp.settings.deleteSharedSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel)!, this.getiModelId(iModel));
-    return IModelApp.settings.deleteUserSetting(requestContext, this.namespace, existingId, this.appSpecific, this.getProjectId(iModel), this.getiModelId(iModel));
+      return IModelApp.settings.deleteSharedSetting(requestContext, this.namespace, existingId, this.appSpecific, projectId, modelId);
+    return IModelApp.settings.deleteUserSetting(requestContext, this.namespace, existingId, this.appSpecific, projectId, modelId);
   }
 
   /** @internal */
@@ -1594,6 +1613,7 @@ export class ViewClipSettingsProvider {
     }
   }
 
+  /** @internal */
   protected async deleteCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsStatus> {
     try {
       const result = await this.deleteSetting(iModel, shared, existingId);
@@ -1605,6 +1625,7 @@ export class ViewClipSettingsProvider {
     }
   }
 
+  /** @internal */
   protected async renameCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, name: string): Promise<SettingsStatus> {
     const existing = await this.getCachedSetting(iModel, shared, existingId);
     if (undefined === existing.clip)
@@ -1621,6 +1642,7 @@ export class ViewClipSettingsProvider {
     }
   }
 
+  /** @internal */
   protected async shareCachedSetting(iModel: IModelConnection, existingId: GuidString, newShared: boolean): Promise<SettingsStatus> {
     const existing = await this.getCachedSetting(iModel, !newShared, existingId);
     if (undefined === existing.clip)
@@ -1637,6 +1659,7 @@ export class ViewClipSettingsProvider {
     }
   }
 
+  /** @internal */
   protected validateActiveClipId(viewport: Viewport): void {
     const activeId = this.getActiveClipId(viewport);
     if (undefined !== activeId) {
@@ -1648,6 +1671,7 @@ export class ViewClipSettingsProvider {
     this.purgeActiveClipIdCache();
   }
 
+  /** @internal */
   protected purgeActiveClipIdCache(): void {
     if (this._cachedClips.size <= this._activeClips.size)
       return;
@@ -1694,7 +1718,6 @@ export class ViewClipSettingsProvider {
     return true;
   }
 
-  /** @internal */
   public async getSettings(settings: SavedClipEntry[], iModel: IModelConnection, shared?: boolean): Promise<SettingsStatus> {
     let userStatus = SettingsStatus.Success;
     let sharedStatus = SettingsStatus.Success;
