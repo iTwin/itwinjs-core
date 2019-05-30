@@ -23,7 +23,8 @@ import { IModelApi } from "./IModelApi";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
-let testNum = 1; // Keep track of current test in test set
+const testNamesImages = new Map<string, number>(); // Keep track of test names and how many duplicate names exist for images
+const testNamesTimings = new Map<string, number>(); // Keep track of test names and how many duplicate names exist for timings
 
 interface Options {
   [key: string]: any; // Add index signature
@@ -368,18 +369,37 @@ function getImageString(configs: DefaultConfigs, prefix = ""): string {
   if (lastChar !== "/" && lastChar !== "\\")
     output += "\\";
   let filename = "";
-  filename += prefix;
-  filename += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
-  filename += configs.viewName ? "_" + configs.viewName : "";
-  filename += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
-  filename += getRenderMode() !== "" ? "_" + getRenderMode() : "";
-  filename += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
-  filename += getRenderOpts() !== "" ? "_" + getRenderOpts() : "";
-  filename += getTileProps() !== "" ? "_" + getTileProps() : "";
-  filename = removeOptsFromString(filename, configs.filenameOptsToIgnore);
+  filename += getTestName(configs, prefix, true);
   output += filename;
   output += ".png";
   return output;
+}
+
+function getTestName(configs: DefaultConfigs, prefix?: string, isImage = false, ignoreDupes = false): string {
+  let testName = "";
+  if (prefix) testName += prefix;
+  testName += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
+  testName += configs.viewName ? "_" + configs.viewName : "";
+  testName += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
+  testName += getRenderMode() !== "" ? "_" + getRenderMode() : "";
+  testName += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
+  testName += getRenderOpts() !== "" ? "_" + getRenderOpts() : "";
+  testName += getTileProps() !== "" ? "_" + getTileProps() : "";
+  testName = removeOptsFromString(testName, configs.filenameOptsToIgnore);
+  if (!ignoreDupes) {
+    let testNum = isImage ? testNamesImages.get(testName) : testNamesTimings.get(testName);
+    if (testNum === undefined)
+      testNum = 0;
+    testName += (testNum > 1) ? ("---" + testNum) : "";
+  }
+  return testName;
+}
+
+function updateTestNames(configs: DefaultConfigs, prefix?: string, isImage = false) {
+  const testNames = isImage ? testNamesImages : testNamesTimings;
+  let testNameDupes = testNames.get(getTestName(configs, prefix, false, true));
+  if (testNameDupes === undefined) testNameDupes = 0;
+  testNames.set(getTestName(configs, prefix, false, true), testNameDupes + 1);
 }
 
 async function savePng(fileName: string): Promise<void> {
@@ -408,7 +428,6 @@ class DefaultConfigs {
   public iModelHubProject?: string;
   public filenameOptsToIgnore?: string[] | string;
   public viewName?: string;
-  public testName?: string;
   public testType?: string;
   public displayStyle?: string;
   public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
@@ -439,7 +458,6 @@ class DefaultConfigs {
       if (prevConfigs.iModelHubProject) this.iModelHubProject = prevConfigs.iModelHubProject;
       if (prevConfigs.filenameOptsToIgnore) this.filenameOptsToIgnore = prevConfigs.filenameOptsToIgnore;
       if (prevConfigs.viewName) this.viewName = prevConfigs.viewName;
-      if (prevConfigs.testName) this.testName = prevConfigs.testName;
       if (prevConfigs.testType) this.testType = prevConfigs.testType;
       if (prevConfigs.displayStyle) this.displayStyle = prevConfigs.displayStyle;
       this.renderOptions = this.updateData(prevConfigs.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
@@ -459,7 +477,6 @@ class DefaultConfigs {
     if (jsonData.viewName) this.viewName = jsonData.viewName;
     if (jsonData.testType) this.testType = jsonData.testType;
     if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
-    this.testName = this.testName ? (this.testName + " - " + (jsonData.testName ? jsonData.testName : testNum++)) : (jsonData.testName ? jsonData.testName : this.testName);
     this.renderOptions = this.updateData(jsonData.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
     this.tileProps = this.updateData(jsonData.tileProps, this.tileProps) as TileAdmin.Props || undefined;
     this.viewFlags = this.updateData(jsonData.viewFlags, this.viewFlags); // as ViewFlags || undefined;
@@ -477,7 +494,6 @@ class DefaultConfigs {
     debugPrint("iModelHubProject: " + this.iModelHubProject);
     debugPrint("filenameOptsToIgnore: " + this.filenameOptsToIgnore);
     debugPrint("viewName: " + this.viewName);
-    debugPrint("testName: " + this.testName);
     debugPrint("testType: " + this.testType);
     debugPrint("displayStyle: " + this.displayStyle);
     debugPrint("tileProps: " + this.tileProps);
@@ -834,7 +850,6 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
       }
     }
   }
-
 }
 
 async function runTest(testConfig: DefaultConfigs) {
@@ -844,8 +859,10 @@ async function runTest(testConfig: DefaultConfigs) {
   // Open and finish loading model
   await loadIModel(testConfig);
 
-  if (testConfig.testType === "image" || testConfig.testType === "both")
+  if (testConfig.testType === "image" || testConfig.testType === "both") {
+    updateTestNames(testConfig, undefined, true); // Update the list of image test names
     await savePng(getImageString(testConfig));
+  }
 
   if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels") {
     // Throw away the first n renderFrame times, until it's more consistent
@@ -872,6 +889,8 @@ async function runTest(testConfig: DefaultConfigs) {
           finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
           finalFrameTimings[i].delete("Scene Time");
         }
+        updateTestNames(testConfig, pixSelectStr, true); // Update the list of image test names
+        updateTestNames(testConfig, pixSelectStr, false); // Update the list of timing test names
         const rowData = getRowData(finalFrameTimings, testConfig, pixSelectStr);
         await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
 
@@ -890,6 +909,7 @@ async function runTest(testConfig: DefaultConfigs) {
         finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
       }
       timer.stop();
+      updateTestNames(testConfig); // Update the list of timing test names
       if (wantConsoleOutput) {
         debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / testConfig.numRendersToTime + "ms per frame");
         debugPrint("Tile Loading Time: " + curTileLoadingTime);
@@ -941,7 +961,6 @@ async function testModel(configs: DefaultConfigs, modelData: any) {
 
     await runTest(testConfig);
   }
-  testNum = 1; // Reset back to first test in test set
   if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
   if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".TileCache");
 }
