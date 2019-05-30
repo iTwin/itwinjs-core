@@ -34,8 +34,8 @@ Here are several significant subclasses:
 
 * `ViewDefinition`
   * `SpatialViewDefinition` - shows a view of one or more 3d SpatialModels
-  * `DrawingViewDefinition` - shows a view of a single 2d DrawingModel
-  * `SheetViewDefinition` - shows a view of a single 2d SheetModel
+  * `DrawingViewDefinition` - shows a view of a *single* 2d DrawingModel
+  * `SheetViewDefinition` - shows a view of a *single* 2d SheetModel
 
 For each subclass of `xxxViewDefinition`, there is a corresponding `xxxViewState` class in the frontend.
 
@@ -44,10 +44,16 @@ For each subclass of `xxxViewDefinition`, there is a corresponding `xxxViewState
 There is a method called [IModelConnection.Views.getViewList]($frontend) that returns an array of [IModelConnection.ViewSpec]($frontend)s in a convenient
 format for User Interfaces. This can be used to present a list of possible views by name in a List.
 
-For example:
+For example, to get a list of all spatial views:
 
 ``` ts
-[[include:IModelConnection.Views.getViewList]]
+[[include:IModelConnection.Views.getSpatialViewList]]
+```
+
+To get a list of all drawing views:
+
+``` ts
+[[include:IModelConnection.Views.getDrawingViewList]]
 ```
 
 Once a view is selected from the list, it may be loaded with:
@@ -56,7 +62,14 @@ Once a view is selected from the list, it may be loaded with:
 [[include:IModelConnection.Views.load]]
 ```
 
-> Note that in the examples above, `getSpatialViews` and `loadOneView` are `async`, and you must `await` them.
+Then, you may wish to change one of the existing views to show the contents of the now-loaded view. For example, to switch the
+[ViewManager.selectedView]($frontend) to show it, use code like:
+
+``` ts
+[[include:ScreenViewport.changeView]]
+```
+
+> Note that in the examples above, `getSpatialViews`, `loadOneView`, and `showOneView` are `async`, and you must `await` them.
 
 ## Using Viewports
 
