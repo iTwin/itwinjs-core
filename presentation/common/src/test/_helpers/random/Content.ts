@@ -3,7 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import { CategoryDescription, TypeDescription, EditorDescription, Field, PrimitiveTypeDescription, Descriptor, Content, PropertyValueFormat } from "../../../presentation-common";
+import {
+  CategoryDescription, TypeDescription, EditorDescription, Field,
+  PrimitiveTypeDescription, Descriptor, Content, PropertyValueFormat, StructTypeDescription,
+} from "../../../presentation-common";
+import { NestedContentFieldJSON, BaseFieldJSON } from "../../../content/Fields";
 import { SelectClassInfoJSON } from "../../../content/Descriptor";
 import { createRandomRelationshipPathJSON, createRandomECClassInfoJSON } from "./EC";
 import { nullable } from "./Misc";
@@ -40,7 +44,7 @@ export const createRandomEditorDescription = (): EditorDescription => {
   } as EditorDescription;
 };
 
-const createRandomPrimitiveFieldJSON = () => {
+export const createRandomPrimitiveFieldJSON = (): BaseFieldJSON => {
   return {
     category: createRandomCategory(),
     name: faker.random.word(),
@@ -55,6 +59,22 @@ const createRandomPrimitiveFieldJSON = () => {
 export const createRandomPrimitiveField = (): Field => {
   return Field.fromJSON(createRandomPrimitiveFieldJSON())!;
 };
+
+export const createRandomNestedFieldJSON = (): NestedContentFieldJSON => ({
+  ...createRandomPrimitiveFieldJSON(),
+  type: {
+    valueFormat: PropertyValueFormat.Struct,
+    typeName: faker.random.word(),
+    members: [{
+      type: createRandomPrimitiveTypeDescription(),
+      name: faker.random.word(),
+      label: faker.random.word(),
+    }],
+  } as StructTypeDescription,
+  contentClassInfo: createRandomECClassInfoJSON(),
+  pathToPrimaryClass: createRandomRelationshipPathJSON(),
+  nestedFields: [createRandomPrimitiveFieldJSON()],
+});
 
 export const createRandomDescriptorJSON = (displayType?: string) => {
   const selectClasses = [createRandomSelectClassInfoJSON(), createRandomSelectClassInfoJSON()];
