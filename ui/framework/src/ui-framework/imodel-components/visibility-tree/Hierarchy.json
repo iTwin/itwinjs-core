@@ -267,7 +267,7 @@
     {
       "ruleType": "ImageIdOverride",
       "condition": "ThisNode.IsOfClass(\"Subject\", \"BisCore\")",
-      "imageIdExpression": "\"icon-table-of-contents\""
+      "imageIdExpression": "IIF(this.Parent.Id = NULL, \"icon-imodel-hollow-2\", \"icon-folder\")"
     },
     {
       "ruleType": "ImageIdOverride",

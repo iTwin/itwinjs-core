@@ -49,7 +49,7 @@ exports[`VisibilityTree #integration renders component with real data and no act
                     class="core-tree-node-icon"
                   >
                     <span
-                      class="bui-webfont-icon icon-table-of-contents"
+                      class="bui-webfont-icon icon-imodel-hollow-2"
                     />
                   </div>
                   <div
@@ -118,7 +118,7 @@ Array [
                   "isSubject": true,
                 },
                 "hasChildren": true,
-                "icon": "icon-table-of-contents",
+                "icon": "icon-folder",
                 "label": "Arch 1.dgn",
               },
               Object {
@@ -171,7 +171,7 @@ Array [
                   "isSubject": true,
                 },
                 "hasChildren": true,
-                "icon": "icon-table-of-contents",
+                "icon": "icon-folder",
                 "label": "Arch 2.dgn",
               },
               Object {
@@ -227,7 +227,7 @@ Array [
                   "isSubject": true,
                 },
                 "hasChildren": true,
-                "icon": "icon-table-of-contents",
+                "icon": "icon-folder",
                 "label": "Arch 3.dgn",
               },
             ],
@@ -235,7 +235,7 @@ Array [
               "isSubject": true,
             },
             "hasChildren": true,
-            "icon": "icon-table-of-contents",
+            "icon": "icon-folder",
             "label": "Arch master.dgn",
           },
           Object {
@@ -285,7 +285,7 @@ Array [
                   "isSubject": true,
                 },
                 "hasChildren": true,
-                "icon": "icon-table-of-contents",
+                "icon": "icon-folder",
                 "label": "MEP 1.dgn",
               },
             ],
@@ -293,7 +293,7 @@ Array [
               "isSubject": true,
             },
             "hasChildren": true,
-            "icon": "icon-table-of-contents",
+            "icon": "icon-folder",
             "label": "MEP master.dgn",
           },
           Object {
@@ -324,7 +324,7 @@ Array [
                   "isSubject": true,
                 },
                 "hasChildren": true,
-                "icon": "icon-table-of-contents",
+                "icon": "icon-folder",
                 "label": "Struct 1.dgn",
               },
               Object {
@@ -692,7 +692,7 @@ Array [
                   "isSubject": true,
                 },
                 "hasChildren": true,
-                "icon": "icon-table-of-contents",
+                "icon": "icon-folder",
                 "label": "Struct 2.dgn",
               },
             ],
@@ -700,7 +700,7 @@ Array [
               "isSubject": true,
             },
             "hasChildren": true,
-            "icon": "icon-table-of-contents",
+            "icon": "icon-folder",
             "label": "Struct master.dgn",
           },
         ],
@@ -708,7 +708,7 @@ Array [
           "isSubject": true,
         },
         "hasChildren": true,
-        "icon": "icon-table-of-contents",
+        "icon": "icon-folder",
         "label": "IModelBridgeForMstn master model file://d:\\\\dgn\\\\joe\\\\OneDrive_1_3-15-2019\\\\Joe's house.dgn, 3D Imperial Design",
       },
     ],
@@ -716,7 +716,7 @@ Array [
       "isSubject": true,
     },
     "hasChildren": true,
-    "icon": "icon-table-of-contents",
+    "icon": "icon-imodel-hollow-2",
     "label": "Joe's house.bim",
   },
 ]
