@@ -78,7 +78,7 @@ beta;HardiModelDeleteEvent
 alpha;HubCode 
 beta;HubIModel 
 alpha;HubUserInfo 
-beta;IAngularOidcFrontendClient 
+alpha;IAngularOidcFrontendClient 
 beta;IAuthorizationClient
 internal;IModelBankClient 
 internal;IModelBankFileSystemContextClient 

@@ -781,7 +781,7 @@ export class HubUserInfo extends WsgInstance {
     lastName?: string;
 }
 
-// @beta
+// @alpha
 export interface IAngularOidcFrontendClient extends IOidcFrontendClient {
     // (undocumented)
     handleRedirectCallback(): Promise<boolean>;

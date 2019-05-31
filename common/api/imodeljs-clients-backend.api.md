@@ -104,7 +104,7 @@ export class OidcDelegationClient extends OidcBackendClient {
 // @beta (undocumented)
 export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient {
     constructor(clientConfiguration: OidcFrontendClientConfiguration);
     dispose(): void;

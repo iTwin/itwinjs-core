@@ -10,7 +10,9 @@ import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
 const loggerCategory: string = FrontendLoggerCategory.OidcIOSClient;
 
-/** Utility to provide OIDC/OAuth tokens from native ios app to frontend */
+/** Utility to provide OIDC/OAuth tokens from native ios app to frontend
+ * @alpha
+ */
 export class OidcIOSClient extends OidcClient implements IOidcFrontendClient {
   private _accessToken: AccessToken | undefined;
   public constructor() {
