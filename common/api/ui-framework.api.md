@@ -1086,9 +1086,9 @@ export class DrawingNavigationAid extends React_2.Component<DrawingNavigationAid
     static getDefaultClosedMapSize: () => Vector3d;
     // @internal (undocumented)
     static getDefaultOpenedMapSize: (paddingX?: number, paddingY?: number) => Vector3d;
-    // (undocumented)
+    // @internal (undocumented)
     render(): React_2.ReactNode;
-    // (undocumented)
+    // @internal (undocumented)
     readonly state: Readonly<DrawingNavigationAidState>;
     }
 

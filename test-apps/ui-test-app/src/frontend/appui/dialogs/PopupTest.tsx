@@ -26,8 +26,8 @@ interface PopupTestState {
 }
 
 /**
- * Test for popups.  Do not use, ths will be removed!
- * @hidden
+ * Test for popups.  Do not use, this will be removed!
+ * @internal
  */
 export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestState> {
   public readonly state: Readonly<PopupTestState>;

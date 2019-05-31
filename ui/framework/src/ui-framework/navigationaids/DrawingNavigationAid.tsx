@@ -114,7 +114,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   private _animationFrame: any;
   private _mounted: boolean = false;
 
-  /** @hidden */
+  /** @internal */
   public readonly state: Readonly<DrawingNavigationAidState>;
 
   constructor(props: DrawingNavigationAidProps) {
@@ -152,7 +152,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     };
   }
 
-  /** @hidden */
+  /** @internal */
   public render(): React.ReactNode {
     const {
       startOrigin, origin, extents,
