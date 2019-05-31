@@ -34,8 +34,7 @@
   },
   "devDependencies": {
     "ignore-styles": "^5.0.1",
-    "cpx": "^1.5.0",
-    "typedoc": "^0.14.2"
+    "cpx": "^1.5.0"
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "0.192.0-dev.20",

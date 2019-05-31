@@ -81,7 +81,6 @@
     "tslint": "^5.11.0",
     "tslint-consistent-codestyle": "^1.11.0",
     "tslint-etc": "^1.5.2",
-    "typedoc": "^0.14.2",
     "typemoq": "^2.1.0",
     "typescript": "~3.2.2",
     "typescript-json-schema": "^0.28.0",
