@@ -30,7 +30,9 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
   /** The immutable name of the interface. */
   public static readonly interfaceName = "DevToolsRpcInterface";
 
-  /** The semantic version of the interface. */
+  /** The semantic version of the interface.
+   * @note The DevToolsRpcInterface will remain at 0.x since it is for testing only and not intended for production.
+   */
   public static interfaceVersion = "0.4.0";
 
   /*===========================================================================================
