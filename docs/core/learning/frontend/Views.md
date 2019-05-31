@@ -39,6 +39,18 @@ Here are several significant subclasses:
 
 For each subclass of `xxxViewDefinition`, there is a corresponding `xxxViewState` class in the frontend.
 
+## Using Viewports
+
+[ViewState]($frontend) objects hold the state of a [ViewDefinition]($backend) (*what* is shown in a View) in the frontend.
+
+[Viewport]($frontend) is an abstract class that connects a ViewState to a [RenderTarget]($frontend).
+
+To connect a ViewState to a rectangular region on a web page, create instances of the [ScreenViewport]($frontend) class. The method [ScreenViewport.create]($frontend) takes an `HTMLDivElement` and a
+(fully loaded) ViewState. In this manner, ScreenViewport forms the connection between a rectangular region on your web page (a "div") and a set of
+Models in an iModel, a display [Frustum]($common), a DisplayStyle, and the rendering system.
+
+> Note: before creating a ScreenViewport, be sure to call [IModelApp.startup]($frontend).
+
 ## Loading Views from an iModel
 
 There is a method called [IModelConnection.Views.getViewList]($frontend) that returns an array of [IModelConnection.ViewSpec]($frontend)s in a convenient
@@ -71,17 +83,17 @@ Then, you may wish to change one of the existing views to show the contents of t
 
 > Note that in the examples above, `getSpatialViews`, `loadOneView`, and `showOneView` are `async`, and you must `await` them.
 
-## Using Viewports
+## Changing the Model displayed by a 2d view
 
-[ViewState]($frontend) objects hold the state of a [ViewDefinition]($backend) (*what* is shown in a View) in the frontend.
+Viewports always display one ViewState. If that ViewState happens to be a ViewState2d, we sometimes call that a "2d view". Since ViewState2d shows
+one and only one 2d Model, it is sometimes is desireable to "switch the Model" of an existing 2d view, versus loading a new ViewState2d. This will sometimes
+be appropriate if you *know* that a set of 2d Models use a common coordinate system and categories, etc.
 
-[Viewport]($frontend) is an abstract class that connects a ViewState to a [RenderTarget]($frontend).
+The [Viewport.changeViewedModel2d]($frontend) method can be used to accomplish this:
 
-To connect a ViewState to a rectangular region on a web page , you create instances of the [ScreenViewport]($frontend) class. The method [ScreenViewport.create]($frontend) takes an `HTMLDivElement` and a
-(fully loaded) ViewState. In this manner, ScreenViewport form the connection between a rectangular region on your web page (a "div") and a set of
-Models in an iModel, a display [Frustum]($common), a DisplayStyle, and the rendering system.
-
-> Note: before creating a ScreenViewport, be sure to call [IModelApp.startup]($frontend).
+``` ts
+[[include:ScreenViewport.changeViewedModel2d]]
+```
 
 ## ViewManager
 

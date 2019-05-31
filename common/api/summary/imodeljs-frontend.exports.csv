@@ -48,6 +48,7 @@ public;CanvasDecorationList = CanvasDecoration[]
 public;CategorySelectorState 
 beta;ChangeFlag
 beta;ChangeFlags
+public;ChangeViewedModel2dOptions
 alpha;CheckBoxIconsEditorParams 
 beta;enum ClassifierType
 alpha;ClipEventType

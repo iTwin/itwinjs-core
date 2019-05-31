@@ -1430,6 +1430,11 @@ export class ChangeFlags {
     readonly viewedModels: boolean;
 }
 
+// @public
+export interface ChangeViewedModel2dOptions {
+    doFit?: boolean;
+}
+
 // @alpha
 export interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
     // (undocumented)
@@ -7868,6 +7873,7 @@ export abstract class Viewport implements IDisposable {
     // @alpha
     changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void;
     changeView(view: ViewState): void;
+    changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void>;
     changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
     clearNeverDrawn(): void;

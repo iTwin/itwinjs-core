@@ -477,6 +477,7 @@ export namespace Id64 {
     export function fromString(val: string): Id64String;
     export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String;
     export function getBriefcaseId(id: Id64String): number;
+    export function getFirst(arg: Id64Arg): Id64String;
     export function getLocalId(id: Id64String): number;
     export function getLowerUint32(id: Id64String): number;
     export function getUint32Pair(id: Id64String): Uint32Pair;

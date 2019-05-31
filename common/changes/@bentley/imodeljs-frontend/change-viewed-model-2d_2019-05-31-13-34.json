@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "added Viewport.changeViewedModel2d",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "keith.bentley@bentley.com"
+}

@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, ViewState, SpatialViewState, ScreenViewport, DrawingViewState } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
 
 export class RobotWorldApp {
 
@@ -52,6 +53,17 @@ export class RobotWorldApp {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       vp.changeView(viewstate);
+  }
+  // __PUBLISH_EXTRACT_END__
+
+  // __PUBLISH_EXTRACT_START__ ScreenViewport.changeViewedModel2d
+  /** Change the displayed 2d Model of the selected view, if it is currently showing a 2d Model
+   * @note the categories and displayStyle are unchanged. View is fitted to new model extents.
+   */
+  public static async change2dModel(newModelId: Id64String): Promise<void> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp)
+      return vp.changeViewedModel2d(newModelId, { doFit: true });
   }
   // __PUBLISH_EXTRACT_END__
 
