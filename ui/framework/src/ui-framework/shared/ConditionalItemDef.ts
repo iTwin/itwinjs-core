@@ -11,7 +11,7 @@ import { SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 
 /** An Item that conditionally renders other items based on UiSync events.
- * @alpha
+ * @beta
  */
 export class ConditionalItemDef extends ItemDefBase {
   private static _sId = 0;

@@ -1653,10 +1653,6 @@ export interface WithTimeoutProps {
 }
 
 
-// Warnings were encountered during analysis:
-// 
-// src/ui-core/tree/Node.tsx:71:5 - (ae-incompatible-release-tags) The symbol "renderCheckbox" is marked as @public, but its signature references "NodeCheckboxRenderer" which is marked as @beta
-
 // (No @packageDocumentation comment for this package)
 
 ```

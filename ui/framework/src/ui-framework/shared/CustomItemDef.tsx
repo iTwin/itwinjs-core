@@ -19,7 +19,7 @@ interface CloneProps {
 }
 
 /** An Item that renders a React component.
- * @alpha
+ * @beta
  */
 export class CustomItemDef extends ActionButtonItemDef {
   private static _sId = 0;

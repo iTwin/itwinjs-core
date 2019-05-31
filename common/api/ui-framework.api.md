@@ -204,15 +204,10 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
     onPlaybackSettingChanged: (settings: PlaybackSettings) => void;
     }
 
-// Warning: (ae-incompatible-release-tags) The symbol "AnyItemDef" is marked as @public, but its signature references "CustomItemDef" which is marked as @alpha
-// 
 // @public
-export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef | CustomItemDef;
+export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef;
 
-// Warning: (ae-incompatible-release-tags) The symbol "AnyItemProps" is marked as @public, but its signature references "ConditionalItemProps" which is marked as @alpha
-// Warning: (ae-incompatible-release-tags) The symbol "AnyItemProps" is marked as @public, but its signature references "CustomItemProps" which is marked as @alpha
-// 
-// @public
+// @beta
 export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps | ConditionalItemProps | CustomItemProps;
 
 // @public
@@ -495,7 +490,7 @@ export interface CommandLaunchBackstageItemProps extends BackstageItemProps, Com
     commandId: string;
 }
 
-// @alpha
+// @beta
 export class ConditionalItemDef extends ItemDefBase {
     constructor(props: ConditionalItemProps);
     // (undocumented)
@@ -514,7 +509,7 @@ export class ConditionalItemDef extends ItemDefBase {
     resolveItems(): void;
     }
 
-// @alpha
+// @beta
 export interface ConditionalItemProps extends ItemProps {
     // (undocumented)
     conditionalId?: string;
@@ -894,7 +889,7 @@ export interface CubeNavigationAidProps extends CommonProps {
     onAnimationEnd?: () => void;
 }
 
-// @alpha
+// @beta
 export class CustomItemDef extends ActionButtonItemDef {
     constructor(props: CustomItemProps);
     // (undocumented)
@@ -911,7 +906,7 @@ export class CustomItemDef extends ActionButtonItemDef {
     toolbarReactNode(index?: number): React_2.ReactNode;
 }
 
-// @alpha
+// @beta
 export interface CustomItemProps extends ItemProps {
     // (undocumented)
     customId?: string;
@@ -1870,7 +1865,7 @@ export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipPr
 
 // @public
 export interface ItemPropsList {
-    // (undocumented)
+    // @beta (undocumented)
     items?: AnyItemProps[];
 }
 

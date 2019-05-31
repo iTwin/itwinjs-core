@@ -15,8 +15,8 @@ public;ActivityMessageCancelledEvent
 public;ActivityMessageEventArgs
 public;ActivityMessageUpdatedEvent 
 alpha;AnalysisAnimationTimelineDataProvider 
-public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef | CustomItemDef
-public;AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps | ConditionalItemProps | CustomItemProps
+public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef
+beta;AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps | ConditionalItemProps | CustomItemProps
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 public;AppNotificationManager 
 public;Backstage 
@@ -47,8 +47,8 @@ public;CommandItemDef
 public;CommandItemProps 
 public;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
-alpha;ConditionalItemDef 
-alpha;ConditionalItemProps 
+beta;ConditionalItemDef 
+beta;ConditionalItemProps 
 public;ConfigurableBase 
 public;ConfigurableCreateInfo
 public;ConfigurableUiActionId
@@ -85,8 +85,8 @@ internal;CubeHover
 alpha;CubeNavigationAid 
 alpha;CubeNavigationAidControl 
 alpha;CubeNavigationAidProps 
-alpha;CustomItemDef 
-alpha;CustomItemProps 
+beta;CustomItemDef 
+beta;CustomItemProps 
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject

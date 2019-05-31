@@ -65,9 +65,10 @@ export interface TreeNodeProps extends CommonProps {
   onMouseUp?: (e: React.MouseEvent) => void;
   onClickExpansionToggle?: () => void;
   children?: React.ReactNode;
-  /** Contains render overrides for different pieces of the node component */
+
+  /** Contains render overrides for different pieces of the node component. */
   renderOverrides?: {
-    /** Callback to render a checkbox. Only called when checkbox is displayed */
+    /** Callback to render a checkbox. Only called when checkbox is displayed. @beta */
     renderCheckbox?: NodeCheckboxRenderer;
   };
   ["data-testid"]?: string;

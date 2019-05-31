@@ -1158,7 +1158,7 @@ export class EventsMuteContext implements IDisposable {
 // @public
 export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
     constructor(props: FilteringInputProps);
-    // (undocumented)
+    // @internal (undocumented)
     static getDerivedStateFromProps(props: FilteringInputProps, state: FilteringInputState): {
         context: InputContext;
     } | null;
@@ -3103,10 +3103,6 @@ export function withTableDragDrop<P extends TableProps, DragDropObject extends T
 // @beta
 export function withTreeDragDrop<P extends TreeProps, DragDropObject extends TreeDragDropType>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeDragDropProps<DragDropObject>>;
 
-
-// Warnings were encountered during analysis:
-// 
-// src/ui-components/filtering/FilteringInput.tsx:101:14 - (ae-incompatible-release-tags) The symbol "context" is marked as @public, but its signature references "InputContext" which is marked as @internal
 
 // (No @packageDocumentation comment for this package)
 
