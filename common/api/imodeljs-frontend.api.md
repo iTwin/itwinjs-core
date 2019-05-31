@@ -112,6 +112,8 @@ import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OidcClient } from '@bentley/imodeljs-clients';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
+import { ParseResult } from '@bentley/imodeljs-quantity';
+import { ParserSpec } from '@bentley/imodeljs-quantity';
 import { Path } from '@bentley/geometry-core';
 import { Placement2d } from '@bentley/imodeljs-common';
 import { PlacementProps } from '@bentley/imodeljs-common';
@@ -3883,6 +3885,7 @@ export class NoRenderApp {
 // @public
 export class NotificationManager {
     clearToolTip(): void;
+    closeInputFieldMessage(): void;
     closePointerMessage(): void;
     endActivityMessage(_reason: ActivityMessageEndReason): boolean;
     readonly isToolTipOpen: boolean;
@@ -3911,6 +3914,8 @@ export class NotifyMessageDetails {
     // (undocumented)
     displayTime: BeDuration;
     // (undocumented)
+    inputField?: HTMLElement;
+    // (undocumented)
     msgType: OutputMessageType;
     // (undocumented)
     openAlert: OutputMessageAlert;
@@ -3918,6 +3923,7 @@ export class NotifyMessageDetails {
     priority: OutputMessagePriority;
     // (undocumented)
     relativePosition: RelativePosition;
+    setInputFieldTypeDetails(inputField: HTMLElement): void;
     setPointerTypeDetails(viewport: HTMLElement, displayPoint: XAndY, relativePosition?: RelativePosition): void;
     // (undocumented)
     viewport?: HTMLElement;
@@ -4517,6 +4523,7 @@ export class QuantityFormatter implements UnitsProvider {
     protected _activeSystemIsImperial: boolean;
     findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
+    findParserSpecByQuantityType(type: QuantityType, imperial?: boolean): ParserSpec | undefined;
     findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
@@ -4530,19 +4537,28 @@ export class QuantityFormatter implements UnitsProvider {
     getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec>;
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
+    getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec>;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
+    getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     // (undocumented)
     protected _imperialFormatsByType: Map<QuantityType, Format>;
     // (undocumented)
     protected _imperialFormatSpecsByType: Map<QuantityType, FormatterSpec>;
+    // (undocumented)
+    protected _imperialParserSpecsByType: Map<QuantityType, ParserSpec>;
+    loadFormatAndParsingMaps(useImperial: boolean): Promise<void>;
     protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
+    protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     // (undocumented)
     protected loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format>;
     // (undocumented)
     protected _metricFormatsByType: Map<QuantityType, Format>;
     // (undocumented)
     protected _metricFormatSpecsByType: Map<QuantityType, FormatterSpec>;
+    // (undocumented)
+    protected _metricUnitParserSpecsByType: Map<QuantityType, ParserSpec>;
+    parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
     useImperialFormats: boolean;
 }
 
@@ -7003,19 +7019,6 @@ export class TwoWayViewportSync {
     connect(view1: Viewport, view2: Viewport): void;
     disconnect(): void;
     }
-
-// @alpha
-export class Unit implements UnitProps {
-    constructor(name: string, label: string, unitFamily: string);
-    // (undocumented)
-    isValid: boolean;
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    unitFamily: string;
-}
 
 // @internal
 export enum UsesDragSelect {

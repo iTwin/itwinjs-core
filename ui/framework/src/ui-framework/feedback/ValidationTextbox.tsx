@@ -12,7 +12,7 @@ import "./ValidationTextbox.scss";
 import { CommonProps } from "@bentley/ui-core";
 
 /** Enum for Input Status used in [[ValidationTextbox]]
- * @beta
+ * @alpha
  */
 export enum InputStatus {
   Valid = 0,
@@ -20,9 +20,9 @@ export enum InputStatus {
 }
 
 /** Property interface for ValidationTextbox
- * @beta
+ * @alpha
  */
-export interface ValidationTextboxProps extends CommonProps {
+interface ValidationTextboxProps extends CommonProps {
   /** value to set ValidationTextbox to initially */
   initialValue?: string;
   /** placeholder value to show in gray before anything is entered in */
@@ -37,18 +37,24 @@ export interface ValidationTextboxProps extends CommonProps {
   size?: number;
   /** Error message to display */
   errorText?: string;
+  /** Detailed error message to display */
+  detailedErrorText?: string;
+}
+
+interface ValidationTextboxState {
+  isValid: boolean;
 }
 
 /**
  * Input box that validates text based on provided criteria. Defaults to checking
  * for empty if no method for onValueChanged is provided.
- * @beta
+ * @alpha
  */
-export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
-  private _isValid: boolean = true;
-
+export class ValidationTextbox extends React.PureComponent<ValidationTextboxProps, ValidationTextboxState> {
   constructor(props: ValidationTextboxProps) {
     super(props);
+
+    this.state = { isValid: true };
   }
 
   /** @internal */
@@ -75,9 +81,9 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
         className={classnames("uifw-ValidationTextbox", this.props.className)}
         style={divStyle}>
         <input
-          className={this._isValid ? validClassNames : invalidClassNames}
+          className={this.state.isValid ? validClassNames : invalidClassNames}
           onChange={this._validateText}
-          onKeyUp={this._validateText}
+          onKeyUp={this._handleKeyUp}
           onPaste={this._validateText}
           onCut={this._validateText}
           onBlur={this._validateText}
@@ -89,30 +95,31 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
     );
   }
 
+  private processValidateText(target: HTMLInputElement | undefined): void {
+    if (undefined === target)
+      return;
+
+    const value = target.value;
+    const isValid = this._calculateIsValid(value);
+
+    this.setState({ isValid }, () => {
+      if (this.state.isValid) {
+        this._hideErrorMessage();
+      } else {
+        // istanbul ignore else
+        if (this.props.errorText && !this.state.isValid)
+          this._showErrorMessage(target);
+      }
+    });
+  }
+
   /**
    * Determines if value is valid and resolves any defined functions.
    * Also will show or hide error message if defined.
    * @param event   Button press event that triggers validation
    */
   private _validateText = (event?: any): void => {
-    this._isValid = false;
-    let value = "";
-
-    if (event.target)
-      value = event.target.value;
-
-    this._calculateIsValid(value);
-
-    if (this.props.errorText)
-      this._isValid ? this._hideErrorMessage() : this._showErrorMessage(event.target);
-
-    this.setState((_prevState) => {
-      return {
-        value,
-      };
-    });
-
-    this._manageKeyCodeEvent(event);
+    this.processValidateText(event.target as HTMLInputElement);
   }
 
   /**
@@ -121,11 +128,10 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
    * validity is if the value has been defined.
    * @param value   The value provided in textbox
    */
-  private _calculateIsValid(value: string) {
+  private _calculateIsValid(value: string): boolean {
     if (this.props.onValueChanged)
-      this._isValid = (this.props.onValueChanged(value) === InputStatus.Valid) ? true : false;
-    else
-      this._isValid = value ? true : false;
+      return (this.props.onValueChanged(value) === InputStatus.Valid) ? true : false;
+    return value.length > 0;
   }
 
   /** Hides error message */
@@ -135,24 +141,28 @@ export class ValidationTextbox extends React.Component<ValidationTextboxProps> {
 
   /** Displays error message. */
   private _showErrorMessage(target: Element) {
-    MessageManager.displayInputFieldMessage(target, this.props.errorText!);
+    MessageManager.displayInputFieldMessage(target as HTMLElement, this.props.errorText!, this.props.detailedErrorText ? this.props.detailedErrorText : "");
     return;
   }
 
   /**
    * Manages special key codes by calling user defined functions
-   * @param event   Button press event
+   * @param event   Keyup event
    */
-  private _manageKeyCodeEvent(event: any) {
-    if (event && event.keyCode) {
-      switch (event.keyCode) {
-        case 27:
-          if (this.props.onEscPressed) this.props.onEscPressed();
-          break;
-        case 13:
-          if (this.props.onEnterPressed) this.props.onEnterPressed();
-          break;
-      }
+  private _handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    this.processValidateText(event.target as HTMLInputElement);
+
+    switch (event.keyCode) {
+      case 27:
+        if (this.props.onEscPressed) {
+          this.props.onEscPressed();
+        }
+        break;
+      case 13:
+        if (this.props.onEnterPressed) {
+          this.props.onEnterPressed();
+        }
+        break;
     }
   }
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add support for synchronous quantity parsing and showing and hiding InputFieldMessages.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "bill.steinbock@bentley.com"
+}

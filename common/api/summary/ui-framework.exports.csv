@@ -153,12 +153,11 @@ internal;IModelScope
 internal;IModelServices
 internal;IModelUserInfo
 internal;INACTIVITY_TIME_DEFAULT = 3500
-beta;InputFieldMessage 
+public;InputFieldMessage 
 public;InputFieldMessageAddedEvent 
 public;InputFieldMessageEventArgs
-beta;InputFieldMessageProps 
 public;InputFieldMessageRemovedEvent 
-beta;InputStatus
+alpha;InputStatus
 public;class ItemDefBase
 public;ItemList 
 public;ItemMap 
@@ -326,8 +325,7 @@ public;UiFramework
 alpha;UiShowHideManager
 beta;UiVisibilityChangedEvent 
 beta;UiVisibilityEventArgs
-beta;ValidationTextbox 
-beta;ValidationTextboxProps 
+alpha;ValidationTextbox 
 internal;VersionInfo
 public;ViewportContentControl 
 beta;ViewSelector 

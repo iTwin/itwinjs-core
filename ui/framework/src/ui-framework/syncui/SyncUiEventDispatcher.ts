@@ -79,7 +79,7 @@ export class SyncUiEventDispatcher {
   private static _eventIds: Set<string>;
   private static _eventIdAdded = false;
   private static _syncUiEvent: SyncUiEvent;
-  private static _timeoutPeriod = 200;
+  private static _timeoutPeriod = 100;
   private static _secondaryTimeoutPeriod = SyncUiEventDispatcher._timeoutPeriod / 2;
   private static _unregisterListenerFunc?: () => void;
 

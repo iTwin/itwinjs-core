@@ -115,6 +115,8 @@ describe("ToolSettingsZone", () => {
       expect(wrapper.find(".nz-footer-dialog-button").length).to.eq(0);
 
       // simulate click to open it
+      wrapper.find(".nz-widget-toolSettings-tab").simulate("keyDown", { key: "Escape" });
+
       wrapper.find(".nz-widget-toolSettings-tab").simulate("click");
       wrapper.update();
       expect(wrapper.find(".nz-widget-toolSettings").length).to.eq(1);

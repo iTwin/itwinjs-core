@@ -198,7 +198,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   public render(): React.ReactNode {
     let content: React.ReactNode;
-
     if (this._frontstageDef) {
       if (this._frontstageDef.frontstageProvider) {
         const frontstageRuntimeProps: FrontstageRuntimeProps = {
@@ -218,11 +217,13 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     return (
       <div id="uifw-frontstage-composer" className={this.props.className} style={this.props.style}>
         {this.renderModalFrontstage()}
-
         {content}
       </div>
     );
   }
+
+  // <InputFieldMessage target={inputMessageParent} children={inputMessageText}
+  //  onClose={() => { this.setState((_prevState) => ({ isInputFieldMessageVisible: false })); }} /> : null
 
   public componentDidMount(): void {
     this.layout();

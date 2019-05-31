@@ -106,6 +106,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
       }
     });
 
+    // istanbul ignore else
     if (needToForceUpdate) {
       this.forceUpdate();
     }
@@ -202,6 +203,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
 
     if (col.type === ColumnType.Label) {
       const labelData = this.state.labelMap.get(col.name);
+      // istanbul ignore else
       if (labelData) {
         const className = labelData.isDisabled ? "uifw-toolSettings-label-disabled" : undefined;
         return ( // return a <span> containing a label

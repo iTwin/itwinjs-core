@@ -14,6 +14,11 @@ export enum QuantityStatus {
   Success = 0,
   InvalidJson = QUANTITY_ERROR_BASE + 1,
   InvalidCompositeFormat = QUANTITY_ERROR_BASE + 2,
+  UnableToGenerateParseTokens = QUANTITY_ERROR_BASE + 3,
+  NoValueOrUnitFoundInString = QUANTITY_ERROR_BASE + 4,
+  UnitLabelSuppliedButNotMatched = QUANTITY_ERROR_BASE + 5,
+  UnknownUnit = QUANTITY_ERROR_BASE + 6,
+  UnableToConvertParseTokensToQuantity = QUANTITY_ERROR_BASE + 7,
 }
 
 /** The error type thrown by this module. See [[QuantityStatus]] for `errorNumber` values.

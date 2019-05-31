@@ -7,6 +7,7 @@ export * from "./Exception";
 export * from "./Interfaces";
 export * from "./Parser";
 export * from "./Quantity";
+export * from "./Unit";
 
 export * from "./Formatter/Format";
 export * from "./Formatter/FormatEnums";

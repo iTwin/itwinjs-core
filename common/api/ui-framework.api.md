@@ -221,6 +221,7 @@ export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetPro
 // @public
 export class AppNotificationManager extends NotificationManager {
     clearToolTip(): void;
+    closeInputFieldMessage(): void;
     closePointerMessage(): void;
     endActivityMessage(reason: ActivityMessageEndReason): boolean;
     protected _hidePointerMessage(): void;
@@ -1765,10 +1766,16 @@ export interface IModelUserInfo {
 // @internal
 export const INACTIVITY_TIME_DEFAULT = 3500;
 
-// @beta
-export class InputFieldMessage extends React_2.PureComponent<InputFieldMessageProps> {
+// @public
+export class InputFieldMessage extends React_2.PureComponent<InputFieldMessageProps, InputFieldMessageState> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
     // (undocumented)
     render(): React_2.ReactNode;
+    // (undocumented)
+    readonly state: Readonly<InputFieldMessageState>;
 }
 
 // @public
@@ -1778,15 +1785,12 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
 // @public
 export interface InputFieldMessageEventArgs {
     // (undocumented)
+    detailedMessage: string;
+    // (undocumented)
     messageText: string;
     // (undocumented)
-    target: Element;
-}
-
-// @beta
-export interface InputFieldMessageProps extends CommonProps {
-    children: React_2.ReactNode;
-    onClose: () => void;
+    priority: OutputMessagePriority;
+    // (undocumented)
     target: Element;
 }
 
@@ -1794,7 +1798,7 @@ export interface InputFieldMessageProps extends CommonProps {
 export class InputFieldMessageRemovedEvent extends UiEvent<{}> {
 }
 
-// @beta
+// @alpha
 export enum InputStatus {
     // (undocumented)
     Invalid = 1,
@@ -2153,7 +2157,7 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
 export class MessageManager {
     static addMessage(message: NotifyMessageDetails): void;
     static clearMessages(): void;
-    static displayInputFieldMessage(target: Element, messageText: string): void;
+    static displayInputFieldMessage(target: HTMLElement, messageText: string, detailedMessage?: string, priority?: OutputMessagePriority): void;
     static endActivityMessage(isCompleted: boolean): boolean;
     static getIconClassName(details: NotifyMessageDetails): string;
     static getIconType(details: NotifyMessageDetails): MessageBoxIconType;
@@ -3418,23 +3422,12 @@ export interface UiVisibilityEventArgs {
     visible: boolean;
 }
 
-// @beta
-export class ValidationTextbox extends React_2.Component<ValidationTextboxProps> {
+// @alpha
+export class ValidationTextbox extends React_2.PureComponent<ValidationTextboxProps, ValidationTextboxState> {
     constructor(props: ValidationTextboxProps);
     // @internal (undocumented)
     render(): React_2.ReactNode;
     }
-
-// @beta
-export interface ValidationTextboxProps extends CommonProps {
-    errorText?: string;
-    initialValue?: string;
-    onEnterPressed?: () => void;
-    onEscPressed?: () => void;
-    onValueChanged?: (value: string) => InputStatus;
-    placeholder?: string;
-    size?: number;
-}
 
 // @internal
 export interface VersionInfo {

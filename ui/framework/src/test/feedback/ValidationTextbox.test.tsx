@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as enzyme from "enzyme";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
-import { MessageManager, ValidationTextbox, ValidationTextboxProps } from "../../ui-framework";
+import { MessageManager, ValidationTextbox } from "../../ui-framework";
 
 describe("ValidationTextbox", () => {
   before(async () => {
@@ -17,9 +17,9 @@ describe("ValidationTextbox", () => {
   const onValueChanged = sinon.spy();
   const onEnterPressed = sinon.spy();
   const onEscPressed = sinon.spy();
-  let simpleBox: enzyme.ReactWrapper<ValidationTextboxProps, any>;
+  let simpleBox: enzyme.ReactWrapper<any, any>;
   let simpleInput: enzyme.ReactWrapper<enzyme.HTMLAttributes, any>;
-  let box: enzyme.ReactWrapper<ValidationTextboxProps, any>;
+  let box: enzyme.ReactWrapper<any, any>;
   let input: enzyme.ReactWrapper<enzyme.HTMLAttributes, any>;
 
   beforeEach(async () => {

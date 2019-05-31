@@ -106,5 +106,8 @@
   },
   "solarsettings": {
     "shadowcolor": "Shadow Color"
+  },
+  "errors": {
+    "unable-to-parse-quantity": "Unable to parse string into quantity"
   }
 }

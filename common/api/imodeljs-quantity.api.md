@@ -18,6 +18,21 @@ export class BadUnit implements UnitProps {
     unitFamily: string;
 }
 
+// @alpha
+export class BasicUnit implements UnitProps {
+    constructor(name: string, label: string, unitFamily: string, alternateLabels?: string[]);
+    // (undocumented)
+    alternateLabels?: string[];
+    // (undocumented)
+    isValid: boolean;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    unitFamily: string;
+}
+
 // @alpha (undocumented)
 export enum DecimalPrecision {
     // (undocumented)
@@ -246,8 +261,39 @@ export enum FractionalPrecision {
 
 // @alpha
 export class Parser {
+    static createUnitConversionSpecs(unitsProvider: UnitsProvider, outUnitName: string, potentialParseUnits: PotentialParseUnit[]): Promise<UnitConversionSpec[]>;
+    static createUnitConversionSpecsForUnit(unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<UnitConversionSpec[]>;
     static parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps>;
+    static parseIntoQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): ParseResult;
     static parseQuantitySpecification(quantitySpecification: string, format: Format): ParseToken[];
+    static parseQuantityString(inString: string, parserSpec: ParserSpec): ParseResult;
+    }
+
+// @alpha
+export interface ParseResult {
+    // (undocumented)
+    status: QuantityStatus;
+    // (undocumented)
+    value?: number | undefined;
+}
+
+// @alpha
+export class ParserSpec {
+    constructor(outUnit: UnitProps, format: Format, conversions: UnitConversionSpec[]);
+    static create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<ParserSpec>;
+    // (undocumented)
+    readonly format: Format;
+    // (undocumented)
+    readonly outUnit: UnitProps;
+    readonly unitConversions: UnitConversionSpec[];
+}
+
+// @alpha
+export interface PotentialParseUnit {
+    // (undocumented)
+    altLabels?: string[];
+    // (undocumented)
+    unitName: string;
 }
 
 // @alpha
@@ -330,9 +376,19 @@ export enum QuantityStatus {
     // (undocumented)
     InvalidJson = 35040,
     // (undocumented)
+    NoValueOrUnitFoundInString = 35043,
+    // (undocumented)
     QUANTITY_ERROR_BASE = 35039,
     // (undocumented)
-    Success = 0
+    Success = 0,
+    // (undocumented)
+    UnableToConvertParseTokensToQuantity = 35046,
+    // (undocumented)
+    UnableToGenerateParseTokens = 35042,
+    // (undocumented)
+    UnitLabelSuppliedButNotMatched = 35044,
+    // (undocumented)
+    UnknownUnit = 35045
 }
 
 // @alpha (undocumented)
@@ -365,16 +421,15 @@ export interface UnitConversion {
 
 // @alpha
 export interface UnitConversionSpec {
-    // (undocumented)
     conversion: UnitConversion;
-    // (undocumented)
     label: string;
-    // (undocumented)
     name: string;
+    parseLabels?: string[];
 }
 
 // @alpha
 export interface UnitProps {
+    readonly alternateLabels?: string[];
     readonly isValid: boolean;
     readonly label: string;
     readonly name: string;
@@ -389,6 +444,8 @@ export interface UnitsProvider {
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
+    // (undocumented)
+    getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
 }
 
 

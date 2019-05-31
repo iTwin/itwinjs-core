@@ -5,69 +5,99 @@
 /** @module Notification */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import * as classnames from "classnames";
-import { CommonProps, withOnOutsideClick } from "@bentley/ui-core";
-import { MessageButton, Status, Message, MessageLayout } from "@bentley/ui-ninezone";
-import "./InputField.scss";
+import { Popup, Position } from "@bentley/ui-core";
+import { MessageManager, InputFieldMessageEventArgs } from "../messages/MessageManager";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
-// tslint:disable-next-line:variable-name
-const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />));
+import "./InputField.scss";
 
 /** Properties of [[InputFieldMessage]] component.
  * @beta
  */
-export interface InputFieldMessageProps extends CommonProps {
-  /** Parent of message. */
-  target: Element;
-  /** Message content. */
-  children: React.ReactNode;
-  /** Function that will close the message */
-  onClose: () => void;
+interface InputFieldMessageProps {
+  showCloseButton?: boolean;
 }
 
-/** InputField message is a popup error message that appears under invalid user input.
- * @beta
- */
-export class InputFieldMessage extends React.PureComponent<InputFieldMessageProps> {
-  public render(): React.ReactNode {
-    return ReactDOM.createPortal(this._getErrorMessage(), this.props.target);
-  }
+/** [[InputFieldMessage]] state.
+ * @internal
+ */
+interface InputFieldMessageState {
+  isVisible: boolean;
+  priority: OutputMessagePriority;
+  message: string;
+  detailedMessage?: string;
+  inputFieldElement?: HTMLElement;
+  showCloseButton?: boolean;
+}
 
-  /**
-   * Provides a message to display inside of the portal.
-   */
-  private _getErrorMessage(): React.ReactNode {
-    const className = classnames(
-      "uifw-popup-message-inputField",
-      this.props.className);
+/** InputField message pops up near pointer when attempting an invalid interaction.
+ * @public
+ */
+export class InputFieldMessage extends React.PureComponent<InputFieldMessageProps, InputFieldMessageState> {
+  public readonly state: Readonly<InputFieldMessageState> = {
+    message: "",
+    isVisible: false,
+    priority: OutputMessagePriority.None,
+    showCloseButton: !!this.props.showCloseButton,
+  };
+
+  public render(): React.ReactNode {
+    const { isVisible, inputFieldElement, message, priority, detailedMessage, showCloseButton } = this.state;
+
+    if (!inputFieldElement || !message) {
+      return null;
+    }
 
     return (
-      <DivWithOnOutsideClick
-        className={className}
-        style={this.props.style}
-        // TODO: dismiss onOutsideClick without immediately dismissing message
-        children={
-          <Message
-            className="uifw-popup-message-inputField"
-            status={Status.Error}
-            icon={
-              <i className="icon icon-status-error-hollow" />
-            }
-          >
-            <MessageLayout
-              buttons={
-                <MessageButton onClick={this.props.onClose}>
-                  <i className="icon icon-close" />
-                </MessageButton>
-              }
-              className="uifw-message-inputField-content"
-            >
-              {this.props.children}
-            </MessageLayout>
-          </Message>
-        }
-      />
-    );
+      <Popup
+        isOpen={isVisible}
+        position={Position.BottomLeft}
+        onClose={this._onInputMessageClose}
+        target={inputFieldElement}>
+        <div className="uifw-popup-message-inputField">
+          <div className="uifw-popup-message-inputField-content">
+            <div className="uifw-popup-message-inputField-primary">
+              {(priority === OutputMessagePriority.Warning) && <div className="icon icon-status-warning" />}
+              {(priority === OutputMessagePriority.Error) && <div className="icon icon-status-error" />}
+              {(priority === OutputMessagePriority.Info) && <div className="icon icon-info" />}
+              {message && <div className="uifw-popup-message-brief">{message}</div>}
+            </div>
+            {detailedMessage && <div className="uifw-popup-message-detailed">{detailedMessage}</div>}
+          </div>
+          {showCloseButton && <div className="uifw-popup-message-close" onClick={this._onInputMessageClose}>
+            <i className="icon icon-close" />
+          </div>}
+        </div>
+      </Popup>);
+  }
+
+  public componentDidMount(): void {
+    MessageManager.onInputFieldMessageAddedEvent.addListener(this._handleInputFieldMessageAddedEvent);
+    MessageManager.onInputFieldMessageRemovedEvent.addListener(this._handleInputFieldMessageRemovedEvent);
+  }
+
+  public componentWillUnmount(): void {
+    MessageManager.onInputFieldMessageAddedEvent.removeListener(this._handleInputFieldMessageAddedEvent);
+    MessageManager.onInputFieldMessageRemovedEvent.removeListener(this._handleInputFieldMessageRemovedEvent);
+  }
+
+  private _onInputMessageClose = () => {
+    this.setState((_prevState) => ({ isVisible: false }));
+  }
+
+  private _handleInputFieldMessageAddedEvent = (args: InputFieldMessageEventArgs) => {
+    this.setState((_prevState) => ({
+      inputFieldElement: args.target as HTMLElement,
+      message: args.messageText,
+      isVisible: true,
+      priority: args.priority,
+      detailedMessage: args.detailedMessage,
+    }));
+  }
+
+  private _handleInputFieldMessageRemovedEvent = () => {
+    this.setState((_prevState) => ({
+      isVisible: false,
+    }));
   }
 }
