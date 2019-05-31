@@ -166,7 +166,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    * @return User found in storage.
    * - Resolves to null if no user was found.
    * - Does not call any events if the user is loaded from storage
-   * - Returned user may have expired - so it's upto the caller to check the expired state
+   * - Returned user may have expired - so it's up to the caller to check the expired state
    */
   private async getUser(requestContext: ClientRequestContext): Promise<User> {
     requestContext.enter();

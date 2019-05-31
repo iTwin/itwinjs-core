@@ -54,18 +54,10 @@ export class BeEventList<T extends Listener> {
 
 // @public
 export class BentleyError extends Error {
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "BriefcaseStatus" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "RepositoryStatus" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "ChangeSetStatus" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "HttpStatus" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "WSStatus" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelHubStatus" which is marked as @beta
-    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | HttpStatus | WSStatus | IModelHubStatus, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
     errorNumber: number;
-    // (undocumented)
     getMetaData(): any;
-    // (undocumented)
     readonly hasMetaData: boolean;
     protected _initName(): string;
 }
@@ -162,7 +154,7 @@ export enum ChangeSetStatus {
 }
 
 // @public
-export class ClientRequestContext {
+export class ClientRequestContext implements ClientRequestContextProps {
     constructor(activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
     readonly activityId: GuidString;
     readonly applicationId: string;
@@ -172,20 +164,18 @@ export class ClientRequestContext {
     protected static _current: ClientRequestContext;
     enter(): this;
     readonly sessionId: GuidString;
+    // @internal (undocumented)
+    toJSON(): ClientRequestContextProps;
     // (undocumented)
     useContextForRpc: boolean;
     }
 
-// Warning: (ae-missing-release-tag) "ClientRequestContextProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export interface ClientRequestContextProps extends Pick<ClientRequestContext, Exclude<keyof ClientRequestContext, "enter" | "useContextForRpc">> {
-}
-
-// @public (undocumented)
-export namespace ClientRequestContextProps {
-    // (undocumented)
-    export function fromContext(context: ClientRequestContext): ClientRequestContextProps;
+export interface ClientRequestContextProps {
+    readonly activityId: GuidString;
+    readonly applicationId: string;
+    readonly applicationVersion: string;
+    readonly sessionId: GuidString;
 }
 
 // @public
@@ -487,6 +477,7 @@ export namespace Id64 {
     export function fromString(val: string): Id64String;
     export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String;
     export function getBriefcaseId(id: Id64String): number;
+    export function getFirst(arg: Id64Arg): Id64String;
     export function getLocalId(id: Id64String): number;
     export function getLowerUint32(id: Id64String): number;
     export function getUint32Pair(id: Id64String): Uint32Pair;

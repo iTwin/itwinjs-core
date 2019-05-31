@@ -18,7 +18,6 @@ export interface SVTConfiguration {
   disableInstancing?: boolean;
   disableActiveVolumeCulling?: boolean;
   preserveShaderSourceCode?: boolean;
-  omitEdges?: boolean;
   useProjectExtents?: boolean;
   displaySolarShadows?: boolean; // default ON
 }

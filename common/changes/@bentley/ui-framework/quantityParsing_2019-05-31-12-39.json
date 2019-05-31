@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "InputFieldMessages are now hosted by ConfigurableUiContent control.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}

@@ -6,8 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { NoChildrenProps } from "../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
 import { Css } from "../../utilities/Css";
 import { Status, StatusHelpers } from "./Status";
 import "./Progress.scss";

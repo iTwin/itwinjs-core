@@ -6,11 +6,12 @@
 
 import * as React from "react";
 
-import { Icon } from "./IconComponent";
 import { CommandHandler, ItemProps } from "./ItemProps";
 import { ItemDefBase } from "./ItemDefBase";
 
-import { Item } from "@bentley/ui-ninezone";
+import { Size } from "@bentley/ui-ninezone";
+import { Orientation } from "@bentley/ui-core";
+import { ActionItemButton } from "../toolbar/ActionItemButton";
 
 /** Abstract base class that is used by classes to execute an action when pressed.
  * @public
@@ -18,6 +19,7 @@ import { Item } from "@bentley/ui-ninezone";
 export abstract class ActionButtonItemDef extends ItemDefBase {
   protected _commandHandler?: CommandHandler;
   public parameters?: any;
+  public size?: Size;
 
   constructor(itemProps: ItemProps) {
     super(itemProps);
@@ -34,20 +36,25 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     }
   }
 
-  public toolbarReactNode(index?: number): React.ReactNode {
+  public handleSizeKnown = (size: Size) => {
+    this.size = size;
+  }
+
+  public getDimension(orientation: Orientation): number {
+    let dimension = 0;
+    if (this.size)
+      dimension = (orientation === Orientation.Horizontal ? this.size.width : this.size.height) + 1;
+    return dimension;
+  }
+
+  public toolbarReactNode(_index?: number): React.ReactNode {
     if (!this.isVisible)
       return null;
 
-    const key = (index !== undefined) ? index.toString() : this.id;
-    const icon = <Icon iconSpec={this.iconSpec} />;
-
     return (
-      <Item
-        isDisabled={!this.isEnabled}
-        title={this.label}
-        key={key}
-        onClick={this.execute}
-        icon={icon}
+      <ActionItemButton
+        actionItem={this}
+        onSizeKnown={this.handleSizeKnown}
       />
     );
   }

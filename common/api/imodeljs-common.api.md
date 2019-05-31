@@ -266,8 +266,6 @@ export interface AuxCoordSystemProps extends ElementProps {
 // @public
 export type AxisAlignedBox3d = Range3d;
 
-// Warning: (ae-missing-release-tag) "AxisAlignedBox3dProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type AxisAlignedBox3dProps = Range3dProps;
 
@@ -1133,19 +1131,11 @@ export interface CustomAttribute {
 export { DbResult }
 
 // @beta
-export class DecorationGeometry {
-    constructor(id: Id64String, geometryStream: GeometryStreamProps);
+export interface DecorationGeometryProps {
     // (undocumented)
     readonly geometryStream: GeometryStreamProps;
     // (undocumented)
     readonly id: Id64String;
-}
-
-// Warning: (ae-incompatible-release-tags) The symbol "DecorationGeometryProps" is marked as @public, but its signature references "DecorationGeometry" which is marked as @beta
-// Warning: (ae-missing-release-tag) "DecorationGeometryProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
-// @public
-export interface DecorationGeometryProps extends Pick<DecorationGeometry, keyof DecorationGeometry> {
 }
 
 // @public
@@ -1222,7 +1212,7 @@ export class DisplayStyleSettings {
     });
     addExcludedElements(id: Id64String): void;
     backgroundColor: ColorDef;
-    // @internal (undocumented)
+    // @alpha (undocumented)
     backgroundMap: BackgroundMapProps | undefined;
     dropExcludedElement(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
@@ -2455,39 +2445,33 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
     getTileCacheContainerUrl(_tokenProps: IModelTokenProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
-    // @internal (undocumented)
-    getTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array>;
-    // @internal
-    getTileTreeProps(_tokenProps: IModelTokenProps, _id: string): Promise<TileTreeProps>;
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
     // @internal (undocumented)
     requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array>;
-    // @internal
+    // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelTokenProps, _id: string): Promise<TileTreeProps>;
 }
 
 // @public
-export class IModelToken {
-    constructor(
-    key?: string | undefined, 
-    contextId?: string | undefined, 
-    iModelId?: string | undefined, 
-    changeSetId?: string | undefined, 
-    openMode?: OpenMode | undefined);
-    changeSetId?: string | undefined;
-    readonly contextId?: string | undefined;
+export class IModelToken implements IModelTokenProps {
+    constructor(key?: string, contextId?: string, iModelid?: string, changesetId?: string, openMode?: OpenMode);
+    changeSetId?: string;
+    readonly contextId?: string;
     static fromJSON(props: IModelTokenProps): IModelToken;
-    readonly iModelId?: string | undefined;
-    readonly key?: string | undefined;
-    openMode?: OpenMode | undefined;
+    readonly iModelId?: string;
+    readonly key?: string;
+    openMode?: OpenMode;
     toJSON(): IModelTokenProps;
 }
 
-// Warning: (ae-missing-release-tag) "IModelTokenProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export interface IModelTokenProps extends Pick<IModelToken, Exclude<keyof IModelToken, "toJSON">> {
+export interface IModelTokenProps {
+    changeSetId?: string;
+    readonly contextId?: string;
+    readonly iModelId?: string;
+    readonly key?: string;
+    openMode?: OpenMode;
 }
 
 // @public

@@ -36,7 +36,8 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     return jsonStr;
   }
 
-  public async saveCsv(outputPath: string, outputName: string, rowData: Map<string, number | string>): Promise<void> {
+  public async saveCsv(outputPath: string, outputName: string, rowDataJson: string): Promise<void> {
+    const rowData = new Map(JSON.parse(rowDataJson)) as Map<string, number | string>;
     if (outputPath !== undefined && outputName !== undefined) {
       let outputFile = this.createFullFilePath(outputPath, outputName);
       outputFile = outputFile ? outputFile : "";

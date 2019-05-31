@@ -49,6 +49,7 @@ export interface TreeNodeProps extends CommonProps {
   imageLoader?: ITreeImageLoader;
 
   renderOverrides?: {
+    /** @beta */
     renderCheckbox?: NodeCheckboxRenderer;
   };
 

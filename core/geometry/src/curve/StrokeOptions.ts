@@ -22,10 +22,10 @@ import { Angle } from "../geometry3d/Angle";
  * * * For facets, 22.5 degrees is typical.
  * * * Halving the angle tolerance will (roughly) make curves get twice as many strokes, and surfaces get 4 times as many facets.
  * * * The angle tolerance has the useful property that its effect is independent of scale of that data.  If data is suddenly scaled into millimeters rather than meters, the facet counts remain the same.
- * * When creating output for devicies such as 3D printing will want a chord tolerance.
+ * * When creating output for devices such as 3D printing will want a chord tolerance.
  * * For graphics display, use an angle tolerance of around 15 degrees and an chord tolerance which is the size of several pixels.
  * * Analysis meshes (e.g. Finite Elements) commonly need to apply maxEdgeLength.
- * * * Using maxEdgeLength for graphics probably produces too many facets.   For example, it causes long cylinders to get many nearly-square facets instead of the samll number of long quads usually used for graphics.
+ * * * Using maxEdgeLength for graphics probably produces too many facets.   For example, it causes long cylinders to get many nearly-square facets instead of the small number of long quads usually used for graphics.
  * * Facet tolerances are, as the Pirates' Code, guidelines, not absolute rules.   Facet and stroke code may ignore tolerances in awkward situations.
  * * If multiple tolerances are in effect, the actual count will usually be based on the one that demands the most strokes or facets, unless it is so high that it violates some upper limit on the number of facets on an arc or a section of a curve.
  * @public
@@ -34,7 +34,7 @@ export class StrokeOptions {
 
   /** distance from stroke to actual geometry */
   public chordTol?: number;
-  /** turning angle betwee strokes. */
+  /** turning angle between strokes. */
   public angleTol?: Angle;
   /** maximum length of a single stroke. */
   public maxEdgeLength?: number;
@@ -52,13 +52,13 @@ export class StrokeOptions {
   public set needParams(value: boolean) { this._needParams = value; }
   /** ask if normals are requested */
   public get needNormals(): boolean { return this._needNormals !== undefined ? this._needNormals : false; }
-  /** set the normals requst flag */
+  /** set the normals request flag */
   public set needNormals(value: boolean) { this._needNormals = value; }
   /** optional color request flag */
   public needColors?: boolean;
   /** default number of strokes for a circle. */
   public defaultCircleStrokes = 16;
-/** ask if maxEdgeLength is specified */
+  /** ask if maxEdgeLength is specified */
   public get hasMaxEdgeLength(): boolean { return this.maxEdgeLength !== undefined && this.maxEdgeLength > 0.0; }
   /** return stroke count which is the larger of the minCount or count needed for edge length condition. */
   public applyMaxEdgeLength(minCount: number, totalLength: number): number {
@@ -103,9 +103,9 @@ export class StrokeOptions {
     }
     return minCount;
   }
-/**
- * Determine a stroke count for a (partial) circular arc of given radius. This considers angle, maxEdgeLength, chord, and minimum stroke.
- */
+  /**
+   * Determine a stroke count for a (partial) circular arc of given radius. This considers angle, maxEdgeLength, chord, and minimum stroke.
+   */
   public applyTolerancesToArc(radius: number, sweepRadians: number = Math.PI * 2): number {
     let numStrokes = 1;
     numStrokes = this.applyAngleTol(numStrokes, sweepRadians, Math.PI * 0.25);

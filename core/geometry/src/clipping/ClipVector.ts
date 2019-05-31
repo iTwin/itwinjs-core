@@ -143,7 +143,7 @@ export class ClipVector {
   }
 
   /** Transforms this ClipVector to a new coordinate-system.
-   * Note that if the transform has rotate and scale the boundinngRange member expands.
+   * Note that if the transform has rotate and scale the boundingRange member expands.
    * Returns true if successful.
    */
   public transformInPlace(transform: Transform): boolean {

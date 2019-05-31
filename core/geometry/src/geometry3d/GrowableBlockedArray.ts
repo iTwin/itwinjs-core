@@ -33,7 +33,7 @@ export class GrowableBlockedArray {
   /** property: number of data values per block */
   public get numPerBlock(): number { return this._blockSize; }
   /**
-   * Return a single value indexed within a blcok
+   * Return a single value indexed within a block
    * @param blockIndex index of block to read
    * @param indexInBlock  offset within the block
    */
@@ -101,7 +101,7 @@ export class GrowableBlockedArray {
   public component(blockIndex: number, componentIndex: number): number {
     return this._data[this._blockSize * blockIndex + componentIndex];
   }
-  /** compre two blocks in simple lexical order.
+  /** compare two blocks in simple lexical order.
    * @param data data array
    * @param blockSize number of items to compare
    * @param ia raw index (not block index) of first block

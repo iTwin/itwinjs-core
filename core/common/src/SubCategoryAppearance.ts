@@ -8,7 +8,7 @@ import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 
 /** Parameters that define the way geometry on a [[SubCategory]] appears.
- * SubCategoryAppearance describes the intrinstic appearance of geometry belonging to that SubCategory, independent of a particular [[ViewState]].
+ * SubCategoryAppearance describes the intrinsic appearance of geometry belonging to that SubCategory, independent of a particular [[ViewState]].
  * Aspects of a SubCategory's appearance can be overridden in the context of a particular [[ViewState]] through the use of [[SubCategoryOverride]s.
  * @public
  */

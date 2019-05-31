@@ -24,7 +24,7 @@ export abstract class BaseEventSAS extends WsgInstance {
 }
 
 /** Base type for all iModelHub global events
- * @public
+ * @beta
  */
 export abstract class IModelHubBaseEvent {
   /** Topic of this event. For [[IModelHubEvent]]s this is iModelId. */

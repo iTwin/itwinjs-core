@@ -106,7 +106,7 @@ export class ClipUtilities {
    * Announce triples of (low, high, cp) for each entry in intervals
    * @param intervals source array
    * @param cp CurvePrimitive for announcement
-   * @param announce funtion to receive data
+   * @param announce function to receive data
    */
   public static announceNNC(intervals: Range1d[], cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     if (announce) {
@@ -199,8 +199,8 @@ export class ClipUtilities {
   }
 
   /**
-   * Emit point loops for intersection of a covnex set with a range.
-   * * return zero length array for (a) null range or (b) no intersectionis
+   * Emit point loops for intersection of a convex set with a range.
+   * * return zero length array for (a) null range or (b) no intersections
    * @param range range to intersect
    * @param includeConvexSetFaces if false, do not compute facets originating as convex set planes.
    * @param includeRangeFaces if false, do not compute facets originating as range faces
@@ -240,7 +240,7 @@ export class ClipUtilities {
 
   /**
    * Return a (possibly empty) array of geometry (Loops !!) which are facets of the intersection of the convex set intersecting a range.
-   * * return zero length array for (a) null range or (b) no intersectionis
+   * * return zero length array for (a) null range or (b) no intersections
    * @param range range to intersect
    * @param includeConvexSetFaces if false, do not compute facets originating as convex set planes.
    * @param includeRangeFaces if false, do not compute facets originating as range faces
@@ -278,8 +278,8 @@ export class ClipUtilities {
    * * `ClipPrimitive` -- access its `UnionOfConvexClipPlaneSet`.
    * * `ClipVector` -- intersection of the ranges of its `ClipPrimitive`.
    * * `undefined` -- entire input range.
-   * * If `observeInvisibleFlag` is false, the "invisbile" properties are ignored, and this effectively returns the range of the edgework of the members
-   * * If `observeInvisibleFlag` is false, the "invisbile" properties are observed, and "invisble" parts do not restrict the range.
+   * * If `observeInvisibleFlag` is false, the "invisible" properties are ignored, and this effectively returns the range of the edge work of the members
+   * * If `observeInvisibleFlag` is false, the "invisible" properties are observed, and "invisible" parts do not restrict the range.
    * @param clipper
    * @param range non-null range.
    * @param observeInvisibleFlag indicates how "invisible" bit is applied for ClipPrimitive.
@@ -325,8 +325,8 @@ export class ClipUtilities {
    * * `ClipPrimitive` -- access its `UnionOfConvexClipPlaneSet`.
    * * `ClipVector` -- intersection of the ranges of its `ClipPrimitive`.
    * * `undefined` -- entire input range.
-   * * If `observeInvisibleFlag` is false, the "invisbile" properties are ignored, and holes do not affect the result.
-   * * If `observeInvisibleFlag` is true, the "invisbile" properties are observed, and may affect the result.
+   * * If `observeInvisibleFlag` is false, the "invisible" properties are ignored, and holes do not affect the result.
+   * * If `observeInvisibleFlag` is true, the "invisible" properties are observed, and may affect the result.
    * @param clipper
    * @param range non-null range.
    * @param observeInvisibleFlag indicates how "invisible" bit is applied for ClipPrimitive.
@@ -368,8 +368,8 @@ export class ClipUtilities {
     return false;
   }
   /**
-   * Emit point loops for intersection of a covnex set with a range.
-   * * return zero length array for (a) null range or (b) no intersectionis
+   * Emit point loops for intersection of a convex set with a range.
+   * * return zero length array for (a) null range or (b) no intersections
    * @param range range to intersect
    * @param includeConvexSetFaces if false, do not compute facets originating as convex set planes.
    * @param includeRangeFaces if false, do not compute facets originating as range faces

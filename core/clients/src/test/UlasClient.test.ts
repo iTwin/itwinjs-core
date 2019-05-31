@@ -36,8 +36,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
 
   it("Post usage log with project id (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "0.4");
-    const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
-    entry.projectId = Guid.createValue();
+    const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, Guid.createValue());
 
     const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
     assert(resp);
@@ -61,8 +60,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
 
   it("Post usage log without product version (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
-    const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
-    entry.projectId = Guid.createValue();
+    const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, Guid.createValue());
 
     const resp: LogPostingResponse = await client.logUsage(requestContext, entry);
     assert(resp);
@@ -192,8 +190,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
 
   it("Post feature log with project id (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
-    const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial);
-    entry.projectId = Guid.createValue();
+    const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial, Guid.createValue());
     entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
     const resp: LogPostingResponse = await client.logFeature(requestContext, entry);
     assert(resp);
@@ -205,8 +202,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
 
   it("Post feature log without product version (#integration)", async function (this: Mocha.ITestCallbackContext) {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
-    const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial);
-    entry.projectId = Guid.createValue();
+    const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial, Guid.createValue());
     entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
     const resp: LogPostingResponse = await client.logFeature(requestContext, entry);
     assert(resp);

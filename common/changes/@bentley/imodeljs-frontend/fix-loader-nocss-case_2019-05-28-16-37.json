@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix loader so that it doesn't attempt to load .css files that don't exist.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Barry.Bentley@bentley.com"
+}

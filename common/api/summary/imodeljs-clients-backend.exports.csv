@@ -5,13 +5,11 @@ internal;BufferedStream
 public;ClientsBackendLoggerCategory
 internal;IOSAzureFileHandler 
 internal;OidcAgentClient 
-internal;OidcAgentClientConfiguration 
-internal;OidcAgentClientConfigurationV2 = OidcBackendClientConfiguration
-internal;OidcAgentClientV2 
+internal;OidcAgentClientConfiguration = OidcBackendClientConfiguration
 beta;class OidcBackendClient 
 beta;OidcBackendClientConfiguration
 beta;OidcDelegationClient 
 beta;OidcDelegationClientConfiguration = OidcBackendClientConfiguration
-beta;OidcDeviceClient 
+alpha;OidcDeviceClient 
 internal;RequestHost
 internal;UrlFileHandler 

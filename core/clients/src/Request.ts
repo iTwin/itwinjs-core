@@ -13,10 +13,10 @@ import { ClientsLoggerCategory } from "./ClientsLoggerCategory";
 
 const loggerCategory: string = ClientsLoggerCategory.Request;
 
-/** @alpha */
+/** @beta */
 export const requestIdHeaderName = "X-Correlation-Id";
 
-/** @alpha */
+/** @beta */
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
@@ -25,7 +25,7 @@ export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
 
 /** Typical option to query REST API. Note that services may not quite support these fields,
  * and the interface is only provided as a hint.
- * @alpha
+ * @beta
  */
 export interface RequestQueryOptions {
   /**
@@ -60,7 +60,7 @@ export interface RequestQueryOptions {
   $pageSize?: number;
 }
 
-/** @alpha */
+/** @beta */
 export interface RequestQueryStringifyOptions {
   delimiter?: string;
   encode?: boolean;
@@ -71,7 +71,7 @@ export interface RequestQueryStringifyOptions {
  * Use a short response timeout to detect unresponsive networks quickly, and a long deadline to give time for downloads on slow,
  * but reliable, networks. Note that both of these timers limit how long uploads of attached files are allowed to take. Use long
  * timeouts if you're uploading files.
- * @alpha
+ * @beta
  */
 export interface RequestTimeoutOptions {
   /** Sets a deadline (in milliseconds) for the entire request (including all uploads, redirects, server processing time) to complete.
@@ -86,7 +86,7 @@ export interface RequestTimeoutOptions {
   response?: number;
 }
 
-/** @alpha */
+/** @beta */
 export interface RequestOptions {
   method: string;
   headers?: any; // {Mas-App-Guid, Mas-UUid, User-Agent}
@@ -110,7 +110,7 @@ export interface RequestOptions {
 }
 
 /** Response object if the request was successful. Note that the status within the range of 200-299 are considered as a success.
- * @public
+ * @beta
  */
 export interface Response {
   body: any; // Parsed body of response
@@ -118,14 +118,14 @@ export interface Response {
   status: number; // Status code of response
 }
 
-/** @public */
+/** @beta */
 export interface ProgressInfo {
   percent?: number;
   total?: number;
   loaded: number;
 }
 
-/** @internal */
+/** @beta */
 export class RequestGlobalOptions {
   public static httpsProxy?: https.Agent = undefined;
   public static timeout: RequestTimeoutOptions = {
@@ -135,7 +135,7 @@ export class RequestGlobalOptions {
 }
 
 /** Error object that's thrown/rejected if the Request fails due to a network error, or if the status is *not* in the range of 200-299 (inclusive)
- * @public
+ * @beta
  */
 export class ResponseError extends BentleyError {
   protected _data?: any;
@@ -149,6 +149,7 @@ export class ResponseError extends BentleyError {
    * Parses error from server's response
    * @param response Http response from the server.
    * @returns Parsed error.
+   * @internal
    */
   public static parse(response: any, log = true): ResponseError {
     const error = new ResponseError(ResponseError.parseHttpStatus(response.statusType));
@@ -187,6 +188,7 @@ export class ResponseError extends BentleyError {
    * Decides whether request should be retried or not
    * @param error Error returned by request
    * @param response Response returned by request
+   * @internal
    */
   public static shouldRetry(error: any, response: any): boolean {
     if (error !== undefined && error !== null) {
@@ -197,6 +199,9 @@ export class ResponseError extends BentleyError {
     return (response !== undefined && response.statusType === HttpStatus.ServerError);
   }
 
+  /**
+   * @internal
+   */
   public static parseHttpStatus(statusType: number): HttpStatus {
     switch (statusType) {
       case 1:
@@ -214,12 +219,16 @@ export class ResponseError extends BentleyError {
     }
   }
 
+  /**
+   * @internal
+   */
   public logMessage(): string {
     return `${this.status} ${this.name}: ${this.message}`;
   }
 
   /**
    * Logs this error
+   * @internal
    */
   public log(): void {
     Logger.logError(loggerCategory, this.logMessage(), this.getMetaData());
@@ -247,7 +256,7 @@ const logRequest = (req: sarequest.SuperAgentRequest) => {
  * @param options Options to pass to the request
  * @returns Resolves to the response from the server
  * @throws ResponseError if the request fails due to network issues, or if the returned status is *outside* the range of 200-299 (inclusive)
- * @public
+ * @internal
  */
 export async function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response> {
   requestContext.enter();
@@ -413,7 +422,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
 /**
  * fetch array buffer from HTTP request
  * @param url server URL to address the request
- * @public
+ * @internal
  */
 export async function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any> {
   const options: RequestOptions = {
@@ -427,7 +436,7 @@ export async function getArrayBuffer(requestContext: ClientRequestContext, url: 
 /**
  * fetch json from HTTP request
  * @param url server URL to address the request
- * @public
+ * @internal
  */
 export async function getJson(requestContext: ClientRequestContext, url: string): Promise<any> {
   const options: RequestOptions = {

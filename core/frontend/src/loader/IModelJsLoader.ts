@@ -102,12 +102,15 @@ class ScriptLoader {
   // look for any css files that need to be loaded and load them all in parallel.
   public static async loadAllCssFiles(options: IModelJsLoadOptions): Promise<void[]> {
     const promises: Array<Promise<void>> = new Array<Promise<void>>();
-    const packagesThatMightHaveCss: string[] = ["ui-core", "ui-components", "ui-ninezone", "ui-framework", "main"];
-    for (const packageName of packagesThatMightHaveCss) {
-      const cssFileName = options.prefixVersion(packageName, ".css");
-      if (cssFileName)
-        promises.push(this.loadCss(cssFileName));
+    for (const key in options.iModelJsVersions) {
+      if (options.iModelJsVersions.hasOwnProperty(key)) {
+        if (key.endsWith(".css")) {
+          const cssFileName = "v".concat(options.iModelJsVersions[key], "/", key);
+          promises.push(this.loadCss(cssFileName));
+        }
+      }
     }
+
     if (0 === promises.length) {
       return Promise.resolve([]);
     }
@@ -117,7 +120,7 @@ class ScriptLoader {
 
 // Load Options. Loading the UiComponents and UiFramework are optional.
 class IModelJsLoadOptions {
-  private _iModelJsVersions: any;
+  public iModelJsVersions: any;
   public loadUiComponents: boolean;
   public loadUiFramework: boolean;
   public loadECPresentation: boolean;
@@ -131,31 +134,30 @@ class IModelJsLoadOptions {
     this.loadMarkup = true;
 
     if (iModelJsVersionString) {
-      this._iModelJsVersions = JSON.parse(iModelJsVersionString);
-      this.loadUiComponents = (undefined !== this._iModelJsVersions["ui-core"]) || (undefined !== this._iModelJsVersions["ui-components"]);
-      this.loadUiFramework = (undefined !== this._iModelJsVersions["ui-ninezone"]) || (undefined !== this._iModelJsVersions["ui-framework"]);
-      this.loadECPresentation = (undefined !== this._iModelJsVersions["presentation-common"]) || (undefined !== this._iModelJsVersions["presentation-frontend"]) || (undefined !== this._iModelJsVersions["presentation-components"]);
-      this.loadMarkup = (undefined !== this._iModelJsVersions["imodeljs-markup"]);
+      this.iModelJsVersions = JSON.parse(iModelJsVersionString);
+      this.loadUiComponents = (undefined !== this.iModelJsVersions["ui-core"]) || (undefined !== this.iModelJsVersions["ui-components"]);
+      this.loadUiFramework = (undefined !== this.iModelJsVersions["ui-ninezone"]) || (undefined !== this.iModelJsVersions["ui-framework"]);
+      this.loadECPresentation = (undefined !== this.iModelJsVersions["presentation-common"]) || (undefined !== this.iModelJsVersions["presentation-frontend"]) || (undefined !== this.iModelJsVersions["presentation-components"]);
+      this.loadMarkup = (undefined !== this.iModelJsVersions["imodeljs-markup"]);
 
       // we need the uiComponents for either ECPresentation or uiFramework.
       if (this.loadECPresentation || this.loadUiFramework) {
         this.loadUiComponents = true;
       }
     } else {
-      this._iModelJsVersions = {};
+      this.iModelJsVersions = {};
     }
   }
 
-  public prefixVersion(packageName: string, extension?: string): string | undefined {
+  public prefixVersion(packageName: string): string | undefined {
     // find the version from the package name.
     let versionNumberString: string;
-    // remove the ".js" from the packageName to get the key
-    if (undefined === (versionNumberString = this._iModelJsVersions[packageName])) {
+    if (undefined === (versionNumberString = this.iModelJsVersions[packageName])) {
       // tslint:disable-next-line:no-console
       console.log("No version specified for ", packageName);
       return undefined;
     }
-    return "v".concat(versionNumberString, "/", packageName, extension ? extension : ".js");
+    return "v".concat(versionNumberString, "/", packageName, ".js");
   }
 
 }

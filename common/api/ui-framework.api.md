@@ -36,12 +36,14 @@ import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
 import { MessageSeverity } from '@bentley/ui-core';
 import { NineZoneProps } from '@bentley/ui-ninezone';
+import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { NotificationManager } from '@bentley/imodeljs-frontend';
 import { NotifyMessageDetails } from '@bentley/imodeljs-frontend';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
+import { Orientation } from '@bentley/ui-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PlaybackSettings } from '@bentley/ui-components';
@@ -57,12 +59,14 @@ import { ResizeHandle } from '@bentley/ui-ninezone';
 import { Ruleset } from '@bentley/presentation-common';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
+import { Size } from '@bentley/ui-ninezone';
 import { SnapMode } from '@bentley/imodeljs-frontend';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { Status } from '@bentley/ui-ninezone';
 import { StatusZoneManagerProps } from '@bentley/ui-ninezone';
 import { Store } from 'redux';
 import { TargetType } from '@bentley/ui-ninezone';
+import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
@@ -93,9 +97,15 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     // (undocumented)
     execute(): void;
     // (undocumented)
+    getDimension(orientation: Orientation): number;
+    // (undocumented)
+    handleSizeKnown: (size: Size) => void;
+    // (undocumented)
     parameters?: any;
     // (undocumented)
-    toolbarReactNode(index?: number): React_2.ReactNode;
+    size?: Size;
+    // (undocumented)
+    toolbarReactNode(_index?: number): React_2.ReactNode;
 }
 
 // @public
@@ -124,6 +134,8 @@ export interface ActionItemButtonProps extends CommonProps {
     actionItem: ActionButtonItemDef;
     // (undocumented)
     isEnabled?: boolean;
+    // (undocumented)
+    onSizeKnown?: (size: Size) => void;
 }
 
 // @public
@@ -193,10 +205,10 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
     }
 
 // @public
-export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef;
+export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef;
 
-// @public
-export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps;
+// @beta
+export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps | ConditionalItemProps | CustomItemProps;
 
 // @public
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
@@ -204,6 +216,7 @@ export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetPro
 // @public
 export class AppNotificationManager extends NotificationManager {
     clearToolTip(): void;
+    closeInputFieldMessage(): void;
     closePointerMessage(): void;
     endActivityMessage(reason: ActivityMessageEndReason): boolean;
     protected _hidePointerMessage(): void;
@@ -475,6 +488,33 @@ export class CommandLaunchBackstageItem extends React_2.PureComponent<CommandLau
 // @public
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler {
     commandId: string;
+}
+
+// @beta
+export class ConditionalItemDef extends ItemDefBase {
+    constructor(props: ConditionalItemProps);
+    // (undocumented)
+    conditionalId: string;
+    // (undocumented)
+    static conditionalIdPrefix: string;
+    // (undocumented)
+    getVisibleItems(): ActionButtonItemDef[];
+    // (undocumented)
+    handleSyncUiEvent(args: SyncUiEventArgs): boolean;
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    items: AnyItemDef[];
+    // (undocumented)
+    resolveItems(): void;
+    }
+
+// @beta
+export interface ConditionalItemProps extends ItemProps {
+    // (undocumented)
+    conditionalId?: string;
+    // (undocumented)
+    items: AnyItemDef[];
 }
 
 // @public
@@ -849,6 +889,31 @@ export interface CubeNavigationAidProps extends CommonProps {
     onAnimationEnd?: () => void;
 }
 
+// @beta
+export class CustomItemDef extends ActionButtonItemDef {
+    constructor(props: CustomItemProps);
+    // (undocumented)
+    customId: string;
+    // (undocumented)
+    static customIdPrefix: string;
+    // (undocumented)
+    handleSyncUiEvent(_args: SyncUiEventArgs): boolean;
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    reactElement: React_2.ReactNode;
+    // (undocumented)
+    toolbarReactNode(index?: number): React_2.ReactNode;
+}
+
+// @beta
+export interface CustomItemProps extends ItemProps {
+    // (undocumented)
+    customId?: string;
+    // (undocumented)
+    reactElement: React.ReactNode;
+}
+
 // @public
 export type DeepReadonly<T> = T extends ReadonlyArray<infer R> ? (R extends object ? DeepReadonlyArray<R> : ReadonlyArray<R>) : T extends FunctionType ? T : T extends object ? DeepReadonlyObject<T> : T;
 
@@ -1021,9 +1086,9 @@ export class DrawingNavigationAid extends React_2.Component<DrawingNavigationAid
     static getDefaultClosedMapSize: () => Vector3d;
     // @internal (undocumented)
     static getDefaultOpenedMapSize: (paddingX?: number, paddingY?: number) => Vector3d;
-    // (undocumented)
+    // @internal (undocumented)
     render(): React_2.ReactNode;
-    // (undocumented)
+    // @internal (undocumented)
     readonly state: Readonly<DrawingNavigationAidState>;
     }
 
@@ -1564,6 +1629,8 @@ export class GroupItemDef extends ActionButtonItemDef {
     // (undocumented)
     direction: Direction;
     // (undocumented)
+    directionExplicit: boolean;
+    // (undocumented)
     execute(): void;
     // (undocumented)
     getItemById(id: string): ItemDefBase | undefined;
@@ -1579,6 +1646,8 @@ export class GroupItemDef extends ActionButtonItemDef {
     items: AnyItemDef[];
     // (undocumented)
     itemsInColumn: number;
+    // @internal (undocumented)
+    overflow: boolean;
     // (undocumented)
     resolveItems(): void;
     // (undocumented)
@@ -1692,10 +1761,16 @@ export interface IModelUserInfo {
 // @internal
 export const INACTIVITY_TIME_DEFAULT = 3500;
 
-// @beta
-export class InputFieldMessage extends React_2.PureComponent<InputFieldMessageProps> {
+// @public
+export class InputFieldMessage extends React_2.PureComponent<InputFieldMessageProps, InputFieldMessageState> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
     // (undocumented)
     render(): React_2.ReactNode;
+    // (undocumented)
+    readonly state: Readonly<InputFieldMessageState>;
 }
 
 // @public
@@ -1705,15 +1780,12 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
 // @public
 export interface InputFieldMessageEventArgs {
     // (undocumented)
+    detailedMessage: string;
+    // (undocumented)
     messageText: string;
     // (undocumented)
-    target: Element;
-}
-
-// @beta
-export interface InputFieldMessageProps extends CommonProps {
-    children: React_2.ReactNode;
-    onClose: () => void;
+    priority: OutputMessagePriority;
+    // (undocumented)
     target: Element;
 }
 
@@ -1721,7 +1793,7 @@ export interface InputFieldMessageProps extends CommonProps {
 export class InputFieldMessageRemovedEvent extends UiEvent<{}> {
 }
 
-// @beta
+// @alpha
 export enum InputStatus {
     // (undocumented)
     Invalid = 1,
@@ -1763,17 +1835,23 @@ export abstract class ItemDefBase {
 }
 
 // @public
-export class ItemList {
+export class ItemList extends Array<ItemDefBase> {
+    constructor(items?: ItemDefBase[]);
     // (undocumented)
     addItem(item: ItemDefBase): void;
     // (undocumented)
+    addItems(items: ItemDefBase[]): void;
+    // (undocumented)
     readonly items: ItemDefBase[];
-    }
+}
 
 // @public
 export class ItemMap extends Map<string, ItemDefBase> {
+    constructor(items?: ItemDefBase[]);
     // (undocumented)
     addItem(item: ItemDefBase): void;
+    // (undocumented)
+    addItems(items: ItemDefBase[]): void;
 }
 
 // @public
@@ -1787,7 +1865,7 @@ export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipPr
 
 // @public
 export interface ItemPropsList {
-    // (undocumented)
+    // @beta (undocumented)
     items?: AnyItemProps[];
 }
 
@@ -1987,7 +2065,7 @@ export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
 // @beta
 export class ListPickerBase extends React_2.PureComponent<ListPickerProps, ListPickerState> {
     constructor(props: any);
-    getExpandedContent(): JSX.Element | undefined;
+    getExpandedContent(): React_2.ReactNode;
     isExpanded: () => boolean;
     minimize: () => void;
     render(): JSX.Element;
@@ -2020,6 +2098,8 @@ export interface ListPickerProps {
     items: ListItem[];
     // (undocumented)
     onExpanded?: (expand: boolean) => void;
+    // (undocumented)
+    onSizeKnown?: (size: Size) => void;
     // (undocumented)
     setEnabled: (item: ListItem, enabled: boolean) => any;
     // (undocumented)
@@ -2072,7 +2152,7 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
 export class MessageManager {
     static addMessage(message: NotifyMessageDetails): void;
     static clearMessages(): void;
-    static displayInputFieldMessage(target: Element, messageText: string): void;
+    static displayInputFieldMessage(target: HTMLElement, messageText: string, detailedMessage?: string, priority?: OutputMessagePriority): void;
     static endActivityMessage(isCompleted: boolean): boolean;
     static getIconClassName(details: NotifyMessageDetails): string;
     static getIconType(details: NotifyMessageDetails): MessageBoxIconType;
@@ -2358,7 +2438,6 @@ export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemSta
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
-    getExpandedContent(): JSX.Element | undefined;
     // (undocumented)
     readonly label: string;
     minimize: () => void;
@@ -2369,6 +2448,8 @@ export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemSta
 export interface PopupButtonProps extends ItemProps, CommonProps {
     // (undocumented)
     onExpanded?: (expand: boolean) => void;
+    // (undocumented)
+    onSizeKnown?: (size: Size) => void;
 }
 
 // @beta
@@ -3041,6 +3122,25 @@ export interface ToolActivatedEventArgs {
     toolId: string;
 }
 
+// @internal
+export class Toolbar extends React_2.Component<ToolbarProps> {
+    constructor(props: ToolbarProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @internal
+export interface ToolbarProps extends CommonProps, NoChildrenProps {
+    expandsTo?: Direction;
+    items: ItemList;
+    orientation: Orientation;
+    panelAlignment?: ToolbarPanelAlignment;
+}
+
 // @public
 export class ToolbarWidgetDefBase extends WidgetDef {
     constructor(def: ToolbarWidgetProps);
@@ -3049,6 +3149,8 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     // (undocumented)
     horizontalItems?: ItemList;
     // (undocumented)
+    horizontalPanelAlignment: ToolbarPanelAlignment;
+    // (undocumented)
     renderHorizontalToolbar: () => React_2.ReactNode;
     // (undocumented)
     renderVerticalToolbar: () => React_2.ReactNode;
@@ -3056,6 +3158,8 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     verticalDirection: Direction;
     // (undocumented)
     verticalItems?: ItemList;
+    // (undocumented)
+    verticalPanelAlignment: ToolbarPanelAlignment;
 }
 
 // @public
@@ -3174,7 +3278,7 @@ export class ToolWidget extends React_2.Component<ToolWidgetPropsEx, ToolWidgetS
 
 // @public
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
-    constructor(def: ToolWidgetProps);
+    constructor(props: ToolWidgetProps);
     // (undocumented)
     readonly reactElement: React_2.ReactNode;
     // (undocumented)
@@ -3313,23 +3417,12 @@ export interface UiVisibilityEventArgs {
     visible: boolean;
 }
 
-// @beta
-export class ValidationTextbox extends React_2.Component<ValidationTextboxProps> {
+// @alpha
+export class ValidationTextbox extends React_2.PureComponent<ValidationTextboxProps, ValidationTextboxState> {
     constructor(props: ValidationTextboxProps);
     // @internal (undocumented)
     render(): React_2.ReactNode;
     }
-
-// @beta
-export interface ValidationTextboxProps extends CommonProps {
-    errorText?: string;
-    initialValue?: string;
-    onEnterPressed?: () => void;
-    onEscPressed?: () => void;
-    onValueChanged?: (value: string) => InputStatus;
-    placeholder?: string;
-    size?: number;
-}
 
 // @internal
 export interface VersionInfo {

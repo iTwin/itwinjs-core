@@ -2,16 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+// cSpell:ignore picklist
 
 import {
   IModelApp, PrimitiveTool,
   BeButtonEvent, EventHandled,
   ToolSettingsPropertyRecord, PropertyDescription, PrimitiveValue, ToolSettingsValue, ToolSettingsPropertySyncItem,
-  NotifyMessageDetails, OutputMessagePriority, PropertyEditorParamTypes, ParseResults,
+  NotifyMessageDetails, OutputMessagePriority, PropertyEditorParamTypes, ParseResults, QuantityType,
 } from "@bentley/imodeljs-frontend";
-
+import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
+import { FormatterSpec, ParserSpec, QuantityStatus } from "@bentley/imodeljs-quantity";
 
 const enum ToolOptions {
   Red,
@@ -24,6 +26,8 @@ export class ToolWithSettings extends PrimitiveTool {
   public static toolId = "ToolWithSettings";
   public readonly points: Point3d[] = [];
   private _showCoordinatesOnPointerMove = false;
+  private _lengthFormatterSpec?: FormatterSpec;
+  private _lengthParserSpec?: ParserSpec;
 
   private toggleCoordinateUpdate() {
     this._showCoordinatesOnPointerMove = !this._showCoordinatesOnPointerMove;
@@ -237,7 +241,30 @@ export class ToolWithSettings extends PrimitiveTool {
     };
   }
 
-  private static _formatLength = (numberValue: number): string => numberValue.toFixed(2);
+  private _formatLength = (numberValue: number): string => {
+    if (this.lengthFormatterSpec) {
+      return IModelApp.quantityFormatter.formatQuantity(numberValue, this.lengthFormatterSpec);
+    }
+    return numberValue.toFixed(2);
+  }
+
+  private _parseLength = (userInput: string): ParseResults => {
+    if (this.lengthParserSpec) {
+      const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, this.lengthParserSpec);
+      if (parseResult.status === QuantityStatus.Success) {
+        return { value: parseResult.value };
+      } else {
+        return { parseError: `Unable to parse ${userInput} into a valid length` };
+      }
+    }
+
+    const rtnValue = Number.parseFloat(userInput);
+    if (Number.isNaN(rtnValue)) {
+      return { parseError: `Unable to parse ${userInput} into a valid length` };
+    } else {
+      return { value: rtnValue };
+    }
+  }
 
   private _useLengthValue = new ToolSettingsValue(true);
 
@@ -251,7 +278,7 @@ export class ToolWithSettings extends PrimitiveTool {
 
   // ------------- text based edit field (TODO: make quantity field) ---------------
   private static _lengthName = "length";
-  private static _getLengthDescription = (): PropertyDescription => {
+  private _getLengthDescription = (): PropertyDescription => {
     return {
       name: ToolWithSettings._lengthName,
       displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Length"),
@@ -261,21 +288,15 @@ export class ToolWithSettings extends PrimitiveTool {
         params: [
           {
             type: PropertyEditorParamTypes.CustomFormattedNumber,
-            formatFunction: ToolWithSettings._formatLength,
-            parseFunction: (stringValue: string): ParseResults => {
-              const rtnValue = Number.parseFloat(stringValue);
-              if (Number.isNaN(rtnValue)) {
-                return { parseError: `Unable to parse ${stringValue} into a valid length` };
-              } else {
-                return { value: rtnValue };
-              }
-            },
+            formatFunction: this._formatLength,
+            parseFunction: this._parseLength,
           },
         ],
       },
     };
   }
 
+  // if _lengthValue also sets up display value then the "number-custom" type editor would not need to format the value before initially displaying it.
   private _lengthValue = new ToolSettingsValue(0.0);
 
   public get length(): number {
@@ -286,10 +307,41 @@ export class ToolWithSettings extends PrimitiveTool {
     this._lengthValue.value = option;
   }
 
+  public get lengthFormatterSpec(): FormatterSpec | undefined {
+    if (this._lengthFormatterSpec)
+      return this._lengthFormatterSpec;
+
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    if (formatterSpec) {
+      this._lengthFormatterSpec = formatterSpec;
+      return formatterSpec;
+    }
+
+    Logger.logError("UITestApp.ToolWithSettings", "Length formatterSpec was expected to be set before tool started.");
+    return undefined;
+  }
+
+  public get lengthParserSpec(): ParserSpec | undefined {
+    if (this._lengthParserSpec)
+      return this._lengthParserSpec;
+
+    const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
+    if (parserSpec) {
+      this._lengthParserSpec = parserSpec;
+      return parserSpec;
+    }
+
+    Logger.logError("UITestApp.ToolWithSettings", "Length parserSpec was expected to be set before tool started.");
+    return undefined;
+  }
+
   // -------- end of ToolSettings ----------
 
   public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public onPostInstall() {
+    super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
 
   public setupAndPromptForNextAction(): void {
     IModelApp.notifications.outputPromptByKey("SampleApp:tools.ToolWithSettings.Prompts.GetPoint");
@@ -341,7 +393,7 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push(new ToolSettingsPropertyRecord(this._stateValue.clone() as PrimitiveValue, ToolWithSettings._getStateDescription(), { rowPriority: 10, columnIndex: 4 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._coordinateValue.clone() as PrimitiveValue, ToolWithSettings._getCoordinateDescription(), { rowPriority: 15, columnIndex: 2, columnSpan: 3 }, readonly));
     toolSettings.push(new ToolSettingsPropertyRecord(this._useLengthValue.clone() as PrimitiveValue, ToolWithSettings._getUseLengthDescription(), { rowPriority: 20, columnIndex: 0 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._lengthValue.clone() as PrimitiveValue, ToolWithSettings._getLengthDescription(), { rowPriority: 20, columnIndex: 2 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._lengthValue.clone() as PrimitiveValue, this._getLengthDescription(), { rowPriority: 20, columnIndex: 2 }));
     return toolSettings;
   }
 
@@ -357,7 +409,7 @@ export class ToolWithSettings extends PrimitiveTool {
 
   private syncLengthState(): void {
     const lengthValue = new ToolSettingsValue(this.length);
-    lengthValue.displayValue = ToolWithSettings._formatLength(lengthValue.value as number);
+    lengthValue.displayValue = this._formatLength(lengthValue.value as number);
     const syncItem: ToolSettingsPropertySyncItem = { value: lengthValue, propertyName: ToolWithSettings._lengthName, isDisabled: !this.useLength };
     this.syncToolSettingsProperties([syncItem]);
   }

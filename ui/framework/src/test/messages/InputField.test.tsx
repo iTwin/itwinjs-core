@@ -15,21 +15,13 @@ describe("InputFieldMessage", () => {
 
   it("should render correctly", () => {
     enzyme.shallow(
-      <InputFieldMessage
-        target={document.activeElement as HTMLElement}
-        children={<div />}
-        onClose={() => { }}
-      />,
+      <InputFieldMessage />,
     ).should.matchSnapshot();
   });
 
   it("should unmount correctly", () => {
     const sut = enzyme.mount(
-      <InputFieldMessage
-        target={document.activeElement as HTMLElement}
-        children={<div />}
-        onClose={() => { }}
-      />,
+      <InputFieldMessage />,
     );
     sut.unmount();
   });

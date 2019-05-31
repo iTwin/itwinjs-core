@@ -10,7 +10,7 @@ import { addUInt32s } from "./Common";
 import { addModelMatrix } from "./Vertex";
 
 const applyPlanarClassificationColor = `
-  vec4 colorTexel = TEXTURE(s_pClassColorSampler, v_pClassPos.xy);
+  vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(v_pClassPos.x, v_pClassPos.y / 2.0));
   if (colorTexel.a < .5) {
     if (s_pClassColorParams.y == 0.0)
       return vec4(0);                          // Unclassifed, Off.
@@ -34,7 +34,7 @@ const applyPlanarClassificationColor = `
 `;
 
 const overrideFeatureId = `
-  vec4 featureTexel = TEXTURE(s_pClassFeatureSampler, v_pClassPos.xy);
+  vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(v_pClassPos.x, (1.0 + v_pClassPos.y) / 2.0));
   return (featureTexel == vec4(0)) ? currentId : addUInt32s(u_batchBase, featureTexel * 255.0) / 255.0;
   `;
 
@@ -77,11 +77,11 @@ export function addColorPlanarClassifier(builder: ProgramBuilder) {
   const frag = builder.frag;
   const vert = builder.vert;
 
-  frag.addUniform("s_pClassColorSampler", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("s_pClassColorSampler", (uniform, params) => {
+  frag.addUniform("s_pClassSampler", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("s_pClassSampler", (uniform, params) => {
       const classifier = params.target.planarClassifiers.classifier!;
-      assert(undefined !== classifier && undefined !== classifier.colorTexture);
-      classifier.colorTexture!.texture.bindSampler(uniform, TextureUnit.PlanarClassificationColor);
+      assert(undefined !== classifier && undefined !== classifier.combinedTexture);
+      classifier.combinedTexture!.texture.bindSampler(uniform, TextureUnit.PlanarClassification);
     });
   });
   frag.addUniform("s_pClassColorParams", VariableType.Vec2, (prog) => {
@@ -119,13 +119,6 @@ export function addFeaturePlanarClassifier(builder: ProgramBuilder) {
       scratchBatchBaseComponents[2] = scratchBytes[2];
       scratchBatchBaseComponents[3] = scratchBytes[3];
       uniform.setUniform4fv(scratchBatchBaseComponents);
-    });
-  });
-  frag.addUniform("s_pClassFeatureSampler", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("s_pClassFeatureSampler", (uniform, params) => {
-      const classifier = params.target.planarClassifiers.classifier!;
-      assert(undefined !== classifier && undefined !== classifier.featureTexture);
-      classifier.featureTexture!.texture.bindSampler(uniform, TextureUnit.PlanarClassificationFeatureId);
     });
   });
   frag.set(FragmentShaderComponent.OverrideFeatureId, overrideFeatureId);

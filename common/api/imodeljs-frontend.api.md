@@ -112,6 +112,8 @@ import { OctEncodedNormal } from '@bentley/imodeljs-common';
 import { OidcClient } from '@bentley/imodeljs-clients';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
+import { ParseResult } from '@bentley/imodeljs-quantity';
+import { ParserSpec } from '@bentley/imodeljs-quantity';
 import { Path } from '@bentley/geometry-core';
 import { Placement2d } from '@bentley/imodeljs-common';
 import { PlacementProps } from '@bentley/imodeljs-common';
@@ -1123,7 +1125,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     type: number;
 }
 
-// @internal (undocumented)
+// @internal
 export class BackgroundMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
     constructor(json: BackgroundMapProps, iModel: IModelConnection);
     // (undocumented)
@@ -1148,7 +1150,7 @@ export interface BasePropertyValue {
     valueFormat: PropertyValueFormat;
 }
 
-// @internal (undocumented)
+// @internal
 export class BaseTiledMapProvider {
     constructor(iModel: IModelConnection, groundBias: number);
     // (undocumented)
@@ -1428,6 +1430,11 @@ export class ChangeFlags {
     // @alpha
     readonly viewedCategoriesPerModel: boolean;
     readonly viewedModels: boolean;
+}
+
+// @public
+export interface ChangeViewedModel2dOptions {
+    doFit?: boolean;
 }
 
 // @alpha
@@ -1883,6 +1890,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     removeContextRealityModel(index: number): void;
     // @internal (undocumented)
     readonly scheduleScript: RenderScheduleState.Script | undefined;
+    // @alpha
     setBackgroundMap(mapProps: BackgroundMapProps): void;
     abstract readonly settings: DisplayStyleSettings;
     viewFlags: ViewFlags;
@@ -3063,8 +3071,6 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: IAuthorizationClient;
-    // @internal (undocumented)
-    backgroundMapProvider?: TiledGraphicsProvider.Provider;
     i18n?: I18N | I18NOptions;
     imodelClient?: IModelClient;
     // @internal (undocumented)
@@ -3879,6 +3885,7 @@ export class NoRenderApp {
 // @public
 export class NotificationManager {
     clearToolTip(): void;
+    closeInputFieldMessage(): void;
     closePointerMessage(): void;
     endActivityMessage(_reason: ActivityMessageEndReason): boolean;
     readonly isToolTipOpen: boolean;
@@ -3907,6 +3914,8 @@ export class NotifyMessageDetails {
     // (undocumented)
     displayTime: BeDuration;
     // (undocumented)
+    inputField?: HTMLElement;
+    // (undocumented)
     msgType: OutputMessageType;
     // (undocumented)
     openAlert: OutputMessageAlert;
@@ -3914,6 +3923,7 @@ export class NotifyMessageDetails {
     priority: OutputMessagePriority;
     // (undocumented)
     relativePosition: RelativePosition;
+    setInputFieldTypeDetails(inputField: HTMLElement): void;
     setPointerTypeDetails(viewport: HTMLElement, displayPoint: XAndY, relativePosition?: RelativePosition): void;
     // (undocumented)
     viewport?: HTMLElement;
@@ -4513,6 +4523,7 @@ export class QuantityFormatter implements UnitsProvider {
     protected _activeSystemIsImperial: boolean;
     findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined;
     protected findKoqFormatterSpec(koq: string, useImperial: boolean): FormatterSpec | undefined;
+    findParserSpecByQuantityType(type: QuantityType, imperial?: boolean): ParserSpec | undefined;
     findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
     // (undocumented)
@@ -4526,19 +4537,28 @@ export class QuantityFormatter implements UnitsProvider {
     getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec>;
     protected getKoqFormatterSpec(koq: string, useImperial: boolean): Promise<FormatterSpec | undefined>;
     protected getKoqFormatterSpecsAsync(koq: string, useImperial: boolean): Promise<FormatterSpec[] | undefined>;
+    getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec>;
     protected getUnitByQuantityType(type: QuantityType): Promise<UnitProps>;
+    getUnitsByFamily(unitFamily: string): Promise<UnitProps[]>;
     // (undocumented)
     protected _imperialFormatsByType: Map<QuantityType, Format>;
     // (undocumented)
     protected _imperialFormatSpecsByType: Map<QuantityType, FormatterSpec>;
+    // (undocumented)
+    protected _imperialParserSpecsByType: Map<QuantityType, ParserSpec>;
+    loadFormatAndParsingMaps(useImperial: boolean): Promise<void>;
     protected loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     protected loadKoqFormatSpecs(koq: string): Promise<void>;
+    protected loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void>;
     // (undocumented)
     protected loadStdFormat(type: QuantityType, imperial: boolean): Promise<Format>;
     // (undocumented)
     protected _metricFormatsByType: Map<QuantityType, Format>;
     // (undocumented)
     protected _metricFormatSpecsByType: Map<QuantityType, FormatterSpec>;
+    // (undocumented)
+    protected _metricUnitParserSpecsByType: Map<QuantityType, ParserSpec>;
+    parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult;
     useImperialFormats: boolean;
 }
 
@@ -5056,7 +5076,7 @@ export interface SavedClipCache {
     shared: boolean;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export interface SavedClipEntry {
     // (undocumented)
     id: GuidString;
@@ -6136,7 +6156,7 @@ export class TentativePoint {
     // (undocumented)
     onInitialized(): void;
     // (undocumented)
-    process(ev: BeButtonEvent): Promise<void>;
+    process(ev: BeButtonEvent): void;
     // (undocumented)
     removeTentative(): void;
     // (undocumented)
@@ -6434,8 +6454,6 @@ export abstract class TileAdmin {
     // @beta
     static create(props?: TileAdmin.Props): TileAdmin;
     // @internal (undocumented)
-    abstract readonly elideEmptyChildContentRequests: boolean;
-    // @internal (undocumented)
     abstract readonly emptyViewportSet: TileAdmin.ViewportSet;
     // @internal (undocumented)
     abstract readonly enableInstancing: boolean;
@@ -6464,8 +6482,6 @@ export abstract class TileAdmin {
     // @internal
     abstract requestTiles(vp: Viewport, tiles: Set<Tile>): void;
     // @internal (undocumented)
-    abstract readonly requestTilesWithoutEdges: boolean;
-    // @internal (undocumented)
     abstract requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
     abstract resetStatistics(): void;
     abstract readonly statistics: TileAdmin.Statistics;
@@ -6479,13 +6495,10 @@ export abstract class TileAdmin {
 export namespace TileAdmin {
     export interface Props {
         disableThrottling?: boolean;
-        elideEmptyChildContentRequests?: boolean;
         enableInstancing?: boolean;
         maxActiveRequests?: number;
         // @internal
         maximumMajorTileFormatVersion?: number;
-        // @internal
-        requestTilesWithoutEdges?: boolean;
         retryInterval?: number;
         tileExpirationTime?: number;
         // @internal
@@ -7007,19 +7020,6 @@ export class TwoWayViewportSync {
     disconnect(): void;
     }
 
-// @alpha
-export class Unit implements UnitProps {
-    constructor(name: string, label: string, unitFamily: string);
-    // (undocumented)
-    isValid: boolean;
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    unitFamily: string;
-}
-
 // @internal
 export enum UsesDragSelect {
     Box = 0,
@@ -7393,17 +7393,17 @@ export class ViewClipSettingsProvider {
     protected _clipEventHandler?: ViewClipEventHandler | undefined;
     // (undocumented)
     copyClip(iModel: IModelConnection, shared: boolean, existingId: GuidString, copyShared: boolean, name?: string): Promise<GuidString | undefined>;
-    // (undocumented)
+    // @internal (undocumented)
     protected deleteCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsStatus>;
     // (undocumented)
     deleteClip(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsStatus>;
-    // (undocumented)
+    // @internal (undocumented)
     protected deleteSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult>;
     // (undocumented)
     getActiveClipId(viewport: Viewport): GuidString | undefined;
     // (undocumented)
     getActiveClipStatus(viewport: Viewport): ActiveClipStatus;
-    // (undocumented)
+    // @internal (undocumented)
     protected getAllSettings(iModel: IModelConnection, shared: boolean): Promise<SettingsMapResult>;
     // @internal (undocumented)
     protected getCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SavedClipCache>;
@@ -7415,9 +7415,9 @@ export class ViewClipSettingsProvider {
     protected getProjectId(iModel: IModelConnection): string | undefined;
     // (undocumented)
     protected getRequestContext(): Promise<AuthorizedFrontendRequestContext>;
-    // (undocumented)
-    protected getSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult>;
     // @internal (undocumented)
+    protected getSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString): Promise<SettingsResult>;
+    // (undocumented)
     getSettings(settings: SavedClipEntry[], iModel: IModelConnection, shared?: boolean): Promise<SettingsStatus>;
     // @internal (undocumented)
     modifiedActiveClip(viewport: Viewport): boolean;
@@ -7427,9 +7427,9 @@ export class ViewClipSettingsProvider {
     protected newCachedSetting(iModel: IModelConnection, shared: boolean, newId: GuidString, settings: SavedClipProps): Promise<SettingsStatus>;
     // (undocumented)
     newClip(iModel: IModelConnection, shared: boolean, clip: ClipVector, name?: string): Promise<GuidString | undefined>;
-    // (undocumented)
+    // @internal (undocumented)
     protected purgeActiveClipIdCache(): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected renameCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, name: string): Promise<SettingsStatus>;
     // (undocumented)
     renameClip(iModel: IModelConnection, shared: boolean, existingId: GuidString, name: string): Promise<SettingsStatus>;
@@ -7441,13 +7441,13 @@ export class ViewClipSettingsProvider {
     protected saveSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsResult>;
     // @internal (undocumented)
     setActiveClipId(viewport: Viewport, existingId: GuidString): void;
-    // (undocumented)
+    // @internal (undocumented)
     protected shareCachedSetting(iModel: IModelConnection, existingId: GuidString, newShared: boolean): Promise<SettingsStatus>;
     // (undocumented)
     shareClip(iModel: IModelConnection, existingId: GuidString, newShare: boolean): Promise<SettingsStatus>;
     // @internal (undocumented)
     protected updateCachedSetting(iModel: IModelConnection, shared: boolean, existingId: GuidString, settings: SavedClipProps): Promise<SettingsStatus>;
-    // (undocumented)
+    // @internal (undocumented)
     protected validateActiveClipId(viewport: Viewport): void;
 }
 
@@ -7876,6 +7876,7 @@ export abstract class Viewport implements IDisposable {
     // @alpha
     changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void;
     changeView(view: ViewState): void;
+    changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void>;
     changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
     clearNeverDrawn(): void;

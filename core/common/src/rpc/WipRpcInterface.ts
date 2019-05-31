@@ -24,7 +24,9 @@ export abstract class WipRpcInterface extends RpcInterface {
   /** The immutable name of the interface. */
   public static readonly interfaceName = "WipRpcInterface";
 
-  /** The semantic version of the interface. */
+  /** The semantic version of the interface.
+   * @note The WipRpcInterface will never progress to 1.0 since it is never intended to be public.
+   */
   public static interfaceVersion = "0.3.0";
 
   /*===========================================================================================

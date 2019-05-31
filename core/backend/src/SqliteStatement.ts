@@ -209,7 +209,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
    *
-   * The SQL select clause item's name becomes the member name of the JavaScript object, **with the first characted lowered**.
+   * The SQL select clause item's name becomes the member name of the JavaScript object, **with the first character lowered**.
    *
    * SQLite Type | JavaScript Type
    * --- | ---

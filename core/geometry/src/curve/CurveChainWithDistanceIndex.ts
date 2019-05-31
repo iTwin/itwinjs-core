@@ -180,7 +180,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   private _totalLength: number; // matches final fragment distance1.
   /** Test if other is a `CurveChainWithDistanceIndex` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof CurveChainWithDistanceIndex; }
-  // finall assembly of CurveChainWithDistanceIndex -- caller must create valid fragment index.
+  // final assembly of CurveChainWithDistanceIndex -- caller must create valid fragment index.
   private constructor(path: CurveChain, fragments: PathFragment[]) {
     super();
     this._path = path;
@@ -266,9 +266,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     }
     CurvePrimitive.installStrokeCountMap(this, myMap, parentStrokeMap);
   }
-/** Second step of double dispatch:  call `this._path.dispatchToGeometryHandler (handler)`
- * * Note that this exposes the children individually to the handler.
- */
+  /** Second step of double dispatch:  call `this._path.dispatchToGeometryHandler (handler)`
+   * * Note that this exposes the children individually to the handler.
+   */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return this._path.dispatchToGeometryHandler(handler);
   }

@@ -31,7 +31,7 @@ import { Point3dArray } from "./PointHelpers";
  *   * getValidatedFrame will succeed when it has two independent vectors.
  * *  to build a left handed frame,
  *   *  an origin and 3 independent vectors are required.
- *   *  annouce as above, but query wtih getValidatedFrame (true).
+ *   *  announce as above, but query with getValidatedFrame (true).
  *   *  this will use the third vector to select right or left handed frame.
  * @public
  */
@@ -40,7 +40,7 @@ export class FrameBuilder {
   private _vector0: undefined | Vector3d;
   private _vector1: undefined | Vector3d;
   private _vector2: undefined | Vector3d;
-/** clear all accumulated point and vector data */
+  /** clear all accumulated point and vector data */
   public clear() { this._origin = undefined; this._vector0 = undefined; this._vector1 = undefined; this._vector2 = undefined; }
   constructor() { this.clear(); }
   /** Try to assemble the data into a nonsingular transform.
@@ -79,7 +79,7 @@ export class FrameBuilder {
   }
   /** Ask if there is a defined origin for the evolving frame */
   public get hasOrigin(): boolean { return this._origin !== undefined; }
-  /** Return the number of vectors saved.   Because the save process checkes numerics, this should be the rank of the system.
+  /** Return the number of vectors saved.   Because the save process checks numerics, this should be the rank of the system.
    */
   public savedVectorCount(): number {
     if (!this._vector0)
@@ -244,10 +244,10 @@ export class FrameBuilder {
   }
   /**
    * Create the localToWorld transform from a range to axes of its parent coordinate system.
-   * @param range [in] range to inpsect
-   * @param fractionX  [in] fractonal coordinate of frame origin x
+   * @param range [in] range to inspect
+   * @param fractionX  [in] fractional coordinate of frame origin x
    * @param fractionY [in] fractional coordinate of frame origin y
-   * @param fractionZ [in] fractgional coordinate of frame origin z
+   * @param fractionZ [in] fractional coordinate of frame origin z
    * @param scaleSelect [in] selects size of localToWorld axes.
    * @param defaultAxisLength [in] if true and any axis length is 0, that axis vector takes this physical length.
    */

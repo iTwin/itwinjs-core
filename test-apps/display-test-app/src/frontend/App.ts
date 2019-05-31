@@ -114,7 +114,6 @@ export class DisplayTestApp {
   public static tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
     enableInstancing: true,
-    elideEmptyChildContentRequests: true,
   };
 
   public static startup(opts?: IModelAppOptions): void {

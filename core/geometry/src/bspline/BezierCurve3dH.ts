@@ -173,7 +173,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     result = Ray3d.createWeightedDerivative(this._workData0, this._workData1, result);
     if (result)
       return result;
-    // Bad. Very Bad.  Return origin and x axis.   Should be undefined, but usual cartesian typs do not allow that
+    // Bad. Very Bad.  Return origin and x axis.   Should be undefined, but usual cartesian types do not allow that
     return Ray3d.createXAxis();
   }
   /** Construct a plane with
@@ -203,7 +203,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     return false;
   }
   /**
-   * Assess legnth and turn to determine a stroke count.
+   * Assess length and turn to determine a stroke count.
    * @param options stroke options structure.
    */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
@@ -273,7 +273,7 @@ export class BezierCurve3dH extends BezierCurveBase {
    * * This assumes this bezier is saturated.
    * @param spacePoint point being projected
    * @param detail pre-allocated detail to record (evolving) closest point.
-   * @returns true if an updated occured, false if either (a) no perpendicular projections or (b) perpendiculars were not closer.
+   * @returns true if an updated occurred, false if either (a) no perpendicular projections or (b) perpendiculars were not closer.
    */
   public updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail): boolean {
     let numUpdates = 0;
@@ -285,7 +285,7 @@ export class BezierCurve3dH extends BezierCurveBase {
       const bezier = this._workBezier!;
       // closestPoint condition is:
       //   (spacePoint - curvePoint) DOT curveTangent = 0;
-      // Each product (x,y,z) of the DOT is the product of two bezier polynonmials
+      // Each product (x,y,z) of the DOT is the product of two bezier polynomials
       BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 0, -spacePoint.x, 0);
       BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 1, -spacePoint.y, 1);
       BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 2, -spacePoint.z, 2);
@@ -326,7 +326,7 @@ export class BezierCurve3dH extends BezierCurveBase {
   }
   /** Extend `rangeToExtend`, using candidate extrema at
    * * both end points
-   * * any interal extrema in x,y,z
+   * * any internal extrema in x,y,z
    */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const order = this.order;

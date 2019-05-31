@@ -345,7 +345,15 @@ export class BentleyError extends Error {
   private readonly _getMetaData: GetMetaDataFunction | undefined;
   public errorNumber: number;
 
-  public constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | HttpStatus | WSStatus | IModelHubStatus, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+  /** Construct a new BentleyError
+   * @param errorNumber The required error number originating from one of the standard status enums.
+   * See [[IModelStatus]], [[DbResult]], [[BentleyStatus]], [[BriefcaseStatus]], [[RepositoryStatus]], [[ChangeSetStatus]], [[HttpStatus]], [[WSStatus]], [[IModelHubStatus]]
+   * @param message The optional error message (should not be localized).
+   * @param log The optional LogFunction that should be used to log this BentleyError.
+   * @param category The optional logger category to use when logging.
+   * @param getMetaData Optional data to be passed to the logger.
+   */
+  public constructor(errorNumber: number, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
     super(message);
     this.errorNumber = errorNumber;
     this._getMetaData = getMetaData;
@@ -354,8 +362,10 @@ export class BentleyError extends Error {
       Logger.logException(category || "BentleyError", this, log, this._getMetaData);  // TODO: Can we come up with a better default category?
   }
 
+  /** Returns true if this BentleyError includes (optional) meta data. */
   public get hasMetaData(): boolean { return this._getMetaData !== undefined; }
 
+  /** Return the meta data associated with this BentleyError. */
   public getMetaData(): any {
     return this.hasMetaData ? this._getMetaData!() : undefined;
   }

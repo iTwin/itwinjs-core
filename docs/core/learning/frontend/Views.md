@@ -34,20 +34,38 @@ Here are several significant subclasses:
 
 * `ViewDefinition`
   * `SpatialViewDefinition` - shows a view of one or more 3d SpatialModels
-  * `DrawingViewDefinition` - shows a view of a single 2d DrawingModel
-  * `SheetViewDefinition` - shows a view of a single 2d SheetModel
+  * `DrawingViewDefinition` - shows a view of a *single* 2d DrawingModel
+  * `SheetViewDefinition` - shows a view of a *single* 2d SheetModel
 
 For each subclass of `xxxViewDefinition`, there is a corresponding `xxxViewState` class in the frontend.
+
+## Using Viewports
+
+[ViewState]($frontend) objects hold the state of a [ViewDefinition]($backend) (*what* is shown in a View) in the frontend.
+
+[Viewport]($frontend) is an abstract class that connects a ViewState to a [RenderTarget]($frontend).
+
+To connect a ViewState to a rectangular region on a web page, create instances of the [ScreenViewport]($frontend) class. The method [ScreenViewport.create]($frontend) takes an `HTMLDivElement` and a
+(fully loaded) ViewState. In this manner, ScreenViewport forms the connection between a rectangular region on your web page (a "div") and a set of
+Models in an iModel, a display [Frustum]($common), a DisplayStyle, and the rendering system.
+
+> Note: before creating a ScreenViewport, be sure to call [IModelApp.startup]($frontend).
 
 ## Loading Views from an iModel
 
 There is a method called [IModelConnection.Views.getViewList]($frontend) that returns an array of [IModelConnection.ViewSpec]($frontend)s in a convenient
 format for User Interfaces. This can be used to present a list of possible views by name in a List.
 
-For example:
+For example, to get a list of all spatial views:
 
 ``` ts
-[[include:IModelConnection.Views.getViewList]]
+[[include:IModelConnection.Views.getSpatialViewList]]
+```
+
+To get a list of all drawing views:
+
+``` ts
+[[include:IModelConnection.Views.getDrawingViewList]]
 ```
 
 Once a view is selected from the list, it may be loaded with:
@@ -56,19 +74,26 @@ Once a view is selected from the list, it may be loaded with:
 [[include:IModelConnection.Views.load]]
 ```
 
-> Note that in the examples above, `getSpatialViews` and `loadOneView` are `async`, and you must `await` them.
+Then, you may wish to change one of the existing views to show the contents of the now-loaded view. For example, to switch the
+[ViewManager.selectedView]($frontend) to show it, use code like:
 
-## Using Viewports
+``` ts
+[[include:ScreenViewport.changeView]]
+```
 
-[ViewState]($frontend) objects hold the state of a [ViewDefinition]($backend) (*what* is shown in a View) in the frontend.
+> Note that in the examples above, `getSpatialViews`, `loadOneView`, and `showOneView` are `async`, and you must `await` them.
 
-[Viewport]($frontend) is an abstract class that connects a ViewState to a [RenderTarget]($frontend).
+## Changing the Model displayed by a 2d view
 
-To connect a ViewState to a rectangular region on a web page , you create instances of the [ScreenViewport]($frontend) class. The method [ScreenViewport.create]($frontend) takes an `HTMLDivElement` and a
-(fully loaded) ViewState. In this manner, ScreenViewport form the connection between a rectangular region on your web page (a "div") and a set of
-Models in an iModel, a display [Frustum]($common), a DisplayStyle, and the rendering system.
+Viewports always display one ViewState. If that ViewState happens to be a ViewState2d, we sometimes call that a "2d view". Since ViewState2d shows
+one and only one 2d Model, it is sometimes is desireable to "switch the Model" of an existing 2d view, versus loading a new ViewState2d. This will sometimes
+be appropriate if you *know* that a set of 2d Models use a common coordinate system and categories, etc.
 
-> Note: before creating a ScreenViewport, be sure to call [IModelApp.startup]($frontend).
+The [Viewport.changeViewedModel2d]($frontend) method can be used to accomplish this:
+
+``` ts
+[[include:ScreenViewport.changeViewedModel2d]]
+```
 
 ## ViewManager
 

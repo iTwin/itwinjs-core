@@ -42,8 +42,11 @@ export class AppNotificationManager extends NotificationManager {
 
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails): void {
-    if (message.msgType === OutputMessageType.Pointer)
+    if (message.msgType === OutputMessageType.Pointer) {
       this._showPointerMessage(message);
+    } else if (message.msgType === OutputMessageType.InputField && message.inputField) {
+      MessageManager.displayInputFieldMessage(message.inputField, message.briefMessage, message.detailedMessage, message.priority);
+    }
     MessageManager.addMessage(message);
   }
 
@@ -129,4 +132,10 @@ export class AppNotificationManager extends NotificationManager {
   protected _hidePointerMessage(): void {
     PointerMessage.hideMessage();
   }
+
+  /** Hide a InputField message. */
+  public closeInputFieldMessage(): void {
+    MessageManager.hideInputFieldMessage();
+  }
+
 }

@@ -5,6 +5,7 @@
 
 import * as React from "react";
 import { expect } from "chai";
+
 import TestUtils from "../TestUtils";
 import {
   ConfigurableUiManager,
@@ -25,12 +26,19 @@ import {
   CoreTools,
   WorkflowProps,
 } from "../../ui-framework";
+import { MockRender } from "@bentley/imodeljs-frontend";
 
 describe("ConfigurableUiManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    MockRender.App.startup();
+
     ConfigurableUiManager.initialize();
+  });
+
+  after(() => {
+    MockRender.App.shutdown();
   });
 
   it("findFrontstageDef passed no argument", () => {

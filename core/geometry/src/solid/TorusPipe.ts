@@ -28,7 +28,7 @@ import { Vector2d } from "../geometry3d/Point2dVector2d";
  *   * vectorTheta0 = (radiusA,0,0)
  *   * vectorTheta90 = (0, radiusA,0)
  *   * The major arc point at angle theta is `C(theta) = vectorTheta0 * cos(theta) + vectorTheta90 * sin(theta)
- * * The minor hoop at theta varius with phi "around the minor hoop"
+ * * The minor hoop at theta various with phi "around the minor hoop"
  *    * (x,y,z) = C(theta) + (radiusB *cos(theta), radiusB * sin(theta)) * cos(phi) + (0,radiusB,0) * sin(phi)
  * * The stored form of the torus pipe is oriented for positive volume:
  *   * Both radii are positive, with r0 >= r1 > 0
@@ -56,32 +56,32 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     this._sweep = sweep;
     this._isReversed = false;
   }
-/** return a copy of the TorusPipe */
+  /** return a copy of the TorusPipe */
   public clone(): TorusPipe {
     const result = new TorusPipe(this._localToWorld.clone(), this._radiusA, this._radiusB, this._sweep.clone(), this.capped);
     result._isReversed = this._isReversed;
     return result;
   }
-/** Apply `transform` to the local coordinate system. */
+  /** Apply `transform` to the local coordinate system. */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
-/** Clone this TorusPipe and transform the clone */
+  /** Clone this TorusPipe and transform the clone */
   public cloneTransformed(transform: Transform): TorusPipe | undefined {
     const result = this.clone();
     transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
     return result;
   }
-/** Create a new `TorusPipe`
- * @param frame local to world transformation
- * @param majorRadius major hoop radius
- * @param minorRadius minor hoop radius
- * @param sweep sweep angle for major circle, with positive sweep from x axis towards y axis.
- * @param capped true for circular caps
- */
+  /** Create a new `TorusPipe`
+   * @param frame local to world transformation
+   * @param majorRadius major hoop radius
+   * @param minorRadius minor hoop radius
+   * @param sweep sweep angle for major circle, with positive sweep from x axis towards y axis.
+   * @param capped true for circular caps
+   */
   public static createInFrame(frame: Transform, majorRadius: number, minorRadius: number, sweep: Angle, capped: boolean): TorusPipe | undefined {
     // force near-zero radii to true zero
     majorRadius = Math.abs(Geometry.correctSmallMetricDistance(majorRadius));

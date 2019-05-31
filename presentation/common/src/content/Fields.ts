@@ -288,7 +288,7 @@ export class NestedContentField extends Field {
       return JSON.parse(json, Field.reviver);
     const field = Object.create(NestedContentField.prototype);
     return Object.assign(field, json, {
-      nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson)),
+      nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson)).filter((nestedField) => (undefined !== nestedField)),
       contentClassInfo: ClassInfo.fromJSON(json.contentClassInfo),
       pathToPrimaryClass: json.pathToPrimaryClass.map((p) => RelatedClassInfo.fromJSON(p)),
     } as Partial<NestedContentField>);

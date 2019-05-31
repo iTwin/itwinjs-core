@@ -147,7 +147,7 @@ export enum BackgroundMapType {
  */
 export interface BackgroundMapProps {
   groundBias?: number;
-  /** "BingProvider" | "MapProvider" currently supported; others may be added in future. */
+  /** The Id of a map tile provider. Currently the type should technically be `"BingProvider" | "MapBoxProvider"`, but support for other providers may be added in the future. */
   providerName?: string;
   providerData?: {
     mapType?: BackgroundMapType;
@@ -309,7 +309,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
    * @beta
    */
   ao?: AmbientOcclusion.Props;
-  /** Settings controlling display of solar shadoss, stored in Props.
+  /** Settings controlling display of solar shadows, stored in Props.
    * @beta
    */
   solarShadows?: SolarShadows.Props;
@@ -486,12 +486,12 @@ export class DisplayStyleSettings {
     this._json.monochromeColor = color.toJSON();
   }
 
-  /** @internal */
+  /** @alpha */
   public get backgroundMap(): BackgroundMapProps | undefined {
     const props = this._json.backgroundMap;
     return undefined !== props ? props : {};
   }
-  /** @internal */
+  /** @alpha */
   public set backgroundMap(map: BackgroundMapProps | undefined) { this._json.backgroundMap = map; }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.

@@ -196,10 +196,10 @@ export class BezierCurve3d extends BezierCurveBase {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBezierCurve3d(this);
   }
-/** Extend `rangeToExtend`, using candidate extrema at
- * * both end points
- * * any interal extrema in x,y,z
- */
+  /** Extend `rangeToExtend`, using candidate extrema at
+   * * both end points
+   * * any internal extrema in x,y,z
+   */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const order = this.order;
     if (!transform) {

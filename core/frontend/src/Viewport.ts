@@ -28,7 +28,7 @@ import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tile } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo } from "./ViewState";
+import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo, ViewState2d } from "./ViewState";
 import { ToolSettings } from "./tools/Tool";
 import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
 
@@ -472,6 +472,14 @@ export interface ZoomToOptions {
   placementRelativeId?: StandardViewId;
   /** Set view rotation from Matrix3d. */
   viewRotation?: Matrix3d;
+}
+
+/** Options for changing the viewed Model of a 2d view via [[Viewport.changeViewedModel2d]]
+ * @public
+ */
+export interface ChangeViewedModel2dOptions {
+  /** If true, perform a "fit view" operation after changing to the new 2d model. */
+  doFit?: boolean;
 }
 
 /** Supplies facilities for interacting with a [[Viewport]]'s frustum.
@@ -1458,10 +1466,35 @@ export abstract class Viewport implements IDisposable {
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
 
-  /** Attempt to replace the set of models currently viewed by this viewport.
+  /** Attempt to change the 2d Model this Viewport is displaying, if its ViewState is a ViewState2d.
+   * @param baseModelId The Id of the new 2d Model to be displayed.
+   * @param options options that determine how the new view is displayed
+   * @note This function *only works* if the viewport is viewing a [[ViewState2d]], otherwise it does nothing. Also note that
+   * the Model of baseModelId should be the same type (Drawing or Sheet) as the current view.
+   * @note this method clones the current ViewState2d and sets its baseModelId to the supplied value. The DisplayStyle and CategorySelector remain unchanged.
+   */
+  public async changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void> {
+    if (!this.view.is2d)
+      return;
+
+    const newView = this.view.clone() as ViewState2d; // start by cloning the current ViewState
+    // NOTE: the cast below is necessary since baseModelId is marked as readonly after construction.
+    //  We know this is a special case where it is safe to change it.
+    (newView.baseModelId as Id64String) = baseModelId; // change its baseModelId.
+
+    await newView.load(); // make sure new model is loaded.
+    this.changeView(newView); // switch this viewport to use new ViewState2d
+
+    if (options && options.doFit) { // optionally fit view to the extents of the new model
+      const range = await this.iModel.models.queryModelRanges([baseModelId]);
+      this.zoomToVolume(Range3d.fromJSON(range[0]), options);
+    }
+  }
+
+  /** Attempt to replace the set of models currently viewed by this viewport, if it is displaying a SpatialView
    * @param modelIds The Ids of the models to be displayed.
    * @returns false if this Viewport is not viewing a [[SpatialViewState]]
-   * @note This function has no effect unless the viewport is viewing a [[SpatialViewState]].
+   * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    */
   public changeViewedModels(modelIds: Id64Arg): boolean {
     if (!this.view.isSpatialView())
@@ -1479,8 +1512,8 @@ export abstract class Viewport implements IDisposable {
   /** Add or remove a set of models from those models currently displayed in this viewport.
    * @param modelIds The Ids of the models to add or remove.
    * @param display Whether or not to display the specified models in the viewport.
-   * @returns false if thsi Viewport is not viewing a [[SpatialViewState]]
-   * @note This function has no effect unless the viewport is viewing a [[SpatialViewState]].
+   * @returns false if this Viewport is not viewing a [[SpatialViewState]]
+   * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    */
   public changeModelDisplay(models: Id64Arg, display: boolean): boolean {
     if (!this.view.isSpatialView())

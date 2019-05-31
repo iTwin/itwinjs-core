@@ -85,6 +85,103 @@ Object {
         "valueFormat": "Primitive",
       },
     },
+    Object {
+      "category": Object {
+        "description": "Dignissimos a libero.",
+        "expand": true,
+        "label": "reboot Generic Clothing",
+        "name": "Awesome",
+        "priority": 64024,
+      },
+      "contentClassInfo": Object {
+        "id": "0x142cf000000f2c2",
+        "label": "Granite",
+        "name": "Auto Loan Account",
+      },
+      "editor": Object {
+        "name": "Manors",
+      },
+      "isReadonly": false,
+      "label": "Upgradable",
+      "name": "paradigms",
+      "nestedFields": Array [
+        Object {
+          "category": Object {
+            "description": "Accusamus aut eligendi voluptas natus quam sequi sit.",
+            "expand": false,
+            "label": "Massachusetts",
+            "name": "Borders",
+            "priority": 93316,
+          },
+          "editor": Object {
+            "name": "Agent",
+          },
+          "isReadonly": true,
+          "label": "Administrator",
+          "name": "primary",
+          "priority": 11214,
+          "type": Object {
+            "typeName": "binary",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x5c77000000e029",
+            "label": "Focused Wooden Investment Account",
+            "name": "navigating",
+          },
+          "sourceClassInfo": Object {
+            "id": "0xd88100000008ec",
+            "label": "Soap Ouguiya transmit",
+            "name": "reinvent",
+          },
+          "targetClassInfo": Object {
+            "id": "0x80e9000001068b",
+            "label": "Operations Land",
+            "name": "Liaison",
+          },
+        },
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0x1572c0000001001",
+            "label": "secondary Ergonomic Soft Shoes",
+            "name": "Music",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x8d420000000b54",
+            "label": "Avon Tactics global",
+            "name": "Borders",
+          },
+          "targetClassInfo": Object {
+            "id": "0x150100000008515",
+            "label": "Interactions Awesome Fresh Pants reboot",
+            "name": "connecting",
+          },
+        },
+      ],
+      "priority": 61219,
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "architectures",
+            "name": "Specialist",
+            "type": Object {
+              "typeName": "point",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "Hryvnia",
+        "valueFormat": "Struct",
+      },
+    },
   ],
   "inputKeysHash": "54787b28-1e98-49de-8921-c8c51abd8be6",
   "selectClasses": Array [
@@ -341,6 +438,101 @@ Object {
       "type": Object {
         "typeName": "boolean",
         "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "category": Object {
+        "description": "Ut odit fugit eaque dolorum aut.",
+        "expand": true,
+        "label": "Developer SMS indexing",
+        "name": "quantify",
+        "priority": 44223,
+      },
+      "contentClassInfo": Object {
+        "id": "0xee3f0000014579",
+        "label": "software",
+        "name": "exploit",
+      },
+      "editor": Object {
+        "name": "Orchestrator",
+      },
+      "isReadonly": false,
+      "label": "synthesizing invoice",
+      "name": "Credit Card Account",
+      "nestedFields": Array [
+        Object {
+          "category": Object {
+            "description": "Natus eum ex magni.",
+            "expand": true,
+            "label": "markets",
+            "name": "RAM",
+            "priority": 70255,
+          },
+          "editor": undefined,
+          "isReadonly": true,
+          "label": "Bike HDD",
+          "name": "Sausages",
+          "priority": 64588,
+          "type": Object {
+            "typeName": "point",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0x673b00000001db",
+            "label": "Sleek",
+            "name": "Spurs",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x1805d0000006f27",
+            "label": "scalable back-end",
+            "name": "Global",
+          },
+          "targetClassInfo": Object {
+            "id": "0x1448d000000bc4f",
+            "label": "bus turn-key",
+            "name": "quantify",
+          },
+        },
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0xa35f0000001fc3",
+            "label": "Sausages",
+            "name": "Outdoors",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x118ac000000115c",
+            "label": "XML",
+            "name": "SMTP",
+          },
+          "targetClassInfo": Object {
+            "id": "0xf6750000008ce7",
+            "label": "e-commerce",
+            "name": "invoice",
+          },
+        },
+      ],
+      "priority": 97494,
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "content",
+            "name": "cross-platform",
+            "type": Object {
+              "typeName": "datetime",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "Forward",
+        "valueFormat": "Struct",
       },
     },
   ],

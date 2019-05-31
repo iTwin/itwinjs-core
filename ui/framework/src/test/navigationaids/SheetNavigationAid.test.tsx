@@ -16,7 +16,7 @@ import {
   WidgetDefFactory,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 
 describe("SheetNavigationAid", () => {
 
@@ -25,6 +25,12 @@ describe("SheetNavigationAid", () => {
 
     if (!ConfigurableUiManager.isControlRegistered("SheetNavigationAid"))
       ConfigurableUiManager.registerControl("SheetNavigationAid", SheetNavigationAidControl);
+
+    MockRender.App.startup();
+  });
+
+  after(() => {
+    MockRender.App.shutdown();
   });
 
   const connection = moq.Mock.ofType<IModelConnection>();

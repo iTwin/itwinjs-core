@@ -48,6 +48,7 @@ public;CanvasDecorationList = CanvasDecoration[]
 public;CategorySelectorState 
 beta;ChangeFlag
 beta;ChangeFlags
+public;ChangeViewedModel2dOptions
 alpha;CheckBoxIconsEditorParams 
 beta;enum ClassifierType
 alpha;ClipEventType
@@ -248,7 +249,7 @@ public;RotateViewTool
 alpha;RotationMode
 internal;RoundOff
 internal;SavedClipCache
-internal;SavedClipEntry
+alpha;SavedClipEntry
 internal;SavedClipProps
 internal;SavedState
 internal;SceneContext 
@@ -340,7 +341,6 @@ public;ToolTipOptions
 public;ToolType = typeof Tool
 internal;TouchCursor 
 alpha;TwoWayViewportSync
-alpha;Unit 
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection

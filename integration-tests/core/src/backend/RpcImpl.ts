@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcManager, IModelTokenProps, IModelToken } from "@bentley/imodeljs-common";
-import { TestRpcInterface } from "../common/RpcInterfaces";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/imodeljs-clients";
 import { IModelDb, ChangeSummaryExtractOptions, ChangeSummaryManager, BriefcaseManager, IModelJsFs, IModelHost } from "@bentley/imodeljs-backend";
+import { TestRpcInterface } from "../common/RpcInterfaces";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public static register() {
@@ -42,14 +42,14 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async reportRequestContext(): Promise<ClientRequestContextProps> {
     if (ClientRequestContext.current instanceof AuthorizedClientRequestContext)
       throw new Error("Did not expect AuthorizedClientRequestContext");
-    return ClientRequestContextProps.fromContext(ClientRequestContext.current);
+    return ClientRequestContext.current.toJSON();
   }
 
   public async reportAuthorizedRequestContext(): Promise<AuthorizedClientRequestContextProps> {
     if (!(ClientRequestContext.current instanceof AuthorizedClientRequestContext))
       throw new Error("Expected AuthorizedClientRequestContext");
     const context = ClientRequestContext.current as AuthorizedClientRequestContext;
-    return AuthorizedClientRequestContextProps.fromContext(context);
+    return context.toJSON();
   }
 }
 

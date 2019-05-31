@@ -12,7 +12,7 @@ import { Matrix3d } from "./Matrix3d";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
 /**
- * context for constructing smooth motion a startFrsutum and endFrutum.
+ * context for constructing smooth motion a startFrustum and endFrustum.
  * The externally interesting calls are
  * * Create a context to shift corner0 to corner1, with the(NPC coordinate) point(fractionU, fractionV, fractionW) moving along its connecting segment, all other points rotating smoothly from the start orientation to end orientation:
  * `const context = SmoothTransformBetweenFrusta (cornerA, cornerB)`

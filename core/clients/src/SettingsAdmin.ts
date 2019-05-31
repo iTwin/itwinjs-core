@@ -97,6 +97,60 @@ export interface SettingsAdmin {
    */
   deleteUserSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
+  /** Retrieves an array of user-specific settings objects that are stored with the specified namespace
+   * @param requestContext The client request context.
+   * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
+   * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+   * @param projectId The wsgId of the Project, to retrieve settings specific to a project, otherwise undefined.
+   * @param iModelId The wsgId of the iModel, to retrieve settings specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
+   * @return The result of the retrieval operation. If successful, SettingsResult.settingsMap contains a map of string to settings values containing all of the settings stored with the specified namespace.
+   */
+  getUserSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
+
+  /** Saves a shared settings object to the settings service.
+   * @param requestContext The client request context.
+   * @param settings The object to be saved. It is saved as a JSON string.
+   * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
+   * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
+   * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+   * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
+   * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
+   * @return The result of the save operation. The setting member is undefined for save operations.
+   */
+  saveSharedSetting(requestContext: AuthorizedClientRequestContext, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
+
+  /** Retrieves a shared settings object from the settings service.
+   * @param requestContext The client request context.
+   * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
+   * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
+   * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+   * @param projectId The wsgId of the Project (required for Shared Setting).
+   * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined.
+   * @return The result of the retrieval operation. The setting member contains the setting if the operation succeeds.
+   */
+  getSharedSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
+
+  /** Deletes a shared settings object from the settings service.
+   * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
+   * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
+   * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+   * @param projectId The wsgId of the Project (required for Shared Setting).
+   * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined.
+   * @return The result of the save operation. The setting member is undefined for delete operations. If the setting specified for deletion
+   * does not exists, the SettingsResult.status is SettingsStatus.SettingNotFound.
+   */
+  deleteSharedSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
+
+  /** Retrieves an array of shared settings objects that are stored with the specified namespace
+   * @param requestContext The client request context.
+   * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
+   * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+   * @param projectId The wsgId of the Project (required for Shared Setting).
+   * @param iModelId The wsgId of the iModel, to retrieve settings specific to an iModel, otherwise undefined.
+   * @return The result of the retrieval operation. If successful, SettingsResult.settingsMap contains a map of string to settings values containing all of the settings stored with the specified namespace.
+   */
+  getSharedSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsMapResult>;
+
   /** Saves a non-user-specific settings object to the settings service.
    * @param requestContext The client request context.
    * @param settings The object to be saved. It is saved as a JSON string.
@@ -138,19 +192,9 @@ export interface SettingsAdmin {
    * @param requestContext The client request context.
    * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
-   * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
-   * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined.The projectId must be specified if iModelId is specified.
+   * @param projectId The wsgId of the Project, to retrieve settings specific to a project, otherwise undefined.
+   * @param iModelId The wsgId of the iModel, to retrieve settings specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the retrieval operation. If successful, SettingsResult.settingsMap contains a map of string to settings values containing all of the settings stored with the specified namespace.
    */
   getSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
-
-  /** Retrieves an array of user-specific settings objects that are stored with the specified namespace
-   * @param requestContext The client request context.
-   * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
-   * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
-   * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
-   * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined.The projectId must be specified if iModelId is specified.
-   * @return The result of the retrieval operation. If successful, SettingsResult.settingsMap contains a map of string to settings values containing all of the settings stored with the specified namespace.
-   */
-  getUserSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
 }

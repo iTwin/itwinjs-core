@@ -27,7 +27,7 @@ export class Loop extends CurveChain {
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Loop; }
   public constructor() { super(); }
   /**
-   * Create a loop from variable length list of CurvePrimtives
+   * Create a loop from variable length list of CurvePrimitives
    * @param curves array of individual curve primitives
    */
   public static create(...curves: CurvePrimitive[]): Loop {
@@ -38,7 +38,7 @@ export class Loop extends CurveChain {
     return result;
   }
   /**
-   * Create a loop from an array of curve primtiives
+   * Create a loop from an array of curve primitives
    * @param curves array of individual curve primitives
    */
   public static createArray(curves: CurvePrimitive[]): Loop {
@@ -61,7 +61,7 @@ export class Loop extends CurveChain {
       curve.emitStrokes(strokes, options);
     return Loop.create(strokes);
   }
-  /** Return the boundary type (2) of a corresponding  Microstation CurveVector */
+  /** Return the boundary type (2) of a corresponding  MicroStation CurveVector */
   public dgnBoundaryType(): number { return 2; } // (2) all "Loop" become "outer"
   /** invoke `processor.announceLoop(this, indexInParent)` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {

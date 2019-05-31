@@ -65,8 +65,7 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
     const me = this;
     this.isReady // tslint:disable-line:no-floating-promises
       .then(() => {
-        if (IModelApp.viewManager)
-          IModelApp.viewManager.setSelectedView(me.viewport);
+        IModelApp.viewManager.setSelectedView(me.viewport);
       });
   }
 

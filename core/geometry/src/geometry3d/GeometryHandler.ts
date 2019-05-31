@@ -101,7 +101,7 @@ export abstract class GeometryHandler {
 }
 /**
  * `NullGeometryHandler` is a base class for dispatching various geometry types to
- * appliation specific implementation of some service.
+ * application specific implementation of some service.
  *
  * To use:
  * * Derive a class from `NullGeometryHandler`
@@ -198,7 +198,7 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
    * @alpha
    */
   public handleTransitionSpiral(_g: TransitionSpiral3d): any { return undefined; }
-/** Invoke `child.dispatchToGeometryHandler(this)` for each child in the array returned by the query `g.children` */
+  /** Invoke `child.dispatchToGeometryHandler(this)` for each child in the array returned by the query `g.children` */
   public handleChildren(g: GeometryQuery): any {
     const children = g.children;
     if (children)
@@ -247,7 +247,7 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
  * The various CurvePrimitive types are free to announce either single points (announcePoint), linear fragments,
  * or fractional intervals of the parent curve.
  * * handler.startCurvePrimitive (cp) -- announce the curve primitive whose strokes will follow.
- * * announcePointTangent (xyz, fraction, tangent) -- annunce a single point on the curve.
+ * * announcePointTangent (xyz, fraction, tangent) -- announce a single point on the curve.
  * * announceIntervalForUniformStepStrokes (cp, numStrokes, fraction0, fraction1) -- announce a fraction
  * interval in which the curve can be evaluated (e.g. the handler can call cp->fractionToPointAndDerivative ())
  * * announceSegmentInterval (cp, point0, point1, numStrokes, fraction0, fraction1) -- announce
@@ -269,7 +269,7 @@ export interface IStrokeHandler {
   /**
    * announce a single point with its fraction and tangent.
    * * (IMPORTANT) the same Point3d and Vector3d will be reset and passed on multiple calls.
-   * * (THEREFORE) if the implementation is saving coordinates, it must copy the xyz data out into its own data strucuture rather than save the references.
+   * * (THEREFORE) if the implementation is saving coordinates, it must copy the xyz data out into its own data structure rather than save the references.
    */
   announcePointTangent(xyz: Point3d, fraction: number, tangent: Vector3d): void;
 
@@ -287,7 +287,7 @@ export interface IStrokeHandler {
     numStrokes: number,
     fraction0: number,
     fraction1: number): void;
-    /** Announce that all data about `cp` has been annonced. */
+  /** Announce that all data about `cp` has been announced. */
   endCurvePrimitive(cp: CurvePrimitive): void;
   /** Announce that all data about the parent primitive has been announced. */
   endParentCurvePrimitive(cp: CurvePrimitive): void;

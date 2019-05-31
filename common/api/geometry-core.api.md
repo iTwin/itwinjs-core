@@ -155,15 +155,13 @@ export type AngleSweepProps = AngleSweep | {
 export class AnnotatedLineString3d {
     curveParam?: GrowableFloat64Array;
     uvwParam?: GrowableXYZArray;
+    vectorU?: GrowableXYZArray;
     vectorV?: GrowableXYZArray;
-    vecturU?: GrowableXYZArray;
 }
 
 // @public
 export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
 
-// Warning: (ae-missing-release-tag) "AnnounceDrapePanel" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type AnnounceDrapePanel = (linestring: GrowableXYZArray, segmentIndex: number, polyface: Polyface, facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number) => any;
 
@@ -746,7 +744,7 @@ export interface BSplineSurface3dQuery {
     cloneTransformed(transform: Transform): BSplineSurface3dQuery;
     degreeUV(select: UVSelect): number;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
-    fractionToPoint(uFractioin: number, vFraction: number): Point3d;
+    fractionToPoint(uFraction: number, vFraction: number): Point3d;
     fractionToRigidFrame(uFraction: number, vFraction: number): Transform | undefined;
     getPointGridJSON(): PackedPointGrid;
     isAlmostEqual(other: any): boolean;
@@ -1550,7 +1548,7 @@ export class GrowableFloat64Array {
     clear(): void;
     clone(maintainExcessCapacity?: boolean): GrowableFloat64Array;
     static compare(a: any, b: any): number;
-    compressAdjcentDuplicates(tolerance?: number): void;
+    compressAdjacentDuplicates(tolerance?: number): void;
     static create(contents: Float64Array | number[]): GrowableFloat64Array;
     ensureCapacity(newCapacity: number): void;
     front(): number;
@@ -1694,7 +1692,7 @@ export class HalfEdge {
     static createEdgeXYXY(id0: any, x0: number, y0: number, id1: any, x1: number, y1: number): HalfEdge;
     static createHalfEdgePair(heArray: HalfEdge[] | undefined): HalfEdge;
     static createHalfEdgePairWithCoordinates(xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, xB: number | undefined, yB: number | undefined, zB: number | undefined, iB: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
-    decomission(): void;
+    decommission(): void;
     distanceXY(other: HalfEdge): number;
     readonly edgeMate: HalfEdge;
     readonly facePredecessor: HalfEdge;

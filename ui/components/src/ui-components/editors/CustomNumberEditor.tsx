@@ -4,14 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PropertyEditors */
 
+// cSpell:ignore customnumber testid
+
 import * as React from "react";
 import classnames from "classnames";
+import { Logger } from "@bentley/bentleyjs-core";
 import {
   PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes,
-  InputEditorSizeParams, CustomFormattedNumberParams,
+  InputEditorSizeParams, CustomFormattedNumberParams, IModelApp, NotifyMessageDetails, OutputMessagePriority,
 } from "@bentley/imodeljs-frontend";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
+import { UiComponents } from "../UiComponents";
 
 import "./CustomNumberEditor.scss";
 
@@ -58,11 +62,22 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
           value: parseResults.value,
           displayValue: newDisplayValue,
         };
+        // make sure the text in the input item matches the latest formatted text... this could get out if the input string say 1.5 === the display string of 1'-6"
+        // istanbul ignore else
+        if (newDisplayValue !== this.state.inputValue) {
+          this.setState({ inputValue: newDisplayValue });
+        }
       } else {
+        const msg = new NotifyMessageDetails(OutputMessagePriority.Error, UiComponents.translate("errors.unable-to-parse-quantity"));
+        msg.setInputFieldTypeDetails(this._input as HTMLElement);
+        // istanbul ignore next
+        if (IModelApp.notifications)
+          IModelApp.notifications.outputMessage(msg);
+        const displayValue = (record.value.displayValue && record.value.displayValue.length > 0) ? record.value.displayValue : (this._formatParams as CustomFormattedNumberParams).formatFunction(record.value.value as number, record.property!.quantityType);
         propertyValue = {
           valueFormat: PropertyValueFormat.Primitive,
           value: record.value.value,
-          displayValue: record.value.displayValue,
+          displayValue,
         };
       }
     }
@@ -80,7 +95,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     }
   }
 
-  private _updateInputValue = (e: React.ChangeEvent<HTMLInputElement>) => {
+  private _applyUpdatedValue(userInput: string) {
     const record = this.props.propertyRecord as PropertyRecord;
     const readonly = (record && !record.isReadonly) ? false : true;
     const disabled = (record && !record.isDisabled) ? false : true;
@@ -91,8 +106,12 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     // istanbul ignore else
     if (this._isMounted)
       this.setState({
-        inputValue: e.target.value,
+        inputValue: userInput,
       });
+  }
+
+  private _updateInputValue = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this._applyUpdatedValue(e.target.value);
   }
 
   /** @internal */
@@ -117,18 +136,20 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     const record = this.props.propertyRecord;
     // istanbul ignore next
     if (!record || !record.property) {
+      Logger.logError(UiComponents.loggerCategory(this), "PropertyRecord must be defined to use CustomNumberPropertyEditor");
       // tslint:disable-next-line:no-console
-      console.log("PropertyRecord must be defined to use CustomNumberPropertyEditor");
+      // console.log("PropertyRecord must be defined to use CustomNumberPropertyEditor");
       return;
     }
-
+    // istanbul ignore else
     if (record.property && record.property.editor && record.property.editor.params) {
       this._formatParams = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.CustomFormattedNumber) as CustomFormattedNumberParams;
     }
 
     if (!this._formatParams) {
+      Logger.logError(UiComponents.loggerCategory(this), `CustomFormattedNumberParams must be defined for property ${record!.property!.name}`);
       // tslint:disable-next-line:no-console
-      console.log(`CustomFormattedNumberParams must be defined for property ${record!.property!.name}`);
+      // console.log(`CustomFormattedNumberParams must be defined for property ${record!.property!.name}`);
       return;
     }
 
@@ -147,7 +168,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
     let size: number | undefined;
     let maxLength: number | undefined;
-
+    // istanbul ignore else
     if (record.property && record.property.editor && record.property.editor.params) {
       const editorSizeParams = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.InputEditorSize) as InputEditorSizeParams;
       // istanbul ignore else
@@ -176,6 +197,38 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       );
   }
 
+  private _resetToOriginalValue() {
+    const record = this.props.propertyRecord;
+    let initialDisplayValue = "";
+    let numberValue = 0;
+    if (record) {
+      if (record.value.valueFormat === PropertyValueFormat.Primitive) {
+        const primitiveValue = (record.value as PrimitiveValue);
+        numberValue = (undefined !== primitiveValue.value) ? primitiveValue.value as number : 0;
+        if (primitiveValue.displayValue)
+          initialDisplayValue = primitiveValue.displayValue;
+        else
+          initialDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(numberValue, record.property!.quantityType);
+      }
+    }
+
+    this.setState({ inputValue: initialDisplayValue });
+  }
+
+  private _onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      this._resetToOriginalValue();
+    }
+
+    if (e.key !== "Enter") {
+      // istanbul ignore next
+      if (IModelApp.notifications)
+        IModelApp.notifications.closeInputFieldMessage();
+    }
+  }
+
   /** @internal */
   public render() {
     const record = this.props.propertyRecord as PropertyRecord;
@@ -198,11 +251,13 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
         maxLength={this.state.maxLength}
         value={this.state.inputValue}
         onChange={this._updateInputValue}
+        onKeyDown={this._onKeyPress}
         data-testid="components-customnumber-editor"
       />
     );
   }
 }
+// onKeyPress={this._onKeyPress}
 
 /** CustomNumberPropertyEditor React component that uses the [[CustomNumberEditor]] property editor.
  * @alpha

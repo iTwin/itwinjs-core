@@ -138,16 +138,14 @@ describe("ToolWidget", () => {
   });
 
   it("ToolWidget should render with an item list", () => {
-    const hItemList = new ItemList();
-    hItemList.addItem(CoreTools.selectElementCommand);
-    const vItemList = new ItemList();
-    vItemList.addItem(CoreTools.fitViewCommand);
+    const hItemList = new ItemList([CoreTools.selectElementCommand]);
+    const vItemList = new ItemList([CoreTools.fitViewCommand]);
 
     const wrapper = mount(
       <ToolWidget
         appButton={backstageToggleCommand}
         horizontalItems={hItemList}
-        verticalItems={hItemList}
+        verticalItems={vItemList}
       />,
     );
     wrapper.unmount();

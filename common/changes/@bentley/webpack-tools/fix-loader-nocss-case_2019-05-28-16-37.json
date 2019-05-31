@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix webpack to put the .css files required into the version string of index.html",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Barry.Bentley@bentley.com"
+}

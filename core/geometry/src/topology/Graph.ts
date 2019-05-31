@@ -10,7 +10,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
-/** funciton signature for function of one node with no return type restrictions
+/** function signature for function of one node with no return type restrictions
  * @internal
  */
 export type NodeFunction = (node: HalfEdge) => any;
@@ -60,7 +60,7 @@ export class HalfEdge {
   /** angle used for sort-around-vertex */
   public sortAngle?: number;  // used in sorting around vertex.
 
-  private _id: any;   // immutable id useful for debuggging.
+  private _id: any;   // immutable id useful for debugging.
   /** id assigned sequentially during construction --- useful for debugging. */
   public get id() { return this._id; }
 
@@ -330,7 +330,7 @@ export class HalfEdge {
   }
 
   /**
-   * Create an edge with initialid,x,y at each end.
+   * Create an edge with initial id,x,y at each end.
    * @param id0 id for first node
    * @param x0  x coordinate for first node
    * @param y0  y coordinate for first node
@@ -351,7 +351,7 @@ export class HalfEdge {
   /** "pinch" ...
    *
    * * is the universal manipulator for manipulating a node's next and prev pointers
-   * * swaps face precessors of nodeA and nodeB.
+   * * swaps face predecessors of nodeA and nodeB.
    * *  is its own inverse.
    * *  if nodeA, nodeB are in different face loops, the loops join to one loop.
    * *  if nodeA, nodeB are in the same face loop, the loop splits into two loops.
@@ -368,9 +368,9 @@ export class HalfEdge {
   }
 
   /** Turn all pointers to undefined so garbage collector can reuse the object.
-   *  This is to be called only by a Graph object that is being decomissioned.
+   *  This is to be called only by a Graph object that is being decommissioned.
    */
-  public decomission() {
+  public decommission() {
     (this._facePredecessor as any) = undefined;
     (this._faceSuccessor as any) = undefined;
     (this._edgeMate as any) = undefined;
@@ -514,7 +514,7 @@ export class HalfEdge {
       node = node.vertexSuccessor;
     } while (node !== this);
   }
-  /** Returns the signed sum of xy areas of triangls from first node to edges.
+  /** Returns the signed sum of xy areas of triangles from first node to edges.
    *
    * * A positive area is counterclockwise.
    * * A negative area is clockwise.
@@ -524,7 +524,7 @@ export class HalfEdge {
     // sum area of trapezoids.
     // * the formula in the loop gives twice the area (because it does nto average the y values).
     // * this is fixed up at the end by a single multiply by 0.5
-    // * indidual trapezoid heights are measured from y at the start node to keep area values numericall smaller.
+    // * individual trapezoid heights are measured from y at the start node to keep area values numerical smaller.
     const y0 = this.y;
     let dy0 = 0.0;
     let dy1 = 0.0;
@@ -590,7 +590,7 @@ export class HalfEdge {
   }
 
   /**
-   * * Compute fractional coordintes of the intersection of edges from given base nodes
+   * * Compute fractional coordinates of the intersection of edges from given base nodes
    * * If parallel or colinear, return undefined.
    * * If (possibly extended) lines intersect, return the fractions of intersection as x,y in the result.
    * @param nodeA0 Base node of edge A
@@ -611,7 +611,7 @@ export class HalfEdge {
     return undefined;
   }
   /**
-   * * Compute fractional coordintes of the intersection of a horizontal line with an edge.
+   * * Compute fractional coordinates of the intersection of a horizontal line with an edge.
    * * If the edge is horizontal with (approximate) identical y, return the node.
    * * If the edge is horizontal with different y, return undefined.
    * * If the edge is not horizontal, return the fractional position (possibly outside 0..1) of the intersection.
@@ -629,7 +629,7 @@ export class HalfEdge {
   }
 
   /**
-   * * Compute fractional coordintes of the intersection of a horizontal line with an edge.
+   * * Compute fractional coordinates of the intersection of a horizontal line with an edge.
    * * If the edge is horizontal return undefined (no test for horizontal at y!!!)
    * * If the edge is not horizontal and y is between its end y's, return the fraction
    * @param nodeA Base node of edge
@@ -681,7 +681,7 @@ export class HalfEdgeGraph {
   }
 
   /**
-   * * Insert a vertex in the edge begining at base.
+   * * Insert a vertex in the edge beginning at base.
    * * this creates two half edges.
    * * The base of the new edge is 'after' the (possibly undefined) start node in its face loop.
    * * The existing mate retains its base xyzi properties but is no longer the mate of base.
@@ -693,11 +693,11 @@ export class HalfEdgeGraph {
     const he = HalfEdge.splitEdge(base, xA, yA, zA, iA, this.allHalfEdges);
     return he;
   }
-  /** This is a destructor-like action that elminates all interconnection among the graph's nodes.
+  /** This is a destructor-like action that eliminates all interconnection among the graph's nodes.
    * After this is called the graph is unusable.
    */
   public decommission() {
-    for (const node of this.allHalfEdges) { node.decomission(); }
+    for (const node of this.allHalfEdges) { node.decommission(); }
     this.allHalfEdges.length = 0;
     (this.allHalfEdges as any) = undefined;
   }
@@ -811,7 +811,7 @@ export class HalfEdgeGraph {
    * * Visit each facet of the graph once.
    * * Call the announceFace function
    * * continue search if announceFace(graph, node) returns true
-   * * terminate search if announceface (graph, node) returns false
+   * * terminate search if announce face (graph, node) returns false
    * @param  announceFace function to apply at one node of each face.
    */
   public announceFaceLoops(announceFace: GraphNodeFunction) {
@@ -829,8 +829,8 @@ export class HalfEdgeGraph {
    * * Visit each vertex loop of the graph once.
    * * Call the announceVertex function
    * * continue search if announceFace(graph, node) returns true
-   * * terminate search if announceface (graph, node) returns false
-   * @param  annonceFace function to apply at one node of each face.
+   * * terminate search if announce face (graph, node) returns false
+   * @param  announceVertex function to apply at one node of each face.
    */
   public announceVertexLoops(announceVertex: GraphNodeFunction) {
     this.clearMask(HalfEdgeMask.VISITED);
@@ -881,7 +881,7 @@ export enum HalfEdgeMask {
   WORK_MASK1 = 0x00000080,
   // DIRECTED_EDGE_MASK = 0x00000100,
   /** Mask commonly set (on both sides) of original geometry edges, but NOT indicating that the edge is certainly a boundary between outside and inside.
-   * * For instance, if geometry is provided as stray sticks (not loops), it can be marked PRIMARY_EDGE but neither BOUDNARY_EDGE nor EXTERIOR_EDGE
+   * * For instance, if geometry is provided as stray sticks (not loops), it can be marked PRIMARY_EDGE but neither BOUNDARY_EDGE nor EXTERIOR_EDGE
    */
   PRIMARY_EDGE = 0x00000200,
   // HULL_MASK = 0x00000400,
@@ -889,7 +889,7 @@ export enum HalfEdgeMask {
   // POLAR_LOOP_MASK = 0x00001000,
   /** Mask used for low level searches to identify previously-visited nodes */
   VISITED = 0x00002000,
-  /** Maks applied to triangles by earcut triangulator */
+  /** Mask applied to triangles by earcut triangulator */
   TRIANGULATED_FACE = 0x00004000,
   /** no mask bits */
   NULL_MASK = 0x00000000,

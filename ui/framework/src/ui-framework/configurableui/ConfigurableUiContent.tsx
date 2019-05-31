@@ -17,6 +17,7 @@ import { FrontstageComposer } from "../frontstage/FrontstageComposer";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
 import { PointerMessage } from "../messages/Pointer";
+import { InputFieldMessage } from "../messages/InputField";
 import { FrameworkState } from "../FrameworkState";
 
 import "./configurableui.scss";
@@ -70,6 +71,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
         <ElementTooltip />
         <PointerMessage />
         <KeyboardShortcutMenu />
+        <InputFieldMessage />
       </div>
     );
   }

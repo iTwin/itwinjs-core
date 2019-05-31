@@ -9,7 +9,7 @@ import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Transform } from "../geometry3d/Transform";
 /**
- * Base class for SolidPrimitve variants.
+ * Base class for SolidPrimitive variants.
  *
  * * The base class holds capped flag for all derived classes.
  * @public

@@ -50,7 +50,7 @@ export class YawPitchRollAngles {
   public static createRadians(yawRadians: number, pitchRadians: number, rollRadians: number): YawPitchRollAngles {
     return new YawPitchRollAngles(Angle.createRadians(yawRadians), Angle.createRadians(pitchRadians), Angle.createRadians(rollRadians));
   }
-  /** constructg a `YawPitchRoll` objecgt from an object with 3 named angles */
+  /** construct a `YawPitchRoll` object from an object with 3 named angles */
   public static fromJSON(json?: YawPitchRollProps): YawPitchRollAngles {
     json = json ? json : {};
     return new YawPitchRollAngles(Angle.fromJSON(json.yaw), Angle.fromJSON(json.pitch), Angle.fromJSON(json.roll));

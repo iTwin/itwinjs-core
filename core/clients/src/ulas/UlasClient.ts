@@ -45,8 +45,8 @@ export interface ProductVersion {
  * @internal
  */
 export class UsageLogEntry {
-  /** The GUID of the project that the usage should be associated with. */
-  public projectId?: GuidString;
+  /** The GUID of the context that the usage should be associated with. */
+  public contextId?: GuidString;
 
   /** Name of the client machine from which usage is logged */
   public readonly hostName: string;
@@ -65,10 +65,12 @@ export class UsageLogEntry {
    *  This also sets the timestamp against which the usage will be logged.
    *  @param hostName Name of the client machine from which usage is logged.
    *  @param usageType Usage type (see [[UsageType]])
+   *  @param contextId The GUID of the context that the usage should be associated with.
    */
-  public constructor(hostName: string, usageType: UsageType) {
+  public constructor(hostName: string, usageType: UsageType, contextId?: GuidString) {
     this.hostName = hostName;
     this.usageType = usageType;
+    this.contextId = contextId;
     this.timestamp = new Date().toISOString();
   }
 }
@@ -92,8 +94,8 @@ export interface FeatureLogEntryAttribute {
  * @internal
  */
 export class FeatureLogEntry {
-  /** The GUID of the project that the usage should be associated with. */
-  public projectId?: GuidString;
+  /** The GUID of the context that the usage should be associated with. */
+  public contextId?: GuidString;
 
   /** ID of the feature to log (from the Global Feature Registry). */
   public readonly featureId: GuidString;
@@ -119,11 +121,13 @@ export class FeatureLogEntry {
    *  @param featureId Feature ID from the Global Feature Registry which is being logged.
    *  @param hostName Name of the client machine from which the feature is being logged.
    *  @param usageType Usage type (see [[UsageType]])
+   *  @param contextId The GUID of the context that the usage should be associated with.
    */
-  public constructor(featureId: GuidString, hostName: string, usageType: UsageType) {
+  public constructor(featureId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString) {
     this.featureId = featureId;
     this.hostName = hostName;
     this.usageType = usageType;
+    this.contextId = contextId;
     this.usageData = [];
     this.timestamp = new Date().toISOString();
   }
@@ -148,9 +152,10 @@ export class FeatureStartedLogEntry extends FeatureLogEntry {
    *  @param featureId Feature ID from the Global Feature Registry which is being logged.
    *  @param hostName Name of the client machine from which the feature is being logged.
    *  @param usageType Usage type (see [[UsageType]])
+   *  @param contextId The GUID of the context that the usage should be associated with.
    */
-  public constructor(featureId: GuidString, hostName: string, usageType: UsageType) {
-    super(featureId, hostName, usageType);
+  public constructor(featureId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString) {
+    super(featureId, hostName, usageType, contextId);
     this.entryId = Guid.createValue();
   }
 }
@@ -175,9 +180,10 @@ export class FeatureEndedLogEntry extends FeatureLogEntry {
    *  @param startEntryId ID of the corresponding [[FeatureStartedLogEntry]]
    *  @param hostName Name of the client machine from which the feature is being logged.
    *  @param usageType Usage type (see [[UsageType]])
+   *  @param contextId The GUID of the context that the usage should be associated with.
    */
-  public constructor(featureId: GuidString, startEntryId: GuidString, hostName: string, usageType: UsageType) {
-    super(featureId, hostName, usageType);
+  public constructor(featureId: GuidString, startEntryId: GuidString, hostName: string, usageType: UsageType, contextId?: GuidString) {
+    super(featureId, hostName, usageType, contextId);
     this.startEntryId = startEntryId;
   }
 
@@ -187,9 +193,8 @@ export class FeatureEndedLogEntry extends FeatureLogEntry {
    */
   public static fromStartEntry(startEntry: FeatureStartedLogEntry): FeatureEndedLogEntry {
     const endEntry = new FeatureEndedLogEntry(startEntry.featureId, startEntry.entryId,
-      startEntry.hostName, startEntry.usageType);
+      startEntry.hostName, startEntry.usageType, startEntry.contextId);
 
-    endEntry.projectId = startEntry.projectId;
     endEntry.usageData = startEntry.usageData;
 
     return endEntry;
@@ -253,6 +258,7 @@ export class UlasClient extends Client {
    * @param requestContext The client request context.
    * @param authTokenInfo Access token.
    * @returns Resolves to the (delegation) access token.
+   * @internal
    */
   public async getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     const imsClient = new ImsDelegationSecureTokenClient();

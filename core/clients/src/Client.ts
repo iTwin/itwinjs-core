@@ -42,7 +42,7 @@ export class DefaultRequestOptionsProvider {
 // @todo Setup a logging framework.
 /**
  * Base class for all Client implementations
- * @public
+ * @beta
  */
 export abstract class Client {
   private static _defaultRequestOptionsProvider: DefaultRequestOptionsProvider;
@@ -112,7 +112,7 @@ export abstract class Client {
 
 /**
  * Error for issues with authentication.
- * @public
+ * @beta
  */
 export class AuthenticationError extends ResponseError {
 }

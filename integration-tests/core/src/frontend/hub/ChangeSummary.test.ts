@@ -48,7 +48,8 @@ describe("ChangeSummary (#integration)", () => {
     MockRender.App.shutdown();
   });
 
-  it("Change cache file generation when attaching change cache", async () => {
+  // ###TODO AFFAN ???
+  it.skip("Change cache file generation when attaching change cache", async () => {
     assert.exists(iModel);
     await TestRpcInterface.getClient().deleteChangeCache(iModel.iModelToken.toJSON());
     await iModel.attachChangeCache();

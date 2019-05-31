@@ -1,6 +1,7 @@
 sep=;
 Release Tag;API Item
 alpha;BadUnit 
+alpha;BasicUnit 
 alpha;DecimalPrecision
 alpha;Format 
 alpha;FormatProps
@@ -10,6 +11,9 @@ alpha;FormatTraits
 alpha;FormatType
 alpha;FractionalPrecision
 alpha;Parser
+alpha;ParseResult
+alpha;ParserSpec
+alpha;PotentialParseUnit
 alpha;Quantity 
 internal;QuantityConstants
 alpha;QuantityError 

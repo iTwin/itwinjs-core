@@ -26,7 +26,7 @@ import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
-import { Config as CQMConfig } from "./ConcurrentQuery";
+import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
 /** @alpha */
@@ -98,10 +98,6 @@ export class IModelHostConfiguration {
    * @internal
    */
   public static defaultTileRequestTimeout = 20 * 1000;
-  /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries.
-   * @internal
-   */
-  public useTileContentThreadPool = false;
 
   /** The default time, in seconds, used for [[logTileLoadTimeThreshold]]. To change this, override that property.
    * @internal
@@ -126,16 +122,17 @@ export class IModelHostConfiguration {
    */
   public crashReportingConfig?: CrashReportingConfig;
 
-  public concurrentQueryManagerConfig: CQMConfig = {
+  public concurrentQuery: ConcurrentQueryConfig = {
     concurrent: os.cpus().length,
     autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
     minMonitorInterval: 1, // 1 seconds
-    idolCleanupTime: 30 * 60, // 30 minutes
+    idleCleanupTime: 30 * 60, // 30 minutes
     cachedStatementsPerThread: 40,
     maxQueueSize: os.cpus().length * 500,
+    pollInterval: 50,
     quota: {
       maxTimeAllowed: 60, // 1 Minute
-      maxMemoryAllowed: 2 * 1024 * 1024, // 4 Mb
+      maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes
     },
   };
 }
@@ -347,11 +344,6 @@ export class IModelHost {
   public static get tileContentRequestTimeout(): number {
     return undefined !== IModelHost.configuration ? IModelHost.configuration.tileContentRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
   }
-
-  /** If true, requests for tile content will execute on a separate thread pool to avoid blocking other, less expensive asynchronous requests such as ECSql queries.
-   * @internal
-   */
-  public static get useTileContentThreadPool(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useTileContentThreadPool; }
 
   /** The backend will log when a tile took longer to load than this threshold in seconds. */
   public static get logTileLoadTimeThreshold(): number { return undefined !== IModelHost.configuration ? IModelHost.configuration.logTileLoadTimeThreshold : IModelHostConfiguration.defaultLogTileLoadTimeThreshold; }

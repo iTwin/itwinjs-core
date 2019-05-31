@@ -1,37 +1,36 @@
 sep=;
 Release Tag;API Item
-internal;AccessToken 
+beta;AccessToken 
 internal;addSelectFileAccessKey(query: RequestQueryOptions): void
 internal;AggregateResponseError 
 alpha;AllCodesDeletedEvent 
 alpha;AllLocksDeletedEvent 
 internal;ArgumentCheck
-public;Asset 
-public;AuthenticationError 
+beta;Asset 
+beta;AuthenticationError 
 internal;AuthorizationToken 
-beta;AuthorizedClientRequestContext 
+public;AuthorizedClientRequestContext 
 public;AuthorizedClientRequestContextProps 
-public;AuthorizedClientRequestContextProps
 internal;Briefcase 
 internal;BriefcaseAccessMode
 internal;BriefcaseDeletedEvent 
-public;class BriefcaseEvent 
+beta;class BriefcaseEvent 
 internal;BriefcaseHandler
 internal;BriefcaseQuery 
-public;ChangeSet 
-public;ChangeSetCreatedEvent 
-public;ChangeSetHandler
-public;ChangeSetPostPushEvent 
-public;ChangeSetPrePushEvent 
-public;ChangeSetQuery 
-internal;ChangeState = "new" | "modified" | "deleted"
-public;ChangesType
-internal;Checkpoint 
-internal;CheckpointHandler
-internal;CheckpointQuery 
+beta;ChangeSet 
+beta;ChangeSetCreatedEvent 
+beta;ChangeSetHandler
+beta;ChangeSetPostPushEvent 
+beta;ChangeSetPrePushEvent 
+beta;ChangeSetQuery 
+beta;ChangeState = "new" | "modified" | "deleted"
+beta;ChangesType
+alpha;Checkpoint 
+alpha;CheckpointHandler
+alpha;CheckpointQuery 
 internal;ClassKeyMapInfo
-public;class Client
-public;ClientsLoggerCategory
+beta;class Client
+beta;ClientsLoggerCategory
 alpha;CodeBase 
 alpha;CodeEvent 
 alpha;CodeHandler
@@ -44,22 +43,22 @@ alpha;CodeUpdateOptions
 public;Config
 alpha;ConflictingCodesError 
 alpha;ConflictingLocksError 
-public;ConnectClient 
-internal;ConnectRequestQueryOptions 
+beta;ConnectClient 
+beta;ConnectRequestQueryOptions 
 internal;ConnectSettingsClient 
 internal;ConstructorType = new () => any
-public;Context 
-public;ContextType
+beta;Context 
+beta;ContextType
 internal;DefaultCodeUpdateOptionsProvider
 internal;DefaultLockUpdateOptionsProvider
 internal;DefaultRequestOptionsProvider
 internal;DefaultWsgRequestOptionsProvider 
-internal;class ECInstance
+beta;class ECInstance
 internal;ECJsonTypeMap
-public;EventHandler 
-public;EventSAS 
-public;EventSubscription 
-public;EventSubscriptionHandler
+beta;EventHandler 
+beta;EventSAS 
+beta;EventSubscription 
+beta;EventSubscriptionHandler
 internal;FeatureEndedLogEntry 
 internal;FeatureLogEntry
 internal;FeatureLogEntryAttribute
@@ -67,44 +66,44 @@ internal;FeatureLogEntryAttributeJson
 internal;FeatureLogEntryJson 
 internal;FeatureStartedLogEntry 
 internal;FileAccessKey 
-internal;FileHandler
-public;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
-public;GetEventOperationType
-public;getJson(requestContext: ClientRequestContext, url: string): Promise
-public;GlobalEventHandler 
-public;GlobalEventSAS 
-public;GlobalEventSubscription 
-public;GlobalEventSubscriptionHandler
+beta;FileHandler
+internal;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
+beta;GetEventOperationType
+internal;getJson(requestContext: ClientRequestContext, url: string): Promise
+beta;GlobalEventHandler 
+beta;GlobalEventSAS 
+beta;GlobalEventSubscription 
+beta;GlobalEventSubscriptionHandler
 beta;HardiModelDeleteEvent 
 alpha;HubCode 
-public;HubIModel 
+beta;HubIModel 
 alpha;HubUserInfo 
-beta;IAngularOidcFrontendClient 
+alpha;IAngularOidcFrontendClient 
 beta;IAuthorizationClient
 internal;IModelBankClient 
 internal;IModelBankFileSystemContextClient 
-internal;IModelBankHandler 
-internal;IModelBaseHandler 
-public;class IModelClient
-public;IModelCreatedEvent 
-public;IModelDeletedEvent 
+beta;IModelBankHandler 
+beta;IModelBaseHandler 
+beta;class IModelClient
+beta;IModelCreatedEvent 
+beta;IModelDeletedEvent 
 internal;IModelFileSystemContextProps
-public;IModelHandler
-public;IModelHubClient 
-public;IModelHubClientError 
-public;IModelHubError 
-public;class IModelHubEvent 
-public;class IModelHubGlobalEvent 
-public;IModelQuery 
-public;IModelsHandler
+beta;IModelHandler
+beta;IModelHubClient 
+beta;IModelHubClientError 
+beta;IModelHubError 
+beta;class IModelHubEvent 
+beta;class IModelHubGlobalEvent 
+beta;IModelQuery 
+beta;IModelsHandler
 internal;ImsActiveSecureTokenClient 
 internal;ImsDelegationSecureTokenClient 
 internal;ImsFederatedAuthenticationClient 
 internal;ImsTestAuthorizationClient 
 internal;ImsUserCredentials
 internal;IncludePrefix
-internal;InitializationState
-internal;InstanceIdQuery 
+beta;InitializationState
+beta;InstanceIdQuery 
 beta;IOidcFrontendClient 
 alpha;LargeThumbnail 
 alpha;Lock 
@@ -119,32 +118,32 @@ internal;LogEntryConverter
 internal;LogPostingResponse
 internal;MultiCode 
 alpha;MultiLock 
-public;NamedVersionCreatedEvent 
+beta;NamedVersionCreatedEvent 
 beta;class OidcClient 
 beta;OidcFrontendClientConfiguration
 internal;ParseEvent(response: Response): IModelHubEvent
 internal;ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent
 internal;Permission 
 internal;ProductVersion
-public;ProgressInfo
-public;Project 
-internal;Query
+beta;ProgressInfo
+beta;Project 
+beta;Query
 internal;RbacProject 
 internal;RbacRequestQueryOptions 
 internal;RbacUser 
 internal;RealityData 
 internal;RealityDataRelationship 
 internal;RealityDataServicesClient 
-public;request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise
-alpha;RequestBasicCredentials
-internal;RequestGlobalOptions
-alpha;requestIdHeaderName = "X-Correlation-Id"
-alpha;RequestOptions
-alpha;RequestQueryOptions
-alpha;RequestQueryStringifyOptions
-alpha;RequestTimeoutOptions
-public;Response
-public;ResponseError 
+internal;request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise
+beta;RequestBasicCredentials
+beta;RequestGlobalOptions
+beta;requestIdHeaderName = "X-Correlation-Id"
+beta;RequestOptions
+beta;RequestQueryOptions
+beta;RequestQueryStringifyOptions
+beta;RequestTimeoutOptions
+beta;Response
+beta;ResponseError 
 internal;SeedFile 
 alpha;SettingsAdmin
 alpha;SettingsMapResult
@@ -152,13 +151,13 @@ alpha;SettingsResult
 alpha;SettingsStatus
 alpha;SmallThumbnail 
 beta;SoftiModelDeleteEvent 
-internal;StringIdQuery 
+beta;StringIdQuery 
 alpha;class Thumbnail 
 alpha;ThumbnailHandler
 alpha;ThumbnailQuery 
 alpha;ThumbnailSize = "Small" | "Large"
 alpha;TipThumbnail
-internal;class Token
+beta;class Token
 internal;UlasClient 
 internal;UrlDiscoveryClient 
 internal;UsageLogEntry
@@ -170,11 +169,11 @@ alpha;UserInfoQuery
 alpha;UserStatistics 
 alpha;UserStatisticsHandler
 alpha;UserStatisticsQuery 
-public;Version 
-public;VersionEvent 
-public;VersionHandler
-public;VersionQuery 
-internal;class WsgClient 
-internal;WsgError 
-internal;class WsgInstance 
-internal;WsgRequestOptions
+beta;Version 
+beta;VersionEvent 
+beta;VersionHandler
+beta;VersionQuery 
+beta;class WsgClient 
+beta;WsgError 
+beta;class WsgInstance 
+beta;WsgRequestOptions

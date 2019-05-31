@@ -10,16 +10,18 @@ import { QueryQuota } from "@bentley/imodeljs-common";
 export interface Config {
   /** Time seconds after which any completed query result will be purged */
   autoExpireTimeForCompletedQuery?: number;
-  /** Number of concurrent worker to use. By default set to avaliable CPUs */
+  /** Number of concurrent worker to use. By default set to available CPUs */
   concurrent?: number;
   /** Number of ECSQL cached statement held by a single worker */
   cachedStatementsPerThread?: number;
-  /** Maximum size of query queue after which incomming queries are rejected */
+  /** Maximum size of query queue after which incoming queries are rejected */
   maxQueueSize?: number;
-  /** Minimum time interval in seconds after which monitor kickin. */
+  /** Minimum time interval in seconds after which monitor starts. */
   minMonitorInterval?: number;
-  /** Idol period of time in seconds after which resouces and caches are purged */
-  idolCleanupTime?: number;
+  /** idle period of time in seconds after which resources and caches are purged */
+  idleCleanupTime?: number;
+  /** Poll interval in milliseconds. */
+  pollInterval?: number;
   /** Global restriction on query quota */
   quota?: QueryQuota;
 }
@@ -28,16 +30,16 @@ export interface Config {
  *  @internal
  */
 export enum PostStatus {
-  NotInitalized = 0,
+  NotInitialized = 0,
   Done = 1,
-  QueueSizeExceded = 2,
+  QueueSizeExceeded = 2,
 }
 
 /** Poll status for concurrent query manager
  *  @internal
  */
 export enum PollStatus {
-  NotInitalized = 0,
+  NotInitialized = 0,
   Done = 1,
   Pending = 2,
   Partial = 3,

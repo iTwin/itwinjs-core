@@ -25,7 +25,6 @@ exports.builder = (yargs) =>
         describe: "Only build the BACKEND bundle",
         conflicts: "frontend"
       }
-
     })
     .options({
       "useConfigLoader": {
@@ -47,7 +46,7 @@ exports.handler = async (argv) => {
   if ("electron" === buildTarget)
     process.env.ELECTRON_ENV = "production";
 
-    if ("ios" === buildTarget)
+  if ("ios" === buildTarget)
     process.env.IOS_ENV = "dev";
 
   const path = require("path");
@@ -97,7 +96,9 @@ exports.handler = async (argv) => {
   }
 
   // Warn and crash if required files are missing
-  if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs, paths.appMainJs])) {
+  const requiredFrontendFiles = (skipFrontend) ? [] : [paths.appHtml, paths.appIndexJs];
+  const requiredBackendFiles = (skipBackend) ? [] : [paths.appMainJs];
+  if (!checkRequiredFiles([...requiredFrontendFiles, ...requiredBackendFiles])) {
     process.exit(1);
   }
 

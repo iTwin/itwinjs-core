@@ -40,7 +40,9 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       label: () => Tool1.flyover,
       tooltip: () => Tool1.description,
-      execute: () => { IModelApp.tools.run(Tool1.toolId); },
+      execute: () => {
+        IModelApp.tools.run(Tool1.toolId);
+      },
     });
   }
 
@@ -60,7 +62,11 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:tools.ToolWithSettings.flyover",
       tooltipKey: "SampleApp:tools.ToolWithSettings.description",
-      execute: () => { IModelApp.tools.run(ToolWithSettings.toolId); },
+      execute: async () => {
+        // make sure formatting and parsing data are cached before the tool starts.
+        await IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats);
+        IModelApp.tools.run(ToolWithSettings.toolId);
+      },
     });
   }
 

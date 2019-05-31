@@ -38,7 +38,6 @@ export function initializeBackend() {
   setupStandaloneConfiguration();
 
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.useTileContentThreadPool = true;
   // tslint:disable-next-line:no-var-requires
   const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
   const svtConfig: SVTConfiguration = require(configPathname);

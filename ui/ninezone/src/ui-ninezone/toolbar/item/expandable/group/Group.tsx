@@ -6,11 +6,10 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
 import { Panel } from "./Panel";
 import { Columns } from "./Columns";
 import { Title } from "./Title";
-import { NoChildrenProps } from "../../../../utilities/Props";
 
 /** Properties of [[Group]] component.
  * @alpha

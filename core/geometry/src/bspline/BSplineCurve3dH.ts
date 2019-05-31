@@ -42,7 +42,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
   public isSameGeometryClass(other: any): boolean { return other instanceof BSplineCurve3dH; }
   /** Apply `transform` to the curve */
   public tryTransformInPlace(transform: Transform): boolean { Point4dArray.multiplyInPlace(transform, this._bcurve.packedData); return true; }
-/** Get a pole, normalized to Point3d. */
+  /** Get a pole, normalized to Point3d. */
   public getPolePoint3d(poleIndex: number, result?: Point3d): Point3d | undefined {
     const k = this.poleIndexToDataIndex(poleIndex);
     if (k !== undefined) {
@@ -119,7 +119,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       numPoles /= 4;  // blocked as xyz
     }
     const numKnots = knotArray.length;
-    // shift knots-of-interest limits for overclampled case ...
+    // shift knots-of-interest limits for overclamped case ...
     const skipFirstAndLast = (numPoles + order === numKnots);
     if (order < 1 || numPoles < order)
       return undefined;
@@ -167,7 +167,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       dxyzw[0], dxyzw[1], dxyzw[2], dxyzw[3], result);
   }
 
-  /** Evaluate at a positioni given by a knot value. */
+  /** Evaluate at a position given by a knot value. */
   public knotToPoint(u: number, result?: Point3d): Point3d {
     this._bcurve.evaluateBuffersAtKnot(u);
     const xyzw = this._bcurve.poleBuffer;
@@ -195,7 +195,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       ddxyzw[0], ddxyzw[1], ddxyzw[2], ddxyzw[3],
       result);
   }
-/** test if the curve is almost equal to `other` */
+  /** test if the curve is almost equal to `other` */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof BSplineCurve3dH) {
       return this._bcurve.knots.isAlmostEqual(other._bcurve.knots)
@@ -207,9 +207,9 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return Point4dArray.isCloseToPlane(this._bcurve.packedData, plane);
   }
-/** Rreturn the control polygon length as quick approximation to the curve length. */
+  /** Rreturn the control polygon length as quick approximation to the curve length. */
   public quickLength(): number { return Point3dArray.sumEdgeLengths(this._bcurve.packedData); }
-/** call a handler with interval data for stroking. */
+  /** call a handler with interval data for stroking. */
   public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {
     const needBeziers = (handler as any).announceBezierCurve;
     const workBezier = this.initializeWorkBezier();
@@ -233,7 +233,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       }
     }
   }
-/**  Append stroked approximation of this curve to the linestring. */
+  /**  Append stroked approximation of this curve to the linestring. */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
     const workBezier = this.initializeWorkBezier();
     const numSpan = this.numSpan;
@@ -244,7 +244,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     }
   }
   /**
-   * Assess legnth and turn to determine a stroke count.
+   * Assess length and turn to determine a stroke count.
    * @param options stroke options structure.
    */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
@@ -331,17 +331,17 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
   public getSaturatedBezierSpan3dOr3dH(spanIndex: number, _prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined {
     return this.getSaturatedBezierSpan3dH(spanIndex, result);
   }
-/** Second step of double dispatch:  call `handler.handleBSplineCurve3dH(this)` */
+  /** Second step of double dispatch:  call `handler.handleBSplineCurve3dH(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBSplineCurve3dH(this);
   }
-/**
- * Extend a range so in includes the range of this curve
- * * REMARK: this is based on the poles, not the exact curve.  This is generally larger than the true curve range.
- * @param rangeToExtend
- * @param transform transform to apply to points as they are entered into the range.
- */
-public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
+  /**
+   * Extend a range so in includes the range of this curve
+   * * REMARK: this is based on the poles, not the exact curve.  This is generally larger than the true curve range.
+   * @param rangeToExtend
+   * @param transform transform to apply to points as they are entered into the range.
+   */
+  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     const buffer = this._bcurve.packedData;
     const n = buffer.length - 3;
     if (transform) {

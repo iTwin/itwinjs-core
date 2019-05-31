@@ -157,14 +157,14 @@ export class ClipPlane implements Clipper {
       val.invisible = true;
     return val;
   }
-/** parse json object to ClipPlane instance */
+  /** parse json object to ClipPlane instance */
   public static fromJSON(json: any, result?: ClipPlane): ClipPlane | undefined {
     if (json && json.normal && Number.isFinite(json.dist)) {
       return ClipPlane.createNormalAndDistance(Vector3d.fromJSON(json.normal), json.dist, !!json.invisible, !!json.interior);
     }
     return ClipPlane.createNormalAndDistance(Vector3d.unitZ(), 0, false, false, result);
   }
-/** Set both the invisible and interior flags. */
+  /** Set both the invisible and interior flags. */
   public setFlags(invisible: boolean, interior: boolean) {
     this._invisible = invisible;
     this._interior = interior;
@@ -343,7 +343,7 @@ export class ClipPlane implements Clipper {
     return - h0 / (h1 - h0);
   }
 
-  /** Apply transform to the origin.  Apply inverse tranpsoe of the matrix part to th normal vector. */
+  /** Apply transform to the origin.  Apply inverse transpose of the matrix part to th normal vector. */
   public transformInPlace(transform: Transform): boolean {
     const plane: Plane3dByOriginAndUnitNormal = this.getPlane3d();
     const matrix: Matrix3d = transform.matrix;
@@ -362,7 +362,7 @@ export class ClipPlane implements Clipper {
     this._distanceFromOrigin = this._inwardNormal.dotProduct(plane.getOriginRef());
     return true;
   }
-/** Set the invisible flag.   Interpretation of this is up to the use code algorithms. */
+  /** Set the invisible flag.   Interpretation of this is up to the use code algorithms. */
   public setInvisible(invisible: boolean) {
     this._invisible = invisible;
   }
@@ -379,12 +379,12 @@ export class ClipPlane implements Clipper {
   public offsetDistance(offset: number) {
     this._distanceFromOrigin += offset;
   }
-/**
- * Clip a polygon, returning the clip result in the same object.
- * @param xyz input/output polygon
- * @param work scratch object
- * @param tolerance tolerance for on-plane decision.
- */
+  /**
+   * Clip a polygon, returning the clip result in the same object.
+   * @param xyz input/output polygon
+   * @param work scratch object
+   * @param tolerance tolerance for on-plane decision.
+   */
   public convexPolygonClipInPlace(xyz: Point3d[], work: Point3d[], tolerance: number = Geometry.smallMetricDistance) {
     work.length = 0;
     let numNegative = 0;
@@ -478,10 +478,10 @@ export class ClipPlane implements Clipper {
     }
     work.clear();
   }
-/** Return an array containing
- * * All points that are exactly on the plane.
- * * Crossing points between adjacent points that are (strictly) on opposite sides.
- */
+  /** Return an array containing
+   * * All points that are exactly on the plane.
+   * * Crossing points between adjacent points that are (strictly) on opposite sides.
+   */
   public polygonCrossings(xyz: Point3d[], crossings: Point3d[]) {
     crossings.length = 0;
     if (xyz.length >= 2) {
@@ -548,7 +548,7 @@ export class ClipPlane implements Clipper {
     }
   }
   /**
-   * Multiply the ClipPlanes's DPoint4d by matrix.
+   * Multiply the ClipPlane's DPoint4d by matrix.
    * @param matrix matrix to apply.
    * @param invert if true, use in verse of the matrix.
    * @param transpose if true, use the transpose of the matrix (or inverse, per invert parameter)
@@ -604,17 +604,17 @@ export class ClipPlane implements Clipper {
    * * z axis points in
    * x and y are "in plane"
    */
-   public getFrame(): Transform {
-   const d = this._distanceFromOrigin;
-   const origin = Point3d.create(this._inwardNormal.x * d, this._inwardNormal.y * d, this._inwardNormal.z * d);
-   const matrix = Matrix3d.createRigidHeadsUp(this._inwardNormal, AxisOrder.ZXY);
-   return Transform.createOriginAndMatrix(origin, matrix);
- }
-   /**
-    * Return the intersection of the plane with a range cube.
-    * @param range
-    * @param xyzOut intersection polygon.  This is convex.
-    */
+  public getFrame(): Transform {
+    const d = this._distanceFromOrigin;
+    const origin = Point3d.create(this._inwardNormal.x * d, this._inwardNormal.y * d, this._inwardNormal.z * d);
+    const matrix = Matrix3d.createRigidHeadsUp(this._inwardNormal, AxisOrder.ZXY);
+    return Transform.createOriginAndMatrix(origin, matrix);
+  }
+  /**
+   * Return the intersection of the plane with a range cube.
+   * @param range
+   * @param xyzOut intersection polygon.  This is convex.
+   */
   public intersectRange(range: Range3d, addClosurePoint: boolean = false): GrowableXYZArray | undefined {
     if (range.isNull)
       return undefined;

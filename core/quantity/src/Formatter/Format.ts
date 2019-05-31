@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { FormatProps } from "./Interfaces";
-import { UnitProps, UnitsProvider, UnitConversion } from "../Interfaces";
+import { UnitProps, UnitsProvider, UnitConversion, UnitConversionSpec } from "../Interfaces";
 import { QuantityStatus, QuantityError } from "../Exception";
 import { QuantityConstants } from "../Constants";
 import {
@@ -469,15 +469,6 @@ export class Format implements FormatProps {
 
     return schemaJson;
   }
-}
-
-/** Interface the defines the format of the data needed to convert a quantity from one unit to another.
- * @alpha
- */
-export interface UnitConversionSpec {
-  name: string;
-  label: string;
-  conversion: UnitConversion;
 }
 
 /** A class that contains both formatting information and the conversion factors necessary to convert from an input unit to the units specified in the format.

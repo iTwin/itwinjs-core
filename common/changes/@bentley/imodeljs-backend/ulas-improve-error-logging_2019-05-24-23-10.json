@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "improve ulas error message logs",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "evan.preslar@bentley.com"
+}

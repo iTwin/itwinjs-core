@@ -74,6 +74,7 @@ export * from "./ui-core/utils/Props";
 export * from "./ui-core/utils/Timer";
 export * from "./ui-core/utils/UiError";
 export * from "./ui-core/utils/UiEvent";
+export * from "./ui-core/utils/flattenChildren";
 export * from "./ui-core/utils/getClassName";
 export * from "./ui-core/utils/getDisplayName";
 export * from "./ui-core/utils/getUserColor";

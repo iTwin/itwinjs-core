@@ -9,7 +9,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 import { SheetData, FrontstageManager, SheetsModalFrontstage, CardContainer, CardInfo, SheetCard } from "../../ui-framework";
 
 describe("SheetsModalFrontstage", () => {
@@ -17,6 +17,11 @@ describe("SheetsModalFrontstage", () => {
   let modal: SheetsModalFrontstage;
   before(async () => {
     await TestUtils.initializeUiFramework();
+    MockRender.App.startup();
+  });
+
+  after(() => {
+    MockRender.App.shutdown();
   });
 
   const connection = moq.Mock.ofType<IModelConnection>();

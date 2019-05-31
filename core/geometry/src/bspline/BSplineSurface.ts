@@ -34,8 +34,8 @@ export enum UVSelect {
  * Enumeration of how weights are carried
  * * UnWeighted (0) -- there are no weights
  * * WeightsAlreadyAppliedToCoordinates (1) -- for real point (x,y,z) the homogeneous point has weight applied throughout as (wx,wy,wz,w)
- * * WeightsSeparateFromCoordinates (2) -- for real point (x,y,z) the honmogeneous point is (x,y,z,w)
- *   * Note that "internal" compuatations never use WeightsSepraateFromCoordinates.
+ * * WeightsSeparateFromCoordinates (2) -- for real point (x,y,z) the homogeneous point is (x,y,z,w)
+ *   * Note that "internal" computations never use WeightsSeparateFromCoordinates.
  *   * WeightsSeparateFromCoordinates is only useful as input or output state in serializers.
  * @public
  */
@@ -79,7 +79,7 @@ export interface PackedPointGrid {
  */
 export interface BSplineSurface3dQuery {
   /** Evaluate xyz coordinates at fractional parameter u,v */
-  fractionToPoint(uFractioin: number, vFraction: number): Point3d;
+  fractionToPoint(uFraction: number, vFraction: number): Point3d;
   /** Evaluate a rigid frame at fractional parameter u,v
    * * origin is at the surface point
    * * x column is a unit vector in the direction of the u derivative
@@ -281,7 +281,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
     return result;
   }
   /** a scratch array sized for `order` numbers */
-  protected _basisBufferUV: Float64Array[]; //  basis function buffers for u, v directgions.   ALLOCATED BY CTOR FOR FREQUENT REUSE
+  protected _basisBufferUV: Float64Array[]; //  basis function buffers for u, v directions.   ALLOCATED BY CTOR FOR FREQUENT REUSE
   /** a scratch array sized for `order` numbers */
   protected _basisBuffer1UV: Float64Array[]; // basis function buffers for u, v directions.   ALLOCATED BY CTOR FOR FREQUENT REUSE
 
@@ -310,7 +310,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
 
   }
   /**
-   * Map a position, specified as (uv direction, bezier span, fraction within the bezier), to an overal knot value.
+   * Map a position, specified as (uv direction, bezier span, fraction within the bezier), to an overall knot value.
    * @param select selector indicating U or V direction.
    * @param span index of bezier span
    * @param localFraction fractional coordinate within the bezier span
@@ -454,7 +454,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
     this.knots[select].wrappable = value;
   }
   /**
-   * Test if `degree` leading and trailing (one of U or V) blocks match, as if the data is an unwrapped closed spline in the slected direction.
+   * Test if `degree` leading and trailing (one of U or V) blocks match, as if the data is an unwrapped closed spline in the selected direction.
    * @param select select U or V direction
    * @returns true if coordinates matched.
    */
@@ -520,7 +520,6 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
    * Return control points json arrays.
    * * if `flatArray===true`, each point appears as an array [x,y,z] in row-major order of a containing array.
    * * if `flatArray===false` each row of points is an an array of [x,y,z] in an array.  Each of these row arrays is in the result array.
-   * @param flatArray if true, retur
    */
   public getPointArray(flatArray: boolean = true): any[] {
     if (flatArray)
@@ -553,7 +552,7 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
    * * This `create` variant takes control points in a "flattened" array, with
    *  points from succeeding U rows packed together in one array.  Use `createGrid` if the points are in
    *  a row-by-row grid structure
-   * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omited (undefined).
+   * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omitted (undefined).
    * *  When knots are given, two knot count conditions are recognized:
    * * + If poleArray.length + order == knotArray.length, the first and last are assumed to be the
    *      extraneous knots of classic clamping.
@@ -628,7 +627,7 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     const numPolesV = points.length;
     const numPolesU = points[0].length;
     const numPoles = numPolesU * numPolesV;
-    // shift knots-of-interest limits for overclampled case ...
+    // shift knots-of-interest limits for overclamped case ...
     const numKnotsU = knotArrayU ? knotArrayU.length : numPolesU + orderU - 2;
     const numKnotsV = knotArrayV ? knotArrayV.length : numPolesV + orderV - 2;
     const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
@@ -689,7 +688,7 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     return Plane3dByOriginAndVectors.createOriginAndVectorsArrays(
       this._poleBuffer, this._poleBuffer1UV[0], this._poleBuffer1UV[1], result);
   }
-  /** Evalute at a position given by fractional coordinte in each direction.
+  /** Evaluate at a position given by fractional coordinate in each direction.
      * @param fractionU u coordinate, as a fraction of the knot range.
      * @param fractionV v coordinate, as a fraction of the knot range.
    * @returns Return the xyz coordinates on the surface.
@@ -775,7 +774,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
    * * This `create` variant takes control points in a "flattened" array, with
    *  points from succeeding U rows packed together in one array.  Use `createGrid` if the points are in
    *  a deeper grid array structure.
-   * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omited (undefined).
+   * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omitted (undefined).
    * *  When knots are given, two knot count conditions are recognized:
    * * * If poleArray.length + order == knotArray.length, the first and last are assumed to be the
    *      extraneous knots of classic clamping.
@@ -844,7 +843,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
       return undefined;
 
     // const numPoles = numPolesU * numPolesV;
-    // shift knots-of-interest limits for overclampled case ...
+    // shift knots-of-interest limits for overclamped case ...
     const numKnotsU = knotArrayU.length;
     const numKnotsV = knotArrayV.length;
     const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
@@ -919,7 +918,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     return Plane3dByOriginAndVectors.createOriginAndVectorsWeightedArrays(this._poleBuffer, this._poleBuffer1UV[0], this._poleBuffer1UV[1], result);
   }
 
-  /** Evaluate the Point4d (leaving weights in the point) at given fractiona coordinates. */
+  /** Evaluate the Point4d (leaving weights in the point) at given fractional coordinates. */
   public fractionToPoint4d(fractionU: number, fractionV: number): Point4d {
     return this.knotToPoint4d(this.knots[0].fractionToKnot(fractionU), this.knots[1].fractionToKnot(fractionV));
   }
@@ -977,7 +976,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
   }
   /**
    * extend a range to include the (optionally transformed) points of this surface
-   * @param rangeToExtend range that is updaatd to include this surface range
+   * @param rangeToExtend range that is updated to include this surface range
    * @param transform transform to apply to the surface points
    */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {

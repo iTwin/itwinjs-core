@@ -45,11 +45,11 @@ export class GrowableXYArray extends IndexedXYCollection {
   /** Return the number of float64 in use. */
   public get float64Length() { return this._xyInUse * 2; }
   /** Return the raw packed data.
-   * * Note that the length of the returned FLoat64Array is a count of doubles, and includes the excess capacity
+   * * Note that the length of the returned Float64Array is a count of doubles, and includes the excess capacity
    */
   public float64Data(): Float64Array { return this._data; }
 
-  /** If necessary, increase the capacity to a new pointCount.  Current coordinates and point count (length) are unchnaged. */
+  /** If necessary, increase the capacity to a new pointCount.  Current coordinates and point count (length) are unchanged. */
   public ensureCapacity(pointCapacity: number) {
     if (pointCapacity > this._xyzCapacity) {
       const newData = new Float64Array(pointCapacity * 2);
@@ -89,7 +89,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     newPoints._xyInUse = this.length;
     return newPoints;
   }
-  /** Create an array poplulated from
+  /** Create an array populated from
    * * An array of Point2d
    * * An array of Point3d (hidden as XAndY)
    * * An array of objects with keyed values, et `{x:1, y:1}`
@@ -159,7 +159,7 @@ export class GrowableXYArray extends IndexedXYCollection {
       this._xyInUse--;
   }
   /**
-   * Test if index is valid for an xyz (point or vector) withibn this array
+   * Test if index is valid for an xyz (point or vector) within this array
    * @param index xyz index to test.
    */
   public isIndexValid(index: number): boolean {
@@ -230,8 +230,8 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /**
-   * Read coordinates from source array, place them at indexe within this array.
-   * @param destIndex point index where coordinats are to be placed in this array
+   * Read coordinates from source array, place them at index within this array.
+   * @param destIndex point index where coordinates are to be placed in this array
    * @param source source array
    * @param sourceIndex point index in source array
    * @returns true if destIndex and sourceIndex are both valid.
@@ -334,7 +334,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     return true;
   }
   /**
-   * Set the coordinates of a single point given as coordintes
+   * Set the coordinates of a single point given as coordinates
    * @param pointIndex index of point to set
    * @param x x coordinate
    * @param y y coordinate

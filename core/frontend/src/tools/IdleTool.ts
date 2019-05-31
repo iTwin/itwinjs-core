@@ -6,7 +6,6 @@
 
 import { BeButton, BeButtonEvent, BeWheelEvent, InteractiveTool, EventHandled, BeTouchEvent } from "./Tool";
 import { ViewManip, ViewHandleType, FitViewTool, DefaultViewTouchTool } from "./ViewTool";
-import { HitDetail, HitSource, SnapDetail, HitPriority } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 
 /**
@@ -32,46 +31,6 @@ import { IModelApp } from "../IModelApp";
 export class IdleTool extends InteractiveTool {
   public static toolId = "Idle";
   public static hidden = true;
-
-  private async performTentative(ev: BeButtonEvent): Promise<void> {
-    const currTool = IModelApp.toolAdmin.viewTool;
-    if (currTool && currTool.inDynamicUpdate)
-      return; // trying to tentative snap while view is changing isn't useful...
-
-    const tp = IModelApp.tentativePoint;
-    await tp.process(ev);
-
-    if (tp.isSnapped) {
-      IModelApp.toolAdmin.adjustSnapPoint();
-    } else if (IModelApp.accuDraw.isActive) {
-      const point = tp.getPoint().clone();
-      const vp = ev.viewport!;
-      if (vp.isSnapAdjustmentRequired) {
-        IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
-        const hit = new HitDetail(point, vp, HitSource.TentativeSnap, point, "", HitPriority.Unknown, 0, 0);
-        const snap = new SnapDetail(hit);
-        tp.setCurrSnap(snap);
-        IModelApp.toolAdmin.adjustSnapPoint();
-        tp.setPoint(tp.getPoint());
-      } else {
-        IModelApp.accuDraw.adjustPoint(point, vp, false);
-        const savePoint = point.clone();
-        IModelApp.toolAdmin.adjustPointToGrid(point, vp);
-        if (!point.isExactEqual(savePoint))
-          IModelApp.accuDraw.adjustPoint(point, vp, false);
-        tp.setPoint(point);
-      }
-    } else {
-      IModelApp.toolAdmin.adjustPoint(tp.getPoint(), ev.viewport!);
-    }
-
-    IModelApp.accuDraw.onTentative();
-
-    if (currTool && currTool instanceof ViewManip && currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
-      currTool.updateTargetCenter(); // Change target center to tentative location...
-    else
-      IModelApp.toolAdmin.updateDynamics(); // Don't wait for motion to update tool dynamics...
-  }
 
   public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (!ev.viewport)
@@ -135,7 +94,7 @@ export class IdleTool extends InteractiveTool {
     if (ev.isControlKey || ev.isShiftKey)
       return EventHandled.No;
 
-    await this.performTentative(ev);
+    IModelApp.tentativePoint.process(ev);
     return EventHandled.Yes;
   }
 

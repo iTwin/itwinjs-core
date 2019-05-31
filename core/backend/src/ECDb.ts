@@ -20,7 +20,7 @@ const loggerCategory: string = BackendLoggerCategory.ECDb;
  */
 export enum ECDbOpenMode {
   Readonly,
-  Readwrite,
+  ReadWrite,
   /** Opens the file read-write and upgrades the file if necessary to the latest file format version. */
   FileUpgrade,
 }
@@ -30,7 +30,7 @@ export enum ECDbOpenMode {
  */
 export class ECDb implements IDisposable {
   private _nativeDb?: IModelJsNative.ECDb;
-  private _concurrentQueryInitalized: boolean = false;
+  private _concurrentQueryInitialized: boolean = false;
   private readonly _statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private readonly _sqliteStatementCache: SqliteStatementCache = new SqliteStatementCache();
 
@@ -295,8 +295,7 @@ export class ECDb implements IDisposable {
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
 
-  /** Execute a query agaisnt this ECDb but restricted by quota and limit settings. This intente to be used internally
-   *  @internal
+  /** Execute a query against this ECDb but restricted by quota and limit settings. This is intended to be used internally
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -311,42 +310,61 @@ export class ECDb implements IDisposable {
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrainted by global setting
+   * @param quota Specify non binding quota. These values are constrained by global setting
    * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
    * @param priority Specify non binding priority for the query. It can help user to adjust
    * priority of query in queue so that small and quicker queries can be prioritized over others.
    * @returns Returns structure containing rows and status.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @internal
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
-    if (!this._concurrentQueryInitalized) {
-      this._concurrentQueryInitalized = this.nativeDb.concurrentQueryInit(IModelHost.configuration!.concurrentQueryManagerConfig);
+    if (!this._concurrentQueryInitialized) {
+      this._concurrentQueryInitialized = this.nativeDb.concurrentQueryInit(IModelHost.configuration!.concurrentQuery);
     }
-
     if (!bindings) bindings = [];
     if (!limit) limit = {};
     if (!quota) quota = {};
     if (!priority) priority = QueryPriority.Normal;
-
+    const base64Header = "encoding=base64;";
+    // handle binary type
+    const reviver = (_name: string, value: any) => {
+      if (typeof value === "string") {
+        if (value.length >= base64Header.length && value.startsWith(base64Header)) {
+          const out = value.substr(base64Header.length);
+          const buffer = Buffer.from(out, "base64");
+          return new Uint8Array(buffer);
+        }
+      }
+      return value;
+    };
+    // handle binary type
+    const replacer = (_name: string, value: any) => {
+      if (value && value.constructor === Uint8Array) {
+        const buffer = Buffer.from(value);
+        return base64Header + buffer.toString("base64");
+      }
+      return value;
+    };
     return new Promise<QueryResponse>((resolve) => {
-      const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings), limit!, quota!, priority!);
+      const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!);
       if (postrc.status !== PostStatus.Done)
         resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
       const poll = () => {
         const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
         if (pollrc.status === PollStatus.Done)
-          resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result) });
+          resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
         else if (pollrc.status === PollStatus.Partial)
-          resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result) });
+          resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
         else if (pollrc.status === PollStatus.Timeout)
           resolve({ status: QueryResponseStatus.Timeout, rows: [] });
         else if (pollrc.status === PollStatus.Pending)
-          setTimeout(() => { poll(); }, 500);
+          setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
         else
           resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });
       };
-      setTimeout(() => { poll(); });
+      setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
     });
   }
   /** Execute a query and stream its results
@@ -364,7 +382,7 @@ export class ECDb implements IDisposable {
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrainted by global setting
+   * @param quota Specify non binding quota. These values are constrained by global setting
    * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
    * @param priority Specify non binding priority for the query. It can help user to adjust
    * priority of query in queue so that small and quicker queries can be prioritized over others.
@@ -383,7 +401,7 @@ export class ECDb implements IDisposable {
       }
 
       if (result.status === QueryResponseStatus.Error)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to execute ECSQL");
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows.length > 0 ? result.rows[0] : "Failed to execute ECSQL");
 
       if (rowsToGet > 0) {
         rowsToGet -= result.rows.length;

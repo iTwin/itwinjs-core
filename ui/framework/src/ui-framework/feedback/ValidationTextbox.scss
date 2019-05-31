@@ -12,6 +12,7 @@
   height: $uicore-line-height;
   line-height: $uicore-line-height;
   font-size: $uicore-font-size;
+
   .ValidationTextbox-input {
     position: absolute;
     font-size: $uicore-font-size;
@@ -23,9 +24,15 @@
     top: 0px;
     border-width: 1px;
   }
+
   .ValidationTextbox-invalid {
     border: 2px solid $buic-foreground-alert;
   }
+
+  .ValidationTextbox-invalid:focus {
+    border: 2px solid $buic-foreground-alert;
+  }
+
   .ValidationTextbox-icon {
     position: absolute;
     padding: $uicore-bordered-padding;
@@ -38,6 +45,7 @@
     right: 0px;
     text-align: center;
     color: $buic-icon-color;
+
     &:hover {
       color: $buic-foreground-primary;
     }

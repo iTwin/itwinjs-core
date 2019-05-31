@@ -7,14 +7,14 @@ export { UiComponents } from "./ui-components/UiComponents";
 export * from "./ui-components/breadcrumb/Breadcrumb";
 export * from "./ui-components/breadcrumb/BreadcrumbPath";
 export * from "./ui-components/breadcrumb/BreadcrumbTreeUtils";
-export { BreadcrumbDragDropProps, withBreadcrumbDragDrop } from "./ui-components/breadcrumb/hoc/withDragDrop";
+export * from "./ui-components/breadcrumb/hoc/withDragDrop";
 export * from "./ui-components/breadcrumb/breadcrumbdetails/BreadcrumbDetails";
-export { BreadcrumbDetailsDragDropProps, withBreadcrumbDetailsDragDrop, BreadcrumbDetailsDragDropType } from "./ui-components/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+export * from "./ui-components/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 
-export { PageOptions } from "./ui-components/common/PageOptions";
-export { SelectionMode } from "./ui-components/common/selection/SelectionModes";
+export * from "./ui-components/common/PageOptions";
+export * from "./ui-components/common/selection/SelectionModes";
 export * from "./ui-components/common/IImageLoader";
-// export { SelectionHandler } from "./ui-components/common/selection/SelectionHandler";  // Is this needed outside ui-components?
+export * from "./ui-components/common/selection/SelectionHandler";
 export * from "./ui-components/common/showhide/ShowHideDialog";
 export * from "./ui-components/common/showhide/ShowHideItem";
 export * from "./ui-components/common/showhide/ShowHideMenu";
@@ -101,31 +101,17 @@ export * from "./ui-components/lineweight/WeightPickerButton";
 
 export * from "./ui-components/table/TableDataProvider";
 export * from "./ui-components/table/SimpleTableDataProvider";
-export {
-  Table,
-  TableProps,
-  TableSelectionTarget,
-  TableCellEditorState,
-  TableCellUpdatedArgs,
-  TableRow,
-  TableRowProps,
-} from "./ui-components/table/component/Table";
-export { TableDragDropType, TableDropTargetProps, TableDragDropProps, withTableDragDrop } from "./ui-components/table/hocs/withDragDrop";
+export * from "./ui-components/table/component/Table";
+export * from "./ui-components/table/hocs/withDragDrop";
 
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/HighlightingEngine";
-export {
-  Tree,
-  TreeProps,
-  NodesSelectedCallback,
-  NodesDeselectedCallback,
-  NodeRenderer,
-} from "./ui-components/tree/component/Tree";
+export * from "./ui-components/tree/component/Tree";
 export * from "./ui-components/tree/component/BeInspireTree";
-export { TreeCellUpdatedArgs, EditableTreeProps } from "./ui-components/tree/CellEditingEngine";
+export * from "./ui-components/tree/CellEditingEngine";
 export * from "./ui-components/tree/ImageLoader";
-export { TreeDragDropType, TreeDragDropProps, withTreeDragDrop } from "./ui-components/tree/hocs/withDragDrop";
-export { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./ui-components/tree/SimpleTreeDataProvider";
+export * from "./ui-components/tree/hocs/withDragDrop";
+export * from "./ui-components/tree/SimpleTreeDataProvider";
 
 export * from "./ui-components/viewport/ViewportComponent";
 export * from "./ui-components/viewport/ViewportComponentEvents";

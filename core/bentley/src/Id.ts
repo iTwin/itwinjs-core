@@ -362,24 +362,24 @@ export namespace Id64 {
     return true;
   }
 
+  /** Return the first [[Id64String]] of an [[Id64Arg]]. */
+  export function getFirst(arg: Id64Arg): Id64String {
+    return typeof arg === "string" ? arg : (Array.isArray(arg) ? arg[0] : arg.values().next().value);
+  }
+
   /** Return the number of [[Id64String]]s represented by an [[Id64Arg]]. */
   export function sizeOf(arg: Id64Arg): number {
-    if (typeof arg === "string")
-      return 1;
-    else if (Array.isArray(arg))
-      return arg.length;
-    else
-      return arg.size;
+    return typeof arg === "string" ? 1 : (Array.isArray(arg) ? arg.length : arg.size);
   }
 
   /** Returns true if the [[Id64Arg]] contains the specified Id. */
   export function has(arg: Id64Arg, id: Id64String): boolean {
     if (typeof arg === "string")
       return arg === id;
-    else if (Array.isArray(arg))
+    if (Array.isArray(arg))
       return -1 !== arg.indexOf(id);
-    else
-      return arg.has(id);
+
+    return arg.has(id);
   }
 
   /** The string representation of an invalid Id. */

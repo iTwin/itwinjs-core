@@ -5,7 +5,7 @@
 import { IOidcFrontendClient } from "./OidcFrontendClient";
 
 /** Interface for frontend client that handles redirect callback
- * @beta
+ * @alpha
  */
 export interface IAngularOidcFrontendClient extends IOidcFrontendClient {
   handleRedirectCallback(): Promise<boolean>;

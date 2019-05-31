@@ -79,7 +79,7 @@ export class SyncUiEventDispatcher {
   private static _eventIds: Set<string>;
   private static _eventIdAdded = false;
   private static _syncUiEvent: SyncUiEvent;
-  private static _timeoutPeriod = 200;
+  private static _timeoutPeriod = 100;
   private static _secondaryTimeoutPeriod = SyncUiEventDispatcher._timeoutPeriod / 2;
   private static _unregisterListenerFunc?: () => void;
 
@@ -286,6 +286,7 @@ export class SyncUiEventDispatcher {
     });
 
     Presentation.selection.scopes.getSelectionScopes(iModelConnection).then((availableScopes: SelectionScope[]) => { // tslint:disable-line:no-floating-promises
+      // istanbul ignore else
       if (availableScopes) {
         const presentationScopes: PresentationSelectionScope[] = [];
         availableScopes.map((scope) => presentationScopes.push(scope));

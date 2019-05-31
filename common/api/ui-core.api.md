@@ -557,6 +557,9 @@ export enum Face {
 // @public
 export const FillCentered: React.FunctionComponent<CommonDivProps>;
 
+// @internal
+export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
+
 // @public
 export const FlexWrapContainer: React.FunctionComponent<CommonDivProps>;
 
@@ -870,6 +873,12 @@ export enum MessageSeverity {
 export const MutedText: React.FunctionComponent<TextProps>;
 
 // @beta
+export interface NoChildrenProps {
+    // (undocumented)
+    children?: undefined;
+}
+
+// @beta
 export interface NodeCheckboxProps {
     isDisabled?: boolean;
     onClick?: (newState: CheckBoxState) => void;
@@ -941,6 +950,11 @@ export interface NumericInputProps extends Omit<ReactNumericInput.NumericInputPr
 
 // @public
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+
+// @beta
+export type OmitChildrenProp<T extends {
+    children?: React.ReactNode;
+}> = Omit<T, "children">;
 
 // @public
 export enum Orientation {
@@ -1638,10 +1652,6 @@ export interface WithTimeoutProps {
     timeout: number;
 }
 
-
-// Warnings were encountered during analysis:
-// 
-// src/ui-core/tree/Node.tsx:71:5 - (ae-incompatible-release-tags) The symbol "renderCheckbox" is marked as @public, but its signature references "NodeCheckboxRenderer" which is marked as @beta
 
 // (No @packageDocumentation comment for this package)
 

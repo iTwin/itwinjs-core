@@ -985,7 +985,7 @@ export enum ECDbOpenMode {
     // (undocumented)
     Readonly = 0,
     // (undocumented)
-    Readwrite = 1
+    ReadWrite = 1
 }
 
 // @public
@@ -1820,8 +1820,6 @@ export class IModelHost {
     // @internal
     static readonly tileTreeRequestTimeout: number;
     // @internal
-    static readonly useTileContentThreadPool: boolean;
-    // @internal
     static readonly usingExternalTileCache: boolean;
     }
 
@@ -1830,7 +1828,7 @@ export class IModelHostConfiguration {
     appAssetsDir?: string;
     briefcaseCacheDir: string;
     // (undocumented)
-    concurrentQueryManagerConfig: Config;
+    concurrentQuery: Config;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
     // @internal
@@ -1851,8 +1849,6 @@ export class IModelHostConfiguration {
     tileContentRequestTimeout: number;
     // @internal
     tileTreeRequestTimeout: number;
-    // @internal
-    useTileContentThreadPool: boolean;
 }
 
 // @alpha (undocumented)
@@ -1942,31 +1938,15 @@ export class IModelJsFsStats {
 export namespace IModelJsNative {
     // (undocumented)
     export function addReferenceToObjectInVault(id: string): void;
-    export const enum BackendLoggerCategory {
-        // (undocumented)
-        BeSQLite = "BeSQLite",
-        // (undocumented)
-        Changeset = "Changeset",
-        // (undocumented)
-        DgnCore = "DgnCore",
-        // (undocumented)
-        ECDb = "ECDb",
-        // (undocumented)
-        ECObjectsNative = "ECObjectsNative",
-        // (undocumented)
-        Success = 0,
-        // (undocumented)
-        UnitsNative = "UnitsNative"
-    }
-    const // (undocumented)
-    version: string;
-    let // (undocumented)
-    logger: Logger;
     export interface BriefcaseManagerOnConflictPolicy {
         deleteVsUpdate: number;
         updateVsDelete: number;
         updateVsUpdate: number;
     }
+    const // (undocumented)
+    version: string;
+    let // (undocumented)
+    logger: Logger;
     // (undocumented)
     export class BriefcaseManagerResourcesRequest {
         // (undocumented)
@@ -2968,6 +2948,24 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     models: string[];
     // @internal (undocumented)
     toJSON(): ModelSelectorProps;
+}
+
+// @internal
+export enum NativeLoggerCategory {
+    // (undocumented)
+    BeSQLite = "BeSQLite",
+    // (undocumented)
+    Changeset = "Changeset",
+    // (undocumented)
+    DgnCore = "DgnCore",
+    // (undocumented)
+    ECDb = "ECDb",
+    // (undocumented)
+    ECObjectsNative = "ECObjectsNative",
+    // (undocumented)
+    Success = 0,
+    // (undocumented)
+    UnitsNative = "UnitsNative"
 }
 
 // @public

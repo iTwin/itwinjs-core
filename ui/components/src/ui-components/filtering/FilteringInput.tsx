@@ -97,6 +97,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     this.setState({ searchText: e.target.value, context: InputContext.ReadyToFilter });
   }
 
+  /** @internal */
   public static getDerivedStateFromProps(props: FilteringInputProps, state: FilteringInputState) {
     if (state.context === InputContext.FilteringInProgress && !props.filteringInProgress) {
       if (state.searchText && props.resultSelectorProps)

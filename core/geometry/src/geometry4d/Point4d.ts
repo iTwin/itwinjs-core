@@ -36,7 +36,7 @@ function quotientDerivative2(ddg: number, dh: number, ddh: number,
  * * the coordinates are stored in a Float64Array of length 4.
  * * properties `x`, `y`, `z`, `w` access array members.
  * *
- * * The coordinates are physically stored as a single FLoat64Array with 4 entries. (w last)
+ * * The coordinates are physically stored as a single Float64Array with 4 entries. (w last)
  * *
  * @public
  */
@@ -105,7 +105,7 @@ export class Point4d implements BeJSONFunctions {
     result.setFromJSON(json);
     return result;
   }
-  /** Near-equality test, using `Geoemtry.isSameCoordinate` on all 4 x,y,z,w */
+  /** Near-equality test, using `Geometry.isSameCoordinate` on all 4 x,y,z,w */
   public isAlmostEqual(other: Point4d): boolean {
     return Geometry.isSameCoordinate(this.x, other.x)
       && Geometry.isSameCoordinate(this.y, other.y)
@@ -239,7 +239,7 @@ export class Point4d implements BeJSONFunctions {
   public static createAdd3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d {
     return Point4d.create(vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB + vectorC.xyzw[0] * scalarC, vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB + vectorC.xyzw[1] * scalarC, vectorA.xyzw[2] * scalarA + vectorB.xyzw[2] * scalarB + vectorC.xyzw[2] * scalarC, vectorA.xyzw[3] * scalarA + vectorB.xyzw[3] * scalarB + vectorC.xyzw[3] * scalarC, result);
   }
-  /** Return dot produt of (4d) vectors from the instance to targetA and targetB */
+  /** Return dot product of (4d) vectors from the instance to targetA and targetB */
   public dotVectorsToTargets(targetA: Point4d, targetB: Point4d): number {
     return (targetA.xyzw[0] - this.xyzw[0]) * (targetB.xyzw[0] - this.xyzw[0]) +
       (targetA.xyzw[1] - this.xyzw[1]) * (targetB.xyzw[1] - this.xyzw[1]) +
@@ -340,7 +340,7 @@ export class Point4d implements BeJSONFunctions {
     return Point3d.create(x * a, y * a, z * a, result);
   }
   /**
-   * * If w is nonzero, return Vector3d which is the derivative of the projecte xyz with given w and 4d derivatives.
+   * * If w is nonzero, return Vector3d which is the derivative of the projected xyz with given w and 4d derivatives.
    * * If w is zero, return 000
    * @param x x coordinate
    * @param y y coordinate
@@ -361,7 +361,7 @@ export class Point4d implements BeJSONFunctions {
     return Ray3d.createXYZUVW(x * a, y * a, z * a, (dx * w - dw * x) * aa, (dy * w - dw * y) * aa, (dz * w - dw * z) * aa, result);
   }
   /**
-   * * If w is nonzero, return Vector3d which is the derivative of the projecte xyz with given w and 4d derivatives.
+   * * If w is nonzero, return Vector3d which is the derivative of the projected xyz with given w and 4d derivatives.
    * * If w is zero, return 000
    * @param x x coordinate
    * @param y y coordinate
@@ -458,7 +458,7 @@ export class Point4d implements BeJSONFunctions {
     }
     return magnitude;
   }
-/** Return a (normalized) quaternion interpolated between two quaternions. */
+  /** Return a (normalized) quaternion interpolated between two quaternions. */
   public static interpolateQuaternions(quaternion0: Point4d, fractionParameter: number, quaternion1: Point4d, result?: Point4d): Point4d {
     if (!result)
       result = new Point4d();

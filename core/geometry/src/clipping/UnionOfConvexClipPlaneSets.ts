@@ -41,7 +41,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     }
     return val;
   }
-/** Convert json `UnionOfConvexClipPlaneSets`, using `setFromJSON`. */
+  /** Convert json `UnionOfConvexClipPlaneSets`, using `setFromJSON`. */
   public static fromJSON(json: any, result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     result = result ? result : new UnionOfConvexClipPlaneSets();
     result._convexSets.length = 0;
@@ -52,7 +52,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     }
     return result;
   }
-  /** Create a `UnionOfComvexClipPlaneSets` with no members. */
+  /** Create a `UnionOfConvexClipPlaneSets` with no members. */
   public static createEmpty(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     if (result) {
       result._convexSets.length = 0;
@@ -72,14 +72,14 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
         return false;
     return true;
   }
-  /** Create a `UnionOfComvexClipPlaneSets` with given `ConvexClipPlaneSet` members */
+  /** Create a `UnionOfConvexClipPlaneSets` with given `ConvexClipPlaneSet` members */
   public static createConvexSets(convexSets: ConvexClipPlaneSet[], result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     result = result ? result : new UnionOfConvexClipPlaneSets();
     for (const set of convexSets)
       result._convexSets.push(set);
     return result;
   }
-/** return a deep copy. */
+  /** return a deep copy. */
   public clone(result?: UnionOfConvexClipPlaneSets): UnionOfConvexClipPlaneSets {
     result = result ? result : new UnionOfConvexClipPlaneSets();
     result._convexSets.length = 0;
@@ -116,7 +116,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     return !maximalRange.isNull;
   }
 
-  /** Return true if true is returned for any contained convex set returns true for `convexSet.isPointInside (point, tolernace)`  */
+  /** Return true if true is returned for any contained convex set returns true for `convexSet.isPointInside (point, tolerance)`  */
   public isPointInside(point: Point3d): boolean {
     for (const convexSet of this._convexSets) {
       if (convexSet.isPointInside(point)) {
@@ -125,7 +125,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     }
     return false;
   }
-  /** Return true if true is returned for any contained convex set returns true for `convexSet.isPointOnOrInside (point, tolernace)`  */
+  /** Return true if true is returned for any contained convex set returns true for `convexSet.isPointOnOrInside (point, tolerance)`  */
   public isPointOnOrInside(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     for (const convexSet of this._convexSets) {
       if (convexSet.isPointOnOrInside(point, tolerance))
@@ -134,7 +134,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     return false;
   }
 
-  /** Return true if true is returned for any contained convex set returns true for `convexSet.isSphereOnOrInside (point, tolernace)`  */
+  /** Return true if true is returned for any contained convex set returns true for `convexSet.isSphereOnOrInside (point, tolerance)`  */
   public isSphereInside(point: Point3d, radius: number) {
     for (const convexSet of this._convexSets) {
       if (convexSet.isSphereInside(point, radius))
@@ -162,7 +162,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
           intervals.push(Segment1d.create(fraction0, fraction1)));
     }
   }
-/** apply `transform` to all the ConvexClipPlaneSet's */
+  /** apply `transform` to all the ConvexClipPlaneSet's */
   public transformInPlace(transform: Transform) {
     for (const convexSet of this._convexSets) {
       convexSet.transformInPlace(transform);
@@ -269,13 +269,13 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
     }
     return true;
   }
-/** Recursively call `setInivisible` on all member convex sets. */
+  /** Recursively call `setInvisible` on all member convex sets. */
   public setInvisible(invisible: boolean) {
     for (const convexSet of this._convexSets) {
       convexSet.setInvisible(invisible);
     }
   }
-/** add convex sets that accept points below `zLow` and above `zHigh` */
+  /** add convex sets that accept points below `zLow` and above `zHigh` */
   public addOutsideZClipSets(invisible: boolean, zLow?: number, zHigh?: number) {
     if (zLow) {
       const convexSet = ConvexClipPlaneSet.createEmpty();

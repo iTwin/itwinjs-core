@@ -52,7 +52,7 @@ export class BSpline1dNd {
   /**
    * initialize arrays for given spline dimensions.
    * @param numPoles number of poles
-   * @param poleLength number of coordinates per pole (e.g.. 3 for 3D unweighted, 4 for 3d weighted, 2 for 2d unweighted, 3 for 2d weigthed)
+   * @param poleLength number of coordinates per pole (e.g.. 3 for 3D unweighted, 4 for 3d weighted, 2 for 2d unweighted, 3 for 2d weighted)
    * @param order number of poles in support for a section of the bspline
    * @param knots KnotVector.  This is captured, not cloned.
    */
@@ -71,7 +71,7 @@ export class BSpline1dNd {
   /**
    * create a 1Bspline1dNd`
    * @param numPoles number of poles
-   * @param poleLength number of coordinates per pole (e.g.. 3 for 3D unweighted, 4 for 3d weighted, 2 for 2d unweighted, 3 for 2d weigthed)
+   * @param poleLength number of coordinates per pole (e.g.. 3 for 3D unweighted, 4 for 3d weighted, 2 for 2d unweighted, 3 for 2d weighted)
    * @param order number of poles in support for a section of the bspline
    * @param knots KnotVector.  This is captured, not cloned.
    */
@@ -159,9 +159,9 @@ export class BSpline1dNd {
       this.sumPoleBuffer2ForSpan(knotIndex0 - this.degree + 1);
     }
   }
-/**
- * Reverse the (blocked) poles (in `this.packedData` in place.
- */
+  /**
+   * Reverse the (blocked) poles (in `this.packedData` in place.
+   */
   public reverseInPlace(): void {
     // reverse poles in blocks ...
     const b = this.poleLength;

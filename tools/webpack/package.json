@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools",
-  "version": "0.192.0-dev.17",
+  "version": "1.0.0-dev.2",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
   "repository": {
@@ -24,7 +24,7 @@
     "buildIModelJsModule": "./bin/buildIModelJsModule.js"
   },
   "dependencies": {
-    "@bentley/config-loader": "0.192.0-dev.17",
+    "@bentley/config-loader": "1.0.0-dev.2",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "^3.1.12",
     "@types/mocha": "^5.2.5",
@@ -40,6 +40,7 @@
     "cli-highlight": "^2.0.0",
     "concurrently": "^3.6.1",
     "css-loader": "^2.1.1",
+    "cssnano": "^4.1.10",
     "dotenv": "^6.0.0",
     "enzyme": "^3.4.0",
     "enzyme-adapter-react-16": "1.12.1",

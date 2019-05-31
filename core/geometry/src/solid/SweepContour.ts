@@ -64,7 +64,7 @@ export class SweepContour {
   }
   /** Return (Reference to) the curves */
   public getCurves(): CurveCollection { return this.curves; }
-  /** Apply `tansform` to the curves, axis.
+  /** Apply `transform` to the curves, axis.
    * * The local to world frame is reconstructed for the transformed curves.
    */
   public tryTransformInPlace(transform: Transform): boolean {

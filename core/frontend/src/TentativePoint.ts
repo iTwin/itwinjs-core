@@ -7,11 +7,12 @@
 import { Point3d } from "@bentley/geometry-core";
 import { ScreenViewport } from "./Viewport";
 import { BeButtonEvent, BeButton } from "./tools/Tool";
-import { HitList, SnapDetail, SnapHeat, HitDetail, HitSource, SnapMode } from "./HitDetail";
+import { HitList, SnapDetail, SnapHeat, HitDetail, HitSource, SnapMode, HitPriority } from "./HitDetail";
 import { DecorateContext } from "./ViewContext";
 import { HitListHolder } from "./ElementLocateManager";
 import { IModelApp } from "./IModelApp";
 import { AccuSnap } from "./AccuSnap";
+import { ViewManip, ViewHandleType } from "./tools/ViewTool";
 
 /** @public */
 export class TentativePoint {
@@ -22,6 +23,7 @@ export class TentativePoint {
   private readonly _point: Point3d = new Point3d();
   private readonly _rawPoint: Point3d = new Point3d();
   private readonly _viewPoint: Point3d = new Point3d();
+  private _tentativePromise?: Promise<SnapDetail | undefined>;
   public viewport?: ScreenViewport;
 
   public onInitialized() { }
@@ -56,16 +58,14 @@ export class TentativePoint {
   }
 
   public removeTentative(): void {
+    this._tentativePromise = undefined;
     if (!this.isActive)
       return;
-
     IModelApp.accuSnap.erase();
-
     if (this.getCurrSnap())
       IModelApp.viewManager.invalidateDecorationsAllViews();
     else
       this.viewport!.invalidateDecorations();
-
     this.isActive = false;
   }
 
@@ -190,7 +190,15 @@ export class TentativePoint {
   }
 
   private static arePointsCloseEnough(pt1: Point3d, pt2: Point3d, pixelDistance: number): boolean { return pt1.distance(pt2) < (pixelDistance + 1.5); }
-  public async process(ev: BeButtonEvent): Promise<void> {
+
+  public process(ev: BeButtonEvent): void {
+    if (undefined !== this._tentativePromise)
+      return;
+
+    const currTool = IModelApp.toolAdmin.viewTool;
+    if (currTool && currTool.inDynamicUpdate)
+      return; // trying to tentative snap while view is changing isn't useful...
+
     const wasActive = this.isActive;
     this.removeTentative(); // remove the TP cross if it is already on the screen
     const lastPtView = this._viewPoint.clone();
@@ -201,16 +209,51 @@ export class TentativePoint {
     this._viewPoint.setFrom(ev.viewPoint);
 
     const newSearch = (!this.isSnapped || !TentativePoint.arePointsCloseEnough(lastPtView, this._viewPoint, this.viewport!.pixelsFromInches(IModelApp.locateManager.apertureInches)));
-    const snap = await this.getSnap(newSearch);
+    const promise = this.getSnap(newSearch);
+    this._tentativePromise = promise;
 
-    this.setCurrSnap(snap); // Adopt the snap as current
-    IModelApp.accuSnap.clear(); // make sure there's no AccuSnap active after a tentative point (otherwise we continually snap to it).
+    promise.then((newSnap) => { // tslint:disable-line:no-floating-promises
+      // Ignore response if we're no longer interested in this tentative.
+      if (this._tentativePromise === promise) {
+        this._tentativePromise = undefined;
+        this.setCurrSnap(newSnap); // Adopt the snap as current
+        IModelApp.accuSnap.clear(); // make sure there's no AccuSnap active after a tentative point (otherwise we continually snap to it).
+        if (this.isSnapped)
+          this._point.setFrom(this.currSnap!.snapPoint);
+        else if (wasActive && newSearch)
+          this._point.setFrom(ev.rawPoint);
+        this.showTentative(); // show the TP cross
 
-    if (this.isSnapped)
-      this._point.setFrom(this.currSnap!.snapPoint);
-    else if (wasActive && newSearch)
-      this._point.setFrom(ev.rawPoint);
+        if (this.isSnapped) {
+          IModelApp.toolAdmin.adjustSnapPoint();
+        } else if (IModelApp.accuDraw.isActive) {
+          const point = this.getPoint().clone();
+          const vp = ev.viewport!;
+          if (vp.isSnapAdjustmentRequired) {
+            IModelApp.toolAdmin.adjustPointToACS(point, vp, false);
+            const hit = new HitDetail(point, vp, HitSource.TentativeSnap, point, "", HitPriority.Unknown, 0, 0);
+            const snap = new SnapDetail(hit);
+            this.setCurrSnap(snap);
+            IModelApp.toolAdmin.adjustSnapPoint();
+            this.setPoint(this.getPoint());
+          } else {
+            IModelApp.accuDraw.adjustPoint(point, vp, false);
+            const savePoint = point.clone();
+            IModelApp.toolAdmin.adjustPointToGrid(point, vp);
+            if (!point.isExactEqual(savePoint))
+              IModelApp.accuDraw.adjustPoint(point, vp, false);
+            this.setPoint(point);
+          }
+        } else {
+          IModelApp.toolAdmin.adjustPoint(this.getPoint(), ev.viewport!);
+        }
 
-    this.showTentative(); // show the TP cross
+        IModelApp.accuDraw.onTentative();
+        if (currTool && currTool instanceof ViewManip && currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
+          currTool.updateTargetCenter(); // Change target center to tentative location...
+        else
+          IModelApp.toolAdmin.updateDynamics(); // Don't wait for motion to update tool dynamics...
+      }
+    });
   }
 }

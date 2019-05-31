@@ -12,6 +12,7 @@ import {
   FrontstageLaunchBackstageItem,
   TaskLaunchBackstageItem,
   FrontstageManager,
+  SyncUiEventDispatcher,
 } from "../../ui-framework";
 import TestUtils, { MockAccessToken } from "../TestUtils";
 import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator";
@@ -22,6 +23,7 @@ describe("Backstage", () => {
     await TestUtils.initializeUiFramework();
 
     FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
+    SyncUiEventDispatcher.initialize();   // To process Backstage events
   });
 
   describe("<Backstage />", () => {

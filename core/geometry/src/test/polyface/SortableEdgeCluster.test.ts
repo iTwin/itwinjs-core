@@ -28,8 +28,8 @@ describe("SortableEdgeCluster", () => {
     //     8 >>F4>>>  9   // nul face F4!!!!
     //
     edgeArray.addPath([1, 2, 3, 4], 0);
-    ck.testTrue(edgeArray.edges[0].islowHigh, "low to high");
-    ck.testFalse(edgeArray.edges[3].islowHigh, "high to low");
+    ck.testTrue(edgeArray.edges[0].isLowHigh, "low to high");
+    ck.testFalse(edgeArray.edges[3].isLowHigh, "high to low");
     ck.testExactNumber(edgeArray.edges[0].vertexIndexA, edgeArray.edges[3].vertexIndexB, "confirm facet closure");
     edgeArray.addPath([1, 6, 7, 2], 1);
     ck.testExactNumber(1, edgeArray.edges[4].facetIndex, "confirm facet index");
@@ -45,16 +45,16 @@ describe("SortableEdgeCluster", () => {
     const boundary: SortableEdgeCluster[] = [];
     const compound: SortableEdgeCluster[] = [];
     const nullEdges: SortableEdgeCluster[] = [];
-    edgeArray.sortAndcollectClusters(manifold, boundary, nullEdges, compound);
+    edgeArray.sortAndCollectClusters(manifold, boundary, nullEdges, compound);
     ck.testExactNumber(3, manifold.length, "edge pairs", SortableEdge.clusterArrayToJSON(manifold));
     ck.testExactNumber(10, boundary.length, "boundary edges", SortableEdge.clusterArrayToJSON(boundary));
     ck.testExactNumber(2, compound.length, "clusters", JSON.stringify(SortableEdge.clusterArrayToJSON(compound)));
     ck.testExactNumber(1, nullEdges.length, "null", JSON.stringify(SortableEdge.clusterArrayToJSON(nullEdges)));
 
-    edgeArray.sortAndcollectClusters(undefined, undefined, undefined, undefined);
+    edgeArray.sortAndCollectClusters(undefined, undefined, undefined, undefined);
     if (nullEdges.length === 1) {
       const edge = nullEdges[0] as SortableEdge;
-      ck.testExactNumber(5, edge.facetIndex, "confirm facet of null edgge");
+      ck.testExactNumber(5, edge.facetIndex, "confirm facet of null edge");
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -84,7 +84,7 @@ describe("SortableEdgeCluster", () => {
     const boundary: SortableEdgeCluster[] = [];
     const compound: SortableEdgeCluster[] = [];
     const nullEdges: SortableEdgeCluster[] = [];
-    edgeArray.sortAndcollectClusters(manifold, boundary, nullEdges, compound);
+    edgeArray.sortAndCollectClusters(manifold, boundary, nullEdges, compound);
     ck.testExactNumber(12, manifold.length, "edge pairs", SortableEdge.clusterArrayToJSON(manifold));
     ck.testExactNumber(0, boundary.length, "boundary edges", SortableEdge.clusterArrayToJSON(boundary));
     ck.testExactNumber(0, compound.length, "clusters", JSON.stringify(SortableEdge.clusterArrayToJSON(compound)));

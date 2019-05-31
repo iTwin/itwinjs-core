@@ -35,7 +35,7 @@ export class UnionRegion extends CurveCollection {
     }
     return result;
   }
-  /** Return the boundary type (5) of a corresponding  Microstation CurveVector */
+  /** Return the boundary type (5) of a corresponding  MicroStation CurveVector */
   public dgnBoundaryType(): number { return 5; }
   /** dispatch to more strongly typed  `processor.announceUnionRegion(this, indexInParent)` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {

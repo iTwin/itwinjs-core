@@ -33,7 +33,7 @@ describe("ECDb", () => {
     });
 
     using(new ECDb(), (ecdb: ECDb) => {
-      ecdb.openDb(ecdbPath, ECDbOpenMode.Readwrite);
+      ecdb.openDb(ecdbPath, ECDbOpenMode.ReadWrite);
       assert.isTrue(ecdb.isOpen);
     });
   });
@@ -50,7 +50,7 @@ describe("ECDb", () => {
     });
 
     using(new ECDb(), (ecdb: ECDb) => {
-      assert.doesNotThrow(() => ecdb.openDb(ecdbPath, ECDbOpenMode.Readwrite));
+      assert.doesNotThrow(() => ecdb.openDb(ecdbPath, ECDbOpenMode.ReadWrite));
     });
 
     using(new ECDb(), (ecdb: ECDb) => {

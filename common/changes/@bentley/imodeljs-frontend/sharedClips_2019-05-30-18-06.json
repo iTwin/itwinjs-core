@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added test for shareClip.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

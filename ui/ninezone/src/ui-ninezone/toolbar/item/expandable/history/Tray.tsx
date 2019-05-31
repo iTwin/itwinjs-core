@@ -6,9 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, NoChildrenProps, flattenChildren } from "@bentley/ui-core";
 import { Direction, DirectionHelpers } from "../../../../utilities/Direction";
-import { NoChildrenProps, FlattenChildren } from "../../../../utilities/Props";
 import "./Tray.scss";
 
 /** Key to identify history item.
@@ -84,7 +83,7 @@ export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
  */
 export class HistoryTray extends React.PureComponent<HistoryTrayProps> {
   public render() {
-    const items = FlattenChildren(this.props.items);
+    const items = flattenChildren(this.props.items);
     const count = React.Children.count(items);
     const isExtendIndicatorVisible = count > 1 && !this.props.isExtended;
     const className = classnames(

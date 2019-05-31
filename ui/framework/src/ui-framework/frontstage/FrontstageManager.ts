@@ -300,7 +300,7 @@ export class FrontstageManager {
    */
   public static get activeToolSettingsNode(): React.ReactNode | undefined {
     const activeToolInformation = FrontstageManager.activeToolInformation;
-    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : undefined;
+    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : /* istanbul ignore next */ undefined;
 
     if (toolUiProvider && toolUiProvider.toolSettingsNode)
       return toolUiProvider.toolSettingsNode;
@@ -313,7 +313,7 @@ export class FrontstageManager {
    */
   public static get activeToolAssistanceNode(): React.ReactNode | undefined {
     const activeToolInformation = FrontstageManager.activeToolInformation;
-    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : undefined;
+    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : /* istanbul ignore next */ undefined;
 
     if (toolUiProvider && toolUiProvider.toolAssistanceNode)
       return toolUiProvider.toolAssistanceNode;
@@ -412,7 +412,7 @@ export class FrontstageManager {
     return undefined;
   }
 
-  /** Opens a nested Frontstage. Modal Frontstages can be stacked.
+  /** Opens a nested Frontstage. Nested Frontstages can be stacked.
    * @param nestedFrontstage  Information about the nested Frontstage
    */
   public static async openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void> {

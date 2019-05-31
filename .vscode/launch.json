@@ -466,20 +466,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Quantity Tests",
-      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/build-tools/scripts/test-tsnode.js",
-      "cwd": "${workspaceFolder}/core/quantity",
-      "args": [
-        "--testDir=${workspaceFolder}/core/quantity/test",
-        "--debug"
-      ],
-      "port": 9229,
-      "protocol": "inspector",
-      "outputCapture": "std"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "Debug agent-test-app",
       "program": "${workspaceRoot}/test-apps/agent-test-app/lib/Main.js",
       "cwd": "${workspaceRoot}/test-apps/agent-test-app/",

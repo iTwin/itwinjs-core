@@ -4,8 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { createRandomDescriptorJSON, createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomECClassInfo, createRandomRelationshipPath } from "../_helpers/random";
-import { Descriptor, NestedContentField, StructTypeDescription, PropertyValueFormat } from "../../presentation-common";
+import {
+  createRandomDescriptorJSON, createRandomDescriptor, createRandomPrimitiveField, createRandomCategory,
+  createRandomECClassInfo, createRandomRelationshipPath, createRandomNestedFieldJSON, createRandomPrimitiveFieldJSON
+} from "../_helpers/random";
+import { Descriptor, Field, NestedContentField, StructTypeDescription, PropertyValueFormat } from "../../presentation-common";
 import { DescriptorJSON, DescriptorSource } from "../../content/Descriptor";
 
 describe("Descriptor", () => {
@@ -34,21 +37,38 @@ describe("Descriptor", () => {
     let testDescriptorJSON!: DescriptorJSON;
     beforeEach(() => {
       testDescriptorJSON = createRandomDescriptorJSON();
+      testDescriptorJSON.fields.push(createRandomNestedFieldJSON());
     });
 
+    const validateParentship = (fields: Field[], parent?: Field) => {
+      fields.forEach((field) => {
+        expect(field.parent).to.eq(parent);
+        if (field.isNestedContentField())
+          validateParentship(field.nestedFields, field);
+      });
+    };
+
     it("creates valid Descriptor from valid JSON", () => {
-      const item = Descriptor.fromJSON(testDescriptorJSON);
-      expect(item).to.matchSnapshot();
+      const descriptor = Descriptor.fromJSON(testDescriptorJSON);
+      validateParentship(descriptor!.fields);
+      expect(descriptor).to.matchSnapshot();
     });
 
     it("creates valid Descriptor from valid serialized JSON", () => {
-      const item = Descriptor.fromJSON(JSON.stringify(testDescriptorJSON));
-      expect(item).to.matchSnapshot();
+      const descriptor = Descriptor.fromJSON(JSON.stringify(testDescriptorJSON));
+      validateParentship(descriptor!.fields);
+      expect(descriptor).to.matchSnapshot();
+    });
+
+    it("skips fields that fail to deserialize", () => {
+      testDescriptorJSON.fields = [createRandomPrimitiveFieldJSON(), undefined as any];
+      const descriptor = Descriptor.fromJSON(testDescriptorJSON);
+      expect(descriptor!.fields.length).to.eq(1);
     });
 
     it("returns undefined for undefined JSON", () => {
-      const item = Descriptor.fromJSON(undefined);
-      expect(item).to.be.undefined;
+      const descriptor = Descriptor.fromJSON(undefined);
+      expect(descriptor).to.be.undefined;
     });
 
   });

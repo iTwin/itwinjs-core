@@ -5,8 +5,7 @@
 
 import * as React from "react";
 import {
-  ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, MessageManager,
-  InputFieldMessageEventArgs, ValidationTextbox, InputStatus, InputFieldMessage,
+  ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ValidationTextbox, InputStatus,
 } from "@bentley/ui-framework";
 
 /** Feedback Demo Widget */
@@ -18,26 +17,12 @@ export class FeedbackDemoWidget extends WidgetControl {
   }
 }
 
-export interface FeedbackWidgetState {
-  /** The closest parent of the invalid input */
-  inputMessageParent: Element;
-  /** The text to display in an error message */
-  inputMessageText: string;
-  /** Flag for displaying inputFieldMessage */
-  isInputFieldMessageVisible: boolean;
-}
-
 /**
  * Sample widget component that contains feedback components
  * (ValidationTextbox, InputFieldMessage, PointerMessage)
  */
-export class FeedbackWidget extends React.Component<any, FeedbackWidgetState> {
+export class FeedbackWidget extends React.Component {
   /** hidden */
-  public readonly state: Readonly<FeedbackWidgetState> = {
-    inputMessageParent: document.getElementById("root") as Element,
-    inputMessageText: "",
-    isInputFieldMessageVisible: false,
-  };
 
   public render() {
     return (
@@ -63,6 +48,7 @@ export class FeedbackWidget extends React.Component<any, FeedbackWidgetState> {
                 {/* Invalid if value provided is a number */}
                 <ValidationTextbox
                   errorText="Cannot be blank or a number"
+                  detailedErrorText="Please enter some value that is either a zero or non-numeric."
                   onValueChanged={(value: string) => {
                     if (!value || Number(value))
                       return InputStatus.Invalid;
@@ -74,62 +60,8 @@ export class FeedbackWidget extends React.Component<any, FeedbackWidgetState> {
             </tr>
           </tbody>
         </table>
-        {
-          (this.state.isInputFieldMessageVisible) ?
-            // The InputFieldMessage class is displayed via a portal, so this element
-            // will render under the provided parent rather than under the <table>
-            <InputFieldMessage
-              target={
-                this.state.inputMessageParent
-              }
-              children={
-                this.state.inputMessageText
-              }
-              onClose={
-                () => {
-                  this.setState((_prevState) => ({
-                    isInputFieldMessageVisible: false,
-                  }));
-                }
-              }
-            /> :
-            <div />
-        }
       </div>
     );
-  }
-
-  /** Registers listeners for managing InputFieldMessage */
-  public componentDidMount() {
-    MessageManager.onInputFieldMessageAddedEvent.addListener(this._handleInputFieldMessageAddedEvent);
-    MessageManager.onInputFieldMessageRemovedEvent.addListener(this._handleInputFieldMessageRemovedEvent);
-  }
-
-  /** Removes listeners for managing InputFieldMessage */
-  public componentWillUnmount() {
-    MessageManager.onInputFieldMessageAddedEvent.removeListener(this._handleInputFieldMessageAddedEvent);
-    MessageManager.onInputFieldMessageRemovedEvent.removeListener(this._handleInputFieldMessageRemovedEvent);
-  }
-
-  /**
-   * Shows InputFieldMessage and updates inputMessageText with text provided by target element.
-   * @param args    Information about the InputFieldMessage to display
-   */
-  private _handleInputFieldMessageAddedEvent = (args: InputFieldMessageEventArgs) => {
-    this.setState((_prevState) => ({
-      inputMessageParent: args.target.closest("td") as Element,
-      inputMessageText: args.messageText,
-      isInputFieldMessageVisible: true,
-    }));
-  }
-
-  /**
-   * Hides InputFieldMessage
-   */
-  private _handleInputFieldMessageRemovedEvent = () => {
-    this.setState((_prevState) => ({
-      isInputFieldMessageVisible: false,
-    }));
   }
 }
 

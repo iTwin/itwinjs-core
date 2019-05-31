@@ -75,7 +75,7 @@ export class LinearSweep extends SolidPrimitive {
   public getSweepContourRef(): SweepContour { return this._contour; }
   /** return a clone of the sweep vector */
   public cloneSweepVector(): Vector3d { return this._direction.clone(); }
-/** Test if `other` is also an instance of `LinearSweep` */
+  /** Test if `other` is also an instance of `LinearSweep` */
   public isSameGeometryClass(other: any): boolean { return other instanceof LinearSweep; }
   /** Return a deep clone */
   public clone(): LinearSweep {
@@ -95,7 +95,7 @@ export class LinearSweep extends SolidPrimitive {
   /** Return a coordinate frame (right handed unit vectors)
    * * origin on base contour
    * * x, y directions from base contour.
-   * * z direction perpenedicular
+   * * z direction perpendicular
    */
   public getConstructiveFrame(): Transform | undefined {
     return this._contour.localToWorld.cloneRigid();
@@ -120,7 +120,7 @@ export class LinearSweep extends SolidPrimitive {
     return handler.handleLinearSweep(this);
   }
   /**
-   * Return the curves at a fraction olong the sweep direction.
+   * Return the curves at a fraction along the sweep direction.
    * @param vFraction fractional position along the sweep direction
    */
   public constantVSection(vFraction: number): CurveCollection | undefined {
@@ -129,7 +129,7 @@ export class LinearSweep extends SolidPrimitive {
       section.tryTransformInPlace(Transform.createTranslation(this._direction.scale(vFraction)));
     return section;
   }
-/** Extend `rangeToExtend` to include this geometry. */
+  /** Extend `rangeToExtend` to include this geometry. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const contourRange = this._contour.curves.range(transform);
     rangeToExtend.extendRange(contourRange);

@@ -5,7 +5,7 @@
 /** @module Tile */
 
 import { BeDuration, Dictionary, SortedArray, PriorityQueue, assert } from "@bentley/bentleyjs-core";
-import { RpcOperation, IModelTileRpcInterface, TileTreeProps } from "@bentley/imodeljs-common";
+import { RpcOperation, RpcResponseCacheControl, IModelTileRpcInterface, TileTreeProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { IModelTileIO } from "./IModelTileIO";
@@ -42,11 +42,7 @@ export abstract class TileAdmin {
 
   /** @internal */
   public abstract get enableInstancing(): boolean;
-  /** @internal */
-  public abstract get elideEmptyChildContentRequests(): boolean;
 
-  /** @internal */
-  public abstract get requestTilesWithoutEdges(): boolean;
   /** @internal */
   public abstract get useProjectExtents(): boolean;
   /** @internal */
@@ -165,19 +161,15 @@ export namespace TileAdmin {
 
     /** If true, tiles may represent repeated geometry as sets of instances. This can reduce tile size and tile generation time, and improve performance.
      *
-     * Default value: false
+     * Default value: true
      */
     enableInstancing?: boolean;
 
-    /** If defined, requests for tile content or tile tree properties will be memoized and retried at the specified interval in milliseconds */
-    retryInterval?: number;
-
-    /** If true, requests for content of a child tile will be elided if the child tile's range can be determined to be empty
-     * based on metadata embedded in the parent's content.
+    /** The interval in milliseconds at which a request for tile content will be retried until a response is received.
      *
-     * Default value: false
+     * Default value: 1000 (1 second)
      */
-    elideEmptyChildContentRequests?: boolean;
+    retryInterval?: number;
 
     /** If defined, specifies the maximum MAJOR tile format version to request. For example, if IModelTileIO.CurrentVersion.Major = 3, and maximumMajorTileFormatVersion = 2,
      * requests for tile content will obtain tile content in some version 2.x of the format, never of some version 3.x.
@@ -189,18 +181,6 @@ export namespace TileAdmin {
      * @internal
      */
     maximumMajorTileFormatVersion?: number;
-
-    /** By default, when requesting tiles for a 3d view for which edge display is turned off, the response will include both surfaces and edges in the tile data.
-     * The tile deserialization code will then discard the edge data to save memory. This wastes bandwidth downloading unused data.
-     *
-     * Setting the following option to `true` will instead produce a response which omits all of the edge data, improving download speed and reducing space used in the browser cache.
-     *
-     * Default value: false
-     *
-     * @note This is a temporary workaround until a better solution is implemented (namely, edges and surfaces will be able to be requested separately).
-     * @internal
-     */
-    requestTilesWithoutEdges?: boolean;
 
     /** By default, the range of a spatial tile tree is based on the range of the model. If that range is small relative to the project extents, the "low-resolution" tiles
      * will be much higher-resolution than is appropriate to draw when the view is fit to the project extents, This can cause poor display performance due to too much tiny geometry.
@@ -360,8 +340,6 @@ class Admin extends TileAdmin {
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
   private readonly _maxMajorVersion: number;
-  private readonly _elideEmptyChildContentRequests: boolean;
-  private readonly _requestTilesWithoutEdges: boolean;
   private readonly _useProjectExtents: boolean;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
@@ -375,9 +353,8 @@ class Admin extends TileAdmin {
   private _totalEmpty = 0;
   private _totalUndisplayable = 0;
   private _totalElided = 0;
-  private _retryIntervalInitialized = false;
+  private _rpcInitialized = false;
   private readonly _expirationTime: BeDuration;
-  private get _memoizeRequests() { return this._retryInterval > 0; }
 
   public get emptyViewportSet(): TileAdmin.ViewportSet { return this._uniqueViewportSets.emptySet; }
   public get statistics(): TileAdmin.Statistics {
@@ -406,12 +383,10 @@ class Admin extends TileAdmin {
 
     this._throttle = !options.disableThrottling;
     this._maxActiveRequests = undefined !== options.maxActiveRequests ? options.maxActiveRequests : 10;
-    this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 0;
-    this._enableInstancing = !!options.enableInstancing;
+    this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
+    this._enableInstancing = undefined !== options.enableInstancing ? options.enableInstancing : true;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : IModelTileIO.CurrentVersion.Major;
 
-    this._elideEmptyChildContentRequests = !!options.elideEmptyChildContentRequests;
-    this._requestTilesWithoutEdges = !!options.requestTilesWithoutEdges;
     this._useProjectExtents = !!options.useProjectExtents;
 
     let expiration = undefined !== options.tileExpirationTime ? options.tileExpirationTime : 20;
@@ -423,8 +398,6 @@ class Admin extends TileAdmin {
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
-  public get elideEmptyChildContentRequests() { return this._elideEmptyChildContentRequests; }
-  public get requestTilesWithoutEdges() { return this._requestTilesWithoutEdges; }
   public get useProjectExtents() { return this._useProjectExtents; }
   public get tileExpirationTime() { return this._expirationTime; }
 
@@ -594,28 +567,29 @@ class Admin extends TileAdmin {
   }
 
   public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
-    this.initializeRetryInterval();
+    this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
-    return this._memoizeRequests ? intfc.requestTileTreeProps(iModel.iModelToken.toJSON(), treeId) : intfc.getTileTreeProps(iModel.iModelToken.toJSON(), treeId);
+    return intfc.requestTileTreeProps(iModel.iModelToken.toJSON(), treeId);
   }
 
   public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string): Promise<Uint8Array> {
-    this.initializeRetryInterval();
+    this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
-    return this._memoizeRequests ? intfc.requestTileContent(iModel.iModelToken.toJSON(), treeId, contentId) : intfc.getTileContent(iModel.iModelToken.toJSON(), treeId, contentId);
+    return intfc.requestTileContent(iModel.iModelToken.toJSON(), treeId, contentId);
   }
 
-  private initializeRetryInterval(): void {
+  private initializeRpc(): void {
     // Would prefer to do this in constructor - but nothing enforces that the app initializes the rpc interfaces before it creates the TileAdmin (via IModelApp.startup()) - so do it on first request instead.
-    if (!this._retryIntervalInitialized) {
-      this._retryIntervalInitialized = true;
+    if (this._rpcInitialized)
+      return;
 
-      if (this._memoizeRequests) {
-        const retryInterval = this._retryInterval;
-        RpcOperation.lookup(IModelTileRpcInterface, "requestTileTreeProps").policy.retryInterval = () => retryInterval;
-        RpcOperation.lookup(IModelTileRpcInterface, "requestTileContent").policy.retryInterval = () => retryInterval;
-      }
-    }
+    this._rpcInitialized = true;
+    const retryInterval = this._retryInterval;
+    RpcOperation.lookup(IModelTileRpcInterface, "requestTileTreeProps").policy.retryInterval = () => retryInterval;
+
+    const policy = RpcOperation.lookup(IModelTileRpcInterface, "requestTileContent").policy;
+    policy.retryInterval = () => retryInterval;
+    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
   }
 
   public onTileFailed(_tile: Tile) { ++this._totalFailed; }

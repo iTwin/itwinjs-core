@@ -6,6 +6,23 @@
 
 import { Guid, GuidString } from "./Id";
 
+/** The data properties of ClientRequestContext.
+ * @public
+ */
+export interface ClientRequestContextProps {
+  /** Used for logging to correlate all service requests that originated from this client request */
+  readonly activityId: GuidString;
+
+  /** Used for logging and usage tracking to identify the application that created this client request */
+  readonly applicationId: string;
+
+  /** Used for logging and usage tracking to identify the application version that created this client request */
+  readonly applicationVersion: string;
+
+  /** Used for logging to identify the session that created this client request */
+  readonly sessionId: GuidString;
+}
+
 /** Provides generic context for a server application to get details of a particular
  * request that originated at the client. This context is used to pass information for various
  * purposes including usage tracking and logging. Services that require authorization are
@@ -15,8 +32,7 @@ import { Guid, GuidString } from "./Id";
  * @see [[AuthorizedClientRequestContext]]
  * @public
  */
-export class ClientRequestContext {
-
+export class ClientRequestContext implements ClientRequestContextProps {
   /** Used for logging to correlate all service requests that originated from this client request */
   public readonly activityId: GuidString;
 
@@ -55,20 +71,16 @@ export class ClientRequestContext {
    * @internal
    */
   private _useContextForRpc: boolean;
-  public get useContextForRpc(): boolean {
-    return this._useContextForRpc;
-  }
-  public set useContextForRpc(value: boolean) {
-    this._useContextForRpc = value;
-  }
-}
-
-/** The data properties of ClientRequestContext. */
-export interface ClientRequestContextProps extends Pick<ClientRequestContext, Exclude<keyof ClientRequestContext, "enter" | "useContextForRpc">> { }
-
-export namespace ClientRequestContextProps {
-  export function fromContext(context: ClientRequestContext): ClientRequestContextProps {
-    return Object.create(Object.prototype, Object.getOwnPropertyDescriptors(context));
+  public get useContextForRpc(): boolean { return this._useContextForRpc; }
+  public set useContextForRpc(value: boolean) { this._useContextForRpc = value; }
+  /** @internal */
+  public toJSON(): ClientRequestContextProps {
+    return {
+      activityId: this.activityId,
+      applicationId: this.applicationId,
+      applicationVersion: this.applicationVersion,
+      sessionId: this.sessionId,
+    };
   }
 }
 

@@ -567,7 +567,7 @@ export class ECJsonTypeMap {
 }
 
 /** Base class for all typed instances mapped to ECInstance-s in an ECDb
- * @internal
+ * @beta
  */
 export abstract class ECInstance {
   @ECJsonTypeMap.propertyToJson("ecdb", "id")
@@ -576,11 +576,11 @@ export abstract class ECInstance {
   [index: string]: any;
 }
 
-/** @internal */
+/** @beta */
 export type ChangeState = "new" | "modified" | "deleted";
 
 /** Base class for all typed instances mapped to ECInstance-s in both an ECDb, and the WSG repository
- * @internal
+ * @beta
  */
 export abstract class WsgInstance extends ECInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId")

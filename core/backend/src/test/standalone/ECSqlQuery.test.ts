@@ -5,6 +5,14 @@
 import { assert } from "chai";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelDb } from "../../IModelDb";
+import { Id64 } from "@bentley/bentleyjs-core";
+async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object): Promise<any[]> {
+  const rows: any[] = [];
+  for await (const row of iModel.query(ecsql, bindings)) {
+    rows.push(row);
+  }
+  return rows;
+}
 
 describe("ECSql Query", () => {
   let imodel1: IModelDb;
@@ -27,6 +35,22 @@ describe("ECSql Query", () => {
     imodel3.closeSnapshot();
     imodel4.closeSnapshot();
     imodel5.closeSnapshot();
+  });
+
+  // new new addon build
+  it.skip("ECSQL with BLOB", async () => {
+    let rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
+    assert.equal(rows.length, 1);
+    const row: any = rows[0];
+
+    assert.isTrue(Id64.isValidId64(row.id));
+
+    assert.isDefined(row.geometryStream);
+    const geomStream: Uint8Array = row.geometryStream;
+    assert.isAtLeast(geomStream.byteLength, 1);
+
+    rows = await executeQuery(imodel1, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
+    assert.equal(rows.length, 1);
   });
 
   it("Paging Results", async () => {

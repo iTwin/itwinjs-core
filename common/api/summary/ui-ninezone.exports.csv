@@ -42,7 +42,6 @@ alpha;ExpandableButton
 alpha;ExpandableButtonProps 
 beta;ExpandableItem 
 beta;ExpandableItemProps 
-internal;FlattenChildren: (children: React.ReactNode) => React.ReactNode
 alpha;FloatingProps
 alpha;FloatingZoneProps 
 beta;Footer 
@@ -130,9 +129,7 @@ alpha;NineZone
 alpha;NineZoneFactory = (props: NineZoneProps) => NineZone
 alpha;NineZoneProps
 alpha;NineZoneRoot 
-alpha;NoChildrenProps
 internal;offsetAndContainInContainer: (tooltipBounds: RectangleProps, containerSize: SizeProps, offset?: PointProps) => Point
-internal;OmitChildrenProp
 alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 beta;Outline 
@@ -169,7 +166,7 @@ alpha;ShrinkRightStrategy
 alpha;class ShrinkStrategy 
 alpha;ShrinkTopStrategy 
 alpha;class ShrinkVerticalStrategy 
-alpha;Size 
+beta;Size 
 beta;SizeProps
 beta;Snap 
 beta;SnapMode 
@@ -183,7 +180,7 @@ alpha;StateManager
 beta;Status
 internal;StatusHelpers
 beta;StatusMessageProps 
-alpha;StatusZoneIndex = 8
+beta;StatusZoneIndex = 8
 alpha;StatusZoneManager 
 alpha;StatusZoneManagerProps 
 alpha;Tab 
@@ -245,7 +242,7 @@ alpha;WidgetContent
 alpha;WidgetContentProps 
 alpha;WidgetProps
 alpha;WidgetZone 
-alpha;WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9
+beta;WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9
 alpha;WidgetZoneLayout 
 alpha;WidgetZoneLayout
 alpha;WidgetZoneLayoutProps

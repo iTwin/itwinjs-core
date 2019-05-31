@@ -48,7 +48,9 @@ beta;BreadcrumbProps
 beta;BreadcrumbTreeUtils
 beta;BreadcrumbUpdateEvent 
 beta;BreadcrumbUpdateEventArgs
+beta;CellEditingEngine
 public;CellItem
+public;CellProps
 beta;ColorEditor 
 beta;ColorPickerButton 
 beta;ColorPickerProps 
@@ -71,6 +73,7 @@ public;DateTimeTypeConverter
 alpha;DayPicker 
 public;DelayLoadedTreeNodeItem 
 public;DoublePropertyValueRenderer 
+internal;DragAction
 beta;DragDropArguments
 beta;DragLayerProps
 beta;DragSourceArguments
@@ -94,7 +97,9 @@ public;EventsMuteContext
 public;FilteringInput 
 public;FilteringInputProps 
 public;FloatTypeConverter 
+beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 public;hasChildren: (node: TreeNodeItem) => boolean
+public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
 beta;HighlightableTreeNodeProps
 beta;HighlightableTreeProps
@@ -132,6 +137,7 @@ public;MapPayloadToInspireNodeCallback
 internal;MenuItem
 alpha;Milestone
 alpha;MilestoneRange
+internal;MultiSelectionHandler
 beta;MutableTableDataProvider 
 beta;MutableTreeDataProvider 
 public;NavigationPropertyTypeConverter 
@@ -145,6 +151,9 @@ public;NonPrimitivePropertyRenderer
 public;NonPrimitivePropertyRendererProps 
 public;NullableOperatorProcessor
 public;class NumericTypeConverterBase 
+public;OnItemsDeselectedCallback
+public;OnItemsSelectedCallback
+public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
 public;OperatorProcessor
 public;PageOptions
 alpha;PlaybackSettings
@@ -185,14 +194,19 @@ public;PropertyValueRendererContext
 public;PropertyValueRendererManager
 public;PropertyView 
 public;PropertyViewProps 
+public;ReactDataGridColumn 
 public;ResultSelector 
 public;ResultSelectorProps 
 public;RowItem
+public;RowProps
 beta;SaturationPicker 
 beta;SaturationPickerProps 
 internal;Scrubber 
 internal;ScrubberProps 
+internal;SelectionHandler
 public;SelectionMode
+public;SelectionModeFlags
+beta;SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode
 public;SharedRendererProps
 public;SharedTableNonPrimitiveValueRendererProps
 public;ShortDateTypeConverter 
@@ -208,6 +222,7 @@ public;SimplePropertyDataProvider
 beta;SimpleTableDataProvider 
 public;SimpleTreeDataProvider 
 public;SimpleTreeDataProviderHierarchy = Map
+internal;SingleSelectionHandler
 alpha;SolarDataProvider
 alpha;SolarPlaybackProgressHandler = (time: Date) => void
 alpha;SolarTimeline 
@@ -260,6 +275,7 @@ beta;TreeDragDropType = {} | TreeNodeItem | TreeDataProvider
 public;TreeImageLoader 
 public;TreeNodeItem
 public;TreeProps 
+internal;TreeTest
 public;class TypeConverter 
 public;TypeConverterManager
 beta;TypeEditor

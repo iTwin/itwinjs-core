@@ -150,22 +150,6 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileCon
 export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface {
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
-  public async getTileTreeProps(tokenProps: IModelTokenProps, id: string): Promise<TileTreeProps> {
-    const requestContext = ClientRequestContext.current;
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const db = IModelDb.find(iModelToken);
-    return db.tiles.requestTileTreeProps(requestContext, id);
-  }
-
-  public async getTileContent(tokenProps: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array> {
-    const requestContext = ClientRequestContext.current;
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const db = IModelDb.find(iModelToken);
-    const content = db.tiles.requestTileContent(requestContext, treeId, contentId);
-    this.cacheTile(tokenProps, treeId, contentId, content);
-    return content;
-  }
-
   public async requestTileTreeProps(tokenProps: IModelTokenProps, treeId: string): Promise<TileTreeProps> {
     const requestContext = ClientRequestContext.current;
     const iModelToken = IModelToken.fromJSON(tokenProps);
@@ -176,9 +160,9 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const requestContext = ClientRequestContext.current;
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const content = RequestTileContentMemoizer.perform({ requestContext, iModelToken, treeId, contentId });
-    this.cacheTile(tokenProps, treeId, contentId, content);
+    this.cacheTile(tokenProps, treeId, contentId, content); // tslint:disable-line:no-floating-promises
     return content;
-  }
+  } // tslint:disable-line:no-floating-promises
 
   public async getTileCacheContainerUrl(_tokenProps: IModelTokenProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     if (!IModelHost.usingExternalTileCache) {
@@ -189,7 +173,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry);
   }
 
-  private cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Promise<Uint8Array>) {
+  private async cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Promise<Uint8Array>) {
     if (!IModelHost.usingExternalTileCache) {
       return;
     }
@@ -200,7 +184,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
       const id: TileContentIdentifier = { iModelToken, treeId, contentId };
       setTimeout(async () => {
         const cache = CloudStorageTileCache.getCache();
-        IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), await content); // tslint:disable-line:no-floating-promises
+        await IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), await content);
       });
     } catch (err) {
       Logger.logError(BackendLoggerCategory.IModelTileRequestRpc, err.toString());

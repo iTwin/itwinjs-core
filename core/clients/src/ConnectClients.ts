@@ -11,7 +11,7 @@ import { Config } from "./Config";
 import * as deepAssign from "deep-assign";
 
 /** Connect context type
- * @public
+ * @beta
  */
 export enum ContextType {
   Unknown,
@@ -20,7 +20,7 @@ export enum ContextType {
 }
 
 /** Connect context. Currently supported contexts are [[Project]] and [[Asset]].
- * @public
+ * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Context", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Context extends WsgInstance {
@@ -46,6 +46,9 @@ export class Context extends WsgInstance {
   public allowExternalTeamMembers?: boolean;
 }
 
+/**
+ * @beta
+ */
 abstract class CommonContext extends Context {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Industry")
   public industry?: string;
@@ -73,7 +76,7 @@ abstract class CommonContext extends Context {
 }
 
 /** Connect project. Represents time-constrained work done on an [[Asset]].
- * @public
+ * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Project extends CommonContext {
@@ -88,7 +91,7 @@ export class Project extends CommonContext {
 }
 
 /** Connect asset. Assets represent a large scale item that is owned and/or operated by organization, such as buildings, highways and so on.
- * @public
+ * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Asset", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Asset extends CommonContext {
@@ -131,7 +134,7 @@ export class Permission extends WsgInstance {
 }
 
 /** Options to request connect projects
- * @internal
+ * @beta
  */
 export interface ConnectRequestQueryOptions extends RequestQueryOptions {
   /** Set to true to request the most recently used projects */
@@ -147,7 +150,7 @@ export interface RbacRequestQueryOptions extends RequestQueryOptions {
 }
 
 /** Client API to access the connect services.
- * @public
+ * @beta
  */
 export class ConnectClient extends WsgClient {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";

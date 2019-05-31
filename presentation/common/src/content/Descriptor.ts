@@ -212,7 +212,12 @@ export class Descriptor implements DescriptorSource {
       return JSON.parse(json, Descriptor.reviver);
     const descriptor = Object.create(Descriptor.prototype);
     return Object.assign(descriptor, json, {
-      fields: json.fields.map((fieldJson: FieldJSON) => Field.fromJSON(fieldJson)),
+      fields: json.fields.map((fieldJson: FieldJSON) => {
+        const field = Field.fromJSON(fieldJson);
+        if (field)
+          field.rebuildParentship();
+        return field;
+      }).filter((field) => (undefined !== field)),
       selectClasses: json.selectClasses.map((selectClass: SelectClassInfoJSON) => selectClassInfoFromJSON(selectClass)),
     } as Partial<Descriptor>);
   }

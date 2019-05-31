@@ -3,8 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { TestUnitsProvider, Unit } from "./TestUtils/TestHelper";
+import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { Format, FormatterSpec } from "../src/Formatter/Format";
+import { BasicUnit } from "../src/Unit";
 import { Formatter } from "../src/Formatter/Formatter";
 
 describe("Composite Formats tests:", () => {
@@ -37,11 +38,9 @@ describe("Composite Formats tests:", () => {
       await format.fromJson(unitsProvider, formatData).catch(() => { });
       assert.isTrue(format.hasUnits);
 
-      const testEntry = {
-        magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2"
-      };
+      const testEntry = { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2" };
 
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -86,7 +85,7 @@ describe("Composite Formats tests:", () => {
         magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2"
       };
 
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -94,10 +93,9 @@ describe("Composite Formats tests:", () => {
     } catch (err) {
       assert.isTrue(err.message === "The Format test has a invalid unit specification..");
       // tslint:disable-next-line:no-console
-      //console.log(err.message);
+      // console.log(err.message);
     }
   });
-
 
   it("Single Composite with label override", async () => {
     const unitsProvider = new TestUnitsProvider();
@@ -132,7 +130,7 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -180,7 +178,7 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -228,7 +226,7 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -272,7 +270,7 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -315,7 +313,7 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
@@ -358,7 +356,7 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -404,7 +402,7 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
@@ -451,7 +449,7 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);

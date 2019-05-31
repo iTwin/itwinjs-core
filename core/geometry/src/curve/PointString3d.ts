@@ -18,11 +18,11 @@ import { GeometryQuery } from "./GeometryQuery";
 /**
  * A PointString3d is an array of points.
  * * PointString3D is first class (persistible, displayable) geometry derived from the GeometryQuery base class.
- * * The varous points in the PointString3d are NOT connected by line segments for display or other calculations.
+ * * The various points in the PointString3d are NOT connected by line segments for display or other calculations.
  * @public
  */
 export class PointString3d extends GeometryQuery implements BeJSONFunctions {
-/** Test if `other` is a PointString3d */
+  /** Test if `other` is a PointString3d */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof PointString3d; }
   private _points: Point3d[];
   /** return a clone of the points array. */
@@ -42,7 +42,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
       return flat.concat(Array.isArray(toFlatten) ? PointString3d.flattenArray(toFlatten) : toFlatten);
     }, []);
   }
-/** Create a PointString3d from points. */
+  /** Create a PointString3d from points. */
   public static create(...points: any[]): PointString3d {
     const result = new PointString3d();
     result.addPoints(points);
@@ -57,20 +57,20 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
         this._points.push(p);
     }
   }
-/** Add a single point to the PoinstString3d */
+  /** Add a single point to the PointString3d */
   public addPoint(point: Point3d) {
     this._points.push(point);
   }
-/** Remove the last point added to the PointString3d */
+  /** Remove the last point added to the PointString3d */
   public popPoint() {
     this._points.pop();
   }
 
-/** Replace this PointString3d's point array by a clone of the array in `other` */
+  /** Replace this PointString3d's point array by a clone of the array in `other` */
   public setFrom(other: PointString3d) {
     this._points = Point3dArray.clonePoint3dArray(other._points);
   }
-/** Create from an array of Point3d */
+  /** Create from an array of Point3d */
   public static createPoints(points: Point3d[]): PointString3d {
     const ps = new PointString3d();
     ps._points = Point3dArray.clonePoint3dArray(points);
@@ -83,13 +83,13 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
       ps._points.push(Point3d.create(xyzData[i], xyzData[i + 1], xyzData[i + 2]));
     return ps;
   }
-/** Return a deep clone. */
+  /** Return a deep clone. */
   public clone(): PointString3d {
     const retVal = new PointString3d();
     retVal.setFrom(this);
     return retVal;
   }
-/** Replace this instance's points by those from a json array, e.g. `[[1,2,3], [4,2,2]]` */
+  /** Replace this instance's points by those from a json array, e.g. `[[1,2,3], [4,2,2]]` */
   public setFromJSON(json?: any) {
     this._points.length = 0;
     if (Array.isArray(json)) {
@@ -111,7 +111,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
   public static fromJSON(json?: any): PointString3d {
     const ps = new PointString3d(); ps.setFromJSON(json); return ps;
   }
-/** Access a single point by index. */
+  /** Access a single point by index. */
   public pointAt(i: number, result?: Point3d): Point3d | undefined {
     if (i >= 0 && i < this._points.length) {
       if (result) { result.setFrom(this._points[i]); return result; }
@@ -141,7 +141,7 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     transform.multiplyPoint3dArrayInPlace(this._points);
     return true;
   }
-/** Return the index and coordinates of the closest point to spacepoint. */
+  /** Return the index and coordinates of the closest point to spacepoint. */
   public closestPoint(spacePoint: Point3d): { index: number, xyz: Point3d } {
     const result = { index: -1, xyz: Point3d.create() };
     const index = Point3dArray.closestPointIndex(this._points, spacePoint);
@@ -151,23 +151,23 @@ export class PointString3d extends GeometryQuery implements BeJSONFunctions {
     }
     return result;
   }
-/** Return true if all points are in the given plane. */
+  /** Return true if all points are in the given plane. */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return Point3dArray.isCloseToPlane(this._points, plane, Geometry.smallMetricDistance);
   }
-/** Extend a range to include the points in this PointString3d. */
+  /** Extend a range to include the points in this PointString3d. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     rangeToExtend.extendArray(this._points, transform);
   }
-/** Return true if corresponding points are almost equal. */
+  /** Return true if corresponding points are almost equal. */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (!(other instanceof PointString3d))
       return false;
     return Point3dArray.isAlmostEqual(this._points, other._points);
   }
-/** Reduce to empty set of points. */
+  /** Reduce to empty set of points. */
   public clear() { this._points.length = 0; }
-/** Second step of double dispatch:  call `handler.handlePointString(this)` */
+  /** Second step of double dispatch:  call `handler.handlePointString(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handlePointString3d(this);
   }

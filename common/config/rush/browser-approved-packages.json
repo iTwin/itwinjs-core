@@ -251,6 +251,10 @@
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
+      "name": "cssnano",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "csstype",
       "allowedCategories": [ "frontend" ]
     },
@@ -717,6 +721,10 @@
     {
       "name": "superagent",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "svg-baker-runtime",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "svg-react-loader",

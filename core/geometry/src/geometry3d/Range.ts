@@ -70,7 +70,7 @@ export abstract class RangeBase {
  * Axis aligned range in 3D.
  * * member `low` contains minimum coordinate of range box
  * * member  `high` contains maximum coordinate of range box
- * * The range i sconsidred null (empty) if any low member is larger than its high counterpart.
+ * * The range is considered null (empty) if any low member is larger than its high counterpart.
  * @public
  */
 export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions {
@@ -890,7 +890,7 @@ export class Range1d extends RangeBase {
   /** extend to include `values` at indices `beginIndex <= i < endIndex]`
    * @param values array of values
    * @param beginIndex first index to include
-   * @param numValue nubmer of values to access
+   * @param numValue number of values to access
    */
   public extendArraySubset(values: Float64Array | number[], beginIndex: number, numValue: number) {
     const endIndex = beginIndex + numValue;

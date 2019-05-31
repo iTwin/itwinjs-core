@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed release tag warnings in UI packages",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

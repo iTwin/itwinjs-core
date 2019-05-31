@@ -118,6 +118,7 @@ export interface ToolTipOptions {
 export class NotifyMessageDetails {
   public displayTime = BeDuration.fromSeconds(3.5);
   public viewport?: HTMLElement;
+  public inputField?: HTMLElement;
   public displayPoint?: Point2d;
   public relativePosition = RelativePosition.TopRight;
 
@@ -139,6 +140,15 @@ export class NotifyMessageDetails {
     this.viewport = viewport;
     this.displayPoint = Point2d.fromJSON(displayPoint);
     this.relativePosition = relativePosition;
+    this.msgType = OutputMessageType.Pointer;
+  }
+
+  /** Set OutputMessageType.InputField message details.
+   * @param inputField            Input field that message pertains. The message will be shown just below this input field element.
+   */
+  public setInputFieldTypeDetails(inputField: HTMLElement) {
+    this.inputField = inputField;
+    this.msgType = OutputMessageType.InputField;
   }
 }
 
@@ -237,4 +247,8 @@ export class NotificationManager {
 
   /** Close message created with [[OutputMessageType.Pointer]]. */
   public closePointerMessage(): void { }
+
+  /** Close message created with [[OutputMessageType.InputField]]. */
+  public closeInputFieldMessage(): void { }
+
 }

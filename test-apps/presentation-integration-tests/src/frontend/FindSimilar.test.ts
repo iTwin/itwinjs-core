@@ -80,7 +80,7 @@ describe("Find Similar", () => {
     return (await getAllRowsInstanceKeys(provider)).map((k) => k.id);
   };
 
-  it.skip("creates a valid 'similar instances' data provider for primary instance primitive property", async () => {
+  it("creates a valid 'similar instances' data provider for primary instance primitive property", async () => {
     // get properties for one of the elements
     propertiesDataProvider.keys = new KeySet([{ className: "PCJ_TestSchema:TestClass", id: "0x38" }]);
     const propertyData = await propertiesDataProvider.getData();
@@ -106,7 +106,7 @@ describe("Find Similar", () => {
     });
   });
 
-  it.skip("creates a valid 'similar instances' data provider for primary instance navigation property", async () => {
+  it("creates a valid 'similar instances' data provider for primary instance navigation property", async () => {
     // get properties for one of the elements
     propertiesDataProvider.keys = new KeySet([{ className: "PCJ_TestSchema:TestClass", id: "0x38" }]);
     const propertyData = await propertiesDataProvider.getData();
@@ -128,7 +128,7 @@ describe("Find Similar", () => {
     });
   });
 
-  it.skip("creates a valid 'similar instances' data provider for related instance property", async () => {
+  it("creates a valid 'similar instances' data provider for related instance property", async () => {
     // get properties for one of the elements
     propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
     const propertyData = await propertiesDataProvider.getData();

@@ -390,7 +390,13 @@ export namespace GltfTileIO {
       else
         renderGraphic = this._system.createGraphicList(renderGraphicList);
 
-      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), contentRange);
+      const range = contentRange.clone();
+      if (undefined !== this._returnToCenter) {
+        range.low.plusXYZ(-this._returnToCenter[0], -this._returnToCenter[1], -this._returnToCenter[2], range.low);
+        range.high.plusXYZ(-this._returnToCenter[0], -this._returnToCenter[1], -this._returnToCenter[2], range.high);
+      }
+
+      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
       if (undefined !== this._returnToCenter || this._yAxisUp || undefined !== transformToRoot) {
         const branch = new GraphicBranch();
         branch.add(renderGraphic);

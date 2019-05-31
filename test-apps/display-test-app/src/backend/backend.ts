@@ -35,7 +35,6 @@ function setupStandaloneConfiguration() {
       configuration.signInForStandalone = true;
 
     configuration.disableInstancing = undefined !== process.env.SVT_DISABLE_INSTANCING;
-    configuration.omitEdges = undefined !== process.env.SVT_OMIT_EDGES;
     configuration.useProjectExtents = undefined !== process.env.SVT_USE_PROJECT_EXTENTS;
     configuration.displaySolarShadows = true;
 
@@ -58,7 +57,6 @@ export function initializeBackend() {
   setupStandaloneConfiguration();
 
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.useTileContentThreadPool = true;
   hostConfig.logTileLoadTimeThreshold = 3;
   hostConfig.logTileSizeThreshold = 500000;
   if (MobileRpcConfiguration.isMobileBackend) {

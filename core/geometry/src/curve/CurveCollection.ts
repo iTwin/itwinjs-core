@@ -158,8 +158,8 @@ class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
  *   * `CurveChain` is a (non-instantiable) intermediate class for a sequence of `CurvePrimitive ` joining head-to-tail.  The two instantiable forms of `CurveChain` are
  *     * `Path` - A chain not required to close, and not enclosing a planar area
  *     * `Loop` - A chain required to close from last to first so that a planar area is enclosed.
- *   * `ParityRegion` -- a colletion of coplanar `Loop`s, with "in/out" classification by parity rules
- *   * `UnionRegion` -- a colletion of coplanar `Loop`s, with "in/out" classification by union rules
+ *   * `ParityRegion` -- a collection of coplanar `Loop`s, with "in/out" classification by parity rules
+ *   * `UnionRegion` -- a collection of coplanar `Loop`s, with "in/out" classification by union rules
  *   * `BagOfCurves` -- a collection of `AnyCurve` with no implied structure.
  * @public
  */
@@ -169,10 +169,10 @@ export abstract class CurveCollection extends GeometryQuery {
   public isInner: boolean = false;
   /** Return the sum of the lengths of all contained curves. */
   public sumLengths(): number { return SumLengthsContext.sumLengths(this); }
-  /** return the max gap between adjacent primitives in Path and Loop collctions.
+  /** return the max gap between adjacent primitives in Path and Loop collections.
    *
    * * In a Path, gaps are computed between consecutive primitives.
-   * * In a Loop, gaps are comptued between consecutvie primtives and between last and first.
+   * * In a Loop, gaps are computed between consecutive primitives and between last and first.
    * * gaps are NOT computed between consecutive CurvePrimitives in "unstructured" collections.  The type is "unstructured" so gaps should not be semantically meaningful.
    */
   public maxGap(): number { return GapSearchContext.maxGap(this); }
@@ -209,11 +209,11 @@ export abstract class CurveCollection extends GeometryQuery {
   }
   /** Return a CurveCollection with the same structure but all curves replaced by strokes. */
   public abstract cloneStroked(options?: StrokeOptions): AnyCurve;
-  /** Support method for ICurvePrimtive ... one line call to specific announce method . . */
+  /** Support method for ICurvePrimitive ... one line call to specific announce method . . */
   public abstract announceToCurveProcessor(processor: RecursiveCurveProcessor): void;
   /** clone an empty collection. */
   public abstract cloneEmptyPeer(): CurveCollection;
-  /** Return the boundary type of a corresponding  Microstation CurveVector.
+  /** Return the boundary type of a corresponding  MicroStation CurveVector.
    * * Derived class must implement.
    */
   public abstract dgnBoundaryType(): number;
@@ -239,13 +239,13 @@ export abstract class CurveCollection extends GeometryQuery {
  * * A `CurveChain` contains only curvePrimitives.  No other paths, loops, or regions allowed.
  * * A single entry in the chain can in fact contain multiple curve primitives if the entry itself is (for instance) `CurveChainWithDistanceIndex`
  *   which presents itself (through method interface) as a CurvePrimitive with well defined mappings from fraction to xyz, but in fact does all the
- *    calculations over multiple primtitives.
+ *    calculations over multiple primitives.
  * * The specific derived classes are `Path` and `Loop`
  * * `CurveChain` is an intermediate class.   It is not instantiable on its own.
  * @public
  */
 export abstract class CurveChain extends CurveCollection {
-/** The curve primitives in the chain. */
+  /** The curve primitives in the chain. */
   protected _curves: CurvePrimitive[];
   protected constructor() { super(); this._curves = []; }
   /** Return the array of `CurvePrimitive` */
@@ -285,7 +285,7 @@ export abstract class CurveChain extends CurveCollection {
     return strokes;
   }
   /** add a child curve.
-   * * Returns fale if the given child is not a CurvePrimitive.
+   * * Returns false if the given child is not a CurvePrimitive.
    */
   public tryAddChild(child: AnyCurve): boolean {
     if (child instanceof CurvePrimitive) {
@@ -299,7 +299,7 @@ export abstract class CurveChain extends CurveCollection {
     if (i < this._curves.length) return this._curves[i];
     return undefined;
   }
-  /** invoke `curve.extendRange(range, transfrom)` for each child  */
+  /** invoke `curve.extendRange(range, transform)` for each child  */
   public extendRange(range: Range3d, transform?: Transform): void {
     for (const curve of this._curves)
       curve.extendRange(range, transform);
@@ -339,7 +339,7 @@ export class BagOfCurves extends CurveCollection {
     }
     return result;
   }
-  /** Return the boundary type (0) of a corresponding  Microstation CurveVector */
+  /** Return the boundary type (0) of a corresponding  MicroStation CurveVector */
   public dgnBoundaryType(): number { return 0; }
   /** invoke `processor.announceBagOfCurves(this, indexInParent);` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
