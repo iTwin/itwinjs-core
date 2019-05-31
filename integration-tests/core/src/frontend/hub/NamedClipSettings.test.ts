@@ -143,7 +143,7 @@ describe("ViewClipDecorationProvider (#integration)", () => {
     }
   });
 
-  it.only("test shared setttings", async () => {
+  it("test shared setttings", async () => {
     const viewport = ScreenViewport.create(viewDiv!, viewState.clone());
     await NamedClipTestUtils.cleanExistingSettings(viewport.iModel, false, viewClipDecoProvider.settings); // Cleanup user clips from previous test runs...
     await NamedClipTestUtils.cleanExistingSettings(viewport.iModel, true, viewClipDecoProvider.settings); // Cleanup shared clips from previous test runs...
