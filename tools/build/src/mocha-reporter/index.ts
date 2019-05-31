@@ -6,7 +6,7 @@
 // tslint:disable:no-var-requires
 // tslint:disable:no-console
 import * as path from "path";
-const { logBuildWarning } = require("../scripts/rush/utils");
+const { logBuildWarning, logBuildError, failBuild } = require("../scripts/rush/utils");
 
 const Base = require("mocha/lib/reporters/base");
 const Spec = require("mocha/lib/reporters/spec");
@@ -41,10 +41,18 @@ class BentleyMochaReporter extends Spec {
   public epilogue(...args: any[]) {
     // Force test errors to be printed to stderr instead of stdout.
     // This will allow rush to correctly summarize test failure when running rush test.
-    if (this.stats.failures)
+    if (this.stats.failures) {
       withStdErr(() => super.epilogue(...args));
-    else
+    } else {
       super.epilogue(...args);
+
+      if (0 === this.stats.passes) {
+        logBuildError("There were 0 passing tests.  That doesn't seem right."
+          + "\nIf there are really no passing tests and no failures, then what was even the point?"
+          + "\nIt seems likely that tests were skipped by it.only, it.skip, or grep filters, so I'm going to fail now.");
+        failBuild();
+      }
+    }
 
     // Also log warnings in CI builds when tests have been skipped.
     if (this.stats.pending) {
