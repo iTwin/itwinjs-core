@@ -10,7 +10,7 @@ import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
-import { IModelJsNative } from "../IModelJsNative";
+import { IModelJsNative, NativeLoggerCategory } from "../IModelJsNative";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility } from "./integration/HubUtility";
@@ -304,8 +304,8 @@ export class IModelTestUtils {
     Logger.setLevel(ClientsLoggerCategory.Clients, LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.IModelHub, LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.Request, LogLevel.Trace);
-    Logger.setLevel(IModelJsNative.BackendLoggerCategory.DgnCore, LogLevel.Error);
-    Logger.setLevel(IModelJsNative.BackendLoggerCategory.BeSQLite, LogLevel.Error);
+    Logger.setLevel(NativeLoggerCategory.DgnCore, LogLevel.Error);
+    Logger.setLevel(NativeLoggerCategory.BeSQLite, LogLevel.Error);
   }
 }
 

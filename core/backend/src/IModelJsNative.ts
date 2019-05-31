@@ -11,6 +11,19 @@ import { ExportGraphicsProps } from "./ExportGraphics";
 import { IModelDb, TxnIdString } from "./IModelDb";
 import { Config, PollStatus, PostStatus } from "./ConcurrentQuery";
 
+/** Logger categories used by the native addon
+ * @internal
+ */
+export enum NativeLoggerCategory {
+  Success = 0,
+  BeSQLite = "BeSQLite",
+  Changeset = "Changeset",
+  DgnCore = "DgnCore",
+  ECDb = "ECDb",
+  ECObjectsNative = "ECObjectsNative",
+  UnitsNative = "UnitsNative",
+}
+
 // tslint:disable:prefer-get
 /** Module that declares the IModelJs native code.
  * @internal
@@ -45,17 +58,6 @@ export declare namespace IModelJsNative {
   export function addReferenceToObjectInVault(id: string): void;
   export function getObjectRefCountFromVault(id: string): number;
   export function clearLogLevelCache(): void;
-
-  /** Logger categories used by the native addon */
-  export enum BackendLoggerCategory {
-    Success = 0,
-    BeSQLite = "BeSQLite",
-    Changeset = "Changeset",
-    DgnCore = "DgnCore",
-    ECDb = "ECDb",
-    ECObjectsNative = "ECObjectsNative",
-    UnitsNative = "UnitsNative",
-  }
 
   /** The return type of synchronous functions that may return an error or a successful result. */
   export interface ErrorStatusOrResult<ErrorCodeType, ResultType> {

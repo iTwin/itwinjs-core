@@ -1938,31 +1938,15 @@ export class IModelJsFsStats {
 export namespace IModelJsNative {
     // (undocumented)
     export function addReferenceToObjectInVault(id: string): void;
-    export enum BackendLoggerCategory {
-        // (undocumented)
-        BeSQLite = "BeSQLite",
-        // (undocumented)
-        Changeset = "Changeset",
-        // (undocumented)
-        DgnCore = "DgnCore",
-        // (undocumented)
-        ECDb = "ECDb",
-        // (undocumented)
-        ECObjectsNative = "ECObjectsNative",
-        // (undocumented)
-        Success = 0,
-        // (undocumented)
-        UnitsNative = "UnitsNative"
-    }
-    const // (undocumented)
-    version: string;
-    let // (undocumented)
-    logger: Logger;
     export interface BriefcaseManagerOnConflictPolicy {
         deleteVsUpdate: number;
         updateVsDelete: number;
         updateVsUpdate: number;
     }
+    const // (undocumented)
+    version: string;
+    let // (undocumented)
+    logger: Logger;
     // (undocumented)
     export class BriefcaseManagerResourcesRequest {
         // (undocumented)
@@ -2964,6 +2948,24 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     models: string[];
     // @internal (undocumented)
     toJSON(): ModelSelectorProps;
+}
+
+// @internal
+export enum NativeLoggerCategory {
+    // (undocumented)
+    BeSQLite = "BeSQLite",
+    // (undocumented)
+    Changeset = "Changeset",
+    // (undocumented)
+    DgnCore = "DgnCore",
+    // (undocumented)
+    ECDb = "ECDb",
+    // (undocumented)
+    ECObjectsNative = "ECObjectsNative",
+    // (undocumented)
+    Success = 0,
+    // (undocumented)
+    UnitsNative = "UnitsNative"
 }
 
 // @public

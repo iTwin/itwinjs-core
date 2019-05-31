@@ -7,7 +7,7 @@ import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, IModelDb, IModelJsNative, KnownLocations, OpenParams } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, IModelDb, NativeLoggerCategory, KnownLocations, OpenParams } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -18,8 +18,8 @@ describe("ApplyChangeSets (#integration)", () => {
   before(async () => {
     // Note: Change to LogLevel.Info for useful debug information
     Logger.setLevel(HubUtility.logCategory, LogLevel.Error);
-    Logger.setLevel(IModelJsNative.BackendLoggerCategory.DgnCore, LogLevel.Error);
-    Logger.setLevel(IModelJsNative.BackendLoggerCategory.BeSQLite, LogLevel.Error);
+    Logger.setLevel(NativeLoggerCategory.DgnCore, LogLevel.Error);
+    Logger.setLevel(NativeLoggerCategory.BeSQLite, LogLevel.Error);
   });
 
   const testAllChangeSetOperations = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString) => {

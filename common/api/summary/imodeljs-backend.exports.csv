@@ -157,6 +157,7 @@ public;LinkPartition
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+internal;NativeLoggerCategory
 public;OpenParams
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
