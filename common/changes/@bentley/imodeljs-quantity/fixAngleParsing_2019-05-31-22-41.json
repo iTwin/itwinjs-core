@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow ^ to be used to define angle degrees.",
+      "packageName": "@bentley/imodeljs-quantity",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-quantity",
+  "email": "bill.steinbock@bentley.com"
+}

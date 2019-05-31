@@ -5,7 +5,6 @@
 import { UnitProps, UnitsProvider, UnitConversion } from "../../src/Interfaces";
 import { BasicUnit, BadUnit } from "../../src/Unit";
 
-
 interface ConversionDef {
   numerator: number;
   denominator: number;
@@ -25,7 +24,7 @@ const unitData: UnitDefinition[] = [
   // Angles ( base unit radian )
   { name: "Units.RAD", unitFamily: "Units.ANGLE", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad", alternateLabels: ["radian"] },
   // 1 rad = 180.0/PI °
-  { name: "Units.ARC_DEG", unitFamily: "Units.ANGLE", conversion: { numerator: 180.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "°", alternateLabels: ["deg"] },
+  { name: "Units.ARC_DEG", unitFamily: "Units.ANGLE", conversion: { numerator: 180.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "°", alternateLabels: ["deg", "^"] },
   { name: "Units.ARC_MINUTE", unitFamily: "Units.ANGLE", conversion: { numerator: 10800.0, denominator: 3.14159265358979323846264338327950, offset: 0.0 }, displayLabel: "'", alternateLabels: ["min"] },
   { name: "Units.ARC_SECOND", unitFamily: "Units.ANGLE", conversion: { numerator: 648000.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: '"', alternateLabels: ["sec"] },
   { name: "Units.GRAD", unitFamily: "Units.ANGLE", conversion: { numerator: 200, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "grad", alternateLabels: ["gd"] },

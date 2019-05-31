@@ -370,6 +370,37 @@ describe("Synchronous Parsing tests:", async () => {
   const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
   const formatSpec = await FormatterSpec.create("test", format, unitsProvider, outUnit);
 
+  const angleFormatData = {
+    composite: {
+      includeZero: true,
+      spacer: "",
+      units: [
+        {
+          label: "°",
+          name: "Units.ARC_DEG",
+        },
+        {
+          label: "'",
+          name: "Units.ARC_MINUTE",
+        },
+        {
+          label: "\"",
+          name: "Units.ARC_SECOND",
+        },
+      ],
+    },
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 2,
+    type: "Decimal",
+    uomSeparator: "",
+  };
+
+  const angleFormat = new Format("testAngle");
+  await angleFormat.fromJson(unitsProvider, angleFormatData).catch(() => { });
+  const outAngleUnit = await unitsProvider.findUnitByName("Units.ARC_DEG");
+  const angleParserSpec = await ParserSpec.create(angleFormat, unitsProvider, outAngleUnit);
+  const angleFormatSpec = await FormatterSpec.create("test", angleFormat, unitsProvider, outAngleUnit);
+
   it("Parse into length values using custom parse labels", () => {
     const testData = [
       // if no quantity is provided then the format unit is used to determine unit
@@ -456,6 +487,37 @@ describe("Synchronous Parsing tests:", async () => {
       assert.isTrue(QuantityStatus.Success === parseResult.status);
       assert.isTrue(Math.abs(parseResult.value! - testEntry.magnitude) < 0.0001);
       const formattedValue = Formatter.formatQuantity(parseResult.value!, formatSpec);
+
+      if (logTestOutput) {
+        // tslint:disable-next-line:no-console
+        console.log(`    formatted value=${formattedValue}`);
+      }
+    }
+  });
+
+  it("Parse into angle values using default parse labels", () => {
+    const testData = [
+      // if no quantity is provided then the format unit is used to determine unit
+      { value: "15^30'", magnitude: 15.5 },
+      { value: "15.5", magnitude: 15.5 },
+    ];
+
+    if (logTestOutput) {
+      for (const spec of angleParserSpec.unitConversions) {
+        // tslint:disable-next-line:no-console
+        console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
+      }
+    }
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry.value, angleParserSpec);
+      if (logTestOutput) {
+        // tslint:disable-next-line:no-console
+        console.log(`input=${testEntry.value} output=${parseResult.value!}`);
+      }
+      assert.isTrue(QuantityStatus.Success === parseResult.status);
+      assert.isTrue(Math.abs(parseResult.value! - testEntry.magnitude) < 0.0001);
+      const formattedValue = Formatter.formatQuantity(parseResult.value!, angleFormatSpec);
 
       if (logTestOutput) {
         // tslint:disable-next-line:no-console
