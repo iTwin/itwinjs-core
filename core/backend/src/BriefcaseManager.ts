@@ -682,7 +682,6 @@ export class BriefcaseManager {
 
     try {
       // Download checkpoint
-      let perfLogger = new PerfLogger("Opening iModel - downloading checkpoint", () => briefcase.getDebugInfo());
       let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
       checkpointQuery = (briefcase.openParams.syncMode === SyncMode.FixedVersion) ? checkpointQuery.nearestCheckpoint(briefcase.targetChangeSetId) : checkpointQuery.precedingCheckpoint(briefcase.targetChangeSetId);
       const checkpoints: Checkpoint[] = await BriefcaseManager.imodelClient.checkpoints.get(requestContext, briefcase.iModelId, checkpointQuery);
@@ -694,20 +693,17 @@ export class BriefcaseManager {
         briefcase.fileId = checkpoint.fileId.toString();
       await BriefcaseManager.downloadCheckpoint(requestContext, checkpoint, briefcase.pathname);
       requestContext.enter();
-      perfLogger.dispose();
 
       // Open checkpoint
-      perfLogger = new PerfLogger("Opening iModel - opening downloaded checkpoint", () => briefcase.getDebugInfo());
       const nativeDb = new IModelHost.platform.DgnDb();
       let res: DbResult = nativeDb.openIModel(briefcase.pathname, OpenMode.ReadWrite);
       if (DbResult.BE_SQLITE_OK !== res)
         throw new IModelError(res, "Unable to open Db", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
       assert(nativeDb.getParentChangeSetId() === checkpoint.mergedChangeSetId);
-      perfLogger.dispose();
 
       // Setup briefcase
       // TODO: Only need to setup briefcase id for the ReadWrite case after the hub properly sets up these checkpoints
-      perfLogger = new PerfLogger("Opening iModel - setting up context/iModel/briefcase ids", () => briefcase.getDebugInfo());
+      const perfLogger = new PerfLogger("Opening iModel - setting up context/iModel/briefcase ids", () => briefcase.getDebugInfo());
       res = nativeDb.saveProjectGuid(briefcase.contextId);
       if (DbResult.BE_SQLITE_OK !== res)
         throw new IModelError(res, "Unable to save context id", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));

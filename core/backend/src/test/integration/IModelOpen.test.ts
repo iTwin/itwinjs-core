@@ -102,11 +102,12 @@ describe("IModelOpen (#integration)", () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
 
+    const numTries = 100;
     const openParams: OpenParams = OpenParams.fixedVersion();
     openParams.timeout = 500;
     const version = IModelVersion.asOfChangeSet(testChangeSetId);
     let openPromises = new Array<Promise<IModelDb>>();
-    for (let ii = 0; ii < 100; ii++) {
+    for (let ii = 0; ii < numTries; ii++) {
       const open = IModelDb.open(requestContext, testProjectId, testIModelId, openParams, version);
       openPromises.push(open);
     }
@@ -128,13 +129,13 @@ describe("IModelOpen (#integration)", () => {
     // Open iModel with no timeout, and ensure all promises resolve to the same briefcase
     openPromises = [];
     openParams.timeout = undefined;
-    for (let ii = 0; ii < 100; ii++) {
+    for (let ii = 0; ii < numTries; ii++) {
       const open = IModelDb.open(requestContext, testProjectId, testIModelId, openParams, version);
       openPromises.push(open);
     }
     const iModels: IModelDb[] = await Promise.all(openPromises);
     const pathname = iModels[0].briefcase.pathname;
-    for (let ii = 1; ii < 100; ii++) {
+    for (let ii = 1; ii < numTries; ii++) {
       assert.strictEqual(iModels[ii].briefcase.pathname, pathname);
     }
     await iModels[0].close(requestContext, KeepBriefcase.No);

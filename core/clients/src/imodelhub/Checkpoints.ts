@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, Logger, PerfLogger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { FileHandler } from "../FileHandler";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
@@ -158,7 +158,6 @@ export class CheckpointHandler {
    */
   public async download(requestContext: AuthorizedClientRequestContext, checkpoint: Checkpoint, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     requestContext.enter();
-    Logger.logTrace(loggerCategory, "Started downloading checkpoint", () => ({ ...checkpoint, path }));
     ArgumentCheck.defined("checkpoint", checkpoint);
     ArgumentCheck.defined("path", path);
 
@@ -171,8 +170,9 @@ export class CheckpointHandler {
     if (!checkpoint.downloadUrl)
       return Promise.reject(IModelHubClientError.missingDownloadUrl("checkpoint"));
 
+    const perfLogger = new PerfLogger("Downloading checkpoint", () => ({ ...checkpoint, path }));
     await this._fileHandler.downloadFile(requestContext, checkpoint.downloadUrl, path, parseInt(checkpoint.fileSize!, 10), progressCallback);
     requestContext.enter();
-    Logger.logTrace(loggerCategory, "Finished downloading checkpoint", () => ({ ...checkpoint, path }));
+    perfLogger.dispose();
   }
 }
