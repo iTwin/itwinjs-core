@@ -28,6 +28,8 @@ export class ToolWithSettings extends PrimitiveTool {
   private _showCoordinatesOnPointerMove = false;
   private _lengthFormatterSpec?: FormatterSpec;
   private _lengthParserSpec?: ParserSpec;
+  private _angleFormatterSpec?: FormatterSpec;
+  private _angleParserSpec?: ParserSpec;
 
   private toggleCoordinateUpdate() {
     this._showCoordinatesOnPointerMove = !this._showCoordinatesOnPointerMove;
@@ -241,6 +243,17 @@ export class ToolWithSettings extends PrimitiveTool {
     };
   }
 
+  private _useLengthValue = new ToolSettingsValue(true);
+
+  public get useLength(): boolean {
+    return this._useLengthValue.value as boolean;
+  }
+
+  public set useLength(option: boolean) {
+    this._useLengthValue.value = option;
+  }
+
+  // ------------- Length ---------------
   private _formatLength = (numberValue: number): string => {
     if (this.lengthFormatterSpec) {
       return IModelApp.quantityFormatter.formatQuantity(numberValue, this.lengthFormatterSpec);
@@ -254,29 +267,18 @@ export class ToolWithSettings extends PrimitiveTool {
       if (parseResult.status === QuantityStatus.Success) {
         return { value: parseResult.value };
       } else {
-        return { parseError: `Unable to parse ${userInput} into a valid length` };
+        return { parseError: IModelApp.i18n.translate("SampleApp:errors.UnableToParseLength") };
       }
     }
 
     const rtnValue = Number.parseFloat(userInput);
     if (Number.isNaN(rtnValue)) {
-      return { parseError: `Unable to parse ${userInput} into a valid length` };
+      return { parseError: IModelApp.i18n.translate("SampleApp:errors.UnableToParseLength") };
     } else {
       return { value: rtnValue };
     }
   }
 
-  private _useLengthValue = new ToolSettingsValue(true);
-
-  public get useLength(): boolean {
-    return this._useLengthValue.value as boolean;
-  }
-
-  public set useLength(option: boolean) {
-    this._useLengthValue.value = option;
-  }
-
-  // ------------- text based edit field (TODO: make quantity field) ---------------
   private static _lengthName = "length";
   private _getLengthDescription = (): PropertyDescription => {
     return {
@@ -332,6 +334,90 @@ export class ToolWithSettings extends PrimitiveTool {
     }
 
     Logger.logError("UITestApp.ToolWithSettings", "Length parserSpec was expected to be set before tool started.");
+    return undefined;
+  }
+
+  // ------------- Angle ---------------
+  private _formatAngle = (numberValue: number): string => {
+    if (this.angleFormatterSpec) {
+      return IModelApp.quantityFormatter.formatQuantity(numberValue, this.angleFormatterSpec);
+    }
+    return numberValue.toFixed(2);
+  }
+
+  private _parseAngle = (userInput: string): ParseResults => {
+    if (this.angleParserSpec) {
+      const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, this.angleParserSpec);
+      if (parseResult.status === QuantityStatus.Success) {
+        return { value: parseResult.value };
+      } else {
+        return { parseError: IModelApp.i18n.translate("SampleApp:errors.UnableToParseAngle") };
+      }
+    }
+
+    const rtnValue = Number.parseFloat(userInput);
+    if (Number.isNaN(rtnValue)) {
+      return { parseError: IModelApp.i18n.translate("SampleApp:errors.UnableToParseAngle") };
+    } else {
+      return { value: rtnValue };
+    }
+  }
+
+  private static _angleName = "angle";
+  private _getAngleDescription = (): PropertyDescription => {
+    return {
+      name: ToolWithSettings._angleName,
+      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Angle"),
+      typename: "number",
+      editor: {
+        name: "number-custom",
+        params: [
+          {
+            type: PropertyEditorParamTypes.CustomFormattedNumber,
+            formatFunction: this._formatAngle,
+            parseFunction: this._parseAngle,
+          },
+        ],
+      },
+    };
+  }
+
+  // if _angleValue also sets up display value then the "number-custom" type editor would not need to format the value before initially displaying it.
+  private _angleValue = new ToolSettingsValue(0.0);
+
+  public get angle(): number {
+    return this._angleValue.value as number;
+  }
+
+  public set angle(option: number) {
+    this._angleValue.value = option;
+  }
+
+  public get angleFormatterSpec(): FormatterSpec | undefined {
+    if (this._angleFormatterSpec)
+      return this._angleFormatterSpec;
+
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
+    if (formatterSpec) {
+      this._angleFormatterSpec = formatterSpec;
+      return formatterSpec;
+    }
+
+    Logger.logError("UITestApp.ToolWithSettings", "Angle formatterSpec was expected to be set before tool started.");
+    return undefined;
+  }
+
+  public get angleParserSpec(): ParserSpec | undefined {
+    if (this._angleParserSpec)
+      return this._angleParserSpec;
+
+    const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Angle);
+    if (parserSpec) {
+      this._angleParserSpec = parserSpec;
+      return parserSpec;
+    }
+
+    Logger.logError("UITestApp.ToolWithSettings", "Angle parserSpec was expected to be set before tool started.");
     return undefined;
   }
 
@@ -394,6 +480,7 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push(new ToolSettingsPropertyRecord(this._coordinateValue.clone() as PrimitiveValue, ToolWithSettings._getCoordinateDescription(), { rowPriority: 15, columnIndex: 2, columnSpan: 3 }, readonly));
     toolSettings.push(new ToolSettingsPropertyRecord(this._useLengthValue.clone() as PrimitiveValue, ToolWithSettings._getUseLengthDescription(), { rowPriority: 20, columnIndex: 0 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._lengthValue.clone() as PrimitiveValue, this._getLengthDescription(), { rowPriority: 20, columnIndex: 2 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._angleValue.clone() as PrimitiveValue, this._getAngleDescription(), { rowPriority: 25, columnIndex: 2 }));
     return toolSettings;
   }
 

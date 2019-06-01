@@ -68,7 +68,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
           this.setState({ inputValue: newDisplayValue });
         }
       } else {
-        const msg = new NotifyMessageDetails(OutputMessagePriority.Error, UiComponents.translate("errors.unable-to-parse-quantity"));
+        const msg = new NotifyMessageDetails(OutputMessagePriority.Error, parseResults.parseError ? parseResults.parseError : UiComponents.translate("errors.unable-to-parse-quantity"));
         msg.setInputFieldTypeDetails(this._input as HTMLElement);
         // istanbul ignore next
         if (IModelApp.notifications)
