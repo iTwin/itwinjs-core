@@ -161,7 +161,7 @@ export class FormDataManagementClient extends WsgClient {
    * @param requestContext The client request context
    * @param projectId the project associated with the form data
    * @param className the name of the class that owns the properties for which each instance binds data to (note this is dynamic, ie a user can create/destroy classes)
-   * @param skip the starting index of instances to fetch (accomodates paging to reduce the request payload)
+   * @param skip the starting index of instances to fetch (accommodates paging to reduce the request payload)
    * @param top the maximum number of instances to return
    * @param filter [optional] can either supply a string or an array of property names and values which are then unioned together as a string and inserted into the url to exclude data instances
    */
@@ -191,12 +191,12 @@ export class FormDataManagementClient extends WsgClient {
   }
 
   /**
-   * get form data instances with the "Risk" classification, "Issue" discipline, and the given iModelId which is stored as the data isntance's "_ContainerId" property
+   * get form data instances with the "Risk" classification, "Issue" discipline, and the given iModelId which is stored as the data instance's "_ContainerId" property
    * @param requestContext The client request context
    * @param projectId the project associated with the form data
    * @param iModelId the iModelId associated with the form data
    * @param className the name of the class that owns the properties for which each instance binds data to (note this is dynamic, ie a user can create/destroy classes)
-   * @param skip the starting index of instances to fetch (accomodates paging to reduce the request payload)
+   * @param skip the starting index of instances to fetch (accommodates paging to reduce the request payload)
    * @param top the maximum number of instances to return
    */
   public async getRiskIssueFormData(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: string, className: string = "Issue", skip: number = 0, top: number = 50): Promise<FormInstanceData[]> {
@@ -234,8 +234,8 @@ export class FormDataManagementClient extends WsgClient {
    * @param requestContext The client request context
    * @param properties the data to be persisted, note due to the dynamic nature of classes this cannot be generalized by a specific type
    * @param projectId the project associated with the form data
-   * @param iModelId the iModelId associated with the form data (bound to teh _ContainerId reference property)
-   * @param elementId the elementId associated with the form data (bound to teh _ItemId reference property)
+   * @param iModelId the iModelId associated with the form data (bound to the _ContainerId reference property)
+   * @param elementId the elementId associated with the form data (bound to the _ItemId reference property)
    * @param formId the form definition the form data was filled out from
    * @param className the name of the class that owns the properties for which each instance binds data to (note this is dynamic, ie a user can create/destroy classes)
    * @param instanceId [optional] if provided the data is used to update an existing form data instance, otherwise a new instance is created

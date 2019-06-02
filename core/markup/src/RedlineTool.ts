@@ -429,7 +429,7 @@ export class SymbolTool extends RedlineTool {
     if ((width < 10 || height < 10) && (isDynamics || this._points.length !== this._minPoints))
       return;
     if (undefined === this._symbol) {
-      const symbol = svgMarkup.group().svg(this._symbolData); // creating group instead of using symbol because of inabilitiy to flash/hilite multi-color symbol instance...
+      const symbol = svgMarkup.group().svg(this._symbolData); // creating group instead of using symbol because of inability to flash/hilite multi-color symbol instance...
       if (0 === symbol.children().length) {
         symbol.remove();
         this._symbolData = undefined;
