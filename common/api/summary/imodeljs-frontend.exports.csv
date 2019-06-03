@@ -196,7 +196,6 @@ internal;NullTarget
 internal;OffScreenTarget 
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
-internal;OidcClientWrapper
 internal;OnScreenTarget 
 public;OrthographicViewState 
 public;OutputMessageAlert

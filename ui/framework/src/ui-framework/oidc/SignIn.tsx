@@ -6,9 +6,9 @@
 
 import * as React from "react";
 import { SignIn as SignInBase } from "@bentley/ui-components";
-import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { CommonProps } from "@bentley/ui-core";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for the [[SignIn]] component
  * @public
@@ -27,7 +27,7 @@ export interface SignInProps extends CommonProps {
 
 /**
  * SignIn React component.
- * `OidcClientWrapper.oidcClient.signIn` is called when the "Sign In" button is pressed,
+ * `UiFramework.oidcClient.signIn` is called when the "Sign In" button is pressed,
  * then `props.onSignedIn` is called after sign-in has completed.
  * @public
  */
@@ -38,25 +38,25 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
   public componentDidMount() {
     // istanbul ignore next
-    if (OidcClientWrapper.oidcClient)
-      OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
+    if (UiFramework.oidcClient)
+      UiFramework.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   private _onUserStateChanged() {
-    if (OidcClientWrapper.oidcClient.isAuthorized && this.props.onSignedIn)
+    if (UiFramework.oidcClient.isAuthorized && this.props.onSignedIn)
       this.props.onSignedIn();
   }
 
   public componentWillUnmount() {
     // istanbul ignore next
-    if (OidcClientWrapper.oidcClient)
-      OidcClientWrapper.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+    if (UiFramework.oidcClient)
+      UiFramework.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 
   private _onStartSignin = async () => {
     // istanbul ignore next
-    if (OidcClientWrapper.oidcClient)
-      OidcClientWrapper.oidcClient.signIn(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
+    if (UiFramework.oidcClient)
+      UiFramework.oidcClient.signIn(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
 
     // istanbul ignore else
     if (this.props.onStartSignIn)

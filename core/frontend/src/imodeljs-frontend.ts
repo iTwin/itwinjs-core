@@ -60,7 +60,6 @@ export * from "./render/MockRender";
 export * from "./render/System";
 export * from "./render/webgl/Target";
 export * from "./oidc/OidcBrowserClient";
-export * from "./oidc/OidcClientWrapper";
 export * from "./TiledGraphicsProvider";
 export * from "./TerrainProvider";
 export * from "./properties/Description";

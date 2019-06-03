@@ -4048,14 +4048,6 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
 
-// @internal (undocumented)
-export class OidcClientWrapper {
-    // (undocumented)
-    static initialize(requestContext: ClientRequestContext, config: OidcFrontendClientConfiguration): Promise<void>;
-    // (undocumented)
-    static readonly oidcClient: IOidcFrontendClient;
-    }
-
 // @internal
 export class OnScreenTarget extends Target {
     constructor(canvas: HTMLCanvasElement);

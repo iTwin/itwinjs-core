@@ -11,7 +11,7 @@ import {
   ElectronRpcConfiguration, BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
 
-import { IModelApp, IModelConnection, SnapMode, AccuSnap, OidcClientWrapper, ViewClipByPlaneTool, RenderSystem, IModelAppOptions } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem, IModelAppOptions } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -390,7 +390,7 @@ export class SampleAppViewer extends React.Component<any> {
     // tslint:disable-next-line:no-console
     console.log("Versions:", (window as any).iModelJsVersions);
 
-    if (OidcClientWrapper.oidcClient.hasSignedIn) {
+    if (UiFramework.oidcClient.hasSignedIn) {
       SampleAppIModelApp.onSignedIn(); // tslint:disable-line:no-floating-promises
     } else {
       SampleAppIModelApp.showSignIn(); // tslint:disable-line:no-floating-promises

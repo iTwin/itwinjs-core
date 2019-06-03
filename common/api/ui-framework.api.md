@@ -29,6 +29,7 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
+import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { Matrix3d } from '@bentley/geometry-core';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
@@ -3363,6 +3364,7 @@ export class UiFramework {
     static initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any>;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
+    static readonly oidcClient: IOidcFrontendClient;
     // @beta
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;
     // @internal (undocumented)
