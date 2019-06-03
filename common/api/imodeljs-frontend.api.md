@@ -3891,18 +3891,21 @@ export class NotificationManager {
     readonly isToolTipOpen: boolean;
     readonly isToolTipSupported: boolean;
     openMessageBox(_mbType: MessageBoxType, _message: string, _icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    // @beta
     openToolTip(_htmlElement: HTMLElement, message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     outputActivityMessage(_messageText: string, _percentComplete: number): boolean;
+    // @beta
     outputMessage(_message: NotifyMessageDetails): void;
     outputPrompt(_prompt: string): void;
     outputPromptByKey(key: string): void;
     setupActivityMessage(_details: ActivityMessageDetails): boolean;
+    // @beta
     protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void;
     // (undocumented)
     readonly toolTipLocation: Point2d;
 }
 
-// @public
+// @beta
 export class NotifyMessageDetails {
     constructor(priority: OutputMessagePriority, briefMessage: string, detailedMessage?: string | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
     // (undocumented)

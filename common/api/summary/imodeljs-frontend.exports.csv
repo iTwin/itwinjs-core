@@ -190,7 +190,7 @@ internal;ModifyElementSource
 alpha;MultilineTextEditorParams 
 internal;NoRenderApp
 public;NotificationManager
-public;NotifyMessageDetails
+beta;NotifyMessageDetails
 internal;NullRenderSystem 
 internal;NullTarget 
 internal;OffScreenTarget 
