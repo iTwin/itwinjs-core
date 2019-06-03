@@ -102,7 +102,7 @@ Array [
                           "modelId": "0x45",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2A",
+                        "label": "Physical Object [0-2A]",
                       },
                     ],
                     "extendedData": Object {
@@ -131,7 +131,7 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3I",
+                        "label": "Physical Object [0-3I]",
                       },
                       Object {
                         "extendedData": Object {
@@ -139,7 +139,7 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3J",
+                        "label": "Physical Object [0-3J]",
                       },
                       Object {
                         "extendedData": Object {
@@ -147,7 +147,7 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3K",
+                        "label": "Physical Object [0-3K]",
                       },
                       Object {
                         "extendedData": Object {
@@ -155,7 +155,7 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3L",
+                        "label": "Physical Object [0-3L]",
                       },
                     ],
                     "extendedData": Object {
@@ -184,7 +184,7 @@ Array [
                           "modelId": "0x49",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3O",
+                        "label": "Physical Object [0-3O]",
                       },
                     ],
                     "extendedData": Object {
@@ -203,7 +203,7 @@ Array [
                           "modelId": "0x49",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3M",
+                        "label": "Physical Object [0-3M]",
                       },
                       Object {
                         "extendedData": Object {
@@ -211,7 +211,7 @@ Array [
                           "modelId": "0x49",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3N",
+                        "label": "Physical Object [0-3N]",
                       },
                     ],
                     "extendedData": Object {
@@ -250,7 +250,7 @@ Array [
                           "modelId": "0x4d",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3Q",
+                        "label": "Physical Object [0-3Q]",
                       },
                     ],
                     "extendedData": Object {
@@ -269,7 +269,7 @@ Array [
                           "modelId": "0x4d",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3P",
+                        "label": "Physical Object [0-3P]",
                       },
                     ],
                     "extendedData": Object {
@@ -308,7 +308,7 @@ Array [
                           "modelId": "0x41",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2B",
+                        "label": "Physical Object [0-2B]",
                       },
                     ],
                     "extendedData": Object {
@@ -337,7 +337,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3C",
+                        "label": "Physical Object [0-3C]",
                       },
                       Object {
                         "extendedData": Object {
@@ -345,7 +345,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3D",
+                        "label": "Physical Object [0-3D]",
                       },
                       Object {
                         "extendedData": Object {
@@ -353,7 +353,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3E",
+                        "label": "Physical Object [0-3E]",
                       },
                       Object {
                         "extendedData": Object {
@@ -361,7 +361,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3F",
+                        "label": "Physical Object [0-3F]",
                       },
                       Object {
                         "extendedData": Object {
@@ -369,7 +369,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3G",
+                        "label": "Physical Object [0-3G]",
                       },
                       Object {
                         "extendedData": Object {
@@ -377,7 +377,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3H",
+                        "label": "Physical Object [0-3H]",
                       },
                     ],
                     "extendedData": Object {
@@ -396,7 +396,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2C",
+                        "label": "Physical Object [0-2C]",
                       },
                       Object {
                         "extendedData": Object {
@@ -404,7 +404,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2D",
+                        "label": "Physical Object [0-2D]",
                       },
                       Object {
                         "extendedData": Object {
@@ -412,7 +412,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2E",
+                        "label": "Physical Object [0-2E]",
                       },
                       Object {
                         "extendedData": Object {
@@ -420,7 +420,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2F",
+                        "label": "Physical Object [0-2F]",
                       },
                       Object {
                         "extendedData": Object {
@@ -428,7 +428,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2G",
+                        "label": "Physical Object [0-2G]",
                       },
                       Object {
                         "extendedData": Object {
@@ -436,7 +436,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2H",
+                        "label": "Physical Object [0-2H]",
                       },
                       Object {
                         "extendedData": Object {
@@ -444,7 +444,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2I",
+                        "label": "Physical Object [0-2I]",
                       },
                       Object {
                         "extendedData": Object {
@@ -452,7 +452,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2J",
+                        "label": "Physical Object [0-2J]",
                       },
                       Object {
                         "extendedData": Object {
@@ -460,7 +460,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2K",
+                        "label": "Physical Object [0-2K]",
                       },
                       Object {
                         "extendedData": Object {
@@ -468,7 +468,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2L",
+                        "label": "Physical Object [0-2L]",
                       },
                       Object {
                         "extendedData": Object {
@@ -476,7 +476,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2M",
+                        "label": "Physical Object [0-2M]",
                       },
                       Object {
                         "extendedData": Object {
@@ -484,7 +484,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2N",
+                        "label": "Physical Object [0-2N]",
                       },
                       Object {
                         "extendedData": Object {
@@ -492,7 +492,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2O",
+                        "label": "Physical Object [0-2O]",
                       },
                       Object {
                         "extendedData": Object {
@@ -500,7 +500,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2P",
+                        "label": "Physical Object [0-2P]",
                       },
                       Object {
                         "extendedData": Object {
@@ -508,7 +508,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2Q",
+                        "label": "Physical Object [0-2Q]",
                       },
                       Object {
                         "extendedData": Object {
@@ -516,7 +516,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2R",
+                        "label": "Physical Object [0-2R]",
                       },
                       Object {
                         "extendedData": Object {
@@ -524,7 +524,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2S",
+                        "label": "Physical Object [0-2S]",
                       },
                       Object {
                         "extendedData": Object {
@@ -532,7 +532,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2T",
+                        "label": "Physical Object [0-2T]",
                       },
                       Object {
                         "extendedData": Object {
@@ -540,7 +540,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2U",
+                        "label": "Physical Object [0-2U]",
                       },
                       Object {
                         "extendedData": Object {
@@ -548,7 +548,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2V",
+                        "label": "Physical Object [0-2V]",
                       },
                       Object {
                         "extendedData": Object {
@@ -556,7 +556,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2W",
+                        "label": "Physical Object [0-2W]",
                       },
                       Object {
                         "extendedData": Object {
@@ -564,7 +564,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2X",
+                        "label": "Physical Object [0-2X]",
                       },
                       Object {
                         "extendedData": Object {
@@ -572,7 +572,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2Y",
+                        "label": "Physical Object [0-2Y]",
                       },
                       Object {
                         "extendedData": Object {
@@ -580,7 +580,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-2Z",
+                        "label": "Physical Object [0-2Z]",
                       },
                       Object {
                         "extendedData": Object {
@@ -588,7 +588,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3A",
+                        "label": "Physical Object [0-3A]",
                       },
                       Object {
                         "extendedData": Object {
@@ -596,7 +596,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-3B",
+                        "label": "Physical Object [0-3B]",
                       },
                       Object {
                         "extendedData": Object {
@@ -604,7 +604,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-30",
+                        "label": "Physical Object [0-30]",
                       },
                       Object {
                         "extendedData": Object {
@@ -612,7 +612,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-31",
+                        "label": "Physical Object [0-31]",
                       },
                       Object {
                         "extendedData": Object {
@@ -620,7 +620,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-32",
+                        "label": "Physical Object [0-32]",
                       },
                       Object {
                         "extendedData": Object {
@@ -628,7 +628,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-33",
+                        "label": "Physical Object [0-33]",
                       },
                       Object {
                         "extendedData": Object {
@@ -636,7 +636,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-34",
+                        "label": "Physical Object [0-34]",
                       },
                       Object {
                         "extendedData": Object {
@@ -644,7 +644,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-35",
+                        "label": "Physical Object [0-35]",
                       },
                       Object {
                         "extendedData": Object {
@@ -652,7 +652,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-36",
+                        "label": "Physical Object [0-36]",
                       },
                       Object {
                         "extendedData": Object {
@@ -660,7 +660,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-37",
+                        "label": "Physical Object [0-37]",
                       },
                       Object {
                         "extendedData": Object {
@@ -668,7 +668,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-38",
+                        "label": "Physical Object [0-38]",
                       },
                       Object {
                         "extendedData": Object {
@@ -676,7 +676,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object-0-39",
+                        "label": "Physical Object [0-39]",
                       },
                     ],
                     "extendedData": Object {
@@ -709,7 +709,7 @@ Array [
         },
         "hasChildren": true,
         "icon": "icon-folder",
-        "label": "IModelBridgeForMstn master model file://d:\\\\dgn\\\\joe\\\\OneDrive_1_3-15-2019\\\\Joe's house.dgn, 3D Imperial Design",
+        "label": "Joe's house",
       },
     ],
     "extendedData": Object {
